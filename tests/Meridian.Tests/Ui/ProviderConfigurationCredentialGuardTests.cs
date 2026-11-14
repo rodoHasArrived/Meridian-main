@@ -136,8 +136,8 @@ public sealed class ProviderConfigurationCredentialGuardTests : IDisposable
     public async Task CallerMutationWhileSaveWaits_CannotInjectCredentialsAfterSnapshotValidation()
     {
         await using var app = await CreateAppAsync("production");
-        var candidate = new AppConfig { AdditionalSections = new() };
         var store = app.Services.GetRequiredService<WorkstationConfigStore>();
+        var candidate = store.Load() with { AdditionalSections = new() };
         var lease = await new CoreConfigStore(ConfigPath).AcquireWriteLeaseAsync();
         Task saving;
         try

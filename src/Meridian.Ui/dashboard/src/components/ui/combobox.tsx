@@ -1,4 +1,4 @@
-import { Fragment, type KeyboardEvent, type ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
+import { Fragment, type InputHTMLAttributes, type KeyboardEvent, type ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
@@ -17,6 +17,10 @@ export interface ComboboxProps {
   emptyText?: string;
   className?: string;
   id?: string;
+  required?: boolean;
+  "aria-label"?: string;
+  "aria-describedby"?: string;
+  "aria-invalid"?: InputHTMLAttributes<HTMLInputElement>["aria-invalid"];
 }
 
 function normalize(options: Array<ComboboxOption | string>): ComboboxOption[] {
@@ -54,7 +58,11 @@ export function Combobox({
   disabled = false,
   emptyText = "No matches",
   className,
-  id
+  id,
+  required,
+  "aria-label": ariaLabel,
+  "aria-describedby": describedBy,
+  "aria-invalid": invalid
 }: ComboboxProps) {
   const generatedId = useId();
   const inputId = id ?? `${generatedId}-combobox`;
@@ -69,7 +77,10 @@ export function Combobox({
   const items = useMemo(() => normalize(options), [options]);
   const selected = items.find((option) => option.value === value);
   const filtered = useMemo(
-    () => (query ? items.filter((option) => option.label.toLowerCase().includes(query.toLowerCase())) : items),
+    () => {
+      const search = query.toLowerCase();
+      return search ? items.filter((option) => option.label.toLowerCase().includes(search) || option.value.toLowerCase().includes(search)) : items;
+    },
     [items, query]
   );
   const isOpen = open && !disabled;
@@ -114,7 +125,7 @@ export function Combobox({
       case "ArrowDown":
         event.preventDefault();
         setOpen(true);
-        setHighlighted((current) => isOpen ? Math.max(0, Math.min(current + 1, filtered.length - 1)) : 0);
+        setHighlighted((current) => isOpen ? Math.max(0, Math.min(current + 1, filtered.length - 1)) : Math.max(0, items.findIndex((option) => option.value === value)));
         break;
       case "ArrowUp":
         event.preventDefault();
@@ -173,10 +184,24 @@ export function Combobox({
           aria-controls={isOpen ? listboxId : undefined}
           aria-activedescendant={activeOptionId}
           aria-autocomplete="list"
+          aria-label={ariaLabel}
+          aria-describedby={describedBy}
+          aria-invalid={invalid}
+          required={required}
+          autoComplete="off"
           disabled={disabled}
           placeholder={selected && !isOpen ? selected.label : placeholder}
           value={isOpen ? query : selected ? selected.label : ""}
-          onFocus={() => setOpen(true)}
+          onFocus={() => {
+            setHighlighted(Math.max(0, items.findIndex((option) => option.value === value)));
+            setOpen(true);
+          }}
+          onClick={() => {
+            if (!isOpen) {
+              setHighlighted(Math.max(0, items.findIndex((option) => option.value === value)));
+              setOpen(true);
+            }
+          }}
           onChange={(event) => {
             setQuery(event.target.value);
             setOpen(true);

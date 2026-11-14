@@ -6,12 +6,15 @@ using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.TwelveData;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Infrastructure.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Infrastructure.Providers;
 
+// Factory-created adapters use the process-wide named HTTP client factory.
+[Collection("Sequential")]
 public sealed class WeightedProviderQuotaTests
 {
     private static readonly TwelveDataQuotaConfig Paid = new(55, FundamentalsEntitled: true, NoDailyLimit: true);
@@ -133,28 +136,29 @@ public sealed class WeightedProviderQuotaTests
         TwelveDataHistoricalDataProvider? history = null;
         TwelveDataSymbolSearchProvider? search = null;
         ServiceProvider? services = null;
-        if (throughFactory)
-        {
-            services = new ServiceCollection().AddLogging().AddSingleton<IConfiguration>(configuration)
-                .AddSingleton(registry).AddSingleton<IHttpClientFactory>(handler).BuildServiceProvider();
-            var factory = new ProviderFactory(new AppConfig(Backfill: new(Providers: new(
-                TwelveData: new(Priority: 7, RateLimitPerMinute: requests))))
-            { ProviderQuotas = new(Paid) }, new Resolver(), services: services);
-            history = Assert.IsType<TwelveDataHistoricalDataProvider>(factory.CreateTwelveDataBackfillProvider());
-            Assert.Equal(55, history.MaxRequestsPerWindow);
-            Assert.Equal(7, history.Priority);
-            Assert.Equal(composedBudget.MinimumDelay, history.RateLimitDelay);
-            search = Assert.IsType<TwelveDataSymbolSearchProvider>(factory.CreateTwelveDataSearchProvider());
-            Assert.Equal(7, search.Priority);
-            provider = factory.CreateCorporateActionProvider<TwelveDataCorporateActionProvider, TwelveDataHistoricalDataProvider>();
-        }
-        else
-        {
-            provider = new TwelveDataCorporateActionProvider(handler, configuration,
-                NullLogger<TwelveDataCorporateActionProvider>.Instance, new Credentials("synthetic-key"), registry);
-        }
         try
         {
+            if (throughFactory)
+            {
+                services = new ServiceCollection().AddLogging().AddSingleton<IConfiguration>(configuration)
+                    .AddSingleton(registry).AddSingleton<IHttpClientFactory>(handler).BuildServiceProvider();
+                HttpClientFactoryProvider.Initialize(services);
+                var factory = new ProviderFactory(new AppConfig(Backfill: new(Providers: new(
+                    TwelveData: new(Priority: 7, RateLimitPerMinute: requests))))
+                { ProviderQuotas = new(Paid) }, new Resolver(), services: services);
+                history = Assert.IsType<TwelveDataHistoricalDataProvider>(factory.CreateTwelveDataBackfillProvider());
+                Assert.Equal(55, history.MaxRequestsPerWindow);
+                Assert.Equal(7, history.Priority);
+                Assert.Equal(composedBudget.MinimumDelay, history.RateLimitDelay);
+                search = Assert.IsType<TwelveDataSymbolSearchProvider>(factory.CreateTwelveDataSearchProvider());
+                Assert.Equal(7, search.Priority);
+                provider = factory.CreateCorporateActionProvider<TwelveDataCorporateActionProvider, TwelveDataHistoricalDataProvider>();
+            }
+            else
+            {
+                provider = new TwelveDataCorporateActionProvider(handler, configuration,
+                    NullLogger<TwelveDataCorporateActionProvider>.Instance, new Credentials("synthetic-key"), registry);
+            }
             var pending = provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid());
             Assert.Single(handler.Requests);
             clock.Advance(composedBudget.MinimumDelay - TimeSpan.FromMilliseconds(1));
@@ -178,6 +182,8 @@ public sealed class WeightedProviderQuotaTests
         }
         finally
         {
+            if (services is not null)
+                HttpClientFactoryProvider.Reset();
             history?.Dispose();
             search?.Dispose();
             services?.Dispose();

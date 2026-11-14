@@ -235,10 +235,12 @@ test("reconciliation readiness proves the loaded selected queue row and inspecto
   const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
   const capture = routeConfig.captures.find((item) => item.id === "W03A");
   const selectedBreak = source.module.accountingPayload.breakQueue[0];
+  const selectedRun = source.module.accountingPayload.reconciliationQueue.find((run) => run.runId === selectedBreak.runId);
   assert.equal(capture.waitForText, "Reconciliation break queue");
   assert.ok(capture.waitForTexts.includes(selectedBreak.strategyName));
   assert.ok(capture.waitForTexts.includes(selectedBreak.reason));
-  assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`option[value="${selectedBreak.runId}"]:checked`)));
+  assert.ok(selectedRun, "The selected break must belong to a retained reconciliation run");
+  assert.ok(capture.waitForSelectors.includes(`#reconciliation-run-picker[role="combobox"][value="${selectedRun.strategyName} · ${selectedRun.openBreakCount} open"]`));
   assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`data-dense-row-id="${selectedBreak.breakId}"`) && selector.includes('aria-selected="true"')));
   assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`Reconciliation break detail for ${selectedBreak.breakId}`)));
   assert.ok(capture.waitForAbsentTexts.includes("Loading reconciliation break queue..."));

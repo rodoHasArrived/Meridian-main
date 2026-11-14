@@ -62,6 +62,8 @@ public sealed class ConfigStore
         => _core.UpdateAsync(current =>
         {
             var (next, result) = update(current);
+            if (!ReferenceEquals(current, next))
+                next = ProviderConfigurationCredentialGuard.Prepare(next, _ownershipPolicy);
             UiConfigurationSaveGuard.Validate(current, next, confirmDataSemantics, wholeDocument: false);
             return (next, result);
         }, ct);

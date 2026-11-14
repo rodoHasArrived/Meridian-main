@@ -42,6 +42,9 @@ changes to price adjustment or Canonical resolution require an explicit archive/
 change is never presented as an applied provider rebuild. Browser Settings and Data use the same
 status.
 
+Provider edits that require credential ownership validate a frozen snapshot before ordinary
+settings validation. Both data-source aliases return safe HTTP 400 errors for invalid settings.
+
 
 The browser's fixed-income journeys use shared permissioned adapters rather than calculation-only
 entry points. Bond settlement preparation resolves an optional service explicitly (503 when absent)

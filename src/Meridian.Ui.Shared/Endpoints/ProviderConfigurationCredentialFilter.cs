@@ -1,4 +1,5 @@
 using Meridian.Application.ProviderRouting;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -15,6 +16,10 @@ internal sealed class ProviderConfigurationCredentialFilter : IEndpointFilter
         catch (ProviderConfigurationCredentialException exception)
         {
             return Results.BadRequest(new { code = "OwnedProviderCredentialsRequired", error = exception.Message });
+        }
+        catch (UiConfigurationValidationException exception)
+        {
+            return Results.ValidationProblem(exception.Errors.ToDictionary(entry => entry.Key, entry => entry.Value));
         }
     }
 }
