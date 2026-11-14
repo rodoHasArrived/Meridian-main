@@ -6,6 +6,134 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ILedgerTaxLotDisposalHistory
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerTaxLotDisposalHistory</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs:55](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs#L55).
+
+Reads retained tax-lot disposal history so realized-gain reporting can be rebuilt from the durable record instead of requiring the original in-memory projection to have been kept.
+
+```csharp
+public interface ILedgerTaxLotDisposalHistory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLotDisposalHistoryRecord&gt;&gt; GetTaxLotDisposalHistoryAsync(Guid ledgerBookId, IReadOnlyList&lt;Guid&gt; journalEntryIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs:61](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs#L61) | Returns the disposals recorded against journalEntryIds, one entry per atomic tax-lot batch, ordered by batch. Journal ids that produced no disposal are absent. |
+
+## IntercompanyAccountBindingRules
+
+Qualified name: <code>Meridian.Storage.Ledger.IntercompanyAccountBindingRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs:6](../../../../src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs#L6).
+
+Structural and historical invariants shared by retained account mapping stores.
+
+```csharp
+public static class IntercompanyAccountBindingRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; Resolve(IEnumerable&lt;IntercompanyAccountBindingDto&gt; history, DateOnly asOf) =&gt; …;</code> | [src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs:8](../../../../src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs#L8) |  |
+| <code>public static void ValidateAppend(IntercompanyAccountBindingDto revision, Guid? expectedPreviousRevisionId, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; history);</code> | [src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs:17](../../../../src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs#L17) |  |
+| <code>public static bool IsCompatible(IntercompanyAccountRoleDto role, string accountType) =&gt; …;</code> | [src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs:67](../../../../src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs#L67) |  |
+
+## IntercompanyAgreementPostingGuard
+
+Qualified name: <code>Meridian.Storage.Ledger.IntercompanyAgreementPostingGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs:8](../../../../src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs#L8).
+
+Non-bypassable shape and source-economics checks for explicit agreement provenance.
+
+```csharp
+public static class IntercompanyAgreementPostingGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool HasReferences(JournalEntry entry) =&gt; …;</code> | [src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs:10](../../../../src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs#L10) |  |
+| <code>public static void ValidateShape(JournalEntry entry);</code> | [src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs:14](../../../../src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs#L14) |  |
+
+## IntercompanyAgreementPostingLine
+
+Qualified name: <code>Meridian.Storage.Ledger.IntercompanyAgreementPostingLine</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:53](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L53).
+
+```csharp
+public sealed record IntercompanyAgreementPostingLine(Guid AgreementId, int AgreementVersion, Guid PostingEntityId, Guid CounterpartyId, string TransactionCurrency);
+```
+
+## IntercompanyAgreementPostingRequest
+
+Qualified name: <code>Meridian.Storage.Ledger.IntercompanyAgreementPostingRequest</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:30](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L30).
+
+A request constructed only by the durable ledger boundary after resolving its actual book and, for historical reversals, proving the complete inverse of the immutable source journal.
+
+```csharp
+public sealed class IntercompanyAgreementPostingRequest
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string TenantId { get; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:44](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L44) |  |
+| <code>public Guid BookEntityId { get; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:45](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L45) |  |
+| <code>public DateOnly AccountingDate { get; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:46](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L46) |  |
+| <code>public string BookCurrency { get; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:47](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L47) |  |
+| <code>public IReadOnlyList&lt;IntercompanyAgreementPostingLine&gt; Lines { get; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:48](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L48) |  |
+| <code>public bool IsVerifiedSourceReversal { get; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:49](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L49) |  |
+| <code>public LegalEntityReadAuthorityProof? StructureAuthorityProof { get; internal set; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:50](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L50) |  |
+
+## IntercompanyJournalCorrectionEvidence
+
+Qualified name: <code>Meridian.Storage.Ledger.IntercompanyJournalCorrectionEvidence</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/IntercompanyJournalCorrectionEvidence.cs:7](../../../../src/Meridian.Storage/Ledger/IntercompanyJournalCorrectionEvidence.cs#L7).
+
+Checks the retained economics of a bounded intercompany reversal.
+
+```csharp
+public static class IntercompanyJournalCorrectionEvidence
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsExactInverse(JournalEntry inverse, JournalEntry original);</code> | [src/Meridian.Storage/Ledger/IntercompanyJournalCorrectionEvidence.cs:12](../../../../src/Meridian.Storage/Ledger/IntercompanyJournalCorrectionEvidence.cs#L12) |  |
+
+## ITransactionalLedgerJournalStore
+
+Qualified name: <code>Meridian.Storage.Ledger.ITransactionalLedgerJournalStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:183](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L183).
+
+Appends ledger journal entries within a caller-owned PostgreSQL transaction.
+
+```csharp
+public interface ITransactionalLedgerJournalStore : ILedgerJournalStore, IAtomicLedgerPeriodCloseStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IAsyncDisposable&gt; AcquirePostingAuthorityAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, IReadOnlyList&lt;LedgerJournalEntryWrite&gt; entries, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:188](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L188) | Retain this scope through commit/rollback of the caller-owned transaction. |
+| <code>Task AppendAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:195](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L195) |  |
+
 ## IWashSaleDeferralStore
 
 Qualified name: <code>Meridian.Storage.Ledger.IWashSaleDeferralStore</code>. Kind: `interface`.
@@ -462,17 +590,52 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; FindPostingIdentityCollisionsAsync(this ILedgerJournalStore store, LedgerPostingIdentity identity, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:255](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L255) |  |
 
+## LedgerReportingInventoryCoverageBlocker
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerReportingInventoryCoverageBlocker</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:42](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L42).
+
+```csharp
+public sealed record LedgerReportingInventoryCoverageBlocker(LedgerAccount Account, string Reason);
+```
+
+## LedgerReportingOpenPositions
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerReportingOpenPositions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:30](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L30).
+
+```csharp
+public sealed record LedgerReportingOpenPositions(DateOnly AsOf, IReadOnlyList<LedgerTaxLotRecord> Lots, IReadOnlyList<string> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTimeOffset? CutoffUtc { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:34](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L34) | Optional exact occurrence cutoff used for intraday journal/lot agreement. |
+| <code>public IReadOnlyList&lt;LedgerTaxLotRecord&gt; ClosedLots { get; init; } = [];</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:36](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L36) | Canonical zero-quantity after-snapshots prove closure without inferring absent holdings. |
+| <code>public IReadOnlyList&lt;LedgerReportingInventoryCoverageBlocker&gt; CoverageBlockers { get; init; } = [];</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:38](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L38) | Financial account-specific inventory coverage failures; unrelated subledgers do not block each other. |
+| <code>public IReadOnlySet&lt;LedgerAccount&gt; HistoricalLotAccounts { get; init; } = new HashSet&lt;LedgerAccount&gt;();</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:39](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L39) |  |
+
 ## LedgerReportingSnapshot
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerReportingSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:27](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L27).
+Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:50](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L50).
 
 Captured journals, their tax-lot history, corporate-action successor batches and the requested report period in the exact ledger book. Calculations and checkpoint evidence retain these facts rather than reading live state. A null successor history means the source cannot capture it, so retained corporate-action journals cannot be certified from this snapshot.
 
 ```csharp
-public sealed record LedgerReportingSnapshot(IReadOnlyList<LedgerJournalEntryRecord> Journals, IReadOnlyList<LedgerTaxLotDisposalHistoryRecord> TaxLotDisposalHistory, LedgerAccountingPeriod? Period = null, IReadOnlyList<AtomicTaxLotJournalResult>? OpenLotSuccessorHistory = null);
+public sealed record LedgerReportingSnapshot(IReadOnlyList<LedgerJournalEntryRecord> Journals, IReadOnlyList<LedgerTaxLotDisposalHistoryRecord> TaxLotDisposalHistory, LedgerAccountingPeriod? Period = null, IReadOnlyList<AtomicTaxLotJournalResult>? OpenLotSuccessorHistory = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerReportingOpenPositions? OpenPositions { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:56](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L56) |  |
 
 ## LedgerSecurityEntitlementInventorySnapshot
 
@@ -648,633 +811,3 @@ Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:387](../../../../src
 ```csharp
 public sealed record PeriodCloseEventRecord(Guid EventId, Guid PeriodId, string PriorStatus, string NewStatus, string ClosedBy, string Notes, DateTimeOffset RecordedAt);
 ```
-
-## PostgresAccountingConfigurationStore
-
-Qualified name: <code>Meridian.Storage.Ledger.PostgresAccountingConfigurationStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs:15](../../../../src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs#L15).
-
-Persists scoped accounting configuration workspaces in PostgreSQL.
-
-```csharp
-public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurationStore, IAccountingActionAuditStore, IAccountingAuditChainVerifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresAccountingConfigurationStore(LedgerJournalStoreOptions options);</code> | [src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs:20](../../../../src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs#L20) |  |
-| <code>public async Task&lt;AccountingConfigurationWorkspaceDto?&gt; GetAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs:27](../../../../src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs#L27) |  |
-| <code>public async Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs:98](../../../../src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs#L98) |  |
-| <code>public async Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs:134](../../../../src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs#L134) | Appends an audit event and extends the tamper-evident chain over it (W9-GOV-008 criterion 3). |
-| <code>public async Task&lt;AccountingAuditChainVerification&gt; VerifyAuditChainAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs:293](../../../../src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs#L293) | Verifies the whole retained chain without appending: the same every-link scan an append runs first, under the same head row lock so a concurrent append cannot be observed half written, then released without committing. A break is returned, not thrown. |
-| <code>public async Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs:634](../../../../src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs#L634) |  |
-
-## PostgresFundProfileTenancyRegistry
-
-Qualified name: <code>Meridian.Storage.Ledger.PostgresFundProfileTenancyRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/PostgresFundProfileTenancyRegistry.cs:13](../../../../src/Meridian.Storage/Ledger/PostgresFundProfileTenancyRegistry.cs#L13).
-
-PostgreSQL-backed IFundProfileTenancyRegistry — the storage-enforced fund→tenant ownership source of truth for shared/multi-tenant deployments. Fund profiles are keyed case-insensitively (the stored id is normalized to a trimmed, lower-invariant value, consistent with how FundProfileId is compared elsewhere). Binding is first-owner-wins via insert ... on conflict (fund_profile_id) do nothing.
-
-```csharp
-public sealed class PostgresFundProfileTenancyRegistry : IFundProfileTenancyRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresFundProfileTenancyRegistry(LedgerJournalStoreOptions options);</code> | [src/Meridian.Storage/Ledger/PostgresFundProfileTenancyRegistry.cs:17](../../../../src/Meridian.Storage/Ledger/PostgresFundProfileTenancyRegistry.cs#L17) |  |
-| <code>public async Task&lt;FundProfileOwnership&gt; BindAsync(string fundProfileId, string tenantId, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresFundProfileTenancyRegistry.cs:22](../../../../src/Meridian.Storage/Ledger/PostgresFundProfileTenancyRegistry.cs#L22) |  |
-| <code>public async Task&lt;FundProfileOwnership?&gt; ResolveAsync(string fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresFundProfileTenancyRegistry.cs:62](../../../../src/Meridian.Storage/Ledger/PostgresFundProfileTenancyRegistry.cs#L62) |  |
-| <code>public async Task&lt;bool&gt; IsAccessibleAsync(string fundProfileId, string tenantId, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresFundProfileTenancyRegistry.cs:86](../../../../src/Meridian.Storage/Ledger/PostgresFundProfileTenancyRegistry.cs#L86) |  |
-
-## PostgresIntercompanyAccountBindingStore
-
-Qualified name: <code>Meridian.Storage.Ledger.PostgresIntercompanyAccountBindingStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs:12](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs#L12).
-
-Append-only account mappings with book-authoritative tenant/company scope.
-
-```csharp
-public sealed class PostgresIntercompanyAccountBindingStore : IIntercompanyAccountBindingStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresIntercompanyAccountBindingStore(LedgerJournalStoreOptions options, IFundScopeTenantAccessor tenants);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs:18](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs#L18) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAccountBindingDto&gt;&gt; ListAsync(Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs:29](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs#L29) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAccountBindingDto&gt;&gt; HistoryAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs:33](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs#L33) |  |
-| <code>public async Task&lt;IntercompanyAccountBindingDto?&gt; GetRevisionAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs:43](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs#L43) |  |
-| <code>public async Task&lt;IntercompanyAccountBindingDto&gt; AppendAsync(IntercompanyAccountBindingDto revision, Guid? expectedPreviousRevisionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs:61](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs#L61) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs:114](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs#L114) |  |
-
-## PostgresIntercompanyProposalStore
-
-Qualified name: <code>Meridian.Storage.Ledger.PostgresIntercompanyProposalStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs:10](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs#L10).
-
-Durable retry leases and terminal receipts around immutable journal-backed source facts.
-
-```csharp
-public sealed class PostgresIntercompanyProposalStore(LedgerJournalStoreOptions options) : IIntercompanyProposalStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyProposalDto&gt;&gt; ListAsync(string tenantId, Guid sourceBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs:30](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs#L30) |  |
-| <code>public async Task&lt;IntercompanyProposalDto?&gt; GetAsync(string tenantId, Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs:40](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs#L40) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyProposalDto&gt;&gt; ClaimAsync(string workerId, int limit, TimeSpan lease, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs:50](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs#L50) |  |
-| <code>public async Task CompleteAsync(string tenantId, Guid proposalId, string claimToken, Guid targetBookId, Guid targetJournalId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs:71](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs#L71) |  |
-| <code>public async Task FailAsync(string tenantId, Guid proposalId, string claimToken, string error, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs:94](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs#L94) |  |
-| <code>public Task LinkAsync(string tenantId, Guid proposalId, LinkIntercompanyCounterpartRequest request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs:110](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs#L110) |  |
-| <code>public Task LinkRejectedDraftAsync(string tenantId, Guid proposalId, LinkIntercompanyCounterpartRequest request, string actor, RejectedIntercompanyDraftEvidenceDto rejectedDraft, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs:114](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs#L114) |  |
-| <code>public async Task RetryAsync(string tenantId, Guid proposalId, RetryIntercompanyProposalRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs:239](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyProposalStore.cs#L239) |  |
-
-## PostgresLedgerBookService
-
-Qualified name: <code>Meridian.Storage.Ledger.PostgresLedgerBookService</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:15](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L15).
-
-Manages ledger books and accounting period transitions through the journal store.
-
-```csharp
-public sealed class PostgresLedgerBookService : ILedgerBookService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresLedgerBookService(ILedgerJournalStore store, IOperatorInboxService? operatorInbox = null, IConsolidationBookPolicyValidator? consolidationPolicies = null);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:25](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L25) |  |
-| <code>public async Task&lt;LedgerBookDto&gt; CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:35](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L35) |  |
-| <code>public async Task&lt;LedgerBookDto?&gt; GetBookAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:99](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L99) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerBookDto&gt;&gt; ListBooksAsync(LedgerBookQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:111](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L111) |  |
-| <code>public async Task&lt;LedgerBookRolloutAssessmentDto&gt; AssessRolloutAsync(LedgerBookRolloutAssessmentRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:131](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L131) |  |
-| <code>public async Task&lt;LedgerPeriodDto&gt; CreatePeriodAsync(CreateLedgerPeriodRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:245](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L245) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; ListPeriodsAsync(LedgerPeriodQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:293](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L293) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; ListOpenPeriodsAsync(Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:327](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L327) |  |
-| <code>public async Task&lt;LedgerPeriodSummaryDto?&gt; GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:338](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L338) |  |
-| <code>public async Task&lt;LedgerPeriodCloseResultDto&gt; ClosePeriodAsync(Guid periodId, CloseLedgerPeriodRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:362](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L362) |  |
-| <code>public async Task&lt;LedgerPeriodReopenResultDto&gt; ReopenPeriodAsync(Guid periodId, ReopenLedgerPeriodRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:443](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L443) |  |
-
-## PostgresLedgerCurrencyBackfill
-
-Qualified name: <code>Meridian.Storage.Ledger.PostgresLedgerCurrencyBackfill</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerCurrencyBackfill.cs:26](../../../../src/Meridian.Storage/Ledger/PostgresLedgerCurrencyBackfill.cs#L26).
-
-Surveys and repairs the currency detail that historical journal legs are missing. V_ledger_026 added transaction currency, both transaction-side amounts, and the FX rate to journal_legs as nullable columns, and legs written before it have them null. So do legs written after it but before #2800, because the shared validator&#x27;s dimension rebuild dropped a line&#x27;s currency on the way to the store. The append path is fixed; nothing repairs what is already retained, and nothing reports it either — a currency-blind leg reads back as a leg that simply has no currency detail. The repair only ever writes the identity translation — transaction currency equal to the functional currency, transaction amounts equal to the functional amounts, FX rate 1 — and never touches a leg&#x27;s debit or credit. The original rate on a foreign leg is not recoverable from anything retained, so this deliberately refuses to invent one: see LedgerCurrencyBackfillDisposition for what each refusal means.
-
-```csharp
-public sealed class PostgresLedgerCurrencyBackfill
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresLedgerCurrencyBackfill(LedgerJournalStoreOptions options);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerCurrencyBackfill.cs:30](../../../../src/Meridian.Storage/Ledger/PostgresLedgerCurrencyBackfill.cs#L30) |  |
-| <code>public async Task&lt;LedgerCurrencyBackfillSurvey&gt; SurveyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerCurrencyBackfill.cs:41](../../../../src/Meridian.Storage/Ledger/PostgresLedgerCurrencyBackfill.cs#L41) | Reports every retained leg still missing its currency detail, grouped by ledger book and by what can be done about it. This is the surface the gap shows up on: currency-blind legs are otherwise indistinguishable from legs that were never meant to carry currency. |
-| <code>public async Task&lt;int&gt; RepairEvidencedLegsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerCurrencyBackfill.cs:78](../../../../src/Meridian.Storage/Ledger/PostgresLedgerCurrencyBackfill.cs#L78) | Repairs every leg the retained evidence already determines, and returns how many were completed. V_ledger_029 runs the same repair once at migration time; this re-runs it, which matters because a book that had no currency evidence then accumulates it with every posting appended since — the same legs become repairable without anyone having to assert anything. |
-| <code>public async Task&lt;LedgerCurrencyAffirmationResult&gt; AffirmSingleCurrencyBookAsync(Guid ledgerBookId, string currency, string actor, string rationale, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerCurrencyBackfill.cs:118](../../../../src/Meridian.Storage/Ledger/PostgresLedgerCurrencyBackfill.cs#L118) | Completes the currency-blind legs of one ledger book on an operator&#x27;s assertion that the book transacted only in currency, and records that assertion as the authority for the change. This is narrow on purpose. It completes an evidence gap; it never overrules evidence. A book whose legs show foreign-currency denomination, or whose functional currency disagrees with its base currency, is refused — no affirmation makes an unrecoverable FX rate recoverable. So is a book whose blind legs the data already determines, which needs RepairEvidencedLegsAsync and no assertion at all. |
-
-## PostgresLedgerJournalStore
-
-Qualified name: <code>Meridian.Storage.Ledger.PostgresLedgerJournalStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AccrualHistory.cs:8](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AccrualHistory.cs#L8).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;FaceValueAccrualHolding&gt;&gt; ListTaxLotAccrualSnapshotsAsync(Guid ledgerBookId, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AccrualHistory.cs:11](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AccrualHistory.cs#L11) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Amortization.cs:13](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Amortization.cs#L13).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AmortizationFactorHistory.cs:6](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AmortizationFactorHistory.cs#L6).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs:12](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs#L12).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;AtomicTaxLotJournalResult?&gt; GetAtomicTaxLotPostingAsync(Guid mutationBatchId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs:14](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs#L14) |  |
-| <code>public async Task&lt;AtomicTaxLotJournalResult&gt; AppendAssetPostingAsync(AtomicTaxLotJournalCommand command, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs:48](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs#L48) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Audit.cs:12](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Audit.cs#L12).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;LedgerEventAuditVerification&gt; VerifyLedgerEventAuditAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Audit.cs:24](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Audit.cs#L24) | Checks every link and every covered retained fact, including uncovered writes since genesis. A coherent rollback of the head, suffix and corresponding facts needs an external checkpoint to detect. |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AverageCostRelief.cs:14](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AverageCostRelief.cs#L14).
-
-Atomic average-cost relief. The disposal books the pooled basis the canonical guard certified, and every surviving lot in the pool is restated to the pooled basis in the same transaction, so the lots of record still tie to the asset account the journal credited. Restatements are governed basis adjustments: acquisition facts never change.
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshotAudit.cs:8](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshotAudit.cs#L8).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshotRead.cs:8](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshotRead.cs#L8).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshots.cs:10](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshots.cs#L10).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore : ILedgerBalanceSnapshotSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;LedgerAccount, decimal&gt;&gt; ReadTrialBalanceAsOfAsync(Guid ledgerBookId, DateTimeOffset asOfUtc, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshots.cs:12](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshots.cs#L12) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs:12](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs#L12).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore : IBondCouponRecognitionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;BondCouponRecognitionReceiptDto?&gt; GetLatestCouponRecognitionAsync(AccountCashForecastScopeDto scope, Guid taxLotRecordId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs:33](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs#L33) |  |
-| <code>public async Task&lt;BondCouponRecognitionReceiptDto?&gt; GetCouponRecognitionRunAsync(AccountCashForecastScopeDto scope, Guid taxLotRecordId, string runId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs:41](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs#L41) |  |
-| <code>public async Task&lt;decimal&gt; GetConsumedCouponCashAsync(AccountCashForecastScopeDto scope, string paymentFlowId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs:49](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs#L49) |  |
-| <code>public async Task&lt;decimal&gt; GetConsumedCouponObligationAsync(AccountCashForecastScopeDto scope, Guid taxLotRecordId, string expectedFlowId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs:57](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs#L57) |  |
-| <code>public async Task&lt;BondCouponRecognitionReceiptDto?&gt; GetCouponRecognitionReceiptAsync(AccountCashForecastScopeDto scope, Guid taxLotRecordId, string receiptId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs:65](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs#L65) |  |
-| <code>public async Task&lt;BondCouponAllocationConsumptionDto&gt; GetConsumedCouponAllocationAsync(AccountCashForecastScopeDto scope, string allocationId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs:73](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs#L73) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;BondCouponObligationConsumptionDto&gt;&gt; GetConsumedCouponObligationsAsync(AccountCashForecastScopeDto scope, Guid taxLotRecordId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs:93](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs#L93) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CapitalReturn.cs:13](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CapitalReturn.cs#L13).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CashDividendAttestation.cs:10](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CashDividendAttestation.cs#L10).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task LockCashDividendBookAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CashDividendAttestation.cs:26](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CashDividendAttestation.cs#L26) | Serializes complete-book entitlement reads with every governed ledger append. |
-| <code>public async Task&lt;LedgerJournalEntryRecord?&gt; GetJournalEntryWithinTransactionAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid journalEntryId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CashDividendAttestation.cs:88](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CashDividendAttestation.cs#L88) |  |
-| <code>public Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; QueryWithinCashDividendTransactionAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, LedgerJournalEntryQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CashDividendAttestation.cs:97](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CashDividendAttestation.cs#L97) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CloseSnapshots.cs:5](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CloseSnapshots.cs#L5).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;LedgerPeriodCloseSnapshot?&gt; GetCloseSnapshotAsync(Guid periodId, long? periodVersion = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CloseSnapshots.cs:7](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CloseSnapshots.cs#L7) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs:10](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs#L10).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ControlledClose.cs:8](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ControlledClose.cs#L8).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore : IControlledCloseAuthorizationStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;ControlledCloseAuthorizationDto&gt; SaveCloseAuthorizationAsync(ControlledCloseAuthorizationDto authorization, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ControlledClose.cs:10](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ControlledClose.cs#L10) |  |
-| <code>public async Task&lt;ControlledCloseAuthorizationDto?&gt; GetCloseAuthorizationAsync(Guid authorizationId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ControlledClose.cs:41](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ControlledClose.cs#L41) |  |
-| <code>public async Task&lt;ControlledCloseAuthorizationDto?&gt; FindCloseAuthorizationAsync(Guid bookId, Guid journalId, int draftVersion, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ControlledClose.cs:44](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ControlledClose.cs#L44) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CorporateAction.cs:21](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CorporateAction.cs#L21).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessorHistory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;AtomicTaxLotJournalResult&gt;&gt; GetOpenLotSuccessorHistoryAsync(Guid ledgerBookId, IReadOnlyList&lt;Guid&gt; journalEntryIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CorporateAction.cs:362](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CorporateAction.cs#L362) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:13](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L13).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore : ITransactionalLedgerJournalStore, IAtomicTaxLotJournalStore, ILedgerBookControlStore, ILedgerEntityControlJournalValidation, Meridian.Contracts.Accounting.Lots.IOpenLotBackfillStore, ILedgerPostingIdentityCollisionLookup, IIntercompanyAgreementJournalValidation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresLedgerJournalStore(LedgerJournalStoreOptions options, IFundScopeTenantAccessor? tenantAccessor = null, TenantScopeEnforcementOptions? tenantScope = null, Func&lt;Meridian.Storage.SecurityMaster.ISecurityMasterStore?&gt;? backfillSecurityMaster = null, Func&lt;Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?&gt;? backfillPositions = null, Func&lt;IConsolidationPostingAuthority?&gt;? consolidationAuthority = null, Func&lt;IEnumerable&lt;ILedgerPostingAuthority&gt;&gt;? postingAuthorities = null, Func&lt;IEnumerable&lt;ILedgerBookControlPreflight&gt;&gt;? controlPreflights = null, Func&lt;IIntercompanyAgreementPostingAuthority?&gt;? intercompanyAgreementAuthority = null, Func&lt;Meridian.Contracts.Accounting.Lots.IBondIncomeService?&gt;? bondIncomeAuthority = null, Func&lt;Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService?&gt;? couponRecognitionAuthority = null);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:44](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L44) |  |
-| <code>public async Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:74](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L74) |  |
-| <code>public Task AppendAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:117](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L117) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; QueryAsync(LedgerJournalEntryQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:270](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L270) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; GetByPeriodAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:391](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L391) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:405](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L405) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; FindPostingIdentityCollisionsAsync(LedgerPostingIdentity identity, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:418](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L418) |  |
-| <code>public async Task&lt;LedgerAccountingPeriod?&gt; GetPeriodAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:481](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L481) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerAccountingPeriod&gt;&gt; ListPeriodsAsync(Guid? ledgerBookId = null, string? status = null, string? fundProfileId = null, Guid? fundStructureNodeId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:487](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L487) |  |
-| <code>public async Task&lt;LedgerAccountingPeriod&gt; SavePeriodAsync(LedgerAccountingPeriod period, long expectedVersion, PeriodCloseEventRecord? closeEvent = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:555](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L555) |  |
-| <code>public async Task&lt;LedgerAccountingPeriod&gt; SaveHardClosedPeriodAsync(LedgerAccountingPeriod period, long expectedVersion, PeriodCloseEventRecord closeEvent, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:568](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L568) |  |
-| <code>public async Task&lt;LedgerBookRecord?&gt; GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:744](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L744) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerBookRecord&gt;&gt; ListLedgerBooksAsync(string? fundProfileId = null, Guid? fundStructureNodeId = null, FundStructureNodeKindDto? fundStructureNodeKind = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:776](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L776) |  |
-| <code>public async Task&lt;LedgerBookRecord&gt; SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:836](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L836) |  |
-| <code>public async Task&lt;LedgerAccountTaxLotPolicyRecord&gt; SaveTaxLotPolicyAsync(LedgerAccountTaxLotPolicyRecord policy, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:948](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L948) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerAccountTaxLotPolicyRecord&gt;&gt; ListTaxLotPoliciesAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:1071](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L1071) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.DiscreteLotRelief.cs:5](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.DiscreteLotRelief.cs#L5).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.EntitlementAuthority.cs:6](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.EntitlementAuthority.cs#L6).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.EntityControls.cs:10](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.EntityControls.cs#L10).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task ValidateEntityPostingControlsAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.EntityControls.cs:16](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.EntityControls.cs#L16) |  |
-| <code>public Task&lt;IAsyncDisposable&gt; AcquirePostingAuthorityAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, IReadOnlyList&lt;LedgerJournalEntryWrite&gt; entries, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.EntityControls.cs:29](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.EntityControls.cs#L29) |  |
-| <code>public async Task&lt;LedgerBookControlProfileDto?&gt; GetBookControlsAsync(Guid bookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.EntityControls.cs:232](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.EntityControls.cs#L232) |  |
-| <code>public async Task&lt;LedgerBookControlProfileDto&gt; ActivateBookControlsAsync(Guid bookId, long expectedVersion, string preflightDigest, string actor, string reason, string evidenceReference, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.EntityControls.cs:254](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.EntityControls.cs#L254) |  |
-| <code>public async Task&lt;LedgerBookControlPreflightDto&gt; PrepareBookControlsAsync(Guid bookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.EntityControls.cs:299](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.EntityControls.cs#L299) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.FactorPaydown.cs:13](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.FactorPaydown.cs#L13).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.HistoricalTaxLots.cs:8](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.HistoricalTaxLots.cs#L8).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; ListOpenTaxLotsByAssetScopeAsync(Guid ledgerBookId, Guid securityId, Guid bookPositionId, DateOnly effectiveDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.HistoricalTaxLots.cs:11](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.HistoricalTaxLots.cs#L11) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.IntercompanyAgreements.cs:7](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.IntercompanyAgreements.cs#L7).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task ValidateIntercompanyAgreementReferencesAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.IntercompanyAgreements.cs:9](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.IntercompanyAgreements.cs#L9) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.IntercompanyProposals.cs:9](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.IntercompanyProposals.cs#L9).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.LotReferenceAuthority.cs:11](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.LotReferenceAuthority.cs#L11).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpeningCorrections.cs:8](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpeningCorrections.cs#L8).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpeningCutover.cs:8](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpeningCutover.cs#L8).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs:15](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs#L15).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;OpenLotBackfillExceptionDto&gt;&gt; SurveyAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs:25](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs#L25) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;OpenLotBackfillExceptionDto&gt;&gt; ListExceptionsAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs:70](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs#L70) |  |
-| <code>public async Task&lt;OpenLotBackfillEvidenceDto&gt; RetainEvidenceAsync(RetainOpenLotBackfillEvidenceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs:77](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs#L77) |  |
-| <code>public async Task&lt;OpenLotBackfillEvidenceDto?&gt; GetEvidenceAsync(Guid ledgerBookId, Guid evidenceRecordId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs:141](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs#L141) |  |
-| <code>public async Task&lt;OpenLotBackfillEvidenceDto&gt; ReviewEvidenceAsync(ReviewOpenLotBackfillEvidenceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs:148](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs#L148) |  |
-| <code>public async Task&lt;OpenLotBackfillReceiptDto&gt; ApplyAsync(ApplyOpenLotBackfillRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs:195](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs#L195) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PeriodLockOwner.cs:5](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PeriodLockOwner.cs#L5).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;string?&gt; GetPeriodLockOwnerAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PeriodLockOwner.cs:8](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PeriodLockOwner.cs#L8) | Reads the retained close actor under the same tenant guard as the period. |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PriorPeriodAdjustments.cs:9](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PriorPeriodAdjustments.cs#L9).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PrivateCapital.cs:11](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PrivateCapital.cs#L11).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ProceedsAllocation.cs:6](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ProceedsAllocation.cs#L6).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Replay.cs:6](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Replay.cs#L6).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ReportingSnapshot.cs:7](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ReportingSnapshot.cs#L7).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore : ILedgerReportingSnapshotSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;LedgerReportingSnapshot&gt; CaptureReportingSnapshotAsync(LedgerJournalEntryQuery query, Guid? accountingPeriodId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ReportingSnapshot.cs:10](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ReportingSnapshot.cs#L10) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.SecurityEntitlementInventory.cs:9](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.SecurityEntitlementInventory.cs#L9).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore : ILedgerSecurityEntitlementInventory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;LedgerSecurityEntitlementInventorySnapshot&gt; ReadSecurityEntitlementInventoryAsync(string tenantId, string companyId, Guid ledgerBookId, Guid securityId, DateOnly asOfDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.SecurityEntitlementInventory.cs:11](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.SecurityEntitlementInventory.cs#L11) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Serialization.cs:10](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Serialization.cs#L10).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ShortLots.cs:7](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ShortLots.cs#L7).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.SuccessorHoldingPeriod.cs:6](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.SuccessorHoldingPeriod.cs#L6).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs:67](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs#L67).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHistory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLotDisposalHistoryRecord&gt;&gt; GetTaxLotDisposalHistoryAsync(Guid ledgerBookId, IReadOnlyList&lt;Guid&gt; journalEntryIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs:70](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs#L70) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotHoldingPeriodEvidence.cs:7](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotHoldingPeriodEvidence.cs#L7).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotReplacementClaims.cs:6](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotReplacementClaims.cs#L6).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLots.cs:13](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLots.cs#L13).
-
-Tax-lot persistence for the Postgres ledger store: the lot of record&#x27;s non-atomic reads and writes, its typed validation, and the single ordinal-positional reader every tax_lots column list in this store must agree with.
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;LedgerTaxLotRecord&gt; SaveTaxLotAsync(LedgerTaxLotRecord lot, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLots.cs:15](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLots.cs#L15) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; ListOpenTaxLotsAsync(Guid ledgerBookId, LedgerAccount account, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLots.cs:191](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLots.cs#L191) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; GetTaxLotsByIdsAsync(Guid ledgerBookId, IReadOnlyList&lt;Guid&gt; taxLotRecordIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLots.cs:258](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLots.cs#L258) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; GetTaxLotsByLotIdsAsync(Guid ledgerBookId, LedgerAccount account, IReadOnlyList&lt;string&gt; lotIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLots.cs:328](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLots.cs#L328) |  |
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TenantWrites.cs:5](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TenantWrites.cs#L5).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Validation.cs:6](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Validation.cs#L6).
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore
-```
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.WashSale.cs:11](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.WashSale.cs#L11).
-
-Wash-sale activation: resolves the replacement acquisitions the relief engine needs and retains the deferrals it produces. Without this the engine&#x27;s policy gate is never satisfied in production, so every realized loss is recognized in full regardless of a repurchase.
-
-```csharp
-public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementResolver, IWashSaleDeferralStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;WashSaleReplacementLookup&gt; ResolveAsync(WashSaleReplacementQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.WashSale.cs:14](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.WashSale.cs#L14) |  |
-| <code>public async Task SaveWashSaleDeferralsAsync(IReadOnlyList&lt;WashSaleDeferralRecord&gt; deferrals, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.WashSale.cs:173](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.WashSale.cs#L173) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;WashSaleDeferralRecord&gt;&gt; ListWashSaleDeferralsAsync(Guid ledgerBookId, DateOnly fromSaleDate, DateOnly toSaleDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.WashSale.cs:273](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.WashSale.cs#L273) |  |
-
-## PostgresLegacyIntercompanyAttributionStore
-
-Qualified name: <code>Meridian.Storage.Ledger.PostgresLegacyIntercompanyAttributionStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs:12](../../../../src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs#L12).
-
-Immutable, tenant-owned reviewer attributions over exact retained journal lines.
-
-```csharp
-public sealed class PostgresLegacyIntercompanyAttributionStore : ILegacyIntercompanyAttributionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresLegacyIntercompanyAttributionStore(LedgerJournalStoreOptions options, IFundScopeTenantAccessor tenants, LegacyIntercompanyAttributionValidator validator);</code> | [src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs:19](../../../../src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs#L19) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LegacyIntercompanyAttributionDto&gt;&gt; ListAsync(Guid ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs:30](../../../../src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs#L30) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LegacyIntercompanyAttributionDto&gt;&gt; HistoryAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs:33](../../../../src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs#L33) |  |
-| <code>public async Task&lt;LegacyIntercompanyAttributionDto&gt; AppendAsync(LegacyIntercompanyAttributionDto attribution, Guid? expectedPreviousAttributionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs:42](../../../../src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs#L42) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs:88](../../../../src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs#L88) |  |
-
-## PostgresPrivateCapitalStore
-
-Qualified name: <code>Meridian.Storage.Ledger.PostgresPrivateCapitalStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs:11](../../../../src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs#L11).
-
-PostgreSQL authority sharing the ledger migration and posting transaction boundary.
-
-```csharp
-public sealed class PostgresPrivateCapitalStore : IPrivateCapitalStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresPrivateCapitalStore(LedgerJournalStoreOptions options);</code> | [src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs:18](../../../../src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs#L18) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;PrivateCapitalCommitmentDto&gt;&gt; ListCommitmentsAsync(PrivateCapitalScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs:29](../../../../src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs#L29) |  |
-| <code>public async Task&lt;PrivateCapitalCommitmentDto?&gt; GetCommitmentAsync(PrivateCapitalScopeDto scope, string commitmentId, int? revision = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs:39](../../../../src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs#L39) |  |
-| <code>public async Task&lt;PrivateCapitalCommitmentDto&gt; SaveCommitmentDraftAsync(PrivateCapitalCommitmentDto draft, int expectedRevision, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs:48](../../../../src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs#L48) |  |
-| <code>public async Task&lt;PrivateCapitalCommitmentDto&gt; ApproveCommitmentAsync(PrivateCapitalScopeDto scope, string commitmentId, int revision, string actor, DateTimeOffset approvedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs:99](../../../../src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs#L99) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;PrivateCapitalCallDto&gt;&gt; ListCallsAsync(PrivateCapitalScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs:164](../../../../src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs#L164) |  |
-| <code>public async Task&lt;PrivateCapitalCallDto?&gt; GetCallAsync(PrivateCapitalScopeDto scope, string callId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs:174](../../../../src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs#L174) |  |
-| <code>public async Task&lt;PrivateCapitalCallDto&gt; SaveCallAsync(PrivateCapitalCallDto call, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs:180](../../../../src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs#L180) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;PrivateCapitalPostingReceiptDto&gt;&gt; ListPostingReceiptsAsync(PrivateCapitalScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs:244](../../../../src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs#L244) |  |
-| <code>public async Task&lt;bool&gt; HasUnreconciledLegacyCapitalAsync(PrivateCapitalScopeDto scope, string investorId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs:252](../../../../src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs#L252) |  |

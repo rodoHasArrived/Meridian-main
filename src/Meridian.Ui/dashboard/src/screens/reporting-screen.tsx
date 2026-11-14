@@ -1,4 +1,5 @@
 import { EntityLink } from "@/components/meridian/entity-inspector";
+import { GeneralLedgerExportPanel } from "./reporting-screen.general-ledger-export";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
 import { NewCustomReportBar } from "@/screens/reporting-screen.new-custom-report";
@@ -889,6 +890,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
         compact={isDailyReportingCockpitLanding}
         context={isDailyReportingCockpitLanding ? reportingConfidence : undefined}
       />
+      {isExportsTaskMode ? <GeneralLedgerExportPanel /> : null}
       {!isDailyReportingCockpitLanding ? reportingConfidence : null}
 
       {isDailyReportingCockpitLanding ? (

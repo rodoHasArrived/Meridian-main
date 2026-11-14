@@ -204,8 +204,9 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static BuiltInLedgerReportBinaryRenderer Instance { get; } = new ();</code> | [src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs:14](../../../../src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs#L14) |  |
-| <code>public byte[] RenderWorkbook(LedgerFinancialReportPack reportPack);</code> | [src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs:16](../../../../src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs#L16) |  |
-| <code>public byte[] RenderPdf(LedgerFinancialReportPack reportPack);</code> | [src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs:34](../../../../src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs#L34) |  |
+| <code>public byte[] RenderWorkbook(LedgerFinancialReportPack reportPack) =&gt; …;</code> | [src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs:16](../../../../src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs#L16) |  |
+| <code>public byte[] RenderWorkbook(IReadOnlyList&lt;LedgerReportTable&gt; tables);</code> | [src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs:20](../../../../src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs#L20) | Renders exact text cells from shared report datasets without coercing decimals to floating point. |
+| <code>public byte[] RenderPdf(LedgerFinancialReportPack reportPack);</code> | [src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs:38](../../../../src/Meridian.Ledger/BuiltInLedgerReportBinaryRenderer.cs#L38) |  |
 
 ## CanonicalCorporateActionLotReport
 

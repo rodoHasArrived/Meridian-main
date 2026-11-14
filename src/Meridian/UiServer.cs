@@ -206,6 +206,21 @@ public sealed class UiServer : IAsyncDisposable
 
                 var postingContext = tradeFillPostingOptions.BuildContext();
                 var tradeFillStoreRoot = Path.Combine(resolvedDataRoot, "execution", "trade-fill-ledger");
+                if (tradeFillPostingOptions.CanonicalAccounting is { } canonicalAccounting)
+                {
+                    if (canonicalAccounting.Grant is null)
+                        throw new InvalidOperationException("Canonical fill accounting requires an operator-activated exact posting grant.");
+                    builder.Services.AddSingleton<IAutomatedTradeFillAccountingService>(sp =>
+                        new AutomatedTradeFillAccountingService(canonicalAccounting,
+                            Path.Combine(tradeFillStoreRoot, "accounting-intents"),
+                            sp.GetRequiredService<ILedgerJournalStore>(),
+                            sp.GetRequiredService<IAtomicTaxLotJournalStore>(),
+                            sp.GetRequiredService<IGovernedLedgerPostingTarget>(),
+                            sp.GetRequiredService<Meridian.Contracts.Ledger.IConfiguredLedgerAccountResolver>(),
+                            sp.GetRequiredService<Meridian.Contracts.Ledger.IAccountingAutomaticPostingPolicyValidator>(),
+                            sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                            sp.GetRequiredService<Meridian.Contracts.AssetOperations.IAssetOperationsQueryService>()));
+                }
                 builder.Services.AddTradeFillLedgerPosting(
                     postingContext,
                     sp => new GovernedTradeFillLedgerPostingTarget(
@@ -335,6 +350,8 @@ public sealed class UiServer : IAsyncDisposable
             var usesPaperGateway = !brokerageConfiguration.LiveExecutionEnabled
                 || string.IsNullOrWhiteSpace(brokerageConfiguration.Gateway)
                 || string.Equals(brokerageConfiguration.Gateway, "paper", StringComparison.OrdinalIgnoreCase);
+            if (!usesPaperGateway && tradeFillPostingOptions.Enabled && tradeFillPostingOptions.CanonicalAccounting is not null)
+                throw new InvalidOperationException("Canonical fill accounting supports the in-process synthetic paper gateway only.");
             builder.Services.AddSingleton(
                 builder.Configuration.GetSection(Meridian.Execution.Adapters.PaperTradingGatewayOptions.SectionKey)
                     .Get<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()
@@ -372,7 +389,20 @@ public sealed class UiServer : IAsyncDisposable
             }
             if (usesPaperGateway)
             {
-                builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
+                builder.Services.AddSingleton<PaperTradingPortfolio>(sp => tradeFillPostingOptions.Enabled && tradeFillPostingOptions.CanonicalAccounting is { } canonical
+                    ? CanonicalPaperPortfolioBootstrapper.CreatePortfolio(canonical,
+                        sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>())
+                    : new PaperTradingPortfolio(100_000m));
+                if (tradeFillPostingOptions.Enabled && tradeFillPostingOptions.CanonicalAccounting is { } canonicalOptions)
+                {
+                    builder.Services.AddSingleton(sp => new CanonicalPaperPortfolioBootstrapper(canonicalOptions,
+                        tradeFillPostingOptions.BuildContext(), sp.GetRequiredService<PaperTradingPortfolio>(),
+                        sp.GetRequiredService<ILedgerJournalStore>(),
+                        sp.GetRequiredService<Meridian.Contracts.Ledger.IConfiguredLedgerAccountResolver>(),
+                        sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                        sp.GetRequiredService<LedgerPostingConsumer>(), sp.GetRequiredService<ITradeFillHandoffFailureStore>(),
+                        sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()));
+                }
                 builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
                 // Production IPositionTracker projection over the live portfolio state. Gives the
                 // safety-critical risk rules (PositionLimitRule and other IPositionTracker consumers) a real backing
@@ -1235,6 +1265,8 @@ public sealed class UiServer : IAsyncDisposable
             await EnsureDatabaseReadinessAsync(ct).ConfigureAwait(false);
             try
             {
+                if (_app.Services.GetService<CanonicalPaperPortfolioBootstrapper>() is { } canonicalPaper)
+                    await canonicalPaper.InitializeAsync(ct).ConfigureAwait(false);
                 _applicationStartBegan = true;
                 await _app.StartAsync(ct);
                 // Providers are otherwise built by dependency-injection factories on first use,

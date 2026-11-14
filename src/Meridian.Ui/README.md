@@ -41,6 +41,12 @@ funding review and notice governance as distinct states. No browser-local balanc
 new root navigation or live payment capability is introduced. See the dashboard and UI Shared
 READMEs for the exact support boundary and validation.
 
+The built workstation assets expose the existing Accounting and Reporting surfaces' three-way
+comparison, operator posting authority and frozen general-ledger export controls. Their domain
+state and mutations remain in shared protected services. Source changes live in `dashboard/`;
+regenerate `wwwroot/workstation/` from that source and avoid bundle regeneration during a host
+build, which captures hashed static-asset paths before copying them.
+
 The host-served workstation bundle uses paired React/React DOM runtime packages and preserves
 accessible separators between account labels, tab counts, and provider state badges. Dashboard
 runtime requirements remain declared in its package manifest and checked before dependency work.

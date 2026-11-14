@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TcaCostSummary
+
+Qualified name: <code>Meridian.Backtesting.Sdk.TcaCostSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/TcaReportModels.cs:12](../../../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs#L12).
+
+Aggregate execution cost summary across all fills in a simulation run.
+
+```csharp
+public sealed record TcaCostSummary(decimal TotalCommissions, decimal TotalBuyNotional, decimal TotalSellNotional, decimal TotalNotional, double CommissionRateBps, int TotalFills, int BuyFills, int SellFills);
+```
+
+## TcaFillOutlier
+
+Qualified name: <code>Meridian.Backtesting.Sdk.TcaFillOutlier</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/TcaReportModels.cs:51](../../../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs#L51).
+
+A fill whose commission rate significantly exceeded the run&#x27;s average — a candidate for execution quality review.
+
+```csharp
+public sealed record TcaFillOutlier(Guid FillId, string Symbol, decimal Notional, decimal Commission, double CommissionRateBps, DateTimeOffset FilledAt);
+```
+
+## TcaReport
+
+Qualified name: <code>Meridian.Backtesting.Sdk.TcaReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/TcaReportModels.cs:72](../../../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs#L72).
+
+Complete Transaction Cost Analysis (TCA) report generated after each simulation run. Contains aggregate cost attribution, per-symbol breakdowns, and outlier fills sorted by cost rate descending.
+
+```csharp
+public sealed record TcaReport(DateTimeOffset GeneratedAtUtc, string? StrategyAssemblyPath, TcaCostSummary CostSummary, IReadOnlyList<SymbolTcaSummary> SymbolSummaries, IReadOnlyList<TcaFillOutlier> Outliers);
+```
+
 ## TimeInForce
 
 Qualified name: <code>Meridian.Backtesting.Sdk.TimeInForce</code>. Kind: `enum`.

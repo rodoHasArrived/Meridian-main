@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HmacReportingDeliveryGrantCredentialDeriver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.HmacReportingDeliveryGrantCredentialDeriver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L34).
+
+Derives repeatable reporting delivery access credentials from a binding key using HMAC.
+
+```csharp
+public sealed class HmacReportingDeliveryGrantCredentialDeriver : IReportingDeliveryGrantCredentialDeriver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public HmacReportingDeliveryGrantCredentialDeriver(ReadOnlySpan&lt;byte&gt; key);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L39) |  |
+| <code>public ReportingDerivedAccessGrantCredential Derive(string bindingKey);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:49](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L49) |  |
+
 ## HmacReportingProviderReceiptAuthenticator
 
 Qualified name: <code>Meridian.Ui.Shared.Services.HmacReportingProviderReceiptAuthenticator</code>. Kind: `class`.
@@ -940,21 +959,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;OperationsReportPackReadinessDto&gt; ResolveAsync(OperationsContinuityWorkflowDto workflow, string? packageId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:16](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L16) |  |
-
-## IPrivateCapitalLifecycleSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IPrivateCapitalLifecycleSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L15).
-
-A source supplies retained balances; the workstation does not manufacture or approve them.
-
-```csharp
-public interface IPrivateCapitalLifecycleSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;PrivateCapitalLifecycleRead&gt; ReadAsync(string familyOfficeId, IReadOnlySet&lt;string&gt; entityIds, DateOnly asOf, DateTimeOffset knownAt, CancellationToken ct = default, Func&lt;DateOnly, CancellationToken, Task&lt;IReadOnlySet&lt;string&gt;&gt;&gt;? historicalEntityScope = null);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:17](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L17) |  |

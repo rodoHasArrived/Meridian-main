@@ -99,7 +99,7 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                     || !Same(item.FundAccountId, scope.FundAccountId)
                     || item.LedgerBookId != scope.LedgerBookId
                     || !Same(item.AccountingPeriodId, scope.AccountingPeriodId)
-                    || !Same(item.SourceImportId, run.RunId))
+                    || (!Same(item.SourceImportId, run.RunId) && !IsStableThreeWayObservation(item, scope, observation)))
                     throw new InvalidOperationException("Source observation does not own the exact retained case scope and run.");
                 EnsureCloseScopeMutationAllowed(item, "retain source comparison");
                 var lineageId = ResolveLineageId(identityScopeId, legacyScopes, observation.SourceSubjectId, existing);
@@ -276,6 +276,14 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
         return JsonSerializer.Serialize(Normalize(original), _jsonOptions)
             == JsonSerializer.Serialize(compatibleRequest, _jsonOptions);
     }
+
+    // Statement breaks belong to one import. A three-way case belongs to a stable comparison
+    // subject across runs; each completed observation independently retains its exact run receipt.
+    // This exception never permits a different source, account/book/period or subject to claim it.
+    private static bool IsStableThreeWayObservation(ReconciliationBreakQueueItem item,
+        ReconciliationRunObservationScope scope, ReconciliationBreakObservation observation)
+        => item.SourceType == "three-way" && item.SourceSystem == "three-way" && scope.SourceSystem == "three-way"
+           && string.Equals(item.SourceReference, observation.SourceSubjectId, StringComparison.Ordinal);
 
     private bool HasVerifiedSourceReceipt(ReconciliationBreakQueueAuditEvent receipt, ReconciliationCompletedRunObservation run)
     {

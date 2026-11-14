@@ -17,10 +17,11 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>
 /// Maps fund-account management and brokerage synchronization operations with account-specific authorization.
 /// </summary>
-public static class FundAccountEndpoints
+public static partial class FundAccountEndpoints
 {
     public static void MapFundAccountEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        MapThreeWayReconciliationEndpoints(app, jsonOptions);
         var group = app.MapGroup("/api/fund-accounts").WithTags("Fund Accounts");
 
         // The brokerage-sync READ routes are mapped on app rather than through this group. Their own

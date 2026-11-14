@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode, type UIEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { ThreeWayAccountingPanel } from "./accounting-screen.three-way";
 import { Landmark, Network, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -114,6 +115,11 @@ const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowVie
   { id: "source", label: "Source observation", hideable: true, render: (row) => <span className="block"><span className="block">{sourceObservationLabel(row.lineage)}</span><span className="block text-muted-foreground">{sourceObservationAge(row.lineage)}</span></span> },
   { id: "status", label: "Case status", render: (row) => <Badge variant={row.statusBadgeVariant}>{row.status}</Badge> }
 ];
+
+/** Preserve the existing casework context before the explicit independent comparison. */
+export function ThreeWayReconciliationWorkbench({ children }: { children: ReactNode }) {
+  return <>{children}<ThreeWayAccountingPanel /></>;
+}
 
 export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice, bulkServices, visitServices }: {
   reconciliation: Reconciliation;

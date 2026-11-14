@@ -3,10 +3,10 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Interfaces;
+using Meridian.Execution.Events;
 using Meridian.Execution.Margin;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
-using Meridian.Execution.Events;
 using Meridian.Ledger;
 using static Meridian.Contracts.Text.TextPrimitives;
 
@@ -25,6 +25,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// <summary>Identity of this in-memory book; a new portfolio starts a new economic history.</summary>
     public Guid BookId { get; } = Guid.NewGuid();
 
+    private readonly string _primaryAccountId = DefaultAccountId;
+    public string PrimaryAccountId => _primaryAccountId;
     private readonly Meridian.Ledger.Ledger? _ledger;
     private readonly Dictionary<Guid, PaperFinancingCharge> _financingCharges = [];
     private readonly IChartOfAccounts _chartOfAccounts = StandardChartOfAccounts.Instance;
@@ -154,6 +156,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         _corporateActionAdjuster = corporateActionAdjuster;
         _lotSelectionMethod = lotSelectionMethod;
 
+        _primaryAccountId = accounts[0].AccountId;
         foreach (var def in accounts)
         {
             _accounts[def.AccountId] = new AccountState(
@@ -234,6 +237,10 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         {
             lock (_lock)
             {
+                if (_canonicalAccountingRequired)
+                    return _accounts[_primaryAccountId].Positions.ToDictionary(pair => pair.Key,
+                        pair => (IPosition)pair.Value.ToExecutionPosition(), StringComparer.OrdinalIgnoreCase);
+
                 // Carry the unrounded quantity beside the whole-share one: position limits and
                 // ownership attribution are decimal, and truncating here let a 0.9-share
                 // holding read as 0 against a share cap.
@@ -324,7 +331,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
     {
         lock (_lock)
         {
-            if (!_accounts.TryGetValue(DefaultAccountId, out var account) ||
+            if (!_accounts.TryGetValue(_primaryAccountId, out var account) ||
                 !account.Positions.TryGetValue(symbol, out var position))
             {
                 return [];
@@ -454,7 +461,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// <summary>
     /// Applies a fill to the <see cref="DefaultAccountId"/> account (single-account path).
     /// </summary>
-    public void ApplyFill(ExecutionReport report) => ApplyFill(DefaultAccountId, report);
+    public void ApplyFill(ExecutionReport report) => ApplyFill(_primaryAccountId, report);
 
     /// <summary>
     /// Applies a fill to the default account while recording the fund account that owns it
@@ -471,7 +478,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         string? ownerAccountId,
         decimal contractMultiplier = 1m,
         bool usesFaceValuePercentageOfPar = false)
-        => ApplyFill(DefaultAccountId, report, ownerAccountId, contractMultiplier, usesFaceValuePercentageOfPar);
+        => ApplyFill(_primaryAccountId, report, ownerAccountId, contractMultiplier, usesFaceValuePercentageOfPar);
 
     /// <summary>
     /// Applies a fill to a specific <paramref name="accountId"/>.
@@ -502,7 +509,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         string? ownerAccountId,
         decimal contractMultiplier = 1m,
         bool usesFaceValuePercentageOfPar = false)
-        => ApplyFillCore(DefaultAccountId, report, ownerAccountId, contractMultiplier, usesFaceValuePercentageOfPar);
+        => ApplyFillCore(_primaryAccountId, report, ownerAccountId, contractMultiplier, usesFaceValuePercentageOfPar);
 
     private PaperFillAccountingResult ApplyFillCore(
         string accountId,
@@ -570,6 +577,24 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
             if (!_accounts.TryGetValue(accountId, out var account))
                 return new PaperFillAccountingResult(null, 0m, _accounts.Values.Sum(static entry => entry.Cash));
 
+            if (_canonicalAccountingRequired && !_canonicalAccountingInitialized)
+                throw new InvalidOperationException("Canonical accounting recovery must complete before paper fills are applied.");
+            if (_canonicalAccountingRequired)
+            {
+                if (contractMultiplier != 1m || multiplier != 1m || economicMultiplier != 1m || variationMargin
+                    || faceValueSizing || lotUnit != SecurityLotUnitKind.Shares || account.MarginModel is not null)
+                    throw new InvalidOperationException("Canonical paper fills support fully funded unit cash equities without financing or variation margin only.");
+                var refusal = ValidateCanonicalFunding(new OrderRequest
+                {
+                    Symbol = report.Symbol,
+                    Side = report.Side,
+                    Type = OrderType.Market,
+                    Quantity = report.FilledQuantity,
+                    LimitPrice = fillPrice
+                }, explicitCosts);
+                if (refusal is not null)
+                    throw new InvalidOperationException(refusal);
+            }
             account.Positions.TryGetValue(report.Symbol, out var previousPosition);
             var requiresAccountingReclassification = previousPosition?.RequiresAccountingReclassification == true;
             var canCertifyOwnership = !requiresAccountingReclassification
@@ -577,7 +602,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
             var capture = new FillAccountingCapture();
             ApplyFillToAccount(account, report.Symbol, signedQty, fillPrice,
                 explicitCosts, report.Timestamp, report.OrderId,
-                ownerAccountId, multiplier, faceValueSizing, lotUnit, economicMultiplier, variationMargin, capture);
+                ownerAccountId, multiplier, faceValueSizing, lotUnit, economicMultiplier, variationMargin, capture,
+                _canonicalAccountingRequired ? PaperSessionFillRecord.ComputeCanonicalFillId(report) : null);
 
             if (account.Positions.TryGetValue(report.Symbol, out var remainingPosition))
             {
@@ -632,7 +658,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (accountingEvidenceVersion is not (0 or 1))
             throw new ArgumentOutOfRangeException(nameof(accountingEvidenceVersion), "Unsupported retained accounting evidence version.");
 
-        ApplyFillCore(DefaultAccountId, report with
+        ApplyFillCore(_primaryAccountId, report with
         {
             BookedMoneyMultiplier = report.BookedMoneyMultiplier ?? 1m,
             BookedVariationMargin = report.BookedVariationMargin ?? false
@@ -653,7 +679,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
     {
         lock (_lock)
         {
-            return _accounts.TryGetValue(DefaultAccountId, out var account)
+            return _accounts.TryGetValue(_primaryAccountId, out var account)
                 && account.Positions.TryGetValue(symbol, out var pos)
                 && pos.Quantity != 0m
                     ? pos.EconomicMultiplier
@@ -671,7 +697,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
     {
         lock (_lock)
         {
-            return _accounts.TryGetValue(DefaultAccountId, out var account)
+            return _accounts.TryGetValue(_primaryAccountId, out var account)
                 && account.Positions.TryGetValue(symbol, out var pos)
                 && pos.Quantity != 0m
                     ? pos.UsesVariationMargin
@@ -813,7 +839,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         string symbol,
         DateTimeOffset positionOpenedAt,
         CancellationToken ct = default)
-        => ApplyCorporateActionsAsync(DefaultAccountId, symbol, positionOpenedAt, ct);
+        => ApplyCorporateActionsAsync(_primaryAccountId, symbol, positionOpenedAt, ct);
 
     /// <summary>
     /// Applies corporate-action adjustments to a position in a specific <paramref name="accountId"/>.
@@ -920,7 +946,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         SecurityLotUnitKind lotUnit,
         decimal economicMultiplier,
         bool variationMargin,
-        FillAccountingCapture capture)
+        FillAccountingCapture capture, Guid? canonicalFillId = null)
     {
         if (!account.Positions.TryGetValue(symbol, out var pos))
         {
@@ -928,7 +954,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
             {
                 LotUnit = lotUnit,
                 EconomicMultiplier = economicMultiplier,
-                UsesVariationMargin = variationMargin
+                UsesVariationMargin = variationMargin,
+                UsesCanonicalLotOrdering = _canonicalAccountingRequired
             };
             // Seed the exact attribution multiplier: AttributeFill only ever raises it, so a valid
             // multiplier below 1 would otherwise stay at the default and fail the equality check
@@ -969,6 +996,12 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
                 $"Fill contract multiplier {contractMultiplier} does not match the open position multiplier {pos.ContractMultiplier} for '{symbol}'.");
         }
 
+        if (_canonicalAccountingRequired)
+        {
+            pos.CanonicalOpeningLotRecordId = TradeFillAccountingIdentity.Create(_canonicalPostingScope!, canonicalFillId!.Value, "lot");
+            pos.CanonicalOpeningLotLabel = $"execution:{canonicalFillId:D}";
+        }
+
         // Once a face-value fill touches the position, its cost basis and market price are
         // held in dollars per unit of face — so later market quotes, still arriving as a
         // percentage of par, must be normalized the same way (see UpdateMarketPrice).
@@ -980,6 +1013,11 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         // Attribution runs before the position math so it records the fill regardless of
         // which branch below applies it, and never depends on the resulting quantity.
         pos.AttributeFill(ownerAccountId, signedQty, contractMultiplier);
+        if (_canonicalAccountingRequired)
+        {
+            pos.MarkObservedAtUtc = ts.ToUniversalTime();
+            pos.MarkSource = "ExecutionFill";
+        }
 
         // A fill that crosses through zero closes the existing side first, then opens
         // the residual on the opposite side — the residual must not be dropped.
@@ -1098,6 +1136,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         decimal settlementPrice,
         DateTimeOffset asOf)
     {
+        if (_canonicalAccountingRequired)
+            throw new InvalidOperationException("Variation-margin settlement is unsupported in canonical cash-equity accounting.");
         ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
         ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
         if (settlementPrice <= 0m)
@@ -1535,6 +1575,8 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     public decimal Quantity { get; set; }
     public decimal CostBasis { get; set; }
     public decimal MarketPrice { get; set; } = marketPrice;
+    public DateTimeOffset? MarkObservedAtUtc { get; set; }
+    public string? MarkSource { get; set; }
     public decimal OpenCostBasis { get; private set; }
     public long LotVersion { get; private set; }
 
@@ -1659,6 +1701,19 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
             lot.OpenedAt))
         .ToArray();
 
+    public bool UsesCanonicalLotOrdering { get; init; }
+    public Guid? CanonicalOpeningLotRecordId { get; set; }
+    public string? CanonicalOpeningLotLabel { get; set; }
+
+    public void RestoreLot(string lotId, decimal quantity, decimal entryPrice, decimal exactBasis, DateTimeOffset openedAt, Guid canonicalRecordId)
+    {
+        _lots.Add(new PositionLot(this, lotId, quantity, entryPrice, openedAt, exactBasis, canonicalRecordId));
+        Quantity += quantity;
+        OpenCostBasis = _lots.Sum(lot => lot.OpenCostBasis);
+        CostBasis = OpenCostBasis / Quantity;
+        LotVersion++;
+    }
+
     public void AddLot(decimal signedQuantity, decimal entryPrice, DateTimeOffset openedAt)
     {
         if (signedQuantity == 0m)
@@ -1666,7 +1721,8 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
             return;
         }
 
-        _lots.Add(new PositionLot(this, $"lot-{Guid.NewGuid():N}", signedQuantity, entryPrice, openedAt));
+        _lots.Add(new PositionLot(this, UsesCanonicalLotOrdering ? CanonicalOpeningLotLabel! : $"lot-{Guid.NewGuid():N}", signedQuantity, entryPrice, openedAt,
+            canonicalTaxLotRecordId: UsesCanonicalLotOrdering ? CanonicalOpeningLotRecordId : null));
         OpenCostBasis = _lots.Sum(static lot => lot.OpenCostBasis);
         LotVersion++;
     }
@@ -1828,6 +1884,9 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
 
         return method switch
         {
+            PositionLotSelectionMethod.Fifo when UsesCanonicalLotOrdering => candidates
+                .OrderBy(lot => DateOnly.FromDateTime(lot.OpenedAt.UtcDateTime)).ThenBy(lot => lot.CanonicalTaxLotRecordId
+                    ?? throw new InvalidOperationException("Canonical FIFO requires a retained durable lot identity.")),
             PositionLotSelectionMethod.Fifo => candidates.OrderBy(static lot => lot.OpenedAt),
             PositionLotSelectionMethod.Lifo => candidates.OrderByDescending(static lot => lot.OpenedAt),
             PositionLotSelectionMethod.Hifo => candidates.OrderByDescending(static lot => lot.EntryPrice).ThenBy(static lot => lot.OpenedAt),
@@ -1903,7 +1962,9 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         ContractMultiplier = ContractMultiplier,
         // The record's Quantity is whole shares; owner attribution is not. Carry the
         // unrounded size so the unattributed remainder is a real remainder.
-        ExactQuantity = Quantity
+        ExactQuantity = Quantity,
+        MarkObservedAtUtc = MarkObservedAtUtc,
+        MarkSource = MarkSource
     };
 }
 
@@ -1914,9 +1975,10 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
 /// contract multiplier recorded after the lot opened is never stale on the lot.
 /// </summary>
 internal sealed class PositionLot(PaperPosition position, string lotId, decimal openQuantity, decimal entryPrice,
-    DateTimeOffset openedAt, decimal? openCostBasis = null) : IUnitizedLot
+    DateTimeOffset openedAt, decimal? openCostBasis = null, Guid? canonicalTaxLotRecordId = null) : IUnitizedLot
 {
     public string LotId { get; } = lotId;
+    public Guid? CanonicalTaxLotRecordId { get; } = canonicalTaxLotRecordId;
     public decimal OpenQuantity { get; set; } = openQuantity;
     public decimal EntryPrice { get; } = entryPrice;
     public decimal OpenCostBasis { get; set; } = openCostBasis ?? position.Money(Math.Abs(openQuantity), entryPrice);

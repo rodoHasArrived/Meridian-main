@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 303,
-    "warning": 303
+    "total": 306,
+    "warning": 306
   },
   "failed": false,
   "findings": [
@@ -564,6 +564,16 @@
       },
       "message": "Business table ledger.atomic_tax_lot_posting_batches does not have a table comment.",
       "object": "ledger.atomic_tax_lot_posting_batches",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "automated_posting_grants"
+      },
+      "message": "Business table ledger.automated_posting_grants does not have a table comment.",
+      "object": "ledger.automated_posting_grants",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -2153,6 +2163,34 @@
     {
       "details": {
         "columns": [
+          "ledger_book_id"
+        ],
+        "constraint": "automated_posting_grants_ledger_book_id_fkey",
+        "schema": "ledger",
+        "table": "automated_posting_grants"
+      },
+      "message": "Foreign key ledger.automated_posting_grants.automated_posting_grants_ledger_book_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.automated_posting_grants.automated_posting_grants_ledger_book_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "period_id"
+        ],
+        "constraint": "automated_posting_grants_period_id_fkey",
+        "schema": "ledger",
+        "table": "automated_posting_grants"
+      },
+      "message": "Foreign key ledger.automated_posting_grants.automated_posting_grants_period_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.automated_posting_grants.automated_posting_grants_period_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "receipt_id"
         ],
         "constraint": "bond_coupon_cash_consumption_receipt_id_fkey",
@@ -3380,5 +3418,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "1410215f43cc136072e2119088d25703f41b7c1b40812c05971c1d77f4e5631c"
+  "fingerprint": "8d7285a3def10d2f44f9000cc57e563974234c229b4a606973581a29df4f5839"
 }

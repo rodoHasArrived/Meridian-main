@@ -469,7 +469,9 @@ public enum OperationsActionOriginDto : byte
     HumanOperator = 0,
     AutomationSuggestion = 1,
     AssistantDraft = 2,
-    AutomationAssistant = 3
+    AutomationAssistant = 3,
+    /// <summary>Deterministic system execution under retained operator delegation; never a human or assistant.</summary>
+    AuthorizedSystem = 4
 }
 
 public sealed record OperationsStartWorkflowRequestDto(

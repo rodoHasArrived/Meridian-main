@@ -17,7 +17,8 @@ public sealed partial class PostgresLedgerJournalStore :
     ILedgerEntityControlJournalValidation,
     Meridian.Contracts.Accounting.Lots.IOpenLotBackfillStore,
     ILedgerPostingIdentityCollisionLookup,
-    IIntercompanyAgreementJournalValidation
+    IIntercompanyAgreementJournalValidation,
+    IAutomatedPostingGrantStore
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
     private readonly LedgerJournalStoreOptions _options;
@@ -130,6 +131,12 @@ public sealed partial class PostgresLedgerJournalStore :
     {
         if (entry.PostingCommand?.LotAmortization?.BondIncome is not null)
             throw new LedgerValidationException("Bond income carrying-value journals require the atomic journal/lot posting boundary.");
+        if (entry.PostingCommand is
+            {
+                ActionOrigin: Meridian.Contracts.Workstation.OperationsActionOriginDto.AuthorizedSystem,
+                SourceEventType: "execution.trade-fill"
+            })
+            throw new LedgerValidationException("Automatic fills require the atomic journal/lot posting boundary.");
         if (entry.PostingCommand?.LotCapitalReturn is not null
             || entry.Entry.Metadata.Tags?.ContainsKey(Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturn.JournalFingerprintTag) == true)
             throw new LedgerValidationException("Capital-return journals require the atomic journal/lot posting boundary.");
@@ -243,6 +250,8 @@ public sealed partial class PostgresLedgerJournalStore :
         else
             LedgerPeriodPostingGuard.Validate(entry, period);
         await ValidateJournalBasisAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
+        await ValidateAutomatedPostingGrantAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        await ValidateThreeWayFeeCorrectionOwnerAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         entry = RetainPostingAuthorityDecision(transaction, entry, period);
         await ValidateAndRecordCouponRecognitionAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         var auditHead = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
@@ -250,7 +259,15 @@ public sealed partial class PostgresLedgerJournalStore :
         await ValidateAgreementReversalNotAlreadyPostedAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await ValidateCurrentConsolidationSourcesAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await ValidateAndRecordCapitalPostingAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
-        await InsertJournalEntryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        try
+        {
+            await InsertJournalEntryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        }
+        catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.UniqueViolation
+            && exception.ConstraintName == "ux_journal_entries_fee_economic_identity")
+        {
+            throw new LedgerValidationException("This broker fee already has a posted economic effect in the selected account/book; review the competing handoff or correction.");
+        }
         await InsertJournalLegsAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await AppendIntercompanyProposalsAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await AppendLedgerAuditAsync(connection, transaction, auditHead, "journal", entry.Entry.JournalEntryId, 1,

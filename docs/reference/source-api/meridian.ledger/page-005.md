@@ -6,6 +6,41 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PeriodCloseInput
+
+Qualified name: <code>Meridian.Ledger.PeriodCloseInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PeriodCloseInput.cs:17](../../../../src/Meridian.Ledger/PeriodCloseInput.cs#L17).
+
+Input for projecting period-close closing entries from a point-in-time trial balance.
+
+```csharp
+public sealed record PeriodCloseInput
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PeriodCloseInput(string periodId, DateTimeOffset closedAtUtc, IReadOnlyList&lt;PeriodCloseAccountBalance&gt; trialBalance, string closedBy);</code> | [src/Meridian.Ledger/PeriodCloseInput.cs:19](../../../../src/Meridian.Ledger/PeriodCloseInput.cs#L19) |  |
+| <code>public PeriodCloseInput(string periodId, DateTimeOffset closedAtUtc, IReadOnlyDictionary&lt;LedgerAccount, decimal&gt; trialBalance, string closedBy) : this(periodId, closedAtUtc, (trialBalance?? throw new ArgumentNullException(nameof(trialBalance))).Select(static pair =&gt; new PeriodCloseAccountBalance(pair.Key, pair.Value)).ToArray(), closedBy);</code> | [src/Meridian.Ledger/PeriodCloseInput.cs:42](../../../../src/Meridian.Ledger/PeriodCloseInput.cs#L42) | Convenience overload for a dimension-flat trial balance (for example the in-memory Ledger.TrialBalanceAsOf(DateTimeOffset, string?, LedgerLineDimensionSet?)), which carries no per-line dimensional scope. |
+| <code>public string PeriodId { get; }</code> | [src/Meridian.Ledger/PeriodCloseInput.cs:57](../../../../src/Meridian.Ledger/PeriodCloseInput.cs#L57) |  |
+| <code>public DateTimeOffset ClosedAtUtc { get; }</code> | [src/Meridian.Ledger/PeriodCloseInput.cs:59](../../../../src/Meridian.Ledger/PeriodCloseInput.cs#L59) |  |
+| <code>public IReadOnlyList&lt;PeriodCloseAccountBalance&gt; TrialBalance { get; }</code> | [src/Meridian.Ledger/PeriodCloseInput.cs:65](../../../../src/Meridian.Ledger/PeriodCloseInput.cs#L65) | Point-in-time trial balance with normal-balance values, one row per account + dimensional scope. |
+| <code>public string ClosedBy { get; }</code> | [src/Meridian.Ledger/PeriodCloseInput.cs:67](../../../../src/Meridian.Ledger/PeriodCloseInput.cs#L67) |  |
+
+## PeriodCloseLine
+
+Qualified name: <code>Meridian.Ledger.PeriodCloseLine</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PeriodCloseLine.cs:7](../../../../src/Meridian.Ledger/PeriodCloseLine.cs#L7).
+
+One temporary (revenue or expense) account being closed to retained earnings, retaining the dimensional scope it was posted under.
+
+```csharp
+public sealed record PeriodCloseLine(LedgerAccount Account, decimal PeriodBalance, decimal ClosingDebit, decimal ClosingCredit, LedgerLineDimensionSet? Dimensions = null);
+```
+
 ## PeriodCloseProjection
 
 Qualified name: <code>Meridian.Ledger.PeriodCloseProjection</code>. Kind: `record`.
@@ -902,41 +937,3 @@ Declared public members:
 | <code>public static bool MatchesExactly(IReadOnlyList&lt;ShortCoverLine&gt; expected, IReadOnlyList&lt;LedgerEntry&gt; actual);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:111](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L111) | True when the journal carries exactly the projected currency-aware lines: same count, and each expected account, functional debit/credit, transaction and functional currencies, transaction amounts and FX rate present exactly once. |
 | <code>[PostingCalculationNotYetConnected(&quot;Corrections are reversed by the journal workbench, which keeps line dimensions and currency; this tuple form drops both, so it should be retired or extended, not wired as is.&quot;)] public static IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; Reverse(IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; posted);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:125](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L125) | The exact inverse of a posted short opening or cover journal: every line&#x27;s sides swapped, nothing else. |
 | <code>public static IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; Reverse(IReadOnlyList&lt;LedgerEntry&gt; posted);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:135](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L135) | The exact inverse of a posted journal, read back from its retained entries. |
-
-## StalePriceAssessment
-
-Qualified name: <code>Meridian.Ledger.StalePriceAssessment</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/StalePricePolicy.cs:66](../../../../src/Meridian.Ledger/StalePricePolicy.cs#L66).
-
-Result of assessing a mark&#x27;s freshness against a StalePricePolicy.
-
-```csharp
-public sealed record StalePriceAssessment(bool IsStale, int AgeDays, StalePriceHandling Handling)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StalePriceAssessment Fresh { get; } = new (false, 0, StalePriceHandling.Allow);</code> | [src/Meridian.Ledger/StalePricePolicy.cs:69](../../../../src/Meridian.Ledger/StalePricePolicy.cs#L69) | A fresh (non-stale) assessment. |
-
-## StalePriceHandling
-
-Qualified name: <code>Meridian.Ledger.StalePriceHandling</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ledger/StalePricePolicy.cs:6](../../../../src/Meridian.Ledger/StalePricePolicy.cs#L6).
-
-How a daily valuation run treats a mark whose price is older than the policy allows.
-
-```csharp
-public enum StalePriceHandling
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Allow</code> | [src/Meridian.Ledger/StalePricePolicy.cs:9](../../../../src/Meridian.Ledger/StalePricePolicy.cs#L9) | Include the mark unchanged; staleness is tolerated without annotation. |
-| <code>Flag</code> | [src/Meridian.Ledger/StalePricePolicy.cs:12](../../../../src/Meridian.Ledger/StalePricePolicy.cs#L12) | Include the mark but flag it as stale so downstream reviewers can see the exception. |
-| <code>Block</code> | [src/Meridian.Ledger/StalePricePolicy.cs:15](../../../../src/Meridian.Ledger/StalePricePolicy.cs#L15) | Exclude the mark from the fair-value draft; the position is surfaced for operator attention. |

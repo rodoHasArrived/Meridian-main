@@ -949,6 +949,7 @@ public sealed partial class AccountingConfigurationServiceTests
             LedgerBookId: ManualJournalLedgerBookId));
 
         saved.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
+        saved.CurrencyEvidenceVersion.Should().Be(0, "ordinary drafts retain the existing native and transaction-currency materialization rules");
         saved.TotalDebits.Should().Be(100m);
         saved.TotalCredits.Should().Be(100m);
         submitted.Status.Should().Be(ManualJournalEntryStatusDto.Submitted);
@@ -965,6 +966,27 @@ public sealed partial class AccountingConfigurationServiceTests
             transition.Action == JournalEntryLifecycleActionDto.Submit &&
             transition.ToStatus == ManualJournalEntryStatusDto.Submitted);
         workbench.AuditTrail.Select(item => item.Action).Should().Contain(new[] { "manual-je.save-draft", "manual-je.submit-approval" });
+    }
+
+    [Theory]
+    [InlineData(null, 0)]
+    [InlineData(0, 0)]
+    [InlineData(1, 1)]
+    public async Task ManualJournalCurrencyVersion_PublicSaveCannotIntroduceOrReplaceServerMarker(int? retainedVersion, int expectedVersion)
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var store = new InMemoryManualJournalEntryDraftStore();
+        var draft = BalancedManualJournalEntry();
+        if (retainedVersion.HasValue)
+            await store.SaveAsync(draft with { CurrencyEvidenceVersion = retainedVersion.Value });
+        var service = CreateManualJournalEntryWorkbenchService(configuration, draftStore: store);
+
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            draft with { CurrencyEvidenceVersion = 99 }, "ops-user", LedgerBookId: draft.LedgerBookId));
+
+        saved.IsAdjustingEntry.Should().BeFalse("an ordinary opening journal is not a reconciliation adjustment");
+        saved.CurrencyEvidenceVersion.Should().Be(expectedVersion);
     }
 
     [Fact]
@@ -5520,6 +5542,11 @@ public sealed partial class AccountingConfigurationServiceTests
             Notes: "Posted after approval",
             EvidenceLinks: [postingEvidence],
             LedgerBookId: approved.JournalEntry.LedgerBookId));
+        var currencyAwarePosted = (await journalStore.GetByPeriodAsync(ManualJournalPeriodId))
+            .Single(record => record.Entry.JournalEntryId == posted.JournalEntry.JournalEntryId);
+        currencyAwarePosted.Entry.Lines.Should().OnlyContain(line => line.Currency != null
+            && line.Currency.TransactionCurrency == "USD" && line.Currency.FunctionalCurrency == "USD"
+            && line.Currency.TransactionDebit == line.Debit && line.Currency.TransactionCredit == line.Credit);
         var missingCloseLockNotes = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             posted.JournalEntry.JournalEntryId,
             posted.JournalEntry.FundProfileId,

@@ -16,7 +16,8 @@ public sealed record TradeFillLedgerPostingContext(
     Guid LedgerBookId,
     string AccountingPolicyId = "execution-trade-fill",
     string AccountingPolicyVersion = "1",
-    long? ExpectedPeriodVersion = null)
+    long? ExpectedPeriodVersion = null,
+    int AccountingProtocolVersion = 1)
 {
     public TradeFillLedgerPostingContext Validate()
     {
@@ -31,6 +32,11 @@ public sealed record TradeFillLedgerPostingContext(
         ArgumentException.ThrowIfNullOrWhiteSpace(AccountingPolicyVersion);
         if (ExpectedPeriodVersion is < 0)
             throw new ArgumentOutOfRangeException(nameof(ExpectedPeriodVersion));
+
+        if (AccountingProtocolVersion is not (1 or 2))
+            throw new ArgumentOutOfRangeException(nameof(AccountingProtocolVersion));
+        if (AccountingProtocolVersion == 2 && !PostingScope.EndsWith("/v2", StringComparison.Ordinal))
+            throw new ArgumentException("Canonical fill accounting requires a distinct /v2 posting scope.");
 
         return this with
         {

@@ -327,6 +327,26 @@ public sealed partial class PaperFinancingPostingTests
         target.AppendCount.Should().Be(1);
     }
 
+    [Fact]
+    public async Task CanonicalScope_RefusesNewFinancingBeforeDurableAcceptance()
+    {
+        var root = TempRoot();
+        var target = new RetainedTarget();
+        var scope = Scope with { PostingScope = Scope.PostingScope + "/v2", AccountingProtocolVersion = 2 };
+        await using (var service = CreatePostingService(root, scope, target))
+        {
+            var refusal = await service.Invoking(posting => posting.PostAsync(Charge())).Should()
+                .ThrowAsync<PaperFinancingAdmissionException>();
+            refusal.Which.InnerException.Should().BeOfType<LedgerValidationException>().Which.Message.Should()
+                .Contain("unsupported in canonical");
+            (await service.LoadSourcesAsync("paper-1")).Should().BeEmpty();
+            target.Records.Should().BeEmpty();
+        }
+        await using var restarted = CreatePostingService(root, scope, target);
+        (await restarted.LoadAndRecoverAsync("paper-1")).Should().BeEmpty();
+        target.AppendCount.Should().Be(0);
+    }
+
     [Theory]
     [InlineData("tax")]
     [InlineData("wrong-policy")]

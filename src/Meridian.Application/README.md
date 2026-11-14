@@ -258,6 +258,26 @@ schedule when effective interest is negative, after contractual caps and floors.
 an entire signed-interest schedule before any period posts. Calculation-only signed-interest
 previews keep their existing signed model; explicit v1/v2 receipt replay retains its original arithmetic.
 
+## Configured direct-lending accounting
+
+Loan journal lines retain their transaction and functional currency through symbol and dimension
+projection. The configured integration slice is opt-in through
+`MERIDIAN_DIRECT_LENDING_LEDGER_BOOK_ID`, `MERIDIAN_DIRECT_LENDING_LEDGER_CHART_MAPPING_REVISION`,
+and `MERIDIAN_DIRECT_LENDING_LEDGER_ACCOUNT_PATHS` (a JSON object mapping economic roles such as
+`LoanPrincipal`, `Cash`, `AccruedInterestReceivable`, and `InterestIncome` to chart paths).
+All three settings are required together. The selected book must be USD, have retained tenant
+ownership, and contain the posting period. Every emitted role must resolve to one active chart
+account of the expected type at the pinned revision. The supported cash account name starts with
+`Cash`, matching the existing statement cash classification. Missing mappings, foreign ownership,
+unsupported currency, and changed configuration block the loan transaction instead of publishing a
+partial state/event/journal. Existing unconfigured deployments retain their period-selection contract;
+this does not enable background lending workers or live-account access.
+
+Statement reconciliation's retained population provider resolves owner-scoped position snapshots
+from the authorized accounting book and retained tenancy. A missing owner partition stays missing;
+it cannot fall back to the legacy unowned run partition. The command and workstation composition
+paths supply the same ledger/tenancy authority to this reader.
+
 `ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
 New Security calculation runs may carry a server-stamped W14 draft-check context when the separate

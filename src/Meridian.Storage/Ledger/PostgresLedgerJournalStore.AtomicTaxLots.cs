@@ -51,6 +51,7 @@ public sealed partial class PostgresLedgerJournalStore
     {
         RequireWriteTenant();
         command = NormalizeAndValidateAtomicTaxLotCommand(command);
+        ValidateAutomaticLotScope(command);
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await EnsureTenantRowAsync(connection, null, "accounting_periods", "period_id", command.Journal.PeriodId, false, ct,

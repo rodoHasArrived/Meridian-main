@@ -6,6 +6,73 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OpenLot
+
+Qualified name: <code>Meridian.Backtesting.Sdk.OpenLot</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/OpenLot.cs:26](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L26).
+
+Represents an open (unrealised) tax lot — a block of explicitly denominated units acquired in a single fill. Lots are always positive-quantity records. IsShort carries direction explicitly when a short lot leaves the portfolio&#x27;s internal short-lot collection in a snapshot.
+
+```csharp
+public sealed record OpenLot(Guid LotId, string Symbol, decimal Quantity, decimal EntryPrice, DateTimeOffset OpenedAt, Guid OpenFillId, string? AccountId = null, string? Notes = null) : IUnitizedLot
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required SecurityLotUnitKind UnitKind { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:40](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L40) | What one unit of Quantity measures. Must be supplied explicitly. |
+| <code>public required decimal Multiplier { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:49](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L49) | Positive contract multiplier scaling one unit to economic exposure. Supply 1 for unscaled units. |
+| <code>public bool IsShort { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:63](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L63) | True when the positive lot quantity represents a short-sale obligation. Kept outside the positional constructor so existing constructor and deconstruction shapes remain valid. |
+| <code>public decimal EntryCommission { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:66](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L66) | Unrelieved acquisition commission, carried separately from securities basis. |
+| <code>public IReadOnlyList&lt;OpenLotBasisComponent&gt; BasisComponents { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:73](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L73) | Exact source-lot contributions when a corporate action combines fractional entitlements into a whole successor share. Empty for ordinary single-source lots. Kept outside the positional constructor so existing constructor and deconstruction shapes remain valid. |
+| <code>public decimal CostBasis() =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:80](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L80) | Exact basis represented by this lot, including synthesized components. |
+| <code>public decimal UnrealizedPnl(decimal currentPrice) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:86](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L86) | Mark-to-market unrealised P&amp;L for this lot at the given price. |
+| <code>public decimal NotionalValue(decimal currentPrice) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:92](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L92) | Current notional value of this lot at the given price. |
+| <code>public TimeSpan Age(DateTimeOffset asOf) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:99](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L99) | How long the newest basis component has been open as of the given point in time. Using the newest component prevents a mixed-age composite lot from overstating its holding period. |
+| <code>public bool IsLongTerm(DateTimeOffset asOf) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:105](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L105) | Returns true when the lot has been held for at least 365 days — the IRS long-term capital gains threshold. |
+
+## OpenLotBasisComponent
+
+Qualified name: <code>Meridian.Backtesting.Sdk.OpenLotBasisComponent</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/OpenLot.cs:10](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L10).
+
+Preserves the source tax-lot facts that contributed basis to a synthesized whole successor share. Quantities may be fractional even though the enclosing OpenLot remains a whole-unit position lot.
+
+```csharp
+public sealed record OpenLotBasisComponent(Guid SourceLotId, Guid SourceOpenFillId, DateTimeOffset OpenedAt, decimal SuccessorQuantity, decimal AllocatedBasis)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal EntryCommission { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:18](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L18) | Unrelieved acquisition commission carried by this component. |
+
+## Order
+
+Qualified name: <code>Meridian.Backtesting.Sdk.Order</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/Order.cs:93](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L93).
+
+Immutable order record submitted to the backtest context. Parent entry orders can carry contingent exit prices, while generated child orders link back through ParentOrderId and OcoGroupId.
+
+```csharp
+public sealed record Order(Guid OrderId, string Symbol, OrderType Type, long Quantity, decimal? LimitPrice, decimal? StopPrice, DateTimeOffset SubmittedAt, TimeInForce TimeInForce = TimeInForce.Day, ExecutionModel ExecutionModel = ExecutionModel.Auto, bool AllowPartialFills = true, IReadOnlyDictionary<string, string>? ProviderParameters = null, string? AccountId = null, OrderStatus Status = OrderStatus.Pending, long FilledQuantity = 0, bool IsTriggered = false, decimal? TakeProfitPrice = null, decimal? StopLossPrice = null, Guid? ParentOrderId = null, Guid? OcoGroupId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal CommissionCharged { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Order.cs:115](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L115) | Commission already charged on accepted fills of this order. |
+| <code>public decimal FilledNotional { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Order.cs:118](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L118) | Absolute notional of accepted fills, used for cumulative commission tiers. |
+| <code>public long RemainingQuantity =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Order.cs:121](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L121) | Absolute quantity that still needs to be executed. |
+| <code>public bool IsComplete =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Order.cs:124](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L124) | True when the order has no remaining quantity to execute. |
+| <code>public long RemainingSignedQuantity =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Order.cs:127](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L127) | Signed quantity still open, retaining the original side of the order. |
+
 ## OrderRequest
 
 Qualified name: <code>Meridian.Backtesting.Sdk.OrderRequest</code>. Kind: `record`.
@@ -66,13 +133,19 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Backtesting.Sdk.PortfolioSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs:4](../../../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs#L4).
+Source: [src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs:6](../../../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs#L6).
 
 Point-in-time snapshot of the simulated portfolio, recorded at each simulated day-end.
 
 ```csharp
-public sealed record PortfolioSnapshot(DateTimeOffset Timestamp, DateOnly Date, decimal Cash, decimal MarginBalance, decimal LongMarketValue, decimal ShortMarketValue, decimal TotalEquity, decimal DailyReturn, IReadOnlyDictionary<string, Position> Positions, IReadOnlyDictionary<string, FinancialAccountSnapshot> Accounts, IReadOnlyList<CashFlowEntry> DayCashFlows);
+public sealed record PortfolioSnapshot(DateTimeOffset Timestamp, DateOnly Date, decimal Cash, decimal MarginBalance, decimal LongMarketValue, decimal ShortMarketValue, decimal TotalEquity, decimal DailyReturn, IReadOnlyDictionary<string, Position> Positions, IReadOnlyDictionary<string, FinancialAccountSnapshot> Accounts, IReadOnlyList<CashFlowEntry> DayCashFlows)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal DividendReceivable { get; init; }</code> | [src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs:21](../../../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs#L21) | Earned dividends included in equity but not yet available as cash. |
 
 ## Position
 
@@ -825,40 +898,4 @@ Per-symbol execution cost breakdown for a simulation run.
 
 ```csharp
 public sealed record SymbolTcaSummary(string Symbol, decimal TotalBuyNotional, decimal TotalSellNotional, decimal AvgBuyPrice, decimal AvgSellPrice, decimal TotalCommission, double CommissionRateBps, int TotalFills);
-```
-
-## TcaCostSummary
-
-Qualified name: <code>Meridian.Backtesting.Sdk.TcaCostSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Backtesting.Sdk/TcaReportModels.cs:12](../../../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs#L12).
-
-Aggregate execution cost summary across all fills in a simulation run.
-
-```csharp
-public sealed record TcaCostSummary(decimal TotalCommissions, decimal TotalBuyNotional, decimal TotalSellNotional, decimal TotalNotional, double CommissionRateBps, int TotalFills, int BuyFills, int SellFills);
-```
-
-## TcaFillOutlier
-
-Qualified name: <code>Meridian.Backtesting.Sdk.TcaFillOutlier</code>. Kind: `record`.
-
-Source: [src/Meridian.Backtesting.Sdk/TcaReportModels.cs:51](../../../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs#L51).
-
-A fill whose commission rate significantly exceeded the run&#x27;s average — a candidate for execution quality review.
-
-```csharp
-public sealed record TcaFillOutlier(Guid FillId, string Symbol, decimal Notional, decimal Commission, double CommissionRateBps, DateTimeOffset FilledAt);
-```
-
-## TcaReport
-
-Qualified name: <code>Meridian.Backtesting.Sdk.TcaReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Backtesting.Sdk/TcaReportModels.cs:72](../../../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs#L72).
-
-Complete Transaction Cost Analysis (TCA) report generated after each simulation run. Contains aggregate cost attribution, per-symbol breakdowns, and outlier fills sorted by cost rate descending.
-
-```csharp
-public sealed record TcaReport(DateTimeOffset GeneratedAtUtc, string? StrategyAssemblyPath, TcaCostSummary CostSummary, IReadOnlyList<SymbolTcaSummary> SymbolSummaries, IReadOnlyList<TcaFillOutlier> Outliers);
 ```

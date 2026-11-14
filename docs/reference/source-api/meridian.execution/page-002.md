@@ -6,6 +6,94 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IOrderManagementLifecycle
+
+Qualified name: <code>Meridian.Execution.IOrderManagementLifecycle</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution/IOrderManagementLifecycle.cs:7](../../../../src/Meridian.Execution/IOrderManagementLifecycle.cs#L7).
+
+Owns the OMS report intake and retained accounting-handoff replay. Construction and read-only recovery inspection do not start background work.
+
+```csharp
+public interface IOrderManagementLifecycle
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task StartAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Execution/IOrderManagementLifecycle.cs:13](../../../../src/Meridian.Execution/IOrderManagementLifecycle.cs#L13) | Starts report intake once and enables order operations. Repeated starts are idempotent; a stopped instance cannot be restarted. The token cancels startup, not the service lifetime. |
+| <code>Task StopAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Execution/IOrderManagementLifecycle.cs:20](../../../../src/Meridian.Execution/IOrderManagementLifecycle.cs#L20) | Closes admission, drains admitted operations and accepted fills, and stops background work. Repeated calls share one shutdown. Cancelling the token cancels the wait, not the drain; disposal still awaits it before dependencies can be released. |
+
+## ISecurityMasterGate
+
+Qualified name: <code>Meridian.Execution.ISecurityMasterGate</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution/ISecurityMasterGate.cs:14](../../../../src/Meridian.Execution/ISecurityMasterGate.cs#L14).
+
+Pre-trade governance gate: verifies that a symbol is registered and active in the Security Master before an order is accepted by the OMS.
+
+```csharp
+public interface ISecurityMasterGate
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityMasterGateResult&gt; CheckAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Execution/ISecurityMasterGate.cs:25](../../../../src/Meridian.Execution/ISecurityMasterGate.cs#L25) | Checks whether symbol resolves to an active security in the Security Master. |
+
+## ILiveMarketEventFeed
+
+Qualified name: <code>Meridian.Execution.Live.ILiveMarketEventFeed</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution/Live/ILiveMarketEventFeed.cs:20](../../../../src/Meridian.Execution/Live/ILiveMarketEventFeed.cs#L20).
+
+In-process subscription surface for the live market event stream. The hosted app publishes every pipeline event into this feed so live strategy sessions can consume real-time events the same way BacktestEngine consumes replayed events.
+
+```csharp
+public interface ILiveMarketEventFeed
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IAsyncEnumerable&lt;LiveMarketEvent&gt; SubscribeAsync(IReadOnlyCollection&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Execution/Live/ILiveMarketEventFeed.cs:27](../../../../src/Meridian.Execution/Live/ILiveMarketEventFeed.cs#L27) | Subscribes to live events for the given symbols. The returned stream completes when ct is cancelled. Slow consumers drop the oldest queued events rather than back-pressuring the market data pipeline. |
+
+## LiveMarketEvent
+
+Qualified name: <code>Meridian.Execution.Live.LiveMarketEvent</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Live/ILiveMarketEventFeed.cs:10](../../../../src/Meridian.Execution/Live/ILiveMarketEventFeed.cs#L10).
+
+Provider-agnostic live market event carried into execution-time consumers. Wraps the shared contract payload types (Trade, BboQuotePayload, HistoricalBar, LOBSnapshot) without exposing pipeline or provider types.
+
+```csharp
+public sealed record LiveMarketEvent(DateTimeOffset Timestamp, string Symbol, MarketEventPayload Payload);
+```
+
+## LiveMarketEventHub
+
+Qualified name: <code>Meridian.Execution.Live.LiveMarketEventHub</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Live/LiveMarketEventHub.cs:16](../../../../src/Meridian.Execution/Live/LiveMarketEventHub.cs#L16).
+
+In-process fan-out hub for live market events. The host publishes each pipeline event once via Publish; every active subscription receives the events matching its symbol set through its own bounded queue. Slow subscribers drop their oldest queued events (the hot publish path never blocks), mirroring the platform&#x27;s observer-channel backpressure policy.
+
+```csharp
+public sealed class LiveMarketEventHub : ILiveMarketEventFeed
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LiveMarketEventHub(ILogger&lt;LiveMarketEventHub&gt;? logger = null, int subscriberCapacity = DefaultSubscriberCapacity);</code> | [src/Meridian.Execution/Live/LiveMarketEventHub.cs:24](../../../../src/Meridian.Execution/Live/LiveMarketEventHub.cs#L24) |  |
+| <code>public int ActiveSubscriptionCount =&gt; …;</code> | [src/Meridian.Execution/Live/LiveMarketEventHub.cs:34](../../../../src/Meridian.Execution/Live/LiveMarketEventHub.cs#L34) | Number of active subscriptions (diagnostics only). |
+| <code>public void Publish(LiveMarketEvent evt);</code> | [src/Meridian.Execution/Live/LiveMarketEventHub.cs:40](../../../../src/Meridian.Execution/Live/LiveMarketEventHub.cs#L40) | Publishes one live event to all subscriptions whose symbol set contains the event&#x27;s symbol. Never blocks; full subscriber queues drop their oldest event. |
+| <code>public async IAsyncEnumerable&lt;LiveMarketEvent&gt; SubscribeAsync(IReadOnlyCollection&lt;string&gt; symbols, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/Live/LiveMarketEventHub.cs:51](../../../../src/Meridian.Execution/Live/LiveMarketEventHub.cs#L51) |  |
+
 ## IMarginModel
 
 Qualified name: <code>Meridian.Execution.Margin.IMarginModel</code>. Kind: `interface`.
@@ -253,9 +341,11 @@ Declared public members:
 | <code>[JsonIgnore] public IReadOnlyDictionary&lt;string, decimal&gt; OwnerQuantities { get; init; } = new Dictionary&lt;string, decimal&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Execution/Models/ExecutionPosition.cs:38](../../../../src/Meridian.Execution/Models/ExecutionPosition.cs#L38) | Signed quantity attributed to each owning fund account. Carried through from the fills so a shared execution book can still be read per fund. |
 | <code>public decimal ContractMultiplier { get; init; } = 1m;</code> | [src/Meridian.Execution/Models/ExecutionPosition.cs:42](../../../../src/Meridian.Execution/Models/ExecutionPosition.cs#L42) | Contract multiplier; 1 for outright instruments, 100 for equity options. |
 | <code>[JsonIgnore] public decimal ExactQuantity { get; init; }</code> | [src/Meridian.Execution/Models/ExecutionPosition.cs:57](../../../../src/Meridian.Execution/Models/ExecutionPosition.cs#L57) | Signed quantity before the whole-share rounding Quantity applies. Falls back to Quantity when a producer did not carry a fractional size, so positions that only ever hold whole shares are unaffected. |
-| <code>public bool IsShort =&gt; …;</code> | [src/Meridian.Execution/Models/ExecutionPosition.cs:64](../../../../src/Meridian.Execution/Models/ExecutionPosition.cs#L64) | True when this is a short (negative) position. |
-| <code>public long AbsoluteQuantity =&gt; …;</code> | [src/Meridian.Execution/Models/ExecutionPosition.cs:67](../../../../src/Meridian.Execution/Models/ExecutionPosition.cs#L67) | Absolute number of shares without sign. |
-| <code>public decimal NotionalValue(decimal lastPrice) =&gt; …;</code> | [src/Meridian.Execution/Models/ExecutionPosition.cs:70](../../../../src/Meridian.Execution/Models/ExecutionPosition.cs#L70) | Signed notional market value at lastPrice. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateTimeOffset? MarkObservedAtUtc { get; init; }</code> | [src/Meridian.Execution/Models/ExecutionPosition.cs:64](../../../../src/Meridian.Execution/Models/ExecutionPosition.cs#L64) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? MarkSource { get; init; }</code> | [src/Meridian.Execution/Models/ExecutionPosition.cs:67](../../../../src/Meridian.Execution/Models/ExecutionPosition.cs#L67) |  |
+| <code>public bool IsShort =&gt; …;</code> | [src/Meridian.Execution/Models/ExecutionPosition.cs:70](../../../../src/Meridian.Execution/Models/ExecutionPosition.cs#L70) | True when this is a short (negative) position. |
+| <code>public long AbsoluteQuantity =&gt; …;</code> | [src/Meridian.Execution/Models/ExecutionPosition.cs:73](../../../../src/Meridian.Execution/Models/ExecutionPosition.cs#L73) | Absolute number of shares without sign. |
+| <code>public decimal NotionalValue(decimal lastPrice) =&gt; …;</code> | [src/Meridian.Execution/Models/ExecutionPosition.cs:76](../../../../src/Meridian.Execution/Models/ExecutionPosition.cs#L76) | Signed notional market value at lastPrice. |
 
 ## FillType
 
@@ -553,18 +643,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public OrderManagementSystem(IExecutionGateway gateway, ILogger&lt;OrderManagementSystem&gt; logger, IRiskValidator? riskValidator, ISecurityMasterGate? securityMasterGate, ExecutionOperatorControlService? operatorControls, ExecutionAuditTrailService? auditTrail, Meridian.Execution.Models.IPortfolioState? portfolioState, PaperSessionPersistenceService? sessionPersistence, BrokerageConfiguration? brokerageConfiguration, ILiveOrderReadinessGate? liveOrderReadinessGate, OrderManagementSystemOptions? options, ITradeEventPublisher? tradeEventPublisher, ITradeFillHandoffFailureStore? tradeFillHandoffFailureStore, RiskEscalationQueueService? escalationQueue, FileBrokerageOrderRecoveryStore? recoveryStore) : this(gateway, logger, riskValidator, securityMasterGate, operatorControls, auditTrail, portfolioState, sessionPersistence, brokerageConfiguration, liveOrderReadinessGate, options, tradeEventPublisher, tradeFillHandoffFailureStore, escalationQueue, recoveryStore, null, null, null, null);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:65](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L65) | Retains the original CLR constructor for already-compiled execution hosts. |
-| <code>public OrderManagementSystem(IExecutionGateway gateway, ILogger&lt;OrderManagementSystem&gt; logger, IRiskValidator? riskValidator = null, ISecurityMasterGate? securityMasterGate = null, ExecutionOperatorControlService? operatorControls = null, ExecutionAuditTrailService? auditTrail = null, Meridian.Execution.Models.IPortfolioState? portfolioState = null, PaperSessionPersistenceService? sessionPersistence = null, BrokerageConfiguration? brokerageConfiguration = null, ILiveOrderReadinessGate? liveOrderReadinessGate = null, OrderManagementSystemOptions? options = null, ITradeEventPublisher? tradeEventPublisher = null, ITradeFillHandoffFailureStore? tradeFillHandoffFailureStore = null, RiskEscalationQueueService? escalationQueue = null, FileBrokerageOrderRecoveryStore? recoveryStore = null, IOrderSessionPolicy? sessionPolicy = null, ExecutionJournal? journal = null, IOrderMarketReferenceSource? marketReferences = null, IOrderInstrumentCoverageSource? instrumentCoverage = null);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:78](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L78) |  |
-| <code>public async Task&lt;OrderResult&gt; PlaceOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:149](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L149) |  |
-| <code>public const string AmbiguousSubmissionReason = &quot;AmbiguousSubmission&quot;;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:755](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L755) | Audit reason marking the one OrderRejected entry whose rate slot was not released: a gateway submission that threw after dispatch was attempted. The order may still execute, so the throttle over-counts rather than under-counts, and the status projection has to count this entry when it falls back to reconstructing usage from audit history. |
-| <code>public IReadOnlyList&lt;OrderState&gt; GetOpenOrders();</code> | [src/Meridian.Execution/OrderManagementSystem.cs:758](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L758) |  |
-| <code>public IReadOnlyList&lt;OrderState&gt; GetCompletedOrders(int take = 20);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:767](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L767) |  |
-| <code>public OrderState? GetOrder(string orderId);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:783](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L783) |  |
-| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:794](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L794) | Compatibility bridge for callers that cannot yet use await using. Shutdown is executed on the thread pool so a single-threaded synchronization context cannot prevent asynchronous pump continuations from completing. |
-| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:806](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L806) | Stops report intake and awaits both the broker-report and retained-handoff pumps before returning. Dependency injection can therefore dispose the accounting publisher and failure store only after no OMS task can use them. |
-| <code>public ChannelReader&lt;ExecutionReport&gt; ExecutionReports =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:821](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L821) | Provides a read-only view of fill and partial-fill execution reports for consumption by diagnostics and compatibility observers. Reports are published as each order transitions to OrderStatus.Filled or OrderStatus.PartiallyFilled, with ExecutionReport.FilledQuantity normalised to the fill increment (gateways report cumulative quantities). This is a lossy observer stream: when a subscriber lags behind OrderManagementSystemOptions.ExecutionChannelCapacity, the oldest unread report is dropped (logged and counted via DroppedExecutionReports) rather than blocking the fill path. Order state, session fill history, and the durable accounting handoff remain authoritative and lossless. Consumers that drive strategy state must use SubscribeLosslessExecutionReports() instead of sharing this reader. |
-| <code>public long DroppedExecutionReports =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:828](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L828) | Total execution reports dropped from the ExecutionReports observer channel because no subscriber drained it in time. Fills themselves are never lost — order state and the accounting handoff do not flow through this channel. |
-| <code>public Task&lt;IReadOnlyList&lt;RetainedTradeFillHandoffFailure&gt;&gt; GetAccountingHandoffFailuresAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:834](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L834) | Returns OMS-level accounting handoff failures that could not enter the primary publisher. These records survive process restart when a failure store is composed. |
+| <code>public OrderManagementSystem(IExecutionGateway gateway, ILogger&lt;OrderManagementSystem&gt; logger, IRiskValidator? riskValidator, ISecurityMasterGate? securityMasterGate, ExecutionOperatorControlService? operatorControls, ExecutionAuditTrailService? auditTrail, Meridian.Execution.Models.IPortfolioState? portfolioState, PaperSessionPersistenceService? sessionPersistence, BrokerageConfiguration? brokerageConfiguration, ILiveOrderReadinessGate? liveOrderReadinessGate, OrderManagementSystemOptions? options, ITradeEventPublisher? tradeEventPublisher, ITradeFillHandoffFailureStore? tradeFillHandoffFailureStore, RiskEscalationQueueService? escalationQueue, FileBrokerageOrderRecoveryStore? recoveryStore) : this(gateway, logger, riskValidator, securityMasterGate, operatorControls, auditTrail, portfolioState, sessionPersistence, brokerageConfiguration, liveOrderReadinessGate, options, tradeEventPublisher, tradeFillHandoffFailureStore, escalationQueue, recoveryStore, null, null, null, null);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:68](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L68) | Retains the original CLR constructor for already-compiled execution hosts. |
+| <code>public OrderManagementSystem(IExecutionGateway gateway, ILogger&lt;OrderManagementSystem&gt; logger, IRiskValidator? riskValidator = null, ISecurityMasterGate? securityMasterGate = null, ExecutionOperatorControlService? operatorControls = null, ExecutionAuditTrailService? auditTrail = null, Meridian.Execution.Models.IPortfolioState? portfolioState = null, PaperSessionPersistenceService? sessionPersistence = null, BrokerageConfiguration? brokerageConfiguration = null, ILiveOrderReadinessGate? liveOrderReadinessGate = null, OrderManagementSystemOptions? options = null, ITradeEventPublisher? tradeEventPublisher = null, ITradeFillHandoffFailureStore? tradeFillHandoffFailureStore = null, RiskEscalationQueueService? escalationQueue = null, FileBrokerageOrderRecoveryStore? recoveryStore = null, IOrderSessionPolicy? sessionPolicy = null, ExecutionJournal? journal = null, IOrderMarketReferenceSource? marketReferences = null, IOrderInstrumentCoverageSource? instrumentCoverage = null);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:81](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L81) |  |
+| <code>public async Task&lt;OrderResult&gt; PlaceOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:161](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L161) |  |
+| <code>public const string AmbiguousSubmissionReason = &quot;AmbiguousSubmission&quot;;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:777](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L777) | Audit reason marking the one OrderRejected entry whose rate slot was not released: a gateway submission that threw after dispatch was attempted. The order may still execute, so the throttle over-counts rather than under-counts, and the status projection has to count this entry when it falls back to reconstructing usage from audit history. |
+| <code>public IReadOnlyList&lt;OrderState&gt; GetOpenOrders();</code> | [src/Meridian.Execution/OrderManagementSystem.cs:780](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L780) |  |
+| <code>public IReadOnlyList&lt;OrderState&gt; GetCompletedOrders(int take = 20);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:789](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L789) |  |
+| <code>public OrderState? GetOrder(string orderId);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:805](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L805) |  |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:816](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L816) | Compatibility bridge for callers that cannot yet use await using. Shutdown is executed on the thread pool so a single-threaded synchronization context cannot prevent asynchronous pump continuations from completing. |
+| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:828](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L828) | Stops report intake and awaits both the broker-report and retained-handoff pumps before returning. Dependency injection can therefore dispose the accounting publisher and failure store only after no OMS task can use them. |
+| <code>public ChannelReader&lt;ExecutionReport&gt; ExecutionReports =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:843](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L843) | Provides a read-only view of fill and partial-fill execution reports for consumption by diagnostics and compatibility observers. Reports are published as each order transitions to OrderStatus.Filled or OrderStatus.PartiallyFilled, with ExecutionReport.FilledQuantity normalised to the fill increment (gateways report cumulative quantities). This is a lossy observer stream: when a subscriber lags behind OrderManagementSystemOptions.ExecutionChannelCapacity, the oldest unread report is dropped (logged and counted via DroppedExecutionReports) rather than blocking the fill path. Order state, session fill history, and the durable accounting handoff remain authoritative and lossless. Consumers that drive strategy state must use SubscribeLosslessExecutionReports() instead of sharing this reader. |
+| <code>public long DroppedExecutionReports =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:850](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L850) | Total execution reports dropped from the ExecutionReports observer channel because no subscriber drained it in time. Fills themselves are never lost — order state and the accounting handoff do not flow through this channel. |
+| <code>public Task&lt;IReadOnlyList&lt;RetainedTradeFillHandoffFailure&gt;&gt; GetAccountingHandoffFailuresAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:856](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L856) | Returns OMS-level accounting handoff failures that could not enter the primary publisher. These records survive process restart when a failure store is composed. |
 
 Source: [src/Meridian.Execution/OrderManagementSystem.ExecutionReportSubscriptions.cs:12](../../../../src/Meridian.Execution/OrderManagementSystem.ExecutionReportSubscriptions.cs#L12).
 
@@ -972,20 +1062,20 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PaperTradingGateway(ILogger&lt;PaperTradingGateway&gt; logger, ISecurityMasterQueryService? securityMaster = null, Adapters.PaperTradingGatewayOptions? options = null, Interfaces.ILiveFeedAdapter? liveFeed = null, PaperTradingCostOptions? costOptions = null) : this(logger, (ISecurityTradingParametersQueryService?) securityMaster, options, liveFeed, costOptions, securityMaster);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:71](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L71) | Retains the aggregate-query constructor used by compiled consumers. |
-| <code>public PaperTradingGateway(ILogger&lt;PaperTradingGateway&gt; logger, ISecurityTradingParametersQueryService? securityMaster, Adapters.PaperTradingGatewayOptions? options = null, Interfaces.ILiveFeedAdapter? liveFeed = null, PaperTradingCostOptions? costOptions = null, ISecurityIdentityQueryService? securityIdentity = null);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:81](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L81) |  |
-| <code>public string GatewayId =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:105](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L105) |  |
-| <code>public ExecutionMode ExecutionMode =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:108](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L108) |  |
-| <code>public bool UsesFaceValuePercentageOfPar(OrderRequest request);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:118](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L118) | Mirrors the live brokerage convention (see AlpacaBrokerageGateway): a treasury or corporate fixed-income order routes its quantity as face value with prices quoted as a percentage of par. Without this capability on the supported paper path, a 100,000-face order at 101.25 is measured by the pre-trade rails and booked by the paper book as $10,125,000 instead of $101,250 — the paper simulation must exercise the same sizing semantics the live gateway routes. |
-| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:147](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L147) |  |
-| <code>public Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:150](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L150) |  |
-| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:158](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L158) |  |
-| <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:166](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L166) |  |
-| <code>public Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:260](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L260) |  |
-| <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:290](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L290) |  |
-| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:352](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L352) |  |
-| <code>public void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:365](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L365) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/PaperTradingGateway.cs:553](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L553) |  |
+| <code>public PaperTradingGateway(ILogger&lt;PaperTradingGateway&gt; logger, ISecurityMasterQueryService? securityMaster = null, Adapters.PaperTradingGatewayOptions? options = null, Interfaces.ILiveFeedAdapter? liveFeed = null, PaperTradingCostOptions? costOptions = null) : this(logger, (ISecurityTradingParametersQueryService?) securityMaster, options, liveFeed, costOptions, securityMaster);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:81](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L81) | Retains the aggregate-query constructor used by compiled consumers. |
+| <code>public PaperTradingGateway(ILogger&lt;PaperTradingGateway&gt; logger, ISecurityTradingParametersQueryService? securityMaster, Adapters.PaperTradingGatewayOptions? options = null, Interfaces.ILiveFeedAdapter? liveFeed = null, PaperTradingCostOptions? costOptions = null, ISecurityIdentityQueryService? securityIdentity = null);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:91](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L91) |  |
+| <code>public string GatewayId =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:115](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L115) |  |
+| <code>public ExecutionMode ExecutionMode =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:118](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L118) |  |
+| <code>public bool UsesFaceValuePercentageOfPar(OrderRequest request);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:128](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L128) | Mirrors the live brokerage convention (see AlpacaBrokerageGateway): a treasury or corporate fixed-income order routes its quantity as face value with prices quoted as a percentage of par. Without this capability on the supported paper path, a 100,000-face order at 101.25 is measured by the pre-trade rails and booked by the paper book as $10,125,000 instead of $101,250 — the paper simulation must exercise the same sizing semantics the live gateway routes. |
+| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:157](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L157) |  |
+| <code>public Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:160](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L160) |  |
+| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:168](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L168) |  |
+| <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:176](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L176) |  |
+| <code>public Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:275](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L275) |  |
+| <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:305](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L305) |  |
+| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:367](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L367) |  |
+| <code>public void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:380](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L380) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/PaperTradingGateway.cs:568](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L568) |  |
 
 ## SecurityMasterGate
 
@@ -1043,82 +1133,10 @@ public sealed record PaperFinancingRequest(DateOnly AccrualDate, decimal Amount,
 
 Qualified name: <code>Meridian.Execution.Services.AccountDefinition</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1383](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1383).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1423](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1423).
 
 Defines one account within a multi-account paper trading session.
 
 ```csharp
 public sealed record AccountDefinition(string AccountId, string DisplayName, AccountKind Kind, decimal InitialCash, MarginAccountType MarginType = MarginAccountType.Cash, IMarginModel? MarginModel = null);
-```
-
-## BrokerAccountingBreak
-
-Qualified name: <code>Meridian.Execution.Services.BrokerAccountingBreak</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:12](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L12).
-
-Reconciliation evidence only; never authorizes a corrective or broker transaction.
-
-```csharp
-public sealed record BrokerAccountingBreak(BrokerAccountingBreakCategory Category, string Reference, decimal? LocalAmount, decimal? BrokerAmount, string? Detail = null);
-```
-
-## BrokerAccountingBreakCategory
-
-Qualified name: <code>Meridian.Execution.Services.BrokerAccountingBreakCategory</code>. Kind: `enum`.
-
-Source: [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:3](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L3).
-
-```csharp
-public enum BrokerAccountingBreakCategory
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>TimingDifference</code> | [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:5](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L5) |  |
-| <code>MissingEntry</code> | [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:6](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L6) |  |
-| <code>AmountMismatch</code> | [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:7](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L7) |  |
-| <code>UnknownActivity</code> | [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:8](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L8) |  |
-
-## BrokerActivityImportResult
-
-Qualified name: <code>Meridian.Execution.Services.BrokerActivityImportResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/BrokerActivityImportService.cs:203](../../../../src/Meridian.Execution/Services/BrokerActivityImportService.cs#L203).
-
-The current provider observation and the checksum-verified accepted activity history.
-
-```csharp
-public sealed record BrokerActivityImportResult(BrokerageActivitySnapshotDto Current, BrokerageActivitySnapshotDto Retained);
-```
-
-## BrokerActivityImportService
-
-Qualified name: <code>Meridian.Execution.Services.BrokerActivityImportService</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/Services/BrokerActivityImportService.cs:14](../../../../src/Meridian.Execution/Services/BrokerActivityImportService.cs#L14).
-
-Durable read-side activity inbox. Immutable provider activity IDs are accepted before the checkpoint advances; a crash between those writes rereads and verifies the same records. It retains source evidence and grants no ledger-posting or corrective-trade authority.
-
-```csharp
-public sealed class BrokerActivityImportService(string rootDirectory)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;BrokerageActivitySnapshotDto&gt; ImportAsync(IBrokerageActivitySync provider, string accountId, DateTimeOffset? since = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/BrokerActivityImportService.cs:23](../../../../src/Meridian.Execution/Services/BrokerActivityImportService.cs#L23) | Resumes from a complete retained watermark, rereading its timestamp inclusively so IDs sharing a timestamp cannot be skipped. An explicit lower bound requests a deliberate rescan. Providers without completeness evidence always rescan; earlier late arrivals require a rescan. |
-| <code>public async Task&lt;BrokerActivityImportResult&gt; ImportWithHistoryAsync(IBrokerageActivitySync provider, string accountId, DateTimeOffset? since = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/BrokerActivityImportService.cs:35](../../../../src/Meridian.Execution/Services/BrokerActivityImportService.cs#L35) | Returns the current provider observation separately from accepted historical activity. Consumers can publish the provider&#x27;s current window without relabeling historical rows, while recovering a downstream history projection from the complete durable inbox. |
-
-## BrokerageExecutionOrderMatch
-
-Qualified name: <code>Meridian.Execution.Services.BrokerageExecutionOrderMatch</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:502](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L502).
-
-```csharp
-public sealed record BrokerageExecutionOrderMatch(string LocalOrderId, string BrokerOrderId, string Symbol, OrderStatus Status);
 ```

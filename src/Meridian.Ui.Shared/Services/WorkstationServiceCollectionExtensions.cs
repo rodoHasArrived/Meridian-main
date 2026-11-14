@@ -484,6 +484,8 @@ public static class WorkstationServiceCollectionExtensions
             return daily;
         });
         services.AddHostedService<ProviderLedgerDailyReconciliationWorker>();
+        services.AddThreeWayReconciliationServices(hostConfiguration,
+            sp => Path.Combine(ResolveWorkstationDataDirectory(sp), "three-way-reconciliation"));
         services.TryAddSingleton(sp => new MarginCertificationStore(ResolveWorkstationDataDirectory(sp)));
         services.TryAddSingleton<MarginControlCenterReadService>();
         // Reconcile statement runs against Meridian's own retained account records (positions + cash +

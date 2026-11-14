@@ -234,6 +234,14 @@ per-item bulk outcomes and the metadata persistence seam; these commands do not 
 financial work. `Ledger/PostedPeriodComparisonDtos.cs` carries explicit fiscal comparison ranges,
 accounting basis/policy/currency, exact decimal changes and posted-journal population identities.
 
+`AutomatedPostingGrantReferenceDto` binds deterministic synthetic fill posting to an operator's
+retained tenant/account/book/period/policy/mapping delegation. `AuthorizedSystem` is distinct
+from human and assistant origins; the nullable command reference is omitted on legacy commands
+to preserve historical fingerprints. Activation and revocation are explicit admin commands,
+and neither a grant reference nor a synthetic mark substitutes for durable authority validation.
+
+`BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
+
 `CashFlows/` owns the versioned calculation-only cash-flow contracts, exercise/notice resolution, standard make-whole formulas, structured coupon/principal walks, deterministic CPR/SMM/PSA prepayments, and replay verification. The `cashFlowContract` companion reads ahead of existing write ceilings; undeclared terms and existing call/put element shapes remain unchanged. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
 Canonical amortization v3 is an explicit opt-in for remaining-face treatment and automatic

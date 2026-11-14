@@ -44,6 +44,11 @@ Live strategy-run cash flows scale the quoted fill price by the report's `LotMul
 OMS), so a run's retained cash-flow history reconciles with the paper portfolio for multiplied contracts;
 face-value fills keep their par scaling.
 
+Three-way accounting observations reuse the existing durable reconciliation case queue. Stable
+source-subject identities retain case age across comparison runs in the same exact owner/account/
+book/period scope. Observation updates preserve prior evidence and governed case disposition;
+source agreement never substitutes for an operator's resolution or approval.
+
 SLA calculation anchors to OccurrenceFirstObservedAt, resolves named business and holiday calendars, retains fractional hours and resolves timezone boundaries separately for each date. Unknown names, missing coverage and ambiguous/nonexistent shift boundaries are refused. Source clearing leaves casework SLA and approval obligations intact.
 
 

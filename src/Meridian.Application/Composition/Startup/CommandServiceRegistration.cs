@@ -88,7 +88,9 @@ internal static class CommandServiceRegistration
                 positionSnapshots: sp.GetService<IPositionSnapshotStore>(),
                 logger: sp.GetService<Microsoft.Extensions.Logging.ILogger<RetainedInternalReconciliationPopulationProvider>>(),
                 ledgerTransactionSource: sp.GetService<IInternalLedgerTransactionSource>(),
-                accountQueryResolver: () => sp.GetService<IAccountQueryService>())));
+                accountQueryResolver: () => sp.GetService<IAccountQueryService>(),
+                ledgerStore: sp.GetService<Meridian.Storage.Ledger.ILedgerJournalStore>(),
+                tenancy: sp.GetService<Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry>())));
         // Normalize cross-currency statement lines using the operator-maintained FX rate table under the
         // data root (reconciliation/fx-rates.json), matching the workstation graph, instead of the
         // identity-only default. A missing or empty table keeps cross-currency lines failing closed.
