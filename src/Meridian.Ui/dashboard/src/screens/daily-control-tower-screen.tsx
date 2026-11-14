@@ -26,7 +26,7 @@ import {
 } from "@/lib/daily-control-tower";
 import { routeForTriageItem } from "@/lib/operator-inbox-triage";
 import { eyebrowClassName } from "@/design-system/label-case";
-import { formatUtcTimestamp, pluralizeCount } from "@/lib/format";
+import { formatTimestamp, pluralizeCount } from "@/lib/format";
 import { toSeverity } from "@/design-system/status-styles";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 
@@ -403,7 +403,7 @@ function buildTowerFreshness(
   }
 
   const observedAt = new Date(observedAtMs);
-  const timestampLabel = formatUtcTimestamp(observedAt);
+  const timestampLabel = formatTimestamp(observedAt);
   const stale = nowMs - observedAtMs > TOWER_FRESHNESS_WINDOW_MS;
 
   return {
