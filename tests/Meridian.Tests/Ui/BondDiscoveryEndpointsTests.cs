@@ -97,6 +97,8 @@ public sealed class BondDiscoveryEndpointsTests : IDisposable
     [InlineData("pending", OwnerTenant, HttpStatusCode.ServiceUnavailable, 0)]
     [InlineData("missing-config", OwnerTenant, HttpStatusCode.ServiceUnavailable, 0)]
     [InlineData("invalid-config", OwnerTenant, HttpStatusCode.ServiceUnavailable, 0)]
+    [InlineData("null-config", OwnerTenant, HttpStatusCode.ServiceUnavailable, 0)]
+    [InlineData("noncanonical-environment", OwnerTenant, HttpStatusCode.ServiceUnavailable, 0)]
     public async Task Lookup_RequiresCurrentAppliedTenantOwnedBindingBeforeProviderAccess(
         string ownership, string tenant, HttpStatusCode expectedStatus, int expectedRequests)
     {
@@ -116,6 +118,11 @@ public sealed class BondDiscoveryEndpointsTests : IDisposable
             body.GetProperty("available").GetBoolean().Should().BeFalse();
             body.GetProperty("failureReason").GetString().Should().Be("credentialsUnavailable");
             body.GetProperty("candidates").GetArrayLength().Should().Be(0);
+        }
+        if (ownership != "missing-config")
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            using var lease = await app.Services.GetRequiredService<ConfigStore>().AcquireWriteLeaseAsync(timeout.Token);
         }
     }
 
@@ -362,8 +369,19 @@ public sealed class BondDiscoveryEndpointsTests : IDisposable
                         }
                     });
                 }
-                if (ownership == "invalid-config")
-                    await File.WriteAllTextAsync(config.ConfigPath, "{");
+                if (ownership is "invalid-config" or "null-config")
+                    await File.WriteAllTextAsync(config.ConfigPath, ownership == "null-config" ? "null" : "{");
+                if (ownership == "noncanonical-environment")
+                {
+                    await config.UpdateAsync(current => current with
+                    {
+                        ProviderConnections = current.ProviderConnections! with
+                        {
+                            Connections = current.ProviderConnections.Connections!
+                                .Select(connection => connection.ConnectionId == "bond-account-a" ? connection with { CredentialEnvironment = "Paper" } : connection).ToArray()
+                        }
+                    });
+                }
             }
             builder.Services.AddSingleton(config);
             builder.Services.AddSingleton(runtime);

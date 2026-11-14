@@ -118,7 +118,7 @@ public static class BondDiscoveryEndpoints
             transferred = true;
             return result;
         }
-        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException or InvalidOperationException or TimeoutException)
+        catch (Exception ex) when (ex is IOException or InvalidDataException or JsonException or UnauthorizedAccessException or InvalidOperationException or TimeoutException)
         {
             throw new ProviderSearchException(ProviderSearchFailure.CredentialsUnavailable,
                 "Owned provider credentials are unavailable.", ex);
