@@ -24,6 +24,7 @@ public sealed partial class PaperSessionPersistenceService
             {
                 if (!session.IsActive)
                     throw new InvalidOperationException("A closed paper session cannot accept financing charges.");
+                EnsureCurrentAccountingScope(session);
                 if (charge.AccountId != PaperTradingPortfolio.DefaultAccountId)
                     throw new InvalidDataException("The single-account paper session requires its default account.");
                 if (session.AccountingContext != _financing.PostingContext)
@@ -129,6 +130,7 @@ public sealed partial class PaperSessionPersistenceService
             {
                 if (!session.IsActive)
                     return false;
+                EnsureCurrentAccountingScope(session);
                 EnsureFinancingRecovered(session);
                 if (session.SettlementHistory.Find(existing => string.Equals(existing.Key, settlement.Key, StringComparison.Ordinal)) is { } applied)
                 {

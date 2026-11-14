@@ -135,12 +135,11 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
 
         var candidate = new ConcurrentDictionary<string, PaperSession>(StringComparer.Ordinal);
         var unapplied = new List<(string SessionId, PaperSessionFillRecord Record)>();
+        var financingProjectionRefresh = new HashSet<string>(StringComparer.Ordinal);
         foreach (var record in records)
         {
             ct.ThrowIfCancellationRequested();
             ValidatePersistedRecord(record);
-            if (record.AccountingContext is { } boundContext && boundContext != _financing?.PostingContext)
-                throw new InvalidDataException("The paper session's retained accounting scope is unavailable or differs from this host.");
             if (record.AccountingContext is not null && record.FinancialAccountId != PaperTradingPortfolio.DefaultAccountId)
                 throw new InvalidDataException("The retained paper-session accounting binding has an unsupported account identity.");
             if (candidate.ContainsKey(record.SessionId))
@@ -151,8 +150,10 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
 
             var fillRecords = await _store.LoadFillRecordsAsync(record.SessionId, ct).ConfigureAwait(false);
             var settlements = await LoadValidatedSettlementsAsync(record.SessionId, ct).ConfigureAwait(false);
-            var financingCharges = _financing is null ? []
-                : await _financing.LoadAndRecoverAsync(record.SessionId, ct).ConfigureAwait(false);
+            var (financingCharges, accountingUnavailableReason) = await LoadSessionFinancingAsync(
+                record.AccountingContext, record.SessionId, ct).ConfigureAwait(false);
+            var historicalAccounting = record.AccountingContext is not null
+                && record.AccountingContext != _financing?.PostingContext;
             if (financingCharges.Count > 0 && record.AccountingContext is null)
                 throw new InvalidDataException("An unbound paper session cannot claim retained financing assessments.");
             var appliedFillHashes = new Dictionary<Guid, string>();
@@ -174,14 +175,34 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                 if (!fillRecord.IsApplied)
                 {
                     hasUnappliedFill = true;
-                    unapplied.Add((record.SessionId, fillRecord));
                 }
             }
 
-            var portfolio = new PaperTradingPortfolio(record.InitialCash, new Meridian.Ledger.Ledger(), record.CreatedAt);
-            ReplayInto(portfolio, fillHistory, settlements, provenance, financingCharges);
+            if (historicalAccounting && hasUnappliedFill)
+                accountingUnavailableReason = "Historical fill delivery is pending; original-scope recovery is required.";
+            PaperTradingPortfolio? portfolio = null;
+            if (accountingUnavailableReason is null)
+            {
+                portfolio = new PaperTradingPortfolio(record.InitialCash, new Meridian.Ledger.Ledger(), record.CreatedAt);
+                ReplayInto(portfolio, fillHistory, settlements, provenance, financingCharges);
+            }
 
             var ledgerEntries = await _store.LoadLedgerJournalAsync(record.SessionId, ct).ConfigureAwait(false);
+            if (portfolio is not null && record.AccountingContext is not null)
+            {
+                var proof = InspectFinancingProjection(portfolio, financingCharges, ledgerEntries, record.SessionId);
+                if (proof == FinancingProjectionProof.Conflict
+                    || historicalAccounting && proof != FinancingProjectionProof.Exact)
+                {
+                    accountingUnavailableReason = "Retained financing sources and session journals disagree or are incomplete; original-scope recovery is required.";
+                    portfolio = null;
+                }
+                else if (proof == FinancingProjectionProof.Missing)
+                    financingProjectionRefresh.Add(record.SessionId);
+            }
+            if (!historicalAccounting && accountingUnavailableReason is null)
+                unapplied.AddRange(fillRecords.Where(static fill => !fill.IsApplied)
+                    .Select(fill => (record.SessionId, fill)));
             var reconstruction = ReconstructLedger(ledgerEntries);
             var orders = await _store.LoadOrderHistoryAsync(record.SessionId, ct).ConfigureAwait(false);
             var session = new PaperSession
@@ -195,12 +216,14 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                 IsActive = record.IsActive,
                 Symbols = record.Symbols.ToList(),
                 Portfolio = portfolio,
-                ReconstructedLedger = record.IsActive || hasUnappliedFill || financingCharges.Count > 0 ? null : reconstruction.Ledger,
+                ReconstructedLedger = portfolio is null ? reconstruction.Ledger
+                    : record.IsActive || hasUnappliedFill || financingCharges.Count > 0 ? null : reconstruction.Ledger,
                 Reconstruction = reconstruction,
                 MatchingModelVersion = record.MatchingModelVersion,
                 CostModelVersion = record.CostModelVersion,
                 AccountingContext = record.AccountingContext,
                 FinancialAccountId = record.FinancialAccountId,
+                AccountingUnavailableReason = accountingUnavailableReason,
             };
             foreach (var appliedFill in appliedFillHashes)
                 session.AppliedFillHashes.Add(appliedFill.Key, appliedFill.Value);
@@ -218,9 +241,11 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         }
 
         // Every fallible load/validation step completed off-side. Refresh the ledger projection
-        // for sessions whose fill claim survived without an apply acknowledgement, then ack. If
-        // either step fails, no candidate is published and a later attempt safely retries recovery.
-        foreach (var sessionId in unapplied.Select(static item => item.SessionId).Distinct(StringComparer.Ordinal))
+        // for unapplied fills or missing confirmed financing entries, then ack. Conflicting
+        // financing evidence is preserved, and historical sessions are never rewritten here.
+        // If a refresh fails, no candidate is published and a later attempt safely retries.
+        foreach (var sessionId in unapplied.Select(static item => item.SessionId)
+            .Concat(financingProjectionRefresh).Distinct(StringComparer.Ordinal))
         {
             var session = candidate[sessionId];
             var ledger = session.Portfolio?.Ledger;
@@ -278,6 +303,10 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
 
             var createdAt = DateTimeOffset.UtcNow;
             var sessionId = $"PAPER-{createdAt:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8]}";
+            // Retain an empty source checkpoint before publishing a bound session, so a
+            // future historical read can prove that no financing was accepted.
+            if (_financing is not null)
+                await _financing.LoadSourcesAsync(sessionId, ct).ConfigureAwait(false);
             var ledger = new Meridian.Ledger.Ledger();
             var session = new PaperSession
             {
@@ -418,6 +447,7 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
             {
                 if (!session.IsActive)
                     return true;
+                EnsureCurrentAccountingScope(session);
                 EnsureFinancingRecovered(session);
 
                 var integrityBreaks = session.Portfolio?.CheckLedgerIntegrity() ?? [];
@@ -520,7 +550,7 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
 
         lock (session.SyncRoot)
         {
-            if (!session.IsActive || session.Portfolio is null)
+            if (!session.IsActive || session.Portfolio is null || HasHistoricalAccountingScope(session))
                 return null;
         }
 
@@ -678,6 +708,7 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
             {
                 if (!session.IsActive)
                     return;
+                EnsureCurrentAccountingScope(session);
             }
 
             if (_store is not null)
@@ -773,6 +804,7 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                 // before close is committed first; a fill that arrives after close is ignored.
                 if (!session.IsActive)
                     return;
+                EnsureCurrentAccountingScope(session);
                 EnsureFinancingRecovered(session);
             }
 
@@ -885,14 +917,24 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
 
             var fills = await _store.LoadFillRecordsAsync(sessionId, ct).ConfigureAwait(false);
             var settlements = await LoadValidatedSettlementsAsync(sessionId, ct).ConfigureAwait(false);
-            var portfolio = new PaperTradingPortfolio(session.InitialCash, null, session.CreatedAt);
-            var financingCharges = _financing is null ? []
-                : await _financing.LoadAndRecoverAsync(sessionId, ct).ConfigureAwait(false);
+            var portfolio = new PaperTradingPortfolio(session.InitialCash, new Meridian.Ledger.Ledger(), session.CreatedAt);
+            var (financingCharges, unavailableReason) = await LoadSessionFinancingAsync(
+                session.AccountingContext, sessionId, ct).ConfigureAwait(false);
+            if (unavailableReason is not null)
+                throw new InvalidOperationException(unavailableReason);
             foreach (var fill in fills)
                 fill.Validate();
+            if (HasHistoricalAccountingScope(session) && fills.Any(static fill => !fill.IsApplied))
+                throw new InvalidOperationException("Historical fill delivery is pending; original-scope recovery is required.");
             var provenance = fills.ToDictionary(fill => fill.FillId,
                 fill => (fill.AccountingEvidenceVersion, fill.FinancialAccountId));
             ReplayInto(portfolio, fills.Select(fill => CloneExecutionReport(fill.Fill)).ToArray(), settlements, provenance, financingCharges);
+            if (session.AccountingContext is not null)
+            {
+                var retainedJournal = await _store.LoadLedgerJournalAsync(sessionId, ct).ConfigureAwait(false);
+                if (InspectFinancingProjection(portfolio, financingCharges, retainedJournal, sessionId) != FinancingProjectionProof.Exact)
+                    throw new InvalidOperationException("Retained financing sources and session journals disagree or are incomplete; original-scope recovery is required.");
+            }
 
             return CreatePortfolioSnapshot(portfolio);
         }
@@ -1407,6 +1449,7 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                 record.StrategyName,
                 record.InitialCash,
                 record.Symbols));
+            record.AccountingContext?.Validate();
             _ = new PaperTradingPortfolio(record.InitialCash, null, record.CreatedAt);
         }
         catch (ArgumentException ex)
@@ -1773,7 +1816,8 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                 LastOrderUpdatedAt: ResolveLastOrderUpdatedAt(orderHistory),
                 FillHistory: fillHistory,
                 TradingCosts: fillHistory.Sum(static fill =>
-                    (fill.Commission ?? 0m) + (fill.Fees ?? 0m) + (fill.SlippageCost ?? 0m)));
+                    (fill.Commission ?? 0m) + (fill.Fees ?? 0m) + (fill.SlippageCost ?? 0m)),
+                AccountingUnavailableReason: session.AccountingUnavailableReason);
         }
     }
 
@@ -1792,6 +1836,7 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         public string? CostModelVersion { get; init; }
         public TradeFillLedgerPostingContext? AccountingContext { get; init; }
         public string? FinancialAccountId { get; init; }
+        public string? AccountingUnavailableReason { get; init; }
         public PaperTradingPortfolio? Portfolio { get; set; }
         public List<OrderState> OrderHistory { get; } = [];
         public List<ExecutionReport> FillHistory { get; } = [];
@@ -1846,7 +1891,8 @@ public sealed record PaperSessionDetailDto(
     DateTimeOffset? LastFillAt,
     DateTimeOffset? LastOrderUpdatedAt,
     IReadOnlyList<ExecutionReport>? FillHistory = null,
-    decimal TradingCosts = 0m);
+    decimal TradingCosts = 0m,
+    string? AccountingUnavailableReason = null);
 
 /// <summary>Portfolio snapshot DTO for session detail.</summary>
 public sealed record ExecutionPortfolioSnapshotDto(

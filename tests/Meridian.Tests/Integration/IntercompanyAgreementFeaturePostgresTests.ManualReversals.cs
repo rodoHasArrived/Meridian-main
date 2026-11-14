@@ -33,7 +33,11 @@ public sealed partial class IntercompanyAgreementFeaturePostgresTests
         };
         await new LedgerMigrationRunner(options).EnsureMigratedAsync(ct);
         var authority = new PostgresIntercompanyAgreementPostingAuthority(data.Store);
-        var ledger = new PostgresLedgerJournalStore(options, intercompanyAgreementAuthority: () => authority);
+        // Isolate the real legal registry; entity/profile onboarding is covered by the
+        // dedicated Enforced-book controls fixtures, just as in the sibling feature test.
+        var ledger = new PostgresLedgerJournalStore(options,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities,
+            intercompanyAgreementAuthority: () => authority);
         var book = IntercompanyAgreementPostingGuardTests.Book();
         await new PostgresFundProfileTenancyRegistry(options).BindAsync(book.FundProfileId, Fixture.Tenant, ct: ct);
         await ledger.SaveLedgerBookAsync(book, ct);

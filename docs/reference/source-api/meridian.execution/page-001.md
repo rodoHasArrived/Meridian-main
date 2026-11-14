@@ -549,7 +549,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Events.PaperFinancingAdmissionException</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:357](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L357).
+Source: [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:359](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L359).
 
 This call failed before accepting a new durable source. An earlier acceptance can still exist on a retry. The original error preserves validation, cancellation and availability.
 
@@ -586,19 +586,25 @@ Source: [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:14](../..
 Retains financing source assessments and pending delivery, using the same governed journal target as fills. This outbox is source evidence, not another ledger.
 
 ```csharp
-public sealed class PaperFinancingPostingService : IAsyncDisposable
+public sealed partial class PaperFinancingPostingService : IAsyncDisposable
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public TradeFillLedgerPostingContext PostingContext =&gt; …;</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:31](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L31) |  |
-| <code>public PaperFinancingPostingService(string rootDirectory, TradeFillLedgerPostingContext context, ITradeFillLedgerPostingTarget target, Func&lt;Guid, CancellationToken, Task&lt;LedgerAccountingPeriod?&gt;&gt; readPeriod, Func&lt;Guid, CancellationToken, Task&lt;LedgerBookRecord?&gt;&gt; readBook);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:33](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L33) |  |
-| <code>public async Task&lt;bool&gt; PostAsync(PaperFinancingCharge charge, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:60](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L60) | Durably accepts and confirms a cash-paid charge. Cancellation is observed before acceptance; after acceptance failures retain the assessment for an idempotent retry. |
-| <code>public async Task&lt;IReadOnlyList&lt;PaperFinancingCharge&gt;&gt; LoadAndRecoverAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:138](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L138) | Replays pending assessments before exposing a rebuilt session book. |
-| <code>public async Task&lt;IReadOnlyList&lt;PaperFinancingCharge&gt;&gt; LoadSourcesAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:159](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L159) | Reads independent accepted source assessments for completeness controls. This does not post or acknowledge any journal. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:332](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L332) |  |
+| <code>public TradeFillLedgerPostingContext PostingContext =&gt; …;</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:32](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L32) |  |
+| <code>public PaperFinancingPostingService(string rootDirectory, TradeFillLedgerPostingContext context, ITradeFillLedgerPostingTarget target, Func&lt;Guid, CancellationToken, Task&lt;LedgerAccountingPeriod?&gt;&gt; readPeriod, Func&lt;Guid, CancellationToken, Task&lt;LedgerBookRecord?&gt;&gt; readBook);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:34](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L34) |  |
+| <code>public async Task&lt;bool&gt; PostAsync(PaperFinancingCharge charge, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:62](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L62) | Durably accepts and confirms a cash-paid charge. Cancellation is observed before acceptance; after acceptance failures retain the assessment for an idempotent retry. |
+| <code>public async Task&lt;IReadOnlyList&lt;PaperFinancingCharge&gt;&gt; LoadAndRecoverAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:140](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L140) | Replays pending assessments before exposing a rebuilt session book. |
+| <code>public async Task&lt;IReadOnlyList&lt;PaperFinancingCharge&gt;&gt; LoadSourcesAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:161](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L161) | Reads independent accepted source assessments for completeness controls. This does not post or acknowledge any journal. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:334](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L334) |  |
+
+Source: [src/Meridian.Execution/Events/PaperFinancingPostingService.HistoricalReads.cs:8](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.HistoricalReads.cs#L8).
+
+```csharp
+public sealed partial class PaperFinancingPostingService
+```
 
 ## PendingTradeFillPosting
 

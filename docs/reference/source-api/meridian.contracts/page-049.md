@@ -130,6 +130,64 @@ Per-security assignment of the authoritative cash flow source.
 public sealed record SecurityCashFlowSourceDto(Guid SecurityId, StructuredCashFlowSourceKind SourceKind, DateTimeOffset? LastUpdatedUtc, bool IsClientOverride, string? ClientConfirmedBy, DateTimeOffset? ClientConfirmedAt);
 ```
 
+## SecurityCashFlowTermBinding
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowTermBinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L29).
+
+One of a class&#x27;s declared term keys and the cash-flow role it plays (SecurityAssetClassDescriptor.CashFlowTermRoles).
+
+```csharp
+public sealed record SecurityCashFlowTermBinding(SecurityCashFlowTermRole Role, string Key, bool ReadAfterSharedSpellings = false);
+```
+
+## SecurityCashFlowTermRole
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRole</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L4).
+
+The economic role a term plays in a calculated cash-flow projection.
+
+```csharp
+public enum SecurityCashFlowTermRole
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Maturity</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L6) |  |
+| <code>Issue</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L7) |  |
+| <code>PrincipalFace</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L8) |  |
+| <code>CurrentFactor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L9) |  |
+| <code>CouponRate</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L10) |  |
+| <code>PaymentFrequency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L11) |  |
+| <code>DayCount</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L12) |  |
+| <code>InflationIndex</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L13) |  |
+| <code>InflationBaseIndexValue</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L14) |  |
+| <code>InflationIndexRatio</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L15) |  |
+
+## SecurityCashFlowTermRoles
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRoles</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L49).
+
+The spellings a calculated cash-flow projection reads for each term role, per class (review D9). A class declares which of its schema keys play which role on its catalog descriptor; this merges those keys with the shared spellings every class reads. The shared spellings are the resolver&#x27;s vendor vocabulary: they are read for every class because governed profile fields, common terms and documents written before a class&#x27;s schema existed carry them. They are not a substitute for a class&#x27;s declaration. A class key that a shared spelling names keeps its shared priority; any other declared key is read before the shared spellings (or after them, when the binding says so). SecurityCashFlowTermRoleTests holds every calculated class to the schema: each declared key is a schema key, each schema key a shared spelling names is declared with that role, and each calculated class declares a maturity and a coupon (or that it pays none).
+
+```csharp
+public static class SecurityCashFlowTermRoles
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyDictionary&lt;SecurityCashFlowTermRole, IReadOnlyList&lt;string&gt;&gt; SharedSpellings { get; } = new Dictionary&lt;SecurityCashFlowTermRole, IReadOnlyList&lt;string&gt;&gt;{[SecurityCashFlowTermRole.Maturity]= [&quot;maturityDate&quot;, &quot;maturity&quot;, &quot;legalFinalMaturity&quot;], [SecurityCashFlowTermRole.Issue]= [&quot;issueDate&quot;, &quot;originationDate&quot;, &quot;effectiveDate&quot;], [SecurityCashFlowTermRole.PrincipalFace]= [&quot;par&quot;, &quot;originalFace&quot;, &quot;notional&quot;, &quot;principal&quot;, &quot;principalAmount&quot;], [SecurityCashFlowTermRole.CurrentFactor]= [&quot;currentFactor&quot;, &quot;factor&quot;], [SecurityCashFlowTermRole.CouponRate]= [&quot;fixedCouponRate&quot;, &quot;couponRate&quot;, &quot;coupon&quot;, &quot;annualRate&quot;], [SecurityCashFlowTermRole.PaymentFrequency]= [&quot;paymentFrequency&quot;, &quot;paymentFrequencyPerYear&quot;, &quot;couponFrequency&quot;], [SecurityCashFlowTermRole.DayCount]= [&quot;dayCountConvention&quot;, &quot;dayCount&quot;, &quot;dayCountBasis&quot;], [SecurityCashFlowTermRole.InflationIndex]= [&quot;inflationIndex&quot;], [SecurityCashFlowTermRole.InflationBaseIndexValue]= [&quot;inflationBaseIndexValue&quot;, &quot;baseIndexValue&quot;], [SecurityCashFlowTermRole.InflationIndexRatio]= [&quot;inflationIndexRatio&quot;, &quot;indexRatio&quot;], };</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L52) | The shared spellings for each role, in priority order: the first key that resolves wins. |
+| <code>public static string[] Spellings(string? assetClass, SecurityCashFlowTermRole role);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L73) | The spellings read for role on a record of assetClass: the class&#x27;s declared keys (with their schema aliases) not already shared, then the shared spellings, then the declared keys bound to read after them. |
+
 ## SecurityClassCodecBinding
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding</code>. Kind: `record`.
@@ -790,49 +848,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public SecurityFieldProvenance ToFieldProvenance() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L99) | Projects the durable row onto the display-level field-provenance shape. |
-
-## SecurityForwardCurve
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurve</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L15).
-
-Projected fixings for one floating-rate index, as observed on AsOfDate. A floating leg resets each period at the curve&#x27;s rate for the period&#x27;s accrual start date, linearly interpolated between points and held flat beyond the first and last point.
-
-```csharp
-public sealed record SecurityForwardCurve(string IndexName, DateOnly AsOfDate, IReadOnlyList<SecurityForwardCurvePoint> Points, string? Source = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondCalculationInput? RetainedInput { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L23) | The immutable stored curve version behind these projected fixings, when retained. |
-| <code>public decimal? RateAt(DateOnly resetDate);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L25) | The projected fixing for a reset on resetDate; null when the curve has no points. |
-| <code>public const string RateSourcePrefix = &quot;forwardCurve:&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L61) | The prefix of every Describe label, and so of a curve-projected leg&#x27;s RateSource. |
-| <code>public string Describe() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L70) | A short provenance label for projections: forwardCurve:{index}@{yyyy-MM-dd}, then ({source}) when a source is known. The date is written in the invariant culture, so TryReadAsOf reads it back on any host. |
-| <code>public static bool TryReadAsOf(string? rateSource, out DateOnly asOf);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:80](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L80) | Reads the curve&#x27;s as-of date back from a Describe label, such as a leg&#x27;s RateSource. The date is the first @yyyy-MM-dd that ends the label or is followed by the (source) suffix, so an index name or source that itself contains @ still reads. False for any other label. |
-
-## SecurityForwardCurveJsonContext
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:118](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L118).
-
-Supplies forward curves for floating-rate cash-flow projection. Hosts without one keep the flat-forward projection (last fixing plus spread). The stored implementation is StoredSecurityForwardCurveProvider in Application, reading ISecurityCurveStore.
-
-```csharp
-public sealed partial class SecurityForwardCurveJsonContext : JsonSerializerContext;
-```
-
-## SecurityForwardCurvePoint
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurvePoint</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L8).
-
-A projected index fixing for a reset date. Rates above 1 are read as percentages.
-
-```csharp
-public sealed record SecurityForwardCurvePoint(DateOnly Date, decimal Rate);
-```

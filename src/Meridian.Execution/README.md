@@ -139,18 +139,37 @@ the same source is successfully retried or startup recovers the pending assessme
 and cancellation evidence remain recordable while recovery is pending.
 
 New sessions created with this composition retain the exact book, period, aggregate and
-policy binding, plus their local `default` account identity. A missing or changed accounting
-owner blocks reconstruction instead of silently omitting financing. Legacy sessions remain
+policy binding, plus their local `default` account identity. A missing accounting owner makes
+that session's portfolio unavailable instead of silently omitting financing. Legacy sessions remain
 unbound and require an explicit migration before accepting these charges. Session reconstruction
 merges financing and settlements into fill replay, preserving paid charges when subsequent fills
 rebuild the projection. This endpoint serves single-account paper sessions; account-level charge
 allocation to promoted strategy runs requires a retained run allocation and is not inferred.
 
-The financing service owns one immutable posting context. The session catalog validates that
-binding for closed historical sessions as well as active sessions. Reconfiguring the period,
-expected period version, book or policy against the same catalog therefore blocks initialization
-until prior-scope ownership is retained, catalogs are explicitly isolated, or a reviewed migration
-preserves the historical bindings. Automatic multi-period catalog resolution is not implemented.
+The financing writer owns one immutable posting context. After an explicit period rollover,
+the catalog preserves historical bindings and permits new sessions in the current context.
+Historical sessions are read-only: fills, order updates, settlements, financing and close cannot
+write through an obsolete context. Their original scope must use a distinct posting-scope label;
+reusing a label for a different context still fails immutable store validation.
+For the same authorized aggregate, book and policy, historical portfolio reads require the
+original financing store's exact completed checkpoint and a checked WAL with no newer evidence.
+The source assessments must also match the retained session's financing journals in both
+directions, including their deterministic identities, legs and projection metadata. Other
+opening and fill journal identities are not part of that comparison. The session projection
+does not retain native-currency pins or all authoritative command facts, so this cash check
+does not re-verify those facts or infer them from the current book. A missing cached financing
+journal can be refreshed only by the original current owner after confirming its source against
+the governed ledger, and only if every existing cached financing journal already matches.
+The same current-owner confirmation can refresh a pre-metadata cache only when its complete
+scalar and line facts match and its optional full metadata is absent. Nonnull conflicting
+metadata is never replaced. Historical reads remain unavailable until that refresh completes.
+Conflicting or unexpected cached charges remain evidence and are never overwritten by recovery.
+These reads never post, initialize, or acknowledge historical deliveries. Missing, conflicting,
+busy or pending evidence leaves `Portfolio` null with `AccountingUnavailableReason`; stored
+session metadata, fills, orders and journal remain readable. Recovery requires the original
+accounting owner. New bound sessions retain an empty checkpoint before metadata publication,
+so subsequent historical reads can prove that no financing was accepted. No scope rebinding,
+period migration or strategy-run allocation is inferred.
 
 Broker reconciliation propagates caller cancellation from health and open-order queries so cancelled requests do not become unhealthy-broker or query-failure evidence.
 

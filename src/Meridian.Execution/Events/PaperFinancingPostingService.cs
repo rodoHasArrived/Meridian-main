@@ -11,8 +11,9 @@ namespace Meridian.Execution.Events;
 
 /// <summary>Retains financing source assessments and pending delivery, using the same
 /// governed journal target as fills. This outbox is source evidence, not another ledger.</summary>
-public sealed class PaperFinancingPostingService : IAsyncDisposable
+public sealed partial class PaperFinancingPostingService : IAsyncDisposable
 {
+    private readonly string _rootDirectory;
     private readonly TradeFillLedgerPostingContext _context;
     private readonly ITradeFillLedgerPostingTarget _target;
     private readonly Func<Guid, CancellationToken, Task<LedgerAccountingPeriod?>> _readPeriod;
@@ -39,7 +40,8 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
         _target = target ?? throw new ArgumentNullException(nameof(target));
         _readPeriod = readPeriod ?? throw new ArgumentNullException(nameof(readPeriod));
         _readBook = readBook ?? throw new ArgumentNullException(nameof(readBook));
-        var root = Path.Combine(new TradeFillPostingStoreOptions(rootDirectory, context).ScopeDirectory, "financing");
+        _rootDirectory = Path.GetFullPath(rootDirectory);
+        var root = Path.Combine(new TradeFillPostingStoreOptions(_rootDirectory, context).ScopeDirectory, "financing");
         Directory.CreateDirectory(root);
         // The snapshot and WAL have one owner. A second host must fail before it can
         // retain a competing sequence or overwrite another writer's accepted assessments.

@@ -194,16 +194,23 @@ public sealed partial class PaperFinancingPostingTests
     }
 
     [Fact]
-    public async Task BoundSessionWithoutAccountingOwner_FailsInsteadOfLosingFinancing()
+    public async Task BoundSessionWithoutAccountingOwner_PreservesHistoryWithUnavailablePortfolio()
     {
         var root = TempRoot();
         var store = new JsonlFilePaperSessionStore(Path.Combine(root, "sessions"), NullLogger<JsonlFilePaperSessionStore>.Instance);
+        string sessionId;
         await using (var financing = CreatePostingService(root, Scope, new RetainedTarget()))
         await using (var sessions = new PaperSessionPersistenceService(NullLogger<PaperSessionPersistenceService>.Instance,
             store, financing: financing))
-            await sessions.CreateSessionAsync(new("strategy-1", null, 1_000m));
+            sessionId = (await sessions.CreateSessionAsync(new("strategy-1", null, 1_000m))).SessionId;
         await using var unbound = new PaperSessionPersistenceService(NullLogger<PaperSessionPersistenceService>.Instance, store);
-        await unbound.Invoking(service => service.InitialiseAsync()).Should().ThrowAsync<InvalidDataException>();
+        await unbound.InitialiseAsync();
+        var detail = unbound.GetSession(sessionId)!;
+        detail.Portfolio.Should().BeNull("missing accounting ownership cannot silently omit retained financing");
+        detail.AccountingUnavailableReason.Should().NotBeNullOrWhiteSpace();
+        (await unbound.CreateSessionAsync(new("current-unbound", null, 1_000m))).SessionId.Should().NotBe(sessionId);
+        await unbound.Invoking(service => service.CloseSessionAsync(sessionId))
+            .Should().ThrowAsync<InvalidOperationException>().WithMessage("*historical accounting scope*");
     }
 
     [Fact]

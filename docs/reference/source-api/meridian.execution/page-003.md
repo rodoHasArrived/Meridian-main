@@ -107,7 +107,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.CreatePaperSessionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1817](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1817).
+Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1862](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1862).
 
 Request to create a new paper session.
 
@@ -414,7 +414,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionPortfolioSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1852](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1852).
+Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1898](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1898).
 
 Portfolio snapshot DTO for session detail.
 
@@ -426,7 +426,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal CashBalance =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1861](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1861) | Alias for Cash using the naming used in operator-facing surfaces. |
+| <code>public decimal CashBalance =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1907](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1907) | Alias for Cash using the naming used in operator-facing surfaces. |
 
 ## FileBrokerageOrderRecoveryStore
 
@@ -712,12 +712,12 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionDetailDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1839](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1839).
+Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1884](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1884).
 
 Detailed session DTO. TradingCosts is the session&#x27;s total explicit transaction cost (commission + fees + modeled slippage) across all fills.
 
 ```csharp
-public sealed record PaperSessionDetailDto(PaperSessionSummaryDto Summary, IReadOnlyList<string> Symbols, ExecutionPortfolioSnapshotDto? Portfolio, IReadOnlyList<OrderState>? OrderHistory, int FillCount, int LedgerEntryCount, DateTimeOffset? LastFillAt, DateTimeOffset? LastOrderUpdatedAt, IReadOnlyList<ExecutionReport>? FillHistory = null, decimal TradingCosts = 0m);
+public sealed record PaperSessionDetailDto(PaperSessionSummaryDto Summary, IReadOnlyList<string> Symbols, ExecutionPortfolioSnapshotDto? Portfolio, IReadOnlyList<OrderState>? OrderHistory, int FillCount, int LedgerEntryCount, DateTimeOffset? LastFillAt, DateTimeOffset? LastOrderUpdatedAt, IReadOnlyList<ExecutionReport>? FillHistory = null, decimal TradingCosts = 0m, string? AccountingUnavailableReason = null);
 ```
 
 ## PaperSessionFillAppendResult
@@ -811,8 +811,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;bool&gt; RecordFinancingAsync(PaperFinancingCharge charge, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.AccountingMutations.cs:9](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.AccountingMutations.cs#L9) | Retains and posts an assessed financing charge before changing session cash. A failed posting remains pending in the durable outbox and is retried on recovery. |
-| <code>public DateOnly? GetLastSettlementDate(string sessionId, string accountId, string symbol);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.AccountingMutations.cs:73](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.AccountingMutations.cs#L73) | The latest trading date a session has settled for symbol in accountId, or null when it has never been settled. |
-| <code>public async Task&lt;bool&gt; RecordSettlementAsync(string sessionId, PaperSessionSettlementRecord settlement, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.AccountingMutations.cs:105](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.AccountingMutations.cs#L105) | Durably records one daily variation-margin settlement for an active session, then applies it to the session&#x27;s book. The record is appended before the book changes (the same persist-then-apply order fills use), and its key (account, symbol, trading date) makes the call idempotent: settling the same day again at the same price changes nothing and returns false; at a different price it fails closed. |
+| <code>public DateOnly? GetLastSettlementDate(string sessionId, string accountId, string symbol);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.AccountingMutations.cs:74](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.AccountingMutations.cs#L74) | The latest trading date a session has settled for symbol in accountId, or null when it has never been settled. |
+| <code>public async Task&lt;bool&gt; RecordSettlementAsync(string sessionId, PaperSessionSettlementRecord settlement, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.AccountingMutations.cs:106](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.AccountingMutations.cs#L106) | Durably records one daily variation-margin settlement for an active session, then applies it to the session&#x27;s book. The record is appended before the book changes (the same persist-then-apply order fills use), and its key (account, symbol, trading date) makes the call idempotent: settling the same day again at the same price changes nothing and returns false; at a different price it fails closed. |
 
 Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:25](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L25).
 
@@ -828,27 +828,33 @@ Declared public members:
 | --- | --- | --- |
 | <code>public PaperSessionPersistenceService(ILogger&lt;PaperSessionPersistenceService&gt; logger, IPaperSessionStore? store = null, ExecutionAuditTrailService? auditTrail = null, PaperFinancingPostingService? financing = null);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:49](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L49) |  |
 | <code>public async Task InitialiseAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:70](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L70) | Loads all sessions from the durable store and reconstructs portfolio state by replaying the persisted fill log. Concurrent callers share one attempt. A failed or cancelled attempt publishes no partial state and the next call starts a fresh attempt. |
-| <code>public async Task&lt;PaperSessionSummaryDto&gt; CreateSessionAsync(CreatePaperSessionDto request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:261](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L261) | Creates a new paper trading session and returns its summary. |
-| <code>public async Task&lt;bool&gt; CloseSessionAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:396](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L396) | Closes a paper trading session and snapshots its final state. |
-| <code>public IReadOnlyList&lt;PaperSessionSummaryDto&gt; GetSessions();</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:482](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L482) | Returns summaries of all tracked sessions. |
-| <code>public PaperSessionDetailDto? GetSession(string sessionId);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:492](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L492) | Returns detailed session state or null if not found. |
-| <code>public IReadOnlyList&lt;ExecutionReport&gt; GetSessionFillHistory(string sessionId);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:503](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L503) | Detached execution-report evidence without rebuilding the session portfolio or ledger. |
-| <code>public PaperTradingPortfolio? GetActivePortfolio(string sessionId);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:515](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L515) | Returns a defensive portfolio snapshot for an active session, or null. |
-| <code>public IReadOnlyLedger? GetLedger(string sessionId);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:537](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L537) | Returns a detached snapshot of the double-entry ledger for a session — either the live ledger (active sessions) or the ledger reconstructed from the persisted journal (closed sessions). The snapshot can be queried or even downcast and mutated without changing the authoritative session ledger. Returns null when no ledger data is available for the session. |
-| <code>public async Task RecordPaperFillAsync(string sessionId, ExecutionFill fill, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:564](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L564) | Converts a lightweight ExecutionFill into an ExecutionReport and records it against the session via RecordFillAsync. |
-| <code>public async Task&lt;PaperSessionReplayVerificationDto?&gt; VerifyReplayAsync(string sessionId, int? expectedFillCount, int? expectedOrderCount, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:601](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L601) | Verifies that the current session portfolio matches the replayed fill-log state, optionally asserting that at least expectedFillCount fills and expectedOrderCount orders were persisted. When the counts do not match a mismatch reason is added to the result. |
-| <code>public async Task RecordOrderUpdateAsync(string sessionId, OrderState orderState, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:651](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L651) | Records an order status update for a session and does not complete until the durable order-history append finishes. |
-| <code>public Task RecordFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:705](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L705) | Applies a fill execution report to the session portfolio and persists the fill event to the durable store for future replay. No-op for non-fill reports (accepted, cancelled, rejected). |
-| <code>public Task RecordFillAsync(string sessionId, Guid fillId, ExecutionReport fill, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:720](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L720) | Durably claims and applies a fill using the caller-provided canonical OMS FillId. Reusing the FillId with identical content is idempotent; reusing it with different content fails closed. |
-| <code>public async Task&lt;ExecutionPortfolioSnapshotDto?&gt; ReplaySessionAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:861](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L861) | Replays the persisted fill log for sessionId through a fresh PaperTradingPortfolio and returns the reconstructed portfolio snapshot. |
-| <code>public async Task&lt;PaperSessionReplayVerificationDto?&gt; VerifyReplayAsync(string sessionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:910](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L910) | Verifies that the current session portfolio matches the replayed fill-log state. This gives operators an explicit continuity check for paper sessions that are expected to survive restarts and replay cleanly from durable fills. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1462](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1462) | Cancels an in-flight initialisation attempt and closes this service to new work. |
+| <code>public async Task&lt;PaperSessionSummaryDto&gt; CreateSessionAsync(CreatePaperSessionDto request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:286](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L286) | Creates a new paper trading session and returns its summary. |
+| <code>public async Task&lt;bool&gt; CloseSessionAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:425](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L425) | Closes a paper trading session and snapshots its final state. |
+| <code>public IReadOnlyList&lt;PaperSessionSummaryDto&gt; GetSessions();</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:512](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L512) | Returns summaries of all tracked sessions. |
+| <code>public PaperSessionDetailDto? GetSession(string sessionId);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:522](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L522) | Returns detailed session state or null if not found. |
+| <code>public IReadOnlyList&lt;ExecutionReport&gt; GetSessionFillHistory(string sessionId);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:533](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L533) | Detached execution-report evidence without rebuilding the session portfolio or ledger. |
+| <code>public PaperTradingPortfolio? GetActivePortfolio(string sessionId);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:545](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L545) | Returns a defensive portfolio snapshot for an active session, or null. |
+| <code>public IReadOnlyLedger? GetLedger(string sessionId);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:567](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L567) | Returns a detached snapshot of the double-entry ledger for a session — either the live ledger (active sessions) or the ledger reconstructed from the persisted journal (closed sessions). The snapshot can be queried or even downcast and mutated without changing the authoritative session ledger. Returns null when no ledger data is available for the session. |
+| <code>public async Task RecordPaperFillAsync(string sessionId, ExecutionFill fill, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:594](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L594) | Converts a lightweight ExecutionFill into an ExecutionReport and records it against the session via RecordFillAsync. |
+| <code>public async Task&lt;PaperSessionReplayVerificationDto?&gt; VerifyReplayAsync(string sessionId, int? expectedFillCount, int? expectedOrderCount, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:631](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L631) | Verifies that the current session portfolio matches the replayed fill-log state, optionally asserting that at least expectedFillCount fills and expectedOrderCount orders were persisted. When the counts do not match a mismatch reason is added to the result. |
+| <code>public async Task RecordOrderUpdateAsync(string sessionId, OrderState orderState, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:681](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L681) | Records an order status update for a session and does not complete until the durable order-history append finishes. |
+| <code>public Task RecordFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:736](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L736) | Applies a fill execution report to the session portfolio and persists the fill event to the durable store for future replay. No-op for non-fill reports (accepted, cancelled, rejected). |
+| <code>public Task RecordFillAsync(string sessionId, Guid fillId, ExecutionReport fill, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:751](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L751) | Durably claims and applies a fill using the caller-provided canonical OMS FillId. Reusing the FillId with identical content is idempotent; reusing it with different content fails closed. |
+| <code>public async Task&lt;ExecutionPortfolioSnapshotDto?&gt; ReplaySessionAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:893](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L893) | Replays the persisted fill log for sessionId through a fresh PaperTradingPortfolio and returns the reconstructed portfolio snapshot. |
+| <code>public async Task&lt;PaperSessionReplayVerificationDto?&gt; VerifyReplayAsync(string sessionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:952](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L952) | Verifies that the current session portfolio matches the replayed fill-log state. This gives operators an explicit continuity check for paper sessions that are expected to survive restarts and replay cleanly from durable fills. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1505](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1505) | Cancels an in-flight initialisation attempt and closes this service to new work. |
+
+Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.HistoricalAccounting.cs:8](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.HistoricalAccounting.cs#L8).
+
+```csharp
+public sealed partial class PaperSessionPersistenceService
+```
 
 ## PaperSessionReplayVerificationDto
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionReplayVerificationDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1876](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1876).
+Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1922](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1922).
 
 Result of replaying a paper session and comparing the replayed state to the currently tracked portfolio snapshot.
 
@@ -860,10 +866,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int VerifiedFilledCount =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1895](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1895) | Alias for ComparedFillCount using the paper-cockpit acceptance naming. |
-| <code>public int VerifiedOrderCount =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1898](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1898) | Alias for ComparedOrderCount using the paper-cockpit acceptance naming. |
-| <code>public int VerifiedLedgerEntriesCount =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1901](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1901) | Alias for ComparedLedgerEntryCount using the paper-cockpit acceptance naming. |
-| <code>public DateTimeOffset LastVerifiedAt =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1904](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1904) | Alias for VerifiedAt using the paper-cockpit acceptance naming. |
+| <code>public int VerifiedFilledCount =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1941](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1941) | Alias for ComparedFillCount using the paper-cockpit acceptance naming. |
+| <code>public int VerifiedOrderCount =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1944](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1944) | Alias for ComparedOrderCount using the paper-cockpit acceptance naming. |
+| <code>public int VerifiedLedgerEntriesCount =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1947](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1947) | Alias for ComparedLedgerEntryCount using the paper-cockpit acceptance naming. |
+| <code>public DateTimeOffset LastVerifiedAt =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1950](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1950) | Alias for VerifiedAt using the paper-cockpit acceptance naming. |
 
 ## PaperSessionSettlementAppendStatus
 
@@ -910,7 +916,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1824](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1824).
+Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1869](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1869).
 
 Session summary DTO.
 

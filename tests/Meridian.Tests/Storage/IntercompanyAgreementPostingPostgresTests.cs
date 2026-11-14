@@ -20,6 +20,13 @@ public sealed class IntercompanyAgreementPostingPostgresTests
 
         var authority = new RecordingAuthority(async () =>
             (await database.JournalStore.QueryAsync(new(JournalEntryId: write.Entry.JournalEntryId), ct)).Should().ContainSingle());
+        var before = await database.JournalStore.VerifyLedgerEventAuditAsync(ct);
+        var missingControls = new PostgresLedgerJournalStore(database.Options, intercompanyAgreementAuthority: () => authority);
+        var missingOperationalAuthority = () => missingControls.AppendAsync(write, ct);
+        await missingOperationalAuthority.Should().ThrowAsync<LedgerValidationException>().WithMessage("*posting controls are unavailable*");
+        (await database.JournalStore.GetByPeriodAsync(write.PeriodId, ct)).Should().BeEmpty();
+        (await database.JournalStore.VerifyLedgerEventAuditAsync(ct)).ChainedEvents.Should().Be(before.ChainedEvents);
+        authority.Request.Should().BeNull();
         var store = new PostgresLedgerJournalStore(database.Options,
             postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities, intercompanyAgreementAuthority: () => authority);
         await store.AppendAsync(write, ct);
