@@ -320,7 +320,9 @@ public static class IntercompanyAccrualSourceBuilder
         var draft = new ManualJournalEntryDraftDto(draftId, ManualJournalEntryStatusDto.Draft, book.FundProfileId,
             book.LedgerBookId, book.AccountingBasis, postingDate, period.PeriodId.ToString("D"), entity.ToString("D"), null,
             book.BaseCurrency, memo, actor, now, now, 1, lines, links, [],
-            TreasuryContext: new(postingDate, $"intercompany-accrual:{draftId:D}", FundEventType: "IntercompanyAccrual"),
+            // No fund-event fields: an accrual is not a fund event, and stating a fund-event type would make
+            // approval submission demand a fund event id and capital account the workflow does not have.
+            TreasuryContext: new(postingDate, $"intercompany-accrual:{draftId:D}"),
             TenantId: tenantId, CompanyId: companyId)
         {
             IntercompanyAccrualEvidenceJson = evidenceJson,

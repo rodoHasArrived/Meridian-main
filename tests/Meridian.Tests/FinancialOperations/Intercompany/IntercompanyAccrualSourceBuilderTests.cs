@@ -217,6 +217,11 @@ public sealed class IntercompanyAccrualSourceBuilderTests
         Assert.Null(draft.PostedAtUtc);
         Assert.Equal(Data.Date, draft.AccountingDate);
         Assert.Equal("preparer", draft.PreparedBy);
+        // Submission requires an effective date and idempotency key, and rejects a partial fund-event context.
+        Assert.Equal((Data.Date, $"intercompany-accrual:{draft.JournalEntryId:D}"), (draft.TreasuryContext!.EffectiveDate!.Value, draft.TreasuryContext.IdempotencyKey));
+        Assert.Null(draft.TreasuryContext.FundEventType);
+        Assert.Null(draft.TreasuryContext.FundEventId);
+        Assert.Null(draft.TreasuryContext.CapitalAccountId);
         Assert.Equal([(AccountingTemplateLineSideDto.Debit, "a-int-recv", 4166.67m), (AccountingTemplateLineSideDto.Credit, "a-int-income", 4166.67m)],
             draft.Lines.Select(line => (line.Side, line.Dimensions!.ChartAccountNodeId!, line.Amount)));
         var posting = Interest();
