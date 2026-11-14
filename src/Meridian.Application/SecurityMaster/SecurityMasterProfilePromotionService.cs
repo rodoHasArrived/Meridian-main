@@ -47,13 +47,16 @@ public sealed class SecurityMasterProfilePromotionService : ISecurityMasterProfi
 
     public async Task<SecurityMasterProfilePromotionReportDto> BuildReportAsync(string profileId, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(profileId)
-            || !SecurityAssetPackRegistry.ProfileAssetClasses.TryGetValue(profileId, out var targetAssetClass))
+        if (!SecurityAssetPackRegistry.TryGetCanonicalProfileId(profileId, out var canonicalProfileId)
+            || !SecurityAssetPackRegistry.ProfileAssetClasses.TryGetValue(canonicalProfileId, out var targetAssetClass))
         {
             throw new ArgumentException(
                 $"'{profileId}' is not a reclassifying profile; only a profile a class declares in ReclassifyingProfileIds can be promoted.",
                 nameof(profileId));
         }
+
+        // From here on only the catalog's spelling is used, never the request text.
+        profileId = canonicalProfileId;
 
         var securities = await _securityStore.LoadActiveAsync(ct).ConfigureAwait(false);
         var candidates = new List<SecurityMasterProfilePromotionCandidateDto>();

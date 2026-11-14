@@ -5,6 +5,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.ReferenceData.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Xunit;
@@ -103,6 +104,25 @@ public sealed class CustomAssetPromotionReportTests
             .Should().Contain(static blocker => blocker.Code == SecurityMasterProfilePromotionService.ClassificationConflict);
     }
 
+    [Fact]
+    public async Task BuildReportAsync_LogsAndReportsTheCatalogSpelling_NotTheRequestText()
+    {
+        var store = Substitute.For<ISecurityMasterStore>();
+        var logger = new CapturingLogger();
+        var sut = new SecurityMasterProfilePromotionService(store, logger, StaticSecurityAssetProfileCatalog.CreateDefault());
+        var pinned = CustomAssetPromotionRoundTripTests.CustomAssetRecord(Guid.NewGuid(), CustomAssetPromotionRoundTripTests.PrivateFundInterestEnvelope(), 2);
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { pinned });
+
+        var report = await sut.BuildReportAsync("PRIVATE-FUND-INTEREST");
+
+        report.ProfileId.Should().Be("private-fund-interest");
+        report.CandidateCount.Should().Be(1, "the pinned record still matches case-insensitively");
+        report.Candidates.Should().OnlyContain(candidate => candidate.CustomProfileId == "private-fund-interest");
+        var entry = logger.Entries.Should().ContainSingle().Subject;
+        entry.ProfileId.Should().Be("private-fund-interest");
+        entry.Message.Should().Contain("private-fund-interest").And.NotContain("PRIVATE-FUND-INTEREST");
+    }
+
     [Theory]
     [InlineData("co-invest-spv")]
     [InlineData("not-a-profile")]
@@ -122,5 +142,24 @@ public sealed class CustomAssetPromotionReportTests
         var node = JsonNode.Parse(envelope.GetRawText())!.AsObject();
         node["profileFields"]!.AsObject().Remove(fieldKey);
         return JsonSerializer.SerializeToElement(node);
+    }
+
+    private sealed record CapturedEntry(LogLevel Level, string Message, object? ProfileId);
+
+    private sealed class CapturingLogger : ILogger<SecurityMasterProfilePromotionService>
+    {
+        public List<CapturedEntry> Entries { get; } = new();
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            object? profileId = null;
+            if (state is IEnumerable<KeyValuePair<string, object?>> values)
+                profileId = values.FirstOrDefault(static pair => pair.Key == "ProfileId").Value;
+            Entries.Add(new CapturedEntry(logLevel, formatter(state, exception), profileId));
+        }
     }
 }
