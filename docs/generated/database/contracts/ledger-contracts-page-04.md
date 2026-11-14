@@ -2,11 +2,15 @@
 
 # `ledger-contracts` data objects - page 4 of 6
 
-Objects 241-320 of 439. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 447. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_GeneratePrivateCapitalNoticeRequest["GeneratePrivateCapitalNoticeRequest"] {
+        +string? CommitmentId
+        +Guid OperationId
+    }
     class Meridian_Contracts_Ledger_GeneratedPostingLineDto["GeneratedPostingLineDto"] {
         +string AccountPath
         +decimal Amount
@@ -72,6 +76,51 @@ classDiagram
     class Meridian_Contracts_Ledger_IntercompanyAccountContractsJsonContext["IntercompanyAccountContractsJsonContext"] {
     }
     class Meridian_Contracts_Ledger_IntercompanyAccountRoleDto["IntercompanyAccountRoleDto"] {
+    }
+    class Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceDto["IntercompanyAccrualEvidenceDto"] {
+        +Guid AccountingArrangementId
+        +Guid AgreementId
+        +IntercompanyAccrualPreviewDto Computation
+        +Guid CounterpartyEntityId
+        +Guid DraftId
+        +decimal FunctionalAmount
+        +string FunctionalCurrency
+        +ConsolidationFxAmountDto? Fx
+        +string PostingAgreementPayloadHash
+        +int PostingAgreementVersion
+        +Guid PostingArrangementRevisionId
+        +DateOnly PostingDate
+    }
+    class Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceGuard["IntercompanyAccrualEvidenceGuard"] {
+    }
+    class Meridian_Contracts_Ledger_IntercompanyAccrualJsonContext["IntercompanyAccrualJsonContext"] {
+    }
+    class Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalEvidenceDto["IntercompanyAccrualPrincipalEvidenceDto"] {
+        +IReadOnlyList~IntercompanyAccrualPrincipalMovementDto~ Movements
+        +int OpeningJournalCount
+        +string OpeningJournalDigest
+        +decimal OpeningPrincipal
+        +Guid PrincipalArrangementId
+        +IntercompanyAccountRoleDto Role
+    }
+    class Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalMovementDto["IntercompanyAccrualPrincipalMovementDto"] {
+        +DateOnly EffectiveDate
+        +Guid JournalEntryId
+        +decimal SignedAmount
+    }
+    class Meridian_Contracts_Ledger_IntercompanyAccrualProposalDto["IntercompanyAccrualProposalDto"] {
+        +IntercompanyAccrualPreviewDto Computation
+        +IReadOnlyList~string~ Diagnostics
+        +ManualJournalEntryDraftDto? Draft
+        +IntercompanyAccrualEvidenceDto? Evidence
+        +string? EvidenceDigest
+    }
+    class Meridian_Contracts_Ledger_IntercompanyAccrualRequestDto["IntercompanyAccrualRequestDto"] {
+        +DateOnly AccrualFrom
+        +DateOnly AccrualTo
+        +Guid InterestArrangementId
+        +Guid PrincipalArrangementId
+        +Guid SourceBookId
     }
     class Meridian_Contracts_Ledger_IntercompanyBalanceScheduleDto["IntercompanyBalanceScheduleDto"] {
         +DateOnly AsOf
@@ -501,75 +550,12 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_LedgerCurrencyRounding["LedgerCurrencyRounding"] {
     }
-    class Meridian_Contracts_Ledger_LedgerDimensionSetDto["LedgerDimensionSetDto"] {
-        +string? AccountBindingRevisionId
-        +string? AccountId
-        +string? AccountingArrangementId
-        +string? AccountingArrangementRevisionId
-        +string? BookId
-        +string? CapitalAccountId
-        +string? ChartAccountNodeId
-        +string? CostCenterId
-        +string? CounterpartyId
-        +string? CustomerId
-        +string? EntityId
-        +IReadOnlyDictionary~string__string~ ExternalGlDimensions
-    }
-    class Meridian_Contracts_Ledger_LedgerDimensionTags["LedgerDimensionTags"] {
-    }
-    class Meridian_Contracts_Ledger_LedgerDisposalTaxParcelDto["LedgerDisposalTaxParcelDto"] {
-        +DateOnly AcquiredDate
-        +string Character
-        +string CostBasis
-        +string? DeferredLoss
-        +string EconomicGainOrLoss
-        +bool HoldingPeriodCarried
-        +int HoldingPeriodDays
-        +DateOnly HoldingPeriodStart
-        +string LotId
-        +string Proceeds
-        +string Quantity
-        +string? RecognizedGainOrLoss
-    }
-    class Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto["LedgerDisposalTaxResultDto"] {
-        +string AccountName
-        +bool CanChange
-        +string? Character
-        +string? DeferredLoss
-        +string? EconomicGainOrLoss
-        +Guid JournalEntryId
-        +Guid MutationBatchId
-        +IReadOnlyList~LedgerDisposalTaxParcelDto~ Parcels
-        +string? PolicyRevision
-        +string? RecognizedGainOrLoss
-        +DateTimeOffset? RecordedAt
-        +bool ReEvaluationRequired
-    }
-    class Meridian_Contracts_Ledger_LedgerEventAuditFailureData["LedgerEventAuditFailureData"] {
-    }
-    class Meridian_Contracts_Ledger_LedgerEventAuditFailureKinds["LedgerEventAuditFailureKinds"] {
-    }
-    class Meridian_Contracts_Ledger_LedgerEventAuditVerification["LedgerEventAuditVerification"] {
-        +long ChainedEvents
-        +DateTimeOffset GenesisAtUtc
-        +long UnprotectedGenesisFacts
-    }
-    class Meridian_Contracts_Ledger_LedgerJournalEntryDto["LedgerJournalEntryDto"] {
-        +AccountingBasisKindDto AccountingBasis
-        +string AccountingPolicyId
-        +string AccountingPolicyVersion
-        +LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval
-        +Guid AggregateId
-        +Guid? CommandId
-        +Guid? CorrelationId
-        +DateTimeOffset CreatedAt
-        +string Description
-        +long GlobalSequence
-        +bool IsBalanced
-        +Guid JournalEntryId
-    }
-    Meridian_Contracts_Ledger_GeneratedPostingLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_IntercompanyAccountBindingDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
+    Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
+    Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalEvidenceDto
+    Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
+    Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalMovementDto
+    Meridian_Contracts_Ledger_IntercompanyAccrualProposalDto --> Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceDto
     Meridian_Contracts_Ledger_IntercompanyBalanceScheduleDto --> Meridian_Contracts_Ledger_IntercompanyBalanceScheduleIssueDto
     Meridian_Contracts_Ledger_IntercompanyBalanceScheduleDto --> Meridian_Contracts_Ledger_IntercompanyBalanceScheduleRowDto
     Meridian_Contracts_Ledger_IntercompanyBalanceScheduleRowDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
@@ -580,7 +566,6 @@ classDiagram
     Meridian_Contracts_Ledger_IntercompanyProposalDto --> Meridian_Contracts_Ledger_IntercompanyProposalSourceDto
     Meridian_Contracts_Ledger_IntercompanyProposalDto --> Meridian_Contracts_Ledger_IntercompanyProposalStatusDto
     Meridian_Contracts_Ledger_IntercompanyProposalSourceDto --> Meridian_Contracts_Ledger_IntercompanyProposalSourceLineDto
-    Meridian_Contracts_Ledger_InvestorCapitalStatementDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleActionRequestDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleActionDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleActionResultDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleTransitionDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleTransitionDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleActionDto
@@ -593,8 +578,5 @@ classDiagram
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutIssueDto
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentRequest --> Meridian_Contracts_Ledger_LedgerBookRequiredScopeDto
     Meridian_Contracts_Ledger_LedgerBookRolloutIssueDto --> Meridian_Contracts_Ledger_LedgerBookRolloutIssueSeverityDto
-    Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceReportDto --> Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto
-    Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto --> Meridian_Contracts_Ledger_LedgerDisposalTaxParcelDto
-    Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerAdjustmentApprovalMetadataDto
 ```

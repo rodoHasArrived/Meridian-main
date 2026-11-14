@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileReconciliationFxRateProvider
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileReconciliationFxRateProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationFxRateProvider.cs:22](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationFxRateProvider.cs#L22).
+
+Loads the production IReconciliationFxRateProvider from an operator-maintained rate table under the deployment data root (reconciliation/fx-rates.json). This is the seam that lets statement reconciliation normalize a non-USD statement line against its base-currency internal balance instead of always failing closed to a cross-currency break.
+
+```csharp
+public static class FileReconciliationFxRateProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string RelativePath = &quot;reconciliation/fx-rates.json&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationFxRateProvider.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationFxRateProvider.cs#L26) |  |
+| <code>public static IReconciliationFxRateProvider Load(string dataRoot, ILogger? logger = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationFxRateProvider.cs:28](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationFxRateProvider.cs#L28) |  |
+
+## FileStatementMatchResultRepository
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementMatchResultRepository</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:421](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L421).
+
+Persists statement matching results in local run artifacts.
+
+```csharp
+public sealed class FileStatementMatchResultRepository : IStatementMatchResultRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileStatementMatchResultRepository(string dataDirectory);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:426](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L426) |  |
+| <code>public async Task SaveAsync(string runId, StatementMatchResultArtifact result, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:431](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L431) |  |
+| <code>public async Task&lt;StatementMatchResultArtifact?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:453](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L453) |  |
+
 ## FileStatementNormalizedEntityRepository
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementNormalizedEntityRepository</code>. Kind: `class`.
@@ -873,32 +912,3 @@ Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextCo
 ```csharp
 public sealed record ReconciliationCaseIntakeRequest(string SourceKind, string SourcePath, string? MappingProfileId);
 ```
-
-## ReconciliationCaseIntakeResult
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationCaseIntakeResult</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:47](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L47).
-
-```csharp
-public sealed record ReconciliationCaseIntakeResult(string ImportId, string SourceKind, string SourcePath, int RowCount, int MatchCount, IReadOnlyList<ReconciliationCase> Cases);
-```
-
-## ReconciliationContractCatalog
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationContractCatalog</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs#L11).
-
-Identifies supported reconciliation contracts and their compatible versions.
-
-```csharp
-public static class ReconciliationContractCatalog
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string BreakWorkflowContract = &quot;meridian.reconciliation.break-workflow&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs#L13) |  |
-| <code>public static bool IsSupported(string contract, ReconciliationContractVersion version) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs#L20) |  |

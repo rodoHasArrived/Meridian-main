@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataVendorEntitlementService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.DataVendorEntitlementService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:11](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L11).
+
+Reads and maintains data-vendor entitlement records and their expiration state.
+
+```csharp
+public sealed class DataVendorEntitlementService : IDataVendorEntitlementService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DataVendorEntitlementService(IDataVendorEntitlementStore store);</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:15](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L15) |  |
+| <code>public Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetAllAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:20](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L20) |  |
+| <code>public Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetExpiringAsync(int withinDays, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:23](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L23) |  |
+| <code>public async Task&lt;DataVendorEntitlementDto&gt; UpsertAsync(UpsertDataVendorEntitlementRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:27](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L27) |  |
+| <code>public async Task DeactivateAsync(Guid entitlementId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:66](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L66) |  |
+
 ## EdgarIngestOrchestrator
 
 Qualified name: <code>Meridian.Application.SecurityMaster.EdgarIngestOrchestrator</code>. Kind: `class`.
@@ -986,23 +1008,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public OtcExposureService(IOtcContractStore contracts, IOtcCollateralStore collateral, IOtcContractValuationSource valuation, ILogger&lt;OtcExposureService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs:24](../../../../src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs#L24) |  |
 | <code>public async Task&lt;OtcExposureSnapshotDto?&gt; ComputeAsync(Guid nettingSetId, DateOnly asOfDate, string actor, DateTimeOffset? knowledgeAsOf = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs:36](../../../../src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs#L36) |  |
-
-## PricingStoreOtcContractValuationSource
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Otc.PricingStoreOtcContractValuationSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs:16](../../../../src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs#L16).
-
-The first IOtcContractValuationSource: marks a contract from the golden-copy price recorded for its instrument. Declared convention: a SecurityPriceUnit.PercentOfPar observation on a bilateral instrument is the value per 100 of notional to the buyer of that instrument as OtcContractDirection defines buying, so the mark is sign(direction) × notional × price / 100. Any other unit, a missing or stale price, or a notional in another currency leaves the contract unvalued with a named blocker. The price hierarchy retains a selection receipt on every call, which is the replayable provenance the snapshot records as its input reference.
-
-```csharp
-public sealed class PricingStoreOtcContractValuationSource : IOtcContractValuationSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Method = &quot;otc-mtm-observed-price-v1&quot;;</code> | [src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs:18](../../../../src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs#L18) |  |
-| <code>public PricingStoreOtcContractValuationSource(ISecurityMasterPricingService pricing);</code> | [src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs:23](../../../../src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs#L23) |  |
-| <code>public async Task&lt;OtcContractValuationDto&gt; ValueAsync(OtcContractValuationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs:28](../../../../src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs#L28) |  |

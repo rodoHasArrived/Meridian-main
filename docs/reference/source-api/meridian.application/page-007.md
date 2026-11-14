@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExecutionTrigger
+
+Qualified name: <code>Meridian.Application.Scheduling.ExecutionTrigger</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:146](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L146).
+
+How a scheduled execution was triggered.
+
+```csharp
+public enum ExecutionTrigger : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Scheduled</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:149](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L149) | Triggered by cron schedule. |
+| <code>Manual</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:152](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L152) | Manually triggered by user. |
+| <code>Api</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:155](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L155) | Triggered by API call. |
+| <code>Retry</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:158](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L158) | Retry of a failed execution. |
+| <code>CatchUp</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:161](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L161) | System startup catch-up. |
+| <code>AutoRemediation</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:164](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L164) | Triggered automatically by quality/gap remediation policy. |
+
 ## ProviderUsageStats
 
 Qualified name: <code>Meridian.Application.Scheduling.ProviderUsageStats</code>. Kind: `class`.
@@ -994,25 +1017,3 @@ Declared public members:
 | <code>public StoredSecurityForwardCurveProvider(ISecurityCurveStore store, ILogger&lt;StoredSecurityForwardCurveProvider&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:19](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L19) |  |
 | <code>public Task&lt;SecurityForwardCurve?&gt; GetForwardCurveAsync(string indexName, DateOnly asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:25](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L25) |  |
 | <code>public async Task&lt;SecurityForwardCurve?&gt; GetForwardCurveAsync(string indexName, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:28](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L28) |  |
-
-## DataVendorEntitlementService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.DataVendorEntitlementService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:11](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L11).
-
-Reads and maintains data-vendor entitlement records and their expiration state.
-
-```csharp
-public sealed class DataVendorEntitlementService : IDataVendorEntitlementService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DataVendorEntitlementService(IDataVendorEntitlementStore store);</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:15](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L15) |  |
-| <code>public Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetAllAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:20](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L20) |  |
-| <code>public Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetExpiringAsync(int withinDays, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:23](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L23) |  |
-| <code>public async Task&lt;DataVendorEntitlementDto&gt; UpsertAsync(UpsertDataVendorEntitlementRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:27](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L27) |  |
-| <code>public async Task DeactivateAsync(Guid entitlementId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:66](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L66) |  |
