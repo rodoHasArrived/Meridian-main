@@ -73,6 +73,7 @@ export function FinancialRecordExplorerShell({
   onSelectRecord,
   activeRecordId,
   scopeControls,
+  formatRunLabel,
   children,
   className,
   compact = false
@@ -93,6 +94,8 @@ export function FinancialRecordExplorerShell({
   activeRecordId?: string;
   /** Required scope choices render before summaries, records, and supporting results. */
   scopeControls?: ReactNode;
+  /** Display-only run naming; underlying scope, filters, share state and save requests stay exact. */
+  formatRunLabel?: (runId: string) => string;
   children: ReactNode;
   className?: string;
   /** Keep task scope and warnings visible while leading with the record grid. */
@@ -313,11 +316,11 @@ export function FinancialRecordExplorerShell({
 
       {compact ? (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-          <ExplorerScopeBar compact items={dtoMode ? dtoMode.scopeItems.map((item) => ({ id: item.label, label: item.label, value: item.value })) : scopeItems} />
+          <ExplorerScopeBar compact items={dtoMode ? dtoMode.scopeItems.map((item) => ({ id: item.label, label: item.label, value: formatRunLabel && /^(run|run id)$/i.test(item.label.trim()) ? formatRunLabel(item.value) : item.value })) : scopeItems} />
           <ExplorerSummaryStrip compact items={dtoMode ? dtoMode.summaryItems.map((item) => ({ id: item.label, label: normalizeFinancialLabel(item.label), value: item.value, tone: normalizeTone(item.tone) })) : summaryItems} />
           {!dtoMode ? <>
             <SavedViewSelector compact views={normalizedViews} selectedViewId={selectedViewId} onSelect={handleSelectSavedView} />
-            <AppliedFilterStrip compact filters={appliedFilters.map((filter) => ({ filterId: filter.id, label: filter.label, value: filter.value, operator: "equals", tone: "Default" as FinancialRecordExplorerTone }))} />
+            <AppliedFilterStrip compact formatRunLabel={formatRunLabel} filters={appliedFilters.map((filter) => ({ filterId: filter.id, label: filter.label, value: filter.value, operator: "equals", tone: "Default" as FinancialRecordExplorerTone }))} />
           </> : null}
           <TechnicalDetails label="Explorer details" className={cn("ml-auto", compact && "[&>summary]:min-h-8 [&>summary]:py-1")}>
             {dtoMode ? <p className="mb-2 text-xs text-muted-foreground">{dtoMode.sourceState}</p> : null}
@@ -326,10 +329,10 @@ export function FinancialRecordExplorerShell({
         </div>
       ) : <div className="grid gap-3 xl:grid-cols-[minmax(0,0.72fr)_minmax(260px,0.28fr)]">
         <div className="space-y-3">
-          <ExplorerScopeBar items={dtoMode ? dtoMode.scopeItems.map((item) => ({ id: item.label, label: item.label, value: item.value })) : scopeItems} />
+          <ExplorerScopeBar items={dtoMode ? dtoMode.scopeItems.map((item) => ({ id: item.label, label: item.label, value: formatRunLabel && /^(run|run id)$/i.test(item.label.trim()) ? formatRunLabel(item.value) : item.value })) : scopeItems} />
           <SavedViewSelector views={normalizedViews} selectedViewId={selectedViewId} onSelect={handleSelectSavedView} />
           <ExplorerSummaryStrip items={dtoMode ? dtoMode.summaryItems.map((item) => ({ id: item.label, label: normalizeFinancialLabel(item.label), value: item.value, tone: normalizeTone(item.tone) })) : summaryItems} />
-          <AppliedFilterStrip filters={dtoMode ? selectedFilters.length > 0 ? selectedFilters : dtoMode.filters : appliedFilters.map((filter) => ({ filterId: filter.id, label: filter.label, value: filter.value, operator: "equals", tone: "Default" as FinancialRecordExplorerTone }))} />
+          <AppliedFilterStrip formatRunLabel={formatRunLabel} filters={dtoMode ? selectedFilters.length > 0 ? selectedFilters : dtoMode.filters : appliedFilters.map((filter) => ({ filterId: filter.id, label: filter.label, value: filter.value, operator: "equals", tone: "Default" as FinancialRecordExplorerTone }))} />
         </div>
         <ProofSummary title={headerTitle} actions={actions} explorer={dtoMode} />
       </div>}
@@ -347,11 +350,11 @@ export function FinancialRecordExplorerShell({
                 placeholder="Search financial records"
                 aria-label={`Search ${headerTitle}`}
               />
-              {compact ? <AppliedFilterStrip compact filters={selectedFilters.length > 0 ? selectedFilters : dtoMode.filters} /> : null}
+              {compact ? <AppliedFilterStrip compact formatRunLabel={formatRunLabel} filters={selectedFilters.length > 0 ? selectedFilters : dtoMode.filters} /> : null}
               {dtoMode.isBlocked ? <Badge variant="danger">Blocked</Badge> : <Badge variant="outline">{pluralizeCount(rows.length, "row")}</Badge>}
             </div>
             <ExplorerGrid explorer={dtoMode} rows={rows} columns={visibleColumns} selectedRecordId={selectedRow?.recordId ?? null} onSelect={handleSelectRecord} />
-            <RecordGraph explorer={dtoMode} />
+            <RecordGraph explorer={dtoMode} formatRunLabel={formatRunLabel} />
           </div>
         </div>
       ) : null}
@@ -445,14 +448,14 @@ function ExplorerSummaryStrip({ items, compact = false }: { items: FinancialReco
   );
 }
 
-function AppliedFilterStrip({ filters, compact = false }: { filters: FinancialRecordExplorerFilterDto[]; compact?: boolean }) {
+function AppliedFilterStrip({ filters, formatRunLabel, compact = false }: { filters: FinancialRecordExplorerFilterDto[]; formatRunLabel?: (runId: string) => string; compact?: boolean }) {
   return (
     <div className={cn("flex flex-wrap items-center gap-2", !compact && "rounded-md border border-border/70 bg-background/60 px-3 py-2")} aria-label="Applied explorer filters">
       <Filter className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
       {filters.length > 0 ? filters.map((filter) => (
         <span key={filter.filterId} className="toolbar-chip">
           <span>{filter.label}</span>
-          <b>{filter.value}</b>
+          <b>{formatRunLabel && /^(run|run id)$/i.test((filter.label || filter.filterId).trim()) ? formatRunLabel(filter.value) : filter.value}</b>
         </span>
       )) : (
         <span className="text-sm text-muted-foreground">No filters applied.</span>
@@ -772,7 +775,7 @@ function normalizeSearchToken(value: string): string {
   return value.trim().toLowerCase();
 }
 
-function RecordGraph({ explorer }: { explorer: FinancialRecordExplorerDto }) {
+function RecordGraph({ explorer, formatRunLabel }: { explorer: FinancialRecordExplorerDto; formatRunLabel?: (runId: string) => string }) {
   if (explorer.recordGraph.nodes.length === 0) {
     return null;
   }
@@ -785,7 +788,7 @@ function RecordGraph({ explorer }: { explorer: FinancialRecordExplorerDto }) {
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
         {explorer.recordGraph.nodes.slice(0, 18).map((node) => (
-          <Badge key={node.nodeId} variant={toneToBadge(node.tone)}>{node.label}</Badge>
+          <Badge key={node.nodeId} variant={toneToBadge(node.tone)}>{formatRunLabel && node.nodeType.trim().toLowerCase() === "run" ? formatRunLabel(node.nodeId) : node.label}</Badge>
         ))}
       </div>
     </section>

@@ -47,6 +47,8 @@ import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian
 import type { CsvCell } from "@/lib/csv";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { KpiProvider } from "@/lib/kpi-context";
+import { workspaceKpiIds } from "@/lib/kpi-registry";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
@@ -447,7 +449,16 @@ function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
   );
 }
 
-export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
+export function TradingScreen(props: TradingScreenProps) {
+  const crossScreenCounts = useSharedCrossScreenCounts();
+  return (
+    <KpiProvider models={{ trading: props.data, crossScreenCounts }}>
+      <TradingScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
   const { pathname, search } = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
   const figureContext = useWorkspaceFigureContext();
@@ -677,7 +688,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         reviewHref={`${WORKSTATION_ROUTE_CATALOG.trading}${search}#brokerage-recovery`}
       />
 
-      {showOverview ? <StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" /> : null}
+      {showOverview ? <KpiProvider models={{ trading: { ...data, metrics: trustedHeadlineMetrics } }}><StatStrip ids={workspaceKpiIds("trading", trustedHeadlineMetrics)} label="Trading headline metrics" /></KpiProvider> : null}
 
       {showOverview ? tradingConfidence : null}
 

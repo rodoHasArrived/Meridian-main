@@ -1,0 +1,1 @@
+import{m as e}from"./button-CT5J9mL7.js";import{Z as t}from"./index-D4Qle2D5.js";var n=e();function r({mark:e}){return(0,n.jsxs)(`div`,{title:e.reason,children:[(0,n.jsx)(t,{variant:e.tone,children:e.label}),(0,n.jsx)(`div`,{className:`mt-1 text-xs text-muted-foreground`,children:e.observationSummary})]})}export{r as t};

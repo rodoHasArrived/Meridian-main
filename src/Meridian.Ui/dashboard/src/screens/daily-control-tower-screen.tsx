@@ -1,3 +1,5 @@
+import { StatStrip } from "@/components/meridian/stat-strip";
+import { WORKSPACE_KPI_IDS } from "@/lib/kpi-registry";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -204,6 +206,7 @@ export function DailyControlTowerScreen({
   return (
     <div className="space-y-2">
       <h2 className="sr-only">What needs an operator decision now</h2>
+      <StatStrip ids={WORKSPACE_KPI_IDS.today} label="Today headline metrics" compact />
       <section aria-label="Priority decision">
         {/* The masthead and Today share one attention object; retain every signal and its
             recovery path while showing only open issues in the collapsed row. */}

@@ -163,7 +163,13 @@ The four-lane `Meridian CI / quality-gate` keeps its identity. The always-report
 `Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
 Production Certification, including pull requests and merge groups.
 
-For tracked-output drift or conflicts after updating from main, prepare a candidate without
+Eligible PRs use the [hosted repair bot](generated-merge-recovery.md#hosted-pr-repair) for routine
+workstation, contract-manifest, and documentation regeneration in one commit. Commit authored
+inputs and let the bot repair generated output; required same-commit freshness checks still apply.
+The bot must first be [configured by the owner](ci-cd-optimization.md#generated-repair-and-maintenance-activation).
+Generator, dependency, and policy changes remain on the contributor review path.
+
+For local tracked-output drift or conflicts after updating from main, prepare a candidate without
 changing your branch or index:
 
 ```powershell

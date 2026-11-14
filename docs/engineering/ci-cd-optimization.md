@@ -517,6 +517,19 @@ protection, so readable rulesets are not a complete inventory of existing requir
 
 ### Generated repair and maintenance activation
 
+The maintained producer catalog covers the tracked workstation bundle, generated UI contracts,
+source-derived schema-control contract/dependency manifests and database documentation, roadmap
+views, structured production readiness, and program-state summaries. PR authors edit source and
+registry fields; the configured repair bot batches deterministic output into one commit. The
+schema-control physical catalog and migration/policy snapshots still use their existing review
+and promotion workflow. Reviewed source-module hashes remain attestations, not a mechanical
+freshness timestamp. See [repair ownership and exceptions](generated-merge-recovery.md#hosted-pr-repair).
+
+Catalog and output-policy changes need human governance review before adoption. This change does
+not modify required checks, repository rules, bot credentials, or environment restrictions. A PR
+that changes a generator or its policy uses the contributor path until those changes are reviewed
+and available on the default branch. Same-commit drift checks still reject stale output.
+
 The local [repair command](generated-merge-recovery.md) works without a GitHub App and never writes
 to a remote. Hosted automatic writes require the reviewed workflows to be on the default branch
 and the following configuration:

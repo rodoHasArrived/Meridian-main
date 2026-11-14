@@ -382,10 +382,10 @@ vi.mock("@/lib/api", async () => {
 
 const data: AccountingWorkspaceResponse = {
   metrics: [
-    { id: "m1", label: "Open Breaks", value: "2", delta: "+1", tone: "warning" },
-    { id: "m2", label: "Timing Drift", value: "1", delta: "0%", tone: "warning" },
-    { id: "m3", label: "Security Gaps", value: "0", delta: "0%", tone: "success" },
-    { id: "m4", label: "Audit Ready", value: "4", delta: "+2", tone: "success" }
+    { id: "breaks", label: "Open Breaks", value: "2", delta: "+1", tone: "warning" },
+    { id: "drift", label: "Timing Drift", value: "1", delta: "0%", tone: "warning" },
+    { id: "coverage", label: "Security Gaps", value: "0", delta: "0%", tone: "success" },
+    { id: "audit", label: "Audit Ready", value: "4", delta: "+2", tone: "success" }
   ],
   reconciliationQueue: [
     {

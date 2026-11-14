@@ -5,7 +5,7 @@ import { axe } from "jest-axe";
 import { renderWithRouter, TestMemoryRouter, waitForAsyncEffects } from "@/test/render";
 import { PortfolioScreen } from "@/screens/portfolio-screen";
 import * as api from "@/lib/api";
-import type { TradingWorkspaceResponse } from "@/types";
+import type { StrategyWorkspaceResponse, TradingWorkspaceResponse } from "@/types";
 
 function position(symbol: string, side: "Long" | "Short", current: boolean): TradingWorkspaceResponse["positions"][number] {
   return {
@@ -62,7 +62,7 @@ const trading: TradingWorkspaceResponse = {
 };
 
 function renderPortfolio(data = trading) {
-  return renderWithRouter(<PortfolioScreen trading={data} strategy={null} accounting={null} />, { initialEntries: ["/portfolio"] });
+  return renderWithRouter(<PortfolioScreen portfolio={portfolioFromTrading(data, null)} trading={data} strategy={null} accounting={null} />, { initialEntries: ["/portfolio"] });
 }
 
 function positionTable() {
@@ -164,7 +164,7 @@ describe("Portfolio Open positions controls", () => {
     await user.type(screen.getByRole("searchbox", { name: "Search positions by symbol" }), "MSFT");
     await user.selectOptions(screen.getByRole("combobox", { name: "Mark readiness" }), "current");
     const refreshed = { ...trading, positions: [...trading.positions, position("MSFT", "Short", true)] };
-    rerender(<TestMemoryRouter initialEntries={["/portfolio"]}><PortfolioScreen trading={refreshed} strategy={null} accounting={null} /></TestMemoryRouter>);
+    rerender(<TestMemoryRouter initialEntries={["/portfolio"]}><PortfolioScreen portfolio={portfolioFromTrading(refreshed, null)} trading={refreshed} strategy={null} accounting={null} /></TestMemoryRouter>);
     expect(screen.getByRole("searchbox", { name: "Search positions by symbol" })).toHaveValue("MSFT");
     expect(screen.getByRole("combobox", { name: "Mark readiness" })).toHaveValue("current");
     expect(positionIds()).toEqual(["msft-long-2", "msft-short-4"]);
@@ -184,3 +184,7 @@ describe("Portfolio Open positions controls", () => {
     expect((await axe(container)).violations).toEqual([]);
   });
 });
+
+function portfolioFromTrading(value: TradingWorkspaceResponse | null, strategyWorkspace: StrategyWorkspaceResponse | null) {
+  return value ? { metrics: [], positions: value.positions, risk: value.risk, brokerage: value.brokerage, runs: (strategyWorkspace?.runs ?? []).map(({ id, ...run }) => ({ ...run, runId: id, promotionState: run.promotionState ?? null })), cashFlow: null } : null;
+}

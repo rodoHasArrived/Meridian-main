@@ -1077,9 +1077,9 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/providers?fundAccountId=fund-1"] });
 
     const footnote = (await screen.findAllByTestId("stat-strip-provenance", {}, { timeout: 10_000 }))[0]!;
-    // The Data payload is not filtered by fund account, so its figures say they cover everything
-    // authorized rather than borrowing the selected account the bar shows.
-    expect(footnote).toHaveTextContent("Scope: All authorized scopes");
+    // Data figures cover loaded accounts and must not borrow the selected account scope.
+    expect(footnote).toHaveTextContent("Scope: All loaded accounts");
+    expect(footnote).not.toHaveTextContent("fund-1");
     expect(scopeBar()).toHaveTextContent("fund-1");
   });
 
