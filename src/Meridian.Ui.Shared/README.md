@@ -773,6 +773,13 @@ opening reconciliation, provider/ledger/NAV, close-readiness and Evidence Vault 
 or mismatched dates and sources remain explicit blockers. No import fallback or posting command
 is exposed by onboarding.
 
+Shadow-mode routes under the same workspace prefix designate or withdraw a shadow book, import
+incumbent opening balances, explain differences, issue the parallel-run certificate and promote.
+`OnboardingOpeningStateSource` supplies Meridian's own start-date balances, NAV components and
+positions. `IBookOfRecordGuard` is registered over the onboarding store. `ClosePublicationReadinessGuard`
+resolves it lazily and blocks hard-close with `CLOSE_SHADOW_BOOK`, and governed report release refuses
+a shadow book.
+
 `FileOnboardingWorkspaceStore` persists full comparison payloads and frozen readiness packets using
 atomic file replacement, writer leases and expected-version checks. Retained history cannot be
 replaced or truncated, and corrupt storage fails closed. Packet reads verify SHA-256; historical

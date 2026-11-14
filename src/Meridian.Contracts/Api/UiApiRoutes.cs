@@ -20,6 +20,17 @@ public static class UiApiRoutes
     public const string OnboardingPacketExport = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}/download";
     public const string OnboardingReplay = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons/{comparisonId}/replay";
 
+    // Shadow-mode onboarding (W11-SHADOW-001): parallel run, certificate and the audited promotion decision.
+    public const string OnboardingShadowDesignation = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/shadow-designation";
+    public const string OnboardingShadowWithdrawal = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/shadow-designation/withdraw";
+    public const string OnboardingOpeningBalances = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/opening-balances";
+    public const string OnboardingOpeningBalanceReport = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/opening-balances/report";
+    public const string OnboardingDifferenceExplanation = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/differences/{differenceKey}/explanation";
+    public const string OnboardingCertificates = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/certificates";
+    public const string OnboardingCertificate = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/certificates/{certificateId:guid}";
+    public const string OnboardingPromotion = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/promotion";
+    public const string OnboardingBookOfRecordStatus = "/api/accounting/onboarding/ledger-books/{ledgerBookId:guid}/book-of-record";
+
     // Health and status endpoints served by the ASP.NET Core workstation host
     public const string Health = "/health";
     public const string HealthDetailed = "/health/detailed";

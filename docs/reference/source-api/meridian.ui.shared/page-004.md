@@ -1001,7 +1001,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.OnboardingEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs#L17).
+Source: [src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs#L18).
 
 Read-only accounting onboarding; no route confers posting or accounting authority.
 
@@ -1013,7 +1013,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapOnboardingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs#L19) |  |
+| <code>public static void MapOnboardingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs#L20) |  |
 
 ## OptionChainEndpoints
 

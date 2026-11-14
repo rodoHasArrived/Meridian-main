@@ -1,11 +1,11 @@
 {
-  "total_files": 1201,
+  "total_files": 1202,
   "orphaned_count": 397,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 310,
   "health_score": 84,
-  "signal_digest": "sha256:f035bc05e0df8cced0f312bad6f4fa0a361423de560006a2cf060dbd028c64ab",
+  "signal_digest": "sha256:15f48ada8130a43bb8eeb0f6792fe3ed64cd86c4c30d189287ee545911fb46df",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -3316,6 +3316,13 @@
     },
     {
       "path": "docs/operators/service-level-objectives.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/shadow-mode-onboarding.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

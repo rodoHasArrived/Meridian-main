@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.Workstation;
 
 /// <summary>Fixed scope of a bounded, read-only accounting onboarding exercise.</summary>
@@ -76,7 +78,10 @@ public sealed record OnboardingComparisonDto(
     OnboardingCriteriaDto Criteria, OnboardingSourceCaptureDto Inputs,
     IReadOnlyList<OnboardingDifferenceDto> Differences,
     decimal CoveragePercent, string ContentHash, string? PreviousContentHash,
-    string AlgorithmVersion, string? BaselineComparisonId = null);
+    string AlgorithmVersion, string? BaselineComparisonId = null,
+    // Shadow-mode additions are omitted when unset so retained comparison hashes stay reproducible.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsOpening = false,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? OpeningSourceKind = null);
 
 public sealed record OnboardingDifferenceAssignmentDto(
     string DifferenceKey, string OwnerId, string Notes, IReadOnlyList<string> EvidenceIds,
@@ -93,7 +98,10 @@ public sealed record OnboardingReadinessDto(
     string Status, bool IsReady, int UnresolvedDifferenceCount,
     IReadOnlyList<DateOnly> MissingDates, IReadOnlyList<OnboardingMissingSourceDto> MissingSources,
     IReadOnlyList<string> Blockers, int ApprovedReviewers, int RequiredReviewers,
-    IReadOnlyList<OnboardingPeriodDifferenceDto> UnresolvedDifferences);
+    IReadOnlyList<OnboardingPeriodDifferenceDto> UnresolvedDifferences,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingPeriodSummaryDto>? Periods = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] OnboardingOpeningBalanceReportDto? Opening = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] int ExplainedDifferenceCount = 0);
 
 public sealed record OnboardingPacketContentDto(
     string WorkspaceId, string Name, string OwnerId, OnboardingScopeDto Scope,
@@ -103,7 +111,9 @@ public sealed record OnboardingPacketContentDto(
     IReadOnlyList<OnboardingDifferenceDto> CurrentDifferences,
     IReadOnlyList<OnboardingDifferenceAssignmentDto> Assignments,
     IReadOnlyList<OnboardingReviewDto> Reviews, OnboardingReadinessDto Readiness,
-    string AuthorityPosture);
+    string AuthorityPosture,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingDifferenceExplanationDto>? Explanations = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] OnboardingShadowDesignationDto? ShadowDesignation = null);
 
 /// <summary>A frozen support artifact, never an accounting-authority transition.</summary>
 public sealed record OnboardingReadinessPacketDto(
@@ -119,4 +129,9 @@ public sealed record OnboardingWorkspaceDto(
     IReadOnlyList<OnboardingDifferenceAssignmentDto> Assignments,
     IReadOnlyList<OnboardingReviewDto> Reviews,
     IReadOnlyList<OnboardingReadinessPacketDto> Packets,
-    OnboardingReadinessDto Readiness, string AuthorityPosture);
+    OnboardingReadinessDto Readiness, string AuthorityPosture,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] OnboardingShadowDesignationDto? ShadowDesignation = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingDifferenceExplanationDto>? Explanations = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingParallelRunCertificateDto>? Certificates = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ShadowBookPromotionDecisionDto? Promotion = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingShadowAuditEntryDto>? ShadowAudit = null);

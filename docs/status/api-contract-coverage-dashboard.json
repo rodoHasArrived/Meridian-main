@@ -6,11 +6,11 @@
   "endpoint_coverage_percent": 100.0,
   "contract_coverage_percent": 100.0,
   "summary": {
-    "endpoint_count": 819,
-    "documented_endpoint_count": 819,
+    "endpoint_count": 828,
+    "documented_endpoint_count": 828,
     "undocumented_endpoint_count": 0,
-    "workstation_contract_count": 1026,
-    "documented_workstation_contract_count": 1026,
+    "workstation_contract_count": 1045,
+    "documented_workstation_contract_count": 1045,
     "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
@@ -3173,73 +3173,127 @@
     {
       "method": "GET",
       "path": "/api/accounting/onboarding/workspaces",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:46",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:47",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/accounting/onboarding/workspaces",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:52",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:53",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:76",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:77",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/sources",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:83",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:84",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/criteria",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:92",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:93",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:100",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:101",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/differences/{differenceKey}/assignment",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:108",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:109",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/reviews",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:118",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:119",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:128",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:129",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:136",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:137",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}/download",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:145",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:146",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons/{comparisonId}/replay",
-      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:156",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:159",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/shadow-designation",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:172",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/shadow-designation/withdraw",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:180",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/opening-balances",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:188",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/opening-balances/report",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:196",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/differences/{differenceKey}/explanation",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:204",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/certificates",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:214",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/certificates/{certificateId:guid}",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:222",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/accounting/onboarding/workspaces/{workspaceId:guid}/promotion",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:231",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/accounting/onboarding/ledger-books/{ledgerBookId:guid}/book-of-record",
+      "source": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:242",
       "documented": true
     },
     {
@@ -7192,117 +7246,212 @@
     },
     {
       "name": "OnboardingScopeDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:4",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:6",
       "documented": true
     },
     {
       "name": "OnboardingCriteriaDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:9",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:11",
       "documented": true
     },
     {
       "name": "CreateOnboardingWorkspaceRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:18",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:20",
       "documented": true
     },
     {
       "name": "UpdateOnboardingCriteriaRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:21",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:23",
       "documented": true
     },
     {
       "name": "CaptureOnboardingComparisonRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:25",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:27",
       "documented": true
     },
     {
       "name": "OnboardingSourceSelectionDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:28",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:30",
       "documented": true
     },
     {
       "name": "AssignOnboardingDifferenceRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:31",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:33",
       "documented": true
     },
     {
       "name": "ReviewOnboardingWorkspaceRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:34",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:36",
       "documented": true
     },
     {
       "name": "FreezeOnboardingPacketRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:37",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:39",
       "documented": true
     },
     {
       "name": "OnboardingSourceSnapshotDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:41",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:43",
       "documented": true
     },
     {
       "name": "OnboardingObservationDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:47",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:49",
       "documented": true
     },
     {
       "name": "OnboardingMissingSourceDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:52",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:54",
       "documented": true
     },
     {
       "name": "OnboardingSourceCaptureDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:56",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:58",
       "documented": true
     },
     {
       "name": "OnboardingCriteriaRevisionDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:61",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:63",
       "documented": true
     },
     {
       "name": "OnboardingDifferenceDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:66",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:68",
       "documented": true
     },
     {
       "name": "OnboardingComparisonDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:71",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:73",
       "documented": true
     },
     {
       "name": "OnboardingDifferenceAssignmentDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:80",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:85",
       "documented": true
     },
     {
       "name": "OnboardingReviewDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:84",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:89",
       "documented": true
     },
     {
       "name": "OnboardingPeriodDifferenceDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:88",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:93",
       "documented": true
     },
     {
       "name": "OnboardingReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:91",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:96",
       "documented": true
     },
     {
       "name": "OnboardingPacketContentDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:97",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:105",
       "documented": true
     },
     {
       "name": "OnboardingReadinessPacketDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:109",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:119",
       "documented": true
     },
     {
       "name": "OnboardingWorkspaceDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:112",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:122",
+      "documented": true
+    },
+    {
+      "name": "DesignateShadowBookRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:39",
+      "documented": true
+    },
+    {
+      "name": "WithdrawShadowBookRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:41",
+      "documented": true
+    },
+    {
+      "name": "OnboardingShadowDesignationDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:43",
+      "documented": true
+    },
+    {
+      "name": "OnboardingOpeningAccountMappingDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:50",
+      "documented": true
+    },
+    {
+      "name": "ImportOnboardingOpeningBalancesRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:56",
+      "documented": true
+    },
+    {
+      "name": "OnboardingOpeningBalanceLineDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:61",
+      "documented": true
+    },
+    {
+      "name": "OnboardingOpeningBalanceReportDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:68",
+      "documented": true
+    },
+    {
+      "name": "ExplainOnboardingDifferenceRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:72",
+      "documented": true
+    },
+    {
+      "name": "OnboardingDifferenceExplanationDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:82",
+      "documented": true
+    },
+    {
+      "name": "OnboardingClassificationCountDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:87",
+      "documented": true
+    },
+    {
+      "name": "OnboardingPeriodSummaryDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:91",
+      "documented": true
+    },
+    {
+      "name": "IssueParallelRunCertificateRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:96",
+      "documented": true
+    },
+    {
+      "name": "OnboardingParallelRunCertificateContentDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:98",
+      "documented": true
+    },
+    {
+      "name": "OnboardingParallelRunCertificateDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:111",
+      "documented": true
+    },
+    {
+      "name": "PromoteShadowBookRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:114",
+      "documented": true
+    },
+    {
+      "name": "ShadowBookPromotionDecisionDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:117",
+      "documented": true
+    },
+    {
+      "name": "OnboardingShadowAuditEntryDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:123",
+      "documented": true
+    },
+    {
+      "name": "BookOfRecordStatusDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:128",
+      "documented": true
+    },
+    {
+      "name": "ShadowBookNotBookOfRecordException",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:142",
       "documented": true
     },
     {

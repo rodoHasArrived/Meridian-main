@@ -14,8 +14,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | Weighted score | 100.0% |
 | Endpoint coverage | 100.0% |
 | Workstation contract coverage | 100.0% |
-| Endpoints documented | 819 / 819 |
-| Workstation contracts documented | 1026 / 1026 |
+| Endpoints documented | 828 / 828 |
+| Workstation contracts documented | 1045 / 1045 |
 
 ## Endpoint Coverage
 
@@ -41,18 +41,27 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/accounting-system/reconciliation/latest` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:433` |
 | `GET` | `/api/accounting-system/tenant-administration-profile` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:62` |
 | `POST` | `/api/accounting-system/tenant-administration-profile` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:86` |
-| `GET` | `/api/accounting/onboarding/workspaces` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:46` |
-| `POST` | `/api/accounting/onboarding/workspaces` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:52` |
-| `GET` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:76` |
-| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:100` |
-| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons/{comparisonId}/replay` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:156` |
-| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/criteria` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:92` |
-| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/differences/{differenceKey}/assignment` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:108` |
-| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:128` |
-| `GET` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:136` |
-| `GET` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}/download` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:145` |
-| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/reviews` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:118` |
-| `GET` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/sources` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:83` |
+| `GET` | `/api/accounting/onboarding/ledger-books/{ledgerBookId:guid}/book-of-record` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:242` |
+| `GET` | `/api/accounting/onboarding/workspaces` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:47` |
+| `POST` | `/api/accounting/onboarding/workspaces` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:53` |
+| `GET` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:77` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/certificates` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:214` |
+| `GET` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/certificates/{certificateId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:222` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:101` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons/{comparisonId}/replay` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:159` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/criteria` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:93` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/differences/{differenceKey}/assignment` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:109` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/differences/{differenceKey}/explanation` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:204` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/opening-balances` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:188` |
+| `GET` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/opening-balances/report` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:196` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:129` |
+| `GET` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:137` |
+| `GET` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}/download` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:146` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/promotion` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:231` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/reviews` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:119` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/shadow-designation` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:172` |
+| `POST` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/shadow-designation/withdraw` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:180` |
+| `GET` | `/api/accounting/onboarding/workspaces/{workspaceId:guid}/sources` | Documented | `src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs:84` |
 | `POST` | `/api/admin/cleanup/execute` | Documented | `src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs:272` |
 | `GET` | `/api/admin/cleanup/preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs:232` |
 | `GET` | `/api/admin/error-codes` | Documented | `src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs:349` |
@@ -858,7 +867,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ApproveSecurityMasterOverrides` | Documented | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:22` |
 | `ApproveSecurityMasterRevisionRequest` | Documented | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:98` |
 | `ApproveWorkflow` | Documented | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:29` |
-| `AssignOnboardingDifferenceRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:31` |
+| `AssignOnboardingDifferenceRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:33` |
 | `AuditTrailExplorerQueryDto` | Documented | `src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:8` |
 | `AuditTrailExplorerResultDto` | Documented | `src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:57` |
 | `AuditTrailObjectKindDto` | Documented | `src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:79` |
@@ -872,6 +881,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `BankStatementImportResultDto` | Documented | `src/Meridian.Contracts/Workstation/DataUploadDtos.cs:74` |
 | `BiasDisclosureDto` | Documented | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:280` |
 | `BiasDisclosureItemDto` | Documented | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:269` |
+| `BookOfRecordStatusDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:128` |
 | `BooksBeforeBrokerReadinessDto` | Documented | `src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:62` |
 | `BrokerageAccountKindDto` | Documented | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:18` |
 | `BrokerageAccountLinkRequestDto` | Documented | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:61` |
@@ -889,7 +899,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `BulkResolveSecurityMasterConflictsResult` | Documented | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:640` |
 | `CanonicalizationAssuranceDto` | Documented | `src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:109` |
 | `CanonicalizationProviderSummaryDto` | Documented | `src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:119` |
-| `CaptureOnboardingComparisonRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:25` |
+| `CaptureOnboardingComparisonRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:27` |
 | `CashFinancingSummary` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:141` |
 | `CashFlowEntryDto` | Documented | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:960` |
 | `CashFlowProjectionPoint` | Documented | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:34` |
@@ -912,7 +922,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `CorporateActionTimelineEntryDto` | Documented | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:110` |
 | `CounterpartyExposureDto` | Documented | `src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:10` |
 | `CouponEvent` | Documented | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:20` |
-| `CreateOnboardingWorkspaceRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:18` |
+| `CreateOnboardingWorkspaceRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:20` |
 | `CrossFundReportingConsolidationDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:323` |
 | `CrossFundReportingConsolidationScopeDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:313` |
 | `DailyValuationBatchLifecycleRequestDto` | Documented | `src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:54` |
@@ -927,6 +937,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `DataUploadWorkbookPreviewResultDto` | Documented | `src/Meridian.Contracts/Workstation/DataUploadDtos.cs:111` |
 | `DataUploadWorkbookSheetPreviewDto` | Documented | `src/Meridian.Contracts/Workstation/DataUploadDtos.cs:94` |
 | `DeltaOutlierResult` | Documented | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:15` |
+| `DesignateShadowBookRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:39` |
 | `DesktopLaunchTicketRedemptionDto` | Documented | `src/Meridian.Contracts/Workstation/FirstRunDtos.cs:94` |
 | `DiscardSecurityMasterRevisionRequest` | Documented | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:91` |
 | `EquityCurvePoint` | Documented | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:896` |
@@ -997,6 +1008,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ExpectedAccountingEventKindDto` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:228` |
 | `ExpectedJournalPreviewDto` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:318` |
 | `ExpectedJournalPreviewLineDto` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:308` |
+| `ExplainOnboardingDifferenceRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:72` |
 | `ExposureSnapshotDto` | Documented | `src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:2` |
 | `ExposureTrendPointDto` | Documented | `src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:43` |
 | `FeatureCapabilitySettingsResponse` | Documented | `src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs:2` |
@@ -1025,7 +1037,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `FinancialRecordExplorerSummaryItemDto` | Documented | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:53` |
 | `FinancialRecordExplorerTone` | Documented | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:6` |
 | `FirstRunStatusDto` | Documented | `src/Meridian.Contracts/Workstation/FirstRunDtos.cs:2` |
-| `FreezeOnboardingPacketRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:37` |
+| `FreezeOnboardingPacketRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:39` |
 | `FundAccountBrokerageBalanceSnapshotDto` | Documented | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:207` |
 | `FundAccountBrokerageCashTransactionDto` | Documented | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:261` |
 | `FundAccountBrokerageCorporateActionDto` | Documented | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:270` |
@@ -1092,6 +1104,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GovernanceReportValidationSeverityDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:53` |
 | `HaircutRuleDto` | Documented | `src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:24` |
 | `ImportBrokerData` | Documented | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:19` |
+| `ImportOnboardingOpeningBalancesRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:56` |
 | `IngestionCheckpointDto` | Documented | `src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:44` |
 | `IngestionOperationActionDto` | Documented | `src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:61` |
 | `IngestionOperationActionRequestDto` | Documented | `src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:67` |
@@ -1121,6 +1134,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `InvestmentAccountingTransactionLabPreviewDto` | Documented | `src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:71` |
 | `InvestmentAccountingTransactionLabRequestDto` | Documented | `src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:29` |
 | `InvestmentAccountingTrialBalanceImpactDto` | Documented | `src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:47` |
+| `IssueParallelRunCertificateRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:96` |
 | `LedgerAmountApprovalStateDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:682` |
 | `LedgerAmountProofDto` | Documented | `src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:31` |
 | `LedgerAmountProofEvidenceDto` | Documented | `src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:10` |
@@ -1157,23 +1171,33 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `NullReportingRunNotifier` | Documented | `src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs:21` |
 | `NumberPassportDeclaredScopeDto` | Documented | `src/Meridian.Contracts/Workstation/NumberPassportReferenceDtos.cs:19` |
 | `NumberPassportReferenceDto` | Documented | `src/Meridian.Contracts/Workstation/NumberPassportReferenceDtos.cs:7` |
-| `OnboardingComparisonDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:71` |
-| `OnboardingCriteriaDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:9` |
-| `OnboardingCriteriaRevisionDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:61` |
-| `OnboardingDifferenceAssignmentDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:80` |
-| `OnboardingDifferenceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:66` |
-| `OnboardingMissingSourceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:52` |
-| `OnboardingObservationDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:47` |
-| `OnboardingPacketContentDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:97` |
-| `OnboardingPeriodDifferenceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:88` |
-| `OnboardingReadinessDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:91` |
-| `OnboardingReadinessPacketDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:109` |
-| `OnboardingReviewDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:84` |
-| `OnboardingScopeDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:4` |
-| `OnboardingSourceCaptureDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:56` |
-| `OnboardingSourceSelectionDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:28` |
-| `OnboardingSourceSnapshotDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:41` |
-| `OnboardingWorkspaceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:112` |
+| `OnboardingClassificationCountDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:87` |
+| `OnboardingComparisonDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:73` |
+| `OnboardingCriteriaDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:11` |
+| `OnboardingCriteriaRevisionDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:63` |
+| `OnboardingDifferenceAssignmentDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:85` |
+| `OnboardingDifferenceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:68` |
+| `OnboardingDifferenceExplanationDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:82` |
+| `OnboardingMissingSourceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:54` |
+| `OnboardingObservationDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:49` |
+| `OnboardingOpeningAccountMappingDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:50` |
+| `OnboardingOpeningBalanceLineDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:61` |
+| `OnboardingOpeningBalanceReportDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:68` |
+| `OnboardingPacketContentDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:105` |
+| `OnboardingParallelRunCertificateContentDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:98` |
+| `OnboardingParallelRunCertificateDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:111` |
+| `OnboardingPeriodDifferenceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:93` |
+| `OnboardingPeriodSummaryDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:91` |
+| `OnboardingReadinessDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:96` |
+| `OnboardingReadinessPacketDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:119` |
+| `OnboardingReviewDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:89` |
+| `OnboardingScopeDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:6` |
+| `OnboardingShadowAuditEntryDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:123` |
+| `OnboardingShadowDesignationDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:43` |
+| `OnboardingSourceCaptureDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:58` |
+| `OnboardingSourceSelectionDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:30` |
+| `OnboardingSourceSnapshotDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:43` |
+| `OnboardingWorkspaceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:122` |
 | `OpenLotSummary` | Documented | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1139` |
 | `OperatingScopeValuesDto` | Documented | `src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:7` |
 | `OperationsAccountingRecordEvidenceCategoryDto` | Documented | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1160` |
@@ -1318,6 +1342,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `PrivateCapitalNavSupportPackageDto` | Documented | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1465` |
 | `PrivateCapitalShadowNavTieOutDto` | Documented | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1446` |
 | `ProductExposureDto` | Documented | `src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:20` |
+| `PromoteShadowBookRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:114` |
 | `ProviderCorporateActionEvidenceCandidateDto` | Documented | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:448` |
 | `ProviderCorporateActionLedgerEffectDto` | Documented | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:466` |
 | `ProviderCorporateActionReadinessDto` | Documented | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:507` |
@@ -1513,7 +1538,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ResolveSourceConflictRequest` | Documented | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:58` |
 | `RestatementCandidateDto` | Documented | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:184` |
 | `RetainedLedgerAmountDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:580` |
-| `ReviewOnboardingWorkspaceRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:34` |
+| `ReviewOnboardingWorkspaceRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:36` |
 | `ReviewReconciliationBreakRequest` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1025` |
 | `RevokePreparerAttestationRequestDto` | Documented | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:42` |
 | `RunAttributionSummary` | Documented | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:947` |
@@ -1582,6 +1607,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `SecurityMasterTrustTone` | Documented | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:7` |
 | `SecurityMasterWorkstationDto` | Documented | `src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs:43` |
 | `SettlementInstruction` | Documented | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:19` |
+| `ShadowBookNotBookOfRecordException` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:142` |
+| `ShadowBookPromotionDecisionDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:117` |
 | `SinglePrincipalAttestationAuditEventDto` | Documented | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:102` |
 | `SinglePrincipalAttestationScopeDto` | Documented | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:16` |
 | `SinglePrincipalAttestationStateDto` | Documented | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:111` |
@@ -1753,11 +1780,12 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `TradingTrustGateEvidenceDocumentDto` | Documented | `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:273` |
 | `TradingTrustGateReadinessDto` | Documented | `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:291` |
 | `TradingTrustGateSampleReviewDto` | Documented | `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:262` |
-| `UpdateOnboardingCriteriaRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:21` |
+| `UpdateOnboardingCriteriaRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:23` |
 | `UpdateSecurityFieldRequest` | Documented | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:41` |
 | `ValidateLedgerDraft` | Documented | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:24` |
 | `ValuationFreshnessPreviewDto` | Documented | `src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs:16` |
 | `VersionedReportTemplateIdDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1427` |
+| `WithdrawShadowBookRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:41` |
 | `WorkflowActionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:29` |
 | `WorkflowBlockerSummary` | Documented | `src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:42` |
 | `WorkflowDefinitionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:14` |
