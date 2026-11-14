@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { SectionDescription } from "@/components/ui/section-description";
 import { cn } from "@/lib/utils";
 import type {
   OperationalExceptionWorkbenchViewState,
@@ -138,10 +139,11 @@ export function OperationalExceptionWorkbenchPanel({ view }: { view: Operational
   return (
     <section id="accounting-exceptions" className="workspace-section-band" aria-labelledby="accounting-exceptions-heading">
       <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Exceptions</p>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h3 id="accounting-exceptions-heading" className="workspace-section-title">{view.title}</h3>
-          <p className="workspace-section-summary">{view.description}</p>
+          <SectionDescription descriptionKey="accounting:operational-exceptions" label={`About ${view.title}`}>
+            {view.description}
+          </SectionDescription>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild size="sm" variant="outline">
@@ -153,27 +155,16 @@ export function OperationalExceptionWorkbenchPanel({ view }: { view: Operational
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {view.metricRows.map((metric) => (
-          <MetricSnapshotCard
-            key={metric.id}
-            id={metric.id}
-            label={metric.label}
-            value={metric.value}
-            delta={metric.detail}
-            tone={metric.tone}
-          />
-        ))}
-      </div>
-
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <Card className="panel-surface" role="region" aria-label="Unified operational exception queue">
-          <CardHeader>
+          <CardHeader className="px-3 py-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <AlertCircle className="h-4 w-4 text-primary" aria-hidden="true" />
               Case queue
             </CardTitle>
-            <CardDescription>Reconciliation exceptions with owner, SLA, comments, and audit evidence counts.</CardDescription>
+            <SectionDescription descriptionKey="accounting:operational-exception-queue" label="About the operational exception queue">
+              Reconciliation exceptions with owner, SLA, comments, and audit evidence counts.
+            </SectionDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {view.cases.length > 0 ? (
@@ -234,6 +225,13 @@ export function OperationalExceptionWorkbenchPanel({ view }: { view: Operational
           </CardContent>
         </Card>
       </div>
+      <TechnicalDetails label="Exception summary">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {view.metricRows.map((metric) => (
+            <MetricSnapshotCard key={metric.id} id={metric.id} label={metric.label} value={metric.value} delta={metric.detail} tone={metric.tone} />
+          ))}
+        </div>
+      </TechnicalDetails>
     </section>
   );
 }

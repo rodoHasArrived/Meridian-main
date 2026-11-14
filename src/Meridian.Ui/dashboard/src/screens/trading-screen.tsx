@@ -1,3 +1,4 @@
+import { SectionDescription } from "@/components/ui/section-description";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React from "react";
@@ -562,8 +563,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         : "unknown";
 
   return (
-    <div className="space-y-5">
-      <StatStrip metrics={data.metrics} label="Trading headline metrics" />
+    <div className={showOrders ? "space-y-2" : "space-y-3"}>
+      {showOverview ? <StatStrip metrics={data.metrics} label="Trading headline metrics" /> : null}
 
       <section
         id="trading-overview"
@@ -572,12 +573,12 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         className="flex flex-wrap items-end justify-between gap-3"
       >
         <div className="min-w-0">
-          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
+          <h2 className={showOrders ? "sr-only" : "font-display text-lg font-semibold leading-tight text-foreground"}>
             {routeCopy.title}
           </h2>
-          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+          <SectionDescription descriptionKey={`trading:${routeView}`} label={`About ${routeCopy.title}`}>
             {routeCopy.description}
-          </p>
+          </SectionDescription>
         </div>
         <WorkspaceTabStrip
           label="Trading routes"
@@ -626,6 +627,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       />
 
       <BrokerageRecoveryPanel
+        compact={!showOverview}
         readiness={tradingReadiness.readiness}
         fundAccountId={fundAccountId}
         busy={tradingReadiness.refreshing}
@@ -821,7 +823,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
         <div className="min-w-0 space-y-4">
         <Card className="panel-surface">
-          <CardHeader>
+          <CardHeader className="px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <CardTitle className="flex items-center gap-2 text-base">
                 <ClipboardList className="h-4 w-4 text-primary" />
@@ -1019,7 +1021,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               riskWarnings={orderTicket.riskWarnings}
             />
           )}
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 p-3">
             <DenseDataTable
               ariaLabel={blotterVm.ordersTableLabel}
               caption="Select an order to update the order detail status window."

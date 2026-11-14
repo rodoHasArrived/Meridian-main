@@ -10,7 +10,7 @@ import { KeyValueGrid } from "@/components/data/concrete";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
-import { ReadinessPanel, SeverityBadge, WorkspaceSection } from "@/components/operations";
+import { SeverityBadge, WorkspaceSection } from "@/components/operations";
 import { buildDailyControlTowerModel } from "@/lib/daily-control-tower";
 import { appendOperatingScopeToRoute } from "@/app-shell.operating-scope";
 import {
@@ -104,92 +104,83 @@ export function DailyControlTowerScreen({
   return (
     <ScreenLayout
       title="What needs an operator decision now"
-      scope="Daily control tower"
+      descriptionKey="today:overview"
       description="One priority, followed by a ranked finance queue with evidence available in place."
-    >
-      <ReadinessPanel
-        state={readinessToneToSeverityStatus(model.statusTone)}
-        statusLabel={model.statusLabel}
-        title={model.decision.title}
-        detail={model.decision.summary}
-        actions={
-          <Button asChild variant="outline" size="sm">
-            <Link to={model.nextActionHref} aria-label={model.nextActionAriaLabel}>
-              <span>{model.nextActionLabel}</span>
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Link>
-          </Button>
-        }
-      >
-        <KeyValueGrid
-          columns={2}
-          items={[
-            { label: model.decision.reasonLabel, value: model.decision.reason },
-            { label: "Owner", value: model.ownerLabel },
-            { label: "Output", value: model.outputLabel },
-            { label: "Evidence", value: model.evidenceLabel }
-          ]}
+      className="gap-2"
+      workClassName="space-y-2"
+      scope={(
+        <OperationalTrustSummary
+          label="Daily control tower confidence"
+          disclosure
+          source={{
+            label: "Connectivity",
+            value: providerTrust?.value ?? "Provider posture unavailable",
+            detail: providerTrust?.detail ?? "Provider connectivity evidence has not loaded.",
+            tone: providerTrust ? operationalTrustToneFromStrip(providerTrust.tone) : "unknown",
+            action: providerTrust?.href && providerTrust.actionLabel ? (
+              <Button asChild variant="outline" size="sm">
+                <Link to={appendOperatingScopeToRoute(providerTrust.href, viewModel.operatingScope)}>
+                  {providerTrust.actionLabel}
+                </Link>
+              </Button>
+            ) : null
+          }}
+          scope={{
+            value: viewModel.operatingScope.summary,
+            detail: viewModel.operatingScope.hasScope
+              ? "Applied to compatible workstation routes."
+              : "Choose a fund, account, run, provider, symbol, or date window.",
+            tone: viewModel.operatingScope.hasScope ? "ready" : "review",
+            action: onEditOperatingScope ? (
+              <Button type="button" variant="outline" size="sm" onClick={onEditOperatingScope}>
+                {viewModel.operatingScope.hasScope ? "Change scope" : "Set operating scope"}
+              </Button>
+            ) : null
+          }}
+          freshness={{
+            value: freshness.value,
+            detail: freshness.detail,
+            tone: freshness.tone,
+            action: onRefresh ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={refreshing}
+                aria-label={refreshing ? "Refreshing control tower evidence" : "Refresh control tower evidence"}
+                onClick={onRefresh}
+              >
+                {refreshing ? "Refreshing" : "Refresh evidence"}
+              </Button>
+            ) : null
+          }}
+          completeness={{
+            value: `${model.queueRows.length} ranked items · ${model.evidenceTimelineItems.length} evidence events`,
+            detail: "Finance queue and retained evidence coverage",
+            tone: model.queueRows.length > 0 && model.evidenceTimelineItems.length > 0 ? "ready" : "review"
+          }}
+          blocker={model.statusTone !== "ready" ? {
+            value: model.statusLabel,
+            detail: model.decision.reason,
+            tone: trustTone
+          } : undefined}
         />
-      </ReadinessPanel>
-
-      <OperationalTrustSummary
-        label="Daily control tower confidence"
-        source={{
-          label: "Connectivity",
-          value: providerTrust?.value ?? "Provider posture unavailable",
-          detail: providerTrust?.detail ?? "Provider connectivity evidence has not loaded.",
-          tone: providerTrust ? operationalTrustToneFromStrip(providerTrust.tone) : "unknown",
-          action: providerTrust?.href && providerTrust.actionLabel ? (
-            <Button asChild variant="outline" size="sm">
-              <Link to={appendOperatingScopeToRoute(providerTrust.href, viewModel.operatingScope)}>
-                {providerTrust.actionLabel}
-              </Link>
-            </Button>
-          ) : null
-        }}
-        scope={{
-          value: viewModel.operatingScope.summary,
-          detail: viewModel.operatingScope.hasScope
-            ? "Applied to compatible workstation routes."
-            : "Choose a fund, account, run, provider, symbol, or date window.",
-          tone: viewModel.operatingScope.hasScope ? "ready" : "review",
-          action: onEditOperatingScope ? (
-            <Button type="button" variant="outline" size="sm" onClick={onEditOperatingScope}>
-              {viewModel.operatingScope.hasScope ? "Change scope" : "Set operating scope"}
-            </Button>
-          ) : null
-        }}
-        freshness={{
-          value: freshness.value,
-          detail: freshness.detail,
-          tone: freshness.tone,
-          action: onRefresh ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={refreshing}
-              aria-label={refreshing ? "Refreshing control tower evidence" : "Refresh control tower evidence"}
-              onClick={onRefresh}
-            >
-              {refreshing ? "Refreshing" : "Refresh evidence"}
-            </Button>
-          ) : null
-        }}
-        completeness={{
-          value: `${model.queueRows.length} ranked items · ${model.evidenceTimelineItems.length} evidence events`,
-          detail: "Finance queue and retained evidence coverage",
-          tone: model.queueRows.length > 0 && model.evidenceTimelineItems.length > 0 ? "ready" : "review"
-        }}
-        blocker={model.statusTone !== "ready" ? {
-          value: model.statusLabel,
-          detail: model.decision.reason,
-          tone: trustTone
-        } : undefined}
-      />
+      )}
+    >
+      <section aria-label="Priority decision" className="flex flex-wrap items-center gap-x-3 gap-y-2 border-l-2 border-primary bg-card px-3 py-1.5">
+        <SeverityBadge status={readinessToneToSeverityStatus(model.statusTone)} label={model.statusLabel} />
+        <h3 className="min-w-0 flex-1 text-sm font-semibold text-foreground">{model.decision.title}</h3>
+        <Button asChild variant="outline" size="sm">
+          <Link to={model.nextActionHref} aria-label={model.nextActionAriaLabel}>
+            <span>{model.nextActionLabel}</span>
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
+        </Button>
+      </section>
 
       <WorkspaceSection
         title="Finance queue"
+        descriptionKey="today:finance-queue"
         summary="Each row carries the evidence needed to move from source issue to downstream output."
       >
         {!queueVisible ? (
@@ -273,7 +264,17 @@ export function DailyControlTowerScreen({
           </PanelSurface>
         )}
       </WorkspaceSection>
-
+      <TechnicalDetails label="Priority decision evidence" description={model.decision.summary}>
+        <KeyValueGrid
+          columns={2}
+          items={[
+            { label: model.decision.reasonLabel, value: model.decision.reason },
+            { label: "Owner", value: model.ownerLabel },
+            { label: "Output", value: model.outputLabel },
+            { label: "Evidence", value: model.evidenceLabel }
+          ]}
+        />
+      </TechnicalDetails>
     </ScreenLayout>
   );
 }

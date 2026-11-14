@@ -444,10 +444,9 @@ describe("App", () => {
     });
     expect(within(trustDetails).getByRole("link", { name: /Data provenance SEEDED/ }))
       .toHaveTextContent("ProvenanceSEEDED");
-    // W9-TRUTH-001: seeded data keeps the persistent, non-dismissable provenance banner
-    // on screen above every workspace, alongside the trust-strip cell.
-    const provenanceBanner = await screen.findByRole("region", { name: "Data provenance" });
-    expect(within(provenanceBanner).getByTestId("data-provenance-seeded")).toBeInTheDocument();
+    // The persistent masthead label carries the notice once; no repeated page banner.
+    expect(strip.querySelector("summary")).toHaveTextContent("SEEDED");
+    expect(screen.queryByRole("region", { name: "Data provenance" })).not.toBeInTheDocument();
   });
 
   it("opens and closes the command palette with Control+K", async () => {
@@ -506,8 +505,8 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: "Daily Control Tower Workstation" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Daily Control Tower continuity" })).toBeInTheDocument();
     const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
-    ["Connectivity", "Scope", "Freshness", "Completeness", "Blocker"].forEach((label) => {
-      expect(within(confidence).getByText(label)).toBeInTheDocument();
+    ["Connectivity", "Freshness", "Blocker"].forEach((label) => {
+      expect(confidence.querySelector("summary")).toHaveTextContent(label);
     });
     expect(confidence).toHaveTextContent("4 ranked items");
     expect(screen.queryByRole("region", { name: "Daily control tower decision drivers" })).not.toBeInTheDocument();

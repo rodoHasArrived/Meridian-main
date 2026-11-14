@@ -201,7 +201,9 @@ describe("TrialBalanceScreen", () => {
 
     expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith(PERIOD_ID);
     expect(ledgerReportsApi.getLedgerPeriodJournalEntries).toHaveBeenCalledWith(PERIOD_ID);
-    expect(screen.getByText("Posted journal")).toBeInTheDocument();
+    const confidence = screen.getByRole("region", { name: "Data confidence" });
+    expect(confidence.querySelector("summary")).toHaveTextContent("Posted journal");
+    expect(confidence.querySelector("details")).not.toHaveAttribute("open");
     expect(screen.getByRole("heading", { name: "Trial balance scope" })).toBeInTheDocument();
     // The structure node the book is scoped to. This asserted the hard-coded "All entities" — an
     // affirmative claim about a book scoped to exactly one node — and then, briefly, the book's

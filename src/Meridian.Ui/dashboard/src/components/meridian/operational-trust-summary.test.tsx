@@ -5,7 +5,7 @@ import { axe } from "jest-axe";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 
 describe("OperationalTrustSummary", () => {
-  it("keeps scope and warnings visible while supporting facts can be expanded", async () => {
+  it("keeps source, freshness and blocker visible while scope and supporting facts can be expanded", async () => {
     const user = userEvent.setup();
     const { container } = render(
       <OperationalTrustSummary
@@ -20,13 +20,16 @@ describe("OperationalTrustSummary", () => {
     const details = container.querySelector("details")!;
     const summary = container.querySelector("summary")!;
     expect(details).not.toHaveAttribute("open");
-    for (const fact of ["Book A", "Stale snapshot", "Missing mark evidence", "Blocked", "Needs review"]) {
+    for (const fact of ["Retained portfolio", "Stale snapshot", "Missing mark evidence", "Blocked"]) {
       expect(summary).toHaveTextContent(fact);
     }
     expect(summary).not.toHaveTextContent("Immutable source receipt");
+    expect(summary).not.toHaveTextContent("Book A");
     expect((await axe(container)).violations).toEqual([]);
     await user.click(summary);
     expect(details).toHaveAttribute("open");
+    expect(screen.getByText("Book A")).toBeVisible();
+    expect(screen.getAllByText("Needs review").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "Review marks" })).toHaveAttribute("href", "/data/providers");
     expect((await axe(container)).violations).toEqual([]);
   });

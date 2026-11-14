@@ -139,14 +139,18 @@ describe("DailyControlTowerScreen", () => {
     expect(screen.getByText("More evidence").closest("details")).not.toHaveAttribute("open");
   });
 
-  it("exposes connectivity, scope, and freshness remediation in their owning cards", async () => {
+  it("retains connectivity, scope, and freshness remediation in the confidence disclosure", async () => {
     const user = userEvent.setup();
     const onEditOperatingScope = vi.fn();
     const onRefresh = vi.fn();
     renderScreen({ onEditOperatingScope, onRefresh, search: "" });
 
     const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
-    expect(within(confidence).getByText("Connectivity")).toBeInTheDocument();
+    const disclosure = confidence.querySelector("details")!;
+    expect(disclosure).not.toHaveAttribute("open");
+    await user.click(disclosure.querySelector("summary")!);
+    expect(disclosure).toHaveAttribute("open");
+    expect(within(confidence).getAllByText("Connectivity").length).toBeGreaterThan(0);
     expect(within(confidence).getByRole("link", { name: "Open provider posture" }))
       .toHaveAttribute("href", "/data/providers");
 
@@ -157,10 +161,12 @@ describe("DailyControlTowerScreen", () => {
     expect(onRefresh).toHaveBeenCalledTimes(1);
   });
 
-  it("preserves compatible operating scope in connectivity recovery", () => {
+  it("preserves compatible operating scope in connectivity recovery", async () => {
+    const user = userEvent.setup();
     renderScreen({ search: "?symbol=MSFT" });
 
     const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
+    await user.click(confidence.querySelector("summary")!);
     expect(within(confidence).getByRole("link", { name: "Open provider posture" }))
       .toHaveAttribute("href", "/data/providers?symbol=MSFT");
   });
@@ -236,11 +242,12 @@ describe("DailyControlTowerScreen", () => {
   it("shows the leading action once outside the ranked queue", () => {
     renderScreen();
 
-    const priorityPanel = screen.getByText("Report pack approval waiting", {
-      selector: ".mds-rpanel__title"
-    }).closest(".mds-rpanel");
-    expect(priorityPanel).not.toBeNull();
-    expect(within(priorityPanel as HTMLElement).getAllByRole("link")).toHaveLength(1);
+    const priorityPanel = screen.getByRole("region", { name: "Priority decision" });
+    expect(within(priorityPanel).getByRole("heading", { name: "Report pack approval waiting" })).toBeInTheDocument();
+    expect(within(priorityPanel).getAllByRole("link")).toHaveLength(1);
+    const evidence = screen.getByText("Priority decision evidence").closest("details")!;
+    expect(evidence).not.toHaveAttribute("open");
+    expect(screen.getByRole("treegrid", { name: "Daily control tower finance queue" }).compareDocumentPosition(evidence) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("has no accessibility violations", async () => {

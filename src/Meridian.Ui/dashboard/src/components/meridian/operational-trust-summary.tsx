@@ -68,6 +68,12 @@ export function OperationalTrustSummary({
     facts.push({ id: "blocker", label: blocker.label ?? "Blocker", fact: blocker });
   }
 
+  const toneRank: Record<OperationalTrustTone, number> = { ready: 0, review: 1, unknown: 2, blocked: 3 };
+  const summaryTone = facts.reduce<OperationalTrustTone>((worst, { fact }) => {
+    const tone = fact.tone ?? "unknown";
+    return toneRank[tone] > toneRank[worst] ? tone : worst;
+  }, "ready");
+
   const detail = (
     <div className="flex flex-wrap items-start justify-between gap-3">
       <dl className="grid min-w-0 flex-1 grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-2">
@@ -120,18 +126,19 @@ export function OperationalTrustSummary({
     >
       {disclosure ? (
         <details className="group">
-          <summary className="flex cursor-pointer list-none items-start gap-3 px-3 py-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-1.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
             <span className="sr-only">{label}. </span>
-            <span className="grid min-w-0 flex-1 grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-x-3 gap-y-2">
-              {facts.map(({ id, label: factLabel, fact }) => (
-                <span key={id} className="min-w-0 text-xs leading-5">
-                  <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span className={cn("inline-flex rounded-full border px-1.5 text-[11px]", toneClasses[summaryTone])}>
+                {toneLabels[summaryTone]}
+              </span>
+              {facts.filter(({ id }) => id === "source" || id === "freshness" || id === "blocker").map(({ id, label: factLabel, fact }) => (
+                <span key={id} className="inline-flex min-w-0 flex-wrap items-baseline gap-x-1.5 text-xs leading-5">
+                  <span className="contents">
                     <span className="text-muted-foreground">{factLabel}</span>
-                    <span className={cn("inline-flex rounded-full border px-1.5 text-[11px]", toneClasses[fact.tone ?? "unknown"])}>
-                      {toneLabels[fact.tone ?? "unknown"]}
-                    </span>
+
                   </span>
-                  <span className="block break-words font-medium text-foreground">{fact.value}</span>
+                  <span className="break-words font-medium text-foreground">{fact.value}</span>
                 </span>
               ))}
             </span>

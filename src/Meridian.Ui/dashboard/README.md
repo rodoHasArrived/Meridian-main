@@ -86,6 +86,24 @@ and Trading blotters retain their existing interaction models.
 
 ## Shared workstation header
 
+Workspace KPI strips belong on overview routes. Accounting and Trading subroutes start with
+their working surface; Settings has no trading or storage metric strip. The masthead keeps
+confirmed SEEDED/SAMPLE/SIMULATED provenance visible once, with its explanation in the Trust
+disclosure. Unknown provenance retains its separate warning and retry control.
+
+`OperationalTrustSummary` in disclosure mode combines the most severe state, source, freshness,
+and explicit blocker into a compact context line. Scope, completeness, individual fact states,
+and recovery actions remain in Details. The persistent shell scope stays visible.
+
+Use `SectionDescription` only for instructional copy, with a stable `descriptionKey` and an
+accessible label. `ScreenLayout` and `WorkspaceSection` opt in using `descriptionKey`; dynamic
+financial state, warnings, source evidence, and scope must never use remembered help. The shell
+scopes browser-local reading preferences to the session environment, operator name and role.
+Copy remains inline on its first visit; visibility observation or Hide remembers it for later
+visits. An information disclosure then restores the copy with Enter/Space; Escape closes it and
+returns focus. Storage failures leave help usable. These preferences do not change financial data
+or authorization and do not synchronize between browsers.
+
 The browser shell combines `WorkspaceHeader` and its persistent operating scope in one compact
 header. `Workflow context` starts collapsed and reveals workflow steps and decision evidence.
 `Views` discloses existing saved-layout and save-current-view controls; Copy link and Refresh stay

@@ -8,6 +8,7 @@ import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { SectionDescription } from "@/components/ui/section-description";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
@@ -374,11 +375,13 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
         )}
       >
         <Card id="reconciliation-break-queue" role="region" aria-label="Reconciliation break checklist" className="panel-surface">
-          <CardHeader>
+          <CardHeader className="flex flex-wrap items-center gap-2 px-3 py-1">
             <CardTitle>Reconciliation break queue</CardTitle>
-            <CardDescription>Review discrepancies, evidence, and permitted actions without leaving the queue.</CardDescription>
+            <SectionDescription descriptionKey="accounting:reconciliation-break-queue" label="About the reconciliation break queue">
+              Review discrepancies, evidence, and permitted actions without leaving the queue.
+            </SectionDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2 px-3 py-1">
             <span className="sr-only" aria-live="polite">{reconciliation.statusAnnouncement}</span>
             {reconciliation.loadingText && (
               <p role="status" className="text-sm text-muted-foreground">{reconciliation.loadingText}</p>
@@ -439,8 +442,6 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
               </label>
               <Button type="button" variant="ghost" onClick={controls.clearQueueFilters}>Clear filters</Button>
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p role="status" className="text-xs text-muted-foreground">{visibleRows.length} of {reconciliation.rows.length} loaded breaks</p>
               <Button
                 ref={toggleRef}
                 type="button"
@@ -452,7 +453,6 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
               >
                 Inspect selected break
               </Button>
-            </div>
             {selectedOutsideFilter ? <p role="status" className="text-sm text-muted-foreground">The selected break is outside these filters. Its evidence remains in the inspector.</p> : null}
             <div ref={queueRef} className="reconciliation-queue-scroll" onScroll={rememberQueueScroll}>
               <DenseDataTable
@@ -470,6 +470,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 caption={reconciliation.tableCaption}
               />
             </div>
+            <p role="status" className="text-xs text-muted-foreground">{visibleRows.length} of {reconciliation.rows.length} loaded breaks</p>
           </CardContent>
         </Card>
       </WorkspaceWorkbenchShell>

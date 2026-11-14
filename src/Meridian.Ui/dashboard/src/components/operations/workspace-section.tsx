@@ -3,6 +3,7 @@
 // A sticky section header (title + summary on the left, optional jump affordance on the
 // right) over a content body. Used to band an operator workspace into labelled,
 // jump-to-able regions that keep their heading pinned while the region scrolls.
+import { SectionDescription } from "@/components/ui/section-description";
 import type { ReactNode } from "react";
 import { injectStyle } from "./inject-style";
 
@@ -32,6 +33,8 @@ export interface WorkspaceSectionProps {
   title?: ReactNode;
   /** Muted one-line summary under the title. */
   summary?: ReactNode;
+  /** Opt in only for instructional summaries; financial status stays visible by default. */
+  descriptionKey?: string;
   /** Jump affordance label (omit to hide). */
   jump?: ReactNode;
   /** Jump click handler (button mode). */
@@ -60,6 +63,7 @@ export function WorkspaceSection({
   id,
   title,
   summary,
+  descriptionKey,
   jump,
   onJump,
   jumpHref,
@@ -70,9 +74,9 @@ export function WorkspaceSection({
   return (
     <section id={id} className={`mds-wsection${className ? " " + className : ""}`}>
       <div className="mds-wsection__head">
-        <div className="mds-wsection__heading">
+        <div className="mds-wsection__heading flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
           {title && <h3 className="mds-wsection__title">{title}</h3>}
-          {summary && <p className="mds-wsection__summary">{summary}</p>}
+          {summary && (descriptionKey ? <SectionDescription descriptionKey={descriptionKey} label={`About ${typeof title === "string" ? title : "this section"}`}>{summary}</SectionDescription> : <p className="mds-wsection__summary basis-full">{summary}</p>)}
         </div>
         {jump &&
           (jumpHref ? (

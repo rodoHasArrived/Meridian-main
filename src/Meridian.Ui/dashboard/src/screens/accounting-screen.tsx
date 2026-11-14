@@ -7,6 +7,7 @@ import { useAccountingCloseSources, type CloseWorkflowQuery } from "./accounting
 import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { SectionDescription } from "@/components/ui/section-description";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { Badge } from "@/components/ui/badge";
@@ -395,16 +396,15 @@ function AccountingSystemReconciliationPanel({
 
   return (
     <Card id="external-gl-reconciliation" className="panel-surface scroll-mt-6" role="region" aria-label="External GL reconciliation">
-      <CardHeader>
+      <CardHeader className="px-3 py-2">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <div className="eyebrow-label">External GL reconciliation</div>
-            <CardTitle className="mt-2 flex items-center gap-2 text-base">
+            <CardTitle className="flex items-center gap-2 text-base">
               <BookCheck className="h-4 w-4 text-primary" aria-hidden="true" />
               {activeProvider ? presentExternalGlProviderEvidenceLabel(activeProvider.displayName) : "External GL evidence"}
             </CardTitle>
-            <CardDescription className="mt-2">
-              External accounting-system records are imported as read-only evidence against Meridian-owned ledger truth; posting back to the external GL remains disabled.
+            <CardDescription className="mt-1">
+              Read-only external GL evidence · Meridian ledger is authoritative · External posting disabled.
             </CardDescription>
             {selectedCompanyLabel ? (
               <div className="mt-2 text-xs text-muted-foreground">
@@ -422,7 +422,7 @@ function AccountingSystemReconciliationPanel({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 p-3">
         {error ? (
           <StatusBanner tone="danger" role="alert" title={error} />
         ) : null}
@@ -1162,10 +1162,11 @@ function AccountingApprovalsWorkstream() {
   return (
     <section id="accounting-approvals" className="workspace-section-band" aria-labelledby="accounting-approvals-heading">
       <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Approvals</p>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h3 id="accounting-approvals-heading" className="workspace-section-title">Approval queue and audit gate</h3>
-          <p className="workspace-section-summary">Close approvals, missing evidence, signer context, and audit history come from the operations-continuity workflow.</p>
+          <SectionDescription descriptionKey="accounting:approval-audit-gate" label="About the approval queue and audit gate">
+            Close approvals, missing evidence, signer context, and audit history come from the operations-continuity workflow.
+          </SectionDescription>
         </div>
         <Button type="button" size="sm" variant="outline" disabled={loading} busy={loading} busyLabel="Refreshing approvals" onClick={() => void refreshWorkflows()}>
           <RefreshCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden="true" />
@@ -1174,12 +1175,14 @@ function AccountingApprovalsWorkstream() {
       </div>
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_26rem]">
         <Card className="panel-surface">
-          <CardHeader>
+          <CardHeader className="px-3 py-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <UserCheck className="h-4 w-4 text-primary" aria-hidden="true" />
               Approval queue
             </CardTitle>
-            <CardDescription>Pending, blocked, approved, and rejected close workflows ready for sign-off review.</CardDescription>
+            <SectionDescription descriptionKey="accounting:approval-queue" label="About the approval queue">
+              Pending, blocked, approved, and rejected close workflows ready for sign-off review.
+            </SectionDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <ApprovalStatusMessage loading={loading} error={error} empty={!loading && workflows.length === 0} />
@@ -2150,8 +2153,8 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const multiAssetCoveragePanel = buildMultiAssetCoveragePanel(multiAssetCoverage);
 
   return (
-    <div className="space-y-5">
-      <StatStrip metrics={data.metrics} label="Accounting headline metrics" />
+    <div className="space-y-3">
+      {taskMode.id === "close-cockpit" ? <StatStrip metrics={data.metrics} label="Accounting headline metrics" /> : null}
       {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
 
       <AccountingWorkbenchContext
@@ -2292,10 +2295,6 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {sectionVisibility.showExternalGl ? (
-      <AccountingOnboardingPanel />
-      ) : null}
-
-      {sectionVisibility.showExternalGl ? (
       <AccountingSystemReconciliationPanel
         providers={accountingSystemProviders}
         importDetail={accountingSystemImport}
@@ -2314,6 +2313,10 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         onCreateExportPackage={() => void createExternalGlExportPackage()}
         onCertifyExportPackage={() => void certifyExternalGlExportPackage()}
       />
+      ) : null}
+
+      {sectionVisibility.showExternalGl ? (
+      <AccountingOnboardingPanel />
       ) : null}
 
       {sectionVisibility.showConfiguration ? (
@@ -2858,6 +2861,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
       {/* --- Security Master panel (shown when security-master workstream is active) --- */}
       {sectionVisibility.showSecurityMaster && (
         <FinancialRecordExplorerShell
+          compact
           explorerLabel="Financial Record Explorer"
           title="Security & Instrument Explorer"
           titleId="accounting-security-master-explorer-title"
@@ -4165,10 +4169,11 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
     return (
       <section className="workspace-section-band" aria-labelledby="manual-je-heading">
         <div className="workspace-section-subheader">
-          <div className="min-w-0">
-            <p className="eyebrow-label">Manual journal entries</p>
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <h3 id="manual-je-heading" className="workspace-section-title">{view.title}</h3>
-            <p className="workspace-section-summary">{view.description}</p>
+            <SectionDescription descriptionKey="accounting:manual-journal-workbench" label={`About ${view.title}`}>
+              {view.description}
+            </SectionDescription>
           </div>
         </div>
         <StatusBanner
@@ -4200,10 +4205,11 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
   return (
     <section className="workspace-section-band" aria-labelledby="manual-je-heading">
       <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Manual journal entries</p>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h3 id="manual-je-heading" className="workspace-section-title">{view.title}</h3>
-          <p className="workspace-section-summary">{view.description}</p>
+          <SectionDescription descriptionKey="accounting:manual-journal-workbench" label={`About ${view.title}`}>
+            {view.description}
+          </SectionDescription>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={view.draft.status === "Submitted" ? "success" : view.draft.status === "NeedsFix" ? "warning" : "outline"} dot>
@@ -4744,10 +4750,11 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
   return (
     <section className="workspace-section-band" aria-labelledby="accounting-configure-heading">
       <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Configure</p>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h3 id="accounting-configure-heading" className="workspace-section-title">{view.title}</h3>
-          <p className="workspace-section-summary">{view.description}</p>
+          <SectionDescription descriptionKey="accounting:configuration-workbench" label={`About ${view.title}`}>
+            {view.description}
+          </SectionDescription>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={view.statusTone === "success" ? "success" : view.statusTone === "danger" ? "danger" : view.statusTone === "warning" ? "warning" : "outline"} dot>

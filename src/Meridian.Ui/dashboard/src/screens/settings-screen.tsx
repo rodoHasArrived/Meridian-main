@@ -1,3 +1,4 @@
+import { SectionDescription } from "@/components/ui/section-description";
 import { OwnedProviderCredentialPanel } from "./settings-owned-provider-credentials";
 import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
@@ -5,7 +6,6 @@ import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-p
 import { formatNumber as formatNumberAmount } from "@/lib/format";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { StatStrip } from "@/components/meridian/stat-strip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -400,18 +400,6 @@ const diagnosticToneClass = {
   warning: "border-warning/35 bg-warning/10",
   danger: "border-danger/35 bg-danger/10"
 } as const;
-
-// Storage-health headline metric tone — mirrors the view-model's storage tone mapping so the
-// MetricCard accent matches the "Storage health" system item.
-function settingsStorageHealthTone(
-  health: SystemOverviewResponse["storageHealth"] | undefined
-): "default" | "success" | "warning" | "danger" {
-  if (health === "Healthy") return "success";
-  if (health === "Warning") return "warning";
-  if (health === "Critical") return "danger";
-  return "default";
-}
-
 
 const requirementToneClass = {
   success: "border-success/30 bg-success/10 text-success",
@@ -880,20 +868,6 @@ export function SettingsScreen({
     [allProviderRows]
   );
   const routeCopy = SETTINGS_ROUTE_VIEW_COPY[activeTaskView];
-  const settingsStatMetrics = [
-    {
-      id: "providers-online",
-      label: "Providers online",
-      value: overview ? `${overview.providersOnline} / ${overview.providersTotal}` : "—",
-      delta: "",
-      tone: overview
-        ? overview.providersOnline === overview.providersTotal ? "success" as const : "warning" as const
-        : "default" as const
-    },
-    { id: "active-runs", label: "Active runs", value: overview ? String(overview.activeRuns) : "—", delta: "", tone: "default" as const },
-    { id: "open-positions", label: "Open positions", value: overview ? String(overview.openPositions) : "—", delta: "", tone: "default" as const },
-    { id: "storage-health", label: "Storage health", value: overview?.storageHealth ?? "—", delta: "", tone: settingsStorageHealthTone(overview?.storageHealth) }
-  ];
   const showChooserSection = activeTaskView === "chooser";
   const showPreferencesSection = activeTaskView === "preferences";
   const showAccessSection = activeTaskView === "access";
@@ -2396,22 +2370,21 @@ export function SettingsScreen({
   };
 
   return (
-    <div className="space-y-5">
-      <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" />
+    <div className="space-y-3">
 
       <section
         id="settings-overview"
         role="region"
         aria-label="Settings workbench context"
-        className="flex flex-wrap items-end justify-between gap-3"
+        className={showChooserSection ? "sr-only" : "flex flex-wrap items-end justify-between gap-3"}
       >
         <div className="min-w-0">
           <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
             {routeCopy.title}
           </h2>
-          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+          {!showChooserSection ? <SectionDescription descriptionKey={`settings:${activeTaskView}`} label={`About ${routeCopy.title}`}>
             {routeCopy.description}
-          </p>
+          </SectionDescription> : null}
         </div>
       </section>
 

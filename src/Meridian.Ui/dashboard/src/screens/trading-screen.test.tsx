@@ -358,6 +358,7 @@ describe("TradingScreen", () => {
   it("renders the overview posture with the workflow strip and no blotters", async () => {
     await renderTradingScreen();
     expect(screen.getByRole("region", { name: "Execution cockpit context" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Trading headline metrics")).toBeInTheDocument();
     const workflowStrip = screen.getByRole("region", { name: "Workflow control strip" });
     expect(within(workflowStrip).getByRole("button", { name: /strategy controls/i })).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /session replay/i })).toBeInTheDocument();
@@ -372,8 +373,20 @@ describe("TradingScreen", () => {
   it("renders the position book with wiring state on the positions route", async () => {
     await renderTradingScreen(data, "/trading/positions");
     expect(screen.getByText("Live positions")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
     expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
+  });
+
+  it("keeps order recovery status and actions visible while disclosing supporting evidence", async () => {
+    await renderTradingScreen(data, "/trading/orders");
+    expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
+    const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
+    expect(recovery.querySelector("summary [role=status]")).toHaveTextContent("Live trading blocked — recovery required");
+    expect(within(recovery).getByRole("button", { name: "Synchronize and reconcile" })).toBeVisible();
+    expect(recovery.querySelector("details")).not.toHaveAttribute("open");
+    await userEvent.setup().click(within(recovery).getByText("Recovery details"));
+    expect(within(recovery).getByText("Select a fund account to load its brokerage recovery evidence.")).toBeVisible();
   });
 
   it("resolves route views by exact path segment, not substring", () => {

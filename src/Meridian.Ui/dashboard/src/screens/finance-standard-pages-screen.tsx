@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { SectionDescription } from "@/components/ui/section-description";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
@@ -336,8 +337,9 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
   const hasAccountingBasis = Boolean(account?.accountingBasis?.trim());
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <OperationalTrustSummary
+        disclosure
         source={{ value: requestedRunId ? "Trial balance" : "No run selected", tone: requestedRunId ? "ready" : "unknown" }}
         scope={{ value: requestedRunId ? "Selected ledger run" : "Select a run", detail: account ? account.accountName : accountId ? "Selected account reference" : "No account selected", tone: requestedRunId ? "ready" : "unknown" }}
         freshness={{
@@ -350,6 +352,24 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
         }}
         blocker={errorText ? { value: "Trial balance unavailable", detail: errorText, tone: "blocked" } : undefined}
       />
+      <div className="flex flex-wrap gap-2">
+        <Button asChild size="sm" variant="outline">
+          <Link to={workstationRouteWithQuery("strategyRunLedger", { runId: requestedRunId || null })}>Back to Run Ledger</Link>
+        </Button>
+        <Button asChild size="sm" variant="outline">
+          <Link to={workstationRouteWithQuery("strategyRunLedger", { runId: requestedRunId || null })}>Open run ledger activity</Link>
+        </Button>
+        {account?.sourceJournalEntryId ? (
+          <Button asChild size="sm" variant="outline">
+            <Link to={workstationRouteWithQuery("accountingJournalEntryDetail", { journalEntryId: account.sourceJournalEntryId, runId: requestedRunId || null })}>Open source journal entry</Link>
+          </Button>
+        ) : null}
+        {account?.approvalIds && account.approvalIds.length > 0 ? (
+          <Button asChild size="sm" variant="outline">
+            <Link to={workstationRouteWithQuery("accountingApprovals", { approvalId: account.approvalIds[0] })}>Review approvals</Link>
+          </Button>
+        ) : null}
+      </div>
       <Card className="panel-surface">
         <CardHeader>
           <CardTitle>Account Detail</CardTitle>
@@ -385,24 +405,7 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
           ) : null}
         </CardContent>
       </Card>
-      <div className="flex flex-wrap gap-2">
-        <Button asChild size="sm" variant="outline">
-          <Link to={workstationRouteWithQuery("strategyRunLedger", { runId: requestedRunId || null })}>Back to Run Ledger</Link>
-        </Button>
-        <Button asChild size="sm" variant="outline">
-          <Link to={workstationRouteWithQuery("strategyRunLedger", { runId: requestedRunId || null })}>Open run ledger activity</Link>
-        </Button>
-        {account?.sourceJournalEntryId ? (
-          <Button asChild size="sm" variant="outline">
-            <Link to={workstationRouteWithQuery("accountingJournalEntryDetail", { journalEntryId: account.sourceJournalEntryId, runId: requestedRunId || null })}>Open source journal entry</Link>
-          </Button>
-        ) : null}
-        {account?.approvalIds && account.approvalIds.length > 0 ? (
-          <Button asChild size="sm" variant="outline">
-            <Link to={workstationRouteWithQuery("accountingApprovals", { approvalId: account.approvalIds[0] })}>Review approvals</Link>
-          </Button>
-        ) : null}
-      </div>
+
     </div>
   );
 }
@@ -527,16 +530,16 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <Card className="panel-surface">
-        <CardHeader>
+        <CardHeader className="sr-only">
           <CardTitle>Ledger Explorer</CardTitle>
-          <CardDescription>Search journal activity by account, amount, journal ID, source, security, or entity.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.25fr)_minmax(15rem,0.7fr)_minmax(9rem,0.45fr)_minmax(10rem,0.5fr)]">
-          <FormRow label="Search by account, amount, journal ID, source, security, entity" labelFor="ledger-search">
+        <CardContent className="grid gap-3 px-3 py-2 lg:grid-cols-[minmax(0,1.5fr)_minmax(12rem,1fr)_minmax(10rem,1fr)]">
+          <FormRow label={<><span aria-hidden="true">Search</span><span className="sr-only">Search by account, amount, journal ID, source, security, entity</span></>} labelFor="ledger-search">
             <Input
               id="ledger-search"
+              aria-label="Search by account, amount, journal ID, source, security, entity"
               type="search"
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
@@ -575,23 +578,21 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
             </Select>
           </FormRow>
         </CardContent>
-      </Card>
-
-      <Card className="panel-surface">
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <CardTitle>Ledger search results</CardTitle>
-            <CardDescription>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 pb-2 text-xs text-muted-foreground">
+            <h3 className="sr-only">Ledger search results</h3>
+            <p>
               {loading
                 ? "Loading the posted journal."
                 : postedLedger.journalErrorText
                   ? postedLedger.journalErrorText
                   : `${filteredRows.length} posted entry(ies)${postedLedger.selectedPeriodLabel ? ` for ${postedLedger.selectedPeriodLabel}` : ""}.`}
-            </CardDescription>
-          </div>
-          <Badge variant={filteredRows.length > 0 ? "success" : "outline"}>{filteredRows.length}</Badge>
-        </CardHeader>
-        <CardContent>
+            </p>
+            <Badge variant={filteredRows.length > 0 ? "success" : "outline"}>{filteredRows.length}</Badge>
+            <SectionDescription descriptionKey="accounting:ledger-explorer" label="About Ledger Explorer">
+              Search journal activity by account, amount, journal ID, source, security, or entity.
+            </SectionDescription>
+        </div>
+        <CardContent className="px-3 pb-3 pt-0">
           <div className="overflow-x-auto rounded-md border border-border/70">
             <table className="min-w-full text-sm" aria-label="Ledger Explorer results">
               <thead className="bg-secondary/30 text-left text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
@@ -704,14 +705,22 @@ export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScre
   const freshness = buildFinanceFreshness(selectedBreak?.lastUpdatedAt);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <OperationalTrustSummary
+        disclosure
         source={{ value: "Reconciliation queue", tone: data ? "ready" : "unknown" }}
         scope={{ value: selectedBreak ? "Selected case" : "No case selected", detail: selectedBreak?.strategyName, tone: selectedBreak ? "ready" : "unknown" }}
         freshness={freshness}
         completeness={{ value: selectedBreak ? "Case loaded" : "No case data", tone: selectedBreak ? "review" : "unknown" }}
         blocker={selectedBreak ? { value: "Open cash variance", detail: selectedBreak.reason, tone: "review" } : undefined}
       />
+      <div className="flex flex-wrap gap-2">
+        <Button asChild size="sm"><Link to={WORKSTATION_ROUTE_CATALOG.accountingReconciliation}>Open reconciliation casework</Link></Button>
+        {selectedBreak ? (
+          <Button asChild size="sm" variant="outline"><Link to={evidenceWorkbenchPath("reconciliation-break", selectedBreak.breakId)}>Review retained evidence</Link></Button>
+        ) : null}
+        <Button type="button" size="sm" variant="outline" disabled disabledReason="Match decisions are recorded from the governed reconciliation casework route.">Record match decision</Button>
+      </div>
       <Card className="panel-surface">
         <CardHeader>
           <CardTitle>Reconciliation Match Workbench</CardTitle>
@@ -741,13 +750,7 @@ export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScre
       ) : (
         <StatusBanner role="status" tone="info" title="No reconciliation case selected" detail="Open a break from Accounting Reconciliation to retain its case scope here." />
       )}
-      <div className="flex flex-wrap gap-2">
-        <Button asChild size="sm"><Link to={WORKSTATION_ROUTE_CATALOG.accountingReconciliation}>Open reconciliation casework</Link></Button>
-        {selectedBreak ? (
-          <Button asChild size="sm" variant="outline"><Link to={evidenceWorkbenchPath("reconciliation-break", selectedBreak.breakId)}>Review retained evidence</Link></Button>
-        ) : null}
-        <Button type="button" size="sm" variant="outline" disabled disabledReason="Match decisions are recorded from the governed reconciliation casework route.">Record match decision</Button>
-      </div>
+
     </div>
   );
 }
@@ -798,34 +801,28 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
   const calendarFreshness = buildFinanceFreshness(calendar?.generatedAtUtc);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <OperationalTrustSummary
+        disclosure
         source={{ value: "Close calendar", tone: calendar ? "ready" : errorText ? "blocked" : "review" }}
         scope={{ value: periodId ? presentFinancePeriod(periodId) : "All periods", detail: fundAccountId ? "Selected fund account" : "All fund accounts", tone: "ready" }}
         freshness={loading ? { value: "Loading", tone: "review" } : errorText ? { value: "Unavailable", tone: "blocked" } : calendarFreshness}
         completeness={{ value: `${items.length} workflow${items.length === 1 ? "" : "s"} retained`, tone: items.length > 0 ? "ready" : errorText ? "blocked" : "unknown" }}
         blocker={errorText ? { value: "Calendar unavailable", detail: errorText, tone: "blocked" } : undefined}
       />
-      <Card className="panel-surface">
-        <CardHeader>
-          <CardTitle>Close Calendar</CardTitle>
-          <CardDescription>Month-end tasks by owner, due date, blocker, evidence, dependency, and sign-off state.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-3">
-          <FinanceFact label="Selected period" value={periodId ?? "All periods"} />
-          <FinanceFact label="Workflows" value={String(items.length)} />
-          <FinanceFact label="Blocked workflows" value={String(items.filter((item) => item.blockerCount > 0).length)} />
-        </CardContent>
-      </Card>
+      <div className="text-xs leading-5 text-muted-foreground" aria-label="Close calendar scope">
+        <h2 className="sr-only">Close Calendar</h2>
+        {periodId ? presentFinancePeriod(periodId) : "All periods"} · {items.length} workflows · {items.filter((item) => item.blockerCount > 0).length} blocked workflows
+      </div>
       {loading ? <StatusBanner role="status" tone="info" title="Loading close calendar" detail="Loading retained workflow deadlines, blockers, and approvals." /> : null}
       {errorText ? <StatusBanner role="alert" tone="danger" title="Close calendar unavailable" detail={errorText} /> : null}
       {!loading && !errorText ? (
         <Card className="panel-surface">
-          <CardHeader>
+          <CardHeader className="px-3 py-2">
             <CardTitle className="text-base">Close workflow queue</CardTitle>
-            <CardDescription>Open a period to acknowledge tasks, submit approvals, or close from the governed workflow.</CardDescription>
+            <SectionDescription descriptionKey="close-calendar:queue" label="About the close workflow queue">Open a period to acknowledge tasks, submit approvals, or close from the governed workflow.</SectionDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3">
             {closeRows.length > 0 ? (
               <ul className="space-y-2" aria-label="Close workflow queue">
                 {closeRows.map(({ item, summary }) => (

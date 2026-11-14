@@ -207,6 +207,7 @@ export function TrialBalanceScreen() {
     <ScreenLayout
       title="Trial Balance"
       scope={trialBalanceScope}
+      descriptionKey="accounting:trial-balance"
       description="Account balances from the fund's posted journal, scoped by ledger period."
       actions={
         <>
@@ -241,6 +242,7 @@ export function TrialBalanceScreen() {
       onContextClose={() => postedLedger.selectTrialBalanceRow(null)}
     >
       <OperationalTrustSummary
+        disclosure
         source={{ value: "Posted journal", tone: postedLedger.view.trialBalance.state === "error" ? "blocked" : "ready" }}
         scope={{ value: selectedPeriodLabel ?? "No period selected", detail: selectedBasisLabel, tone: selectedPeriodId ? "ready" : "unknown" }}
         freshness={freshness}
