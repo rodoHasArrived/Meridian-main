@@ -10,7 +10,7 @@ import { InlineFundAccountPicker } from "@/components/meridian/inline-fund-accou
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatTimestamp } from "@/lib/format";
 import type { TradingBrokerageRecoveryRun, TradingExecutionReconciliationBreak, TradingOperatorReadiness } from "@/types";
 
 type RecoveryBreak = TradingExecutionReconciliationBreak & { rowId: string };
@@ -37,7 +37,7 @@ const FUND_ACCOUNT_GUID_MESSAGE = "Not a fund account id. Trading accepts a fund
 
 function timestamp(value: string | null | undefined) {
   if (!value || !Number.isFinite(Date.parse(value))) return "Unavailable";
-  return `${new Date(value).toISOString().replace("T", " ").replace(/\.\d{3}Z$/, " UTC")}`;
+  return formatTimestamp(value, { precision: "second" });
 }
 
 export function BrokerageRecoveryPanel({ readiness, fundAccountId, brokerageEnvironment, busy, error, onRecover, variant = "full", reviewHref }: {
