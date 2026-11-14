@@ -5455,7 +5455,7 @@
       ]
     }
   ],
-  "fingerprint": "b19c45e7b7e24e880169e0698af224c1898de01d10772b29317ad1774781691d",
+  "fingerprint": "5d67aa7f8547306bb43ecedb9d4351e68e27c5c0b2821a5ad8c4847ef398da0d",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -8758,7 +8758,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "82082afe5d1b0f00661fe410f5924eca802e6c8328f761678f00db5db0e47fd5",
+      "fingerprint": "bb3eefa5f5af17e8699f42a67c1f61dd75398e3b8d1174e36b223159ca6c216b",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -399966,7 +399966,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "65afb040877a8b3b39fd172fee1f8b9725997451dd0b0ba259683759f6bfb401",
+      "fingerprint": "02d0fc48bf1f63e8c98c8568eafe9c2e47cc3bdcc80936f395f7291216074464",
       "full_name": "Meridian.Contracts.Workstation.OperatingScopeValuesDto",
       "id": "Meridian.Contracts.Workstation.OperatingScopeValuesDto",
       "kind": "record",
@@ -399984,7 +399984,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 15,
+          "source_line": 17,
           "type": "string?"
         },
         {
@@ -399999,7 +399999,22 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 14,
+          "source_line": 16,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EntityId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 18,
           "type": "string?"
         },
         {
@@ -400014,7 +400029,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 12,
+          "source_line": 14,
           "type": "string?"
         },
         {
@@ -400029,7 +400044,22 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 9,
+          "source_line": 11,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 19,
           "type": "string?"
         },
         {
@@ -400044,7 +400074,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 11,
+          "source_line": 13,
           "type": "string?"
         },
         {
@@ -400059,7 +400089,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 10,
+          "source_line": 12,
           "type": "string?"
         },
         {
@@ -400074,7 +400104,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 8,
+          "source_line": 10,
           "type": "string?"
         },
         {
@@ -400089,7 +400119,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 13,
+          "source_line": 15,
           "type": "string?"
         }
       ],
@@ -400099,12 +400129,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.OperatingScopeValuesDto",
       "references": [],
       "source": {
-        "line": 7,
+        "line": 9,
         "path": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs"
       },
       "sources": [
         {
-          "line": 7,
+          "line": 9,
           "path": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs"
         }
       ],
@@ -413633,7 +413663,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "0a10ec839d57805dd51d402deb3fd386586a18ecda42ada235f035a778cd15eb",
+      "fingerprint": "7235f37781cdee6a1a2ec84c82128a3b6360575d807c621937ff7f7da1825384",
       "full_name": "Meridian.Contracts.Workstation.OperatorScopePreferenceDto",
       "id": "Meridian.Contracts.Workstation.OperatorScopePreferenceDto",
       "kind": "record",
@@ -413650,7 +413680,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "OperatingScopeValuesDto?",
-          "source_line": 22,
+          "source_line": 26,
           "type": "OperatingScopeValuesDto?"
         },
         {
@@ -413664,7 +413694,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 23,
+          "source_line": 27,
           "type": "DateTimeOffset?"
         }
       ],
@@ -413676,12 +413706,12 @@
         "Meridian.Contracts.Workstation.OperatingScopeValuesDto"
       ],
       "source": {
-        "line": 21,
+        "line": 25,
         "path": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs"
       },
       "sources": [
         {
-          "line": 21,
+          "line": 25,
           "path": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs"
         }
       ],
@@ -413697,7 +413727,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "65e90172721fce016489ee9f6592972813c63978e7c59df9014aee00e8a1c51f",
+      "fingerprint": "07b27fc241d711544b06d66513e3ef4c0fbe609a26bc3ab9c761fdeff3c8d5ae",
       "full_name": "Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest",
       "id": "Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest",
       "kind": "record",
@@ -413714,7 +413744,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "OperatingScopeValuesDto?",
-          "source_line": 26,
+          "source_line": 30,
           "type": "OperatingScopeValuesDto?"
         }
       ],
@@ -413726,12 +413756,12 @@
         "Meridian.Contracts.Workstation.OperatingScopeValuesDto"
       ],
       "source": {
-        "line": 26,
+        "line": 30,
         "path": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs"
       },
       "sources": [
         {
-          "line": 26,
+          "line": 30,
           "path": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs"
         }
       ],
