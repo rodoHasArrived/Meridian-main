@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundSummaryDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:175](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L175).
+
+```csharp
+public sealed record FundSummaryDto(Guid FundId, Guid? BusinessId, string Code, string Name, string BaseCurrency, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<Guid> SleeveIds, IReadOnlyList<Guid> VehicleIds, IReadOnlyList<Guid> EntityIds, IReadOnlyList<Guid> InvestmentPortfolioIds, IReadOnlyList<Guid> AccountIds, string? Description = null);
+```
+
 ## GovernanceCashFlowAccountViewDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.GovernanceCashFlowAccountViewDto</code>. Kind: `record`.
@@ -701,23 +711,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyExternalReviewAttestationDto? ExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:61](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L61) |  |
-
-## IntercompanyAgreementStatusDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L12).
-
-```csharp
-public enum IntercompanyAgreementStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unapproved</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L12) |  |
-| <code>Scheduled</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L12) |  |
-| <code>Active</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L12) |  |
-| <code>Expired</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L12) |  |
-| <code>Terminated</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L12) |  |

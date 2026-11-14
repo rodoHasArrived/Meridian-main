@@ -109,7 +109,8 @@ internal static partial class SecurityEconomicDefinitionAdapter
     {
         try
         {
-            var flattened = SecurityAssetSpecificTermsUpcasterChain.Normalize(retained, projection.AssetClass).Payload;
+            var flattened = SecurityAssetSpecificTermsUpcasterChain.Normalize(
+                retained, projection.AssetClass, SecurityTermsFormats.Economic).Payload;
             var baseline = BuildEconomicTermsJson(
                 ToEconomicDefinition(projection with { AssetSpecificTerms = RemoveRetainedKey(flattened) }));
             if (baseline.ValueKind != JsonValueKind.Object)
@@ -203,7 +204,8 @@ internal static partial class SecurityEconomicDefinitionAdapter
         var assetSpecificTerms = economic.LegacyAssetSpecificTerms is { } legacyTerms
             ? SecurityAssetClassTermsUpgrader.UpgradeForRead(legacyAssetClass, legacyTerms.Clone())
             : StripRetainedWhenLossless(
-                SecurityAssetSpecificTermsUpcasterChain.Normalize(economic.EconomicTerms, legacyAssetClass).Payload,
+                SecurityAssetSpecificTermsUpcasterChain.Normalize(
+                    economic.EconomicTerms, legacyAssetClass, SecurityTermsFormats.Economic).Payload,
                 economic);
         var primaryIdentifier = economic.Identifiers.FirstOrDefault(identifier => identifier.IsPrimary);
 

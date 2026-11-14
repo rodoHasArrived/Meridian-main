@@ -35,7 +35,7 @@ Declared public members:
 | <code>public Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Cancellation.cs:13](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Cancellation.cs#L13) |  |
 | <code>public async Task&lt;ExecutionReport&gt; CancelOrderAsync(OrderCancellationIdentifier identifier, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Cancellation.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Cancellation.cs#L19) |  |
 
-Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:43](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L43).
+Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L44).
 
 Alpaca brokerage gateway for live order execution via the Alpaca Trading API. Uses REST API for order management and a bounded channel for execution report streaming.
 
@@ -47,27 +47,27 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool UsesFaceValuePercentageOfPar(OrderRequest request);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:46](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L46) |  |
-| <code>public bool RoutesNotionalMetadata(OrderRequest request);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:69](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L69) |  |
-| <code>public AlpacaBrokerageGateway(IHttpClientFactory httpClientFactory, AlpacaOptions options, ILogger&lt;AlpacaBrokerageGateway&gt; logger, AlpacaTradeUpdatesClient? tradeUpdates = null, AlpacaCredentialSnapshot? credentials = null);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:112](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L112) |  |
-| <code>public string GatewayId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:148](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L148) |  |
-| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:151](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L151) |  |
-| <code>public bool IsExecutionStreamHealthy =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:153](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L153) |  |
-| <code>public string? ScopeIdentity =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:158](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L158) |  |
-| <code>public long ConnectionGeneration { get; }</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:164](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L164) |  |
-| <code>public string BrokerDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:186](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L186) |  |
-| <code>public BrokerageCapabilities BrokerageCapabilities { get; } = BrokerageCapabilities.UsEquityAndFixedIncome(modification : true, partialFills : true, shortSelling : true, fractional : true, extendedHours : true);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:189](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L189) |  |
-| <code>public async Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:212](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L212) |  |
-| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:252](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L252) |  |
-| <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:261](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L261) |  |
-| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:356](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L356) |  |
-| <code>public async Task&lt;AccountInfo&gt; GetAccountInfoAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:372](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L372) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;BrokerPosition&gt;&gt; GetPositionsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:379](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L379) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;BrokerOrder&gt;&gt; GetOpenOrdersAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:429](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L429) |  |
-| <code>public async Task&lt;BrokerHealthStatus&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:519](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L519) |  |
-| <code>public Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:541](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L541) |  |
-| <code>public Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since, DateTimeOffset? untilExclusive, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:548](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L548) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:654](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L654) |  |
+| <code>public bool UsesFaceValuePercentageOfPar(OrderRequest request);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:47](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L47) |  |
+| <code>public bool RoutesNotionalMetadata(OrderRequest request);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:70](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L70) |  |
+| <code>public AlpacaBrokerageGateway(IHttpClientFactory httpClientFactory, AlpacaOptions options, ILogger&lt;AlpacaBrokerageGateway&gt; logger, AlpacaTradeUpdatesClient? tradeUpdates = null, AlpacaCredentialSnapshot? credentials = null);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:113](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L113) |  |
+| <code>public string GatewayId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:149](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L149) |  |
+| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:152](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L152) |  |
+| <code>public bool IsExecutionStreamHealthy =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:154](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L154) |  |
+| <code>public string? ScopeIdentity =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:159](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L159) |  |
+| <code>public long ConnectionGeneration { get; }</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:165](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L165) |  |
+| <code>public string BrokerDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:187](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L187) |  |
+| <code>public BrokerageCapabilities BrokerageCapabilities { get; } = BrokerageCapabilities.UsEquityAndFixedIncome(modification : true, partialFills : true, shortSelling : true, fractional : true, extendedHours : true);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:190](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L190) |  |
+| <code>public async Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L213) |  |
+| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:253](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L253) |  |
+| <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:262](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L262) |  |
+| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:357](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L357) |  |
+| <code>public async Task&lt;AccountInfo&gt; GetAccountInfoAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:373](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L373) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;BrokerPosition&gt;&gt; GetPositionsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:380](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L380) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;BrokerOrder&gt;&gt; GetOpenOrdersAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:430](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L430) |  |
+| <code>public async Task&lt;BrokerHealthStatus&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:520](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L520) |  |
+| <code>public Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:542](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L542) |  |
+| <code>public Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since, DateTimeOffset? untilExclusive, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:549](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L549) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:655](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L655) |  |
 
 Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs:10](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs#L10).
 
@@ -82,7 +82,7 @@ Declared public members:
 | <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs:66](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs#L66) |  |
 | <code>public async Task&lt;ExecutionReport&gt; ModifyOrderAsync(OrderCancellationIdentifier identifier, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs:71](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs#L71) |  |
 
-Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs:5](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs#L5).
+Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs:6](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs#L6).
 
 ```csharp
 public sealed partial class AlpacaBrokerageGateway
@@ -92,8 +92,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;BrokerageExternalAccountDto&gt;&gt; GetAccountsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs:8](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs#L8) |  |
-| <code>public async Task&lt;BrokeragePortfolioSnapshotDto&gt; GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs:33](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs#L33) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;BrokerageExternalAccountDto&gt;&gt; GetAccountsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs:9](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs#L9) |  |
+| <code>public async Task&lt;BrokeragePortfolioSnapshotDto&gt; GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs#L34) |  |
 
 Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Recovery.cs:7](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Recovery.cs#L7).
 
@@ -380,7 +380,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProvider</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs#L28).
+Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs:29](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs#L29).
 
 Symbol search provider using the Alpaca Markets API. Provides asset search for US equities with trading status information.
 
@@ -392,12 +392,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs:33](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs#L33) |  |
-| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs#L34) |  |
-| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs:35](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs#L35) |  |
-| <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs:46](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs#L46) |  |
-| <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs:47](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs#L47) |  |
-| <code>public AlpacaSymbolSearchProvider(string? keyId = null, string? secretKey = null, HttpClient? httpClient = null, ILogger? log = null, bool? useSandbox = null) : base(keyId, httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs:58](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs#L58) |  |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs#L34) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs:35](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs#L35) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs:36](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs#L36) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs:47](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs#L47) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs:48](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs#L48) |  |
+| <code>public AlpacaSymbolSearchProvider(string? keyId = null, string? secretKey = null, HttpClient? httpClient = null, ILogger? log = null, bool? useSandbox = null) : base(keyId, httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs#L59) |  |
 
 ## AlpacaTradeUpdateCursorState
 

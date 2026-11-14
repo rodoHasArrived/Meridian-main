@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondSettlementPreparationResult
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondSettlementPreparationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:77](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L77).
+
+```csharp
+public sealed record BondSettlementPreparationResult(BondSettlementConsiderationDto? Settlement, IReadOnlyList<BondAnalyticsBlocker> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsBlocked =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:81](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L81) |  |
+
 ## BondSinkingFundDto
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondSinkingFundDto</code>. Kind: `record`.
@@ -795,16 +811,4 @@ Source: [src/Meridian.Contracts/FixedIncome/BondObservedFixings.cs:15](../../../
 
 ```csharp
 public sealed record RetainBondObservedFixingRequest(long ExpectedSecurityVersion, DateOnly ResetDate, SecurityRateObservationDto Observation, string Justification);
-```
-
-## AccountBalanceSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L6).
-
-Snapshot of an account&#x27;s balance at a point in time.
-
-```csharp
-public sealed record AccountBalanceSnapshotDto(Guid SnapshotId, Guid AccountId, Guid? FundId, DateOnly AsOfDate, string Currency, decimal CashBalance, decimal? SecuritiesMarketValue, decimal? AccruedInterest, decimal? PendingSettlement, string Source, DateTimeOffset RecordedAt, string? ExternalReference, decimal? UnrealizedPnl = null, decimal? RealizedPnl = null);
 ```

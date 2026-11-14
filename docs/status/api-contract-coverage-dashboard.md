@@ -14,7 +14,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | Weighted score | 100.0% |
 | Endpoint coverage | 100.0% |
 | Workstation contract coverage | 100.0% |
-| Endpoints documented | 830 / 830 |
+| Endpoints documented | 832 / 832 |
 | Workstation contracts documented | 1051 / 1051 |
 
 ## Endpoint Coverage
@@ -700,12 +700,12 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/security-master/curves/{curveId:guid}/versions` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:101` |
 | `POST` | `/api/security-master/curves/{curveId:guid}/versions` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:129` |
 | `GET` | `/api/security-master/curves/{curveId:guid}/versions/{version:long}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:167` |
-| `GET` | `/api/security-master/data-entitlements` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1782` |
-| `POST` | `/api/security-master/data-entitlements` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1804` |
-| `GET` | `/api/security-master/data-entitlements/expiring` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1792` |
-| `DELETE` | `/api/security-master/data-entitlements/{entitlementId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1832` |
+| `GET` | `/api/security-master/data-entitlements` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1791` |
+| `POST` | `/api/security-master/data-entitlements` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1813` |
+| `GET` | `/api/security-master/data-entitlements/expiring` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1801` |
+| `DELETE` | `/api/security-master/data-entitlements/{entitlementId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1841` |
 | `POST` | `/api/security-master/deactivate` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:508` |
-| `GET` | `/api/security-master/exceptions/aging` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1917` |
+| `GET` | `/api/security-master/exceptions/aging` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1958` |
 | `POST` | `/api/security-master/import` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1120` |
 | `POST` | `/api/security-master/ingest/edgar` | Documented | `src/Meridian.Ui.Shared/Endpoints/EdgarReferenceDataEndpoints.cs:24` |
 | `GET` | `/api/security-master/ingest/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1158` |
@@ -729,13 +729,15 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/security-master/otc/netting-sets/{nettingSetId:guid}/exposure-snapshots` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:48` |
 | `POST` | `/api/security-master/otc/netting-sets/{nettingSetId:guid}/exposure-snapshots` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:31` |
 | `GET` | `/api/security-master/otc/netting-sets/{nettingSetId:guid}/margin-calls` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:138` |
-| `GET` | `/api/security-master/quality-report/latest` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1879` |
-| `POST` | `/api/security-master/quality-report/run` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1864` |
+| `POST` | `/api/security-master/profile-promotion/{profileId}/report` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1929` |
+| `GET` | `/api/security-master/projections/{assetClass}/{securityId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.RegistryProjections.cs:33` |
+| `GET` | `/api/security-master/quality-report/latest` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1888` |
+| `POST` | `/api/security-master/quality-report/run` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1873` |
 | `POST` | `/api/security-master/rates/ingest` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Rates.cs:49` |
 | `GET` | `/api/security-master/rates/observations` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Rates.cs:18` |
 | `POST` | `/api/security-master/resolve` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:279` |
 | `POST` | `/api/security-master/search` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:316` |
-| `POST` | `/api/security-master/structured-credit-reclassification/report` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1897` |
+| `POST` | `/api/security-master/structured-credit-reclassification/report` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1906` |
 | `GET` | `/api/security-master/{securityId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:46` |
 | `GET` | `/api/security-master/{securityId:guid}/cashflow-projections` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:140` |
 | `POST` | `/api/security-master/{securityId:guid}/cashflow-projections/preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:20` |
@@ -758,12 +760,12 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/security-master/{securityId:guid}/operator-overrides/decision` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1296` |
 | `GET` | `/api/security-master/{securityId:guid}/preferred-equity-terms` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:600` |
 | `PATCH` | `/api/security-master/{securityId:guid}/preferred-equity-terms` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:621` |
-| `GET` | `/api/security-master/{securityId:guid}/price-comparison` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1765` |
-| `GET` | `/api/security-master/{securityId:guid}/price-golden-copy` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1731` |
-| `GET` | `/api/security-master/{securityId:guid}/price-golden-copy/observations` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1752` |
-| `GET` | `/api/security-master/{securityId:guid}/pricing-hierarchy` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1635` |
-| `PUT` | `/api/security-master/{securityId:guid}/pricing-hierarchy` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1649` |
-| `POST` | `/api/security-master/{securityId:guid}/raw-price` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1690` |
+| `GET` | `/api/security-master/{securityId:guid}/price-comparison` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1774` |
+| `GET` | `/api/security-master/{securityId:guid}/price-golden-copy` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1740` |
+| `GET` | `/api/security-master/{securityId:guid}/price-golden-copy/observations` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1761` |
+| `GET` | `/api/security-master/{securityId:guid}/pricing-hierarchy` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1644` |
+| `PUT` | `/api/security-master/{securityId:guid}/pricing-hierarchy` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1658` |
+| `POST` | `/api/security-master/{securityId:guid}/raw-price` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1699` |
 | `PUT` | `/api/security-master/{securityId:guid}/terms/{blockKey}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:441` |
 | `GET` | `/api/security-master/{securityId:guid}/trading-parameters` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:577` |
 | `GET` | `/api/security-master/{securityId:guid}/underlyings` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:821` |

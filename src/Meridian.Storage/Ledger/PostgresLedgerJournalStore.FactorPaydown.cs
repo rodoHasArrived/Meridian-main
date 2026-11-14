@@ -118,7 +118,7 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Factor-paydown tenant must match the retained posting authority.");
         var security = await securities.LockForLotPostingAsync(connection, transaction, scope.SecurityId, ct).ConfigureAwait(false);
         if (security is null || security.Version != scope.ExpectedSecurityVersion
-            || OpenLotAmortization.SecurityHash(security) != instruction.ExpectedSecurityHash
+            || !OpenLotAmortization.AcceptedSecurityHashes(security).Contains(instruction.ExpectedSecurityHash)
             || security.Currency != instruction.Currency || security.Status != SecurityStatusDto.Active
             || DateOnly.FromDateTime(security.EffectiveFrom.UtcDateTime) > effectiveDate
             || security.EffectiveTo is { } securityEnd && DateOnly.FromDateTime(securityEnd.UtcDateTime) < effectiveDate)

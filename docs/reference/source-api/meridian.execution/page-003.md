@@ -428,6 +428,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>public decimal CashBalance =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1907](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1907) | Alias for Cash using the naming used in operator-facing surfaces. |
 
+## ExecutionReportingAssetClasses
+
+Qualified name: <code>Meridian.Execution.Services.ExecutionReportingAssetClasses</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/ExecutionReportingAssetClasses.cs:7](../../../../src/Meridian.Execution/Services/ExecutionReportingAssetClasses.cs#L7).
+
+Reporting asset-class tags stamped on ExecutionJournalEntry.ReportingAssetClass. The values are persisted in the execution journal, so they must never change.
+
+```csharp
+public static class ExecutionReportingAssetClasses
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string UsdUsEquity = &quot;USD_US_EQUITY&quot;;</code> | [src/Meridian.Execution/Services/ExecutionReportingAssetClasses.cs:10](../../../../src/Meridian.Execution/Services/ExecutionReportingAssetClasses.cs#L10) | A USD-denominated US equity order whose economics the journal reports. |
+
 ## FileBrokerageOrderRecoveryStore
 
 Qualified name: <code>Meridian.Execution.Services.FileBrokerageOrderRecoveryStore</code>. Kind: `class`.
@@ -911,15 +929,3 @@ Declared public members:
 | <code>public static PaperSessionSettlementRecord Create(string accountId, string symbol, DateOnly tradingDate, decimal settlementPrice, DateTimeOffset settledAt);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:265](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L265) | Creates a current-schema settlement record. |
 | <code>public string Key =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:279](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L279) | The once-per-trading-day identity: account, normalized symbol and date. |
 | <code>public void Validate();</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:284](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L284) | Throws InvalidDataException when the record cannot be applied. |
-
-## PaperSessionSummaryDto
-
-Qualified name: <code>Meridian.Execution.Services.PaperSessionSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1869](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1869).
-
-Session summary DTO.
-
-```csharp
-public sealed record PaperSessionSummaryDto(string SessionId, string StrategyId, string? StrategyName, decimal InitialCash, DateTimeOffset CreatedAt, DateTimeOffset? ClosedAt, bool IsActive, string? MatchingModelVersion = null, string? CostModelVersion = null);
-```

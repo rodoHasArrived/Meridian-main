@@ -93,6 +93,14 @@ def promotion_status(receipt: dict | None, expected: dict) -> dict:
         certification['runAttempt'] = certified_attempt
     if not bound(receipt, certification) or type(schema) is not int or schema not in (1, 2):
         return row('Certified package evidence', 'blocked', 'Promotion receipt identity or schema does not match.', action)
+    try:
+        families_required = promotion.required_families(receipt.get('version'))
+    except (ValueError, TypeError):
+        return row('Certified package evidence', 'blocked', 'Promotion receipt release version is invalid.', action)
+    if receipt.get('version') is not None and (
+            receipt.get('supportScope') != promotion.envelope.support_scope(receipt['version'])
+            or receipt.get('supportedRuntimes') != sorted({runtime for _, runtime in families_required})):
+        return row('Certified package evidence', 'blocked', 'Promotion receipt support scope does not match its version.', action)
     validations = receipt.get('validations', {})
     if not isinstance(validations, dict) or any(not isinstance(validations.get(gate), dict) or validations[gate].get('result') != 'success' for gate in promotion.GATES):
         return row('Certified package evidence', 'blocked', 'Promotion receipt lacks successful dependency evidence.', action)
@@ -117,7 +125,7 @@ def promotion_status(receipt: dict | None, expected: dict) -> dict:
             elif str(package.get('name', '')).endswith('.msix'):
                 families.add(('desktop-installer', 'win-' + str(item.get('architecture', '')).lower()))
     startup = receipt.get('installedStartup', {})
-    if (families != promotion.FAMILIES or not isinstance(lifecycle, list) or len(lifecycle) != 3
+    if (families != families_required or not isinstance(lifecycle, list) or len(lifecycle) != len(families_required)
             or not isinstance(startup, dict) or startup.get('commitSha') != expected['commitSha']
             or str(startup.get('workflowRunId')) != expected['runId']
             or str(startup.get('workflowRunAttempt')) != certification['runAttempt']
@@ -129,13 +137,16 @@ def promotion_status(receipt: dict | None, expected: dict) -> dict:
                f"Promotion verifier retained matching source, lifecycle and package digests; certification attempt {certification['runAttempt']}, publication attempt {expected['runAttempt']}.")
 
 
-def runner_status(snapshot: dict | None, expected: dict, now: datetime) -> list[dict]:
+def runner_status(snapshot: dict | None, expected: dict, now: datetime, version: str | None = None) -> list[dict]:
     action = 'Run a full signed rehearsal; inspect Actions runner capacity and label access if allocation remains queued.'
+    families = promotion.required_families(version)
+    jobs = {name: job for name, job in RUNNER_JOBS.items()
+            if 'ARM64' not in name or ('desktop-installer', 'win-arm64') in families}
     if snapshot is None or not bound(snapshot, expected) or type(snapshot.get('schemaVersion')) is not int or snapshot['schemaVersion'] != 1:
-        return [row(name, 'unknown', 'No bound runner observation snapshot.', action) for name in RUNNER_JOBS]
+        return [row(name, 'unknown', 'No bound runner observation snapshot.', action) for name in jobs]
     observations = snapshot.get('observations', {})
     result = []
-    for name in RUNNER_JOBS:
+    for name in jobs:
         item = observations.get(name) if isinstance(observations, dict) else None
         try:
             observed = timestamp(item.get('completedAt')) if isinstance(item, dict) else None
@@ -157,7 +168,7 @@ def runner_status(snapshot: dict | None, expected: dict, now: datetime) -> list[
 
 
 def report(mode: str, needs: dict, expected: dict, signing: dict | None, gate: dict | None,
-           runners: dict | None, now: datetime, warning_days: int = 30) -> dict:
+           runners: dict | None, now: datetime, warning_days: int = 30, version: str | None = None) -> dict:
     rows = []
     if mode == 'coordinator':
         for name in sorted(GATES):
@@ -170,7 +181,7 @@ def report(mode: str, needs: dict, expected: dict, signing: dict | None, gate: d
                                          'for scheduled rehearsals configure MDC_RELEASE_REHEARSAL_VERSION above published identities.')
         rows.append(promotion_status(gate, expected))
     else:
-        rows.extend(runner_status(runners, expected, now))
+        rows.extend(runner_status(runners, expected, now, version))
     resumed = (mode == 'coordinator' and isinstance(gate, dict) and gate.get('schemaVersion') == 2
                and str(gate.get('runAttempt')) != expected['runAttempt']
                and promotion_status(gate, expected)['status'] == 'ready'
@@ -184,7 +195,7 @@ def report(mode: str, needs: dict, expected: dict, signing: dict | None, gate: d
     statuses = {item['status'] for item in rows}
     status = next((value for value in ('blocked', 'unknown', 'warning') if value in statuses), 'ready')
     return dict(schemaVersion=1, **expected, mode=mode, status=status, observedAt=now.isoformat(), checks=rows,
-                publicationAuthorized=False)
+                supportScope=promotion.envelope.support_scope(version), version=version, publicationAuthorized=False)
 
 
 def markdown(payload: dict) -> str:
@@ -274,6 +285,7 @@ def main() -> int:
     parser.add_argument('--evidence-dir', type=Path, default=Path('artifacts/readiness-input'))
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--warning-days', type=int, default=30)
+    parser.add_argument('--version', default=os.environ.get('RELEASE_VERSION') or None)
     args = parser.parse_args()
     if not 1 <= args.warning_days <= 365:
         parser.error('--warning-days must be between 1 and 365.')
@@ -288,7 +300,7 @@ def main() -> int:
             raise ValueError('Release dependencies must be an object.')
         payload = report(args.mode, needs, expected, read_receipt(args.evidence_dir, 'signing.json'),
                          read_receipt(args.evidence_dir, 'release-gate-evidence.json'),
-                         read_receipt(args.evidence_dir, 'runners.json'), now, args.warning_days)
+                         read_receipt(args.evidence_dir, 'runners.json'), now, args.warning_days, args.version)
         rendered = markdown(payload)
         args.output.with_suffix('.md').write_text(rendered, encoding='utf-8')
         if os.environ.get('GITHUB_STEP_SUMMARY'):

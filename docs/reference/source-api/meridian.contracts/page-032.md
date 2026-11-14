@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingRuleConditionDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingRuleConditionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:363](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L363).
+
+```csharp
+public sealed record AccountingRuleConditionDto(string ConditionId, string Field, AccountingRuleConditionOperatorDto Operator, string? Value = null, string? SecondValue = null, bool IsRequired = true, string? Description = null);
+```
+
 ## AccountingRuleConditionGroupDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingRuleConditionGroupDto</code>. Kind: `record`.
@@ -707,21 +717,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:287](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L287) |  |
-
-## CloseDeadlineAdjustmentDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.CloseDeadlineAdjustmentDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L11).
-
-```csharp
-public enum CloseDeadlineAdjustmentDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None</code> | [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L11) |  |
-| <code>FollowingBusinessDay</code> | [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L11) |  |
-| <code>PrecedingBusinessDay</code> | [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L11) |  |

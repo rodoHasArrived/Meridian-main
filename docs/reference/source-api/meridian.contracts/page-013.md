@@ -176,13 +176,19 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.CashFlows.SecurityTermsDigest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:23](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L23).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:33](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L33).
 
-The retained Security Master terms a preview was calculated from.
+The retained Security Master terms a preview was calculated from. The asset-specific terms are hashed without their top-level SecurityTermsEnvelope.FormatKey member: the declared payload family is the only envelope key a write or the current-state backfill adds to the same economic terms (ADR-024 amendment 2026-11-13), and it only states the family the shape rule already infers, so declaring it never changes what a preview decodes. Every other member, including schemaVersion and SecurityTermsEnvelope.AssetClassTermsVersionKey (which selects the versioned terms the preview decodes), keeps its stored order and bytes and stays in the hash.
 
 ```csharp
-public sealed record SecurityTermsDigest(JsonElement CommonTerms, JsonElement AssetSpecificTerms);
+public sealed record SecurityTermsDigest(JsonElement CommonTerms, JsonElement AssetSpecificTerms)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonElement AssetSpecificTerms { get; init; } = WithoutFormatKey(AssetSpecificTerms);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:36](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L36) | The asset-specific terms as hashed: the supplied terms without a top-level termsFormat. |
 
 ## SelectedCashFlowExercise
 

@@ -14,24 +14,12 @@ public static class AssetSpecificTermsSchema
     /// <summary>Flat per-asset-class term payloads (the original, pre-versioning shape).</summary>
     public const int Legacy = 1;
 
-    /// <summary>
-    /// Reserved — never a flat asset-specific-terms version. The asset-specific-terms slot holds one
-    /// <c>schemaVersion</c> key but two payload families, and
-    /// <see cref="SecurityAssetSpecificTermsUpcasterChain"/> dispatches on the bare integer: a
-    /// payload stamped with this number is routed into the cross-family economic-terms → v1 bridge
-    /// (<see cref="SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster"/>). Declaring a genuine flat
-    /// v2 would send every such payload through that bridge, which reads nested module objects a
-    /// flat document does not have and would emit an empty terms object stamped as valid legacy —
-    /// total loss of the record's economics with no diagnostic. The next flat evolution must skip
-    /// this number; the guard test in <c>SecurityAssetSpecificTermsUpcasterChainTests</c> enforces
-    /// that no accepted flat version ever equals <see cref="EconomicTermsSchema.Current"/>.
-    /// <para>Payloads now declare their family in <see cref="SecurityTermsEnvelope.FormatKey"/>, and a
-    /// tagged payload is dispatched on that declaration alone. The reservation still protects the
-    /// untagged payloads stored before the tag existed, which can only be classified by shape. New
-    /// per-class evolution belongs in <see cref="SecurityAssetClassDescriptor.TermsVersion"/>, not
-    /// in this codec number.</para>
-    /// </summary>
-    public const int ReservedForEconomicTerms = 2;
+    // Version 2 is no longer reserved here (ADR-024 decision 5, amendment 2026-11-13 step 6). Every
+    // live payload declares its family in SecurityTermsEnvelope.FormatKey, and live dispatch reads that
+    // tag alone, so a declared flat version-2 payload reads as flat and IsAccepted judges it like any
+    // other flat version. The reservation survives only in SecurityTermsLegacyEventClassifier, frozen
+    // with the untagged event history it classifies. New per-class evolution still belongs in
+    // SecurityAssetClassDescriptor.TermsVersion, not in this codec number.
 
     /// <summary>Custom-asset profile-backed term payloads (profileFields + customProfileId).</summary>
     public const int CustomAssetProfile = 3;

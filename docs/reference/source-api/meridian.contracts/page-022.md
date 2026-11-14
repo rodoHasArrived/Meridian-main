@@ -253,7 +253,7 @@ public sealed record BondExerciseNoticeWindow(string Kind, DateOnly ExerciseDate
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondExerciseYield</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:69](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L69).
+Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:78](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L78).
 
 Contractual exercise scenario, not an exercise forecast or trading instruction.
 
@@ -325,7 +325,7 @@ public sealed record BondFredSeriesBindingDocument(int SchemaVersion, string Kin
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondGoverningYieldScenario</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:80](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L80).
+Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:89](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L89).
 
 Every tied issuer-controlled or maturity scenario determining yield to worst.
 

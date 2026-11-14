@@ -350,7 +350,7 @@ public sealed class ExecutionJournal : IAsyncDisposable
             ? windowFills.Sum(fill => (fill.Price - fill.Reference!.Price) * fill.Quantity * (fill.Report.Side == OrderSide.Buy ? 1m : -1m)) : null;
         var economicOrders = orders.Where(order => order.FilledQuantity > 0m).ToArray();
         economicsComplete &= economicOrders.Length > 0;
-        var supportedEconomics = economicOrders.All(order => order.Events.Any(entry => entry.Kind == "Dispatch" && entry.ReportingAssetClass == "USD_US_EQUITY"));
+        var supportedEconomics = economicOrders.All(order => order.Events.Any(entry => entry.Kind == "Dispatch" && entry.ReportingAssetClass == ExecutionReportingAssetClasses.UsdUsEquity));
         if (!supportedEconomics)
             slippage = null;
         // An initial holding or unknown history cannot be reconstructed from executions alone.
