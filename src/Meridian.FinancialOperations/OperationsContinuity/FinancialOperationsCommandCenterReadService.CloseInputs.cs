@@ -154,7 +154,10 @@ public sealed partial class FinancialOperationsCommandCenterReadService
 
     private IBookOfRecordGuard? ResolveBookOfRecordGuard()
     {
-        try { return _bookOfRecordGuardFactory?.Invoke(); }
+        try
+        {
+            return _bookOfRecordGuardFactory?.Invoke();
+        }
         catch (Exception)
         {
             // A guard that cannot be composed must not silently drop the contributor.
