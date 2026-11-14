@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ScreenLayout, type FocusSignal } from "@/components/ui/screen-layout";
-import { Select } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { withoutOpaqueIdentifiers } from "@/lib/identifiers";
@@ -100,21 +100,41 @@ export function TrialBalanceScreen() {
   // Hoisted above the early returns below. A book with no periods still has to offer the book
   // picker: without it an operator whose default book is empty or failing has no way to reach
   // another book they can read, and the screen is a dead end rather than an empty state.
-  const bookSelector = postedLedger.view.bookOptions.length > 1 ? (
-    <FormRow label="Ledger book" labelFor="trial-balance-book-select" className="w-full max-w-xs sm:w-56">
-      <Select
-        id="trial-balance-book-select"
-        value={postedLedger.view.bookOptions.find((option) => option.isSelected)?.id ?? ""}
-        onChange={(event) => postedLedger.selectBook(event.target.value)}
-      >
-        {postedLedger.view.bookOptions.map((option) => (
-          <option key={option.id} value={option.id}>
-            {option.label} · {option.baseCurrency}
-          </option>
-        ))}
-      </Select>
-    </FormRow>
-  ) : null;
+  const bookSelector = (
+    <Combobox
+      id="trial-balance-book-select"
+      label="Ledger book"
+      required
+      className="w-full sm:w-56"
+      value={postedLedger.view.bookOptions.find((option) => option.isSelected)?.id ?? ""}
+      options={postedLedger.view.bookOptions.map((option) => ({
+        value: option.id,
+        label: `${option.label} · ${option.baseCurrency}`
+      }))}
+      onChange={postedLedger.selectBook}
+      placeholder="Search ledger books…"
+      emptyText="No ledger books available"
+      disabled={postedLedger.view.bookOptions.length === 0}
+    />
+  );
+  const periodSelector = (
+    <Combobox
+      id="trial-balance-period-select"
+      label="Period"
+      required
+      className="w-full sm:w-64"
+      value={selectedPeriodId ?? ""}
+      options={periodOptions.map((option) => ({
+        value: option.id,
+        label: `${option.label} · ${option.statusLabel}`
+      }))}
+      onChange={postedLedger.selectPeriod}
+      placeholder={postedLedger.view.periodSelector.loading ? "Loading periods…" : "Search periods…"}
+      emptyText="No periods available for this book"
+      disabled={periodOptions.length === 0}
+    />
+  );
+  const scopeSelectors = <div className="flex flex-wrap items-end gap-3">{bookSelector}{periodSelector}</div>;
 
   // Deliberately not gated on the aggregate accounting-workspace payload any more: every value
   // this screen renders now comes from the posted-ledger hook's own /api/ledger/* requests. Gating
@@ -133,6 +153,7 @@ export function TrialBalanceScreen() {
           <CardTitle id="trial-balance-loading-title">Loading Trial Balance</CardTitle>
           <CardDescription>Reading the fund's ledger periods.</CardDescription>
         </CardHeader>
+        <CardContent>{scopeSelectors}</CardContent>
       </Card>
     );
   }
@@ -148,7 +169,7 @@ export function TrialBalanceScreen() {
               ?? "No ledger periods are available for this accounting scope."}
           </CardDescription>
         </CardHeader>
-        {bookSelector ? <CardContent>{bookSelector}</CardContent> : null}
+        <CardContent>{scopeSelectors}</CardContent>
       </Card>
     );
   }
@@ -210,25 +231,9 @@ export function TrialBalanceScreen() {
     <ScreenLayout
       title="Trial Balance"
       scope={trialBalanceScope}
+      descriptionKey="accounting:trial-balance"
       description="Account balances from the fund's posted journal, scoped by ledger period."
-      actions={
-        <>
-        {bookSelector}
-        <FormRow label="Period" labelFor="trial-balance-period-select" className="w-full max-w-xs sm:w-64">
-          <Select
-            id="trial-balance-period-select"
-            value={selectedPeriodId ?? ""}
-            onChange={(event) => postedLedger.selectPeriod(event.target.value)}
-          >
-            {periodOptions.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label} · {option.statusLabel}
-              </option>
-            ))}
-          </Select>
-        </FormRow>
-        </>
-      }
+      actions={scopeSelectors}
       focus={focusSignals}
       context={
         postedLedger.view.trialBalance.selectedDetail ? (
@@ -260,27 +265,11 @@ export function TrialBalanceScreen() {
           <CardTitle>Trial balance scope</CardTitle>
           <CardDescription>Confirm entity, book, and period before drilling into account, ledger, journal, or evidence detail.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3 lg:grid-cols-[repeat(3,minmax(0,1fr))_auto] lg:items-end">
+        <CardContent className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <FormRow label="Entity / fund / portfolio" labelFor="trial-balance-entity-scope">
             <Input
               id="trial-balance-entity-scope"
               value={entityScope}
-              readOnly
-              aria-readonly="true"
-            />
-          </FormRow>
-          <FormRow label="Book" labelFor="trial-balance-book">
-            <Input
-              id="trial-balance-book"
-              value={postedLedger.view.selectedBookLabel ?? ledgerBook}
-              readOnly
-              aria-readonly="true"
-            />
-          </FormRow>
-          <FormRow label="Period" labelFor="trial-balance-period">
-            <Input
-              id="trial-balance-period"
-              value={selectedPeriodLabel ?? "No period selected"}
               readOnly
               aria-readonly="true"
             />

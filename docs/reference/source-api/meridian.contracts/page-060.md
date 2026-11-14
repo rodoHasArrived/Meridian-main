@@ -251,7 +251,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.IssueParallelRunCertificateRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:97](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L97).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:109](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L109).
 
 ```csharp
 public sealed record IssueParallelRunCertificateRequestDto(int ExpectedVersion);

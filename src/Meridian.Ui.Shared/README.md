@@ -778,7 +778,8 @@ incumbent opening balances, explain differences, issue the parallel-run certific
 `OnboardingOpeningStateSource` supplies Meridian's own start-date balances, NAV components and
 positions. `IBookOfRecordGuard` is registered over the onboarding store. `ClosePublicationReadinessGuard`
 resolves it lazily and blocks hard-close with `CLOSE_SHADOW_BOOK`, and governed report release refuses
-a shadow book.
+a shadow book. `FileOnboardingWorkspaceStore` enforces one active shadow trial per ledger book inside the
+save's writer lease and returns a concurrency conflict to the losing designation.
 
 `FileOnboardingWorkspaceStore` persists full comparison payloads and frozen readiness packets using
 atomic file replacement, writer leases and expected-version checks. Retained history cannot be
@@ -1262,6 +1263,15 @@ without endpoint or workstation orchestration. The larger cross-domain workflows
 
 ## Key folders and files
 
+- `Services/FundOperationsWorkspaceReadService.*.cs` - feature partials for accounts,
+  reconciliation, ledger/NAV, report packs, portfolio reporting, live views, and structured exports.
+  The main file keeps workspace orchestration and constructor dependencies.
+- `Services/FinancialRecordExplorerReadService.*.cs` - feature partials for ledger/portfolio
+  records, run sources, querying, security instruments/evidence, report provenance, graphs, and
+  formatting. The main file keeps explorer dispatch and shared state.
+- `Endpoints/LedgerEndpoints.*.cs` - ledger route features and shared authorization, service
+  resolution, and report projections. `MapLedgerEndpoints` remains in the main file with its
+  registration order intact. These partials retain one service/type and its existing public API.
 - `Services/HostStartupEscalation` - the rule a host uses to decide whether a fault raised while
   starting hosted services must take the application down or may be degraded past. A component that
   fails to start is degradable; a guard raising `Meridian.Application.Composition.StartupRefusedException`

@@ -9,8 +9,8 @@
     "endpoint_count": 828,
     "documented_endpoint_count": 828,
     "undocumented_endpoint_count": 0,
-    "workstation_contract_count": 1050,
-    "documented_workstation_contract_count": 1050,
+    "workstation_contract_count": 1051,
+    "documented_workstation_contract_count": 1051,
     "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
@@ -7326,132 +7326,137 @@
     },
     {
       "name": "OnboardingDifferenceAssignmentDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:85",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:87",
       "documented": true
     },
     {
       "name": "OnboardingReviewDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:89",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:91",
       "documented": true
     },
     {
       "name": "OnboardingPeriodDifferenceDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:93",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:95",
       "documented": true
     },
     {
       "name": "OnboardingReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:96",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:98",
       "documented": true
     },
     {
       "name": "OnboardingPacketContentDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:105",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:107",
       "documented": true
     },
     {
       "name": "OnboardingReadinessPacketDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:119",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:121",
       "documented": true
     },
     {
       "name": "OnboardingWorkspaceDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:122",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs:124",
       "documented": true
     },
     {
       "name": "DesignateShadowBookRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:39",
-      "documented": true
-    },
-    {
-      "name": "WithdrawShadowBookRequestDto",
       "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:41",
       "documented": true
     },
     {
-      "name": "OnboardingShadowDesignationDto",
+      "name": "WithdrawShadowBookRequestDto",
       "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:43",
       "documented": true
     },
     {
+      "name": "OnboardingShadowDesignationDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:45",
+      "documented": true
+    },
+    {
       "name": "OnboardingOpeningAccountMappingDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:50",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:52",
       "documented": true
     },
     {
       "name": "ImportOnboardingOpeningBalancesRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:56",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:58",
       "documented": true
     },
     {
       "name": "OnboardingOpeningBalanceLineDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:61",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:63",
       "documented": true
     },
     {
-      "name": "OnboardingOpeningBalanceReportDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:68",
-      "documented": true
-    },
-    {
-      "name": "ExplainOnboardingDifferenceRequestDto",
+      "name": "OnboardingOpeningSourceSummaryDto",
       "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:72",
       "documented": true
     },
     {
+      "name": "OnboardingOpeningBalanceReportDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:77",
+      "documented": true
+    },
+    {
+      "name": "ExplainOnboardingDifferenceRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:84",
+      "documented": true
+    },
+    {
       "name": "OnboardingDifferenceExplanationDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:82",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:94",
       "documented": true
     },
     {
       "name": "OnboardingClassificationCountDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:87",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:99",
       "documented": true
     },
     {
       "name": "OnboardingPeriodSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:91",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:103",
       "documented": true
     },
     {
       "name": "IssueParallelRunCertificateRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:96",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:108",
       "documented": true
     },
     {
       "name": "OnboardingParallelRunCertificateContentDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:98",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:110",
       "documented": true
     },
     {
       "name": "OnboardingParallelRunCertificateDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:111",
-      "documented": true
-    },
-    {
-      "name": "PromoteShadowBookRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:114",
-      "documented": true
-    },
-    {
-      "name": "ShadowBookPromotionDecisionDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:117",
-      "documented": true
-    },
-    {
-      "name": "OnboardingShadowAuditEntryDto",
       "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:123",
       "documented": true
     },
     {
+      "name": "PromoteShadowBookRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:126",
+      "documented": true
+    },
+    {
+      "name": "ShadowBookPromotionDecisionDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:129",
+      "documented": true
+    },
+    {
+      "name": "OnboardingShadowAuditEntryDto",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:135",
+      "documented": true
+    },
+    {
       "name": "BookOfRecordStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:128",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:140",
       "documented": true
     },
     {
       "name": "ShadowBookNotBookOfRecordException",
-      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:142",
+      "source": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:154",
       "documented": true
     },
     {

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { GateRail, ReadinessPanel, SeverityBadge } from "@/components/operations";
-import { MetricCard } from "@/components/data/concrete";
+import { MetricTile } from "@/components/data/concrete";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import {
@@ -261,7 +261,7 @@ export function OperatorReadinessConsole({
             aria-describedby={metric.detailId}
             className="grid gap-2"
           >
-            <MetricCard
+            <MetricTile
               label={metric.label}
               value={metric.value}
               delta={metric.delta}

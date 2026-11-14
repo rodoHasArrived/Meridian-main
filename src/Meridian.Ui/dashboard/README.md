@@ -462,6 +462,38 @@ the same reviewed request for retry. Focused tests are in
 `accounting-screen.factor-paydown-panel.test.tsx`, `factor-paydown.api.test.ts`,
 `accounting-screen.asset-workflow.test.ts` and `asset-accounting-workflow.api.test.ts`.
 
+## Registry-owned headline figures
+
+Workspace `StatStrip` and `MetricCard` accept typed IDs from `lib/kpi-registry.ts`,
+not caller-supplied labels or values. Each definition records its owning read model,
+computation, applied scope dimensions, and currency rule. `KpiProvider` supplies shared
+read models; unavailable owners stay unavailable rather than borrowing a different
+workspace's summary. Feature-local, non-headline presentation uses `MetricTile` or
+`SnapshotMetricTile`; these are not substitutes for registry-owned workspace KPIs.
+
+`portfolio.open-positions` counts the Portfolio projection's positions on Portfolio
+and Today. Live total exposure sums the same holdings' supplied exposure
+amounts. Missing or mixed denominations withhold the aggregate; no FX rate, market
+value, or missing component is invented. The current Portfolio read model is an
+all-holdings projection: retained account/run/symbol URL scope is not claimed as an
+applied financial filter. Trading metrics remain owned by the Trading read model.
+
+Portfolio defaults to Live holdings. The source selector reveals retained run records
+with their own market-value and record-count definitions; exposure and market value
+are distinct measures. Compare position sources is a collapsed disclosure. Holding
+table and inspector values retain their source's supplied meaning.
+
+The screenshot harness independently reads `[data-kpi-rendered-value]`, checks it
+against the registry display annotation, then compares KPI ID + applied scope across
+routes within each scenario (and explicit source revision, when supplied). Both raw
+and formatted discrepancies fail the run and remain in `manifest.kpiConsistency`.
+Fixtures must be consistent within the same scenario; differing sources need distinct
+registry IDs/scopes, not cosmetic labels that hide discrepancies.
+
+Focused verification: `kpi-registry.test.ts`, `stat-strip.test.tsx`, registry card tests,
+Portfolio/Settings suites, and `node --test scripts/dev/capture-web-screenshots.test.mjs
+scripts/dev/web-screenshot-scenarios.test.mjs` from the repository root.
+
 ## Financial visual evidence
 
 Report-writer chart previews are explicitly labeled **Signed value summary** beside the configured
@@ -518,6 +550,24 @@ Focused coverage: `portfolio-positions-table.test.ts`, `use-portfolio-positions-
 and Trading blotters retain their existing interaction models.
 
 ## Shared workstation header
+
+Workspace KPI strips belong on overview routes. Accounting and Trading subroutes start with
+their working surface; Settings has no trading or storage metric strip. The masthead keeps
+confirmed SEEDED/SAMPLE/SIMULATED provenance visible once, with its explanation and unverified
+source recovery in the shared status control.
+
+Use `SectionDescription` only for instructional copy, with a stable `descriptionKey` and an
+accessible label. `ScreenLayout` and `WorkspaceSection` opt in using `descriptionKey`; dynamic
+financial state, warnings, source evidence, and scope must never use remembered help. The shell
+scopes browser-local reading preferences to the session environment, operator name and role.
+Copy remains inline on its first visit; visibility observation or Hide remembers it for later
+visits. An information disclosure then restores the copy with Enter/Space; Escape closes it and
+returns focus. Storage failures leave help usable. These preferences do not change financial data
+or authorization and do not synchronize between browsers.
+
+`TableWorkbench` can opt in to `compactToolbar` on task queues. Search, active filters and match
+counts stay visible; Table options discloses Columns, Density, Export and saved-view controls.
+Escape closes the options and returns focus. Source errors and command outcomes remain visible.
 
 The notification bell counts unread events, separately from unresolved financial work.
 Its operator inbox belongs to the current account scope: changing accounts immediately
@@ -614,8 +664,13 @@ figures-strip scope names them. Everywhere else a set fund stays retained (muted
 
 The inline account picker (`components/meridian/inline-fund-account-picker.tsx`, used on Trading's
 brokerage-recovery step) narrows its suggestions exactly as the scope picker narrows its account
-list, prints the same "Showing N accounts under the chosen fund" help, and flags a typed or scoped
-account the graph places outside the chosen fund or entity. The operator can still use it.
+list, prints the same "Showing N accounts under the chosen fund" help, and flags a retained scoped
+account the graph places outside the chosen fund or entity. The operator can still use that explicit
+selection. The shared searchable `Combobox` offers account names and also searches IDs; typing a
+query never applies an account. Confirm a listed choice, then use **Use account**. The current
+account is preselected, or the last-used account is offered as a draft if it fits the chosen scope.
+The shell retains applied scope across routes and reloads. Empty lists keep **All scope options**
+available for recovery; arbitrary references remain an advanced option in that scope dialog.
 
 The picker's Period control sets the window: `All periods`, `Today`, `MTD`, `QTD`, `YTD`,
 `Last month` (computed on the operator's calendar day through `LocalDate`,
@@ -639,8 +694,19 @@ not narrow those figures, so they do not borrow it), then the scope the shell ap
 (`OperatingScopeLabelProvider`). Figures that state their own scope keep it. Screens that need one
 fund account use `InlineFundAccountPicker`, which sets only the fund-account dimension through the
 shell (`FundAccountScopeSelectionProvider`); Trading uses it in place of its "Choose a fund
-account" empty state in a non-live environment, on the overview and in the one-line row on Orders
-and the other Trading routes. Live, unknown and failed brokerage states keep blocking.
+account" empty state on the overview and in the one-line row on Orders and the other Trading
+routes. Live, unknown and failed brokerage states keep blocking while offering the account choice.
+Trading account setup precedes headline results. Orders puts its supporting Trade journal after
+the blotter; with no account it collapses to “Select an account to see its journal”.
+
+Required scope controls precede the results they govern. `FinancialRecordExplorerShell.scopeControls`
+provides that position before summaries and record grids. Run Ledger uses it for the searchable
+strategy run and UTC as-of date; unselected or superseded run evidence stays hidden. The date
+continues to scope trial balance, journal and exports. Trial Balance offers searchable ledger-book
+and period choices in the header, including loading/empty/error recovery, instead of duplicate
+readonly scope fields. Reconciliation run selection uses the same combobox before run details.
+Comboboxes support Arrow keys, Enter, Escape, Tab, linked labels, active-option announcements, and
+optional required, validation and help semantics. Choosing a scope never grants trading authority.
 
 Focused regression coverage includes `app.test.tsx`, `workspace-header.test.tsx`,
 `workspace-views-menu.test.tsx`, `workflow-context-disclosure.test.tsx`, `scope-picker.test.tsx`,
@@ -1209,7 +1275,8 @@ searchable when remote command or entity search is unavailable; unwired routes s
 Accounting onboarding searches open the existing External GL surface, which hosts the bounded
 onboarding workspace and its retained comparison and readiness evidence. Its shadow-mode section
 (`accounting-screen.onboarding-shadow-panel.tsx`) covers shadow-book designation, incumbent
-opening-balance upload and report, per-period agreement, difference explanations, the parallel-run
+opening-balance upload and the combined multi-source report (per-line source, uncovered kinds),
+per-period agreement, explanations for both opening breaks and period differences, the parallel-run
 certificate and promotion; tables use the shared `DenseDataTable`.
 From 1200px the masthead is one 48px row: the environment badge leads with the never-shrinking
 session environment and adds the data qualifier only when the data is not confirmed real
@@ -3004,6 +3071,11 @@ specimen document is not a conformance verdict: some specimens retain their Desi
 external-runtime requirements. Package conformance and browser regression harnesses remain separate.
 
 ## Validation
+
+TypeScript is pinned to 5.9.3 in the package manifest and lockfile. This stays within the
+`typescript-eslint` supported compiler range while updating the previous 5.7 baseline.
+After compiler updates, run `npx tsc --noEmit` from this directory and the focused Vite
+configuration tests before rebuilding the workstation assets.
 
 Launcher/process ownership coverage runs from the repository root with
 `node --test scripts/dev/web-dev.test.mjs`. Focused Vite/API mode coverage is in

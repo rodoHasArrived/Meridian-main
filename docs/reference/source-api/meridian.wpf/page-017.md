@@ -595,7 +595,7 @@ public partial class DataSourcesPage : Page
 
 Qualified name: <code>Meridian.Wpf.Views.DataWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:310](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L310).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:313](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L313).
 
 Binds derived pages to the data workspace shell definition.
 

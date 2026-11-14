@@ -321,6 +321,20 @@ verify_docs() {
   run_step "Check docs automation dependencies" \
     bash -c '"$0" -c "import yaml" 2>/dev/null || { echo "PyYAML is required by build/scripts/docs/validate-agent-definitions.py." >&2; echo "  $0 -m pip install --requirement build/scripts/docs/requirements.txt" >&2; exit 1; }' "$python_cmd"
 
+  # Automatic documentation checks have one owner. The standalone documentation
+  # workflow is a manual refresh; these checks must also gate every ordinary PR.
+  run_step "Run docs rules engine" \
+    "$python_cmd" build/scripts/docs/rules-engine.py --rules build/rules/doc-rules.yaml --summary
+
+  run_step "Check Codex memory" \
+    "$python_cmd" build/scripts/docs/check-codex-memory.py --summary
+  run_step "Validate Codex task memory receipt" \
+    "$python_cmd" build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
+  run_step "Validate Codex goal memory receipt" \
+    "$python_cmd" build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
+  run_step "Run Codex memory regression tests" \
+    "$python_cmd" -m unittest build.scripts.docs.tests.test_check_codex_memory
+
   # Keep the early validator and its regression fixtures for actionable feedback;
   # the shared generation profile also validates definitions before producing docs.
   run_step "Validate Claude agent definitions" \
@@ -365,6 +379,10 @@ verify_docs() {
   run_step "Reject whole-repo generated documentation drift" \
     "$python_cmd" build/scripts/run-maintained-generation.py \
       --docs-only --report "${MERIDIAN_CI_ARTIFACT_ROOT}/docs/generation.json"
+
+  run_step "Compare dashboard readiness deltas vs previous commit" \
+    "$python_cmd" build/scripts/ci/check-doc-health-delta.py \
+      --output "${MERIDIAN_CI_ARTIFACT_ROOT}/docs/dashboard-delta.json"
 
   run_step "Verify whole-repo generated documentation is committed" \
     "$python_cmd" build/scripts/ci/check-generated-output.py

@@ -19,7 +19,7 @@ DASHBOARD_GATE_STEP = "Compare dashboard readiness deltas vs previous commit"
 
 
 class DashboardRegressionGateTests(unittest.TestCase):
-    """Execute the workflow's inline gate against scratch Git histories.
+    """Execute the shared dashboard gate against scratch Git histories.
 
     The step compares the regenerated dashboard in the worktree with the
     dashboard committed at ``HEAD~1``, the base branch side of a PR merge ref.
@@ -27,12 +27,7 @@ class DashboardRegressionGateTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        steps = yaml.load(DOCUMENTATION_WORKFLOW.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)[
-            "jobs"]["regenerate-docs"]["steps"]
-        step = next(step for step in steps if step.get("name") == DASHBOARD_GATE_STEP)
-        if step.get("shell") != "python":
-            raise AssertionError(f"{DASHBOARD_GATE_STEP} must run as Python, not {step.get('shell')!r}")
-        cls.script = step["run"]
+        cls.script = (REPO_ROOT / "build/scripts/ci/check-doc-health-delta.py").read_text(encoding="utf-8")
 
     def run_gate(self, history: list[dict], current: dict) -> tuple[subprocess.CompletedProcess, dict]:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
@@ -100,15 +95,13 @@ class DocumentationWorkflowTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.workflow = DOCUMENTATION_WORKFLOW.read_text(encoding="utf-8")
 
-    def test_dashboard_diff_gate_skips_severe_failure_when_baseline_is_unavailable(self) -> None:
-        self.assertIn("baseline_available = bool(previous.strip())", self.workflow)
-        self.assertIn("'baseline_available': baseline_available", self.workflow)
-        self.assertIn("'missing_previous_files': missing_previous", self.workflow)
-        self.assertIn(
-            "Baseline dashboard source was unavailable; severe regression gating was skipped",
-            self.workflow,
-        )
-        self.assertIn("severe = baseline_available and (", self.workflow)
+    def test_automatic_and_manual_lanes_share_dashboard_gate(self) -> None:
+        helper = "build/scripts/ci/check-doc-health-delta.py"
+        self.assertIn(helper, self.workflow)
+        ci = (REPO_ROOT / "scripts/ci.sh").read_text(encoding="utf-8")
+        self.assertIn(helper, ci)
+        self.assertLess(ci.index("build/scripts/run-maintained-generation.py"), ci.index(helper))
+        self.assertLess(ci.index(helper), ci.index("build/scripts/ci/check-generated-output.py"))
 
     def test_regenerate_docs_job_fetches_history_for_dashboard_diff(self) -> None:
         checkout = assert_pinned_action(self, self.workflow, "regenerate-docs", "actions/checkout")
@@ -127,12 +120,20 @@ class DocumentationWorkflowTests(unittest.TestCase):
         self.assertIn("npm ci --no-fund --no-audit", self.workflow)
         self.assertNotIn("npm install --no-fund --no-audit", self.workflow)
 
-    def test_whole_repository_inputs_and_merge_groups_receive_drift_validation(self) -> None:
+    def test_automatic_generation_is_owned_by_meridian_ci(self) -> None:
         events = yaml.load(self.workflow, Loader=yaml.BaseLoader)["on"]
+        self.assertEqual({"workflow_dispatch"}, set(events))
+        meridian = yaml.load((REPO_ROOT / ".github/workflows/meridian-ci.yml").read_text(),
+                             Loader=yaml.BaseLoader)
+        events = meridian["on"]
         self.assertIn("merge_group", events)
         for event in ("pull_request", "push"):
-            self.assertNotIn("paths", events[event])
-            self.assertNotIn("paths-ignore", events[event])
+            self.assertNotIn("paths", events[event] or {})
+            self.assertNotIn("paths-ignore", events[event] or {})
+        self.assertNotIn("if", meridian["jobs"]["verify-docs"])
+        checkout = next(s for s in meridian["jobs"]["verify-docs"]["steps"]
+                        if s.get("uses", "").startswith("actions/checkout@"))
+        self.assertIn(checkout["with"]["fetch-depth"], {"0", "2"})
 
     def test_drift_check_follows_convergence_and_exports_failure_evidence(self) -> None:
         steps = yaml.load(self.workflow, Loader=yaml.BaseLoader)["jobs"]["regenerate-docs"]["steps"]
@@ -162,6 +163,7 @@ class DocumentationWorkflowTests(unittest.TestCase):
         # and executes the compatibility gate's success/failure/cancel/skip cases.
         for name in ("rules-engine.py", "check-codex-memory.py"):
             self.assertIn(name, runs)
+            self.assertIn(name, ci)
         self.assertEqual(jobs["validate-docs"]["needs"], "regenerate-docs")
         self.assertEqual(jobs["validate-docs"]["if"], "always()")
 
@@ -199,12 +201,13 @@ class DocumentationWorkflowTests(unittest.TestCase):
             self.assertEqual("github.event_name == 'workflow_dispatch'", step["if"])
         # Automatic generation can only be delegated to a workflow that runs on
         # every corresponding event, including non-main PRs and merge groups.
-        events = yaml.load(self.workflow, Loader=yaml.BaseLoader)["on"]
+        events = yaml.load((REPO_ROOT / ".github/workflows/meridian-ci.yml").read_text(),
+                           Loader=yaml.BaseLoader)["on"]
         self.assertIn("merge_group", events)
         for event in ("pull_request", "push"):
-            self.assertNotIn("paths", events[event])
-            self.assertNotIn("paths-ignore", events[event])
-        self.assertNotIn("branches", events["pull_request"])
+            self.assertNotIn("paths", events[event] or {})
+            self.assertNotIn("paths-ignore", events[event] or {})
+        self.assertNotIn("branches", events["pull_request"] or {})
 
     def test_phase_metadata_changes_retrigger_the_trusted_scope_gate(self) -> None:
         workflow = yaml.load(
@@ -235,7 +238,8 @@ class DocumentationWorkflowTests(unittest.TestCase):
         # Run the actual shell orchestrator with inert tools. This proves a failed
         # producer cannot reach a green freshness gate, and a stale-output verdict
         # cannot be swallowed by a later successful validator or EXIT summary.
-        for failure in ("run-maintained-generation.py", "check-generated-output.py"):
+        for failure in ("rules-engine.py", "check-codex-memory.py", "run-maintained-generation.py",
+                        "check-doc-health-delta.py", "check-generated-output.py"):
             with self.subTest(failure=failure), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
                 root = Path(temporary)
                 (root / "scripts").mkdir()
@@ -260,8 +264,11 @@ exit 0
                 )
                 self.assertEqual(19, result.returncode, result.stdout + result.stderr)
                 commands = log.read_text()
+                if failure in {"rules-engine.py", "check-codex-memory.py"}:
+                    self.assertNotIn("run-maintained-generation.py --docs-only", commands)
+                    continue
                 self.assertIn("run-maintained-generation.py --docs-only", commands)
-                if failure == "run-maintained-generation.py":
+                if failure in {"run-maintained-generation.py", "check-doc-health-delta.py"}:
                     self.assertNotIn("check-generated-output.py", commands)
                 else:
                     self.assertIn("check-generated-output.py", commands)

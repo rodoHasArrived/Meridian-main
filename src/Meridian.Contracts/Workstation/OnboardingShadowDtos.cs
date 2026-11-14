@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.Workstation;
 
 /// <summary>
@@ -62,13 +64,23 @@ public sealed record ImportOnboardingOpeningBalancesRequestDto(
 public sealed record OnboardingOpeningBalanceLineDto(
     string DifferenceKey, string Kind, string AccountId, string Currency, string? InstrumentId,
     decimal? MeridianAmount, decimal? IncumbentAmount, decimal? Difference, decimal Tolerance,
-    string Status, string? Classification, string? MissingReason);
+    string Status, string? Classification, string? MissingReason,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ComparisonId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? SourceKind = null);
+
+/// <summary>One incumbent opening source contributing to the combined opening reconciliation.</summary>
+public sealed record OnboardingOpeningSourceSummaryDto(
+    string SourceKind, string ComparisonId, string SourceContentHash, IReadOnlyList<string> Kinds,
+    DateTimeOffset CapturedAtUtc);
 
 /// <summary>Governed opening-balance reconciliation: incumbent opening state side by side with Meridian's records.</summary>
 public sealed record OnboardingOpeningBalanceReportDto(
     string ComparisonId, string SourceKind, DateOnly AsOfDate, string SourceContentHash,
     int MatchedCount, int ExplainedCount, int BreakCount, int MissingCount, bool IsReconciled,
-    IReadOnlyList<OnboardingOpeningBalanceLineDto> Lines, IReadOnlyList<string> EvidenceIds);
+    IReadOnlyList<OnboardingOpeningBalanceLineDto> Lines, IReadOnlyList<string> EvidenceIds,
+    // Complementary sources combine: the latest import of each source kind contributes the kinds it covers.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingOpeningSourceSummaryDto>? Sources = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<string>? UncoveredKinds = null);
 
 public sealed record ExplainOnboardingDifferenceRequestDto(
     int ExpectedVersion, string ComparisonId, string Classification, string Notes,

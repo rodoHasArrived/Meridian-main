@@ -417,7 +417,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.PortfolioWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:352](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L352).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:355](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L355).
 
 Binds derived pages to the portfolio workspace shell definition.
 
@@ -586,7 +586,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.ReportingWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:366](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L366).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:369](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L369).
 
 Binds derived pages to the reporting workspace shell definition.
 
@@ -1018,7 +1018,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.SettingsWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:338](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L338).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:341](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L341).
 
 Binds derived pages to the settings workspace shell definition.
 
@@ -1109,3 +1109,145 @@ Declared public members:
 | <code>public int ActivePaneIndex { get; set; }</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:36](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L36) |  |
 | <code>public SplitPaneHostControl();</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:38](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L38) |  |
 | <code>public Frame? GetPaneFrame(int index) =&gt; …;</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:44](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L44) |  |
+<<<<<<< HEAD
+=======
+
+## StartupWindow
+
+Qualified name: <code>Meridian.Wpf.Views.StartupWindow</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/StartupWindow.xaml.cs:10](../../../../src/Meridian.Wpf/Views/StartupWindow.xaml.cs#L10).
+
+Hosts the desktop startup and authentication view.
+
+```csharp
+public partial class StartupWindow : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StartupWindow(StartupWindowViewModel viewModel);</code> | [src/Meridian.Wpf/Views/StartupWindow.xaml.cs:15](../../../../src/Meridian.Wpf/Views/StartupWindow.xaml.cs#L15) |  |
+
+## StatusBarControl
+
+Qualified name: <code>Meridian.Wpf.Views.StatusBarControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/StatusBarControl.xaml.cs:8](../../../../src/Meridian.Wpf/Views/StatusBarControl.xaml.cs#L8).
+
+StatusBarControl: persistent status bar showing live system state. Code-behind: minimal, only InitializeComponent(). All state and logic is in StatusBarViewModel.
+
+```csharp
+public partial class StatusBarControl : System.Windows.Controls.UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StatusBarControl();</code> | [src/Meridian.Wpf/Views/StatusBarControl.xaml.cs:10](../../../../src/Meridian.Wpf/Views/StatusBarControl.xaml.cs#L10) |  |
+
+## StorageOptimizationPage
+
+Qualified name: <code>Meridian.Wpf.Views.StorageOptimizationPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:56](../../../../src/Meridian.Wpf/Views/Pages.cs#L56).
+
+```csharp
+public partial class StorageOptimizationPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/StorageOptimizationPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/StorageOptimizationPage.xaml.cs#L12).
+
+Hosts storage analysis, tier statistics, and optimization review.
+
+```csharp
+public partial class StorageOptimizationPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StorageOptimizationPage() : this(new StorageOptimizationViewModel());</code> | [src/Meridian.Wpf/Views/StorageOptimizationPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/StorageOptimizationPage.xaml.cs#L16) |  |
+| <code>public StorageOptimizationPage(NavigationService navigationService, WpfNotificationService notificationService) : this(new StorageOptimizationViewModel());</code> | [src/Meridian.Wpf/Views/StorageOptimizationPage.xaml.cs:21](../../../../src/Meridian.Wpf/Views/StorageOptimizationPage.xaml.cs#L21) |  |
+
+## StoragePage
+
+Qualified name: <code>Meridian.Wpf.Views.StoragePage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:19](../../../../src/Meridian.Wpf/Views/Pages.cs#L19).
+
+```csharp
+public partial class StoragePage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/StoragePage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/StoragePage.xaml.cs#L13).
+
+Storage configuration and analytics page — thin code-behind. All metric loading and preview generation live in StorageViewModel.
+
+```csharp
+public partial class StoragePage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StoragePage();</code> | [src/Meridian.Wpf/Views/StoragePage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/StoragePage.xaml.cs#L17) |  |
+
+## StrategyRunsPage
+
+Qualified name: <code>Meridian.Wpf.Views.StrategyRunsPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:68](../../../../src/Meridian.Wpf/Views/Pages.cs#L68).
+
+```csharp
+public partial class StrategyRunsPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/StrategyRunsPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/StrategyRunsPage.xaml.cs#L11).
+
+Provides the desktop page to review active and completed runs, then compare outcomes.
+
+```csharp
+public partial class StrategyRunsPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyRunsPage();</code> | [src/Meridian.Wpf/Views/StrategyRunsPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/StrategyRunsPage.xaml.cs#L15) |  |
+
+## StrategyWorkspaceShellPage
+
+Qualified name: <code>Meridian.Wpf.Views.StrategyWorkspaceShellPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/StrategyWorkspaceShellPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/StrategyWorkspaceShellPage.xaml.cs#L17).
+
+Strategy workspace shell - compatibility page for the canonical Strategy workspace. Hosts the Strategy shell view model and keeps code-behind limited to WPF lifecycle, visual-resource tone application, and dock/navigation forwarding.
+
+```csharp
+public partial class StrategyWorkspaceShellPage : StrategyWorkspaceShellPageBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyWorkspaceShellPage(NavigationService navigationService, StrategyWorkspaceShellStateProvider stateProvider, StrategyWorkspaceShellViewModel viewModel) : base(navigationService, stateProvider, viewModel);</code> | [src/Meridian.Wpf/Views/StrategyWorkspaceShellPage.xaml.cs:21](../../../../src/Meridian.Wpf/Views/StrategyWorkspaceShellPage.xaml.cs#L21) |  |
+
+## StrategyWorkspaceShellPageBase
+
+Qualified name: <code>Meridian.Wpf.Views.StrategyWorkspaceShellPageBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:285](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L285).
+
+Binds derived pages to the strategy workspace shell definition.
+
+```csharp
+public class StrategyWorkspaceShellPageBase : WorkspaceShellPageBase<StrategyWorkspaceShellStateProvider, StrategyWorkspaceShellViewModel>
+```
+>>>>>>> origin/main

@@ -1785,15 +1785,15 @@ Declared public members:
 | <code>public async Task StartAsync();</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:381](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L381) |  |
 | <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:398](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L398) |  |
 | <code>public async Task RefreshAsync();</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:413](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L413) |  |
-| <code>public void ExecuteCommandAction(string actionId) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:445](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L445) |  |
-| <code>public void ExecuteHeroPrimaryAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:459](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L459) |  |
-| <code>public void ExecuteHeroSecondaryAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:462](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L462) |  |
-| <code>public void OpenRunStudio(string? runId) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:465](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L465) |  |
-| <code>public async Task OpenRunStudioAsync(string? runId);</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:468](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L468) |  |
-| <code>public void ReviewPromotion(string? runId) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:484](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L484) |  |
-| <code>public void OpenBriefingAlert(string? runId);</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:487](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L487) |  |
-| <code>public void OpenBriefingComparison(string? runId) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:498](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L498) |  |
-| <code>public async Task OpenBriefingComparisonAsync(string? runId);</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:501](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L501) |  |
+| <code>public void ExecuteCommandAction(string actionId) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:446](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L446) |  |
+| <code>public void ExecuteHeroPrimaryAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:460](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L460) |  |
+| <code>public void ExecuteHeroSecondaryAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:463](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L463) |  |
+| <code>public void OpenRunStudio(string? runId) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:466](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L466) |  |
+| <code>public async Task OpenRunStudioAsync(string? runId);</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:469](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L469) |  |
+| <code>public void ReviewPromotion(string? runId) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:485](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L485) |  |
+| <code>public void OpenBriefingAlert(string? runId);</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:488](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L488) |  |
+| <code>public void OpenBriefingComparison(string? runId) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:499](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L499) |  |
+| <code>public async Task OpenBriefingComparisonAsync(string? runId);</code> | [src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs:502](../../../../src/Meridian.Wpf/ViewModels/StrategyWorkspaceShellViewModel.cs#L502) |  |
 
 ## SymbolAttributionVm
 

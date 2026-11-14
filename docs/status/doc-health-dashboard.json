@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "total_files": 1249,
   "orphaned_count": 399,
   "no_heading_count": 231,
@@ -6,6 +7,15 @@
   "todo_count": 310,
   "health_score": 85,
   "signal_digest": "sha256:51d7e1a22725ef9bdfafba00ae1f66e437621b0a4015076ba1362a978dc0f07c",
+=======
+  "total_files": 1265,
+  "orphaned_count": 396,
+  "no_heading_count": 231,
+  "stale_count": 0,
+  "todo_count": 303,
+  "health_score": 85,
+  "signal_digest": "sha256:a967215bfd69ea8eb16bf8dea38cda4d4a7caef87df0eac65cca74fadd8f88ab",
+>>>>>>> origin/main
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -343,7 +353,6 @@
     "docs/ai/exports/LLM_CONTEXT.md",
     "docs/ai/model-routing-telemetry.md",
     "docs/development/fund-account-traversal.md",
-    "docs/development/policies/promotion-policy-matrix.md",
     "docs/development/score-reason-taxonomy.md",
     "docs/development/synthetic-provider-test-harness.md",
     "docs/docfx/api/index.md",
@@ -353,11 +362,11 @@
     "docs/generated/interfaces.md",
     "docs/generated/project-dependencies.md",
     "docs/generated/provider-registry.md",
-    "docs/product/w9-operator-acceptance-2026-10-18.md",
-    "docs/product/w9-operator-acceptance-2026-10-19.md",
+    "docs/product/adversarial-program-review-2026-08-25.md",
     "docs/roadmap/generated-doc-policy.md",
     "docs/roadmap/roadmap-governance.md",
     "docs/roadmap/roadmap-item-template.md",
+    "docs/roadmap/snapshots/status-prose-2026-11-14/program-active-scope.md",
     "docs/source/generated/source-roadmap-traceability.md",
     "docs/source/generated/source-todo-checklist.md",
     "docs/source/generated/stale-docs.md",
@@ -2472,7 +2481,7 @@
     {
       "path": "docs/documentation-ownership.md",
       "has_heading": true,
-      "todo_count": 1,
+      "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -3732,7 +3741,7 @@
     {
       "path": "docs/product/adversarial-program-review-2026-08-25.md",
       "has_heading": true,
-      "todo_count": 12,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -3779,9 +3788,16 @@
       "stale": false
     },
     {
+      "path": "docs/product/history/production-readiness-2026-11-14.md",
+      "has_heading": true,
+      "todo_count": 6,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/implementation-todo-list.md",
       "has_heading": true,
-      "todo_count": 5,
+      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -5916,7 +5932,7 @@
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
       "has_heading": true,
-      "todo_count": 0,
+      "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -5950,6 +5966,440 @@
     },
     {
       "path": "docs/roadmap/schema-versioning.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/program-active-scope.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W1-DATA-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W10-BOND-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W10-CONSOL-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W10-DEBT-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W10-JRNL-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W10-LOT-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W10-MARK-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W10-PERF-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W10-PROV-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W10-RECON-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W10-RECON-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W10-RECON-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W10-RECON-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W10-SEAM-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W10-TAX-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W11-COVER-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W11-EXEC-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W11-PACK-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W11-PASSPORT-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W11-SHADOW-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W11-STAKE-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W12-BOOK-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W12-CAPITAL-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W12-CREDIT-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W12-ENTITY-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W12-FINRPT-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W12-ICAGREE-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W12-ICINCOME-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W12-ICPAIR-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W12-YEND-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W13-OMS-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W13-STRAT-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W14-ATTEST-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W2-PROMO-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W2-TRD-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W3-CONT-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W4-RECON-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W4-RPT-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W5-ACCT-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W5-MASSET-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W5X-CONNECT-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W5X-EVIDENCE-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W5X-FINOPS-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W5X-FREX-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W5X-OEG-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W5X-STMT-ONBOARD-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W6-BTSTUDIO-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W7-LIVE-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W8-UX-CONSOL-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W8-WPF-PARITY-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W9-ALPACA-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W9-ASSET-010.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W9-CORPACT-011.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W9-DEMO-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W9-GOV-008.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W9-INGEST-009.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W9-NAV-006.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W9-PAPER-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W9-REPORT-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W9-SAFETY-007.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/status-prose-2026-11-14/W9-TRUTH-001.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

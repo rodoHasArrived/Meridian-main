@@ -1,3 +1,5 @@
+import { StatStrip } from "@/components/meridian/stat-strip";
+import { WORKSPACE_KPI_IDS } from "@/lib/kpi-registry";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -8,6 +10,7 @@ import type {
 } from "@/app-shell.view-model";
 import { Button } from "@/components/ui/button";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { SectionDescription } from "@/components/ui/section-description";
 import { DetailRail } from "@/components/meridian/detail-rail";
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { buildAttentionSignalFact } from "@/components/meridian/attention-signal-fact";
@@ -201,8 +204,9 @@ export function DailyControlTowerScreen({
         : `${model.emptyQueueText} The shared inbox has no active items.`;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <h2 className="sr-only">What needs an operator decision now</h2>
+      <StatStrip ids={WORKSPACE_KPI_IDS.today} label="Today headline metrics" compact />
       <section aria-label="Priority decision">
         {/* The masthead and Today share one attention object; retain every signal and its
             recovery path while showing only open issues in the collapsed row. */}
@@ -223,7 +227,7 @@ export function DailyControlTowerScreen({
                   variant="outline"
                   size="sm"
                   disabled={refreshing}
-                  aria-label={refreshing ? "Refreshing control tower evidence" : "Refresh control tower evidence"}
+                  aria-label={refreshing ? "Refreshing: control tower evidence" : "Refresh evidence: control tower"}
                   onClick={onRefresh}
                 >
                   {refreshing ? "Refreshing" : "Refresh evidence"}
@@ -235,33 +239,60 @@ export function DailyControlTowerScreen({
       </section>
 
       <section aria-label="Daily control tower confidence" className="space-y-2">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-          <span title={viewModel.operatingScope.summary}><span className="text-muted-foreground">Scope </span>{viewModel.operatingScope.hasScope ? viewModel.operatingScope.summary : "All authorized scopes"}</span>
-          <span title={freshness.detail}><span className="text-muted-foreground">Selected evidence </span>{freshness.value}</span>
-          <span>
-            {pluralizeCount(workspaceCount, "workspace signal")} in the queue
-            {" · "}
-            {inboxCount !== null ? pluralizeCount(inboxCount, "shared inbox item") : triage.error ? "Shared inbox unavailable" : "Shared inbox loading"}
-          </span>
-          {onEditOperatingScope ? (
-            <Button type="button" variant="ghost" size="sm" onClick={onEditOperatingScope}>
-              {viewModel.operatingScope.hasScope ? "Change scope filter" : "Set operating scope"}
-            </Button>
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span title={viewModel.operatingScope.summary}><span className="text-muted-foreground">Scope </span>{viewModel.operatingScope.hasScope ? viewModel.operatingScope.summary : "All authorized scopes"}</span>
+            <span title={freshness.detail}><span className="text-muted-foreground">Selected evidence </span>{freshness.value}</span>
+            {/* The source tabs show these counts visually; retain their full accessible context here. */}
+            <span className="sr-only">
+              {pluralizeCount(workspaceCount, "workspace signal")} in the queue
+              {" · "}
+              {inboxCount !== null ? pluralizeCount(inboxCount, "shared inbox item") : triage.error ? "Shared inbox unavailable" : "Shared inbox loading"}
+            </span>
+            {onEditOperatingScope ? (
+              <Button type="button" variant="ghost" size="sm" onClick={onEditOperatingScope}>
+                {viewModel.operatingScope.hasScope ? "Change scope filter" : "Set operating scope"}
+              </Button>
+            ) : null}
+          </div>
+          {showsInbox && triage.inbox ? (
+            <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Inbox filters" aria-busy={triage.loading || triage.busy}>
+              <span className="sr-only">
+                {triage.rows.length} of {pluralizeCount(triage.inbox.items.length, "inbox item")} · {fundAccountId ? "Account filter applied" : "All authorized accounts"}
+              </span>
+              {!triage.inbox.persistenceAvailable ? (
+                /^Seeded read-only inbox\./i.test(triage.inbox.unavailableReason ?? "") ? (
+                  <details className="relative">
+                    <summary className="cursor-pointer text-warning underline underline-offset-2">Read-only inbox</summary>
+                    <p className="absolute right-0 top-full z-30 w-72 rounded-sm border border-border bg-card p-3 text-xs text-foreground shadow-md">
+                      {triage.inbox.unavailableReason?.replace(/^Seeded read-only inbox\.\s*/i, "Inbox is read-only. ")}
+                    </p>
+                  </details>
+                ) : (
+                  <span role="alert" className="text-xs text-warning">
+                    {triage.inbox.unavailableReason ?? "Durable triage is unavailable. Actions are disabled."}
+                  </span>
+                )
+              ) : null}
+              <OperatorTriageInboxActions triage={triage} />
+            </div>
           ) : null}
         </div>
+        {showsInbox && triage.loading ? <p role="status" className="text-xs text-muted-foreground">Refreshing authorized inbox…</p> : null}
+        {showsInbox && triage.error ? <OperatorTriageInboxError triage={triage} unaffectedText="Workspace signals in this queue are unaffected" /> : null}
       </section>
 
       {/* One queue grid, two sources (UX consolidation P1). Workspace signals are exactly what the
           sidebar Today badge and the masthead count; the shared inbox is the host's triage
           population, which is not a subset of them and keeps its assignment and snooze. The
           Source filter filters rows of this one grid. */}
-      <section aria-labelledby="today-queue-heading" className="space-y-3" data-today-inbox-state={inboxState}>
+      <section aria-labelledby="today-queue-heading" className="space-y-2" data-today-inbox-state={inboxState}>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
             <h3 id="today-queue-heading" className="text-sm font-semibold">Queue</h3>
-            <p className="text-xs text-muted-foreground">
+            <SectionDescription descriptionKey="today:queue" label="About the Today queue">
               Workspace signals are what the sidebar badges count. Shared inbox items can be assigned, snoozed and acknowledged here.
-            </p>
+            </SectionDescription>
           </div>
           <SegmentedControl
             aria-label="Queue source"
@@ -276,25 +307,12 @@ export function DailyControlTowerScreen({
           />
         </div>
 
-        {showsInbox ? (
-          <div className="space-y-2" aria-busy={triage.loading || triage.busy}>
-            {triage.loading ? <p role="status" className="text-xs text-muted-foreground">Refreshing authorized inbox…</p> : null}
-            {triage.error ? <OperatorTriageInboxError triage={triage} unaffectedText="Workspace signals in this queue are unaffected" /> : null}
-            {triage.inbox ? (
-              <div className="flex flex-wrap items-center justify-between gap-2" role="group" aria-label="Inbox filters">
-                <p className="text-xs text-muted-foreground">
-                  {triage.rows.length} of {pluralizeCount(triage.inbox.items.length, "inbox item")} · {fundAccountId ? "Account filter applied" : "All authorized accounts"}
-                </p>
-                <OperatorTriageInboxActions triage={triage} />
-              </div>
-            ) : null}
-          </div>
-        ) : null}
         {/* Command outcome and unconfirmed-command recovery stay visible under every Source filter. */}
-        <OperatorTriageNotices triage={triage} showPersistence={showsInbox} />
+        <OperatorTriageNotices triage={triage} showPersistence={false} />
 
         <div onKeyDownCapture={queueKeyboard} className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
           <TableWorkbench
+            compactToolbar
             workbenchId="operator-inbox"
             sourceKey={`${triage.inbox?.actorId ?? "pending"}:${fundAccountId ?? "all"}`}
             completePopulation={Boolean(triage.inbox && !triage.loading && !triage.error)}

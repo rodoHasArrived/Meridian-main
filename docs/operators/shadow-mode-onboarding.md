@@ -25,7 +25,8 @@ When a workspace's ledger book is designated as a shadow book, the shared book-o
 - **Period hard-close** is blocked with `CLOSE_SHADOW_BOOK`. (`ClosePublicationReadinessGuard`)
 
 A **withdrawn** shadow trial also stays non-authoritative. A new workspace may designate the same book
-again; two concurrent shadow trials on one book are refused.
+again; two concurrent shadow trials on one book are refused. The store enforces this inside the same
+write lease as the save, so a race between two designations returns `409 Conflict` for the loser.
 
 To check a book's status, use
 `GET /api/accounting/onboarding/ledger-books/{ledgerBookId}/book-of-record`. It returns
@@ -37,13 +38,17 @@ To check a book's status, use
    reviewers as usual.
 2. **Designate the shadow book.** Only the owner can do this, and it needs a human operator. The
    designation is recorded in the workspace's hash-chained shadow audit trail.
-3. **Import the incumbent opening balances** for the workspace start date. Choose one of three sources:
+3. **Import the incumbent opening balances** for the workspace start date. Sources combine: each
+   import compares only the required kinds it supplies, and the latest import of each source kind
+   counts. A bank statement or GL trial balance covers cash balances only, so pair it with an
+   administrator pack for positions and NAV. Re-importing a source replaces only that source.
+   The three sources:
 
    | Source kind | Input | Notes |
    |---|---|---|
-   | `StatementOpening` | camt.053 or BAI2 file | Reads camt.053 `OPBD`, or BAI2 `010` falling back to `040`. Every opening balance must be dated the start date. Ordinary statement reconciliation still reads closing balances only. |
-   | `AdministratorPack` | CSV | Header: `record_type,account,currency,instrument,quantity,market_value,amount,as_of_date`. `CASH` and `NAV` rows use `amount`; `POSITION` rows use `quantity` and/or `market_value`. An empty value is missing, never zero. |
-   | `GlTrialBalance` | Exact retained provider and import IDs | Reads the retained external GL import without calling the provider. Only mapped GL accounts are compared. |
+   | `StatementOpening` | camt.053 or BAI2 file | Cash only. Reads camt.053 `OPBD` or BAI2 `010` (never the available balance `040`). Every opening balance must be dated the start date. Ordinary statement reconciliation still reads closing balances only. |
+   | `AdministratorPack` | CSV | Header: `record_type,account,currency,instrument,quantity,market_value,amount,as_of_date`. `CASH` and `NAV` rows use `amount`; `POSITION` rows use `quantity` and/or `market_value`. An empty value is missing, never zero. Covers the kinds its rows contain. |
+   | `GlTrialBalance` | Exact retained provider and import IDs | Cash only. Reads the retained external GL import without calling the provider. Only mapped GL accounts are compared. |
 
    For file sources, map every incumbent account (IBAN, admin account code) to a selected financial
    account with `EXTERNAL=account-id` lines. Rows that already use Meridian account IDs need no mapping.
@@ -54,7 +59,11 @@ To check a book's status, use
    position lines.
 
    The raw file is kept inside the comparison payload, so the opening comparison can be replayed. The
-   opening-balance report marks each line `Matched`, `Explained`, `Break` or `Missing`.
+   opening-balance report combines the sources. It marks each line `Matched`, `Explained`, `Break` or
+   `Missing`, names the source of each line, and lists any required kind that no source yet covers for
+   every selected account. Opening balances are reconciled only when every required kind is covered, no
+   source has a missing requirement, and every line is matched or explained. Explain an opening `Break`
+   from the same panel as period differences; a `Missing` line must be supplied, not explained.
 4. **Capture each required period** with the existing comparison flow. Opening comparisons form their
    own history, separate from the period history.
 5. **Explain every remaining difference** with retained evidence:

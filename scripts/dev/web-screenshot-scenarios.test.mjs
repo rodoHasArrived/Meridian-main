@@ -218,14 +218,29 @@ test("the Playwright adapter waits for the declared response delay", async () =>
 });
 
 
+test("journal readiness waits for the current heading and populated balanced draft", async () => {
+  const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
+  const fixtures = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-fixtures.json"), "utf8"));
+  const capture = routeConfig.captures.find((item) => item.id === "W03J");
+  const workbench = fixtures.routes["/api/ledger/journal-entry-workbench"];
+  assert.ok(capture.requiredApiRoutes.includes("/api/ledger/journal-entry-workbench"));
+  assert.equal(capture.waitForText, "Manual journal entry workbench");
+  assert.ok(capture.waitForTexts.includes(capture.waitForText));
+  assert.ok(capture.waitForTexts.includes(workbench.drafts[0].memo), "Readiness must prove the fixture draft loaded");
+  assert.ok(capture.waitForTexts.includes("Balanced"), "Readiness must still prove the populated balance state");
+  assert.ok(!capture.waitForTexts.includes("Manual journal entries"), "Removed introductory copy is not a readiness signal");
+});
+
 test("reconciliation readiness proves the loaded selected queue row and inspector", async () => {
   const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
   const capture = routeConfig.captures.find((item) => item.id === "W03A");
   const selectedBreak = source.module.accountingPayload.breakQueue[0];
+  const selectedRun = source.module.accountingPayload.reconciliationQueue.find((run) => run.runId === selectedBreak.runId);
   assert.equal(capture.waitForText, "Reconciliation break queue");
   assert.ok(capture.waitForTexts.includes(selectedBreak.strategyName));
   assert.ok(capture.waitForTexts.includes(selectedBreak.reason));
-  assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`option[value="${selectedBreak.runId}"]:checked`)));
+  assert.ok(selectedRun, "The selected break must belong to a retained reconciliation run");
+  assert.ok(capture.waitForSelectors.includes(`#reconciliation-run-picker[role="combobox"][value="${selectedRun.strategyName} · ${selectedRun.openBreakCount} open"]`));
   assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`data-dense-row-id="${selectedBreak.breakId}"`) && selector.includes('aria-selected="true"')));
   assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`Reconciliation break detail for ${selectedBreak.breakId}`)));
   assert.ok(capture.waitForAbsentTexts.includes("Loading reconciliation break queue..."));

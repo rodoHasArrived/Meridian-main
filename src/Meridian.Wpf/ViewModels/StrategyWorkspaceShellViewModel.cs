@@ -431,7 +431,8 @@ public sealed class StrategyWorkspaceShellViewModel : WorkspaceShellViewModelBas
         }
         catch (Exception ex)
         {
-            WpfLoggingService.Instance.LogError($"[StrategyWorkspaceShell] Refresh failed: {ex.Message}");
+            WpfLoggingService.Instance.LogError("[StrategyWorkspaceShell] Refresh failed: {Error}", ex,
+                ("Error", ex.Message));
             HasError = true;
             ErrorMessage = ex.Message;
             ApplyState(_presentationService.BuildDegradedState());

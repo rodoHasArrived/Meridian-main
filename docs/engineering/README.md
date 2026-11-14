@@ -21,7 +21,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **Writing or moving docs:** [Documentation Contribution Guide](../development/documentation-contribution-guide.md)
 - **Dead-code cleanup inventory:** [Dead-Code Inventory](dead-code-inventory.md)
 - **Production readiness and test debt:** [Production Readiness Audit 2026-07-27](production-readiness-audit-2026-07-27.md)
-- **Security Master architecture review:** [Rolling review and October dispositions](../architecture/security-master-extensibility-review.md#consolidated-october-review-and-dispositions--2026-10-28), with the [remediation working plan](plans/security-master-review-remediation-plan.md). The [2026-08-13 audit](security-master-architecture-audit-2026-08-13.md) remains historical evidence.
+- **Security Master architecture review:** [Archived review and October dispositions](../../archive/docs/architecture/security-master-extensibility-review.md#consolidated-october-review-and-dispositions--2026-10-28), with the [remediation working plan](plans/security-master-review-remediation-plan.md). The [2026-08-13 audit](security-master-architecture-audit-2026-08-13.md) remains historical evidence.
 - **WPF performance and UI/UX audit:** [WPF Performance & UI/UX Refinement Audit 2026-06-14](wpf-perf-uiux-audit-2026-06-14.md) *(dated; its changes were not compiled or run when written)*
 - **Release-evidence working ledger:** [Production-Certification Evidence Chain](production-certification-evidence-chain.md)
 - **CI/CD ownership and rollout:** [CI/CD validation ownership](ci-cd-optimization.md)
@@ -163,7 +163,13 @@ The four-lane `Meridian CI / quality-gate` keeps its identity. The always-report
 `Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
 Production Certification, including pull requests and merge groups.
 
-For tracked-output drift or conflicts after updating from main, prepare a candidate without
+Eligible PRs use the [hosted repair bot](generated-merge-recovery.md#hosted-pr-repair) for routine
+workstation, contract-manifest, and documentation regeneration in one commit. Commit authored
+inputs and let the bot repair generated output; required same-commit freshness checks still apply.
+The bot must first be [configured by the owner](ci-cd-optimization.md#generated-repair-and-maintenance-activation).
+Generator, dependency, and policy changes remain on the contributor review path.
+
+For local tracked-output drift or conflicts after updating from main, prepare a candidate without
 changing your branch or index:
 
 ```powershell
