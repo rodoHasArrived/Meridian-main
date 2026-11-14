@@ -5,7 +5,7 @@ using Meridian.ProviderSdk;
 namespace Meridian.Infrastructure.Adapters.NYSE;
 
 /// <summary>Credential-free diagnostics for a NYSE capability that cannot be activated.</summary>
-internal sealed class UnavailableNyseDataSource : IDataSource, IProviderRateLimitDiagnosticsSource
+internal sealed class UnavailableNyseDataSource : IDataSource, IProviderRateLimitDiagnosticsSource, IDisposable
 {
     public string Id => "nyse";
     public string DisplayName => "NYSE Direct";
@@ -26,6 +26,7 @@ internal sealed class UnavailableNyseDataSource : IDataSource, IProviderRateLimi
         => Task.FromException(new InvalidOperationException(Description));
     public Task<bool> ValidateCredentialsAsync(CancellationToken ct = default) => Task.FromResult(false);
     public Task<bool> TestConnectivityAsync(CancellationToken ct = default) => Task.FromResult(false);
+    public void Dispose() { }
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
     public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot()
