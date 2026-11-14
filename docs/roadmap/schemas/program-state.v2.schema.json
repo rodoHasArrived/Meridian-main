@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "meridian.program-state.v2",
+  "type": "object",
+  "required": [
+    "schema",
+    "program"
+  ],
+  "properties": {
+    "schema": {
+      "type": "object",
+      "required": [
+        "id",
+        "version",
+        "minimum_renderer_version"
+      ],
+      "properties": {
+        "id": {
+          "const": "meridian.program-state"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^2\\.\\d+\\.\\d+$"
+        },
+        "minimum_renderer_version": {
+          "const": "3.0.0"
+        }
+      },
+      "additionalProperties": false
+    },
+    "program": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "owner",
+        "snapshot_date",
+        "status",
+        "scope_gate",
+        "near_term_release_baseline",
+        "active_productization_targets",
+        "current_focus",
+        "production_readiness",
+        "deferred_lanes",
+        "active_ui_lane",
+        "shared_ui_seam",
+        "mobile_lane",
+        "active_scope"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "owner": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "snapshot_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "status": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "scope_gate": {
+          "type": "string",
+          "maxLength": 1600
+        },
+        "near_term_release_baseline": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 600
+          }
+        },
+        "active_productization_targets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 600
+          }
+        },
+        "current_focus": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 600
+          }
+        },
+        "production_readiness": {
+          "type": "object",
+          "required": [
+            "status",
+            "reviewed",
+            "baseline_commit",
+            "canonical_tracker",
+            "release_gate"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "maxLength": 240
+            },
+            "reviewed": {
+              "type": "string",
+              "maxLength": 240
+            },
+            "baseline_commit": {
+              "type": "string",
+              "maxLength": 240
+            },
+            "canonical_tracker": {
+              "type": "string",
+              "maxLength": 240
+            },
+            "release_gate": {
+              "type": "string",
+              "maxLength": 400
+            }
+          },
+          "additionalProperties": false
+        },
+        "deferred_lanes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 600
+          }
+        },
+        "active_ui_lane": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "shared_ui_seam": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "mobile_lane": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "active_scope": {
+          "type": "object",
+          "required": [
+            "roadmap_items",
+            "decision_ids",
+            "work_queue",
+            "status_detail"
+          ],
+          "properties": {
+            "roadmap_items": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "decision_ids": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^DEC-[A-Z0-9-]+$"
+              }
+            },
+            "work_queue": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "status_detail": {
+              "type": "string",
+              "maxLength": 240,
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
