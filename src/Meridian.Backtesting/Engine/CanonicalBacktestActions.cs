@@ -38,7 +38,8 @@ internal sealed class CanonicalBacktestActions(BacktestCanonicalActionSnapshot s
                 SecurityIdentifierKind.Ticker, symbol, null, ct, through).ConfigureAwait(false)
                 ?? throw new InvalidOperationException($"Canonical replay requires a mastered security for '{symbol}'.");
             if (security.SecurityId == Guid.Empty || security.Version <= 0 || security.Status != SecurityStatusDto.Active ||
-                !string.Equals(security.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase) ||
+                !SecurityAssetClassCatalog.TryGet(security.AssetClass, out var descriptor) || !descriptor.SupportsEquityClassification ||
+                !string.Equals(security.AssetClass, descriptor.AssetClass, StringComparison.OrdinalIgnoreCase) ||
                 !string.Equals(security.Currency, "USD", StringComparison.OrdinalIgnoreCase))
                 throw new NotSupportedException($"Canonical replay requires an active USD cash equity: '{symbol}'.");
             if (!securities.Add(security.SecurityId))

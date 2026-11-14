@@ -249,7 +249,7 @@ public sealed class ThreeWayReconciliationSourceReader(
             : securities.ResolveAsync(new ResolveSecurityRequest(SecurityIdentifierKind.Ticker, symbol, null, asOf), ct);
 
     private static bool IsEquity(string? assetClass)
-        => SecurityAssetClassCatalog.TryResolveLabel(assetClass, out var descriptor) && descriptor.AssetClass == "Equity";
+        => SecurityAssetClassCatalog.TryResolveLabel(assetClass, out var descriptor) && descriptor.SupportsEquityClassification;
 
     private static bool IsCash(LedgerAccount account)
         => account.AccountType == LedgerAccountType.Asset && account.Name.StartsWith("Cash", StringComparison.OrdinalIgnoreCase);

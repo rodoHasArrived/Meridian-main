@@ -107,7 +107,7 @@ public sealed class CanonicalPaperPortfolioBootstrapper(
                     || group.Select(lot => lot.BookPositionId).Distinct().Count() != 1)
                     throw new InvalidOperationException("Canonical paper holdings require unambiguous security, symbol and book-position identities.");
                 var security = await securities.GetByIdAsync(group.First().SecurityId, ct).ConfigureAwait(false);
-                if (security is null || security.Currency != "USD" || SecurityAssetClassCatalog.ResolveLabel(security.AssetClass, out var kind) != SecurityAssetClassLabelResolution.Resolved || kind.AssetClass != "Equity")
+                if (security is null || security.Currency != "USD" || SecurityAssetClassCatalog.ResolveLabel(security.AssetClass, out var kind) != SecurityAssetClassLabelResolution.Resolved || kind is not { SupportsEquityClassification: true })
                     throw new InvalidOperationException("Canonical paper recovery supports USD cash-equity holdings only.");
                 var trusted = new List<JournalEntry>();
                 var batchIds = group.SelectMany(lot => new[] { lot.OriginatingMutationBatchId, lot.LastMutationBatchId })
@@ -175,7 +175,7 @@ public sealed class CanonicalPaperPortfolioBootstrapper(
                 DateTimeOffset.UtcNow).ConfigureAwait(false);
             if (security is not { Status: SecurityStatusDto.Active, Currency: "USD" }
                 || SecurityAssetClassCatalog.ResolveLabel(security.AssetClass, out var descriptor) != SecurityAssetClassLabelResolution.Resolved
-                || descriptor.AssetClass != "Equity" || LotQuantity.UnitFor(descriptor.AssetClass, security.AssetSpecificTerms) is not (SecurityLotUnitKind.Shares, 1m))
+                || descriptor is not { SupportsEquityClassification: true } || LotQuantity.UnitFor(descriptor.AssetClass, security.AssetSpecificTerms) is not (SecurityLotUnitKind.Shares, 1m))
                 return "Canonical paper accounting requires an authoritative active USD cash-equity security with unit shares.";
             var now = DateTimeOffset.UtcNow;
             var date = DateOnly.FromDateTime(now.UtcDateTime);

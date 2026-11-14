@@ -112,7 +112,7 @@ public static class GeneralLedgerSymbolPnlBuilder
             var price = prices.Lines.SingleOrDefault(item => item.SecurityId == lot.SecurityId);
             if (lot.LedgerBookId != book.LedgerBookId || lot.Acquisition is not { QuantityBasis: LotQuantityBasis.Units, Direction: OpenLotDirection.Long } acquisition
                 || security is null || SecurityAssetClassCatalog.ResolveLabel(security.AssetClass, out var descriptor) != SecurityAssetClassLabelResolution.Resolved
-                || descriptor?.AssetClass != "Equity" || security.Currency != book.BaseCurrency
+                || descriptor is not { SupportsEquityClassification: true } || security.Currency != book.BaseCurrency
                 || acquisition.AcquisitionCurrency != book.BaseCurrency || acquisition.FunctionalCurrency != book.BaseCurrency
                 || price is not { Unit: SecurityPriceUnit.CurrencyPerUnit, ClosePrice: > 0m }
                 || security.EffectiveFrom > prices.EvaluatedAsOf || security.EffectiveTo <= prices.EvaluatedAsOf)

@@ -205,7 +205,7 @@ public sealed class AutomatedTradeFillAccountingService(
             ?? throw new InvalidOperationException("The fill security is missing.");
         if (security.Currency != "USD" || security.Status != SecurityStatusDto.Active
             || SecurityAssetClassCatalog.ResolveLabel(security.AssetClass, out var descriptor) != SecurityAssetClassLabelResolution.Resolved
-            || descriptor.AssetClass != "Equity")
+            || descriptor is not { SupportsEquityClassification: true })
             throw new InvalidOperationException("Automatic fill accounting supports active USD cash equities only.");
         if (fill.SettlementCurrency is not null && fill.SettlementCurrency != security.Currency)
             throw new InvalidOperationException("Fill settlement currency differs from the security's authoritative currency.");

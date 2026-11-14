@@ -98,17 +98,22 @@ public sealed partial class WorkstationEndpointsTests
         var policy = new AccountingPolicyDto("policy", AccountingBasisKindDto.Primary, "v1", "Synthetic",
             period.StartDate, period.EndDate, false, "{}", now,
             RulePack: new AccountingPolicyRulePackDto("synthetic", "v1", rules));
+        var expectedPolicyQuery = new AccountingPolicyQuery(book.AccountingBasis, period.StartDate,
+            "policy", book.FundProfileId, book.FundStructureNodeId, PolicyVersion: "v1");
+        var expectedRequest = new ActivateAutomatedPostingGrantRequest(grantId, "account", book.LedgerBookId,
+            period.PeriodId, "policy", "v1", "mapping", CompanyId: "company-alpha");
+        var retainedGrant = grant with { PolicySnapshot = policy };
         var journals = new Mock<ILedgerJournalStore>(MockBehavior.Strict);
         journals.Setup(store => store.GetPeriodAsync(period.PeriodId, It.IsAny<CancellationToken>())).ReturnsAsync(period);
         journals.Setup(store => store.GetLedgerBookAsync(book.LedgerBookId, It.IsAny<CancellationToken>())).ReturnsAsync(book);
         var policies = new Mock<IAccountingPolicyService>(MockBehavior.Strict);
         policies.Setup(service => service.AcquireConsolidationAuthorityLeaseAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GrantPolicyLease());
-        policies.Setup(service => service.ResolvePolicyAsync(It.IsAny<AccountingPolicyQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(policy);
+        policies.Setup(service => service.ResolvePolicyAsync(expectedPolicyQuery, It.IsAny<CancellationToken>())).ReturnsAsync(policy);
         var grants = new Mock<IAutomatedPostingGrantStore>(MockBehavior.Strict);
-        grants.Setup(store => store.ActivateAsync(It.Is<ActivateAutomatedPostingGrantRequest>(request =>
-                request.CompanyId == "company-alpha"), "authenticated-admin", "tenant-alpha", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(grant);
+        grants.Setup(store => store.ActivateWithPolicyAsync(expectedRequest, policy,
+                "authenticated-admin", "tenant-alpha", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(retainedGrant);
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton(journals.Object);
@@ -131,7 +136,21 @@ public sealed partial class WorkstationEndpointsTests
             tenantId = "forged-tenant"
         });
         response.StatusCode.Should().Be(HttpStatusCode.Created, await response.Content.ReadAsStringAsync());
-        grants.VerifyAll();
+        var created = await response.Content.ReadFromJsonAsync<AutomatedPostingGrantDto>(ServerJsonOptions);
+        created.Should().NotBeNull();
+        created!.ActivatedBy.Should().Be("authenticated-admin");
+        created.Reference.TenantId.Should().Be("tenant-alpha");
+        created.Reference.CompanyId.Should().Be("company-alpha");
+        created.PolicySnapshot.Should().BeEquivalentTo(policy);
+        grants.Verify(store => store.ActivateWithPolicyAsync(expectedRequest, policy,
+            "authenticated-admin", "tenant-alpha", It.IsAny<CancellationToken>()), Times.Once);
+        grants.VerifyNoOtherCalls();
+        policies.Verify(service => service.AcquireConsolidationAuthorityLeaseAsync(It.IsAny<CancellationToken>()), Times.Once);
+        policies.Verify(service => service.ResolvePolicyAsync(expectedPolicyQuery, It.IsAny<CancellationToken>()), Times.Once);
+        policies.VerifyNoOtherCalls();
+        journals.Verify(store => store.GetPeriodAsync(period.PeriodId, It.IsAny<CancellationToken>()), Times.Once);
+        journals.Verify(store => store.GetLedgerBookAsync(book.LedgerBookId, It.IsAny<CancellationToken>()), Times.Once);
+        journals.VerifyNoOtherCalls();
     }
 
     private sealed class GrantPolicyLease : IAsyncDisposable
