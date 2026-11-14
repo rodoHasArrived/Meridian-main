@@ -16,6 +16,14 @@ public sealed partial class OrderManagementSystem
     {
         using var operation = EnterOperation();
 
+        if (_portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: true })
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                ErrorMessage = "Canonical accounting supports immediate synthetic fills only; order amendments require a separate reviewed mode."
+            };
+
         if (!_orders.TryGetValue(orderId, out var state))
         {
             await _executionAudit.RecordLifecycleAsync(

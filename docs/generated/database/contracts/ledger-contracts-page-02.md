@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 2 of 6
 
-Objects 81-160 of 439. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 447. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -174,13 +174,13 @@ classDiagram
         +Guid AggregateId
         +string? ApprovalId
         +AccountingPostingApprovalStateDto ApprovalState
+        +AutomatedPostingGrantReferenceDto? AutomationGrant
         +Meridian_Contracts_Accounting_Lots_BondCouponRecognitionInstructionDto? BondCouponRecognition
         +AccountingBookContextDto? BookContext
         +Guid? BookPositionId
         +AssetAccountingPreparerAttestationDto? CashDividendAttestation
         +Guid? CausationId
         +Guid CommandId
-        +Guid? ControlledCloseAuthorizationId
     }
     class Meridian_Contracts_Ledger_AccountingPostingEvidenceKindDto["AccountingPostingEvidenceKindDto"] {
     }
@@ -385,6 +385,18 @@ classDiagram
         +IReadOnlyList~string~? ReportGroupPrincipalIds
         +string? TenantId
     }
+    class Meridian_Contracts_Ledger_ActivateAutomatedPostingGrantRequest["ActivateAutomatedPostingGrantRequest"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string? CompanyId
+        +string FinancialAccountId
+        +Guid GrantId
+        +Guid LedgerBookId
+        +string MappingRevision
+        +Guid PeriodId
+        +string PolicyId
+        +string PolicyVersion
+        +string SourceMode
+    }
     class Meridian_Contracts_Ledger_ActivateLedgerBookControlsRequestDto["ActivateLedgerBookControlsRequestDto"] {
         +string EvidenceReference
         +long ExpectedVersion
@@ -505,6 +517,28 @@ classDiagram
         +string Summary
     }
     class Meridian_Contracts_Ledger_AutomatedJournalEvidenceQualityDto["AutomatedJournalEvidenceQualityDto"] {
+    }
+    class Meridian_Contracts_Ledger_AutomatedPostingGrantDto["AutomatedPostingGrantDto"] {
+        +DateTimeOffset ActivatedAtUtc
+        +string ActivatedBy
+        +bool IsActive
+        +AccountingPolicyDto? PolicySnapshot
+        +AutomatedPostingGrantReferenceDto Reference
+        +DateTimeOffset? RevokedAtUtc
+        +string? RevokedBy
+    }
+    class Meridian_Contracts_Ledger_AutomatedPostingGrantReferenceDto["AutomatedPostingGrantReferenceDto"] {
+        +string? CompanyId
+        +string FinancialAccountId
+        +Guid GrantId
+        +Guid LedgerBookId
+        +string MappingRevision
+        +Guid PeriodId
+        +string PolicyId
+        +string PolicyVersion
+        +string SourceMode
+        +string TenantId
+        +long Version
     }
     class Meridian_Contracts_Ledger_CanonicalAmortizationOccurrenceDto["CanonicalAmortizationOccurrenceDto"] {
         +DateOnly Date
@@ -647,12 +681,6 @@ classDiagram
         +string Owner
         +int RequiredSignOffCount
     }
-    class Meridian_Contracts_Ledger_CloseDeadlineAdjustmentDto["CloseDeadlineAdjustmentDto"] {
-    }
-    class Meridian_Contracts_Ledger_CloseDeadlineAnchorDto["CloseDeadlineAnchorDto"] {
-    }
-    class Meridian_Contracts_Ledger_CloseDeadlineDayCountDto["CloseDeadlineDayCountDto"] {
-    }
     Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto --> Meridian_Contracts_Ledger_AccountingBasisKindDto
     Meridian_Contracts_Ledger_AccountingBasisProjectionSetDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto
     Meridian_Contracts_Ledger_AccountingBasisProjectionSetRequestDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionTargetDto
@@ -680,6 +708,7 @@ classDiagram
     Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AccountingPostingEvidenceReferenceDto
     Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AccountingPostingIntentDto
     Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AccountingRulePackReferenceDto
+    Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AutomatedPostingGrantReferenceDto
     Meridian_Contracts_Ledger_AccountingPostingEvidenceReferenceDto --> Meridian_Contracts_Ledger_AccountingPostingEvidenceKindDto
     Meridian_Contracts_Ledger_AccountingReportPackageBundleDto --> Meridian_Contracts_Ledger_AccountingCloseReadinessItemDto
     Meridian_Contracts_Ledger_AccountingReportPackageBundleDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
@@ -701,6 +730,8 @@ classDiagram
     Meridian_Contracts_Ledger_AllocationRuleDto --> Meridian_Contracts_Ledger_AllocationRuleBasisDto
     Meridian_Contracts_Ledger_AssetAccountingDraftCapabilitiesDto --> Meridian_Contracts_Ledger_AssetAccountingApprovalReceiptDto
     Meridian_Contracts_Ledger_AutomatedJournalEvidenceAssessmentDto --> Meridian_Contracts_Ledger_AutomatedJournalEvidenceQualityDto
+    Meridian_Contracts_Ledger_AutomatedPostingGrantDto --> Meridian_Contracts_Ledger_AccountingPolicyDto
+    Meridian_Contracts_Ledger_AutomatedPostingGrantDto --> Meridian_Contracts_Ledger_AutomatedPostingGrantReferenceDto
     Meridian_Contracts_Ledger_CanonicalAmortizationPreparationDto --> Meridian_Contracts_Ledger_CanonicalAmortizationOccurrenceDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationRuleDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationInputDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto

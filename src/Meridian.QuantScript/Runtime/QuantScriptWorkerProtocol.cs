@@ -185,7 +185,9 @@ internal enum WorkerDataOperation
     Trades,
     OrderBook,
     SecurityMaster,
-    CorporateActions
+    CorporateActions,
+    CanonicalSecurityMaster,
+    CanonicalCorporateActions
 }
 
 internal sealed record WorkerDataRequest(
@@ -195,7 +197,8 @@ internal sealed record WorkerDataRequest(
     DateOnly? To = null,
     DateOnly? Date = null,
     DateTimeOffset? Timestamp = null,
-    string? Provider = null);
+    string? Provider = null,
+    Guid? ExpectedSecurityId = null);
 
 internal sealed record WorkerDataResponse(bool Success, JsonElement Value, string? Error);
 

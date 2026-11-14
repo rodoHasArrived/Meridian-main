@@ -66,6 +66,27 @@ public sealed class BacktestProxyRealismTests
 
     // ── Realism passthrough ──────────────────────────────────────────────────
 
+    [Theory]
+    [InlineData("Legacy", BacktestCorporateActionMode.Legacy)]
+    [InlineData(" RawPricesWithCanonicalEvents ", BacktestCorporateActionMode.RawPricesWithCanonicalEvents)]
+    [InlineData("rawpriceswithcanonicalevents", BacktestCorporateActionMode.RawPricesWithCanonicalEvents)]
+    public void WithCorporateActionMode_PropagatesExplicitMode(string mode, BacktestCorporateActionMode expected)
+    {
+        CreateProxy().WithCorporateActionMode(mode).BuildRequest().CorporateActionMode.Should().Be(expected);
+        CreateProxy().WithCorporateActionMode(expected).BuildRequest().CorporateActionMode.Should().Be(expected);
+        CreateProxy().BuildRequest().CorporateActionMode.Should().Be(BacktestCorporateActionMode.Legacy);
+    }
+
+    [Theory]
+    [InlineData("1")]
+    [InlineData("raw")]
+    [InlineData("")]
+    public void WithCorporateActionMode_RejectsAmbiguousMode(string mode)
+    {
+        var action = () => CreateProxy().WithCorporateActionMode(mode);
+        action.Should().Throw<ArgumentException>();
+    }
+
     [Fact]
     public void BuildRequest_CarriesEveryConfiguredRealismSetting()
     {

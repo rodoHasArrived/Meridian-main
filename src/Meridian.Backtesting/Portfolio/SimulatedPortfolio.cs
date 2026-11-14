@@ -9,7 +9,7 @@ namespace Meridian.Backtesting.Portfolio;
 /// Tracks simulated cash, margin, positions, and a typed cash-flow ledger.
 /// All mutations are single-threaded (called from the engine replay loop).
 /// </summary>
-internal sealed class SimulatedPortfolio
+internal sealed partial class SimulatedPortfolio
 {
     private readonly BacktestLedger? _ledger;
     private readonly IChartOfAccounts _chart = StandardChartOfAccounts.Instance;
@@ -136,6 +136,9 @@ internal sealed class SimulatedPortfolio
         var commission = fill.Commission;
 
         account.Positions.TryGetValue(symbol, out var existingQty);
+
+        if (_canonicalActions is not null && (existingQty + qty < 0 || account.Cash - qty * price - commission < 0m))
+            throw new NotSupportedException("Canonical raw-price replay permits long positions and fully funded fills only.");
 
         // Any sell that leaves the position net short opens short exposure, including a sell
         // larger than the current long (long 100, sell 150 => short 50).
@@ -285,6 +288,10 @@ internal sealed class SimulatedPortfolio
                         assetEvent.PositionFactor)
                     : (decimal?)null))
             .ToArray();
+
+        if (_canonicalActions is not null && impactedAccounts.Any(item =>
+            item.Account.Cash + item.ExistingQuantity * assetEvent.CashPerShare < 0m))
+            throw new NotSupportedException("Canonical raw-price replay requires fully funded asset-event fees.");
 
         // Combining unlike directions requires explicit close/cover economics. A corporate action
         // cannot silently net a transformed source book against an existing opposite-direction
@@ -460,7 +467,10 @@ internal sealed class SimulatedPortfolio
         var dayCashFlows = _cashFlows.ToList();
         _cashFlows.Clear();
 
-        var snapshot = new PortfolioSnapshot(timestamp, date, Cash, MarginBalance, longMv, shortMv, equity, dailyReturn, positions, accountSnapshots, dayCashFlows);
+        var snapshot = new PortfolioSnapshot(timestamp, date, Cash, MarginBalance, longMv, shortMv, equity, dailyReturn, positions, accountSnapshots, dayCashFlows)
+        {
+            DividendReceivable = accountSnapshots.Values.Sum(static account => account.DividendReceivable)
+        };
         if (_ledger is not null)
         {
             var breaks = BacktestLedgerIntegrityValidator.Validate(_ledger, snapshot);
@@ -1445,7 +1455,8 @@ internal sealed class SimulatedPortfolio
                     .Sum(position => position.NotionalValue(_lastPrices.GetValueOrDefault(position.Symbol, position.AverageCostBasis)));
                 var shortMv = positions.Values.Where(position => position.Quantity < 0)
                     .Sum(position => position.NotionalValue(_lastPrices.GetValueOrDefault(position.Symbol, position.AverageCostBasis)));
-                var equity = account.Cash + longMv + shortMv;
+                var receivable = account.DividendEntitlements.Values.Sum(static entitlement => entitlement.Amount);
+                var equity = account.Cash + longMv + shortMv + receivable;
                 var openLots = account.Lots.Values
                     .Concat(account.ShortLots.Values)
                     .SelectMany(static lots => lots)
@@ -1463,7 +1474,10 @@ internal sealed class SimulatedPortfolio
                     positions,
                     account.Rules,
                     openLots,
-                    account.ClosedLots.ToList());
+                    account.ClosedLots.ToList())
+                {
+                    DividendReceivable = receivable
+                };
             },
             StringComparer.OrdinalIgnoreCase);
     }
@@ -1762,5 +1776,6 @@ internal sealed class SimulatedPortfolio
         public Dictionary<string, long> Positions { get; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, decimal> AvgCost { get; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, decimal> RealizedPnl { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<Guid, (decimal Amount, long Shares)> DividendEntitlements { get; } = new();
     }
 }

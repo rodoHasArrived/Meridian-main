@@ -87,7 +87,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:20](../../../.
 Maps fund-account management and brokerage synchronization operations with account-specific authorization.
 
 ```csharp
-public static class FundAccountEndpoints
+public static partial class FundAccountEndpoints
 ```
 
 Declared public members:
@@ -95,6 +95,12 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapFundAccountEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs#L22) |  |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.ThreeWayReconciliation.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.ThreeWayReconciliation.cs#L12).
+
+```csharp
+public static partial class FundAccountEndpoints
+```
 
 ## FundProfileScopeEndpointFilters
 
@@ -584,6 +590,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Authorization.cs:23](.
 public static partial class LedgerEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AutomatedPostingGrants.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AutomatedPostingGrants.cs#L15).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs#L20).
 
 ```csharp
@@ -687,6 +699,12 @@ public static partial class LedgerEndpoints
 ```
 
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs#L19).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.GeneralLedgerExport.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.GeneralLedgerExport.cs#L15).
 
 ```csharp
 public static partial class LedgerEndpoints

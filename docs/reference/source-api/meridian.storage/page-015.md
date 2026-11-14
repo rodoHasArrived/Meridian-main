@@ -6,6 +6,178 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingSession
+
+Qualified name: <code>Meridian.Storage.Services.TradingSession</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1562](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1562).
+
+```csharp
+public sealed record TradingSession(string Name, DayOfWeek[] ActiveDays, TimeSpan PreMarketStart, TimeSpan RegularStart, TimeSpan RegularEnd, TimeSpan AfterHoursEnd, bool IncludesPreMarket = true, bool IncludesAfterHours = true);
+```
+
+## TransformationRecord
+
+Qualified name: <code>Meridian.Storage.Services.TransformationRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataLineageService.cs:449](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L449).
+
+```csharp
+public sealed record TransformationRecord(DateTime TimestampUtc, string Type, string Description, string? Algorithm = null, IReadOnlyDictionary<string, string>? Parameters = null);
+```
+
+## CatalogSyncSink
+
+Qualified name: <code>Meridian.Storage.Sinks.CatalogSyncSink</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Sinks/CatalogSyncSink.cs:17](../../../../src/Meridian.Storage/Sinks/CatalogSyncSink.cs#L17).
+
+Decorator around any IStorageSink that automatically updates the IStorageCatalogService whenever data is flushed to disk. This keeps directory indexes and the global catalog in sync with live writes without requiring periodic RebuildCatalogAsync calls.
+
+```csharp
+public sealed class CatalogSyncSink : IStorageSink
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CatalogSyncSink(IStorageSink inner, IStorageCatalogService catalog, IStoragePolicy policy, string rootPath, ILogger&lt;CatalogSyncSink&gt;? logger = null);</code> | [src/Meridian.Storage/Sinks/CatalogSyncSink.cs:32](../../../../src/Meridian.Storage/Sinks/CatalogSyncSink.cs#L32) |  |
+| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/CatalogSyncSink.cs:46](../../../../src/Meridian.Storage/Sinks/CatalogSyncSink.cs#L46) |  |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/CatalogSyncSink.cs:61](../../../../src/Meridian.Storage/Sinks/CatalogSyncSink.cs#L61) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/CatalogSyncSink.cs:77](../../../../src/Meridian.Storage/Sinks/CatalogSyncSink.cs#L77) |  |
+
+## CompositeSink
+
+Qualified name: <code>Meridian.Storage.Sinks.CompositeSink</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Sinks/CompositeSink.cs:56](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L56).
+
+Fans out events to multiple storage sinks, enabling multi-format storage (e.g., JSONL + Parquet simultaneously) without modifying the EventPipeline. Includes per-sink circuit breaker health tracking to avoid hammering a persistently failing sink.
+
+```csharp
+public sealed class CompositeSink : IStorageSink
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CompositeSink(IEnumerable&lt;IStorageSink&gt; sinks, ILogger&lt;CompositeSink&gt;? logger = null, int maxConsecutiveFailures = 5, TimeSpan? circuitResetTimeout = null, FailurePolicy failurePolicy = FailurePolicy.ContinueOnPartialFailure, TimeProvider? timeProvider = null);</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:85](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L85) |  |
+| <code>public int SinkCount =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:123](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L123) | Gets the number of underlying sinks. |
+| <code>public long AppendFailures =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:126](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L126) | Gets the total number of individual sink append failures since startup. |
+| <code>public FailurePolicy FailurePolicy =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:129](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L129) | Gets the configured failure policy. |
+| <code>public int HealthySinkCount =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:132](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L132) | Gets the number of sinks currently in the SinkHealthState.Healthy state. |
+| <code>public int DegradedSinkCount =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:135](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L135) | Gets the number of sinks currently in the SinkHealthState.Degraded state. |
+| <code>public int FailedSinkCount =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:138](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L138) | Gets the number of sinks currently in the SinkHealthState.Failed state (circuit open). |
+| <code>public long TotalCircuitBreaks { get; }</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:141](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L141) | Gets the total number of circuit breaker trip events across all sinks. |
+| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:173](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L173) | Appends the event to every child sink whose circuit is not open. Under FailurePolicy.ContinueOnPartialFailure individual sink failures are tolerated only while at least one sink accepts the write. When no sink accepts it (every sink failed or had its circuit open) this method throws, so callers such as the EventPipeline never treat an unpersisted event as durable and commit or truncate the write-ahead log that is still holding it. Under FailurePolicy.FailOnAnyFailure a sink whose circuit is open is not skipped: the append throws for as long as the circuit stays open, exactly as it does when that sink&#x27;s write fails. |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:329](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L329) | Flushes every child sink whose circuit is not open. Throws when any attempted flush fails, and also when no sink was flushed at all because every circuit is open: a flush that persisted nothing must not let callers treat buffered events as durable. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:372](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L372) |  |
+| <code>public IReadOnlyList&lt;SinkHealth&gt; GetSinkHealthReport();</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:393](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L393) | Returns a health report for every registered sink, including circuit breaker state, failure counts, and reset times. Useful for Prometheus metrics and diagnostics endpoints. |
+
+## FailurePolicy
+
+Qualified name: <code>Meridian.Storage.Sinks.FailurePolicy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Sinks/CompositeSink.cs:41](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L41).
+
+Determines how the composite sink behaves when one or more child sinks fail.
+
+```csharp
+public enum FailurePolicy : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ContinueOnPartialFailure</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:44](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L44) | Continue writing to remaining healthy sinks when one fails (default). |
+| <code>FailOnAnyFailure</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:47](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L47) | Throw if any sink fails an append or cannot be written because its circuit is open. |
+
+## JsonlBatchOptions
+
+Qualified name: <code>Meridian.Storage.Sinks.JsonlBatchOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:23](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L23).
+
+Configuration options for batched JSONL storage.
+
+```csharp
+public sealed class JsonlBatchOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int BatchSize { get; init; } = 1000;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:29](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L29) | Number of events to buffer before writing to disk. Default is 1000 events. |
+| <code>public TimeSpan FlushInterval { get; init; } = TimeSpan.FromSeconds(5);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:35](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L35) | Maximum time between flushes. Default is 5 seconds. |
+| <code>public bool Enabled { get; init; } = true;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:41](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L41) | Whether batching is enabled. When disabled, writes occur immediately per event. Default is true. |
+| <code>public JsonlWriteMode WriteMode { get; init; } = JsonlWriteMode.AppendStream;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:50](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L50) | How appends reach the day file. JsonlWriteMode.AppendStream (default) keeps a persistent append-only handle per uncompressed file and fsyncs on the sink&#x27;s flush barrier; JsonlWriteMode.CopyOnWrite preserves the previous whole-file copy-per-batch behaviour as a rollback path. Compressed files always use copy-on-write because a torn gzip member cannot be safely repaired in place. |
+| <code>public static JsonlBatchOptions Default =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:55](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L55) | Default options with batching enabled. |
+| <code>public static JsonlBatchOptions HighThroughput =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:60](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L60) | Optimized for high throughput with larger batches. |
+| <code>public static JsonlBatchOptions LowLatency =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:69](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L69) | Optimized for low latency with smaller batches. |
+| <code>public static JsonlBatchOptions NoBatching =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:78](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L78) | Disable batching - write each event immediately. |
+
+## JsonlStorageSink
+
+Qualified name: <code>Meridian.Storage.Sinks.JsonlStorageSink</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:103](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L103).
+
+Buffered JSONL writer with per-path writers and configurable batch writes. Supports both immediate and batched write modes for optimal performance.
+
+```csharp
+public sealed class JsonlStorageSink : IStorageSink
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public long EventsBuffered =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:144](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L144) | Total events currently buffered across all paths. |
+| <code>public long EventsWritten =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:149](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L149) | Total events written to disk. |
+| <code>public long BatchesWritten =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:154](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L154) | Total batches written to disk. |
+| <code>public bool IsBatchingEnabled =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:159](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L159) | Gets whether sink-side batching is enabled. |
+| <code>public int BatchSize =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:164](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L164) | Gets the configured batch size threshold. |
+| <code>public TimeSpan FlushInterval =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:169](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L169) | Gets the configured periodic flush interval for buffered batches. |
+| <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, ILogger&lt;JsonlStorageSink&gt;? logger = null) : this(options, policy, JsonlBatchOptions.NoBatching, logger);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:174](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L174) | Creates a JsonlStorageSink with default options (no batching for backward compatibility). |
+| <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, JsonlBatchOptions batchOptions, ILogger&lt;JsonlStorageSink&gt;? logger = null);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:193](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L193) | Creates a JsonlStorageSink with configurable batch options. |
+| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:241](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L241) |  |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:407](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L407) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:424](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L424) |  |
+| <code>public JsonlStorageSinkStatistics GetStatistics();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:489](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L489) | Returns a diagnostics snapshot for buffered JSONL persistence. |
+
+## JsonlStorageSinkStatistics
+
+Qualified name: <code>Meridian.Storage.Sinks.JsonlStorageSinkStatistics</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1146](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1146).
+
+```csharp
+public sealed record JsonlStorageSinkStatistics(bool IsBatchingEnabled, int BatchSize, TimeSpan FlushInterval, long EventsBuffered, long EventsWritten, long BatchesWritten, int WriterCount, int BufferCount, DateTimeOffset Timestamp, long FsyncCount = 0, int OpenWriterHandles = 0);
+```
+
+## JsonlWriteMode
+
+Qualified name: <code>Meridian.Storage.Sinks.JsonlWriteMode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:87](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L87).
+
+Append mechanism for JSONL day files.
+
+```csharp
+public enum JsonlWriteMode : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>AppendStream</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:90](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L90) | Persistent append-only file handle; new bytes only, fsync on the flush barrier. |
+| <code>CopyOnWrite</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:93](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L93) | Legacy whole-file copy through AtomicFileWriter.AppendAsync per batch. |
+
 ## ParquetStorageOptions
 
 Qualified name: <code>Meridian.Storage.Sinks.ParquetStorageOptions</code>. Kind: `class`.

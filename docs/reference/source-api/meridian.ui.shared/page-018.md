@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterReconciliationSlaPolicyProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterReconciliationSlaPolicyProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs:13](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs#L13).
+
+Supplies Security Master-specific SLA policies for reconciliation cases, honoring the per-category windows in SecurityMasterExceptionSlaConfig. The configured calendar-day windows are expressed as business-day equivalents so they integrate with the shared ReconciliationSlaCalculator business-hour model (weekends excluded), consistent with the rest of the reconciliation SLA system.
+
+```csharp
+public sealed class SecurityMasterReconciliationSlaPolicyProvider : IReconciliationSlaPolicyProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterReconciliationSlaPolicyProvider(SecurityMasterExceptionSlaConfig? config = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs:22](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs#L22) |  |
+| <code>public ReconciliationSlaPolicy? ResolvePolicy(ReconciliationBreakQueueItem item);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs:25](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs#L25) |  |
+
+## SecurityMasterSecurityReferenceLookup
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterSecurityReferenceLookup</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:12](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs#L12).
+
+Adapts Security Master query services to workstation-facing symbol enrichment.
+
+```csharp
+public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLookup
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterSecurityReferenceLookup(ISecurityMasterQueryService queryService);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:16](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs#L16) |  |
+| <code>public Task&lt;WorkstationSecurityReference?&gt; GetBySymbolAsync(string symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:21](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs#L21) |  |
+| <code>public async Task&lt;WorkstationSecurityReference?&gt; GetByCanonicalAsync(SecurityReferenceLookupRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:30](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs#L30) |  |
+
 ## SecurityMasterWorkbenchQueryService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterWorkbenchQueryService</code>. Kind: `class`.
@@ -234,7 +273,7 @@ public sealed class StatementFetchSchedulerService(IServiceProvider serviceProvi
 
 Qualified name: <code>Meridian.Ui.Shared.Services.StatementFetchSchedulerServiceCollectionExtensions</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:68](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L68).
+Source: [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:83](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L83).
 
 Registers the statement fetch scheduler as a shared singleton and hosted service.
 
@@ -246,7 +285,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IServiceCollection AddStatementFetchSchedulerHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:70](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L70) |  |
+| <code>public static IServiceCollection AddStatementFetchSchedulerHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:85](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L85) |  |
 
 ## StatementReconciliationCaseworkHandoffException
 
@@ -466,6 +505,190 @@ Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:23](../
 public sealed record SyncValidationResult(bool Passed, IReadOnlyList<SyncValidationIssue> Issues);
 ```
 
+## ThreeWayAdjustmentDraftService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayAdjustmentDraftService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentDraftService.cs:12](../../../../src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentDraftService.cs#L12).
+
+Prepares a reviewed correction candidate; never approves, posts, or clears casework.
+
+```csharp
+public sealed class ThreeWayAdjustmentDraftService(IThreeWayReconciliationSourceReader sources, FileThreeWayReconciliationEvidenceStore evidence, ThreeWayReconciliationOptions options, ILedgerJournalStore? ledger = null, IAccountingConfigurationService? configuration = null, IManualJournalEntryWorkbenchService? workbench = null, IManualJournalEntryDraftStore? drafts = null, TimeProvider? timeProvider = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; PrepareAsync(Guid accountId, ReconciliationBreakQueueScope access, PrepareThreeWayAdjustmentRequestDto request, string actor, IReadOnlyList&lt;string&gt;? principalIds = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentDraftService.cs:24](../../../../src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentDraftService.cs#L24) |  |
+
+## ThreeWayAdjustmentProposalBuilder
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayAdjustmentProposalBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentProposalBuilder.cs:8](../../../../src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentProposalBuilder.cs#L8).
+
+Evidence-backed suggestions only; an unexplained cash residual never creates a journal.
+
+```csharp
+public static class ThreeWayAdjustmentProposalBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;ThreeWayAdjustmentProposalDto&gt; Build(IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt; sources, IReadOnlyList&lt;ThreeWayReconciliationCheckDto&gt; checks, DateTimeOffset cutoff);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentProposalBuilder.cs:10](../../../../src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentProposalBuilder.cs#L10) |  |
+
+## ThreeWayReconciliationComparer
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationComparer</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationComparer.cs:6](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationComparer.cs#L6).
+
+Compares independent retained operands; coverage and comparability are not zero balances.
+
+```csharp
+public static class ThreeWayReconciliationComparer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;ThreeWayReconciliationCheckDto&gt; Compare(IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt; sources, DateTimeOffset cutoffUtc, TimeSpan maximumAge, TimeSpan maximumDrift);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationComparer.cs:8](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationComparer.cs#L8) |  |
+
+## ThreeWayReconciliationOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:14](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L14).
+
+```csharp
+public sealed class ThreeWayReconciliationOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionKey = &quot;Reconciliation:ThreeWay&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:16](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L16) |  |
+| <code>public const string SupportedBasisConvention = &quot;GrossTradeValueFeesExpensed&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:17](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L17) |  |
+| <code>public string RootDirectory { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:18](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L18) |  |
+| <code>public TimeSpan MaximumSourceAge { get; set; } = TimeSpan.FromMinutes(30);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:19](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L19) |  |
+| <code>public TimeSpan MaximumSourceDrift { get; set; } = TimeSpan.FromMinutes(5);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:20](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L20) |  |
+| <code>public string BrokerCostBasisConvention { get; set; } = &quot;Unknown&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:22](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L22) |  |
+| <code>public string CashAccountPath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:23](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L23) |  |
+| <code>public string FeeExpenseAccountPath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:24](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L24) |  |
+| <code>public TimeOnly DailyRunAfterUtc { get; set; } = new (0, 15);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:25](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L25) |  |
+| <code>public IReadOnlyList&lt;ThreeWayReconciliationSchedule&gt; Schedules { get; set; } = [];</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:26](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L26) |  |
+
+## ThreeWayReconciliationSchedule
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationSchedule</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:6](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L6).
+
+Explicit daily scope configuration; no account or authority is discovered implicitly.
+
+```csharp
+public sealed record ThreeWayReconciliationSchedule(string TenantId, string CompanyId, Guid FinancialAccountId, Guid LedgerBookId, Guid AccountingPeriodId, bool Enabled = false);
+```
+
+## ThreeWayReconciliationScheduleRunner
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationScheduleRunner</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:35](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L35).
+
+Uses the existing shared scheduler tick; retains one operation per configured scope/day.
+
+```csharp
+public sealed class ThreeWayReconciliationScheduleRunner(IThreeWayReconciliationSourceReader sources, ThreeWayReconciliationService reconciliation, ThreeWayReconciliationOptions options, ILogger<ThreeWayReconciliationScheduleRunner> logger)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;int&gt; RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:41](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L41) |  |
+
+## ThreeWayReconciliationService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:10](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L10).
+
+Retains source operands and routes discrepancies into existing governed casework.
+
+```csharp
+public sealed class ThreeWayReconciliationService(IThreeWayReconciliationSourceReader sources, FileThreeWayReconciliationEvidenceStore store, IReconciliationBreakQueueRepository queue, ThreeWayReconciliationOptions options, TimeProvider? timeProvider = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ThreeWayReconciliationResultDto&gt; RunAsync(Guid accountId, ReconciliationBreakQueueScope access, ThreeWayReconciliationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:19](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L19) |  |
+| <code>public async Task&lt;ThreeWayReconciliationResultDto?&gt; GetLatestAsync(Guid accountId, ReconciliationBreakQueueScope access, Guid bookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:69](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L69) |  |
+
+## ThreeWayReconciliationServiceRegistration
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationServiceRegistration</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:10](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L10).
+
+```csharp
+public static class ThreeWayReconciliationServiceRegistration
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddThreeWayReconciliationServices(this IServiceCollection services, IConfiguration? configuration, Func&lt;IServiceProvider, string&gt; rootDirectory);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:12](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L12) |  |
+
+## ThreeWayReconciliationSourceReader
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationSourceReader</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs:20](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs#L20).
+
+Reads posted journal/lot truth, independent paper-OMS snapshots and retained broker observations. The broker-backed legacy IPortfolioState is deliberately not an OMS source.
+
+```csharp
+public sealed class ThreeWayReconciliationSourceReader(BrokeragePortfolioSyncService brokerage, FileThreeWayReconciliationEvidenceStore evidence, ThreeWayReconciliationOptions options, IAccountQueryService? accounts = null, ILedgerJournalStore? ledger = null, IFundProfileTenancyRegistry? tenancy = null, PaperTradingPortfolio? oms = null, ISecurityResolver? securities = null, TimeProvider? timeProvider = null) : IThreeWayReconciliationSourceReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ThreeWayReconciliationScopeDto&gt; AuthorizeAsync(Guid accountId, ReconciliationBreakQueueScope accessScope, Guid ledgerBookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs:33](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs#L33) |  |
+| <code>public async Task CaptureAsync(ThreeWayReconciliationScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs:58](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs#L58) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt;&gt; ReadAsync(ThreeWayReconciliationScopeDto scope, DateTimeOffset cutoffUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs:116](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs#L116) |  |
+
+## ThreeWayRetainedSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayRetainedSource</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs:10](../../../../src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs#L10).
+
+```csharp
+public sealed record ThreeWayRetainedSource(ThreeWayReconciliationScopeDto Scope, ThreeWaySourceSnapshotDto Snapshot);
+```
+
+## ThreeWayStoredRun
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayStoredRun</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs:9](../../../../src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs#L9).
+
+```csharp
+public sealed record ThreeWayStoredRun(string RequestHash, ThreeWayReconciliationResultDto Result, bool Completed = false);
+```
+
 ## ThresholdBreach
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ThresholdBreach</code>. Kind: `record`.
@@ -658,7 +881,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:89](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L89) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1537](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1537) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1539](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1539) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -716,280 +939,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>QuoteStreamSubscription? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs:17](../../../../src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs#L17) | Subscribe to a topic&#x27;s coalesced snapshot feed. Returns null when the session&#x27;s concurrent-stream cap is exceeded. Dispose the subscription to unsubscribe and release the session&#x27;s stream slot. |
-
-## QuoteStreamBroadcaster
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamBroadcaster</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:18](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L18).
-
-Event-driven quote fan-out. A thin quote-typed configuration of StreamBroadcaster{T}: woken by the collector via NotifyQuoteChanged, it rebuilds each active topic&#x27;s snapshot on the shared coalescing loop (latest-wins) and pushes it to every subscriber of that topic. One snapshot build is shared across all subscribers of a topic, and the market-data storage hot path is untouched: NotifyQuoteChanged only sets a wake signal.
-
-```csharp
-public sealed class QuoteStreamBroadcaster : IQuoteStreamBroadcaster, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public QuoteStreamBroadcaster(IServiceProvider services, StreamConnectionRegistry registry, QuoteStreamOptions options) : this(services, registry, options, LiveDataEndpoints.TryBuildQuotesSnapshotResponse);</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:22](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L22) |  |
-| <code>public void NotifyQuoteChanged(string symbol) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:52](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L52) |  |
-| <code>public QuoteStreamSubscription? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:55](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L55) |  |
-| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:66](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L66) |  |
-
-## QuoteStreamOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:7](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L7).
-
-Tuning knobs for the workstation quote-stream fan-out. Bindable from configuration under SectionName.
-
-```csharp
-public sealed class QuoteStreamOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SectionName = &quot;Workstation:QuoteStream&quot;;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:10](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L10) | Configuration section name. |
-| <code>public int CoalesceIntervalMs { get; set; } = 250;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:16](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L16) | Maximum push cadence: dirty topics are rebuilt and fanned out at most this often. Also the floor for how quickly a change reaches subscribers. |
-| <code>public int MaxConcurrentStreamsPerSession { get; set; } = 4;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:19](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L19) | Maximum concurrent stream connections per session. |
-| <code>public int SubscriberChannelCapacity { get; set; } = 1;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L25) | Per-subscriber channel capacity. 1 means latest-snapshot-wins (drop-oldest), so a slow client can never block the broadcaster — it only drops intermediate snapshots. |
-
-## QuoteStreamSubscription
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamSubscription</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:12](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L12).
-
-A live subscription to a quote topic. Read coalesced snapshots from Reader; dispose to unsubscribe and release the session&#x27;s stream slot. Disposal is idempotent.
-
-```csharp
-public sealed class QuoteStreamSubscription : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ChannelReader&lt;QuotesSnapshotResponse&gt; Reader { get; }</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:23](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L23) | Coalesced snapshot feed for this subscription&#x27;s topic. |
-| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L25) |  |
-
-## ReportRunStreamBroadcaster
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.ReportRunStreamBroadcaster</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:18](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L18).
-
-Event-driven report-run fan-out. A report-run-typed configuration of StreamBroadcaster{TPayload}: implements IReportingRunNotifier so run persistence wakes it, rebuilds each watched run&#x27;s status/audit payload on the shared coalescing loop, and pushes it to every subscriber of that run. Because report-run topics are keyed by an unbounded set of run ids, empty topics are evicted on last unsubscribe so they cannot leak.
-
-```csharp
-public sealed class ReportRunStreamBroadcaster : IReportingRunNotifier, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportRunStreamBroadcaster(IServiceProvider services, StreamConnectionRegistry registry, QuoteStreamOptions options) : this(services, registry, options, FundStructureEndpoints.TryBuildReportRunAuditTrail);</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:22](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L22) |  |
-| <code>public void NotifyRunChanged(string runId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:51](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L51) |  |
-| <code>public void NotifyRunChanged(string tenantId, string? companyId, string runId);</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:53](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L53) |  |
-| <code>public StreamSubscription&lt;ReportingRunAuditTrailDto&gt;? TrySubscribe(StreamTopic topic, string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:74](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L74) | Subscribe to a report-run topic&#x27;s coalesced status feed. Returns null when the session&#x27;s concurrent-stream cap is exceeded. Dispose to unsubscribe and release the session&#x27;s slot. |
-| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:80](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L80) |  |
-
-## StreamBroadcaster (generic arity 1)
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamBroadcaster</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:26](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L26).
-
-Event-driven fan-out engine shared by all workstation stream kinds. Woken via WakeAll (or Wake), it rebuilds each active topic&#x27;s payload on a coalescing loop (latest-wins) and pushes it to every subscriber of that topic over a bounded, drop-oldest channel — so one build is shared across all subscribers of a topic and a slow client never blocks the loop. The payload build, coalesce comparison, and empty-topic lifecycle are supplied by the owning broadcaster (quotes, report-run, …).
-
-```csharp
-public sealed class StreamBroadcaster<TPayload>: IAsyncDisposable where TPayload : class
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StreamBroadcaster(StreamConnectionRegistry registry, Func&lt;StreamTopic, TPayload?&gt; build, IEqualityComparer&lt;TPayload&gt; coalesceComparer, int coalesceIntervalMs, int subscriberChannelCapacity, bool evictEmptyTopics, ILogger? logger = null);</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:48](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L48) |  |
-| <code>public void WakeAll() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:71](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L71) | Wake the loop to rebuild every active topic (any topic may have changed). |
-| <code>public void Wake(StreamTopic topic) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:78](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L78) | Wake the loop for a change to a single topic. The loop currently rebuilds all active topics and coalesces unchanged ones to no-ops, so this is equivalent to WakeAll today; the topic argument is accepted for a future targeted-rebuild optimization. |
-| <code>public StreamSubscription&lt;TPayload&gt;? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:85](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L85) | Subscribe to a topic&#x27;s coalesced payload feed. Returns null when the session&#x27;s concurrent-stream cap is exceeded. Dispose the subscription to unsubscribe and release the session&#x27;s stream slot. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:246](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L246) |  |
-
-## StreamConnectionRegistry
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamConnectionRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:11](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L11).
-
-Tracks the number of concurrent quote-stream connections per session and enforces a per-session cap. A singleton hit concurrently by many request threads, so all counter mutations are atomic (compare-and-swap on a ConcurrentDictionary{TKey,TValue}).
-
-```csharp
-public sealed class StreamConnectionRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StreamConnectionRegistry(int maxConcurrentStreamsPerSession);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:16](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L16) |  |
-| <code>public bool TryReserve(string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L25) | Atomically reserves a stream slot for the session. Returns false when the session is already at its cap. An empty session id is treated as unscoped and never capped. |
-| <code>public void Release(string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:61](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L61) | Releases a previously reserved slot for the session. |
-| <code>public int ActiveCount(string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:93](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L93) | Current number of active streams for the session. |
-| <code>public void CloseSession(string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:97](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L97) | Drops all accounting for a session (e.g. on logout / session expiry). |
-
-## StreamSubscription (generic arity 1)
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamSubscription</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:12](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L12).
-
-A live subscription to a stream topic produced by StreamBroadcaster{TPayload}. Read coalesced payloads from Reader; dispose to unsubscribe and release the session&#x27;s stream slot. Disposal is idempotent.
-
-```csharp
-public sealed class StreamSubscription<TPayload>: IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ChannelReader&lt;TPayload&gt; Reader { get; }</code> | [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:23](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L23) | Coalesced payload feed for this subscription&#x27;s topic. |
-| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L25) |  |
-
-## StreamTopic
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamTopic</code>. Kind: `struct`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:14](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L14).
-
-Identifies a stream fan-out topic — the unit of subscription and one-build-per-tick sharing. The Key encodes the topic kind and its argument: quotes:&lt;symbols&gt; for a canonical, order- and case-independent symbol set (or the &quot;all tracked symbols&quot; sentinel), and a length-prefixed tenant/company/run identity for a scoped reporting run. Topic equality is by Key, so equivalent requests share one topic (and therefore one snapshot build per fan-out tick).
-
-```csharp
-public readonly struct StreamTopic : IEquatable<StreamTopic>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string AllQuotesKey = &quot;quotes:*&quot;;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:17](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L17) | Topic key for &quot;all tracked symbols&quot;. |
-| <code>public string Key =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:32](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L32) | Canonical, stable identifier for this topic. default(StreamTopic) resolves to AllQuotesKey so the default value behaves as AllQuotes. |
-| <code>public string Argument =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:38](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L38) | The argument passed to this topic&#x27;s snapshot builder: the comma-joined symbol filter for quote topics (empty string = &quot;all tracked symbols&quot;), or the run id for report-run topics. |
-| <code>public string SymbolFilter =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:41](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L41) | Back-compat alias for quote consumers: the symbol filter for a quotes topic. |
-| <code>public static StreamTopic AllQuotes { get; } = new (AllQuotesKey, string.Empty);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:44](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L44) | Topic covering every tracked symbol. |
-| <code>public static StreamTopic Quotes(string? symbolFilter);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:52](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L52) | Build a quotes topic from a raw or normalized symbol filter (comma-separated). Symbols are trimmed, upper-cased, de-duplicated, and sorted so equivalent requests collapse to the same topic. An empty/whitespace filter yields AllQuotes. |
-| <code>public static StreamTopic ReportRun(string runId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:79](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L79) | Build a legacy report-run topic keyed by the exact run id (trimmed). New tenant-bound subscriptions use the scoped overload below. |
-| <code>public static StreamTopic ReportRun(string tenantId, string companyId, string runId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:85](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L85) |  |
-| <code>public static bool TryParseScopedReportRun(string argument, out string tenantId, out string companyId, out string runId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:101](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L101) |  |
-| <code>public bool Equals(StreamTopic other) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:145](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L145) |  |
-| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:147](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L147) |  |
-| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:149](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L149) |  |
-| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:151](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L151) |  |
-| <code>public static bool operator == (StreamTopic left, StreamTopic right) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:153](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L153) |  |
-| <code>public static bool operator != (StreamTopic left, StreamTopic right) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:155](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L155) |  |
-
-## BuiltInWorkflowDefinitionProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.BuiltInWorkflowDefinitionProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs:9](../../../../src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs#L9).
-
-Built-in workflow library entries based on the current workstation surfaces.
-
-```csharp
-public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions() =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs#L11) |  |
-
-## FileOperatorScopePreferenceStore
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.FileOperatorScopePreferenceStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:22](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L22).
-
-JSON-backed store under Meridian&#x27;s data root, keyed by tenant, company and user so one operator&#x27;s default never leaks to another. Writes go through the snapshot store&#x27;s atomic replace, like workflow presets.
-
-```csharp
-public sealed class FileOperatorScopePreferenceStore : JsonFileSnapshotStore<OperatorScopePreferenceSnapshot>, IOperatorScopePreferenceStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileOperatorScopePreferenceStore(string dataRoot, ILogger&lt;FileOperatorScopePreferenceStore&gt; logger, TimeProvider? timeProvider = null) : base(ResolveSnapshotPath(dataRoot), OperatorScopePreferenceJsonContext.Default.OperatorScopePreferenceSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:31](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L31) |  |
-| <code>public Task&lt;OperatorScopePreferenceDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:41](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L41) |  |
-| <code>public async Task&lt;OperatorScopePreferenceDto&gt; SetAsync(string operatorKey, OperatingScopeValuesDto? defaultScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:53](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L53) |  |
-| <code>public static OperatingScopeValuesDto? Normalize(OperatingScopeValuesDto? scope);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:78](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L78) | Trims each value, drops blanks, and returns null for a scope with no values. |
-
-## FileOperatorSurfaceVisitStore
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.FileOperatorSurfaceVisitStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:24](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L24).
-
-JSON-backed store beside the operator scope preferences, keyed by tenant, company, user and surface. Writes go through the snapshot store&#x27;s atomic replace.
-
-```csharp
-public sealed partial class FileOperatorSurfaceVisitStore : JsonFileSnapshotStore<OperatorSurfaceVisitSnapshot>, IOperatorSurfaceVisitStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileOperatorSurfaceVisitStore(string dataRoot, ILogger&lt;FileOperatorSurfaceVisitStore&gt; logger, TimeProvider? timeProvider = null) : base(ResolveSnapshotPath(dataRoot), OperatorSurfaceVisitJsonContext.Default.OperatorSurfaceVisitSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:32](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L32) |  |
-| <code>public Task&lt;OperatorSurfaceVisitDto&gt; GetAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:42](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L42) |  |
-| <code>public async Task&lt;OperatorSurfaceVisitDto&gt; RecordVisitAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:51](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L51) |  |
-| <code>public static string NormalizeSurface(string? surface);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:72](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L72) | Surface ids are short lowercase slugs, such as reconciliation-breaks. |
-
-## FileWorkflowPresetStore
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.FileWorkflowPresetStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L12).
-
-JSON-backed workflow preset store rooted under Meridian&#x27;s resolved data directory.
-
-```csharp
-public sealed class FileWorkflowPresetStore : JsonFileSnapshotStore<WorkflowPresetSnapshot>, IWorkflowPresetStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileWorkflowPresetStore(string dataRoot, ILogger&lt;FileWorkflowPresetStore&gt; logger) : base(ResolveSnapshotPath(dataRoot), WorkflowPresetJsonContext.Default.WorkflowPresetSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:22](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L22) |  |
-| <code>public Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; LoadAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:28](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L28) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; UpdateAsync(Func&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;, IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:31](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L31) |  |
-
-## IOperatorScopePreferenceStore
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.IOperatorScopePreferenceStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L10).
-
-Durable per-operator default operating scope (C1).
-
-```csharp
-public interface IOperatorScopePreferenceStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OperatorScopePreferenceDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L12) |  |
-| <code>Task&lt;OperatorScopePreferenceDto&gt; SetAsync(string operatorKey, OperatingScopeValuesDto? defaultScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:14](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L14) |  |

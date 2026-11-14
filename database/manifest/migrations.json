@@ -1297,6 +1297,33 @@
       "sha256": "9d08de1400940d2e67d1e31a76f623f76877193886209a4e724b5ab8cb07ca77"
     },
     {
+      "filename": "V_ledger_069__automated_posting_grants.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_069__automated_posting_grants.sql",
+      "schema": "ledger",
+      "sha256": "86aa3ca2e76b04ba1bfdc7001c5e55192dd6aba1a93b2229961241fe3a0d1469"
+    },
+    {
+      "filename": "V_ledger_070__automatic_policy_snapshot.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_070__automatic_policy_snapshot.sql",
+      "schema": "ledger",
+      "sha256": "a7918bb90763038f2c802f2bd639bc9d11c4aea60be8846143d97ba105df211d"
+    },
+    {
+      "filename": "V_ledger_071__fee_economic_identity.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_071__fee_economic_identity.sql",
+      "schema": "ledger",
+      "sha256": "d49f06f0e9e62cab5dc0d78e1b8b2d7a95926c5071334ae601ec49617c2c93a6"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1631,7 +1658,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "6b065b9ea94c7b20c9b36fb55d8ce3536bfe5fdd5db64d23da3a8f85e710fed7",
+  "fingerprint": "be77a5937205864f62701cdad4ef3b11fc80f41d67c5dc6d916e893e972ed771",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1893,9 +1920,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 181,
+    "files": 184,
     "migration_sets": 11,
-    "waivers": 45,
+    "waivers": 46,
     "warnings": 0
   },
   "waivers": [
@@ -2101,6 +2128,13 @@
       "reason": "The lexical TRUNCATE matches declare BEFORE TRUNCATE rejection triggers on the immutable balance checkpoint tables; this migration executes no data truncation. Separate AI schema review confirmed this bounded exception. PostgreSQL regression coverage attempts update, delete and truncate on both tables, requires the guard SQLSTATE 55000, and verifies that retained rows and balances remain unchanged.",
       "review_after": "2027-05-13",
       "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_069__automated_posting_grants.sql",
+      "reason": "Scoped schema review exception for automatic synthetic fill accounting: replaces only ledger_event_audit_events_subject_kind_check with a strict superset preserving journal and period and admitting automation-grant. The migration runner performs drop and replacement within one transaction; no rows, columns, audit events or immutability triggers are removed. Failure rolls back the original constraint. PostgreSQL tests verify existing audit coverage and actor-attributed grant activation/revocation. Independent human schema/storage review remains pending before production activation; never narrow this check while grant audit events exist.",
+      "review_after": "2027-02-14",
+      "rule_id": "migration-drop-table-member"
     },
     {
       "category": "destructive_changes",

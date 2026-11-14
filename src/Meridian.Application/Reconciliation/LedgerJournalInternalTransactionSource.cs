@@ -125,6 +125,7 @@ public sealed class LedgerJournalInternalTransactionSource(
     private static readonly HashSet<string> TradeActivityTypes = new(StringComparer.OrdinalIgnoreCase)
     {
         "trade",
+        "execution.trade-fill",
         "buy",
         "sell",
         "short_sell",
@@ -135,6 +136,8 @@ public sealed class LedgerJournalInternalTransactionSource(
     {
         "fee",
         "commission",
+        "execution.trade-commission",
+        "execution.trade-fee",
     };
 
     /// <summary>Per-symbol instrument accounts whose movement marks the entry as a trade.</summary>

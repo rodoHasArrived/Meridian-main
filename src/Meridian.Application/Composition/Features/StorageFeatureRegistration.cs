@@ -264,6 +264,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<PostgresLedgerJournalStore>();
             services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddSingleton<IAutomatedPostingGrantStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddSingleton<IAtomicTaxLotJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<IIntercompanyAgreementJournalValidation>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.TryAddSingleton<ILedgerSecurityEntitlementInventory>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
@@ -620,7 +622,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton(sp => new LoanAccountingProjector(
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetRequiredService<IAccountingPolicyService>(),
-                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>()));
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                directLendingOptions,
+                directLendingOptions.LedgerBookId.HasValue ? sp.GetRequiredService<IConfiguredLedgerAccountResolver>() : null,
+                sp.GetService<IFundProfileTenancyRegistry>(),
+                sp.GetService<IFundScopeTenantAccessor>()));
             services.AddSingleton<IAccrualLedgerService, AccrualLedgerService>();
             services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
             services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
@@ -857,7 +863,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         };
 
     private static DirectLendingOptions CreateDirectLendingOptions(CompositionConfiguration configuration)
-        => new()
+    {
+        var result = new DirectLendingOptions
         {
             ConnectionString = FirstConfiguredValue(configuration.GetConnectionString(DirectLendingStartup.ConnectionStringVariable),
                 configuration.GetConnectionString(SecurityMasterStartup.ConnectionStringVariable)),
@@ -871,6 +878,28 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             ReplayBatchSize = configuration.GetInt32("MERIDIAN_DIRECT_LENDING_REPLAY_BATCH_SIZE", 250),
             RequireSecurityMasterReferenceForDurableWrites = configuration.GetBoolean("MERIDIAN_DIRECT_LENDING_REQUIRE_SECURITY_MASTER_REFERENCE", false)
         };
+        var bookId = configuration["MERIDIAN_DIRECT_LENDING_LEDGER_BOOK_ID"];
+        var revision = configuration["MERIDIAN_DIRECT_LENDING_LEDGER_CHART_MAPPING_REVISION"];
+        var pathsJson = configuration["MERIDIAN_DIRECT_LENDING_LEDGER_ACCOUNT_PATHS"];
+        if (string.IsNullOrWhiteSpace(bookId) && string.IsNullOrWhiteSpace(revision) && string.IsNullOrWhiteSpace(pathsJson))
+            return result;
+        if (!Guid.TryParse(bookId, out var parsedBookId) || parsedBookId == Guid.Empty ||
+            string.IsNullOrWhiteSpace(revision) || string.IsNullOrWhiteSpace(pathsJson))
+            throw new InvalidOperationException("Configured lending requires an explicit ledger book, chart mapping revision and JSON account-path map.");
+        result.LedgerBookId = parsedBookId;
+        result.LedgerChartMappingRevision = revision.Trim();
+        using var paths = System.Text.Json.JsonDocument.Parse(pathsJson);
+        if (paths.RootElement.ValueKind != System.Text.Json.JsonValueKind.Object)
+            throw new InvalidOperationException("Direct-lending ledger account paths must be a JSON object.");
+        foreach (var path in paths.RootElement.EnumerateObject())
+        {
+            if (path.Value.ValueKind != System.Text.Json.JsonValueKind.String ||
+                string.IsNullOrWhiteSpace(path.Value.GetString()) ||
+                !result.LedgerAccountPaths.TryAdd(path.Name, path.Value.GetString()!))
+                throw new InvalidOperationException("Direct-lending ledger account paths must contain unique roles and nonempty string paths.");
+        }
+        return result;
+    }
 
     private static AssetOperationsOptions CreateAssetOperationsOptions(CompositionConfiguration configuration)
         => new()

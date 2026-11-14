@@ -2,11 +2,17 @@
 
 # `ledger-contracts` data objects - page 3 of 6
 
-Objects 161-240 of 439. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 447. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_CloseDeadlineAdjustmentDto["CloseDeadlineAdjustmentDto"] {
+    }
+    class Meridian_Contracts_Ledger_CloseDeadlineAnchorDto["CloseDeadlineAnchorDto"] {
+    }
+    class Meridian_Contracts_Ledger_CloseDeadlineDayCountDto["CloseDeadlineDayCountDto"] {
+    }
     class Meridian_Contracts_Ledger_CloseDeadlineRuleDto["CloseDeadlineRuleDto"] {
         +CloseDeadlineAdjustmentDto Adjustment
         +CloseDeadlineAnchorDto Anchor
@@ -237,6 +243,17 @@ classDiagram
         +string Role
     }
     class Meridian_Contracts_Ledger_CloseTaskStatusDto["CloseTaskStatusDto"] {
+    }
+    class Meridian_Contracts_Ledger_ConfiguredLedgerAccountRequestDto["ConfiguredLedgerAccountRequestDto"] {
+        +string AccountPath
+        +string? CompanyId
+        +string? ConfigurationVersion
+        +string ExpectedAccountType
+        +string? FinancialAccountId
+        +string? FundProfileId
+        +Guid LedgerBookId
+        +string? Symbol
+        +string TenantId
     }
     class Meridian_Contracts_Ledger_ConsolidationBalanceDto["ConsolidationBalanceDto"] {
         +string AccountPath
@@ -674,39 +691,9 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_ExternalGlExportReconciliationSafeguardStateDto["ExternalGlExportReconciliationSafeguardStateDto"] {
     }
-    class Meridian_Contracts_Ledger_ExternalGlMappingProfileDto["ExternalGlMappingProfileDto"] {
-        +IReadOnlyDictionary~string__string~ AccountMappings
-        +AccountingCertificationStateDto CertificationState
-        +IReadOnlyList~DimensionMappingProfileDto~ DimensionMappings
-        +string DisplayName
-        +string ProfileId
-        +string ProviderId
-        +DateTimeOffset UpdatedAtUtc
-    }
-    class Meridian_Contracts_Ledger_FactorPaydownPreparationDto["FactorPaydownPreparationDto"] {
-        +IReadOnlyDictionary~string__string~ Components
-        +OpenLotFactorPaydownInstructionDto Instruction
-        +AssetLotMutationInstructionDto LotMutation
-        +string PreparationFingerprint
-        +ProjectAssetAccountingEventRequestDto ProjectRequest
-    }
-    class Meridian_Contracts_Ledger_FinancialStatementPackageDto["FinancialStatementPackageDto"] {
-        +ReportCertificationDto? Certification
-        +AccountingCertificationStateDto CertificationState
-        +LedgerDimensionSetDto Dimensions
-        +IReadOnlyList~string~ EvidenceLinks
-        +string FundProfileId
-        +Guid? LedgerBookId
-        +IReadOnlyList~ReportLineProvenanceDto~ LineProvenance
-        +string PackageId
-        +string PeriodId
-        +RestatementWorkflowDto? Restatement
-        +IReadOnlyList~string~ StatementIds
-    }
-    class Meridian_Contracts_Ledger_GeneratePrivateCapitalNoticeRequest["GeneratePrivateCapitalNoticeRequest"] {
-        +string? CommitmentId
-        +Guid OperationId
-    }
+    Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineAdjustmentDto
+    Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineAnchorDto
+    Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineDayCountDto
     Meridian_Contracts_Ledger_ClosePeriodLockResultDto --> Meridian_Contracts_Ledger_ClosePeriodPlanDto
     Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto --> Meridian_Contracts_Ledger_ClosePlanPreparationLineageDto
     Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto --> Meridian_Contracts_Ledger_CloseTaskConfigurationDto
@@ -770,5 +757,4 @@ classDiagram
     Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportReconciliationSafeguardStateDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto --> Meridian_Contracts_Ledger_ExternalGlExportLineDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto --> Meridian_Contracts_Ledger_ExternalGlExportReconciliationSafeguardStateDto
-    Meridian_Contracts_Ledger_ExternalGlMappingProfileDto --> Meridian_Contracts_Ledger_DimensionMappingProfileDto
 ```

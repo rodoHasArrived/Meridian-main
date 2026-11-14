@@ -91,5 +91,8 @@ public sealed partial class PostgresLedgerJournalStore
             await authority.RequireAcquisitionPolicyAsync(book.LedgerBookId, command.AcquisitionLot.AcquiredDate,
                 adoptedIncome, command.AcquisitionLot.Acquisition.TransactionCostBasis, ct).ConfigureAwait(false);
         }
+        if (command.Journal.PostingCommand?.ActionOrigin == Meridian.Contracts.Workstation.OperationsActionOriginDto.AuthorizedSystem
+            && (security.AssetClass != "Equity" || security.Currency != "USD"))
+            throw new LedgerValidationException("Automatic fill grants authorize USD cash equities only.");
     }
 }

@@ -21,7 +21,8 @@ public sealed class StatementFetchSchedulerService(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var runner = serviceProvider.GetService<StatementFetchScheduleRunner>();
-        if (runner is null)
+        var threeWay = serviceProvider.GetService<ThreeWayReconciliationScheduleRunner>();
+        if (runner is null && threeWay is null)
         {
             logger.LogDebug("Statement fetch scheduler idle: connector services are not registered in this host.");
             return;
@@ -32,7 +33,7 @@ public sealed class StatementFetchSchedulerService(
         {
             try
             {
-                var ran = await runner.RunDueSchedulesAsync(DateTimeOffset.UtcNow, stoppingToken).ConfigureAwait(false);
+                var ran = runner is null ? 0 : await runner.RunDueSchedulesAsync(DateTimeOffset.UtcNow, stoppingToken).ConfigureAwait(false);
                 if (ran > 0)
                 {
                     logger.LogInformation("Statement fetch scheduler executed {Count} due schedule(s).", ran);
@@ -45,6 +46,20 @@ public sealed class StatementFetchSchedulerService(
             catch (Exception ex)
             {
                 logger.LogWarning(ex, "Statement fetch scheduler tick failed; retrying on the next interval.");
+            }
+
+            try
+            {
+                if (threeWay is not null)
+                    await threeWay.RunDueAsync(DateTimeOffset.UtcNow, stoppingToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning("Three-way scheduler tick failed ({FailureType}); retrying on the next interval.", ex.GetType().Name);
             }
 
             try

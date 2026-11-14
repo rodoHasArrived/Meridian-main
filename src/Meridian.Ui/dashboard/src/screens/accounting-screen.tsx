@@ -53,7 +53,7 @@ import { AuditChainIntegrityPanel } from "@/screens/accounting-screen.audit-inte
 import { BondCutoverConsolePanel } from "@/screens/accounting-screen.bond-cutover";
 import { ReconciliationReadinessPanel } from "@/screens/accounting-screen.reconciliation-readiness";
 import { AccountingOnboardingPanel } from "@/screens/accounting-screen.onboarding-panel";
-import { ReconciliationWorkbench, ReconciliationStatementRuns } from "./accounting-screen.reconciliation-workbench";
+import { ReconciliationWorkbench, ReconciliationStatementRuns, ThreeWayReconciliationWorkbench } from "./accounting-screen.reconciliation-workbench";
 import { useReconciliationViewState } from "./reconciliation-view-state";
 import { AccountOversightPanel } from "@/screens/accounting-screen.account-oversight";
 import { buildAccountingSectionVisibility, buildAccountingTaskMode, resolveAccountingWorkstream } from "@/screens/accounting-screen.task-mode-view-model";
@@ -788,14 +788,14 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
       {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
 
       {workstream === "reconciliation" ? (
-        <>
+        <ThreeWayReconciliationWorkbench>
           <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice}
             runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />}
           />
           <TechnicalDetails label="Break aging"><ReconciliationAgingChart breaks={reconciliation.sourceRows} /></TechnicalDetails>
           <TechnicalDetails label="Account oversight"><AccountOversightPanel /></TechnicalDetails>
           <TechnicalDetails id="accounting-history" label="Calibration and history"><CalibrationSummaryPanel view={reconciliation.calibrationView} /></TechnicalDetails>
-        </>
+        </ThreeWayReconciliationWorkbench>
       ) : null}
 
       {/* On the landing the queue leads and preparation follows it (below); elsewhere it stays here. */}

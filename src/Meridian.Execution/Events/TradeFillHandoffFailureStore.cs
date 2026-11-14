@@ -22,6 +22,9 @@ public sealed record TradeFillPostingScopeIdentity(
     /// <summary>Accounting policy version included in an exact posting identity.</summary>
     public string? AccountingPolicyVersion { get; init; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int AccountingProtocolVersion { get; init; }
+
     [JsonIgnore]
     public bool IsExact => AggregateId.HasValue
                            && PeriodId.HasValue
@@ -40,13 +43,16 @@ public sealed record TradeFillPostingScopeIdentity(
             validated.LedgerBookId)
         {
             AccountingPolicyId = validated.AccountingPolicyId,
-            AccountingPolicyVersion = validated.AccountingPolicyVersion
+            AccountingPolicyVersion = validated.AccountingPolicyVersion,
+            AccountingProtocolVersion = validated.AccountingProtocolVersion == 1 ? 0 : validated.AccountingProtocolVersion
         };
     }
 
     public TradeFillPostingScopeIdentity Validate()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(PostingScope);
+        if (AccountingProtocolVersion is not (0 or 2) || (AccountingProtocolVersion == 2 && !PostingScope.EndsWith("/v2", StringComparison.Ordinal)))
+            throw new ArgumentException("A canonical accounting scope requires protocol 2 and a distinct /v2 partition.");
         var hasAnyIdentifier = AggregateId.HasValue
                                || PeriodId.HasValue
                                || LedgerBookId.HasValue
@@ -193,6 +199,7 @@ public sealed class AtomicTradeFillHandoffFailureStore : ITradeFillHandoffFailur
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(tradeEvent);
+        tradeEvent = tradeEvent.FreezeFees();
         if (tradeEvent.FillId == Guid.Empty)
             throw new ArgumentException("A durable fill id is required.", nameof(tradeEvent));
         ArgumentException.ThrowIfNullOrWhiteSpace(failure);
@@ -208,7 +215,7 @@ public sealed class AtomicTradeFillHandoffFailureStore : ITradeFillHandoffFailur
                 normalizedFailure = normalizedFailure[..MaximumFailureLength];
             var now = DateTimeOffset.UtcNow;
             var hadPrevious = _pending.TryGetValue(tradeEvent.FillId, out var previous);
-            if (hadPrevious && previous!.TradeEvent != tradeEvent)
+            if (hadPrevious && !previous!.TradeEvent.HasSameEconomics(tradeEvent))
             {
                 throw new InvalidOperationException(
                     $"Fill '{tradeEvent.FillId:D}' cannot retain different accounting economics.");

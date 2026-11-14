@@ -6,6 +6,145 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TenantScopeEnforcementMode
+
+Qualified name: <code>Meridian.Contracts.Tenancy.TenantScopeEnforcementMode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:6](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L6).
+
+How strictly tenant scope is enforced on fund-partitioned reads.
+
+```csharp
+public enum TenantScopeEnforcementMode
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>DeploymentBoundary = 0</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:17](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L17) | The historical SEC-005 posture: unattributed rows stay visible and a caller with no resolved tenant reads unfiltered, with one-company-per-deployment as the actual control. |
+| <code>FailClosed = 1</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:24](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L24) | Cross-tenant reads fail closed: a scoped caller sees only rows their tenant owns, unattributed rows excluded, and a caller whose tenant cannot be resolved is refused rather than defaulted to an unfiltered read. |
+
+## TenantScopeEnforcementOptions
+
+Qualified name: <code>Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:37](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L37).
+
+Deployment switch for TenantScopeEnforcementMode, read once at startup so changing it requires a restart.
+
+```csharp
+public sealed record TenantScopeEnforcementOptions(TenantScopeEnforcementMode Mode)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string EnvironmentVariable = &quot;MERIDIAN_TENANT_SCOPE_ENFORCEMENT&quot;;</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:40](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L40) | Environment variable naming the posture, e.g. deployment-boundary. |
+| <code>public const string ConfigurationKey = &quot;TenantScopeEnforcement&quot;;</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:43](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L43) | Supported appsettings key. The environment override takes precedence. |
+| <code>public static readonly TenantScopeEnforcementOptions DeploymentBoundary = new (TenantScopeEnforcementMode.DeploymentBoundary);</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:45](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L45) |  |
+| <code>public static readonly TenantScopeEnforcementOptions FailClosed = new (TenantScopeEnforcementMode.FailClosed);</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:48](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L48) |  |
+| <code>public bool IsFailClosed =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:51](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L51) |  |
+| <code>public static TenantScopeEnforcementOptions FromConfigurationValue(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:58](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L58) | Parses the supported appsettings values exactly. Omission selects strict enforcement; compatibility aliases are accepted only by FromEnvironmentValue. |
+| <code>public static TenantScopeEnforcementOptions FromEnvironmentValue(string? value, TenantScopeEnforcementOptions fallback);</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:82](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L82) | Parses the deployment switch. An absent value keeps the current default; a value that is present but unrecognised is refused. |
+
+## TenantScopeRejectedException
+
+Qualified name: <code>Meridian.Contracts.Tenancy.TenantScopeRejectedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:118](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L118).
+
+Raised when a fund-scoped read is refused because the caller&#x27;s tenant could not be resolved.
+
+```csharp
+public sealed class TenantScopeRejectedException : Exception
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TenantScopeRejectedException(string readDescription) : base($&quot;A tenant-scoped caller is required to read {readDescription}.&quot;);</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:120](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L120) |  |
+| <code>public string ReadDescription { get; }</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:127](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L127) | What the caller was trying to read, for the operator-facing message. |
+
+## TextPrimitives
+
+Qualified name: <code>Meridian.Contracts.Text.TextPrimitives</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Text/TextPrimitives.cs:33](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L33).
+
+The shared home for the trivial string helpers that were previously redeclared as private static in hundreds of files.
+
+```csharp
+public static class TextPrimitives
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string? NormalizeOptional(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Text/TextPrimitives.cs:43](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L43) | Returns value trimmed, or null when it is null, empty, or entirely white space. |
+| <code>public static string RequireText(string? value, [CallerArgumentExpression(nameof(value))] string? paramName = null);</code> | [src/Meridian.Contracts/Text/TextPrimitives.cs:58](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L58) | Returns value trimmed, throwing when it is null, empty, or entirely white space. |
+| <code>public static string? FirstNonBlank(params string?[] values);</code> | [src/Meridian.Contracts/Text/TextPrimitives.cs:74](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L74) | Returns the first entry of values that is not null, empty, or entirely white space, trimmed; or null when every entry is blank. |
+
+## MmfDetailDto
+
+Qualified name: <code>Meridian.Contracts.Treasury.MmfDetailDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:25](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L25).
+
+Full reference record for a money market fund, including canonical identity, sweep eligibility, weighted-average maturity, and liquidity-fee metadata.
+
+```csharp
+public sealed record MmfDetailDto(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool IsSweepEligible, int? WeightedAverageMaturityDays, bool HasLiquidityFee, string Status, long Version, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo);
+```
+
+## MmfFundFamilyDto
+
+Qualified name: <code>Meridian.Contracts.Treasury.MmfFundFamilyDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:63](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L63).
+
+Fund-family grouping projection. Normalised family name is upper-case; members are the canonical security IDs of all active MMFs sharing that family lineage.
+
+```csharp
+public sealed record MmfFundFamilyDto(string NormalizedFamilyName, IReadOnlyList<Guid> MemberSecurityIds, int MemberCount, DateTimeOffset AsOf);
+```
+
+## MmfLiquidityDto
+
+Qualified name: <code>Meridian.Contracts.Treasury.MmfLiquidityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:41](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L41).
+
+Liquidity projection for a money market fund derived from WAM and operational state.
+
+```csharp
+public sealed record MmfLiquidityDto(Guid SecurityId, MmfLiquidityState State, int? WeightedAverageMaturityDays, DateTimeOffset AsOf);
+```
+
+## MmfLiquidityState
+
+Qualified name: <code>Meridian.Contracts.Treasury.MmfLiquidityState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:13](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L13).
+
+Operational liquidity state of a money market fund. Liquid funds are within standard WAM limits and fully operational. Restricted funds have elevated WAM or suspended redemptions. Suspended funds are under regulatory or operational hold. Inactive funds have been deactivated in the security master.
+
+```csharp
+public enum MmfLiquidityState
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Liquid</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:15](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L15) |  |
+| <code>Restricted</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:16](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L16) |  |
+| <code>Suspended</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:17](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L17) |  |
+| <code>Inactive</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:18](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L18) |  |
+
 ## MmfRebuildCheckpointDto
 
 Qualified name: <code>Meridian.Contracts.Treasury.MmfRebuildCheckpointDto</code>. Kind: `record`.
@@ -554,88 +693,4 @@ Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:115](../../../.
 
 ```csharp
 public sealed record BrokeragePortfolioPerformanceDto(Guid FundAccountId, string? ProviderId, string? ExternalAccountId, BrokerageAccountKindDto AccountKind, DateOnly? From, DateOnly? To, bool HasSufficientHistory, decimal? BeginningEquity, decimal? EndingEquity, decimal NetCashFlow, decimal? CashAdjustedReturn, decimal? CashAdjustedReturnPercent, IReadOnlyList<BrokeragePortfolioPerformancePointDto> Points, IReadOnlyList<string> Warnings);
-```
-
-## BrokeragePortfolioPerformancePointDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokeragePortfolioPerformancePointDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:109](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L109).
-
-```csharp
-public sealed record BrokeragePortfolioPerformancePointDto(DateOnly Date, decimal Equity, decimal Cash, decimal NetCashFlow);
-```
-
-## BuildLedgerDraft
-
-Qualified name: <code>Meridian.Contracts.Workstation.BuildLedgerDraft</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:23](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L23).
-
-```csharp
-public sealed record BuildLedgerDraft(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
-## BulkResolveSecurityMasterConflictsRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.BulkResolveSecurityMasterConflictsRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:635](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L635).
-
-```csharp
-public sealed record BulkResolveSecurityMasterConflictsRequest(IReadOnlyList<Guid> ConflictIds, string ResolvedBy, string? Reason, string? FundProfileId);
-```
-
-## BulkResolveSecurityMasterConflictsResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.BulkResolveSecurityMasterConflictsResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:641](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L641).
-
-```csharp
-public sealed record BulkResolveSecurityMasterConflictsResult(int Requested, int Eligible, int Resolved, int Skipped, IReadOnlyList<Guid> ResolvedConflictIds, IReadOnlyDictionary<Guid, string> SkippedReasons);
-```
-
-## CanonicalizationAssuranceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CanonicalizationAssuranceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:110](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L110).
-
-```csharp
-public sealed record CanonicalizationAssuranceDto(bool Enabled, long Version, long EventsTotal, long SuccessTotal, long SoftFailTotal, long HardFailTotal, double MatchRatePercent, IReadOnlyList<CanonicalizationProviderSummaryDto> Providers);
-```
-
-## CanonicalizationProviderSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CanonicalizationProviderSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:120](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L120).
-
-```csharp
-public sealed record CanonicalizationProviderSummaryDto(string Provider, long Total, long Success, long SoftFail, long HardFail, double MatchRatePercent);
-```
-
-## CaptureOnboardingComparisonRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CaptureOnboardingComparisonRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L27).
-
-Only source identities are accepted from clients; amounts and readiness come from services.
-
-```csharp
-public sealed record CaptureOnboardingComparisonRequestDto(int ExpectedVersion, DateOnly AsOfDate, string ProviderId, string ImportId, string MappingProfileId, string MappingVersion, string? Notes = null);
-```
-
-## CashFinancingSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.CashFinancingSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:141](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L141).
-
-Shared cash and financing rollup for Accounting and Trading capital-control surfaces.
-
-```csharp
-public sealed record CashFinancingSummary(string Currency, decimal TotalCash, decimal PendingSettlement, decimal FinancingCost, decimal MarginBalance, decimal RealizedPnl, decimal UnrealizedPnl, decimal LongMarketValue, decimal ShortMarketValue, decimal GrossExposure, decimal NetExposure, decimal TotalEquity, IReadOnlyList<string> Highlights, int CashFlowEntryCount = 0, decimal ProjectedInflows = 0m, decimal ProjectedOutflows = 0m, decimal NetProjectedCashFlow = 0m, int ProjectionBucketDays = 0, IReadOnlyList<CashLadderBucketDto>? CashFlowBuckets = null, IReadOnlyList<CashFlowEntryDto>? CashFlowEntries = null);
 ```

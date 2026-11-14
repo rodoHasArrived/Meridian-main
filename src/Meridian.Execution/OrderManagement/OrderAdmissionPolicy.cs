@@ -65,6 +65,8 @@ internal sealed class OrderAdmissionPolicy
     {
         ArgumentNullException.ThrowIfNull(request);
         request = request.ClientOrderId is null ? request with { ClientOrderId = orderId } : request;
+        if (_portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: true } canonical && request.FundAccountId is null)
+            request = request with { FundAccountId = Guid.Parse(canonical.PrimaryAccountId) };
         request = StripInternalRiskMetadata(request);
         var brokerName = _gateway.GatewayId;
 
@@ -104,12 +106,33 @@ internal sealed class OrderAdmissionPolicy
                     }));
         }
 
+        if (_portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: true } scoped
+            && prepared.SafeRequest.FundAccountId != Guid.Parse(scoped.PrimaryAccountId))
+            return new OrderAdmissionDecision(prepared.SafeRequest, false, null, null,
+                new OrderAdmissionRefusal("This canonical paper host can execute only for its configured accounting account.",
+                    "canonical accounting account", "CANONICAL_ACCOUNT_MISMATCH"));
+
+        if (_portfolioState is PaperTradingPortfolio paper && !paper.CanAdmitCanonicalOrders(DateTimeOffset.UtcNow, out var recoveryBlocker))
+            return new OrderAdmissionDecision(prepared.SafeRequest, false, null, null,
+                new OrderAdmissionRefusal(recoveryBlocker, "canonical accounting recovery", "CANONICAL_RECOVERY_NOT_READY"));
+
         var safeRequest = validated.Request;
         prepared = prepared with { SafeRequest = safeRequest };
         if (!GatewayResolvedOrder.TryResolve(validated, _gateway, out var resolved, out var rejectionReason))
         {
             return new OrderAdmissionDecision(safeRequest, false, null, null,
                 new OrderAdmissionRefusal(rejectionReason, "notional metadata gate"));
+        }
+
+        if (_portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: true } canonical)
+        {
+            var canonicalRefusal = resolved.Sizing is not OrderSizing.Quantity
+                || OrderRiskSizingPolicy.ResolveContractMultiplier(safeRequest) != 1m
+                ? "Canonical accounting requires unit quantity with a multiplier of one."
+                : await canonical.ValidateCanonicalOrderAsync(safeRequest, ct).ConfigureAwait(false);
+            if (canonicalRefusal is not null)
+                return new OrderAdmissionDecision(safeRequest, false, null, null,
+                    new OrderAdmissionRefusal(canonicalRefusal, "canonical accounting authority", "CANONICAL_AUTHORITY_REJECTED"));
         }
 
         var usesFaceValue = resolved.Sizing is OrderSizing.FaceValuePercentageOfPar;

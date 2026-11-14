@@ -14,8 +14,12 @@ public sealed class BuiltInLedgerReportBinaryRenderer : ILedgerReportBinaryRende
     public static BuiltInLedgerReportBinaryRenderer Instance { get; } = new();
 
     public byte[] RenderWorkbook(LedgerFinancialReportPack reportPack)
+        => RenderWorkbook(LedgerReportPresentation.BuildTables(reportPack));
+
+    /// <summary>Renders exact text cells from shared report datasets without coercing decimals to floating point.</summary>
+    public byte[] RenderWorkbook(IReadOnlyList<LedgerReportTable> tables)
     {
-        var tables = LedgerReportPresentation.BuildTables(reportPack);
+        ArgumentNullException.ThrowIfNull(tables);
         using var output = new MemoryStream();
         using (var archive = new ZipArchive(output, ZipArchiveMode.Create, leaveOpen: true, Encoding.UTF8))
         {

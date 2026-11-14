@@ -51,6 +51,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     // exposure. Without it, concurrent submissions each evaluate against the same
     // pre-order book and can collectively breach a ceiling none of them breaches alone.
     private readonly SemaphoreSlim _preTradeReservationGate = new(1, 1);
+    // Canonical immediate fills reserve cash and units until the portfolio has actually applied
+    // the gateway acknowledgement, rather than merely until the order becomes visible.
+    private readonly SemaphoreSlim _canonicalSubmissionGate = new(1, 1);
     private readonly ConcurrentDictionary<string, string> _orderFinancialAccountIds = new(StringComparer.OrdinalIgnoreCase);
     // Contract multiplier per order id, for derivative fills.
     private readonly ConcurrentDictionary<string, decimal> _orderContractMultipliers = new(StringComparer.OrdinalIgnoreCase);
@@ -113,6 +116,13 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         _accountingHandoff = new AccountingHandoffCoordinator(
             tradeEventPublisher, tradeFillHandoffFailureStore, logger);
         _options = options ?? new OrderManagementSystemOptions();
+        if (portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: true })
+        {
+            if (gateway is not PaperTradingGateway synthetic
+                || tradeEventPublisher is not IScopedTradeEventPublisher { ScopeIdentity.AccountingProtocolVersion: 2 })
+                throw new InvalidOperationException("Canonical paper execution requires its exact v2 accounting publisher and in-process synthetic gateway.");
+            synthetic.EnableCanonicalSyntheticPricing();
+        }
         if (_options.RequireProductionSafetyDependencies)
         {
             if (_riskValidator is null)
@@ -132,7 +142,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         _brokerOrderSweep = new BrokerOrderSweep(gateway, _brokerIdentities, _executionAudit, logger);
         _amendmentBook = new OrderAmendmentBook(_orders);
         _fillProcessor = new OrderFillProcessor(
-            new OrderFillContext(_orders, _orderFinancialAccountIds, _orderContractMultipliers, _orderFaceValueSizing),
+            new OrderFillContext(_orders, _orderFinancialAccountIds, _orderContractMultipliers, _orderFaceValueSizing,
+                tradeEventPublisher is IScopedTradeEventPublisher scopedPublisher && scopedPublisher.ScopeIdentity.AccountingProtocolVersion == 2,
+                gateway is PaperTradingGateway),
             portfolioState, sessionPersistence, _accountingHandoff, _executionReportHub, _executionAudit, logger);
         _lifecycle = new OrderManagementLifecycleCoordinator(
             PumpGatewayExecutionReportsAsync, _accountingHandoff, _executionReportHub,
@@ -147,6 +159,16 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
 
     /// <inheritdoc />
     public async Task<OrderResult> PlaceOrderAsync(OrderRequest request, CancellationToken ct = default)
+    {
+        if (_portfolioState is not PaperTradingPortfolio { UsesCanonicalAccounting: true })
+            return await PlaceOrderCoreAsync(request, ct).ConfigureAwait(false);
+        await _canonicalSubmissionGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        { return await PlaceOrderCoreAsync(request, ct).ConfigureAwait(false); }
+        finally { _canonicalSubmissionGate.Release(); }
+    }
+
+    private async Task<OrderResult> PlaceOrderCoreAsync(OrderRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         OrderManagementLifecycleCoordinator.OperationLease operation;

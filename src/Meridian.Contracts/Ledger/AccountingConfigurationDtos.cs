@@ -887,6 +887,20 @@ public sealed record ManualJournalEntryDraftDto(
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public PostedPostingRuleJournalCandidateResultDto? AssetAccountingPostingResult { get; init; }
+
+    /// <summary>Retained non-real origin of a draft; absent on legacy operator journals.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? DataProvenanceToken { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ThreeWayFeeCorrectionEvidenceDto? ThreeWayFeeCorrection { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool IsAdjustingEntry { get; init; }
+
+    /// <summary>Server-selected currency materialization; zero preserves retained legacy draft replay.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int CurrencyEvidenceVersion { get; init; }
 }
 
 public sealed record RuleDryRunRequestDto(

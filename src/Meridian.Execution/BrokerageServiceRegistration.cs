@@ -219,7 +219,7 @@ public static class BrokerageServiceRegistration
         {
             var securityGate = sp.GetRequiredService<ISecurityValidationGateService>();
 
-            return new LedgerPostingConsumer(
+            return LedgerPostingConsumer.CreateWithAccountingAdapter(
                 sp.GetRequiredService<ITradeFillLedgerPostingTarget>(),
                 sp.GetRequiredService<ILogger<LedgerPostingConsumer>>(),
                 sp.GetRequiredService<ITradeFillPostingStore>(),
@@ -230,7 +230,9 @@ public static class BrokerageServiceRegistration
                 securityValidationGate: securityGate,
                 requireSecurityMasterPostingGate: true,
                 drainTimeout: options.DrainTimeout,
-                cancellationTimeout: options.CancellationTimeout);
+                cancellationTimeout: options.CancellationTimeout,
+                automatedAccounting: postingContext.AccountingProtocolVersion == 2
+                    ? sp.GetRequiredService<IAutomatedTradeFillAccountingService>() : null);
         });
         services.AddSingleton<ITradeEventPublisher>(sp =>
             sp.GetRequiredService<LedgerPostingConsumer>());
@@ -330,6 +332,9 @@ public sealed class TradeFillLedgerPostingHostOptions
 
     public long? ExpectedPeriodVersion { get; set; }
 
+    /// <summary>Null retains the legacy journal-only scope. Set only after reviewed canonical opening-state cutover.</summary>
+    public AutomatedTradeFillAccountingOptions? CanonicalAccounting { get; set; }
+
     public int ChannelCapacity { get; set; } = 10_000;
 
     public TimeSpan? DrainTimeout { get; set; }
@@ -351,12 +356,13 @@ public sealed class TradeFillLedgerPostingHostOptions
                 "Execution trade-fill posting requires the authoritative ExpectedPeriodVersion.");
 
         return new TradeFillLedgerPostingContext(
-            $"ledger-book/{LedgerBookId:D}/period/{PeriodId:D}/aggregate/{AggregateId:D}",
+            $"ledger-book/{LedgerBookId:D}/period/{PeriodId:D}/aggregate/{AggregateId:D}" + (CanonicalAccounting is null ? "" : "/v2"),
             AggregateId,
             PeriodId,
             LedgerBookId,
             AccountingPolicyId,
             AccountingPolicyVersion,
-            ExpectedPeriodVersion).Validate();
+            ExpectedPeriodVersion,
+            CanonicalAccounting is null ? 1 : 2).Validate();
     }
 }

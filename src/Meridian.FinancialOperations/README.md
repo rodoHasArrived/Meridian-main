@@ -1362,3 +1362,21 @@ Preserve the module boundary declared in `docs/source/data/source-modules.yml` a
 - `docs/source/README.md`
 - `docs/source/generated/source-module-index.md`
 - `docs/architecture/module-map.md`
+
+### Configured posting accounts and automatic policy authority
+
+`ConfiguredLedgerAccountResolver` exposes the shared chart lookup through Contracts. It requires
+an exact owner/book/configuration revision and one active account with the expected classification
+and compatible account/instrument bindings; no account name or numeric prefix infers a type.
+Execution and direct lending consume this seam without introducing another chart.
+`AccountingAutomaticPostingPolicyValidator` resolves the exact effective policy/rule and requires
+retained evidence, `AllowsAutoPosting=true` and `RequiresApproval=false`. Its authority lease uses
+the existing policy mutation gate and remains held through a new posting, preventing a rule edit
+from racing the append. This is separate from the human candidate review workflow, whose approval
+requirements remain unchanged. Ledger storage independently checks the durable operator grant.
+
+Automatic fill grants retain immutable policy snapshots. `AcquireRetainedPolicyAuthorityLeaseAsync`
+restores an absent policy version after process restart under the existing policy mutation gate; it
+compares exact policy content (excluding creation time) when the version already exists and refuses
+to overwrite changed content. The matching lease remains held through each new append. Grant
+revocation and exact effective source-rule authority are independently checked in PostgreSQL.

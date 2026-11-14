@@ -9400,6 +9400,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ActivateAutomatedPostingGrantRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ActivateLedgerBookControlsRequestDto"
     },
     {
@@ -9497,6 +9503,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.AutomatedJournalEvidenceQualityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AutomatedPostingGrantDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AutomatedPostingGrantReferenceDto"
     },
     {
       "kind": "contract-set-member",
@@ -9761,6 +9779,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CloseTaskStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConfiguredLedgerAccountRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -10102,6 +10126,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IAccountingAutomaticPostingPolicyValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IAccountingConfigurationService"
     },
     {
@@ -10114,7 +10144,19 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IAutomatedPostingGrantStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ICapitalAccountWorkbenchService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IConfiguredLedgerAccountResolver"
     },
     {
       "kind": "contract-set-member",
@@ -11189,6 +11231,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ReviewLateAdjustmentRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.RevokeAutomatedPostingGrantRequest"
     },
     {
       "kind": "contract-set-member",
@@ -19168,6 +19216,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.PrepareThreeWayAdjustmentRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.PreparerAttestationEvidenceProjectionDto"
     },
     {
@@ -21755,6 +21809,66 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SyncValidationResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayAdjustmentProposalDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayCashActivityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayFeeCorrectionEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayFeeCorrectionIdentity"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayPositionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayReconciliationCheckDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayReconciliationRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayReconciliationResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayReconciliationScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWaySourceSnapshotDto"
     },
     {
       "kind": "contract-set-member",
@@ -26680,6 +26794,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ActivateAutomatedPostingGrantRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ActivateLedgerBookControlsRequestDto"
     },
     {
@@ -26777,6 +26897,18 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.AutomatedJournalEvidenceQualityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AutomatedPostingGrantDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AutomatedPostingGrantReferenceDto"
     },
     {
       "kind": "contract-set-member",
@@ -27041,6 +27173,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CloseTaskStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConfiguredLedgerAccountRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -27382,6 +27520,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IAccountingAutomaticPostingPolicyValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IAccountingConfigurationService"
     },
     {
@@ -27394,7 +27538,19 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IAutomatedPostingGrantStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ICapitalAccountWorkbenchService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IConfiguredLedgerAccountResolver"
     },
     {
       "kind": "contract-set-member",
@@ -28469,6 +28625,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ReviewLateAdjustmentRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.RevokeAutomatedPostingGrantRequest"
     },
     {
       "kind": "contract-set-member",
@@ -41548,6 +41710,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.AccountingPostingCommandDto",
+      "target": "contract:Meridian.Contracts.Ledger.AutomatedPostingGrantReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AccountingPostingCommandDto",
       "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxAmountDto"
     },
     {
@@ -41567,6 +41735,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.AccountingPostingCommandDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AccountingPostingCommandDto",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayFeeCorrectionEvidenceDto"
     },
     {
       "kind": "contract-reference",
@@ -41787,6 +41961,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ActivateAutomatedPostingGrantRequest",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.AllocationRuleDto",
       "target": "contract:Meridian.Contracts.Ledger.AllocationRuleBasisDto"
     },
@@ -41855,6 +42035,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.AutomatedJournalEvidenceAssessmentDto",
       "target": "contract:Meridian.Contracts.Ledger.AutomatedJournalEvidenceQualityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AutomatedPostingGrantDto",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingPolicyDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AutomatedPostingGrantDto",
+      "target": "contract:Meridian.Contracts.Ledger.AutomatedPostingGrantReferenceDto"
     },
     {
       "kind": "contract-reference",
@@ -43395,6 +43587,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ManualJournalEntryDraftDto",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayFeeCorrectionEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ManualJournalEntryLineDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingTemplateLineSideDto"
     },
@@ -44332,6 +44530,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ReviewLateAdjustmentRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.RevokeAutomatedPostingGrantRequest",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
     },
     {
@@ -55905,6 +56109,42 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ThreeWayReconciliationResultDto",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayAdjustmentProposalDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ThreeWayReconciliationResultDto",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayReconciliationCheckDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ThreeWayReconciliationResultDto",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayReconciliationScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ThreeWayReconciliationResultDto",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWaySourceSnapshotDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ThreeWaySourceSnapshotDto",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayCashActivityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ThreeWaySourceSnapshotDto",
+      "target": "contract:Meridian.Contracts.Workstation.ThreeWayPositionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.TradingAcceptanceGateDto",
       "target": "contract:Meridian.Contracts.Workstation.TradingAcceptanceGateStatusDto"
     },
@@ -58240,6 +58480,80 @@
       "label": "",
       "source": "database:ledger.atomic_tax_lot_posting_batches_period_id_fkey on ledger.atomic_tax_lot_posting_batches",
       "target": "database:ledger.accounting_periods_pkey"
+    },
+    {
+      "constraint": "automated_posting_grants_period_id_fkey",
+      "kind": "foreign-key",
+      "label": "period_id",
+      "source": "database:ledger.automated_posting_grants",
+      "target": "database:ledger.accounting_periods"
+    },
+    {
+      "constraint": "automated_posting_grants_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.automated_posting_grants",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.automated_posting_grants_check on ledger.automated_posting_grants",
+      "target": "database:ledger.automated_posting_grants.is_active"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.automated_posting_grants_check on ledger.automated_posting_grants",
+      "target": "database:ledger.automated_posting_grants.revoked_at_utc"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.automated_posting_grants_ledger_book_id_fkey on ledger.automated_posting_grants",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.automated_posting_grants_ledger_book_id_fkey on ledger.automated_posting_grants",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.automated_posting_grants_period_id_fkey on ledger.automated_posting_grants",
+      "target": "database:ledger.accounting_periods.period_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.automated_posting_grants_period_id_fkey on ledger.automated_posting_grants",
+      "target": "database:ledger.accounting_periods_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.automated_posting_grants_policy_snapshot_pair on ledger.automated_posting_grants",
+      "target": "database:ledger.automated_posting_grants.policy_snapshot"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.automated_posting_grants_policy_snapshot_pair on ledger.automated_posting_grants",
+      "target": "database:ledger.automated_posting_grants.policy_snapshot_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.automated_posting_grants_source_mode_check on ledger.automated_posting_grants",
+      "target": "database:ledger.automated_posting_grants.source_mode"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.automated_posting_grants_version_check on ledger.automated_posting_grants",
+      "target": "database:ledger.automated_posting_grants.version"
     },
     {
       "constraint": "bond_coupon_cash_consumption_receipt_id_fkey",
@@ -65819,6 +66133,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.automated_posting_grants"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.bond_coupon_cash_consumption"
     },
     {
@@ -67141,7 +67461,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "1f29eff3be8bab3b8e62f66a0224129ab07a404695664d55c289a602f3a463c5",
+  "fingerprint": "95a0e495b23bc13f75dcb86bf83577005d62ac1c70517d3e5945b55128cf2d0a",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -76591,6 +76911,12 @@
       "label": "Meridian.Contracts.Ledger.ActivateAccountingConfigurationRequest"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.ActivateAutomatedPostingGrantRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ActivateAutomatedPostingGrantRequest"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.ActivateLedgerBookControlsRequestDto",
       "kind": "contract-type",
@@ -76691,6 +77017,18 @@
       "id": "contract:Meridian.Contracts.Ledger.AutomatedJournalEvidenceQualityDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.AutomatedJournalEvidenceQualityDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.AutomatedPostingGrantDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AutomatedPostingGrantDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.AutomatedPostingGrantReferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AutomatedPostingGrantReferenceDto"
     },
     {
       "classification": "dto",
@@ -76955,6 +77293,12 @@
       "id": "contract:Meridian.Contracts.Ledger.CloseTaskStatusDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.CloseTaskStatusDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConfiguredLedgerAccountRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConfiguredLedgerAccountRequestDto"
     },
     {
       "classification": "dto",
@@ -77294,6 +77638,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Ledger.IAccountingAutomaticPostingPolicyValidator",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IAccountingAutomaticPostingPolicyValidator"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Ledger.IAccountingConfigurationService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.IAccountingConfigurationService"
@@ -77306,9 +77656,21 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Ledger.IAutomatedPostingGrantStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IAutomatedPostingGrantStore"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Ledger.ICapitalAccountWorkbenchService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.ICapitalAccountWorkbenchService"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Ledger.IConfiguredLedgerAccountResolver",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IConfiguredLedgerAccountResolver"
     },
     {
       "classification": "service_contract",
@@ -78383,6 +78745,12 @@
       "id": "contract:Meridian.Contracts.Ledger.ReviewLateAdjustmentRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.ReviewLateAdjustmentRequestDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.RevokeAutomatedPostingGrantRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.RevokeAutomatedPostingGrantRequest"
     },
     {
       "classification": "dto",
@@ -86360,6 +86728,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.PrepareThreeWayAdjustmentRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.PrepareThreeWayAdjustmentRequestDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.PreparerAttestationEvidenceProjectionDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.PreparerAttestationEvidenceProjectionDto"
@@ -88952,6 +89326,66 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ThreeWayAdjustmentProposalDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ThreeWayAdjustmentProposalDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ThreeWayCashActivityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ThreeWayCashActivityDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ThreeWayFeeCorrectionEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ThreeWayFeeCorrectionEvidenceDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Workstation.ThreeWayFeeCorrectionIdentity",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ThreeWayFeeCorrectionIdentity"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ThreeWayPositionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ThreeWayPositionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ThreeWayReconciliationCheckDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ThreeWayReconciliationCheckDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ThreeWayReconciliationRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ThreeWayReconciliationRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ThreeWayReconciliationResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ThreeWayReconciliationResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ThreeWayReconciliationScopeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ThreeWayReconciliationScopeDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ThreeWaySourceSnapshotDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ThreeWaySourceSnapshotDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.ThresholdBreachDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ThresholdBreachDto"
@@ -91448,6 +91882,72 @@
       "id": "database:ledger.atomic_tax_lot_posting_batches_pkey",
       "kind": "database-object",
       "label": "ledger.atomic_tax_lot_posting_batches_pkey"
+    },
+    {
+      "id": "database:ledger.automated_posting_grants",
+      "kind": "database-table",
+      "label": "ledger.automated_posting_grants",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.automated_posting_grants.is_active",
+      "kind": "database-object",
+      "label": "ledger.automated_posting_grants.is_active"
+    },
+    {
+      "id": "database:ledger.automated_posting_grants.policy_snapshot",
+      "kind": "database-object",
+      "label": "ledger.automated_posting_grants.policy_snapshot"
+    },
+    {
+      "id": "database:ledger.automated_posting_grants.policy_snapshot_sha256",
+      "kind": "database-object",
+      "label": "ledger.automated_posting_grants.policy_snapshot_sha256"
+    },
+    {
+      "id": "database:ledger.automated_posting_grants.revoked_at_utc",
+      "kind": "database-object",
+      "label": "ledger.automated_posting_grants.revoked_at_utc"
+    },
+    {
+      "id": "database:ledger.automated_posting_grants.source_mode",
+      "kind": "database-object",
+      "label": "ledger.automated_posting_grants.source_mode"
+    },
+    {
+      "id": "database:ledger.automated_posting_grants.version",
+      "kind": "database-object",
+      "label": "ledger.automated_posting_grants.version"
+    },
+    {
+      "id": "database:ledger.automated_posting_grants_check on ledger.automated_posting_grants",
+      "kind": "database-object",
+      "label": "ledger.automated_posting_grants_check on ledger.automated_posting_grants"
+    },
+    {
+      "id": "database:ledger.automated_posting_grants_ledger_book_id_fkey on ledger.automated_posting_grants",
+      "kind": "database-object",
+      "label": "ledger.automated_posting_grants_ledger_book_id_fkey on ledger.automated_posting_grants"
+    },
+    {
+      "id": "database:ledger.automated_posting_grants_period_id_fkey on ledger.automated_posting_grants",
+      "kind": "database-object",
+      "label": "ledger.automated_posting_grants_period_id_fkey on ledger.automated_posting_grants"
+    },
+    {
+      "id": "database:ledger.automated_posting_grants_policy_snapshot_pair on ledger.automated_posting_grants",
+      "kind": "database-object",
+      "label": "ledger.automated_posting_grants_policy_snapshot_pair on ledger.automated_posting_grants"
+    },
+    {
+      "id": "database:ledger.automated_posting_grants_source_mode_check on ledger.automated_posting_grants",
+      "kind": "database-object",
+      "label": "ledger.automated_posting_grants_source_mode_check on ledger.automated_posting_grants"
+    },
+    {
+      "id": "database:ledger.automated_posting_grants_version_check on ledger.automated_posting_grants",
+      "kind": "database-object",
+      "label": "ledger.automated_posting_grants_version_check on ledger.automated_posting_grants"
     },
     {
       "id": "database:ledger.bond_coupon_cash_consumption",
@@ -98555,11 +99055,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4171,
-    "contract_set_memberships": 5358,
-    "edges": 11153,
-    "foreign_keys": 206,
+    "contract_references": 4184,
+    "contract_set_memberships": 5385,
+    "edges": 11206,
+    "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5461
+    "nodes": 5493
   }
 }

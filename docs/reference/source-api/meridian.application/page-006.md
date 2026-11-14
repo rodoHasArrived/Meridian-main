@@ -787,7 +787,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;InternalLedgerTransaction&gt;&gt; GetTransactionsAsync(InternalLedgerTransactionQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs:157](../../../../src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs#L157) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;InternalLedgerTransaction&gt;&gt; GetTransactionsAsync(InternalLedgerTransactionQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs:160](../../../../src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs#L160) |  |
 
 ## RetainedInternalReconciliationPopulationProvider
 
@@ -798,14 +798,14 @@ Source: [src/Meridian.Application/Reconciliation/RetainedInternalReconciliationP
 Resolves the internal book (positions, cash, and journal-projected ledger transactions) a statement run reconciles against from Meridian&#x27;s own retained records, replacing the fail-closed empty default so shipped imports actually reconcile instead of surfacing every external row as an unmatched break. Lives in the application layer so both the browser workstation service graph and the CLI command graph resolve the same retained-book provider over shared account, position, and ledger-journal stores.
 
 ```csharp
-public sealed class RetainedInternalReconciliationPopulationProvider(IAccountQueryService? accounts = null, IPositionSnapshotStore? positionSnapshots = null, ILogger<RetainedInternalReconciliationPopulationProvider>? logger = null, IInternalLedgerTransactionSource? ledgerTransactionSource = null, Func<IAccountQueryService?>? accountQueryResolver = null) : IInternalReconciliationPopulationProvider
+public sealed class RetainedInternalReconciliationPopulationProvider(IAccountQueryService? accounts = null, IPositionSnapshotStore? positionSnapshots = null, ILogger<RetainedInternalReconciliationPopulationProvider>? logger = null, IInternalLedgerTransactionSource? ledgerTransactionSource = null, Func<IAccountQueryService?>? accountQueryResolver = null, ILedgerJournalStore? ledgerStore = null, IFundProfileTenancyRegistry? tenancy = null) : IInternalReconciliationPopulationProvider
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;InternalReconciliationPopulations&gt; GetPopulationsAsync(InternalReconciliationPopulationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/Reconciliation/RetainedInternalReconciliationPopulationProvider.cs:64](../../../../src/Meridian.Application/Reconciliation/RetainedInternalReconciliationPopulationProvider.cs#L64) |  |
+| <code>public async Task&lt;InternalReconciliationPopulations&gt; GetPopulationsAsync(InternalReconciliationPopulationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/Reconciliation/RetainedInternalReconciliationPopulationProvider.cs:66](../../../../src/Meridian.Application/Reconciliation/RetainedInternalReconciliationPopulationProvider.cs#L66) |  |
 
 ## BackfillExecutionHistory
 

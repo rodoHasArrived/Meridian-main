@@ -4,13 +4,21 @@ using Npgsql;
 
 namespace Meridian.Storage.Ledger;
 
-public sealed partial class PostgresLedgerJournalStore : ILedgerReportingSnapshotSource
+public sealed partial class PostgresLedgerJournalStore : ILedgerOpenPositionReportingSnapshotSource
 {
     /// <inheritdoc />
-    public async Task<LedgerReportingSnapshot> CaptureReportingSnapshotAsync(
+    public Task<LedgerReportingSnapshot> CaptureReportingSnapshotAsync(
         LedgerJournalEntryQuery query,
         Guid? accountingPeriodId = null,
         CancellationToken ct = default)
+        => CaptureReportingSnapshotCoreAsync(query, accountingPeriodId, false, ct);
+
+    public Task<LedgerReportingSnapshot> CaptureOpenPositionReportingSnapshotAsync(
+        LedgerJournalEntryQuery query, Guid accountingPeriodId, CancellationToken ct = default)
+        => CaptureReportingSnapshotCoreAsync(query, accountingPeriodId, true, ct);
+
+    private async Task<LedgerReportingSnapshot> CaptureReportingSnapshotCoreAsync(
+        LedgerJournalEntryQuery query, Guid? accountingPeriodId, bool captureOpenPositions, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(query);
         if (query.LedgerBookId is not { } ledgerBookId || ledgerBookId == Guid.Empty)
@@ -54,8 +62,14 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerReportingSnapsho
             .ConfigureAwait(false);
         var successors = await GetOpenLotSuccessorHistoryAsync(connection, transaction, ledgerBookId, journalIds, ct)
             .ConfigureAwait(false);
+        var positionDate = query.EffectiveTo ?? (query.OccurredTo is { } cutoff
+            ? DateOnly.FromDateTime(cutoff.UtcDateTime) : period?.EndDate);
+        var positions = captureOpenPositions && period is not null && positionDate.HasValue
+            ? await CaptureReportingOpenPositionsAsync(connection, transaction, ledgerBookId, positionDate.Value,
+                query.OccurredTo?.ToUniversalTime(), ct).ConfigureAwait(false)
+            : null;
         await transaction.CommitAsync(ct).ConfigureAwait(false);
-        return new LedgerReportingSnapshot(journals, history, period, successors);
+        return new LedgerReportingSnapshot(journals, history, period, successors) { OpenPositions = positions };
     }
 
     private async Task EnsureReportingBookReadAuthorityAsync(

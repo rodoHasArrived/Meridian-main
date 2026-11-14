@@ -222,6 +222,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifi
             "journal" => $"select {JournalAuditSnapshotSql("j")} from {Qualified("journal_entries")} j where journal_entry_id = @id;",
             "period" => $"select to_jsonb(p)::text from {Qualified("accounting_periods")} p where period_id = @id;",
             "period-close" => $"select to_jsonb(p)::text from {Qualified("period_close_events")} p where event_id = @id;",
+            "automation-grant" => $"select to_jsonb(g)::text from {Qualified("automated_posting_grants")} g where grant_id = @id;",
             _ => throw new ArgumentOutOfRangeException(nameof(kind))
         };
         command.Parameters.AddWithValue("id", id);
@@ -274,6 +275,16 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifi
                 union all
                 select 1 from {events} a left join {Qualified("period_close_events")} c on c.event_id = a.close_event_id
                 where a.close_event_id is not null and c.event_id is null
+                union all
+                select 1 from {Qualified("automated_posting_grants")} g
+                left join lateral (select * from {events} e
+                    where e.subject_kind = 'automation-grant' and e.subject_id = g.grant_id
+                    order by subject_version desc limit 1) a on true
+                where a.subject_id is null or a.subject_version <> g.version
+                   or {RetainedAuditColumnsSql("g", "a.fact_snapshot::jsonb")} <> a.fact_snapshot::jsonb
+                union all
+                select 1 from {events} a left join {Qualified("automated_posting_grants")} g on g.grant_id = a.subject_id
+                where a.subject_kind = 'automation-grant' and g.grant_id is null
             );
             """;
         if ((bool)(await command.ExecuteScalarAsync(ct).ConfigureAwait(false))!)

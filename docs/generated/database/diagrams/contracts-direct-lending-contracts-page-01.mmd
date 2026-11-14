@@ -294,6 +294,9 @@ classDiagram
     class Meridian_Contracts_DirectLending_DirectLendingOptions["DirectLendingOptions"] {
         +string ConnectionString
         +int CurrentEventSchemaVersion
+        +Dictionary~string__string~ LedgerAccountPaths
+        +Guid? LedgerBookId
+        +string? LedgerChartMappingRevision
         +int OutboxBatchSize
         +int OutboxPollIntervalSeconds
         +string ProjectionEngineVersion

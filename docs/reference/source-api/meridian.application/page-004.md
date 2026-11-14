@@ -524,7 +524,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.DirectLending.LoanAccountingProjector</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/DirectLending/LoanAccountingProjector.cs:16](../../../../src/Meridian.Application/DirectLending/LoanAccountingProjector.cs#L16).
+Source: [src/Meridian.Application/DirectLending/LoanAccountingProjector.cs:17](../../../../src/Meridian.Application/DirectLending/LoanAccountingProjector.cs#L17).
 
 Builds ledger journal writes for loan events using the applicable accounting policy.
 
@@ -536,9 +536,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public LoanAccountingProjector(ILedgerJournalStore? journalStore, IAccountingPolicyService accountingPolicyService, SecurityMasterQueryService? securityMasterQueryService = null);</code> | [src/Meridian.Application/DirectLending/LoanAccountingProjector.cs:23](../../../../src/Meridian.Application/DirectLending/LoanAccountingProjector.cs#L23) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryWrite&gt;&gt; ProjectAsync(Guid loanId, LoanContractDetailDto contract, string eventType, DateOnly? effectiveDate, JsonDocument payload, Guid sourceEventId, DirectLendingEventWriteMetadata metadata, CancellationToken ct, LedgerPostingKindDto postingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null);</code> | [src/Meridian.Application/DirectLending/LoanAccountingProjector.cs:33](../../../../src/Meridian.Application/DirectLending/LoanAccountingProjector.cs#L33) |  |
-| <code>public static bool HasAccountingImpact(string eventType, JsonElement payload) =&gt; …;</code> | [src/Meridian.Application/DirectLending/LoanAccountingProjector.cs:239](../../../../src/Meridian.Application/DirectLending/LoanAccountingProjector.cs#L239) | Reports whether a retained loan event requires a journal, using exactly the same amount validation and line projection as posting. Zero-value and non-accounting events have no required journal; malformed or negative accounting amounts fail closed. |
+| <code>public LoanAccountingProjector(ILedgerJournalStore? journalStore, IAccountingPolicyService accountingPolicyService, SecurityMasterQueryService? securityMasterQueryService = null, DirectLendingOptions? options = null, IConfiguredLedgerAccountResolver? accountResolver = null, IFundProfileTenancyRegistry? tenancyRegistry = null, IFundScopeTenantAccessor? tenantAccessor = null);</code> | [src/Meridian.Application/DirectLending/LoanAccountingProjector.cs:28](../../../../src/Meridian.Application/DirectLending/LoanAccountingProjector.cs#L28) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryWrite&gt;&gt; ProjectAsync(Guid loanId, LoanContractDetailDto contract, string eventType, DateOnly? effectiveDate, JsonDocument payload, Guid sourceEventId, DirectLendingEventWriteMetadata metadata, CancellationToken ct, LedgerPostingKindDto postingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null);</code> | [src/Meridian.Application/DirectLending/LoanAccountingProjector.cs:46](../../../../src/Meridian.Application/DirectLending/LoanAccountingProjector.cs#L46) |  |
+| <code>public static bool HasAccountingImpact(string eventType, JsonElement payload) =&gt; …;</code> | [src/Meridian.Application/DirectLending/LoanAccountingProjector.cs:269](../../../../src/Meridian.Application/DirectLending/LoanAccountingProjector.cs#L269) | Reports whether a retained loan event requires a journal, using exactly the same amount validation and line projection as posting. Zero-value and non-accounting events have no required journal; malformed or negative accounting amounts fail closed. |
 
 ## PostgresDirectLendingCommandService
 

@@ -99,7 +99,7 @@ public sealed class PortfolioStatePositionTracker : IPositionTracker
             // same scale as the source portfolio instead of reverting to quote × quantity.
             ContractMultiplier = multiplier,
             RealizedPnl = position.RealizedPnl,
-            LastUpdated = asOf
+            LastUpdated = position is ExecutionPosition { MarkObservedAtUtc: { } observedAt } ? observedAt : asOf
         };
     }
 

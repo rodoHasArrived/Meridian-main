@@ -60,6 +60,15 @@ do not introduce a reverse reference from Storage primitives.
 
 ## Accounting exports
 
+The opt-in canonical paper adapter uses retained operator grants, immutable policy snapshots and
+exact chart bindings through the same governed append transaction. Migrations 069–071 add grant
+authority and shared automatic/reviewed fee identity without replacing existing posting controls.
+Historical open-position capture retains complete lot quantity and basis at the journal cut.
+
+The additional `general-ledger.v1` ZIP shares one captured population across CSV, exact text-cell
+XLSX, typed-decimal Parquet and symbol P&L evidence. Its API requires `ExportData` plus scoped ledger
+read authority. This versioned layout leaves the existing invariant-text export schemas unchanged.
+
 The `ExportLedgerAsync` extension exports an immutable journal generation, as-of trial balance and
 balance sheet, period income statement, financial summary and reconciled cash-flow statement as
 CSV, XLSX, Parquet or Arrow. Period income uses activity in `(PeriodStart, AsOf]`, excludes pure
