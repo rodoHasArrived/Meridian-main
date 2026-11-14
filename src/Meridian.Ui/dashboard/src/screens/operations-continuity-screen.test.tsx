@@ -2141,8 +2141,8 @@ describe("OperationsContinuityScreen fund narrowing", () => {
   });
   const otherFund = { ...summary, workflowId: "wf-fund-two", fundAccountId: "acct-2", periodId: "2026-04", updatedAtUtc: "2026-05-08T13:00:00Z" };
   const unfiled = { ...summary, workflowId: "wf-unfiled", fundAccountId: "acct-unfiled", periodId: "2026-03", updatedAtUtc: "2026-05-08T12:00:00Z" };
-  const renderWithFundScope = (value: FundScopeNarrowingContextValue) => render(
-    <MemoryRouter initialEntries={["/accounting/operations-continuity"]}>
+  const renderWithFundScope = (value: FundScopeNarrowingContextValue, entry = "/accounting/operations-continuity") => render(
+    <MemoryRouter initialEntries={[entry]}>
       <FundScopeNarrowingProvider value={value}>
         <Routes>
           <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
@@ -2165,6 +2165,19 @@ describe("OperationsContinuityScreen fund narrowing", () => {
     expect(screen.getByText("1 workflow")).toBeInTheDocument();
     await waitFor(() => expect(getOperationsContinuityWorkflow).toHaveBeenCalledWith(workflowId, expect.anything()));
     expect(getOperationsContinuityWorkflow).not.toHaveBeenCalledWith(otherFund.workflowId, expect.anything());
+  });
+
+  it("reports a requested workflow the fund scope narrowed out instead of opening another", async () => {
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, otherFund, unfiled]);
+    renderWithFundScope(
+      { structure, loading: false, entityId: null, fundId: "F-1", names: { fundId: "Fund One" } },
+      `/accounting/operations-continuity?workflowId=${otherFund.workflowId}`
+    );
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(`Workflow ${otherFund.workflowId} is outside the chosen fund or entity.`);
+    expect(getOperationsContinuityWorkflow).not.toHaveBeenCalled();
+    expect(screen.queryByText("2026-05 close workflow")).not.toBeInTheDocument();
   });
 
   it("lists every workflow, with an honest note, when the organization graph is unavailable", async () => {

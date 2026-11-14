@@ -133,6 +133,54 @@ public sealed class WorkstationScopeOptionsViewModelTests
     }
 
     [Fact]
+    public async Task Reload_DropsARetainedAccountThatMovedOutsideTheChosenFund()
+    {
+        var source = Options();
+        var moved = source with
+        {
+            Accounts = source.Accounts
+                .Select(account => account.AccountId == HeldByFundOne ? account with { FundId = FundTwo } : account)
+                .ToArray()
+        };
+        var client = new SequenceClient(Loaded(source), Loaded(moved));
+        var viewModel = new WorkstationScopeOptionsViewModel(client);
+        await viewModel.InitializeAsync();
+        viewModel.SelectedFund = viewModel.Funds.Single(fund => fund.FundId == FundOne);
+        viewModel.SelectedAccount = viewModel.Accounts.Single(account => account.AccountId == HeldByFundOne);
+        viewModel.SelectedScopeContextKey.Should().Be($"Account:{HeldByFundOne:D}");
+
+        await viewModel.LoadAsync();
+
+        viewModel.SelectedFund!.FundId.Should().Be(FundOne);
+        viewModel.SelectedAccount.Should().BeNull("the account now sits under Fund Two, outside the chosen fund");
+        viewModel.SelectedScopeContextKey.Should().Be($"Fund:{FundOne:D}");
+    }
+
+    [Fact]
+    public async Task Reload_DropsARetainedFundThatNoLongerHoldsTheChosenEntity()
+    {
+        var source = Options();
+        var released = source with
+        {
+            Funds = source.Funds
+                .Select(fund => fund.FundId == FundOne ? fund with { EntityIds = [EntityB] } : fund)
+                .ToArray(),
+            Accounts = source.Accounts.Where(account => account.AccountId != HeldByFundOne).ToArray()
+        };
+        var client = new SequenceClient(Loaded(source), Loaded(released));
+        var viewModel = new WorkstationScopeOptionsViewModel(client);
+        await viewModel.InitializeAsync();
+        viewModel.SelectedEntity = viewModel.Entities.Single(entity => entity.EntityId == EntityA);
+        viewModel.SelectedFund = viewModel.Funds.Single(fund => fund.FundId == FundOne);
+
+        await viewModel.LoadAsync();
+
+        viewModel.SelectedEntity!.EntityId.Should().Be(EntityA);
+        viewModel.SelectedFund.Should().BeNull("Fund One no longer holds Entity A");
+        viewModel.SelectedScopeContextKey.Should().Be($"Entity:{EntityA:D}");
+    }
+
+    [Fact]
     public async Task UnavailableOptions_ShowStatusAndEmptyLists()
     {
         var viewModel = new WorkstationScopeOptionsViewModel(new StubClient(new WorkstationScopeOptionsLoadResult(
@@ -166,6 +214,14 @@ public sealed class WorkstationScopeOptionsViewModelTests
     {
         public Task<WorkstationScopeOptionsLoadResult> GetScopeOptionsAsync(CancellationToken ct = default)
             => Task.FromResult(result);
+    }
+
+    private sealed class SequenceClient(params WorkstationScopeOptionsLoadResult[] results) : IWorkstationScopeOptionsApiClient
+    {
+        private int _next;
+
+        public Task<WorkstationScopeOptionsLoadResult> GetScopeOptionsAsync(CancellationToken ct = default)
+            => Task.FromResult(results[Math.Min(_next++, results.Length - 1)]);
     }
 
     private sealed class ThrowingClient : IWorkstationScopeOptionsApiClient

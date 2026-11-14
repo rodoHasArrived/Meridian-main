@@ -225,6 +225,24 @@ public sealed class WorkstationScopeOptionsViewModel : BindableBase
             ? null
             : _options.Accounts.FirstOrDefault(account => account.AccountId == accountId.Value);
 
+        // A retained id can sit somewhere else in the new payload (an account moved fund, a fund no
+        // longer holds the entity), so re-run the setters' conflict checks before rebuilding; the
+        // narrowest pick must never resolve to something outside the displayed scope.
+        if (WorkstationScopeOptionsNarrowing.FundConflictsWithEntity(_options, IsAvailable, _selectedFund?.FundId, _selectedEntity?.EntityId))
+        {
+            _selectedFund = null;
+        }
+
+        if (WorkstationScopeOptionsNarrowing.AccountConflictsWithScope(
+                _options,
+                IsAvailable,
+                _selectedAccount?.AccountId,
+                _selectedEntity?.EntityId,
+                _selectedFund?.FundId))
+        {
+            _selectedAccount = null;
+        }
+
         Rebuild();
     }
 

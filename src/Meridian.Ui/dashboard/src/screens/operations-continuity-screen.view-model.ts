@@ -770,7 +770,16 @@ export function useOperationsContinuityScreenViewModel(
   const [closeCockpitLoading, setCloseCockpitLoading] = useState(false);
   const [closeCockpitError, setCloseCockpitError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selectionError, setSelectionError] = useState<string | null>(null);
+  const [requestSelectionError, setSelectionError] = useState<string | null>(null);
+  // A requested workflow the server returned but the scope's fund/entity narrowed out is reported
+  // as out of scope, never replaced silently by the first kept workflow.
+  const requestedOutsideFundScope = !!initialWorkflowId
+    && !loading
+    && loadedWorkflows.some((workflow) => workflow.workflowId === initialWorkflowId)
+    && !workflows.some((workflow) => workflow.workflowId === initialWorkflowId);
+  const selectionError = requestSelectionError ?? (requestedOutsideFundScope
+    ? `Workflow ${initialWorkflowId} is outside the chosen fund or entity. Clear the fund or entity in the scope to open it.`
+    : null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const mountedRef = useRef(true);
   const listRevisionRef = useRef(0);
