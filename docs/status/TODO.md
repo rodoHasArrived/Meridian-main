@@ -68,9 +68,9 @@ Total items: **241**
 | `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 898 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
 | `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 973 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
 | `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 1429 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
-| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 267 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
-| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 767 | `NOTE` | ❌ | note: "Credential check failed" |
-| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 1140 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
+| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 268 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
+| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 768 | `NOTE` | ❌ | note: "Credential check failed" |
+| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 1153 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
 | `src/Meridian.Ui/dashboard/src/components/data/skeleton.tsx` | 5 | `NOTE` | ❌ | // NOTE: a second, Tailwind-based Skeleton family lives in `components/ui/skeleton.tsx` |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.test.tsx` | 23 | `NOTE` | ❌ | note: "Opening sleeve" |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.test.tsx` | 151 | `NOTE` | ❌ | note: "operator note" |
