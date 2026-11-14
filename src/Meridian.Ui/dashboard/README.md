@@ -534,12 +534,13 @@ The browser shell renders `WorkspaceHeader` as one row above every route:
   a workspace root reads `Trading`, the front door reads `Today`). The masthead shows only
   `Meridian` and announces the workspace to assistive technology, so the location is stated once.
 - **Centre:** the permanent operating-scope bar (`components/meridian/operating-scope-bar.tsx`),
-  `Scope  Account … › Period …`, with Subject, Run and Provider inserted when set. The scope model
-  has no entity or fund dimension of its own, so the bar does not invent one. An unset dimension
-  reads `All authorized` (never "None"); set dimensions the current screen does not apply are
-  muted and described as retained. It shows on every route and opens the scope picker. The empty
-  scope as a whole reads `All authorized scopes` (`OPERATING_SCOPE_EMPTY_SUMMARY`), the same words
-  Today prints.
+  `Scope  Entity … › Fund … › Account … › Period …`, with Subject, Run and Provider inserted
+  before Period when set. An unset Entity, Fund or Account reads `All authorized` and an unset
+  Period reads `All periods` (never "None"); set dimensions the current screen does not apply are
+  muted and described as retained. Entity and fund ids print as names when the organization graph
+  has loaded (`valueLabels`), otherwise as ids. It shows on every route and opens the scope picker.
+  The empty scope as a whole reads `All authorized scopes` (`OPERATING_SCOPE_EMPTY_SUMMARY`), the
+  same words Today prints.
 - **Right:** Refresh, `Views` (saved-layout and save-current-view controls) and an overflow menu
   holding Copy link and the workspace's About text.
 
@@ -553,8 +554,33 @@ under the scope controls; following one of its links closes the picker. Live, si
 unknown-provenance and degraded warnings remain outside disclosures.
 
 The scope picker stages all changes, including Clear scope, until Apply scope. Cancel and Escape
-leave the active URL and stored scope unchanged. Run and date dimensions remain inspectable;
+leave the active URL and stored scope unchanged. The run dimension remains inspectable (read-only);
 applicability text distinguishes dimensions applied here from those retained for other screens.
+
+Entity and fund (P4) are scope dimensions carried as the `entityId` and `fundId` URL parameters
+(`app-shell.operating-scope.ts`), in browser storage, recent scopes, saved layouts, Copy link and
+the operator's server-side default scope. They are written into every route's URL because they head
+the scope hierarchy, but they are applied only where a screen reads them: Accounting reads
+`entityId` (close scope, intercompany and payment-approval panels); no screen filters by `fundId`
+yet, so the bar shows a set fund as retained everywhere. Payloads are never filtered by entity or
+fund on the client. The picker's entity, fund and account options come from the existing
+organization read model `GET /api/fund-structure/graph?activeOnly=true`
+(`lib/operating-scope/structure-options.ts`, loaded by `use-scope-structure.ts` when the picker
+first opens or the scope names an entity or fund). It lists entities, funds with the entities they
+hold, and accounts with their fund and entity; household brokerage accounts the graph does not list
+are added without a relationship. Choosing an entity narrows the funds to those holding it and the
+accounts to those booked to it; choosing a fund narrows the accounts to its own; an account with no
+recorded fund or entity is left out of a narrowed list and counted, and a fund or account known to
+sit outside a new entity or fund is cleared with a status note. The graph is gated to fund-structure
+permissions; without it the entity and fund fields take typed ids, nothing is narrowed, and the
+picker says so.
+
+The picker's Period control sets the window: `All periods`, `Today`, `MTD`, `QTD`, `YTD`,
+`Last month` (computed on the operator's calendar day through `LocalDate`,
+`lib/operating-scope/period.ts`), `Custom range` on the shared `DateRangePicker`, or `As of` a single
+date. Every choice replaces the whole window (`from`, `to`, `date`, `asOf`); a date set by an
+originating workflow is shown as such until replaced. The bar prints the window as
+`Period 2026-11-01 to 2026-11-14` (a same-day range prints the day once).
 Navigating to another workflow disposes nested view-control dialogs and their keyboard listeners
 before the disclosure closes; screen-local table URL updates retain the current control session.
 Symbol suggestions support arrow keys, Enter, Escape, search progress, no matches and Retry.
@@ -576,7 +602,13 @@ and the other Trading routes. Live, unknown and failed brokerage states keep blo
 
 Focused regression coverage includes `app.test.tsx`, `workspace-header.test.tsx`,
 `workspace-views-menu.test.tsx`, `workflow-continuity-dock.test.tsx`, `scope-picker.test.tsx`,
-`workspace-nav.test.tsx`, and `layout-switcher.test.tsx`.
+`operating-scope-bar.test.tsx`, `app-shell.operating-scope.test.ts`, the
+`lib/operating-scope/*.test.ts` suites (structure options, period presets, persistence, recent
+scopes), `workspace-nav.test.tsx`, and `layout-switcher.test.tsx`.
+
+Shared contract change (additive): `OperatingScopeValuesDto` (the operator's default scope) gained
+optional `EntityId` and `FundId` members, appended last, so the server keeps entity and fund in a
+saved default; the dashboard mirror is `types/operator-scope-preference.ts`. No endpoint was added.
 
 React, React DOM, and their type packages are upgraded together. Runtime support uses the floating
 Node major in `.nvmrc` and the minimum declared in this dashboard's `engines.node`; both prerequisite

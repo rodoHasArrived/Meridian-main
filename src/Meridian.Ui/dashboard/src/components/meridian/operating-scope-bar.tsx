@@ -3,28 +3,32 @@ import { ChevronDown } from "lucide-react";
 import {
   buildOperatingScopeBarSegments,
   type AppShellOperatingScopeQueryKey,
-  type AppShellOperatingScopeState
+  type AppShellOperatingScopeState,
+  type OperatingScopeValueLabels
 } from "@/app-shell.operating-scope";
 import { cn } from "@/lib/utils";
 
 /**
- * The operating scope as a permanent, labelled part of the top bar: `Scope  Account … › Period …`,
- * plus Subject, Run and Provider when set. An unset dimension reads "All authorized", so an
- * unscoped view never looks like an empty one. It is shown on every route (the scope still carries
+ * The operating scope as a permanent, labelled part of the top bar:
+ * `Scope  Entity … › Fund … › Account … › Period …`, plus Subject, Run and Provider when set. An
+ * unset Entity, Fund or Account reads "All authorized" and an unset Period "All periods", so an
+ * unscoped view never looks like an empty one. Ids show as names when `valueLabels` supplies them. It is shown on every route (the scope still carries
  * on a page that does not filter by it) and opens the shell's scope picker. A set dimension the
  * current screen does not filter by stays in the bar, muted, so a carried scope is never invisible.
  */
 export function OperatingScopeBar({
   operatingScope,
   onEditOperatingScope,
-  scopeDimensionsInEffect
+  scopeDimensionsInEffect,
+  valueLabels
 }: {
   operatingScope: AppShellOperatingScopeState;
   onEditOperatingScope?: () => void;
   scopeDimensionsInEffect?: AppShellOperatingScopeQueryKey[];
+  valueLabels?: OperatingScopeValueLabels;
 }) {
   const applicabilityId = useId();
-  const segments = buildOperatingScopeBarSegments(operatingScope, scopeDimensionsInEffect);
+  const segments = buildOperatingScopeBarSegments(operatingScope, scopeDimensionsInEffect, valueLabels);
   const spoken = segments.map((segment) => `${segment.label} ${segment.value}`).join(", ");
   const applied = segments.filter((segment) => segment.isSet && segment.applied);
   const retained = segments.filter((segment) => segment.isSet && !segment.applied);
@@ -44,7 +48,9 @@ export function OperatingScopeBar({
               !segment.applied && "operating-scope-bar-segment-retained"
             )}
             title={!segment.isSet
-              ? `${segment.label}: not narrowed; covers everything you are authorized to see`
+              ? segment.id === "window"
+                ? `${segment.label}: not narrowed; each screen shows its own default range`
+                : `${segment.label}: not narrowed; covers everything you are authorized to see`
               : segment.applied
                 ? `${segment.label}: applied here`
                 : `${segment.label}: carried, but not applied on this screen`}

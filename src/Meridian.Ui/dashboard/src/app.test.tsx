@@ -302,7 +302,7 @@ const loadedOperatorInbox: OperatorTriageInbox = {
   }]
 };
 
-const EMPTY_SCOPE_BAR_NAME = "Operating scope: Account All authorized, Period All authorized";
+const EMPTY_SCOPE_BAR_NAME = "Operating scope: Entity All authorized, Fund All authorized, Account All authorized, Period All periods";
 
 /** The permanent top-bar scope bar; its accessible name lists every labelled dimension. */
 function scopeBar() {
@@ -864,7 +864,7 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/quotes?symbol=MSFT"] });
 
     expect(screen.getByRole("region", { name: "Operating scope bar" })).toBeInTheDocument();
-    expect(scopeBar()).toHaveAccessibleName("Operating scope: Account All authorized, Subject MSFT, Period All authorized");
+    expect(scopeBar()).toHaveAccessibleName("Operating scope: Entity All authorized, Fund All authorized, Account All authorized, Subject MSFT, Period All periods");
     expect(screen.queryByText("/data/quotes?symbol=MSFT")).not.toBeInTheDocument();
     // Workflow context lives in the scope chip's popover, not in the header row.
     expect(screen.queryByText("Workflow context")).not.toBeInTheDocument();
@@ -1040,7 +1040,7 @@ describe("App", () => {
       // Only the account changed; the rest of the scope is kept.
       expect(params.get("symbol")).toBe("MSFT");
     });
-    expect(scopeBar()).toHaveAccessibleName(`Operating scope: Account ${fundAccountId}, Subject MSFT, Period All authorized`);
+    expect(scopeBar()).toHaveAccessibleName(`Operating scope: Entity All authorized, Fund All authorized, Account ${fundAccountId}, Subject MSFT, Period All periods`);
     expect(screen.queryByLabelText("Fund account")).not.toBeInTheDocument();
     // Links built from the scope carry it, so a followed or copied link opens in the same scope.
     const portfolioLink = within(screen.getAllByRole("navigation").find((nav) => within(nav).queryByRole("link", { name: /Portfolio/ }))!)

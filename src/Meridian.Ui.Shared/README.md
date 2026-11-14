@@ -1015,8 +1015,8 @@ source. `AddPaperFuturesSettlement` registers it; the host calls it next to the 
 default operating scope. `Workflows/FileOperatorScopePreferenceStore.cs` keeps one record per
 tenant, company and user under the data root (`workstation/operators/scope-preferences.json`)
 through the snapshot store's atomic replace; values are trimmed, capped at 128 printable characters,
-and an empty scope clears the default. Both routes require an authenticated session and only ever
-read or write the caller's own record.
+and an empty scope clears the default (an entity or fund alone is a scope). Both routes require an
+authenticated session and only ever read or write the caller's own record.
 
 ## Operator surface visits
 

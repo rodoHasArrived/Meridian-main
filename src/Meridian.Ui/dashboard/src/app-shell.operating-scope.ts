@@ -2,6 +2,10 @@ import { workspaceForPath } from "@/lib/workspace";
 import { splitContinuityRoute } from "@/app-shell.workflow-continuity";
 
 export interface AppShellOperatingScopeInput {
+  /** Legal entity (fund-structure entity id). Carried on every route; applied where a screen reads it. */
+  entityId?: string | null;
+  /** Fund (fund-structure fund id). Carried on every route; no screen filters by it yet. */
+  fundId?: string | null;
   symbol?: string | null;
   fundAccountId?: string | null;
   runId?: string | null;
@@ -25,7 +29,14 @@ export interface AppShellOperatingScopeQueryParam {
   scopeKey: AppShellOperatingScopeQueryKey;
 }
 
-export type AppShellOperatingScopeQueryKey = "symbol" | "fundAccountId" | "runId" | "provider" | "window";
+export type AppShellOperatingScopeQueryKey =
+  | "entityId"
+  | "fundId"
+  | "symbol"
+  | "fundAccountId"
+  | "runId"
+  | "provider"
+  | "window";
 
 /**
  * What an unset scope dimension means: nothing is narrowed, so the view covers everything the
@@ -37,11 +48,27 @@ export const OPERATING_SCOPE_ALL_AUTHORIZED = "All authorized";
 /** The whole operating scope with no dimension set; the same words Today prints. */
 export const OPERATING_SCOPE_EMPTY_SUMMARY = "All authorized scopes";
 
-/** One labelled dimension of the top-bar scope bar (`Account › … › Period`). */
+/**
+ * What an unset period means: the window is not narrowed, so each screen shows its own default
+ * range. It reads "All periods" rather than "All authorized", because a date window is not an
+ * authorization boundary.
+ */
+export const OPERATING_SCOPE_ALL_PERIODS = "All periods";
+
+/**
+ * Display names for identifier dimensions, keyed by dimension (`entityId`, `fundId`,
+ * `fundAccountId`). The scope carries ids; a name is shown only when a loaded read model supplied it.
+ */
+export type OperatingScopeValueLabels = Partial<Record<AppShellOperatingScopeQueryKey, string | null | undefined>>;
+
+/** One labelled dimension of the top-bar scope bar (`Entity › Fund › Account › … › Period`). */
 export interface OperatingScopeBarSegment {
   id: AppShellOperatingScopeQueryKey;
   label: string;
-  /** The value, or {@link OPERATING_SCOPE_ALL_AUTHORIZED} when the dimension is not set. */
+  /**
+   * The value (a display name when one is known), or {@link OPERATING_SCOPE_ALL_AUTHORIZED} /
+   * {@link OPERATING_SCOPE_ALL_PERIODS} when the dimension is not set.
+   */
   value: string;
   isSet: boolean;
   /** False when the dimension is set but the current screen does not filter by it. */
@@ -51,6 +78,9 @@ export interface OperatingScopeBarSegment {
 export interface AppShellOperatingScopeState {
   label: string;
   summary: string;
+  /** Optional so hand-built scope states predating the entity and fund dimensions stay valid. */
+  entityId?: string | null;
+  fundId?: string | null;
   subjectSymbol: string | null;
   fundAccountId: string | null;
   runId: string | null;
@@ -80,6 +110,8 @@ function normalizeSubjectSymbol(value: string | null): string | null {
 
 export function readOperatingScopeFromSearch(search: string): AppShellOperatingScopeInput {
   return {
+    entityId: normalizeScopeToken(readSearchValue(search, "entityId"), 72),
+    fundId: normalizeScopeToken(readSearchValue(search, "fundId"), 72),
     symbol: normalizeSubjectSymbol(readSearchValue(search, "symbol")),
     fundAccountId: normalizeScopeToken(readSearchValue(search, "fundAccountId"), 72),
     runId: normalizeScopeToken(readSearchValue(search, "runId"), 72),
@@ -97,6 +129,8 @@ export function buildOperatingScopeFromSearch(
   activeRoute: string | null = null
 ): AppShellOperatingScopeState {
   const routeScope = readOperatingScopeFromSearch(search);
+  const entityId = routeScope.entityId ?? normalizeScopeToken(fallback?.entityId, 72);
+  const fundId = routeScope.fundId ?? normalizeScopeToken(fallback?.fundId, 72);
   const subjectSymbol = routeScope.symbol ?? normalizeSubjectSymbol(fallback?.symbol ?? null);
   const fundAccountId = routeScope.fundAccountId ?? normalizeScopeToken(fallback?.fundAccountId, 72);
   const runId = routeScope.runId ?? normalizeScopeToken(fallback?.runId, 72);
@@ -108,6 +142,8 @@ export function buildOperatingScopeFromSearch(
   const windowValue = formatOperatingScopeWindow({ from, to, date, asOf });
 
   const items: AppShellOperatingScopeItem[] = [
+    entityId ? buildOperatingScopeItem("entityId", "Entity", entityId) : null,
+    fundId ? buildOperatingScopeItem("fundId", "Fund", fundId) : null,
     subjectSymbol ? buildOperatingScopeItem("symbol", "Subject", subjectSymbol) : null,
     fundAccountId ? buildOperatingScopeItem("fundAccountId", "Account", fundAccountId) : null,
     runId ? buildOperatingScopeItem("runId", "Run", operatingRunScopeLabel(activeRoute)) : null,
@@ -116,6 +152,8 @@ export function buildOperatingScopeFromSearch(
   ].filter((item): item is AppShellOperatingScopeItem => Boolean(item));
 
   const queryParams: AppShellOperatingScopeQueryParam[] = [
+    entityId ? { key: "entityId", value: entityId, scopeKey: "entityId" as const } : null,
+    fundId ? { key: "fundId", value: fundId, scopeKey: "fundId" as const } : null,
     subjectSymbol ? { key: "symbol", value: subjectSymbol, scopeKey: "symbol" as const } : null,
     fundAccountId ? { key: "fundAccountId", value: fundAccountId, scopeKey: "fundAccountId" as const } : null,
     runId ? { key: "runId", value: runId, scopeKey: "runId" as const } : null,
@@ -133,6 +171,8 @@ export function buildOperatingScopeFromSearch(
   return {
     label: "Operating scope",
     summary,
+    entityId,
+    fundId,
     subjectSymbol,
     fundAccountId,
     runId,
@@ -173,9 +213,9 @@ export function appendOperatingScopeToRoute(route: string, operatingScope: AppSh
     return route;
   }
 
-  const allowedScopeKeys = operatingScopeKeysForRoute(route);
+  const carriedScopeKeys = operatingScopeCarriedKeysForRoute(route);
   return operatingScope.queryParams
-    .filter((item) => allowedScopeKeys.has(item.scopeKey))
+    .filter((item) => carriedScopeKeys.has(item.scopeKey))
     .reduce((current, item) => appendSearchValue(current, item.key, item.value, true), route);
 }
 
@@ -205,36 +245,51 @@ export function summarizeOperatingScopeForRoute(
 }
 
 /**
- * The scope bar's labelled dimensions, in the order the bar prints them: Account and Period are
- * always present (reading "All authorized" when unset); Subject, Run and Provider appear only when
- * set. The scope model has no entity or fund dimension of its own, so the bar does not invent one.
- * `dimensionsInEffect` marks set dimensions the current screen does not filter by.
+ * The scope bar's labelled dimensions, in the order the bar prints them:
+ * `Entity › Fund › Account › [Subject › Run › Provider ›] Period`. Entity, Fund, Account and Period
+ * are always present; an unset Entity, Fund or Account reads "All authorized" and an unset Period
+ * reads "All periods". Subject, Run and Provider appear only when set. `dimensionsInEffect` marks
+ * set dimensions the current screen does not filter by; `valueLabels` replaces an id with the
+ * display name a loaded read model supplied for it.
  */
 export function buildOperatingScopeBarSegments(
   operatingScope: AppShellOperatingScopeState,
-  dimensionsInEffect?: readonly AppShellOperatingScopeQueryKey[]
+  dimensionsInEffect?: readonly AppShellOperatingScopeQueryKey[],
+  valueLabels?: OperatingScopeValueLabels
 ): OperatingScopeBarSegment[] {
   const valueFor = (key: AppShellOperatingScopeQueryKey) =>
     operatingScope.items.find((item) => scopeKeyForOperatingScopeItem(item) === key)?.value ?? null;
   const segment = (id: AppShellOperatingScopeQueryKey, label: string): OperatingScopeBarSegment => {
     const value = valueFor(id);
+    const named = value !== null ? valueLabels?.[id]?.trim() : null;
     return {
       id,
       label,
-      value: value ?? OPERATING_SCOPE_ALL_AUTHORIZED,
+      value: value === null
+        ? id === "window" ? OPERATING_SCOPE_ALL_PERIODS : OPERATING_SCOPE_ALL_AUTHORIZED
+        : named || value,
       isSet: value !== null,
       applied: value === null || !dimensionsInEffect || dimensionsInEffect.includes(id)
     };
   };
 
   return [
+    segment("entityId", "Entity"),
+    segment("fundId", "Fund"),
     segment("fundAccountId", "Account"),
     segment("symbol", "Subject"),
     segment("runId", "Run"),
     segment("provider", "Provider"),
     segment("window", "Period")
-  ].filter((item) => item.isSet || item.id === "fundAccountId" || item.id === "window");
+  ].filter((item) => item.isSet || ALWAYS_SHOWN_BAR_DIMENSIONS.has(item.id));
 }
+
+const ALWAYS_SHOWN_BAR_DIMENSIONS: ReadonlySet<AppShellOperatingScopeQueryKey> = new Set([
+  "entityId",
+  "fundId",
+  "fundAccountId",
+  "window"
+]);
 
 /**
  * The scope a screen's figures are counted over, as one short label: the dimensions the route
@@ -286,6 +341,10 @@ function buildOperatingScopeClearAriaLabel(
 
 function scopeKeyForOperatingScopeItem(item: AppShellOperatingScopeItem): AppShellOperatingScopeQueryKey {
   switch (item.id) {
+    case "entityId":
+      return "entityId";
+    case "fundId":
+      return "fundId";
     case "symbol":
     case "subject":
       return "symbol";
@@ -322,6 +381,10 @@ function formatOperatingScopeWindow({
   date,
   asOf
 }: Pick<AppShellOperatingScopeInput, "from" | "to" | "date" | "asOf">): string | null {
+  if (from && to && from === to) {
+    return from;
+  }
+
   if (from || to) {
     return `${from ?? "Start"} to ${to ?? "Now"}`;
   }
@@ -344,11 +407,25 @@ function operatingScopeKeysForRoute(route: string): Set<AppShellOperatingScopeQu
     case "portfolio":
       return new Set(["symbol", "fundAccountId", "runId", "provider", "window"]);
     case "accounting":
+      // Accounting reads `entityId` from its URL (close scope, intercompany and payment panels).
+      return new Set(["entityId", "symbol", "fundAccountId", "runId", "provider", "window"]);
     case "reporting":
       return new Set(["symbol", "fundAccountId", "runId", "provider", "window"]);
     case "settings":
       return new Set(["fundAccountId", "provider"]);
   }
+}
+
+/**
+ * The scope dimensions written into a route's URL: the ones the workspace applies, plus Entity and
+ * Fund, which are the top of the scope hierarchy and so travel in every link even where no screen
+ * narrows by them yet (the bar shows them as retained there).
+ */
+function operatingScopeCarriedKeysForRoute(route: string): Set<AppShellOperatingScopeQueryKey> {
+  const keys = operatingScopeKeysForRoute(route);
+  keys.add("entityId");
+  keys.add("fundId");
+  return keys;
 }
 
 function appendSearchValue(route: string, key: string, value: string, preserveExisting = false): string {
@@ -367,4 +444,4 @@ function appendSearchValue(route: string, key: string, value: string, preserveEx
   return `${pathname}${nextSearch ? `?${nextSearch}` : ""}${hash}`;
 }
 
-const operatingScopeQueryParamKeys = ["symbol", "fundAccountId", "runId", "provider", "from", "to", "date", "asOf"] as const;
+const operatingScopeQueryParamKeys = ["entityId", "fundId", "symbol", "fundAccountId", "runId", "provider", "from", "to", "date", "asOf"] as const;

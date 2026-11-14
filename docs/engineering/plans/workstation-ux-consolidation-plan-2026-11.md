@@ -149,9 +149,29 @@ items, which is a follow-up.
   Trading routes. Live, unknown and failed states still block. Applying an account sets only that
   dimension, through the same path as the scope picker, so it lands in the URL and links carry it.
   Picking a scope already updated the URL; tests now prove links carry it.
-- Not done: an entity/fund dimension in the scope model; a period picker (the window is still set by
-  the originating workflow). Today's own "Scope …" line was left as is: it already reads
-  "All authorized scopes".
+- Today's own "Scope …" line was left as is: it already reads "All authorized scopes".
+
+**P4 entity, fund and period (landed 2026-11-14, dashboard source; host bundle not yet rebuilt):**
+- The scope model gains Entity and Fund dimensions (`entityId`, `fundId` URL parameters). The bar
+  now reads `Scope  Entity … › Fund … › Account … › Period …`, with Subject, Run and Provider
+  inserted before Period when set. Unset Entity, Fund and Account read "All authorized"; an unset
+  Period reads "All periods".
+- Entity and fund travel on every route's URL and in browser storage, recent scopes, saved
+  layouts, Copy link and the operator's default scope. They apply only where a screen reads them:
+  Accounting reads `entityId`; no screen filters by fund yet, so a set fund shows as retained
+  everywhere. No payload is filtered by entity or fund on the client.
+- Option source: the existing organization read model, `GET /api/fund-structure/graph`
+  (`OrganizationStructureGraphDto`). It lists entities, funds with the entities they hold, and
+  accounts with their fund and entity, filtered server-side. No endpoint was added. An entity
+  narrows the funds and accounts; a fund narrows the accounts; an account whose fund or entity the
+  data does not state is hidden from a narrowed list and counted. The graph is gated to
+  fund-structure permissions; without it the picker takes typed ids and narrows nothing.
+- A period control in the scope picker: All periods, Today, MTD, QTD, YTD, Last month, Custom range
+  (shared `DateRangePicker`) and As of. Presets use the operator's calendar day (`LocalDate`).
+- Shared contract: `OperatingScopeValuesDto` gained optional `EntityId` and `FundId` (additive,
+  appended last) so a saved default keeps them.
+- Gaps: no screen narrows by fund yet. Operators without fund-structure permissions get no entity or
+  fund lists. A scope-option read open to every operator would need a new authorized seam.
 
 **P3 one money formatter (landed 2026-11-14):** `formatMoney` in `@/lib/format` is the only
 money formatter.
@@ -184,8 +204,8 @@ money formatter.
   absolute forms.
 
 **Remaining in Phase 1:**
-- P4: entity and fund scope dimensions (needs a shared scope seam), a period picker, and inline
-  account pickers on other single-account screens as they are identified.
+- P4: screens that narrow by fund, a scope-option read for operators without fund-structure
+  access, and inline account pickers on other single-account screens as they are identified.
 - Time formatters kept on purpose, because their precision differs or a test pins their
   format:
   - Live-quote times with milliseconds.
