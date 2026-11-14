@@ -378,9 +378,12 @@ public sealed class BondDiscoveryEndpointsTests : IDisposable
                         ProviderConnections = current.ProviderConnections! with
                         {
                             Connections = current.ProviderConnections.Connections!
-                                .Select(connection => connection.ConnectionId == "bond-account-a" ? connection with { CredentialEnvironment = "Paper" } : connection).ToArray()
+                                .Select(connection => connection.ConnectionId == "bond-account-a" ? connection with { CredentialEnvironment = "unsupported-environment" } : connection).ToArray()
                         }
                     });
+                    Action invalidScope = () => ProviderRuntimeCredentialService.RequireScope(
+                        config.LoadRequired(), "alpaca", "bond-account-a", OwnerTenant);
+                    invalidScope.Should().Throw<InvalidDataException>();
                 }
             }
             builder.Services.AddSingleton(config);
