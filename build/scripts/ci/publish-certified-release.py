@@ -56,7 +56,10 @@ def validate_audit_bundle(path: Path, gate: dict):
                 or manifest.get("workflowPath") != WORKFLOW
                 or manifest.get("artifacts") != gate.get("upstreamEvidence")):
             raise ValueError("Retained upstream provenance does not match certified gate evidence.")
-        required = promotion.required_evidence(str(gate["runId"]), str(manifest["runNumber"]), str(gate["runAttempt"]))
+        if gate.get('version') is not None and any(
+                manifest.get(key) != gate.get(key) for key in ('version', 'supportScope')):
+            raise ValueError('Retained audit bundle support envelope differs from certified gate evidence.')
+        required = promotion.required_evidence(str(gate["runId"]), str(manifest["runNumber"]), str(gate["runAttempt"]), gate.get('version'))
         rows = manifest["artifacts"]
         if (not isinstance(rows, list) or len(rows) != len(required)
                 or any(not isinstance(row, dict) for row in rows)
@@ -113,6 +116,15 @@ def inventory(root: Path, commit: str, repository: str) -> dict[str, str]:
     if sum((root / name).stat().st_size for name in expected) > MAX_RELEASE_BYTES:
         raise ValueError("Certified release exceeds the 4 GiB recovery bound.")
     validate_audit_bundle(root / BUNDLE_FILE, gate)
+    if gate.get('version') is not None:
+        spec = importlib.util.spec_from_file_location('candidate_evidence', Path(__file__).with_name('check-release-candidate.py'))
+        candidate = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(candidate)
+        if gate.get('candidatePolicy') != candidate.POLICY or candidate.REPORT not in expected:
+            raise ValueError('Versioned releases require the P0 candidate evidence gate.')
+        report = json.loads((root / candidate.REPORT).read_text(encoding='utf-8'))
+        if report != candidate.evaluate(root, gate):
+            raise ValueError('P0 candidate report differs from retained certified evidence.')
     return expected
 
 
