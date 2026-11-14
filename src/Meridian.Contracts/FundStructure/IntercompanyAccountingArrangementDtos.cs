@@ -3,7 +3,8 @@ using System.Text.Json.Serialization;
 namespace Meridian.Contracts.FundStructure;
 
 [JsonConverter(typeof(JsonStringEnumConverter<IntercompanyAccountingTemplateKindDto>))]
-public enum IntercompanyAccountingTemplateKindDto { Loan, CostRecharge, ManagementFee, ExpenseShare, CashSweep, Guarantee, Manual }
+/// <summary><c>Loan</c> mirrors principal only; <c>LoanInterest</c> is the separately reviewed interest treatment of a loan agreement.</summary>
+public enum IntercompanyAccountingTemplateKindDto { Loan, CostRecharge, ManagementFee, ExpenseShare, CashSweep, Guarantee, Manual, LoanInterest }
 [JsonConverter(typeof(JsonStringEnumConverter<IntercompanyAccountingArrangementStatusDto>))]
 public enum IntercompanyAccountingArrangementStatusDto { Draft, Submitted, Approved, Rejected, Retired }
 [JsonConverter(typeof(JsonStringEnumConverter<IntercompanyAccountingArrangementActionDto>))]

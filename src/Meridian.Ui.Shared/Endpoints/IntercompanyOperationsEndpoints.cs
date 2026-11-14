@@ -124,6 +124,52 @@ public static class IntercompanyOperationsEndpoints
           .RequireAnyPermission(UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance)
           .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
+        // Read-only computation: the body carries selections only, so it is a POST without being a mutation.
+        app.MapPost("/api/ledger/intercompany/accruals/preview", async (IntercompanyAccrualRequestDto request, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IntercompanyAccrualDraftService>();
+            if (service is null)
+                return AccrualUnavailable();
+            if (!await BookAllowedAsync(context, request.SourceBookId).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden();
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            try
+            {
+                return Results.Json(await service.PreviewAsync(tenant.TenantId!, tenant.CompanyId, actor, request,
+                    context.RequestAborted).ConfigureAwait(false), options);
+            }
+            catch (UnauthorizedAccessException) { return EndpointHelpers.Forbidden(); }
+            catch (Npgsql.NpgsqlException) { return AccrualUnavailable(); }
+        }).RequireAuthenticatedSession().RequireWorkstationTenantCompanyScope()
+          .RequireAnyPermission(UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance)
+          .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        // Creates a draft in the source book's review queue. It does not submit, approve or post.
+        app.MapPost("/api/ledger/intercompany/accruals/drafts", async (CreateIntercompanyAccrualDraftRequest request, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IntercompanyAccrualDraftService>();
+            if (service is null)
+                return AccrualUnavailable();
+            if (request.Accrual is null || !await BookAllowedAsync(context, request.Accrual.SourceBookId).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden();
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            try
+            {
+                return Results.Json(await service.CreateDraftAsync(tenant.TenantId!, tenant.CompanyId, actor, request,
+                    context.RequestAborted).ConfigureAwait(false), options);
+            }
+            catch (UnauthorizedAccessException) { return EndpointHelpers.Forbidden(); }
+            catch (Exception error) when (error is InvalidOperationException or ArgumentException)
+            { return Results.Conflict(new { error = error.Message }); }
+            catch (Npgsql.NpgsqlException) { return AccrualUnavailable(); }
+        }).RequireAuthenticatedSession().RequireWorkstationTenantCompanyScope().RequireFundScopedWriteTenant()
+          .RequireAnyPermission(UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance)
+          .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         app.MapGet("/api/ledger/intercompany/breaks", async (Guid sourceBookId, DateOnly? asOf, HttpContext context) =>
         {
             if (!await BookAllowedAsync(context, sourceBookId).ConfigureAwait(false))
@@ -185,6 +231,8 @@ public static class IntercompanyOperationsEndpoints
           .RequireAnyPermission(UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance)
           .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
+
+    private static IResult AccrualUnavailable() => Results.Problem("Governed intercompany accrual authority is unavailable.", statusCode: 503);
 
     private static IResult Unavailable() => Results.Problem("Durable intercompany proposal delivery is unavailable.", statusCode: 503);
 

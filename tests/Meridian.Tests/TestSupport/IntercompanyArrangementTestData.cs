@@ -18,7 +18,7 @@ internal static class IntercompanyArrangementTestData
             IntercompanyAgreementActionDto.Activate,
             new(reference, reference, partyOne, "Party one", partyTwo, "Party two", kind switch
             {
-                IntercompanyAccountingTemplateKindDto.Loan => IntercompanyAgreementTypeDto.Loan,
+                IntercompanyAccountingTemplateKindDto.Loan or IntercompanyAccountingTemplateKindDto.LoanInterest => IntercompanyAgreementTypeDto.Loan,
                 IntercompanyAccountingTemplateKindDto.ManagementFee => IntercompanyAgreementTypeDto.ManagementFee,
                 IntercompanyAccountingTemplateKindDto.CashSweep => IntercompanyAgreementTypeDto.CashSweep,
                 IntercompanyAccountingTemplateKindDto.Guarantee => IntercompanyAgreementTypeDto.Guarantee,

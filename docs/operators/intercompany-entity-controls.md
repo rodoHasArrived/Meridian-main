@@ -4,7 +4,7 @@
 
 **Owner:** Accounting and Ledger
 
-**Reviewed:** 2026-11-13
+**Reviewed:** 2026-11-14
 
 Use Accounting's entity/intercompany and consolidation views to inspect the shared entity timeline,
 agreements, books, source evidence, counterpart proposals and consolidation output. Desktop uses
@@ -57,6 +57,38 @@ it calculates no interest, fees or ledger due dates. Legacy calendar-day settlem
 converted to business days automatically. A missing calendar or an unstructured agreement remains
 unavailable for date preview.
 
+## Accruing loan interest
+
+Interest on a fixed-rate, simple-interest intercompany loan can be calculated from its approved
+structured terms. It needs two approved accounting profiles of the same legal agreement: the `Loan`
+profile that carries posted principal, and a `LoanInterest` profile that maps interest receivable and
+payable and puts interest income on one party against interest expense on the other.
+
+1. Preview with `POST /api/ledger/intercompany/accruals/preview`, giving the source book, the two
+   profile IDs and the window. `accrualTo` is exclusive: June is `2026-06-01` to `2026-07-01`.
+   Nothing is saved. The response shows each slice, the rounded amount, the draft that would be
+   retained and an evidence digest.
+2. Draft with `POST /api/ledger/intercompany/accruals/drafts`, sending the same selection and the
+   digest from the preview. If terms, profiles, principal or FX changed in between, the request is
+   refused and you preview again.
+3. Review the draft in the source book's journal queue like any other entry. It is dated on the last
+   accrued day and is not submitted, approved or posted for you.
+4. After it posts, the counterpart arrives as a proposal draft in the other entity's review queue.
+
+Both routes need ledger management permission. You cannot supply a rate, day count, principal or
+amount; they are resolved from approved records. Do not edit the computed lines. If the amount is
+wrong, correct the terms, profile or principal and recompute: a draft that has not yet been submitted
+is refreshed in place, and edited lines block review.
+
+An accrual is unavailable, with the reason stated, when a day in the window has no approved
+`LoanInterest` profile revision or falls outside the declared schedule; when the loan is
+floating-rate, compounding or unstructured; when no principal is posted under the `Loan` profile;
+when a posted accrual already covers part of the window (reverse it first); when the source book has
+no open period containing the last accrued day; or when a cross-currency loan has no approved FX
+configuration. After an amendment, approve a `LoanInterest` profile revision that pins the amended
+legal version before accruing the affected days; the days on each side of the amendment then use
+their own rate. Fees are not calculated.
+
 Ordinary legal approval retains the independent-reviewer rule. To attest an external legal review,
 select the exact submitted hash and accepted retained review document, identify the distinct
 external reviewer and date, and supply the attestation rationale. The preparing Meridian operator
@@ -94,7 +126,7 @@ The shared API families are `/api/fund-structure/intercompany-agreements`,
 `/api/ledger/intercompany-accounting-arrangements`, entity
 `/lifecycle` and `/timeline`, `/api/ledger/intercompany/account-bindings`,
 `/api/ledger/intercompany/legacy-attributions`, `/api/ledger/intercompany/proposals`,
-`/api/ledger/intercompany/breaks`, book `/controls`, `/api/ledger/consolidation`, and its `/transitions` preview/activation/history routes.
+`/api/ledger/intercompany/accruals`, `/api/ledger/intercompany/breaks`, book `/controls`, `/api/ledger/consolidation`, and its `/transitions` preview/activation/history routes.
 Use the host's authenticated capability responses; service absence is an unavailable capability.
 The native agreement `/{id}/schedule` read selects an approved version or proposal for dates-only
 preview. `/api/ledger/intercompany/obligations` requires an owned ledger book and explicit as-of

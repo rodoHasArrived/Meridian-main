@@ -25,9 +25,11 @@ operation. Missing retained lifecycle history can use an active legacy snapshot 
 explicit migration warning retained in the legal audit and receipt. That warning does not grant
 governed accounting-profile activation or enforced-book posting eligibility.
 
-Loan, cost-recharge, management-fee and expense-share profiles support configured journal
-templates. Guarantees have no posting treatment. Loan mirrors support principal; interest needs
-its own reviewed treatment. A successor profile cannot novate a legal agreement: retain the
+Loan, loan-interest, cost-recharge, management-fee and expense-share profiles support configured
+journal templates. Guarantees have no posting treatment. Loan mirrors support principal only;
+interest is booked under a separately reviewed `LoanInterest` profile that maps interest income on
+one party against interest expense on the other, and may be calculated by the
+[governed loan-interest accrual](intercompany-agreements.md#governed-loan-interest-accrual). A successor profile cannot novate a legal agreement: retain the
 separately approved native successor and predecessor termination. Entity mergers never rewrite
 legal parties, accounting profiles, books or journals automatically.
 
