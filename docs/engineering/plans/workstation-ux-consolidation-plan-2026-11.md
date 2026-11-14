@@ -128,7 +128,7 @@ money formatter.
   default.
 - Screen-local formatters were migrated:
   - Backfill and deadline times on Data. This fixes a doubled "UTC UTC".
-  - Provider and reporting-schedule times. These change from 12-hour to 24-hour and gain the year.
+  - Provider last-verified times. These change from 12-hour to 24-hour and gain the year.
   - Approval discussion dates.
   - Host-locale times in lifecycle receipts, historical chart bars and price-alert notifications.
 - Tests cover UTC, a New York spring-forward and fall-back transition, and the relative and
@@ -141,6 +141,9 @@ money formatter.
   - Live-quote times with milliseconds.
   - Price-alert and journal tax-result times with seconds.
   - The brokerage-recovery "2026-10-05 15:30:02 UTC" label.
+  - Reporting schedule times, which stay 12-hour ("May 17, 8:15 PM UTC") because the Reporting
+    tests pin that format. Moving them to `formatTimestamp` is a follow-up that needs those
+    tests updated.
   - The close-checklist "Recorded at UTC" column.
   - Today-screen and triage-queue times, which another lane owns.
 

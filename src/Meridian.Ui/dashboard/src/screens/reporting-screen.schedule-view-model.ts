@@ -14,7 +14,16 @@ import type {
   ReportingScheduleRow,
   ReportingScheduledReleaseHandoffRow
 } from "@/screens/reporting-screen.view-model";
-import { formatTimestamp, formatUtcDate } from "@/lib/format";
+import { formatDateTime, formatUtcDate } from "@/lib/format";
+
+const REPORTING_TIMESTAMP_FORMAT: Intl.DateTimeFormatOptions = {
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: "UTC",
+  timeZoneName: "short"
+};
 
 export function hasRetainedReportingAsOfDate(value: string | null | undefined): boolean {
   return hasRetainedReportingAsOfDateValue(value);
@@ -41,7 +50,7 @@ export function formatReportingTimestamp(value: string): string {
     return value;
   }
 
-  return formatTimestamp(timestamp);
+  return formatDateTime(timestamp, REPORTING_TIMESTAMP_FORMAT);
 }
 
 export function buildScheduleRows(
