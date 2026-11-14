@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackDeliveryEvidencePacketDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryEvidencePacketDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:919](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L919).
+
+```csharp
+public sealed record ReportPackDeliveryEvidencePacketDto(string PacketId, string PacketKind, string PackageId, Guid ReportId, string FundProfileId, string FundAccountId, string Period, IReadOnlyList<string> PackageContents, IReadOnlyList<string> SupportEvidenceIds, IReadOnlyList<ReportPackDeliveryRecipientDto> RecipientList, string EntitlementScope, IReadOnlyList<ReportPackDeliveryApprovalStepDto> ApprovalChain, string DatasetVersion, string TemplateVersion, string DeliveryChannel, DateTimeOffset DeliveredAtUtc, IReadOnlyList<ReportPackEvidenceLinkDto> DeliveryEvidence, IReadOnlyList<string> RequestHistory, string? AmendmentReason = null, string? RestatementLineage = null, IReadOnlyList<string>? AuditEventReferences = null, IReadOnlyList<string>? BlockedDownstreamOutputs = null);
+```
+
+## ReportPackDeliveryFailureRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryFailureRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1021](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1021).
+
+```csharp
+public sealed record ReportPackDeliveryFailureRequestDto(string DistributionId, string FailureReason, string? Actor = null, string? DeliveryReference = null, string? Note = null, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
+## ReportPackDeliveryHistoryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryHistoryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1030](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1030).
+
+```csharp
+public sealed record ReportPackDeliveryHistoryDto(Guid ReportId, IReadOnlyList<ReportPackDeliveryAttemptDto> Attempts);
+```
+
 ## ReportPackDeliveryModeDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryModeDto</code>. Kind: `enum`.
@@ -601,34 +631,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1593]
 
 ```csharp
 public sealed record ReportWriterGridRenderDto(string GridId, string Title, ReportWriterGridKindDto Kind, IReadOnlyList<ReportWriterGridColumnDto> Columns, IReadOnlyList<ReportWriterGridRowDto> Rows, IReadOnlyList<string> Warnings, ReportWriterGridLineageDto? Lineage = null, IReadOnlyList<ReportWriterGridDataDictionaryFieldDto>? DataDictionary = null, IReadOnlyList<ReportWriterGridValidationCheckDto>? ValidationChecks = null, ReportWriterChartRenderDto? Chart = null);
-```
-
-## ReportWriterGridRowDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridRowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1549](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1549).
-
-```csharp
-public sealed record ReportWriterGridRowDto(string RowKey, IReadOnlyDictionary<string, string> Values, IReadOnlyDictionary<string, ReportWriterCellStyleDto>? StyleHints = null);
-```
-
-## ReportWriterGridValidationCheckDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridValidationCheckDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1579](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1579).
-
-```csharp
-public sealed record ReportWriterGridValidationCheckDto(string CheckId, string Status, string Detail);
-```
-
-## ReportWriterMetricDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterMetricDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1450](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1450).
-
-```csharp
-public sealed record ReportWriterMetricDefinitionDto(string Name, string SourceField, ReportWriterAggregateFunctionDto Function = ReportWriterAggregateFunctionDto.Sum, string? Label = null);
 ```

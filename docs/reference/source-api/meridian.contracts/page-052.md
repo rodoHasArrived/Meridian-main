@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityValuationBlockerDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationBlockerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L64).
+
+Why no value could be produced. When any blocker is present no number is substituted.
+
+```csharp
+public sealed record SecurityValuationBlockerDto(string Code, string Reason);
+```
+
+## SecurityValuationCurveInput
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationCurveInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L34).
+
+A curve the caller pins for a role; Role is Discount in this increment.
+
+```csharp
+public sealed record SecurityValuationCurveInput(string Role, Guid CurveId, Guid? CurveVersionId = null);
+```
+
+## SecurityValuationInputDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationInputDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L54).
+
+One retained input a value was built from, so the value can be rebuilt from the same evidence.
+
+```csharp
+public sealed record SecurityValuationInputDto(string Kind, string Reference, Guid? Id = null, long? Version = null, string? ContentSha256 = null, DateTimeOffset? AsOf = null, DateTimeOffset? RecordedAt = null);
+```
+
 ## SecurityValuationModelKind
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationModelKind</code>. Kind: `enum`.
@@ -411,8 +447,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static StructuredCashFlowTerms Resolve(SecurityDetailDto security);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L46) | Resolves the typed cash flow terms for security. |
-| <code>public static IEnumerable&lt;JsonElement&gt; EnumerateTermSources(SecurityDetailDto security);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:322](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L322) | Enumerates governed profile fields, outer asset terms, and common terms in authority order. The asset terms are read at the class&#x27;s current terms version (SecurityAssetClassTermsUpgrader, ADR-024). |
+| <code>public static IReadOnlyCollection&lt;string&gt; LegSpellingPaths =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L67) | The swap-leg schema paths the resolver reads, under Swap. |
+| <code>public static IReadOnlyList&lt;string&gt; LegSpellings(string path) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L70) | The spellings read for the swap-leg field at path, in priority order. |
+| <code>public static StructuredCashFlowTerms Resolve(SecurityDetailDto security);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L73) | Resolves the typed cash flow terms for security. |
+| <code>public static IEnumerable&lt;JsonElement&gt; EnumerateTermSources(SecurityDetailDto security);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:342](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L342) | Enumerates governed profile fields, outer asset terms, and common terms in authority order. The asset terms are read at the class&#x27;s current terms version (SecurityAssetClassTermsUpgrader, ADR-024). |
 
 ## StructuredCreditReclassificationBlockerDto
 
@@ -777,60 +815,3 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;PublishedEnvironmentVersionDto&gt;&gt; ListPublishedVersionsAsync(Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:20](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L20) |  |
 | <code>Task&lt;PublishedEnvironmentVersionDto?&gt; GetPublishedVersionAsync(Guid versionId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:24](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L24) |  |
 | <code>Task&lt;PublishedEnvironmentVersionDto?&gt; GetCurrentPublishedVersionAsync(Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:26](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L26) |  |
-
-## IEnvironmentPublishService
-
-Qualified name: <code>Meridian.Contracts.Services.IEnvironmentPublishService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:8](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L8).
-
-Previews, publishes, and rolls back versioned environment configurations.
-
-```csharp
-public interface IEnvironmentPublishService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EnvironmentPublishPreviewDto&gt; PreviewPublishAsync(EnvironmentPublishPlanDto plan, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L10) |  |
-| <code>Task&lt;PublishedEnvironmentVersionDto&gt; PublishAsync(EnvironmentPublishPlanDto plan, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:12](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L12) |  |
-| <code>Task&lt;PublishedEnvironmentVersionDto&gt; RollbackAsync(RollbackEnvironmentVersionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:14](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L14) |  |
-
-## IEnvironmentRuntimeProjectionService
-
-Qualified name: <code>Meridian.Contracts.Services.IEnvironmentRuntimeProjectionService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs:8](../../../../src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs#L8).
-
-Retrieves the runtime projection of the current or a specified published environment version.
-
-```csharp
-public interface IEnvironmentRuntimeProjectionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;PublishedEnvironmentRuntimeDto?&gt; GetCurrentRuntimeAsync(Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs#L10) |  |
-| <code>Task&lt;PublishedEnvironmentRuntimeDto?&gt; GetRuntimeForVersionAsync(Guid versionId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs:12](../../../../src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs#L12) |  |
-
-## IEnvironmentValidationService
-
-Qualified name: <code>Meridian.Contracts.Services.IEnvironmentValidationService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEnvironmentValidationService.cs:8](../../../../src/Meridian.Contracts/Services/IEnvironmentValidationService.cs#L8).
-
-Validates an environment design and returns its validation findings.
-
-```csharp
-public interface IEnvironmentValidationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EnvironmentValidationResultDto&gt; ValidateAsync(EnvironmentDraftDto draft, EnvironmentPublishPlanDto? publishPlan = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentValidationService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentValidationService.cs#L10) |  |

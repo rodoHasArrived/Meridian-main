@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScopeAssignmentProviderResult
+
+Qualified name: <code>Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:168](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L168).
+
+One authority&#x27;s contribution to a fan-out resolution.
+
+```csharp
+public sealed record ScopeAssignmentProviderResult(bool IsAuthoritative, IReadOnlyList<AuthoritativeScopeAssignment> Scopes, IReadOnlyList<string> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ScopeAssignmentProviderResult NotAuthoritative(string blocker) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:174](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L174) | A fail-closed contribution carrying a single stated reason. |
+| <code>public static ScopeAssignmentProviderResult Authoritative(IReadOnlyList&lt;AuthoritativeScopeAssignment&gt; scopes) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:178](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L178) | A complete contribution over the supplied scopes (possibly none). |
+
+## ScopeFanOutIdentifier
+
+Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutIdentifier</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:66](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L66).
+
+One identifier a holdings record may carry for the security under decision.
+
+```csharp
+public sealed record ScopeFanOutIdentifier(string IdentifierType, string Value);
+```
+
+## ScopeFanOutRequest
+
+Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:78](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L78).
+
+A request to enumerate every accounting scope affected by a security-level fact.
+
+```csharp
+public sealed record ScopeFanOutRequest(Guid SecurityId, IReadOnlyList<ScopeFanOutIdentifier> Identifiers, DateOnly EffectiveDate);
+```
+
 ## ScopeFanOutResult
 
 Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutResult</code>. Kind: `record`.
@@ -680,33 +723,3 @@ Enum declarations:
 | <code>Connected = 3</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L32) |  |
 | <code>ReauthorizationRequired = 4</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L33) |  |
 | <code>Degraded = 5</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L34) |  |
-
-## BrokerageConnectionStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageConnectionStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L87).
-
-```csharp
-public sealed record BrokerageConnectionStatusDto(string ProviderId, string DisplayName, BrokerageConnectionStateDto State, bool IsConfigured, bool IsConnected, string? AuthorizationUrl, DateTimeOffset? ConnectedAt, DateTimeOffset? ExpiresAt, string? LastError, IReadOnlyList<string> Warnings, IReadOnlyList<string> Scopes, string? Environment = null, string? ExternalAccountId = null, DateTimeOffset? VerifiedAt = null, string? MaskedKeyId = null);
-```
-
-## BrokerageHouseholdAccountDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageHouseholdAccountDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:156](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L156).
-
-```csharp
-public sealed record BrokerageHouseholdAccountDto(Guid FundAccountId, string ProviderId, string ExternalAccountId, string DisplayName, BrokerageAccountKindDto AccountKind, WorkstationBrokerageSyncHealth Health, decimal Cash, decimal Equity, decimal BuyingPower, string Currency, DateTimeOffset SyncedAt, int PositionCount, int CashTransactionCount, IReadOnlyList<string> Warnings);
-```
-
-## BrokerageHouseholdPortfolioDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageHouseholdPortfolioDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:197](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L197).
-
-```csharp
-public sealed record BrokerageHouseholdPortfolioDto(string ProviderId, DateTimeOffset AsOf, decimal TotalCash, decimal TotalEquity, decimal TotalBuyingPower, string Currency, IReadOnlyList<BrokerageHouseholdAccountDto> Accounts, IReadOnlyList<BrokerageHouseholdPositionDto> Positions, IReadOnlyList<string> Warnings);
-```

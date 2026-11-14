@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PortfolioReportingLiveViewDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PortfolioReportingLiveViewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:210](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L210).
+
+Reporting-owned pointer to live portfolio summary, liquidity, and cash-ladder evidence.
+
+```csharp
+public sealed record PortfolioReportingLiveViewDto(string ViewId, string Label, PortfolioReportingCutKindDto Kind, PortfolioReportingLiveViewStateDto State, string Currency, decimal GrossExposure, decimal NetExposure, decimal TotalCash, decimal PendingSettlement, decimal TotalPnl, decimal ShadowNav, DateTimeOffset AsOf, DateTimeOffset? SourceAsOfUtc, int SourceCount, string Route, string LiquiditySummary, string CashLadderSummary, string TelemetrySummary, IReadOnlyList<string> Tags, string? CashLadderRoute = null, string? VersionStamp = null, IReadOnlyList<string>? ReadinessBlockers = null, DateTimeOffset? MarketTickAsOfUtc = null, int? MarketTickAgeSeconds = null, long? MarketTickSequence = null, string? MarketDataProvider = null, string? TickFreshnessSummary = null, bool IsMarketTickLinked = false, PortfolioReportingLiveViewFreshnessPolicyDto? FreshnessPolicy = null);
+```
+
+## PortfolioReportingLiveViewFreshnessPolicyDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PortfolioReportingLiveViewFreshnessPolicyDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:197](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L197).
+
+Server-owned freshness policy evidence for a portfolio reporting live view.
+
+```csharp
+public sealed record PortfolioReportingLiveViewFreshnessPolicyDto(string PolicyName, DateTimeOffset EvaluatedAtUtc, int? SourceAgeSeconds, int LiveLinkWindowSeconds, int StaleWindowSeconds, bool IsWithinLiveLinkWindow, bool IsBeyondStaleWindow, string Reason);
+```
+
+## PortfolioReportingLiveViewStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PortfolioReportingLiveViewStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:160](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L160).
+
+```csharp
+public enum PortfolioReportingLiveViewStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>LiveLinked = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:162](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L162) |  |
+| <code>SourceBacked = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:163](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L163) |  |
+| <code>Stale = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:164](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L164) |  |
+| <code>Blocked = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:165](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L165) |  |
+
 ## PortfolioReportingPnlSliceDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.PortfolioReportingPnlSliceDto</code>. Kind: `record`.
@@ -623,49 +666,4 @@ Source: [src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:38
 
 ```csharp
 public sealed record ReconciliationBreakObservation(string BreakId, string SourceSubjectId);
-```
-
-## ReconciliationBreakQueueItem
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakQueueItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:480](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L480).
-
-Work item shown in the reconciliation break queue.
-
-```csharp
-public sealed record ReconciliationBreakQueueItem(string BreakId, string RunId, string StrategyName, ReconciliationBreakCategory Category, ReconciliationBreakQueueStatus Status, decimal Variance, string Reason, string? AssignedTo, DateTimeOffset DetectedAt, DateTimeOffset LastUpdatedAt, string? ReviewedBy = null, DateTimeOffset? ReviewedAt = null, string? ResolvedBy = null, DateTimeOffset? ResolvedAt = null, string? ResolutionNote = null, ReconciliationBreakSeverity Severity = ReconciliationBreakSeverity.Medium, string? ExceptionRoute = null, string? ToleranceProfileId = null, decimal? ToleranceBand = null, string? RequiredSignoffRole = null, string? SignoffStatus = null, string? FundAccountId = null, string? ExplainabilitySummary = null, string? RoutingTarget = null, string? RoutingDetail = null, string? RecommendedAction = null, ReconciliationCaseLifecycleState LifecycleState = ReconciliationCaseLifecycleState.Open, string? LifecycleRationale = null, string? ExternalAccountId = null, string? CustodianId = null, string? UpstreamSyncCursor = null, DateTimeOffset? LastUpstreamSyncAt = null, IReadOnlyList<ReconciliationCaseSignoffRecord>? SignoffHistory = null, IReadOnlyList<ReconciliationCaseStateTransition>? StateTransitions = null, string? Team = null, string? Counterparty = null, ReconciliationBreakScore? Score = null, DateTimeOffset? SlaDueAt = null, bool SlaBreached = false, string? AssigneeId = null, string? AssigneeDisplayName = null, ReconciliationCasePriority Priority = ReconciliationCasePriority.Normal, string? SlaPolicyId = null, DateTimeOffset? SlaWarningAt = null, DateTimeOffset? SlaBreachedAt = null, ReconciliationCaseSlaState SlaState = ReconciliationCaseSlaState.OnTrack, string? AgeBand = null, double BusinessAgeHours = 0, string? RootCauseCode = null, string? ResolutionCode = null, string? SignedOffBy = null, DateTimeOffset? SignedOffAt = null, string? SignOffNote = null, string? ReopenedBy = null, DateTimeOffset? ReopenedAt = null, string? ReopenReason = null, long Version = 0, IReadOnlyList<ReconciliationCaseComment>? Comments = null, IReadOnlyList<string>? EvidenceLinks = null, int CommentCount = 0, int EvidenceCount = 0, DateTimeOffset? LastActivityAt = null, string? SourceType = null, string? SourceSystem = null, string? SourceReference = null, string? SourceImportId = null, string? SourceBreakId = null, string? SourceFingerprint = null, ReconciliationBreakExplanationDto? BreakExplanation = null, Guid? LedgerBookId = null, IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null, ReconciliationBreakDispositionDto? Disposition = null, string? DispositionReason = null, string? SupersedingBreakId = null, string? DispositionApprovedBy = null, string? DispositionApprovalReference = null, string? DispositionEvidenceHash = null, DateTimeOffset? DisposedAt = null, IReadOnlyList<string>? BlockedOutputs = null, string? AccountingPeriodId = null, DateOnly? AsOfDate = null, string? DataProvenanceToken = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? TenantId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:568](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L568) | Immutable tenant identity retained by the queue persistence boundary. Legacy records may be unscoped; tenant-bound production reads must not surface those records. |
-| <code>public string? CompanyId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:574](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L574) | Immutable company identity retained alongside TenantId. Tenant and company must either both be present or both be absent on a legacy record. |
-| <code>public string? FundProfileId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:580](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L580) | Reporting/close fund-profile identity. Kept separate from the source fund-account identity and init-only to preserve the established positional constructor and deconstruction ABI. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public ReconciliationBreakLineageDto? Lineage { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:584](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L584) | Durable source comparison, distinct from case resolution and approval. |
-
-## ReconciliationBreakQueueProjectionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakQueueProjectionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:248](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L248).
-
-Reconciliation break-queue projection used by shared operator workflows.
-
-```csharp
-public sealed record ReconciliationBreakQueueProjectionDto(int TotalCount, int OpenCount, int InReviewCount, int ResolvedCount, int DismissedCount, int CriticalOpenCount, IReadOnlyList<ReconciliationBreakQueueProjectionItemDto> Items, int BreachedCount = 0, int AwaitingEvidenceCount = 0, int SignedOffEvidenceCount = 0);
-```
-
-## ReconciliationBreakQueueProjectionItemDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakQueueProjectionItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:263](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L263).
-
-One projected reconciliation break row including routing and sign-off evidence fields.
-
-```csharp
-public sealed record ReconciliationBreakQueueProjectionItemDto(string BreakId, string? WorkflowId, ReconciliationBreakSeverity Severity, ReconciliationBreakQueueStatus Status, string? Owner, string? RequiredSignoffRole, string? SignoffStatus, string? RoutingTarget, string? RoutingDetail, string? EvidenceReference, DateTimeOffset LastUpdatedAt, ReconciliationCasePriority Priority = ReconciliationCasePriority.Normal, ReconciliationCaseSlaState SlaState = ReconciliationCaseSlaState.OnTrack, string? AgeBand = null, string? RootCauseCode = null, string? ResolutionCode = null, int CommentCount = 0, int EvidenceCount = 0, DateTimeOffset? LastActivityAt = null, string? LastCommentExcerpt = null, int RelatedCaseCount = 0, string? SlaBadgeLabel = null, string? SlaBadgeTone = null);
 ```

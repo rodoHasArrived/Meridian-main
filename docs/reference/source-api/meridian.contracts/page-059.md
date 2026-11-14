@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundWorkflowCommandMetadata
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundWorkflowCommandMetadata</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:10](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L10).
+
+```csharp
+public sealed record FundWorkflowCommandMetadata(string Actor, string Role, string? RequestId = null, string? CorrelationId = null, string? IncidentTicketId = null, string? ApprovalReference = null, string? AssigneeId = null);
+```
+
+## FundWorkflowOverallStatus
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundWorkflowOverallStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:5](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L5).
+
+```csharp
+public enum FundWorkflowOverallStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Draft = 0</code> | [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:5](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L5) |  |
+| <code>InProgress = 1</code> | [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:5](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L5) |  |
+| <code>AwaitingApproval = 2</code> | [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:5](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L5) |  |
+| <code>Approved = 3</code> | [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:5](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L5) |  |
+| <code>Rejected = 4</code> | [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:5](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L5) |  |
+| <code>Closed = 5</code> | [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:5](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L5) |  |
+
+## FundWorkflowRejectionReasonCode
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundWorkflowRejectionReasonCode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:8](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L8).
+
+```csharp
+public enum FundWorkflowRejectionReasonCode : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>DataQuality = 0</code> | [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:8](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L8) |  |
+| <code>MappingDefect = 1</code> | [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:8](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L8) |  |
+| <code>LedgerMismatch = 2</code> | [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:8](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L8) |  |
+| <code>ReconciliationBreak = 3</code> | [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:8](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L8) |  |
+| <code>GovernanceFailure = 4</code> | [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:8](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L8) |  |
+
 ## FundWorkflowStage
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundWorkflowStage</code>. Kind: `enum`.
@@ -675,43 +726,3 @@ Source: [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDt
 ```csharp
 public sealed record InvestmentAccountingTransactionLabPreviewDto(string PreviewId, InvestmentAccountingTransactionKindDto Kind, string FundAccountId, string Symbol, DateOnly EventDate, string Currency, ExpectedJournalPreviewDto JournalPreview, LedgerImpactPreviewDto LedgerImpact, IReadOnlyList<InvestmentAccountingTrialBalanceImpactDto> TrialBalanceImpact, InvestmentAccountingReconciliationExpectationDto ReconciliationExpectation, IReadOnlyList<string> EvidenceIds, string? SourceRunId = null, string? SourceSessionId = null, BooksBeforeBrokerReadinessDto? BooksBeforeBroker = null);
 ```
-
-## InvestmentAccountingTransactionLabRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.InvestmentAccountingTransactionLabRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L30).
-
-```csharp
-public sealed record InvestmentAccountingTransactionLabRequestDto(InvestmentAccountingTransactionKindDto Kind, string FundAccountId, string Symbol, DateOnly EventDate, string Currency, decimal Amount, decimal Quantity = 0m, decimal Price = 0m, decimal FeeAmount = 0m, InvestmentAccountingTradeSideDto? Side = null, string? SourceRunId = null, string? SourceSessionId = null, string? BrokerStatementId = null, string? ReconciliationCaseId = null, IReadOnlyList<string>? EvidenceIds = null, InvestmentAccountingPreviewModeDto PreviewMode = InvestmentAccountingPreviewModeDto.TransactionLab);
-```
-
-## InvestmentAccountingTrialBalanceImpactDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.InvestmentAccountingTrialBalanceImpactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:48](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L48).
-
-```csharp
-public sealed record InvestmentAccountingTrialBalanceImpactDto(string AccountName, string AccountType, string? Symbol, decimal BalanceDelta, string Explanation);
-```
-
-## IOperatorInboxService
-
-Qualified name: <code>Meridian.Contracts.Workstation.IOperatorInboxService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Workstation/IOperatorInboxService.cs:6](../../../../src/Meridian.Contracts/Workstation/IOperatorInboxService.cs#L6).
-
-Queries and maintains the operator&#x27;s actionable work item inbox.
-
-```csharp
-public interface IOperatorInboxService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;OperatorWorkItemDto&gt;&gt; GetItemsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/IOperatorInboxService.cs:8](../../../../src/Meridian.Contracts/Workstation/IOperatorInboxService.cs#L8) |  |
-| <code>Task UpsertItemAsync(OperatorWorkItemDto item, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/IOperatorInboxService.cs:10](../../../../src/Meridian.Contracts/Workstation/IOperatorInboxService.cs#L10) |  |
-| <code>Task RemoveItemAsync(string workItemId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/IOperatorInboxService.cs:12](../../../../src/Meridian.Contracts/Workstation/IOperatorInboxService.cs#L12) |  |

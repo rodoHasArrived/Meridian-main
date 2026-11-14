@@ -6,6 +6,51 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OnboardingDifferenceAssignmentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:86](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L86).
+
+```csharp
+public sealed record OnboardingDifferenceAssignmentDto(string DifferenceKey, string OwnerId, string Notes, IReadOnlyList<string> EvidenceIds, string ActorId, DateTimeOffset RecordedAtUtc, int DataRevision);
+```
+
+## OnboardingDifferenceClassifications
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingDifferenceClassifications</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L16).
+
+Reasons an operator may give for a parallel-run difference. Only MeridianError never clears.
+
+```csharp
+public static class OnboardingDifferenceClassifications
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Timing = &quot;Timing&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L18) |  |
+| <code>public const string Pricing = &quot;Pricing&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L19) |  |
+| <code>public const string Treatment = &quot;Treatment&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L20) |  |
+| <code>public const string SourceData = &quot;SourceData&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L21) |  |
+| <code>public const string MeridianError = &quot;MeridianError&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L22) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; All = [Timing, Pricing, Treatment, SourceData, MeridianError];</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L24) |  |
+
+## OnboardingDifferenceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingDifferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L68).
+
+Difference lineage is keyed by kind, account, currency and instrument, never by amount.
+
+```csharp
+public sealed record OnboardingDifferenceDto(string DifferenceKey, string Kind, string AccountId, string Currency, string? InstrumentId, decimal? MeridianAmount, decimal? ExternalAmount, decimal? Difference, decimal Tolerance, string Status, string OwnerId, string FirstSeenComparisonId, string LastSeenComparisonId, IReadOnlyList<string> EvidenceIds, string? MissingReason);
+```
+
 ## OnboardingDifferenceExplanationDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto</code>. Kind: `record`.
@@ -552,34 +597,4 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:811](../
 
 ```csharp
 public sealed record OperationsCloseCalendarDto(DateTimeOffset GeneratedAtUtc, IReadOnlyList<OperationsCloseCalendarItemDto> Items);
-```
-
-## OperationsCloseCalendarItemAuditEventDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseCalendarItemAuditEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:851](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L851).
-
-```csharp
-public sealed record OperationsCloseCalendarItemAuditEventDto(string AuditId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Rationale, string CorrelationId, Guid WorkflowId, Guid FundAccountId, string PeriodId, string TaskId, DateOnly DueDate, string Owner);
-```
-
-## OperationsCloseCalendarItemDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseCalendarItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:815](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L815).
-
-```csharp
-public sealed record OperationsCloseCalendarItemDto(Guid WorkflowId, Guid FundAccountId, string PeriodId, OperationsWorkflowStatusDto Status, long Version, DateOnly? NextDueDate, string? NextDueTaskId, string? NextDueLabel, string? NextDueOwner, string? ReadinessSeverity, int? ReadinessScore, bool IsReadyToClose, int BlockerCount, int OpenChecklistCount, int RequiredApprovalCount, int CompletedApprovalCount, string Route, IReadOnlyList<OperationsCloseReadinessComponentDto>? ReadinessComponents = null, IReadOnlyList<OperationsCloseReadinessBlockerDto>? ReadinessBlockers = null, IReadOnlyList<OperationsNextActionDto>? ReadinessNextActions = null);
-```
-
-## OperationsCloseCalendarItemUpsertRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseCalendarItemUpsertRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:837](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L837).
-
-```csharp
-public sealed record OperationsCloseCalendarItemUpsertRequestDto(Guid WorkflowId, string TaskId, DateOnly DueDate, string Owner, string RequestedBy, string Rationale, string? CorrelationId = null);
 ```

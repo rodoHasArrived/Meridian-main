@@ -136,7 +136,24 @@ public static class SecurityAssetClassCatalog
                     rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25)."),
                 SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29)."),
                 SecurityAssetClassTermsUpgrade.Identity(fromVersion: 4, rationale: "Version 5 adds explicit overnight and inflation workflow conventions without changing earlier terms; historical calculations retain their versions.")
-            ]) { StampFloor = 1, SupportsRecurringFixedIncomeAccrual = true },
+            ])
+        {
+            StampFloor = 1,
+            SupportsRecurringFixedIncomeAccrual = true,
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturity"),
+                new(SecurityCashFlowTermRole.Maturity, "legalFinalMaturity"),
+                new(SecurityCashFlowTermRole.Issue, "issueDate"),
+                new(SecurityCashFlowTermRole.PrincipalFace, "par"),
+                new(SecurityCashFlowTermRole.CouponRate, "couponRate"),
+                new(SecurityCashFlowTermRole.PaymentFrequency, "paymentFrequency"),
+                new(SecurityCashFlowTermRole.DayCount, "dayCount"),
+                new(SecurityCashFlowTermRole.InflationIndex, "inflationIndex"),
+                new(SecurityCashFlowTermRole.InflationBaseIndexValue, "inflationBaseIndexValue"),
+                new(SecurityCashFlowTermRole.InflationIndexRatio, "inflationIndexRatio")
+            ]
+        },
         new(
             AssetClass: "FxSpot",
             AssetPackIds: ["derivatives-fx"],
@@ -169,7 +186,17 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Cusip
             ],
             TermsVersion: 2,
-            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")])
+        {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturity"),
+                new(SecurityCashFlowTermRole.CouponRate, "interestRate"),
+                new(SecurityCashFlowTermRole.DayCount, "dayCount")
+            ],
+            StampFloor = 1,
+            AccountingOutsideSlice = true
+        },
         new(
             AssetClass: "MoneyMarketFund",
             AssetPackIds: ["cash-bank"],
@@ -219,7 +246,16 @@ public static class SecurityAssetClassCatalog
                     rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25)."),
                 SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29)."),
                 SecurityAssetClassTermsUpgrade.Identity(fromVersion: 4, rationale: "Version 5 adds the optional governed scalar rateUnit declaration without changing earlier terms.")
-            ]) { StampFloor = 1 },
+            ])
+        {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturity"),
+                new(SecurityCashFlowTermRole.CouponRate, "couponRate"),
+                new(SecurityCashFlowTermRole.DayCount, "dayCount")
+            ],
+            StampFloor = 1
+        },
         new(
             AssetClass: "CommercialPaper",
             AssetPackIds: ["fixed-income"],
@@ -241,7 +277,16 @@ public static class SecurityAssetClassCatalog
             RequiresMaturity: true,
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond,
             TermsVersion: 2,
-            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1 },
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")])
+        {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturity"),
+                new(SecurityCashFlowTermRole.DayCount, "dayCount")
+            ],
+            PaysNoContractualCoupon = true,
+            StampFloor = 1
+        },
         new(
             AssetClass: "TreasuryBill",
             AssetPackIds: ["fixed-income"],
@@ -264,7 +309,15 @@ public static class SecurityAssetClassCatalog
             RequiresMaturity: true,
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond,
             TermsVersion: 2,
-            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1 },
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")])
+        {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturity")
+            ],
+            PaysNoContractualCoupon = true,
+            StampFloor = 1
+        },
         new(
             AssetClass: "Repo",
             TradesAsBilateralContract: true,
@@ -282,7 +335,17 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Cusip
             ],
             TermsVersion: 2,
-            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")])
+        {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "endDate"),
+                new(SecurityCashFlowTermRole.Issue, "startDate"),
+                new(SecurityCashFlowTermRole.CouponRate, "repoRate")
+            ],
+            StampFloor = 1,
+            AccountingOutsideSlice = true
+        },
         new(
             AssetClass: "CashSweep",
             AssetPackIds: ["cash-bank"],
@@ -367,7 +430,16 @@ public static class SecurityAssetClassCatalog
                     rationale: "Version 2 adds the optional scheduleConventions block to each leg and changes no version-1 term, so a version-1 payload reads it as unset on every leg (ADR-024, 2026-10-25)."),
                 SecurityAssetClassTermsUpgrade.Identity(fromVersion: 2, rationale: "Version 3 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29)."),
                 SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional governed scalar rateUnit declaration without changing earlier terms.")
-            ]) { StampFloor = 1, AccountingOutsideSlice = true },
+            ])
+        {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturityDate"),
+                new(SecurityCashFlowTermRole.Issue, "effectiveDate")
+            ],
+            StampFloor = 1,
+            AccountingOutsideSlice = true
+        },
         new(
             AssetClass: "DirectLoan",
             AssetPackIds: ["private-loan-credit", "mortgage-facility-intercompany"],
@@ -391,7 +463,16 @@ public static class SecurityAssetClassCatalog
             TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29)."),
                 SecurityAssetClassTermsUpgrade.Identity(fromVersion: 2, rationale: "Version 3 adds the optional governed scalar rateUnit declaration without changing earlier terms.")
             ],
-            TermsVersion: 3) { StampFloor = 1, AccountingOutsideSlice = true },
+            TermsVersion: 3)
+        {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturity"),
+                new(SecurityCashFlowTermRole.CouponRate, "currentCouponRate")
+            ],
+            StampFloor = 1,
+            AccountingOutsideSlice = true
+        },
         new(
             AssetClass: "StructuredCredit",
             AssetPackIds: ["fixed-income"],
@@ -436,6 +517,13 @@ public static class SecurityAssetClassCatalog
             Aliases: [.. SecurityCanonicalAssetHomes.SecuritizedLabels.Where(static label => label != "StructuredCredit")],
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity)
         {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturity"),
+                new(SecurityCashFlowTermRole.PrincipalFace, "originalFace"),
+                new(SecurityCashFlowTermRole.CurrentFactor, "currentFactor"),
+                new(SecurityCashFlowTermRole.CouponRate, "couponOrIndex", ReadAfterSharedSpellings: true)
+            ],
             StampFloor = 2,
             SupportsRecurringFixedIncomeAccrual = true,
             ReclassifyingProfileIds = ["structured-credit-io-po"]
@@ -1282,6 +1370,19 @@ public sealed record SecurityAssetClassDescriptor(
     /// profile-backed CustomAsset. Only a profile id listed by exactly one class reclassifies.
     /// </summary>
     public IReadOnlyList<string> ReclassifyingProfileIds { get; init; } = [];
+
+    /// <summary>
+    /// Which of this class's schema keys play which role in a calculated cash-flow projection
+    /// (review D9). The projection reads them with the shared spellings
+    /// (<see cref="SecurityCashFlowTermRoles.Spellings"/>).
+    /// </summary>
+    public IReadOnlyList<SecurityCashFlowTermBinding> CashFlowTermRoles { get; init; } = [];
+
+    /// <summary>
+    /// Whether the class pays no contractual coupon: its rate is a discount yield, which belongs to
+    /// the carrying-value accretion rather than to coupon accrual, so the projection pays principal only.
+    /// </summary>
+    public bool PaysNoContractualCoupon { get; init; }
 
     /// <summary>
     /// The routing keys this class owns: its canonical name, its <see cref="Aliases"/> and its

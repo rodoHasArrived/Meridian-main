@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationCrossScreenCountsDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs#L9).
+
+Counts that appear on more than one workstation screen (Trading, Data, Settings, Accounting and the WPF desktop), each computed once with the definition its Definition text states, so every surface shows the same number for the same quantity. A count is null when its source is not registered or the caller may not read it; clients then show &quot;—&quot;, never a substitute number.
+
+```csharp
+public sealed record WorkstationCrossScreenCountsDto(DateTimeOffset AsOf, WorkstationCrossScreenCount? OpenOrders, WorkstationProviderHealthCount? Providers, WorkstationCrossScreenCount? OpenBreaks);
+```
+
+## WorkstationDataBackfillRecord
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataBackfillRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1128](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1128).
+
+Backfill row returned by the Data workspace bootstrap payload.
+
+```csharp
+public sealed record WorkstationDataBackfillRecord(string JobId, string Scope, string Provider, string Status, string Progress, string UpdatedAt);
+```
+
+## WorkstationDataExportRecord
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataExportRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1139](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1139).
+
+Export row returned by the Data workspace bootstrap payload.
+
+```csharp
+public sealed record WorkstationDataExportRecord(string ExportId, string Profile, string Target, string Status, string Rows, string UpdatedAt);
+```
+
 ## WorkstationDataPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataPayload</code>. Kind: `record`.
@@ -520,34 +556,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:496](../
 
 ```csharp
 public sealed record WorkstationReportWriterDatasetSourcePayload(string SourceId, string Label, string Description, int RowCount, IReadOnlyList<WorkstationReportWriterFieldPayload> Fields, IReadOnlyList<IReadOnlyDictionary<string, string>> Rows, IReadOnlyList<string>? Tags = null, string? CertificationState = null, string? ValidationState = null, string? ReconciliationState = null, string? RefreshCadence = null, string? Owner = null, string? Version = null, string? ReleaseApproval = null, string? LineageManifest = null, IReadOnlyList<string>? SourceRunIds = null, IReadOnlyList<string>? PermittedConsumers = null, string? RowLineageKeyField = null, string? EvidenceIndexField = null);
-```
-
-## WorkstationReportWriterFieldPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterFieldPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:488](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L488).
-
-```csharp
-public sealed record WorkstationReportWriterFieldPayload(string Name, string Label, string Role, string DataType, string Dataset, string? Description = null);
-```
-
-## WorkstationReportWriterFilterPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterFilterPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:482](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L482).
-
-```csharp
-public sealed record WorkstationReportWriterFilterPayload(string Field, string Operator, string? Value = null, string? Label = null);
-```
-
-## WorkstationReportWriterFormulaPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterFormulaPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:477](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L477).
-
-```csharp
-public sealed record WorkstationReportWriterFormulaPayload(string Name, string Expression, string? Label = null);
 ```

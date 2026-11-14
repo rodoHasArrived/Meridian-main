@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InvestmentAccountingTransactionLabRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.InvestmentAccountingTransactionLabRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L30).
+
+```csharp
+public sealed record InvestmentAccountingTransactionLabRequestDto(InvestmentAccountingTransactionKindDto Kind, string FundAccountId, string Symbol, DateOnly EventDate, string Currency, decimal Amount, decimal Quantity = 0m, decimal Price = 0m, decimal FeeAmount = 0m, InvestmentAccountingTradeSideDto? Side = null, string? SourceRunId = null, string? SourceSessionId = null, string? BrokerStatementId = null, string? ReconciliationCaseId = null, IReadOnlyList<string>? EvidenceIds = null, InvestmentAccountingPreviewModeDto PreviewMode = InvestmentAccountingPreviewModeDto.TransactionLab);
+```
+
+## InvestmentAccountingTrialBalanceImpactDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.InvestmentAccountingTrialBalanceImpactDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:48](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L48).
+
+```csharp
+public sealed record InvestmentAccountingTrialBalanceImpactDto(string AccountName, string AccountType, string? Symbol, decimal BalanceDelta, string Explanation);
+```
+
+## IOperatorInboxService
+
+Qualified name: <code>Meridian.Contracts.Workstation.IOperatorInboxService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Workstation/IOperatorInboxService.cs:6](../../../../src/Meridian.Contracts/Workstation/IOperatorInboxService.cs#L6).
+
+Queries and maintains the operator&#x27;s actionable work item inbox.
+
+```csharp
+public interface IOperatorInboxService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;OperatorWorkItemDto&gt;&gt; GetItemsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/IOperatorInboxService.cs:8](../../../../src/Meridian.Contracts/Workstation/IOperatorInboxService.cs#L8) |  |
+| <code>Task UpsertItemAsync(OperatorWorkItemDto item, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/IOperatorInboxService.cs:10](../../../../src/Meridian.Contracts/Workstation/IOperatorInboxService.cs#L10) |  |
+| <code>Task RemoveItemAsync(string workItemId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/IOperatorInboxService.cs:12](../../../../src/Meridian.Contracts/Workstation/IOperatorInboxService.cs#L12) |  |
+
 ## IOperatorTriageStore
 
 Qualified name: <code>Meridian.Contracts.Workstation.IOperatorTriageStore</code>. Kind: `interface`.
@@ -607,49 +647,4 @@ Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:64](../../../../sr
 
 ```csharp
 public sealed record OnboardingCriteriaRevisionDto(int DataRevision, OnboardingCriteriaDto Criteria, string ActorId, DateTimeOffset RecordedAtUtc);
-```
-
-## OnboardingDifferenceAssignmentDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:86](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L86).
-
-```csharp
-public sealed record OnboardingDifferenceAssignmentDto(string DifferenceKey, string OwnerId, string Notes, IReadOnlyList<string> EvidenceIds, string ActorId, DateTimeOffset RecordedAtUtc, int DataRevision);
-```
-
-## OnboardingDifferenceClassifications
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingDifferenceClassifications</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L16).
-
-Reasons an operator may give for a parallel-run difference. Only MeridianError never clears.
-
-```csharp
-public static class OnboardingDifferenceClassifications
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Timing = &quot;Timing&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L18) |  |
-| <code>public const string Pricing = &quot;Pricing&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L19) |  |
-| <code>public const string Treatment = &quot;Treatment&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L20) |  |
-| <code>public const string SourceData = &quot;SourceData&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L21) |  |
-| <code>public const string MeridianError = &quot;MeridianError&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L22) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; All = [Timing, Pricing, Treatment, SourceData, MeridianError];</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L24) |  |
-
-## OnboardingDifferenceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingDifferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L68).
-
-Difference lineage is keyed by kind, account, currency and instrument, never by amount.
-
-```csharp
-public sealed record OnboardingDifferenceDto(string DifferenceKey, string Kind, string AccountId, string Currency, string? InstrumentId, decimal? MeridianAmount, decimal? ExternalAmount, decimal? Difference, decimal Tolerance, string Status, string OwnerId, string FirstSeenComparisonId, string LastSeenComparisonId, IReadOnlyList<string> EvidenceIds, string? MissingReason);
 ```

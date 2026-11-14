@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BrokerageConnectionStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BrokerageConnectionStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L87).
+
+```csharp
+public sealed record BrokerageConnectionStatusDto(string ProviderId, string DisplayName, BrokerageConnectionStateDto State, bool IsConfigured, bool IsConnected, string? AuthorizationUrl, DateTimeOffset? ConnectedAt, DateTimeOffset? ExpiresAt, string? LastError, IReadOnlyList<string> Warnings, IReadOnlyList<string> Scopes, string? Environment = null, string? ExternalAccountId = null, DateTimeOffset? VerifiedAt = null, string? MaskedKeyId = null);
+```
+
+## BrokerageHouseholdAccountDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BrokerageHouseholdAccountDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:156](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L156).
+
+```csharp
+public sealed record BrokerageHouseholdAccountDto(Guid FundAccountId, string ProviderId, string ExternalAccountId, string DisplayName, BrokerageAccountKindDto AccountKind, WorkstationBrokerageSyncHealth Health, decimal Cash, decimal Equity, decimal BuyingPower, string Currency, DateTimeOffset SyncedAt, int PositionCount, int CashTransactionCount, IReadOnlyList<string> Warnings);
+```
+
+## BrokerageHouseholdPortfolioDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BrokerageHouseholdPortfolioDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:197](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L197).
+
+```csharp
+public sealed record BrokerageHouseholdPortfolioDto(string ProviderId, DateTimeOffset AsOf, decimal TotalCash, decimal TotalEquity, decimal TotalBuyingPower, string Currency, IReadOnlyList<BrokerageHouseholdAccountDto> Accounts, IReadOnlyList<BrokerageHouseholdPositionDto> Positions, IReadOnlyList<string> Warnings);
+```
+
 ## BrokerageHouseholdPositionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.BrokerageHouseholdPositionDto</code>. Kind: `record`.
@@ -575,38 +605,4 @@ Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:40](../../..
 
 ```csharp
 public sealed record DesignateShadowBookRequestDto(int ExpectedVersion, string Rationale);
-```
-
-## DesktopLaunchTicketRedemptionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DesktopLaunchTicketRedemptionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L95).
-
-```csharp
-public sealed record DesktopLaunchTicketRedemptionDto(string Username, string Page, DateTimeOffset ExpiresAtUtc);
-```
-
-## DiscardSecurityMasterRevisionRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.DiscardSecurityMasterRevisionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:91](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L91).
-
-Discards a staged (Draft or Submitted) revision, transitioning it to Rejected and withdrawing the staged override value it governs. This is the terminal path for abandoned drafts and gate-rejected submissions: without it a staged sibling defers the security-level override decision forever, leaving governed runs blocked behind a Pending overlay no revision can ever approve.
-
-```csharp
-public sealed record DiscardSecurityMasterRevisionRequest(Guid SecurityId, Guid RevisionId, string Actor, string? Reason = null);
-```
-
-## EquityCurvePoint
-
-Qualified name: <code>Meridian.Contracts.Workstation.EquityCurvePoint</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:876](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L876).
-
-A single point on the portfolio equity curve.
-
-```csharp
-public sealed record EquityCurvePoint(DateOnly Date, decimal TotalEquity, decimal Cash, decimal DailyReturn, decimal DrawdownFromPeak, decimal DrawdownFromPeakPercent);
 ```

@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsSubmitApprovalRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsSubmitApprovalRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:675](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L675).
+
+```csharp
+public sealed record OperationsSubmitApprovalRequestDto(long ExpectedVersion, string Actor, string Reviewer, string Rationale, string ReportPackId, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
+## OperationsTimelineEntryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsTimelineEntryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1222](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1222).
+
+```csharp
+public sealed record OperationsTimelineEntryDto(Guid AuditId, DateTimeOffset OccurredAtUtc, Guid WorkflowId, Guid FundAccountId, string PeriodId, string EventType, OperationsWorkflowStatusDto FromState, OperationsWorkflowStatusDto ToState, OperationsGateKeyDto? Gate, OperationsGateStatusDto? FromGateStatus, OperationsGateStatusDto? ToGateStatus, string Actor, string? Rationale, string? CorrelationId, OperationsContinuityCorrelationKeysDto? CorrelationKeys, IReadOnlyList<OperationsEvidenceLinkDto> References, string? PreviousHash, string CurrentHash, VerifiedOperationOutcome? Outcome = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public OperationsCloseChecklistSnapshotDto? CloseChecklistSnapshot { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1244](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1244) |  |
+
+## OperationsTransitionRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsTransitionRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:486](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L486).
+
+```csharp
+public sealed record OperationsTransitionRequestDto(long ExpectedVersion, string Actor, string? Rationale = null, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<string>? EvidenceReferenceIds = null);
+```
+
 ## OperationsTransitionResultDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsTransitionResultDto</code>. Kind: `record`.
@@ -706,46 +742,3 @@ Enum declarations:
 | <code>Fund = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:154](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L154) |  |
 | <code>Strategy = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:155](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L155) |  |
 | <code>UserTag = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:156](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L156) |  |
-
-## PortfolioReportingLiveViewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PortfolioReportingLiveViewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:210](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L210).
-
-Reporting-owned pointer to live portfolio summary, liquidity, and cash-ladder evidence.
-
-```csharp
-public sealed record PortfolioReportingLiveViewDto(string ViewId, string Label, PortfolioReportingCutKindDto Kind, PortfolioReportingLiveViewStateDto State, string Currency, decimal GrossExposure, decimal NetExposure, decimal TotalCash, decimal PendingSettlement, decimal TotalPnl, decimal ShadowNav, DateTimeOffset AsOf, DateTimeOffset? SourceAsOfUtc, int SourceCount, string Route, string LiquiditySummary, string CashLadderSummary, string TelemetrySummary, IReadOnlyList<string> Tags, string? CashLadderRoute = null, string? VersionStamp = null, IReadOnlyList<string>? ReadinessBlockers = null, DateTimeOffset? MarketTickAsOfUtc = null, int? MarketTickAgeSeconds = null, long? MarketTickSequence = null, string? MarketDataProvider = null, string? TickFreshnessSummary = null, bool IsMarketTickLinked = false, PortfolioReportingLiveViewFreshnessPolicyDto? FreshnessPolicy = null);
-```
-
-## PortfolioReportingLiveViewFreshnessPolicyDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PortfolioReportingLiveViewFreshnessPolicyDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:197](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L197).
-
-Server-owned freshness policy evidence for a portfolio reporting live view.
-
-```csharp
-public sealed record PortfolioReportingLiveViewFreshnessPolicyDto(string PolicyName, DateTimeOffset EvaluatedAtUtc, int? SourceAgeSeconds, int LiveLinkWindowSeconds, int StaleWindowSeconds, bool IsWithinLiveLinkWindow, bool IsBeyondStaleWindow, string Reason);
-```
-
-## PortfolioReportingLiveViewStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PortfolioReportingLiveViewStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:160](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L160).
-
-```csharp
-public enum PortfolioReportingLiveViewStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>LiveLinked = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:162](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L162) |  |
-| <code>SourceBacked = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:163](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L163) |  |
-| <code>Stale = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:164](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L164) |  |
-| <code>Blocked = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:165](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L165) |  |

@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RejectWorkflow
+
+Qualified name: <code>Meridian.Contracts.Workstation.RejectWorkflow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:30](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L30).
+
+```csharp
+public sealed record RejectWorkflow(Guid WorkflowId, FundWorkflowRejectionReasonCode ReasonCode, FundWorkflowCommandMetadata Metadata);
+```
+
+## RenderReportTemplateRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.RenderReportTemplateRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1687](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1687).
+
+```csharp
+public sealed record RenderReportTemplateRequestDto(VersionedReportTemplateIdDto TemplateId, IReadOnlyDictionary<string, string> Parameters, IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null, IReadOnlyList<ReportWriterGridDefinitionDto>? Grids = null);
+```
+
+## RenderReportTemplateResponseDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.RenderReportTemplateResponseDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1692](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1692).
+
+```csharp
+public sealed record RenderReportTemplateResponseDto(VersionedReportTemplateIdDto TemplateId, string RenderedContent, IReadOnlyList<string> MissingRequiredParameters, IReadOnlyList<ReportWriterGridRenderDto>? Grids = null, IReadOnlyList<string>? Warnings = null);
+```
+
 ## ReopenWorkflow
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReopenWorkflow</code>. Kind: `record`.
@@ -600,34 +630,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:994](
 
 ```csharp
 public sealed record ReportPackDeliveryAttemptDto(Guid AttemptId, Guid ReportId, string DistributionId, string Recipient, string RecipientRole, string Channel, ReportPackDeliveryStateDto State, DateTimeOffset AttemptedAtUtc, string Actor, int AttemptNumber, string DeliveryReference, string? Note = null, string? FailureReason = null, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null, ReportPackDeliveryPackageDto? Package = null);
-```
-
-## ReportPackDeliveryEvidencePacketDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryEvidencePacketDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:919](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L919).
-
-```csharp
-public sealed record ReportPackDeliveryEvidencePacketDto(string PacketId, string PacketKind, string PackageId, Guid ReportId, string FundProfileId, string FundAccountId, string Period, IReadOnlyList<string> PackageContents, IReadOnlyList<string> SupportEvidenceIds, IReadOnlyList<ReportPackDeliveryRecipientDto> RecipientList, string EntitlementScope, IReadOnlyList<ReportPackDeliveryApprovalStepDto> ApprovalChain, string DatasetVersion, string TemplateVersion, string DeliveryChannel, DateTimeOffset DeliveredAtUtc, IReadOnlyList<ReportPackEvidenceLinkDto> DeliveryEvidence, IReadOnlyList<string> RequestHistory, string? AmendmentReason = null, string? RestatementLineage = null, IReadOnlyList<string>? AuditEventReferences = null, IReadOnlyList<string>? BlockedDownstreamOutputs = null);
-```
-
-## ReportPackDeliveryFailureRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryFailureRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1021](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1021).
-
-```csharp
-public sealed record ReportPackDeliveryFailureRequestDto(string DistributionId, string FailureReason, string? Actor = null, string? DeliveryReference = null, string? Note = null, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## ReportPackDeliveryHistoryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryHistoryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1030](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1030).
-
-```csharp
-public sealed record ReportPackDeliveryHistoryDto(Guid ReportId, IReadOnlyList<ReportPackDeliveryAttemptDto> Attempts);
 ```

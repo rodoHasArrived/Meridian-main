@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 12489 |
-| Valid | 12007 |
+| Total code blocks | 12492 |
+| Valid | 12010 |
 | Invalid | 0 |
 | Skipped | 482 |
 
@@ -19,7 +19,7 @@
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 109 | 0 | 0 | 109 |
 | `bash` | 265 | 265 | 0 | 0 |
-| `csharp` | 11637 | 11637 | 0 | 0 |
+| `csharp` | 11640 | 11640 | 0 | 0 |
 | `csv` | 3 | 0 | 0 | 3 |
 | `fsharp` | 50 | 0 | 0 | 50 |
 | `json` | 72 | 72 | 0 | 0 |
@@ -255,7 +255,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.contracts/page-072.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-073.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-074.md` | 50 |
-| `docs/reference/source-api/meridian.contracts/page-075.md` | 29 |
+| `docs/reference/source-api/meridian.contracts/page-075.md` | 32 |
 | `docs/reference/source-api/meridian.core/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-002.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-003.md` | 50 |

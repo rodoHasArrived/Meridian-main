@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationReportWriterFieldPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterFieldPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:488](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L488).
+
+```csharp
+public sealed record WorkstationReportWriterFieldPayload(string Name, string Label, string Role, string DataType, string Dataset, string? Description = null);
+```
+
+## WorkstationReportWriterFilterPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterFilterPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:482](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L482).
+
+```csharp
+public sealed record WorkstationReportWriterFilterPayload(string Field, string Operator, string? Value = null, string? Label = null);
+```
+
+## WorkstationReportWriterFormulaPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterFormulaPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:477](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L477).
+
+```csharp
+public sealed record WorkstationReportWriterFormulaPayload(string Name, string Expression, string? Label = null);
+```
+
 ## WorkstationReportWriterGridPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterGridPayload</code>. Kind: `record`.

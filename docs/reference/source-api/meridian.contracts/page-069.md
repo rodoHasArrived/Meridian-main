@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterDeclaredExerciseStatus
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:226](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L226).
+
+Whether a record&#x27;s declared call and put schedule resolved to dated rows or is blocked.
+
+```csharp
+public enum SecurityMasterDeclaredExerciseStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Resolved = 0</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:229](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L229) | The declared schedule resolved; its exercise and notice-deadline rows are in the schedule book. |
+| <code>Blocked = 1</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:232](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L232) | The declared schedule could not be resolved; no call or put row is shown and the scalar call date is not used. |
+
+## SecurityMasterDownstreamImpactDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterDownstreamImpactDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:403](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L403).
+
+```csharp
+public sealed record SecurityMasterDownstreamImpactDto(string? FundProfileId, bool IsScoped, SecurityMasterImpactSeverity Severity, string Summary, string PortfolioExposureSummary, string LedgerExposureSummary, string ReconciliationExposureSummary, string ReportPackExposureSummary, int MatchedRunCount, int PortfolioExposureCount, int LedgerExposureCount, int ReconciliationExposureCount, int ReportPackExposureCount, IReadOnlyList<SecurityMasterImpactLinkDto> Links);
+```
+
+## SecurityMasterEconomicDefinitionDrillInDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterEconomicDefinitionDrillInDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:117](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L117).
+
+```csharp
+public sealed record SecurityMasterEconomicDefinitionDrillInDto(Guid SecurityId, string AssetClass, string Currency, long Version, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, string? AssetFamily, string? SubType, string? IssuerType, string? RiskCountry, string? WinningSourceSystem, string? WinningSourceRecordId, DateTimeOffset? WinningSourceAsOf, string? WinningSourceUpdatedBy, string? WinningSourceReason);
+```
+
 ## SecurityMasterEditOrigin
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterEditOrigin</code>. Kind: `enum`.
@@ -588,58 +627,3 @@ Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:122](../..
 ```csharp
 public sealed record StatementActivityCompletenessDto(string? LastEventId = null, DateTimeOffset? HighWatermark = null, int PageCount = default, int SourceRecordCount = default, bool IsComplete = default);
 ```
-
-## StatementActivitySubtypeSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:117](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L117).
-
-```csharp
-public sealed record StatementActivitySubtypeSummaryDto(string Category = default !, string Subtype = default !, int RecordCount = default);
-```
-
-## StatementBreakDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementBreakDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:175](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L175).
-
-Open or resolved variance between normalized statement data and Meridian books/activity.
-
-```csharp
-public sealed record StatementBreakDto(string? BreakId, StatementBreakType? BreakType, StatementValidationSeverity? Severity, StatementMatchTier? MatchTier, string? StatementReference, string? Description, decimal? StatementAmount, decimal? BookAmount, decimal? Delta, decimal? Tolerance, string? Currency, DateTimeOffset? CreatedAtUtc, string? Status, string? InternalReference = null, string? Owner = null, DateTimeOffset? LastObservedAtUtc = null, string? RecommendedAction = null, string? EvidenceLink = null, DateTimeOffset? SlaDueAtUtc = null, DateTimeOffset? SlaWarningAtUtc = null, DateTimeOffset? SlaBreachedAtUtc = null, string? SlaState = null, string? EscalationLabel = null, string? EscalationReason = null, IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null, string? Classification = null);
-```
-
-## StatementBreakType
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementBreakType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L53).
-
-Canonical category for a statement reconciliation break.
-
-```csharp
-public enum StatementBreakType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L55) |  |
-| <code>MissingStatementPosition = 1</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L56) |  |
-| <code>MissingBookPosition = 2</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L57) |  |
-| <code>PositionQuantityMismatch = 3</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L58) |  |
-| <code>PositionMarketValueMismatch = 4</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:59](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L59) |  |
-| <code>MissingStatementCash = 5</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L60) |  |
-| <code>MissingBookCash = 6</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:61](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L61) |  |
-| <code>CashBalanceMismatch = 7</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L62) |  |
-| <code>MissingStatementTransaction = 8</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L63) |  |
-| <code>MissingBookTransaction = 9</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L64) |  |
-| <code>TransactionAmountMismatch = 10</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L65) |  |
-| <code>SecurityIdentifierMismatch = 11</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L66) |  |
-| <code>TimingMismatch = 12</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:67](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L67) |  |
-| <code>ClassificationMismatch = 13</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L68) |  |
-| <code>DuplicateStatementItem = 14</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L69) |  |
-| <code>ValidationFailure = 15</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L70) |  |
