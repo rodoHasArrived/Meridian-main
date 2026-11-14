@@ -725,7 +725,7 @@
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/discovery",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs:19",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs:22",
       "documented": true
     },
     {

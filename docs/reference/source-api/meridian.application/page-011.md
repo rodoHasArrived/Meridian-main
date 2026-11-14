@@ -731,7 +731,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.ProviderStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:581](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L581).
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:608](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L608).
 
 Provider availability status.
 
@@ -845,7 +845,7 @@ public sealed record SymbolOperationResult(bool Success, string Message, string[
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolSearchService</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:18](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L18).
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:20](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L20).
 
 Service for searching and autocompleting symbols across multiple providers. Aggregates results from Finnhub, Polygon, Alpaca, and OpenFIGI.
 
@@ -857,16 +857,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SymbolSearchService(MetadataEnrichmentService? metadataService = null, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:31](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L31) | Creates a new symbol search service with default provider configuration. |
-| <code>public SymbolSearchService(IEnumerable&lt;ISymbolSearchProvider&gt; providers, OpenFigiClient? figiClient, MetadataEnrichmentService metadataService, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:49](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L49) | Creates a symbol search service with custom providers. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderStatus&gt;&gt; GetProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:83](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L83) | Get available providers and their status. |
-| <code>public Task&lt;SymbolSearchResponse&gt; SearchAsync(SymbolSearchRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:130](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L130) | Search for symbols with autocomplete support. |
-| <code>public Task&lt;SymbolSearchResponse&gt; SearchAuthoritativeAsync(SymbolSearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:137](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L137) | Explicit provider lookup that distinguishes provider failure from a successful empty search. Intended for candidate-review workflows where a swallowed failure would misstate availability. |
-| <code>public async Task&lt;SymbolDetails?&gt; GetDetailsAsync(string symbol, string? provider = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:355](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L355) | Get detailed information about a specific symbol. |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, IReadOnlyList&lt;FigiMapping&gt;&gt;&gt; LookupFigiAsync(IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:449](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L449) | Lookup FIGI identifiers for symbols. |
-| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; SearchFigiAsync(string query, int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:470](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L470) | Search OpenFIGI directly. |
-| <code>public void ClearCache();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:549](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L549) | Clear the search and details cache. |
-| <code>public void Dispose();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:556](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L556) |  |
+| <code>public SymbolSearchService(MetadataEnrichmentService? metadataService = null, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:33](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L33) | Creates a new symbol search service with default provider configuration. |
+| <code>public SymbolSearchService(IEnumerable&lt;ISymbolSearchProvider&gt; providers, OpenFigiClient? figiClient, MetadataEnrichmentService metadataService, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:51](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L51) | Creates a symbol search service with custom providers. |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderStatus&gt;&gt; GetProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:85](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L85) | Get available providers and their status. |
+| <code>public Task&lt;SymbolSearchResponse&gt; SearchAsync(SymbolSearchRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:132](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L132) | Search for symbols with autocomplete support. |
+| <code>public Task&lt;SymbolSearchResponse&gt; SearchAuthoritativeAsync(SymbolSearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:139](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L139) | Explicit provider lookup that distinguishes provider failure from a successful empty search. Intended for candidate-review workflows where a swallowed failure would misstate availability. |
+| <code>public async Task&lt;SymbolDetails?&gt; GetDetailsAsync(string symbol, string? provider = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:382](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L382) | Get detailed information about a specific symbol. |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;string, IReadOnlyList&lt;FigiMapping&gt;&gt;&gt; LookupFigiAsync(IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:476](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L476) | Lookup FIGI identifiers for symbols. |
+| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; SearchFigiAsync(string query, int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:497](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L497) | Search OpenFIGI directly. |
+| <code>public void ClearCache();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:576](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L576) | Clear the search and details cache. |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:583](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L583) |  |
 
 ## SymbolStatusReport
 

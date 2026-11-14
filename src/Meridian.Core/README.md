@@ -15,6 +15,10 @@ Subscription import contracts include an explicit broker-account selection and d
 run identity, ownership/book scope, immutable source hash, checkpoints and terminal status.
 Missing broker quantities remain invalid source data rather than implicit zero holdings.
 
+`ProviderSearchException` and `ProviderSearchFailure` identify unavailable credentials, transport failures, malformed or
+incomplete responses and throttling for explicit provider lookups. A successful empty search is
+represented by its result rather than a failure category.
+
 `Meridian.Core.Currency.CurrencyMinorUnits.GetPrecision` delegates to `Meridian.Contracts.Ledger.CurrencyMinorUnits`, so the ISO 4217 minor-unit table is maintained in one place.
 
 `ProviderConnectionsConfig.RuntimeCredentials` holds optional explicit host defaults keyed by
