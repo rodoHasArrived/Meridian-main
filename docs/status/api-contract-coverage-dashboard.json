@@ -7707,17 +7707,17 @@
     },
     {
       "name": "OperatingScopeValuesDto",
-      "source": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:7",
+      "source": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:9",
       "documented": true
     },
     {
       "name": "OperatorScopePreferenceDto",
-      "source": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:21",
+      "source": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:25",
       "documented": true
     },
     {
       "name": "OperatorScopePreferenceSaveRequest",
-      "source": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:26",
+      "source": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:30",
       "documented": true
     },
     {

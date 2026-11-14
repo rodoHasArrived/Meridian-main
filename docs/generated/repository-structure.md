@@ -9026,6 +9026,7 @@ Meridian-main
 │   │   │   │   │   │   ├── save-view-dialog.tsx
 │   │   │   │   │   │   ├── scenario-prepayment-inputs.test.ts
 │   │   │   │   │   │   ├── scenario-prepayment-inputs.tsx
+│   │   │   │   │   │   ├── scope-period-field.tsx
 │   │   │   │   │   │   ├── scope-picker.test.tsx
 │   │   │   │   │   │   ├── scope-picker.tsx
 │   │   │   │   │   │   ├── security-curve-valuation-panel.test.tsx
@@ -9417,12 +9418,18 @@ Meridian-main
 │   │   │   │   │   │   ├── figure-scope.ts
 │   │   │   │   │   │   ├── fund-accounts.test.ts
 │   │   │   │   │   │   ├── fund-accounts.ts
+│   │   │   │   │   │   ├── period.test.ts
+│   │   │   │   │   │   ├── period.ts
 │   │   │   │   │   │   ├── persistence.test.ts
 │   │   │   │   │   │   ├── persistence.ts
 │   │   │   │   │   │   ├── recent-scopes.test.ts
 │   │   │   │   │   │   ├── recent-scopes.ts
 │   │   │   │   │   │   ├── scope-label-context.tsx
-│   │   │   │   │   │   └── scope-picker-context.tsx
+│   │   │   │   │   │   ├── scope-picker-context.tsx
+│   │   │   │   │   │   ├── structure-options.test.ts
+│   │   │   │   │   │   ├── structure-options.ts
+│   │   │   │   │   │   ├── use-scope-structure.test.ts
+│   │   │   │   │   │   └── use-scope-structure.ts
 │   │   │   │   │   ├── perf
 │   │   │   │   │   │   ├── off-thread-compute.test.tsx
 │   │   │   │   │   │   └── off-thread-compute.ts

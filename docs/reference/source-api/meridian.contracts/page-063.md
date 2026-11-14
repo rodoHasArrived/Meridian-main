@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs#L26).
+Source: [src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs#L30).
 
 Sets (or, with a null or empty scope, clears) the signed-in operator&#x27;s default scope.
 
