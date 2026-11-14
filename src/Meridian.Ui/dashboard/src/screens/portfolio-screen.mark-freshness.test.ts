@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildPortfolioScreenViewModel } from "./portfolio-screen.view-model";
 import { presentMarkFreshness } from "@/lib/mark-freshness";
-import type { MarkFreshnessAssessmentDto, TradingWorkspaceResponse } from "@/types";
+import type { MarkFreshnessAssessmentDto, PortfolioWorkspaceResponse, TradingWorkspaceResponse } from "@/types";
 
 const current: MarkFreshnessAssessmentDto = {
   symbol: "AAPL", securityId: "apple-security", financialAccountId: "account-1",
@@ -15,7 +15,12 @@ function portfolio(markFreshness: MarkFreshnessAssessmentDto | null) {
       markPrice: "$100", exposure: "$1,000", dayPnl: "$0", unrealizedPnl: "$100", markFreshness }],
     metrics: [], openOrders: [], fills: [], risk: null, brokerage: null
   } as unknown as TradingWorkspaceResponse;
-  return buildPortfolioScreenViewModel({ trading, strategy: null, accounting: null });
+  // Positions come from the Portfolio workspace payload (its KPI owner); Trading keeps the rest.
+  const portfolio = {
+    positions: trading.positions,
+    runs: []
+  } as unknown as PortfolioWorkspaceResponse;
+  return buildPortfolioScreenViewModel({ portfolio, trading, strategy: null, accounting: null });
 }
 
 describe("Portfolio shared mark readiness", () => {
