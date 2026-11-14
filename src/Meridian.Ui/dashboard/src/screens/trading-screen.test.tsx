@@ -389,6 +389,9 @@ describe("TradingScreen", () => {
   it("renders the overview posture with the workflow strip and no blotters", async () => {
     await renderTradingScreen();
     expect(screen.getByRole("region", { name: "Execution cockpit context" })).toBeInTheDocument();
+    const accountSetup = screen.getByRole("region", { name: "Brokerage recovery" });
+    const headline = screen.getByLabelText("Trading headline metrics");
+    expect(accountSetup.compareDocumentPosition(headline) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const workflowStrip = screen.getByRole("region", { name: "Workflow control strip" });
     expect(within(workflowStrip).getByRole("button", { name: /strategy controls/i })).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /session replay/i })).toBeInTheDocument();

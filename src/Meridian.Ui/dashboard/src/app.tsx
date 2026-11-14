@@ -635,6 +635,7 @@ function AppShell({
     });
     return {
       options: [...options.values()],
+      lastUsedAccountId: recentScopes.find((recent) => recent.fundAccountId)?.fundAccountId ?? null,
       select: (fundAccountId: string) => handleSetOperatingScopeRef.current({ ...currentOperatingScopeRef.current, fundAccountId }),
       structure: scopeStructure.structure,
       structureLoading: scopeStructure.loading,

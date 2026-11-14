@@ -70,6 +70,7 @@ export function FinancialRecordExplorerShell({
   onSaveView,
   onSelectRecord,
   activeRecordId,
+  scopeControls,
   children,
   className
 }: {
@@ -87,6 +88,8 @@ export function FinancialRecordExplorerShell({
   onSelectRecord?: (recordId: string) => void;
   /** A linked authoritative record controls selection; never fall back to another row. */
   activeRecordId?: string;
+  /** Required scope choices render before summaries, records, and supporting results. */
+  scopeControls?: ReactNode;
   children: ReactNode;
   className?: string;
 }) {
@@ -300,6 +303,8 @@ export function FinancialRecordExplorerShell({
           </Button>
         </div>
       </div>
+
+      {scopeControls ? <div className="mb-4">{scopeControls}</div> : null}
 
       <div className="grid gap-3 xl:grid-cols-[minmax(0,0.72fr)_minmax(260px,0.28fr)]">
         <div className="space-y-3">

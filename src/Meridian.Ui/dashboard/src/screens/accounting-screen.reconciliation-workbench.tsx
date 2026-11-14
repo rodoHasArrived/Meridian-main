@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Combobox } from "@/components/ui/combobox";
 import { Kbd } from "@/components/ui/kbd";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
@@ -713,13 +714,23 @@ const reconciliationStatementRunColumns: DenseDataTableColumn<ReconciliationStat
 export function ReconciliationStatementRuns({ reconciliation, initiallyOpen = false }: { reconciliation: StatementRuns; initiallyOpen?: boolean }) {
   return (
     <div className="reconciliation-run-context">
-      <label className="reconciliation-run-picker">
-        <span>Reconciliation run</span>
-        <Select value={reconciliation.reconciliationQueue.some((run) => run.runId === reconciliation.selectedRunId) ? reconciliation.selectedRunId ?? "" : ""} onChange={(event) => reconciliation.selectRun(event.target.value || null)}>
-          <option value="">Choose a reconciliation run</option>
-          {reconciliation.reconciliationQueue.map((run) => <option key={run.runId} value={run.runId}>{run.strategyName} · {run.openBreakCount} open</option>)}
-        </Select>
-      </label>
+      <Combobox
+        id="reconciliation-run-picker"
+        label="Reconciliation run"
+        required
+        className="max-w-lg"
+        value={reconciliation.selectedRunId ?? ""}
+        options={[
+          { value: "", label: "Choose a reconciliation run" },
+          ...reconciliation.reconciliationQueue.map((run) => ({
+            value: run.runId,
+            label: `${run.strategyName} · ${run.openBreakCount} open`
+          }))
+        ]}
+        onChange={(value) => reconciliation.selectRun(value || null)}
+        placeholder="Search reconciliation runs…"
+        emptyText="No matching reconciliation runs"
+      />
       <TechnicalDetails label="Statement runs and import evidence" open={initiallyOpen}>
       <Card className="panel-surface xl:col-span-2">
         <CardHeader>

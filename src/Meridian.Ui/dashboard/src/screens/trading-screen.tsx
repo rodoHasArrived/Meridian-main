@@ -663,10 +663,6 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         </p>
       </section>
 
-      {showOverview ? <StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" /> : null}
-
-      {showOverview ? tradingConfidence : null}
-
       {/* The full recovery workspace belongs to the overview; every other route keeps one
           blocked-state row so its own object (blotter, book, guardrails) stays above the fold. */}
       <BrokerageRecoveryPanel
@@ -679,6 +675,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         variant={showOverview ? "full" : "row"}
         reviewHref={`${WORKSTATION_ROUTE_CATALOG.trading}${search}#brokerage-recovery`}
       />
+
+      {showOverview ? <StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" /> : null}
+
+      {showOverview ? tradingConfidence : null}
 
       {showOverview ? (
       <section id="trading-posture" className="workspace-section-band" aria-labelledby="trading-posture-heading">
@@ -876,9 +876,6 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       ) : null}
 
       {showOrders ? (
-        <ExecutionJournalPanel accountId={fundAccountId} />
-      ) : null}
-      {showOrders ? (
       <section id="trading-actions" className="workspace-section-band" aria-label="Order blotter and selected detail">
       <WorkspaceWorkbenchShell label="Trading orders workbench" switchInspector inspectorRole="region" inspector={(
 <div className="min-w-0">
@@ -1025,6 +1022,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
         </WorkspaceWorkbenchShell>
       </section>
+      ) : null}
+
+      {showOrders ? (
+        <ExecutionJournalPanel accountId={fundAccountId} />
       ) : null}
 
       {showOverview ? (

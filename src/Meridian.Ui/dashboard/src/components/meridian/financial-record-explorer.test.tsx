@@ -12,6 +12,13 @@ describe("FinancialRecordExplorerShell", () => {
     window.history.replaceState(null, "", "/");
   });
 
+  it("places required scope controls above source-backed summaries and records", () => {
+    renderExplorer(undefined, createExplorerDto(), undefined, <input aria-label="Run scope" />);
+    const scope = screen.getByRole("textbox", { name: "Run scope" });
+    expect(scope.compareDocumentPosition(screen.getByLabelText("Explorer summary")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(scope.compareDocumentPosition(screen.getByRole("grid", { name: "Ledger Explorer records" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it("renders source-backed DTO rows and opens row proof detail", async () => {
     const user = userEvent.setup();
     renderExplorer();
@@ -605,7 +612,8 @@ describe("FinancialRecordExplorerShell", () => {
 function renderExplorer(
   onSaveView?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSaveView"],
   explorer: FinancialRecordExplorerDto = createExplorerDto(),
-  onSelectRecord?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSelectRecord"]
+  onSelectRecord?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSelectRecord"],
+  scopeControls?: Parameters<typeof FinancialRecordExplorerShell>[0]["scopeControls"]
 ) {
   return render(
     <FinancialRecordExplorerShell
@@ -619,6 +627,7 @@ function renderExplorer(
       explorer={explorer}
       onSaveView={onSaveView}
       onSelectRecord={onSelectRecord}
+      scopeControls={scopeControls}
     >
       <div>Fallback static content</div>
     </FinancialRecordExplorerShell>
