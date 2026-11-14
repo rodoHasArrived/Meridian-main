@@ -31,7 +31,8 @@ public static partial class IntercompanyAgreementRules
     }
 
     private static decimal? CanonicalDecimal(decimal? value) => value is { } amount
-        ? decimal.Parse(amount.ToString("G29", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture) : null;
+        ? decimal.Parse(amount.ToString("G29", CultureInfo.InvariantCulture), NumberStyles.Number | NumberStyles.AllowExponent,
+            CultureInfo.InvariantCulture) : null;
 
     private static void ValidateStructuredShape(IntercompanyStructuredTermsDto terms)
     {

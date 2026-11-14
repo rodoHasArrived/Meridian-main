@@ -20,6 +20,10 @@ External-review evidence verifies accepted immutable documents, separately from 
 operator. The close-readiness companion does not become a blocker. See
 [the intercompany procedure](../../docs/operators/intercompany-entity-controls.md).
 
+Ordinary agreement approval and rejection retain `ManageFundStructure` or `AdminMaintenance`
+authority. `ManageCompliance` authorizes the explicit evidence-bound external-review path; it does
+not grant ordinary agreement review.
+
 The obligation endpoint alone formats embedded schedule decimals as exact strings. The canonical
 balance-schedule serializer and its evidence fingerprint are unchanged; this response formatting
 does not create a second schedule authority.

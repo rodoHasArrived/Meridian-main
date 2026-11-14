@@ -152,6 +152,8 @@ public static class IntercompanyAgreementEndpoints
                         OperationsOriginGuard.RequireHumanOperator(
                             EndpointAuthorization.ResolveTrustedActionOrigin(http, OperationsActionOriginDto.HumanOperator),
                             "review intercompany agreement terms");
+                    if (command.ExternalReview is null && !CanMutate(http))
+                        return EndpointHelpers.Forbidden();
                     if (command.ExternalReview is not null && !EndpointAuthorization.HasPermission(http, UserPermission.ManageCompliance))
                         return EndpointHelpers.Forbidden();
                     if (command.ExternalReview is not null)

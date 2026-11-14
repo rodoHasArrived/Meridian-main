@@ -12358,6 +12358,7 @@ Meridian-main
 │   │   ├── IntercompanyAgreementServiceTests.cs
 │   │   ├── IntercompanyAgreementServiceTests.ExternalReview.cs
 │   │   ├── IntercompanyAgreementServiceTests.Lifecycle.cs
+│   │   ├── IntercompanyStructuredDecimalTests.cs
 │   │   ├── IntercompanyStructuredTermsTests.cs
 │   │   ├── LedgerGroupingRulesTests.cs
 │   │   └── Meridian.FundStructure.Tests.csproj
@@ -13189,6 +13190,7 @@ Meridian-main
 │   │   │   └── DeclaredExerciseNonBondClassTests.cs
 │   │   ├── FundStructure
 │   │   │   ├── EntityLifecycleExternalReviewTests.cs
+│   │   │   ├── EntityLifecycleProjectionRecoveryTests.cs
 │   │   │   ├── GovernanceCashFlowTransactionFeedTests.cs
 │   │   │   └── OwnershipGraphValidationTests.cs
 │   │   ├── Futures
@@ -14488,6 +14490,7 @@ Meridian-main
 │   │   │   ├── IntercompanyAgreementEndpointTests.cs
 │   │   │   ├── IntercompanyAgreementEvidenceAuthorityTests.cs
 │   │   │   ├── IntercompanyAgreementJournalProjectionTests.cs
+│   │   │   ├── IntercompanyAgreementReviewPermissionTests.cs
 │   │   │   ├── IntercompanyCloseAdvisoryAuthorizationTests.cs
 │   │   │   ├── IntercompanyObligationEndpointTests.cs
 │   │   │   ├── IntercompanyProposalResolutionTests.cs

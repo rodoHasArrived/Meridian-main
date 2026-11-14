@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.Application
@@ -17,6 +17,10 @@ dates only. An explicit evidence-bound external-review attestation lets the prep
 record external legal review while ordinary independent review remains available; legal lifecycle
 revisions retain the same separate audit facts. See
 [terms and review boundaries](../../docs/domain/intercompany-agreements.md).
+
+Structured decimal normalization preserves representable declarations when canonical formatting
+uses an exponent. Retrying an externally reviewed lifecycle append repairs an interrupted local
+profile projection from the latest retained revision while holding the history read lease.
 
 Shared `ConfigStore` saves retain a host-lifetime activation record containing only field names,
 impact classes and timestamps. Symbol changes are `Live`, streaming provider selection/options

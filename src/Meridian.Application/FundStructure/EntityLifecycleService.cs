@@ -58,7 +58,10 @@ public sealed class EntityLifecycleService(
             if (retryRevision?.ExternalReview is { } receipt && receipt.Operator == actor.Trim()
                 && receipt.SubmittedHash == EntityLifecycleExternalReviewIntegrity.SubmittedHash(request)
                 && SameExternalReview(retryReview, receipt))
+            {
+                await ApplyLatestProjectionAsync(tenant, request.EntityId, ct).ConfigureAwait(false);
                 return retryRevision;
+            }
         }
         foreach (var successorId in request.Timeline.Where(state => state.SuccessorEntityId.HasValue).Select(state => state.SuccessorEntityId!.Value).Distinct())
         {
@@ -93,9 +96,21 @@ public sealed class EntityLifecycleService(
             previous?.ContentHash ?? string.Empty, string.Empty, request.Timeline)
         { ExternalReview = externalReview });
         var retained = await store.AppendAsync(revision, request.ExpectedRevision, ct).ConfigureAwait(false);
-        if (structure is IEntityLifecycleProjectionSink projection)
-            await projection.ApplyLifecycleProjectionAsync(retained, ct).ConfigureAwait(false);
+        await ApplyLatestProjectionAsync(tenant, request.EntityId, ct).ConfigureAwait(false);
         return retained;
+    }
+
+    private async Task ApplyLatestProjectionAsync(string tenant, Guid entityId, CancellationToken ct)
+    {
+        if (structure is IEntityLifecycleProjectionSink projection)
+        {
+            // Appending history and persisting a local profile are separate operations. A retry
+            // must repair that projection without replaying an older receipt over later history.
+            await using var lease = await store.AcquireReadLeaseAsync(tenant, [entityId], ct).ConfigureAwait(false);
+            var latest = await store.GetLatestAsync(tenant, entityId, ct).ConfigureAwait(false)
+                ?? throw new InvalidOperationException("Retained lifecycle history is unavailable for projection.");
+            await projection.ApplyLifecycleProjectionAsync(latest, ct).ConfigureAwait(false);
+        }
     }
 
     private static bool SameExternalReview(IntercompanyExternalReviewDto requested,
