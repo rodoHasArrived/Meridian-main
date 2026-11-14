@@ -32,6 +32,7 @@ describe("Native intercompany obligation observations", () => {
   });
   it("clears stale results immediately when the date changes and preserves unavailable authority", async () => {
     renderWithRouter(<EntityObligationMonitor scope={{ ...scope, capabilities: { ...scope.capabilities, canManageLedger: false } }} />);
+    fireEvent.change(screen.getByLabelText("Obligation monitoring as of"), { target: { value: "2026-11-13" } });
     fireEvent.click(screen.getByRole("button", { name: "Evaluate intercompany obligations" }));
     await screen.findByText("Partial · Incomplete observation");
     fireEvent.change(screen.getByLabelText("Obligation monitoring as of"), { target: { value: "2026-11-14" } });
