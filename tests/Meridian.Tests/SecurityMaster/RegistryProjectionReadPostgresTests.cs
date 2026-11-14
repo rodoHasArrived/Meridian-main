@@ -175,6 +175,34 @@ public sealed class RegistryProjectionReadPostgresTests : IClassFixture<Security
             .Select(row => row.CovenantType + ":" + row.Threshold).Should().Equal("MaxLeverage:5.0x");
     }
 
+    [SecurityMasterDatabaseFact]
+    public async Task ProjectionReadSnapshot_IsAReadOnlyRepeatableReadTransaction()
+    {
+        var reader = new PostgresReferenceProjectionReader(_fixture.Options);
+
+        await using var snapshot = await reader.BeginSnapshotAsync(CancellationToken.None);
+
+        var settings = await snapshot.QuerySingleAsync(
+            "select current_setting('transaction_read_only') as read_only, current_setting('transaction_isolation') as isolation;",
+            Array.Empty<Npgsql.NpgsqlParameter>(),
+            row => new SnapshotSettings(row.String("read_only"), row.String("isolation")),
+            CancellationToken.None);
+
+        settings.Should().Be(new SnapshotSettings("on", "repeatable read"));
+
+        // A write through the snapshot is rejected by the server, not merely discouraged.
+        var write = () => snapshot.QueryAsync(
+            "create temp table projection_snapshot_write_probe (id int);",
+            Array.Empty<Npgsql.NpgsqlParameter>(),
+            row => 0,
+            CancellationToken.None);
+
+        (await write.Should().ThrowAsync<Npgsql.PostgresException>())
+            .Which.SqlState.Should().Be("25006"); // read_only_sql_transaction
+    }
+
+    private sealed record SnapshotSettings(string ReadOnly, string Isolation);
+
     private static object DirectLoanTerms(
         string borrower,
         IReadOnlyList<(string Type, string Threshold)> covenants,
