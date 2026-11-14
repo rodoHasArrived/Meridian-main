@@ -151,6 +151,12 @@ contracts aligned with shared UI models and compatibility gates.
 
 ## Important workflows
 
+UI logging accepts named message placeholders with the existing string tuple properties, for
+example `LogError("Failed to load {Symbol}", exception, ("Symbol", symbol))`. The shared formatter
+retains property fields and renders the message for desktop Activity Log consumers. Unknown
+placeholders remain visible, property values are not parsed as templates, and messages without
+properties retain their literal text. `LoggingServiceBaseTests` covers rendering and exception retention.
+
 Reporting status projections translate application report manifests into operator read models with template family, approval status, retry attempt, artifact, audit, and section lineage counts. Keep these projections aligned with browser and WPF Reporting surfaces so both shells show the same generated-run state.
 Preview and estimate services must fail closed when the API cannot return source-backed numbers.
 Analysis export projections also fail closed when an artifact omits its physical format or when the
@@ -222,6 +228,7 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~LoggingServiceBaseTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~WorkstationAccountingCloseApiClientTests" --logger "console;verbosity=normal"
 ```

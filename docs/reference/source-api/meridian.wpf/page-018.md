@@ -269,7 +269,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.PortfolioWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:352](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L352).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:355](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L355).
 
 Binds derived pages to the portfolio workspace shell definition.
 
@@ -438,7 +438,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.ReportingWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:366](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L366).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:369](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L369).
 
 Binds derived pages to the reporting workspace shell definition.
 
@@ -870,7 +870,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.SettingsWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:338](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L338).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:341](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L341).
 
 Binds derived pages to the settings workspace shell definition.
 

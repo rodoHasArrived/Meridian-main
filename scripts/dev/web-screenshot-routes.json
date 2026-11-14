@@ -652,7 +652,7 @@
         "/api/ledger/journal-entry-workbench"
       ],
       "waitForTexts": [
-        "Manual journal entries",
+        "Manual journal entry workbench",
         "Month-end investment income adjustment",
         "Balanced"
       ]

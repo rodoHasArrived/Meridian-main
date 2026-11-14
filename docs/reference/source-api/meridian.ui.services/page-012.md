@@ -987,8 +987,9 @@ Declared public members:
 | <code>public void LogInfo(string message, params(string key, string value)[] properties) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:57](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L57) |  |
 | <code>public void LogWarning(string message, params(string key, string value)[] properties) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:60](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L60) |  |
 | <code>public void LogError(string message, Exception? ex = null) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:63](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L63) |  |
-| <code>public void LogDebug(string message, params(string key, string value)[] properties) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:66](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L66) |  |
-| <code>public static string FormatLogEntry(LogLevel level, DateTime timestamp, string message, Exception? exception, (string key, string value)[] properties);</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:107](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L107) |  |
+| <code>public void LogError(string message, Exception? ex, params(string key, string value)[] properties) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:66](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L66) |  |
+| <code>public void LogDebug(string message, params(string key, string value)[] properties) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:69](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L69) |  |
+| <code>public static string FormatLogEntry(LogLevel level, DateTime timestamp, string message, Exception? exception, (string key, string value)[] properties);</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:111](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L111) |  |
 
 ## LogLevel
 

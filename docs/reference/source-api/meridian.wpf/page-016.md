@@ -636,10 +636,10 @@ Declared public members:
 | <code>public async Task StartAsync();</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:448](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L448) |  |
 | <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:465](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L465) |  |
 | <code>public async Task RefreshAsync();</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:480](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L480) |  |
-| <code>public void ExecuteCommandAction(string actionId) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:512](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L512) |  |
-| <code>public void ExecuteHeroPrimaryAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:549](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L549) |  |
-| <code>public void ExecuteHeroSecondaryAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:552](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L552) |  |
-| <code>public void ExecuteWorkflowNextAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:555](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L555) |  |
+| <code>public void ExecuteCommandAction(string actionId) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:513](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L513) |  |
+| <code>public void ExecuteHeroPrimaryAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:551](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L551) |  |
+| <code>public void ExecuteHeroSecondaryAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:554](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L554) |  |
+| <code>public void ExecuteWorkflowNextAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:557](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L557) |  |
 
 ## TrendStatistics
 
@@ -1178,7 +1178,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.AccountingWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:324](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L324).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:327](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L327).
 
 Binds derived pages to the accounting workspace shell definition.
 

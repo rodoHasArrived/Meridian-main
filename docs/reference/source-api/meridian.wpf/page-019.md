@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Wpf.Views.StrategyWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:282](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L282).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:285](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L285).
 
 Binds derived pages to the strategy workspace shell definition.
 
@@ -203,7 +203,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.TradingWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:296](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L296).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:299](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L299).
 
 Binds derived pages to the trading workspace shell definition.
 

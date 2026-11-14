@@ -142,7 +142,8 @@ public sealed class DataWorkspaceShellSnapshotService : IDataWorkspaceShellSnaps
         }
         catch (Exception ex)
         {
-            WpfLoggingService.Instance.LogWarning($"[DataWorkspaceShell] {operationName} unavailable: {ex.Message}");
+            WpfLoggingService.Instance.LogWarning("[DataWorkspaceShell] {Operation} unavailable: {Error}",
+                ("Operation", operationName), ("Error", ex.Message));
             return fallback;
         }
     }

@@ -788,7 +788,7 @@ public partial class MainWindow : Window
         using var stream = File.Create(targetPath);
         encoder.Save(stream);
 
-        Meridian.Wpf.Services.LoggingService.Instance.LogInfo($"Saved automation screenshot to '{targetPath}'.");
+        Meridian.Wpf.Services.LoggingService.Instance.LogInfo("Saved automation screenshot to '{Path}'.", ("Path", targetPath));
     }
 
     private async Task EnsureMainPageShellReadyAsync(CancellationToken ct = default)
