@@ -34,7 +34,7 @@ import {
   readStoredOperatingScope,
   writeStoredOperatingScope
 } from "@/lib/operating-scope/persistence";
-import { WorkflowContextDisclosure } from "@/components/meridian/workflow-continuity-dock";
+import { WorkflowContextDisclosure } from "@/components/meridian/workflow-context-disclosure";
 import { OperatingScopeBar } from "@/components/meridian/operating-scope-bar";
 import { WorkspaceViewsMenu } from "@/components/meridian/workspace-views-menu";
 import { WorkspaceStatus } from "@/components/meridian/workspace-status";
