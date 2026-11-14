@@ -50,7 +50,6 @@ import { cn } from "@/lib/utils";
 import { getPositionSideOptions, selectPortfolioPositionRows } from "@/lib/portfolio-positions-table";
 import { usePortfolioPositionsTable } from "@/hooks/use-portfolio-positions-table";
 import { PortfolioPositionsToolbar } from "@/screens/portfolio-positions-toolbar";
-import { readinessToneToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { bondWorkflowRoute, holdingBondWorkflowRoute } from "@/lib/fixed-income-navigation";
 import {
@@ -83,6 +82,7 @@ import { resolveFigureEvidence, resolveFigureScope, useWorkspaceFigureContext } 
 import { FigureDifferenceNote } from "@/components/meridian/figure-difference-note";
 import { buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
 import { withPortfolioMarkEvidence } from "@/screens/portfolio-screen.headline-evidence";
+import { toSeverity } from "@/design-system/status-styles";
 
 interface PortfolioScreenProps {
   portfolio?: PortfolioWorkspaceResponse | null;
@@ -1014,7 +1014,7 @@ export function PortfolioScreen({
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <h3 className="text-base font-semibold text-foreground">{vm.brokerageTrustSnapshot.title}</h3>
                   <SeverityBadge
-                    status={readinessToneToSeverityStatus(vm.brokerageTrustSnapshot.statusTone)}
+                    status={toSeverity(vm.brokerageTrustSnapshot.statusTone)}
                     label={vm.brokerageTrustSnapshot.statusLabel}
                   />
                 </div>

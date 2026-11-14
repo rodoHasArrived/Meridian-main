@@ -31,7 +31,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction 
 import { getJournalOrder, previewExecutionOrder, type ServerOrderPreview, type SessionIntent } from "@/lib/api/execution-workflows.api";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
-import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue, pluralizeCount } from "@/lib/format";
+import { formatCurrency, formatDecimal, formatMoney as formatMoneyValue, formatPercent, formatQuantity as formatQuantityValue, pluralizeCount } from "@/lib/format";
 import { buildExecutionAuditRow, type ExecutionAuditRow, type ExecutionEvidenceTone } from "./trading-screen.execution-audit-rows";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { readCancelAllPreview, type CancelAllPreview } from "./trading-screen.cancel-preview";
@@ -45,7 +45,7 @@ import {
 import {
   buildTradingReadinessSummaryRows,
   formatReadinessStatusValue,
-  formatTradingUtcDateTime as formatUtcDateTime,
+  formatTradingDateTime,
   type AcceptanceLevel,
   type TradingReadinessSummaryRow
 } from "@/screens/trading-screen.readiness-summary";
@@ -234,6 +234,20 @@ export function useTradingScreenShellViewModel({
   );
 }
 
+/** The broker link in operator words; an unknown state says the status is unavailable. */
+export function describeBrokerConnection(connection: TradingWorkspaceResponse["brokerage"]["connection"] | undefined): string {
+  switch (connection) {
+    case "Connected":
+      return "Online";
+    case "Degraded":
+      return "Degraded";
+    case "Disconnected":
+      return "Offline";
+    default:
+      return "Status unavailable";
+  }
+}
+
 export function buildTradingScreenShellViewModel({
   pathname,
   data,
@@ -254,8 +268,7 @@ export function buildTradingScreenShellViewModel({
   const positionCount = data?.positions.length ?? 0;
   const openOrderCount = data?.openOrders.length ?? 0;
   const fillCount = data?.fills.length ?? 0;
-  const connection = data?.brokerage.connection ?? "Unavailable";
-  const activeLabel = activeWorkflowPanel ? workflowPanelLabel(activeWorkflowPanel) : "None";
+  const activeLabel = activeWorkflowPanel ? workflowPanelLabel(activeWorkflowPanel) : null;
 
   return {
     route: {
@@ -279,10 +292,12 @@ export function buildTradingScreenShellViewModel({
       statusText: activeWorkflowPanel
         ? `${activeLabel} panel open. Press Escape or the close button to return to the trading cockpit.`
         : "No workflow panel open.",
+      // Plain-language posture: the broker link reads as a sentence, and the open panel is only
+      // named while one is open (an always-on "Panel: None" reads like debug output).
       chips: [
         { label: "Positions", value: String(positionCount) },
-        { label: "Connection", value: connection },
-        { label: "Panel", value: activeLabel }
+        { label: "Broker", value: describeBrokerConnection(data?.brokerage.connection) },
+        ...(activeLabel ? [{ label: "Open panel", value: activeLabel }] : [])
       ],
       commands: [
         buildWorkflowCommand("strategy", activeWorkflowPanel),
@@ -1048,7 +1063,7 @@ function buildTradingReadinessAnnouncement({
   }
 
   if (readiness) {
-    return `Trading readiness ${formatReadinessStatusValue(readiness.overallStatus).toLowerCase()} as of ${formatUtcDateTime(readiness.asOf)}.`;
+    return `Trading readiness ${formatReadinessStatusValue(readiness.overallStatus).toLowerCase()} as of ${formatTradingDateTime(readiness.asOf)}.`;
   }
 
   return "";
@@ -1868,11 +1883,11 @@ function buildPaperSessionRows({
     return {
       sessionId: session.sessionId,
       strategyId: session.strategyId,
-      initialCashText: formatUsdValue(session.initialCash),
+      initialCashText: formatCurrency(session.initialCash),
       statusLabel,
       isActive: session.isActive,
       isSelected: selectedSessionId === session.sessionId,
-      ariaLabel: `${session.sessionId}, ${session.strategyId}, ${statusLabel}, ${formatUsdValue(session.initialCash)} initial cash`,
+      ariaLabel: `${session.sessionId}, ${session.strategyId}, ${statusLabel}, ${formatCurrency(session.initialCash)} initial cash`,
       restoreButtonLabel: rowBusy && busyCommand?.kind === "restoring" ? "Restoring…" : "Restore",
       verifyButtonLabel: rowBusy && busyCommand?.kind === "verifying" ? "Verifying…" : "Verify replay",
       closeButtonLabel: rowBusy && busyCommand?.kind === "closing" ? "Closing…" : "Close",
@@ -1929,14 +1944,14 @@ function buildPaperSessionDetailPanel(
     ariaLabel: `Paper session detail for ${detail.summary.sessionId}`,
     infoRows: [
       { label: "Strategy", value: detail.summary.strategyId },
-      { label: "Initial cash", value: formatUsdValue(detail.summary.initialCash) },
+      { label: "Initial cash", value: formatCurrency(detail.summary.initialCash) },
       { label: "Tracked symbols", value: detail.symbols.length > 0 ? detail.symbols.join(", ") : "None" },
       { label: "Orders retained", value: String(detail.orderHistory?.length ?? 0) }
     ],
     metricRows: detail.portfolio
       ? [
-          { label: "Cash", value: formatUsdValue(detail.portfolio.cash) },
-          { label: "Portfolio value", value: formatUsdValue(detail.portfolio.portfolioValue) },
+          { label: "Cash", value: formatCurrency(detail.portfolio.cash) },
+          { label: "Portfolio value", value: formatCurrency(detail.portfolio.portfolioValue) },
           { label: "Open positions", value: String(detail.portfolio.positions.length) }
         ]
       : [],
@@ -2015,10 +2030,6 @@ function parsePaperSessionCash(value: string): number | null {
 
 function getPaperSessionStatus(session: PaperSessionSummary): string {
   return session.isActive ? "Active" : "Closed";
-}
-
-function formatUsdValue(value: number): string {
-  return formatCurrency(value);
 }
 
 export type SessionReplayCommandKind =
@@ -3524,7 +3535,7 @@ export function buildOrderPreview({ form, positions, risk }: BuildOrderPreviewOp
 
   const riskNote = buildOrderPreviewRiskNote(risk);
   const referencePriceLabel = referencePrice === null ? "—" : formatPrice(referencePrice);
-  const notionalLabel = notional === null ? "—" : formatMoney(notional);
+  const notionalLabel = notional === null ? "—" : formatMoneyValue(notional, { context: "trading", decimals: 2 });
   const resultingPositionLabel = available
     ? describeResultingPosition(resultingSignedQuantity, symbol)
     : "—";
@@ -3793,7 +3804,7 @@ function buildOrderPreviewSummary({
 }): string {
   const qtyText = formatQuantity(quantity);
   const priceText = referencePrice !== null
-    ? ` ≈ ${formatMoney(referencePrice * quantity)} @ ${formatPrice(referencePrice)}${priceSource === "limit" || priceSource === "stop" ? "" : " (" + describePriceSourceLabel(priceSource).toLowerCase() + ")"}`
+    ? ` ≈ ${formatMoneyValue(referencePrice * quantity, { context: "trading", decimals: 2 })} @ ${formatPrice(referencePrice)}${priceSource === "limit" || priceSource === "stop" ? "" : " (" + describePriceSourceLabel(priceSource).toLowerCase() + ")"}`
     : "";
   return `${side} ${qtyText} ${symbol} ${type.toLowerCase()}${priceText}`;
 }
@@ -3812,10 +3823,6 @@ function parseLooseNumber(value: string | null | undefined): number | null {
 
 function formatPrice(value: number): string {
   return formatQuantityValue(value, { minDecimals: 2, maxDecimals: 2 });
-}
-
-function formatMoney(value: number): string {
-  return formatMoneyValue(value, { context: "trading", decimals: 2 });
 }
 
 function formatQuantity(value: number): string {
@@ -4467,9 +4474,9 @@ function buildPromotionEvaluationPanel(
     eligibleLabel: evaluation.isEligible ? "Eligible: Yes" : "Eligible: No",
     eligibleTone: evaluation.isEligible ? "success" : "warning",
     metrics: [
-      { id: "sharpe", label: "Sharpe", value: evaluation.sharpeRatio.toFixed(2) },
-      { id: "max-drawdown", label: "Max DD", value: `${evaluation.maxDrawdownPercent.toFixed(1)}%` },
-      { id: "total-return", label: "Return", value: `${evaluation.totalReturn.toFixed(1)}%` }
+      { id: "sharpe", label: "Sharpe", value: formatDecimal(evaluation.sharpeRatio, 2) },
+      { id: "max-drawdown", label: "Max DD", value: formatPercent(evaluation.maxDrawdownPercent, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) },
+      { id: "total-return", label: "Return", value: formatPercent(evaluation.totalReturn, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) }
     ],
     reason: evaluation.reason?.trim() ? evaluation.reason : null,
     warnings,

@@ -3,8 +3,8 @@ import * as workstationApi from "@/lib/api";
 import { describeApiError, isApiError } from "@/lib/api-errors";
 import { rebaseToFirst, sampleEvenly } from "@/components/charts/compare-series";
 import type { CompareItem, CompareSeriesState } from "@/components/charts/SelectionCompare";
-import { formatCount as formatCountValue, formatNumber } from "@/lib/format";
-import { formatMoney, formatSignedPercent, formatText } from "@/screens/strategy-screen.formatters";
+import { formatCount as formatCountValue, formatMoney, formatNumber, formatRatioAsPercent } from "@/lib/format";
+import { formatText, STRATEGY_MONEY, STRATEGY_SIGNED_RETURN } from "@/screens/strategy-screen.formatters";
 import type { StrategyRunLibraryServices } from "@/screens/strategy-screen.view-model";
 import type { EquityCurveSummary, StrategyRunRecord } from "@/types";
 
@@ -122,7 +122,7 @@ export function formatStrategyEquityPathIndex(value: number, scale?: { step: num
 /** Total return exactly as the run record reports it; never derived from the plotted path. */
 export function formatStrategyEquityPathTotalReturn(run: StrategyRunRecord | undefined): string {
   return typeof run?.totalReturn === "number" && Number.isFinite(run.totalReturn)
-    ? formatSignedPercent(run.totalReturn)
+    ? formatRatioAsPercent(run.totalReturn, STRATEGY_SIGNED_RETURN)
     : "Not reported";
 }
 
@@ -153,8 +153,8 @@ export function buildStrategyEquityPathView(
   const detail = {
     curveDatesText: points.length > 0 ? `${points[0].date} to ${points[points.length - 1].date}` : EQUITY_PATH_NO_DETAIL,
     curvePointsText: formatCountValue(points.length),
-    initialEquityText: formatMoney(load.curve.initialEquity),
-    finalEquityText: formatMoney(load.curve.finalEquity)
+    initialEquityText: formatMoney(load.curve.initialEquity, STRATEGY_MONEY),
+    finalEquityText: formatMoney(load.curve.finalEquity, STRATEGY_MONEY)
   };
   const sampled = sampleEvenly(points, STRATEGY_EQUITY_PATH_POINT_COUNT).map((point) => point.totalEquity);
   if (sampled.length === 0) {

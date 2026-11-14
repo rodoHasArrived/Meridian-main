@@ -18,9 +18,11 @@
   letter-spacing: 0.04em;
   padding: 0 7px;
   text-transform: uppercase;
+  /* A status is never clipped ("OPE"): a one- or two-word badge keeps its full width and does not
+     shrink in a flex row; a sentence badge wraps instead (see --sentence). */
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex-shrink: 0;
+  min-width: max-content;
 }
 
 /* Counts and sentences read in normal case; tracked caps are for one- or two-word badges. */
@@ -30,6 +32,12 @@
   font-weight: 600;
   letter-spacing: 0;
   text-transform: none;
+  white-space: normal;
+  overflow-wrap: break-word;
+  min-width: 0;
+  flex-shrink: 1;
+  line-height: 1.25;
+  padding-block: 2px;
 }
 
 .mds-sev__dot { height: 5px; width: 5px; border-radius: 50%; background: currentColor; flex: 0 0 auto; }

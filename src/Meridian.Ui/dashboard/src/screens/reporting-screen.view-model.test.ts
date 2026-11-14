@@ -972,7 +972,7 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.workflowTaskPanel?.restatementReview.changedLines).toEqual([
       expect.objectContaining({
         lineKey: "nav.total",
-        valueBridge: "1250000 -> 1249500",
+        valueBridge: "1250000 → 1249500",
         evidenceLabel: "1 evidence link",
         evidenceHref: "/reporting/evidence?subject=pricing"
       })

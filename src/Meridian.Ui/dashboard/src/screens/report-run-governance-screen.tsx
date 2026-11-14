@@ -49,7 +49,7 @@ import type {
   SecureReportingDistributionCapabilityCatalog,
   SecureReportingIssuedAccessGrant
 } from "@/types/reporting-governance";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatDecimal, formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
 
 type ResourcePhase = "loading" | "ready" | "unavailable";
 
@@ -1812,14 +1812,14 @@ function formatTimestamp(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : formatUtcTimestamp(date);
+    : formatDisplayTimestamp(date);
 }
 
 function formatBytes(value: number): string {
   if (!Number.isFinite(value) || value < 0) return "Unavailable";
   if (value < 1024) return `${value} B`;
-  if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
-  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+  if (value < 1024 * 1024) return `${formatDecimal(value / 1024, 1)} KB`;
+  return `${formatDecimal(value / (1024 * 1024), 1)} MB`;
 }
 
 function presentTransition(from: string | null, to: string | null): string {

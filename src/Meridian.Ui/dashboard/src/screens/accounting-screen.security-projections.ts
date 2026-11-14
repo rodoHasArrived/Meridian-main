@@ -31,7 +31,7 @@ import type {
   SecurityMasterTrustSnapshot,
   TradingParameters
 } from "@/types";
-import { formatCount as formatCountValue, formatNumber } from "@/lib/format";
+import { formatAmountWithCode, formatCount as formatCountValue, formatDecimal, formatNumber, formatPercent } from "@/lib/format";
 
 // Domain-specific projections and components shared by the screen composition.
 
@@ -572,7 +572,7 @@ export function buildSecuritySchedulesViewState({
 
 
 export function buildSecurityScheduleDetailViewState(row: SecurityScheduleRowViewModel): SecurityScheduleDetailViewState {
-  const accrualWindow = `${formatSecurityDate(row.accrualStartDate)} -> ${formatSecurityDate(row.accrualEndDate)}`;
+  const accrualWindow = `${formatSecurityDate(row.accrualStartDate)} → ${formatSecurityDate(row.accrualEndDate)}`;
   const varianceTone = scheduleVarianceTone(row.expectedAmount, row.actualAmount, row.postingStatus);
 
   return {
@@ -589,7 +589,7 @@ export function buildSecurityScheduleDetailViewState(row: SecurityScheduleRowVie
       { label: "Event type", value: row.eventTypeLabel },
       { label: "Payment date", value: row.paymentDateLabel },
       { label: "Accrual window", value: accrualWindow, tone: accrualWindow.includes("—") ? "warning" : "default" },
-      { label: "Coupon rate", value: row.couponRatePct !== null ? `${row.couponRatePct.toFixed(3)}%` : "—" },
+      { label: "Coupon rate", value: row.couponRatePct !== null ? formatPercent(row.couponRatePct, { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : "—" },
       { label: "Interest", value: formatScheduleAmount(row.interestAmount, row.currency) },
       { label: "Principal", value: formatScheduleAmount(row.principalAmount, row.currency) },
       { label: "Expected", value: row.expectedAmountLabel },
@@ -731,7 +731,7 @@ export function buildSecurityOpenLotRows(
         ? formatQuantity(lot.factorAdjustedFace)
         : "—";
     const costBasisLabel = formatScheduleAmount(lot.costBasis, lot.currency);
-    const unrealizedPnlLabel = lot.unrealizedPnl !== null ? formatSignedScheduleAmount(lot.unrealizedPnl, lot.currency) : "—";
+    const unrealizedPnlLabel = lot.unrealizedPnl !== null ? formatAmountWithCode(lot.unrealizedPnl, lot.currency, { signed: true, minimumFractionDigits: 0, maximumFractionDigits: 2 }) : "—";
     const statusTone = openLotStatusTone(lot.lotStatus);
 
     return {
@@ -826,7 +826,7 @@ export function buildSecurityOpenLotDetailViewState(
 ): SecurityOpenLotDetailViewState {
   const quantityModel = readModel?.quantityModel || "Unspecified quantity model";
   const factor = readModel?.currentFactor !== null && readModel?.currentFactor !== undefined
-    ? readModel.currentFactor.toFixed(6)
+    ? formatDecimal(readModel.currentFactor, 6)
     : "—";
 
   return {
@@ -1372,20 +1372,6 @@ export function formatScheduleAmount(value: number | null, currency: string): st
 }
 
 
-export function formatSignedScheduleAmount(value: number, currency: string): string {
-  if (!Number.isFinite(value)) {
-    return "—";
-  }
-
-  if (value === 0) {
-    return `0 ${currency}`;
-  }
-
-  const sign = value > 0 ? "+" : "-";
-  return `${sign}${formatNumber(Math.abs(value), { maximumFractionDigits: 2 })} ${currency}`;
-}
-
-
 export function formatQuantity(value: number | null): string {
   if (value === null || !Number.isFinite(value)) {
     return "—";
@@ -1442,9 +1428,9 @@ export function formatScheduleFactor(start: number | null, end: number | null): 
     return "—";
   }
 
-  const startLabel = start === null ? "—" : start.toFixed(6);
-  const endLabel = end === null ? "—" : end.toFixed(6);
-  return `${startLabel} -> ${endLabel}`;
+  const startLabel = start === null ? "—" : formatDecimal(start, 6);
+  const endLabel = end === null ? "—" : formatDecimal(end, 6);
+  return `${startLabel} → ${endLabel}`;
 }
 
 

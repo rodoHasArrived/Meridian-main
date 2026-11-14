@@ -13,8 +13,8 @@ import {
   withReportingWorkSelection
 } from "@/components/meridian/reporting-hub.selection";
 import { cn } from "@/lib/utils";
-import { badgeVariantToSeverityStatus, semanticToneToTextClass } from "@/lib/shared-tone-mappings";
 import type { ReportingHubCard, ReportingHubDailyWorkItem, ReportingHubModel } from "@/lib/reporting-hub";
+import { statusTextClass, toSeverity } from "@/design-system/status-styles";
 
 export interface ReportingHubProps {
   model: ReportingHubModel;
@@ -36,7 +36,7 @@ const reportingWorkColumns: DenseDataTableColumn<ReportingHubDailyWorkItem>[] = 
   {
     id: "state",
     label: "State",
-    render: (item) => <SeverityBadge status={badgeVariantToSeverityStatus(item.badgeVariant)} label={item.statusLabel} />
+    render: (item) => <SeverityBadge status={toSeverity(item.badgeVariant)} label={item.statusLabel} />
   },
   { id: "owner", label: "Owner", render: (item) => <span className="text-xs text-muted-foreground">{item.owner}</span> },
   { id: "due", label: "Due", render: (item) => <span className="text-xs text-muted-foreground">{item.dueLabel ?? "Not supplied"}</span> }
@@ -54,13 +54,13 @@ const reportFamilyColumns: DenseDataTableColumn<ReportingHubCard>[] = [
     label: "Readiness",
     // Families that need attention come first in ascending order.
     sortValue: (card) => `${card.needsAttention ? 0 : 1} ${card.statusLabel}`,
-    render: (card) => <SeverityBadge status={badgeVariantToSeverityStatus(card.badgeVariant)} label={card.statusLabel} />
+    render: (card) => <SeverityBadge status={toSeverity(card.badgeVariant)} label={card.statusLabel} />
   },
   {
     id: "approved",
     label: "Latest approved",
     hideable: true,
-    render: (card) => <span className={cn("text-xs", semanticToneToTextClass(card.statusTone))}>{card.approvedAsOfLabel}</span>
+    render: (card) => <span className={cn("text-xs", statusTextClass(card.statusTone))}>{card.approvedAsOfLabel}</span>
   },
   {
     id: "activity",

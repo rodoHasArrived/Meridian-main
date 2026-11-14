@@ -145,7 +145,7 @@ describe("CapitalAccountWorkbenchPanel rollforward proof", () => {
     ]);
 
     // Existing labels are untouched.
-    expect(screen.getByText("+$100.00 USD opening -> +$180.00 USD ending")).toBeInTheDocument();
+    expect(screen.getByText("+$100.00 USD opening → +$180.00 USD ending")).toBeInTheDocument();
     expect(screen.getByText(/Contributions \$125 USD \/ Distributions \$0 USD/)).toBeInTheDocument();
 
     const proof = proofFor("LP 1 capital account");
