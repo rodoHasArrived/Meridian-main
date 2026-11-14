@@ -148,7 +148,9 @@ See the [Security Master extensibility review](../../docs/architecture/security-
 
 `EventPipelinePolicy.CreateChannel` accepts an item-dropped callback so the owning pipeline can count
 evictions. `ConfigJsonSchemaGenerator` declares the sample configuration's `Settings`, `Serilog` and
-`$schema` keys.
+`$schema` keys. It emits string-keyed mutable and read-only dictionaries as JSON objects
+with typed `additionalProperties`, before considering enumerable collection shapes. Nullable
+interface-backed maps accept null, matching serialized provider validation profiles and rollout modes.
 
 ## Diagrams
 
