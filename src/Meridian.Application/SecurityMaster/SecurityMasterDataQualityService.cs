@@ -289,9 +289,10 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
 
     /// <summary>
     /// Flags an active record whose asset-specific terms carry no declared <c>termsFormat</c> tag
-    /// (rule TX003). These are the rows the ADR-024 shape rule still classifies by inference; the
-    /// tag is stamped on the record's next write, so the rule names the record rather than asking
-    /// for a payload rewrite — ADR-024 rejected rewriting stored blobs. The report-level
+    /// (rule TX003). Migration 068 declared the family on every stored row and its constraint refuses
+    /// new untagged rows, and live readers no longer infer a family by shape (ADR-024 amendment
+    /// 2026-11-13 step 5), so the rule stays as a regression monitor: a violation names a record that
+    /// live readers refuse. The report-level
     /// <see cref="SecurityMasterQualityReportDto.UntaggedTermsPayloadCount"/> gauges the whole
     /// stored population, inactive rows included.
     /// </summary>
@@ -303,14 +304,11 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
             yield break;
         }
 
-        var inferredFamily = security.AssetSpecificTerms.ValueKind == JsonValueKind.Object
-            ? SecurityTermsEnvelope.ResolveFormat(security.AssetSpecificTerms)
-            : SecurityTermsFormats.Flat;
         yield return Violation(
             "TX003", "Untagged Terms Payload Format", DataQualityRuleCategory.TaxonomyCheck,
             security.SecurityId, "assetSpecificTerms.termsFormat",
-            $"Asset-specific terms declare no termsFormat; the ADR-024 shape rule infers '{inferredFamily}'. " +
-            "The tag is stamped on the record's next write; the shape rule retires only when no untagged payload remains.",
+            "Asset-specific terms declare no termsFormat. Live readers no longer infer the family by shape and refuse " +
+            "the payload; migration 068 should have declared it, so this record indicates a writer that bypassed stamping.",
             DataQualityRuleSeverity.Warning, now);
     }
 

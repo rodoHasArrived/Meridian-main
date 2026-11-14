@@ -6,6 +6,140 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterProjectionChangeHandler
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterProjectionChangeHandler</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L38).
+
+Applies cross-node Security Master projection-change notifications to this node&#x27;s SecurityMasterProjectionCache. Separated from the listener&#x27;s connection handling so the decision logic is testable without PostgreSQL.
+
+```csharp
+public sealed class SecurityMasterProjectionChangeHandler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterProjectionChangeHandler(SecurityMasterProjectionService projectionService, SecurityMasterProjectionCache cache, SecurityMasterNodeIdentity nodeIdentity, SecurityMasterOptions options, ILogger&lt;SecurityMasterProjectionChangeHandler&gt; logger, SecurityMasterCanonicalSymbolSeedService? seedService = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:54](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L54) |  |
+| <code>public Task&lt;SecurityProjectionChangeOutcome&gt; HandleAsync(string? payload, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:70](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L70) |  |
+| <code>public async Task&lt;SecurityProjectionChangeOutcome&gt; HandleAsync(string? payload, bool reseedCanonicalSymbols, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:79](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L79) | Applies one notification. With reseedCanonicalSymbols false the caller owns reseeding: the listener drains a batch of notifications and reseeds the canonical registry once afterwards, rather than rescanning the cache and rewriting the registry per notification. |
+| <code>public Task ReseedCanonicalSymbolsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:165](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L165) | Reseeds the canonical symbol registry from the current cache, when one is wired. |
+| <code>public async Task ResynchronizeAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:175](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L175) | Re-synchronises the whole cache after notifications may have been missed (a listener reconnect) or after a bulk publish on another node. A pre-warmed cache is re-warmed with the atomic ReplaceAll swap; a lazily-populated cache (pre-warm disabled) refreshes the securities it already holds plus any whose notification reread failed, so a resync keeps its memory profile without losing a remote creation whose first reread failed. |
+
+## SecurityMasterProjectionChangeListener
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterProjectionChangeListener</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeListener.cs:26](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeListener.cs#L26).
+
+Keeps this node&#x27;s SecurityMasterProjectionCache coherent with projection writes committed on other nodes. Holds one dedicated PostgreSQL connection that LISTENs on the schema&#x27;s projection channel (see SecurityProjectionChangeNotification.ChannelFor); PostgresSecurityMasterStore issues the matching pg_notify inside every projection-writing transaction, so a notification is delivered only once its change is durable. Each notification is applied by SecurityMasterProjectionChangeHandler.
+
+```csharp
+public sealed class SecurityMasterProjectionChangeListener : BackgroundService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterProjectionChangeListener(SecurityMasterOptions options, SecurityMasterProjectionChangeHandler handler, ILogger&lt;SecurityMasterProjectionChangeListener&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeListener.cs:36](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeListener.cs#L36) |  |
+
+## SecurityMasterProjectionService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterProjectionService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L10).
+
+Builds and refreshes Security Master projections and warms the projection cache.
+
+```csharp
+public sealed class SecurityMasterProjectionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterProjectionService(ISecurityMasterStore store, SecurityMasterProjectionCache cache, SecurityMasterAggregateRebuilder rebuilder, ILogger&lt;SecurityMasterProjectionService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:17](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L17) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; BuildWarmSetAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:29](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L29) |  |
+| <code>public async Task&lt;SecurityProjectionRefreshResult&gt; RefreshSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:56](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L56) | Re-reads one security from the durable store, rebuilds it exactly as a warm would, and applies it to the cache through the version-guarded SecurityMasterProjectionCache.Upsert (so an older read never downgrades a newer cached record). A security the durable store no longer holds is evicted; deactivated securities stay cached with their inactive status, as a full warm leaves them. |
+| <code>public async Task WarmAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:75](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L75) |  |
+
+## SecurityMasterProjectionWarmupService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterProjectionWarmupService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs:21](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs#L21).
+
+Hosted service that warms the in-memory projection cache on startup when SecurityMasterOptions.PreloadProjectionCache is enabled. This eliminates cold-start latency for the first queries after deployment. When SecurityMasterOptions.ProjectionCacheRefreshMinutes is positive, the service also re-warms the cache on that interval (the cache&#x27;s atomic ReplaceAll swap keeps concurrent readers on a complete set throughout). Cross-node coherence is primarily delivered by SecurityMasterProjectionChangeListener (PostgreSQL LISTEN/NOTIFY); the periodic re-warm is the backstop that bounds staleness if a notification is lost or the listener is disabled. Identifier validity boundaries always schedule a reseed, independently of periodic cache warming and notifications, so clock-only activation and expiry reach the live registry.
+
+```csharp
+public sealed class SecurityMasterProjectionWarmupService : IHostedService, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterProjectionWarmupService(SecurityMasterProjectionService projectionService, SecurityMasterOptions options, ILogger&lt;SecurityMasterProjectionWarmupService&gt; logger, SecurityMasterCanonicalSymbolSeedService? seedService = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs:32](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs#L32) |  |
+| <code>public async Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs:52](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs#L52) |  |
+| <code>public async Task StopAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs:175](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs#L175) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs:192](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs#L192) |  |
+
+## SecurityMasterPublishFailedException
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterPublishFailedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs:9](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs#L9).
+
+Raised when one or more revision-published handlers fail during PublishRevisionAsync. The revision is left in its pre-publish (Approved) state so the caller can retry; handlers are idempotent, so a retry re-runs the full ordered fan-out. This gives callers a failure signal instead of a publish that silently dropped a required side effect.
+
+```csharp
+public sealed class SecurityMasterPublishFailedException : Exception
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterPublishFailedException(Guid securityId, Guid revisionId, IReadOnlyList&lt;string&gt; failedHandlers) : base($&quot;Publishing Security Master revision &#x27;{revisionId:D}&#x27; for security &#x27;{securityId:D}&#x27; failed in {failedHandlers.Count} handler(s): {string.Join(&quot;, &quot;, failedHandlers)}.&quot;);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs:11](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs#L11) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs:19](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs#L19) |  |
+| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs:21](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs#L21) |  |
+| <code>public IReadOnlyList&lt;string&gt; FailedHandlers { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs:23](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs#L23) |  |
+
+## SecurityMasterQueryService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterQueryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L10).
+
+Reads current and historical security details from Security Master projections and retained records.
+
+```csharp
+public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, ISecurityMasterReportingQueryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterQueryService(ISecurityMasterEventStore eventStore, ISecurityMasterStore store, SecurityMasterAggregateRebuilder rebuilder);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L18) |  |
+| <code>public Task&lt;SecurityDetailDto?&gt; GetByIdAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:28](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L28) |  |
+| <code>public async Task&lt;SecurityDetailDto?&gt; GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:31](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L31) |  |
+| <code>public async Task&lt;SecurityDetailDto?&gt; GetRecordedByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L38) |  |
+| <code>public async Task&lt;SecurityDetailDto?&gt; GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:55](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L55) |  |
+| <code>public async Task&lt;SecurityDetailDto?&gt; GetRecordedByIdentifierAsOfAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, DateTimeOffset recordedAsOfUtc, DateTimeOffset? effectiveAsOfUtc = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:85](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L85) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecuritySummaryDto&gt;&gt; SearchAsync(SecuritySearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:185](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L185) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecurityMasterEventEnvelope&gt;&gt; GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:206](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L206) |  |
+| <code>public async Task&lt;SecurityEconomicDefinitionRecord?&gt; GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:212](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L212) |  |
+| <code>public async Task&lt;SecurityMasterReportingReference?&gt; GetReportingReferenceByIdentifierAsOfAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, DateTimeOffset asOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:218](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L218) |  |
+| <code>public async Task&lt;TradingParametersDto?&gt; GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:274](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L274) |  |
+| <code>public Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:330](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L330) |  |
+| <code>public async Task&lt;PreferredEquityTermsDto?&gt; GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:333](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L333) |  |
+| <code>public async Task&lt;ConvertibleEquityTermsDto?&gt; GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:365](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L365) |  |
+
 ## SecurityMasterRestatementDecision
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRestatementDecision</code>. Kind: `record`.
@@ -983,100 +1117,3 @@ Declared public members:
 | <code>public ConnectivityProbeService(IHttpClientFactory httpClientFactory, ILogger? log = null);</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:49](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L49) | Initializes ConnectivityProbeService using IHttpClientFactory for HTTP calls. Per ADR-010, HttpClient is never instantiated directly. |
 | <code>public void Start();</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:63](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L63) | Starts the periodic connectivity probe. |
 | <code>public void Dispose();</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:143](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L143) |  |
-
-## ConnectivityTestService
-
-Qualified name: <code>Meridian.Application.Services.ConnectivityTestService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/ConnectivityTestService.cs:15](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L15).
-
-Service for testing connectivity to data providers and reporting results. Helps users diagnose network and configuration issues.
-
-```csharp
-public sealed class ConnectivityTestService : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ConnectivityTestService(Meridian.Contracts.Configuration.ConnectivityProbeOptions? probeOptions = null);</code> | [src/Meridian.Application/Services/ConnectivityTestService.cs:23](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L23) |  |
-| <code>public async Task&lt;ConnectivitySummary&gt; TestAllAsync(AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConnectivityTestService.cs:56](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L56) | Tests connectivity to all configured providers. |
-| <code>public void DisplaySummary(ConnectivitySummary summary);</code> | [src/Meridian.Application/Services/ConnectivityTestService.cs:158](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L158) | Displays the connectivity test summary. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/ConnectivityTestService.cs:515](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L515) |  |
-
-## ConnectivitySummary
-
-Qualified name: <code>Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/ConnectivityTestService.cs:47](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L47).
-
-Summary of all connectivity tests.
-
-```csharp
-public sealed record ConnectivitySummary(IReadOnlyList<ConnectivityTestResult> Results, bool AllReachable, IReadOnlyList<string> NetworkIssues);
-```
-
-## ConnectivityTestResult
-
-Qualified name: <code>Meridian.Application.Services.ConnectivityTestService.ConnectivityTestResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/ConnectivityTestService.cs:36](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L36).
-
-Result of a connectivity test.
-
-```csharp
-public sealed record ConnectivityTestResult(string Provider, bool IsReachable, TimeSpan ResponseTime, string? Error, string? Suggestion);
-```
-
-## CredentialValidationService
-
-Qualified name: <code>Meridian.Application.Services.CredentialValidationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/CredentialValidationService.cs:14](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L14).
-
-Service for validating API credentials at startup. Performs lightweight validation calls to verify credentials are valid.
-
-```csharp
-public sealed class CredentialValidationService : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CredentialValidationService();</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:20](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L20) |  |
-| <code>public async Task&lt;ValidationSummary&gt; ValidateAllAsync(AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:49](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L49) | Validates all configured credentials. |
-| <code>public async Task&lt;ValidationResult&gt; ValidateAlpacaAsync(AlpacaOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:148](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L148) | Validates Alpaca credentials by calling the account endpoint. |
-| <code>public async Task&lt;ValidationResult&gt; ValidatePolygonAsync(PolygonOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:220](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L220) | Validates Polygon credentials by calling the ticker details endpoint. |
-| <code>public async Task&lt;ValidationResult&gt; ValidateTiingoAsync(TiingoConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:277](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L277) | Validates Tiingo credentials by calling the meta endpoint. |
-| <code>public async Task&lt;ValidationResult&gt; ValidateFinnhubAsync(FinnhubConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:333](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L333) | Validates Finnhub credentials by calling the profile endpoint. |
-| <code>public async Task&lt;ValidationResult&gt; ValidatePolygonBackfillAsync(PolygonConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:394](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L394) | Validates Polygon backfill credentials. |
-| <code>public async Task&lt;ValidationResult&gt; ValidateAlphaVantageAsync(AlphaVantageConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:450](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L450) | Validates Alpha Vantage credentials. |
-| <code>public async Task&lt;ValidationResult&gt; ValidateFredAsync(FredConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:531](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L531) | Validates FRED credentials. |
-| <code>public void PrintSummary(ValidationSummary summary, TextWriter? output = null);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:598](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L598) | Prints a summary of validation results to the console. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:652](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L652) |  |
-
-## ValidationResult
-
-Qualified name: <code>Meridian.Application.Services.CredentialValidationService.ValidationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/CredentialValidationService.cs:29](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L29).
-
-Result of credential validation.
-
-```csharp
-public sealed record ValidationResult(string Provider, bool IsValid, string? Message, string? AccountInfo, TimeSpan ResponseTime);
-```
-
-## ValidationSummary
-
-Qualified name: <code>Meridian.Application.Services.CredentialValidationService.ValidationSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/CredentialValidationService.cs:40](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L40).
-
-Summary of all validation results.
-
-```csharp
-public sealed record ValidationSummary(IReadOnlyList<ValidationResult> Results, bool AllValid, IReadOnlyList<string> Warnings);
-```

@@ -115,14 +115,14 @@ public sealed class BrokeragePortfolioState(LiveBrokeragePortfolioSyncService sy
         // view, this projection must stay readable while an option's multiplier is unresolved
         // (position limits still read its quantity), so an unresolved contract keeps the 1x
         // quote scale; readiness is already blocked and the IPosition view still fails closed.
-        ContractMultiplier = position.AssetClass == "us_option"
+        ContractMultiplier = LiveBrokeragePortfolioSyncService.IsAlpacaOptionCode(position.AssetClass)
             ? observation.OptionContractMultipliers.TryGetValue(position.Symbol, out var multiplier) ? multiplier : 1m
             : 1m,
         LastUpdated = observation.Snapshot!.RetrievedAt
     };
 
     private static decimal ContractMultiplierFor(BrokeragePositionSnapshotDto position, LiveBrokeragePortfolioStatus observation)
-        => position.AssetClass == "us_option"
+        => LiveBrokeragePortfolioSyncService.IsAlpacaOptionCode(position.AssetClass)
             ? LiveBrokeragePortfolioSyncService.GetObservedOptionMultiplier(observation, position.Symbol)
             : 1m;
 

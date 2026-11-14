@@ -138,7 +138,11 @@ public sealed class SecurityAssetClassTermsUpgraderTests
         SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", Json(V1Text), out var declared, out var current).Should().BeTrue();
         (declared, current).Should().Be((1, 6));
 
-        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", Json(UnstampedText), out declared, out current).Should().BeTrue();
+        // An untagged payload is not the flat codec by declaration, so nothing is pending for it
+        // (ADR-024 amendment 2026-11-13 step 5: the family is never inferred by shape).
+        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", Json(UnstampedText), out _, out _).Should().BeFalse();
+        var declaredUnversioned = UnstampedText.Replace("\"schemaVersion\":1,", "\"schemaVersion\":1,\"termsFormat\":\"flat\",", StringComparison.Ordinal);
+        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", Json(declaredUnversioned), out declared, out current).Should().BeTrue();
         (declared, current).Should().Be((1, 6));
 
         SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("MBS", Json(V1Text), out declared, out current).Should().BeTrue("an alias reads as its class");
@@ -280,7 +284,7 @@ public sealed class SecurityAssetClassTermsUpgraderTests
     public void TransformStep_OnAPayloadWithoutSchemaVersion_StampsTheEnvelopeLast_AndAddsNoSchemaVersion()
     {
         var descriptor = WithRename(static () => 0);
-        var input = Json("""{"tranche":"A-1","seniority":"Senior","assetClassTermsVersion":2}""");
+        var input = Json("""{"tranche":"A-1","seniority":"Senior","termsFormat":"flat","assetClassTermsVersion":2}""");
 
         SecurityAssetClassTermsUpgrader.TryUpgradeForRead(descriptor, input, out var upgraded).Should().BeTrue();
 

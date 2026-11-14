@@ -647,10 +647,11 @@ public sealed class ScheduleSpecFactoryTests
     [Fact]
     public void AnUntaggedBondCarryingAProfileShape_IsDeclared()
     {
-        // ResolveFormat reads this row as a custom profile, but a Bond is not profile-governed: the
-        // mapping decodes its root block by its own stamp, and so does the factory.
+        // The historical shape rule (now only the legacy event classifier) reads this row as a custom
+        // profile, but a Bond is not profile-governed: the mapping decodes its root block by its own
+        // stamp, and so does the factory.
         var security = Bond("""{"accrualAdjusted":false}""", body: BondBody + ",\"customProfileId\":\"bond-profile\",\"profileFields\":{\"issuerName\":\"ACME Corp\"}");
-        SecurityTermsEnvelope.ResolveFormat(security.AssetSpecificTerms).Should().Be(SecurityTermsFormats.CustomProfile);
+        SecurityTermsLegacyEventClassifier.Classify(security.AssetSpecificTerms).Should().Be(SecurityTermsFormats.CustomProfile);
 
         DeclaredSpec(Resolve(security)).Should().Be(DeclaredSpec(Resolve(Bond("""{"accrualAdjusted":false}"""))));
     }

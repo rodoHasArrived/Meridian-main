@@ -898,6 +898,24 @@ Declared public members:
 | <code>public Task&lt;SecurityClosePriceSetDto?&gt; GetClosePriceSetAsync(string accountId, string bookId, DateOnly valuationDate, Guid snapshotId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:55](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L55) |  |
 | <code>public Task&lt;IReadOnlyList&lt;SecurityClosePriceSetDto&gt;&gt; GetClosePriceSetsAsync(string accountId, string bookId, DateOnly valuationDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:58](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L58) |  |
 
+## NullSecurityMasterProfilePromotionService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterProfilePromotionService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:138](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L138).
+
+Rejects CustomAsset profile promotion reports when Security Master is unavailable.
+
+```csharp
+public sealed class NullSecurityMasterProfilePromotionService : ISecurityMasterProfilePromotionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityMasterProfilePromotionReportDto&gt; BuildReportAsync(string profileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:140](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L140) |  |
+
 ## NullSecurityMasterQueryService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterQueryService</code>. Kind: `class`.
@@ -989,22 +1007,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public Task BackfillAllAsync(string initiatedBy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:308](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L308) |  |
 | <code>public Task BackfillTickerAsync(string ticker, Guid securityId, string initiatedBy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:310](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L310) |  |
-
-## OtcExposureService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Otc.OtcExposureService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs:17](../../../../src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs#L17).
-
-Computes and records a netting set&#x27;s exposure: reads the netting set with its agreements and contracts, the collateral balances under its collateral agreement and the netting sets that reference that agreement, values each contract that enters the exposure through the registered IOtcContractValuationSource at one knowledge time (the request&#x27;s, else the computation instant the snapshot is stamped with), applies OtcExposureRules.Compute and appends the result as the next snapshot version for the date. The knowledge time is recorded on the snapshot&#x27;s inputs, so a call is refused once market data for a valued security is recorded after it, or when it is earlier than the computation (a replay). An as-of date after the current UTC date is refused before anything is read or valued.
-
-```csharp
-public sealed class OtcExposureService : IOtcExposureService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OtcExposureService(IOtcContractStore contracts, IOtcCollateralStore collateral, IOtcContractValuationSource valuation, ILogger&lt;OtcExposureService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs:24](../../../../src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs#L24) |  |
-| <code>public async Task&lt;OtcExposureSnapshotDto?&gt; ComputeAsync(Guid nettingSetId, DateOnly asOfDate, string actor, DateTimeOffset? knowledgeAsOf = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs:36](../../../../src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs#L36) |  |

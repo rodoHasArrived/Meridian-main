@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConsolidationOptions
+
+Qualified name: <code>Meridian.Storage.Services.ConsolidationOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataQualityService.cs:1197](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1197).
+
+```csharp
+public sealed record ConsolidationOptions(SourceSelectionStrategy Strategy = SourceSelectionStrategy.HighestQualityScore, bool FillGapsFromAlternates = true, bool ValidateCrossSource = true, decimal PriceTolerancePct = 0.01m, long VolumeTolerancePct = 5);
+```
+
+## ConversionSummary
+
+Qualified name: <code>Meridian.Storage.Services.ConversionSummary</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/ParquetConversionService.cs:387](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L387).
+
+Summary of a Parquet conversion batch run.
+
+```csharp
+public sealed class ConversionSummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int FilesConverted { get; set; }</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:389](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L389) |  |
+| <code>public long RecordsConverted { get; set; }</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:390](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L390) |  |
+| <code>public long BytesSaved { get; set; }</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:391](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L391) |  |
+| <code>public int SkippedAlreadyConverted { get; set; }</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:392](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L392) |  |
+| <code>public int SkippedEmpty { get; set; }</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:393](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L393) |  |
+| <code>public int Errors { get; set; }</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:394](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L394) |  |
+
+## DataCatalog
+
+Qualified name: <code>Meridian.Storage.Services.DataCatalog</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:816](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L816).
+
+```csharp
+public sealed record DataCatalog(DateTimeOffset GeneratedAt, string RootPath, IReadOnlyList<StorageSymbolCatalogEntry> Symbols, IReadOnlyList<string> Sources, IReadOnlyList<string> EventTypes, DateRange DateRange, long TotalEvents, long TotalBytes);
+```
+
 ## DataInsight
 
 Qualified name: <code>Meridian.Storage.Services.DataInsight</code>. Kind: `record`.
@@ -819,71 +862,3 @@ Declared public members:
 | <code>JobExecutionStatus? GetJobStatus(string jobId);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1496](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1496) |  |
 | <code>bool IsRealTimeCollectionActive();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1497](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1497) |  |
 | <code>TimeSpan? GetTimeUntilCollectionEnds();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1498](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1498) |  |
-
-## IMetadataTagService
-
-Qualified name: <code>Meridian.Storage.Services.IMetadataTagService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Services/MetadataTagService.cs:545](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L545).
-
-Interface for metadata tagging and lineage tracking on stored data files.
-
-```csharp
-public interface IMetadataTagService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>void SetTag(string filePath, string key, string value);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:547](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L547) |  |
-| <code>void SetTags(string filePath, IReadOnlyDictionary&lt;string, string&gt; tags);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:548](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L548) |  |
-| <code>string? GetTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:549](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L549) |  |
-| <code>IReadOnlyDictionary&lt;string, string&gt; GetAllTags(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:550](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L550) |  |
-| <code>bool RemoveTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:551](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L551) |  |
-| <code>void RecordLineage(string filePath, LineageEntry entry);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:552](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L552) |  |
-| <code>IReadOnlyList&lt;LineageEntry&gt; GetLineage(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:553](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L553) |  |
-| <code>void SetInsight(string filePath, string insightKey, DataInsight insight);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:554](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L554) |  |
-| <code>DataInsight? GetInsight(string filePath, string insightKey);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:555](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L555) |  |
-| <code>IReadOnlyDictionary&lt;string, DataInsight&gt; GetAllInsights(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:556](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L556) |  |
-| <code>void SetQualityScore(string filePath, double score, string? scoredBy = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:557](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L557) |  |
-| <code>double? GetQualityScore(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:558](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L558) |  |
-| <code>IReadOnlyList&lt;string&gt; SearchByTag(string key, string? valuePattern = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:559](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L559) |  |
-| <code>IReadOnlyList&lt;string&gt; SearchByQualityScore(double minScore, double maxScore = 1.0);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:560](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L560) |  |
-| <code>FileMetadataRecord? GetFullMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:561](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L561) |  |
-| <code>void RemoveMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:562](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L562) |  |
-| <code>Task SetQualityAssessmentAsync(string filePath, double score, DataInsight insight, string? scoredBy = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:563](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L563) |  |
-| <code>Task SetQualityAssessmentsAsync(IReadOnlyCollection&lt;QualityAssessmentMetadataUpdate&gt; assessments, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:564](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L564) |  |
-| <code>Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:565](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L565) |  |
-
-## IndexRebuildVerification
-
-Qualified name: <code>Meridian.Storage.Services.IndexRebuildVerification</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:880](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L880).
-
-Verifiable proof returned by an index rebuild. A caller must not claim success unless every discovered input was indexed and the post-swap readback matches the staged index exactly.
-
-```csharp
-public sealed record IndexRebuildVerification(IndexSnapshot Before, IndexSnapshot After, IndexSnapshot Readback, int DiscoveredFileCount)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool AllDiscoveredFilesIndexed =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:887](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L887) |  |
-| <code>public bool ReadbackVerified =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:890](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L890) |  |
-| <code>public bool IsVerified =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:894](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L894) |  |
-
-## IndexSnapshot
-
-Qualified name: <code>Meridian.Storage.Services.IndexSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:870](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L870).
-
-A canonical count-and-digest snapshot of the live file metadata index.
-
-```csharp
-public sealed record IndexSnapshot(int IndexedFileCount, string DigestSha256, DateTimeOffset CapturedAtUtc);
-```

@@ -855,7 +855,7 @@ Declared public members:
 | <code>public async Task&lt;FundOperationsWorkspaceDto&gt; GetWorkspaceAsync(FundOperationsWorkspaceQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:92](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L92) |  |
 | <code>public async Task&lt;FundOperationsWorkspaceDto&gt; GetWorkspaceAsync(FundOperationsWorkspaceQuery query, ReportAccessQueryContext? accessContext, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:97](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L97) |  |
 
-Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs#L26).
+Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs:27](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs#L27).
 
 ```csharp
 public sealed partial class FundOperationsWorkspaceReadService
@@ -865,7 +865,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static FundLedgerReconciliationSnapshot ProjectReconciliationSnapshot(FundLedgerSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs:98](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs#L98) |  |
+| <code>public static FundLedgerReconciliationSnapshot ProjectReconciliationSnapshot(FundLedgerSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs:99](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs#L99) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.LiveViews.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.LiveViews.cs#L26).
 

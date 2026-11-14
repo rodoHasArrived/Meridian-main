@@ -682,7 +682,7 @@ Declared public members:
 | <code>public IReadOnlyList&lt;OrderState&gt; GetUnitReservingOrders() =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.RiskOutcomes.cs:126](../../../../src/Meridian.Execution/OrderManagementSystem.RiskOutcomes.cs#L126) |  |
 | <code>public bool WasRiskApprovalDeclined(string orderId) =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.RiskOutcomes.cs:160](../../../../src/Meridian.Execution/OrderManagementSystem.RiskOutcomes.cs#L160) |  |
 
-Source: [src/Meridian.Execution/OrderManagementSystem.UntrackedFills.cs:18](../../../../src/Meridian.Execution/OrderManagementSystem.UntrackedFills.cs#L18).
+Source: [src/Meridian.Execution/OrderManagementSystem.UntrackedFills.cs:19](../../../../src/Meridian.Execution/OrderManagementSystem.UntrackedFills.cs#L19).
 
 Fills for orders this process does not track: what a restarted host does with a durably admitted broker event whose order lives only in the previous incarnation&#x27;s memory. Separated from the main partial because the policy here is about booking rather than order flow: the fill is real and belongs to the connected account, the one thing lost across the restart is which fund the original submission attributed it to, and the choice made is to book it unattributed and say so on the audit trail rather than to acknowledge it and post nothing.
 
@@ -977,15 +977,15 @@ Declared public members:
 | <code>public string GatewayId =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:105](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L105) |  |
 | <code>public ExecutionMode ExecutionMode =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:108](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L108) |  |
 | <code>public bool UsesFaceValuePercentageOfPar(OrderRequest request);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:118](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L118) | Mirrors the live brokerage convention (see AlpacaBrokerageGateway): a treasury or corporate fixed-income order routes its quantity as face value with prices quoted as a percentage of par. Without this capability on the supported paper path, a 100,000-face order at 101.25 is measured by the pre-trade rails and booked by the paper book as $10,125,000 instead of $101,250 — the paper simulation must exercise the same sizing semantics the live gateway routes. |
-| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:147](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L147) |  |
-| <code>public Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:150](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L150) |  |
-| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:158](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L158) |  |
-| <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:166](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L166) |  |
-| <code>public Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:260](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L260) |  |
-| <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:290](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L290) |  |
-| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:352](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L352) |  |
-| <code>public void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:365](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L365) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/PaperTradingGateway.cs:553](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L553) |  |
+| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:148](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L148) |  |
+| <code>public Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:151](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L151) |  |
+| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:159](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L159) |  |
+| <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:167](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L167) |  |
+| <code>public Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:261](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L261) |  |
+| <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:291](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L291) |  |
+| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:353](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L353) |  |
+| <code>public void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:366](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L366) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/PaperTradingGateway.cs:554](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L554) |  |
 
 ## SecurityMasterGate
 

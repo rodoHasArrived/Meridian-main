@@ -6,6 +6,107 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MonitoredSymbolInfo
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:708](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L708).
+
+Information about a monitored symbol.
+
+```csharp
+public sealed record MonitoredSymbolInfo(string Symbol, bool SubscribeTrades, bool SubscribeDepth, int DepthLevels, string SecurityType, string Exchange, string Currency);
+```
+
+## MonitoredSymbolsResult
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:721](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L721).
+
+Result of querying monitored symbols.
+
+```csharp
+public sealed record MonitoredSymbolsResult(MonitoredSymbolInfo[] Symbols, int TotalCount, int TradeSubscriptions, int DepthSubscriptions);
+```
+
+## PortfolioImportRunService
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.PortfolioImportRunService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs:21](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs#L21).
+
+Retains a broker snapshot before any effects. A retry resumes that exact population rather than refetching a changed account. Copy-on-write checkpoints and a process-independent file lease cover response loss between a side effect and its receipt.
+
+```csharp
+public sealed class PortfolioImportRunService(ConfigStore configuration, PortfolioImportService importer, WatchlistService watchlists, IPortfolioOpeningBalanceQueue? openingBalances = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PortfolioImportRun?&gt; GetAsync(string tenantId, string companyId, Guid runId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs:27](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs#L27) |  |
+| <code>public async Task&lt;PortfolioImportRun&gt; RunAsync(PortfolioImportRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs:38](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs#L38) |  |
+| <code>public static string SnapshotHash(PortfolioSummary snapshot) =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs:124](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs#L124) |  |
+
+## PortfolioImportService
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.PortfolioImportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:17](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L17).
+
+Service for importing symbols from broker portfolios. Supports Alpaca, Interactive Brokers, and manual entry.
+
+```csharp
+public sealed partial class PortfolioImportService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PortfolioImportService(ConfigStore configStore, WatchlistService watchlistService, HttpClient? httpClient = null);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:24](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L24) |  |
+| <code>public async Task&lt;PortfolioImportResult&gt; ImportFromBrokerAsync(PortfolioImportRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:38](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L38) | Import symbols from a broker portfolio. |
+| <code>public async Task&lt;PortfolioImportResult&gt; ImportFromAlpacaAsync(PortfolioImportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:57](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L57) | Import symbols from Alpaca portfolio. |
+| <code>public async Task&lt;PortfolioImportResult&gt; ImportFromInteractiveBrokersAsync(PortfolioImportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:87](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L87) | Import symbols from Interactive Brokers portfolio. |
+| <code>public async Task&lt;PortfolioImportResult&gt; ImportManualAsync(ManualPortfolioEntry[] entries, PortfolioImportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:123](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L123) | Import symbols from manual entries. |
+| <code>public Task&lt;PortfolioSummary?&gt; GetPortfolioSummaryAsync(string broker, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:157](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L157) | Get portfolio summary without importing. |
+| <code>public async Task&lt;PortfolioSummary?&gt; GetPortfolioSummaryAsync(string broker, string? accountId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:160](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L160) |  |
+| <code>public IReadOnlyList&lt;string&gt; GetAvailableBrokers();</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:178](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L178) | Get available brokers based on configuration. |
+| <code>public static IReadOnlyList&lt;PortfolioPosition&gt; SelectPositions(PortfolioSummary portfolio, PortfolioImportOptions options);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:355](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L355) |  |
+| <code>public async Task&lt;PortfolioImportResult&gt; ProcessPortfolioAsync(PortfolioSummary portfolio, PortfolioImportOptions options, CancellationToken ct);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs:390](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs#L390) |  |
+
+## PortfolioOpeningBalanceProjector
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.PortfolioOpeningBalanceProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs:8](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs#L8).
+
+Projects a complete account at cost; subscription filters never remove opening assets.
+
+```csharp
+public static class PortfolioOpeningBalanceProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static AutomatedJournalDraft Build(PortfolioImportRun run);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs:10](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs#L10) |  |
+
+## ProviderStatus
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.ProviderStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:613](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L613).
+
+Provider availability status.
+
+```csharp
+public sealed record ProviderStatus(string Name, string DisplayName, int Priority, bool Available);
+```
+
 ## SchedulingService
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.SchedulingService</code>. Kind: `class`.

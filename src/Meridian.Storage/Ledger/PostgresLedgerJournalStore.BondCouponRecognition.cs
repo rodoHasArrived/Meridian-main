@@ -229,7 +229,7 @@ public sealed partial class PostgresLedgerJournalStore : IBondCouponRecognitionS
         var position = await positions.LockForLotPostingAsync(connection, transaction, lot.BookPositionId, ct).ConfigureAwait(false);
         var lots = await LoadTaxLotsForUpdateAsync(connection, transaction, lot.LedgerBookId, [lot.TaxLotRecordId], ct).ConfigureAwait(false);
         if (security is null || instruction.ReversalTarget is null && instruction.TerminalCashAuthority is null
-                && OpenLotAmortization.SecurityHash(security) != OpenLotAmortization.SecurityHash(instruction.IncomeInstruction.Security)
+                && !OpenLotAmortization.SameSecurityHash(security, instruction.IncomeInstruction.Security)
             || position?.Version != instruction.IncomeInstruction.ExpectedBookPositionVersion
             || lots.Count != 1 || !OpenLotAmortization.SameLot(lots[0].ToOpenLot(), lot))
             throw new LedgerValidationException("Coupon lot, position or reference inputs changed after review.");

@@ -785,6 +785,24 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;DateOnly&gt;&gt; GetExpiryLadderAsync(string underlyingSymbol, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs#L13) |  |
 | <code>Task UpsertChainSnapshotAsync(OptionChainSnapshot snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs:14](../../../../src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs#L14) |  |
 
+## IRegistryProjectionReadService
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.IRegistryProjectionReadService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs:14](../../../../src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs#L14).
+
+Reads any SecurityTermsProjectionRegistry projection as column→value data, driven by the class&#x27;s descriptor rather than a typed row. This is the read path for the registry classes that never had a typed reader (CommercialPaper through CommitmentGuarantee, the OTC derivatives, the rate options and linked notes); the typed I*ReferenceProjectionStore readers remain the path for the classes that have one.
+
+```csharp
+public interface IRegistryProjectionReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityTermsProjectionReadDto?&gt; GetAsync(string assetClass, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs:23](../../../../src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs#L23) | The projection of securityId read as assetClass, or null when the class has no registry descriptor, the security does not exist, its current asset class is a different class, or it has no projection row (a gating term is absent). assetClass accepts a catalog name or alias in any casing. |
+
 ## ISecurityFieldProvenanceStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityFieldProvenanceStore</code>. Kind: `interface`.
@@ -834,22 +852,3 @@ Marks a typed governance payload. PostgresSecurityGovernanceEventLog.AppendAsync
 ```csharp
 public interface ISecurityGovernancePayload;
 ```
-
-## ISecurityIdentifierHistoryStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityIdentifierHistoryStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:73](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L73).
-
-Reads the append-only recorded history of Security Master identifier rows. Recorded cutoffs filter on stored recording timestamps (transaction-start time); like the alias history, these establish eligibility, not commit visibility, so a write committed later can still satisfy an earlier cutoff. Valid time is a separate filter over each revision&#x27;s valid-from/valid-to.
-
-```csharp
-public interface ISecurityIdentifierHistoryStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;SecurityIdentifierRevision&gt;&gt; GetIdentifierRevisionsAsync(Guid securityId, DateTimeOffset recordedAsOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:76](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L76) | Every retained revision recorded at or before recordedAsOfUtc, ordered by identity then revision. |
-| <code>Task&lt;SecurityIdentifiersRecordedView&gt; GetIdentifiersRecordedAsOfAsync(Guid securityId, DateTimeOffset recordedAsOfUtc, DateTimeOffset? validAsOfUtc = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:86](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L86) | The latest revision per identity recorded at or before recordedAsOfUtc, omitting removed identities and, when validAsOfUtc is given, identities not valid at that instant. |

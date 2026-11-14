@@ -458,6 +458,37 @@ public sealed class BondIncomeServiceTests
         (await f.Service.PrepareAsync(new(f.Request, preview.Fingerprint))).Fingerprint.Should().Be(preview.Fingerprint);
     }
 
+    [Fact]
+    public async Task UntaggedEraAcquisitionSecurityEvidence_KeepsMatchingAfterTheTermsAreStamped_AndChangedTermsAreRefused()
+    {
+        var f = new Fixture();
+        // The acquisition retained Security Master evidence hashed over the untagged terms; they now read back stamped.
+        var retainedHash = OpenLotAmortization.SecurityHash(f.Security);
+        SecurityTermsEnvelope.GetDeclaredFormat(f.Security.AssetSpecificTerms).Should().BeNull();
+        var stamped = f.Security with { AssetSpecificTerms = SecurityTermsEnvelope.StampDeclaredFormat(f.Security.AssetSpecificTerms) };
+        SecurityTermsEnvelope.GetDeclaredFormat(stamped.AssetSpecificTerms).Should().Be(SecurityTermsFormats.Flat);
+        OpenLotAmortization.SecurityHash(stamped).Should().NotBe(retainedHash);
+        f.Securities.GetProjectionAsync(f.Security.SecurityId, Arg.Any<CancellationToken>()).Returns(stamped);
+
+        var preview = await f.Service.PreviewAsync(f.Request);
+
+        SecurityTermsEnvelope.GetDeclaredFormat(preview.Instruction.Security!.AssetSpecificTerms).Should().Be(SecurityTermsFormats.Flat);
+        preview.Instruction.SecurityEvidence!.ContentHashSha256.Should().Be(retainedHash);
+        // BondIncomeCalculator.ProjectCanonical binds the same untagged-era evidence to the stamped projection.
+        OpenLotAmortization.Project(preview.Instruction).TransactionCostBasis
+            .Should().Be(preview.Instruction.BondIncome!.BookedTarget!.BookedTransactionTarget);
+        (await f.Service.PrepareAsync(new(f.Request, preview.Fingerprint))).Fingerprint.Should().Be(preview.Fingerprint);
+
+        f.Securities.GetProjectionAsync(f.Security.SecurityId, Arg.Any<CancellationToken>())
+            .Returns(stamped with { DisplayName = stamped.DisplayName + " (amended)" });
+        await f.Service.Invoking(s => s.PreviewAsync(f.Request)).Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*retained evidence matching the current Security Master terms*");
+        var amended = preview.Instruction with { Security = preview.Instruction.Security! with { DisplayName = "Amended" } };
+        var project = () => OpenLotAmortization.Project(amended);
+        project.Should().Throw<ArgumentException>().WithMessage("*hash-bound authoritative Security Master*");
+        await f.Lots.DidNotReceive().AppendAsync(Arg.Any<LedgerJournalEntryWrite>(), Arg.Any<CancellationToken>());
+    }
+
     [Theory]
     [InlineData("lot")]
     [InlineData("policy")]
