@@ -170,8 +170,8 @@ items, which is a follow-up.
   (shared `DateRangePicker`) and As of. Presets use the operator's calendar day (`LocalDate`).
 - Shared contract: `OperatingScopeValuesDto` gained optional `EntityId` and `FundId` (additive,
   appended last) so a saved default keeps them.
-- Gaps: no screen narrows by fund yet. Operators without fund-structure permissions get no entity or
-  fund lists. A scope-option read open to every operator would need a new authorized seam.
+- Gaps at that point (both closed below): no screen narrowed by fund, and operators without
+  fund-structure permissions got no entity or fund lists.
 
 **P4 scope-option read for every operator (landed 2026-11-14, source; host bundle not yet rebuilt):**
 - `GET /api/workstation/scope-options` (`WorkstationScopeOptionsDto`, additive) is open to any
@@ -185,6 +185,28 @@ items, which is a follow-up.
 - The picker prefers it and falls back to `/api/fund-structure/graph` on a 404 (older hosts). A
   trading-only operator now gets its accounts; the picker says "No entities or funds are visible to
   you" instead of naming fund-structure access, and "could not be loaded" when the read fails.
+
+**P4 screens narrow by fund (landed 2026-11-14, dashboard source; host bundle not yet rebuilt):**
+- Shared rule (`lib/operating-scope/fund-scope-narrowing.ts`): a fund-account row is kept when the
+  organization graph places its account under the chosen fund (or, with only an entity chosen,
+  booked to that entity or held by a fund that holds it). This is the scope picker's
+  `constrainScopeOptions` rule. Rows whose account the graph does not place are left out of the
+  narrowed list and counted in a note ("… 2 with no recorded fund not shown."), never hidden
+  silently. Without the structure read (loading, or the read failed) nothing is narrowed and the
+  note says so. No server payload changed; the narrowing is client-side.
+- Portfolio > Brokerage sync (`/portfolio/brokerage-sync`): the household's accounts and positions
+  are narrowed, and the household totals are re-summed over the accounts kept. Other Portfolio
+  routes keep the whole household.
+- Accounting > Close calendar (`/accounting/close-calendar`): the close-workflow queue, its counts
+  and references are narrowed.
+- Scope bar: `operatingScopeDimensionsForRoute(route, { fundStructureReady })` adds Entity and Fund
+  to the dimensions in effect on `FUND_SCOPE_NARROWED_ROUTES` only when the graph has loaded. The
+  bar, the picker's "Applied on this screen" hints and the figures-strip scope follow it. Without
+  the graph both stay "retained".
+- Trading's inline account picker narrows its suggestions exactly as the scope picker does
+  (accounts with no recorded fund or entity are left out and counted), and flags a typed or
+  scoped account the graph places outside the chosen fund or entity. It still lets the operator
+  use it. Trading has no other per-account list to narrow.
 
 **P3 one money formatter (landed 2026-11-14):** `formatMoney` in `@/lib/format` is the only
 money formatter.
@@ -237,11 +259,13 @@ money formatter.
   `components/meridian/workflow-context-disclosure.tsx` with its own stylesheet.
 
 **Remaining in Phase 1:**
-- P4: screens that narrow by fund, and inline account pickers on other single-account screens as
-  they are identified. The scope-option read landed; still open there: rebuilding the host bundle,
-  regenerating the schema contract manifest and API reference for `WorkstationScopeOptionsDto`, a
-  WPF consumer of the same seam, and (if wanted) letting a trading, direct-lending or accounting
-  grant at fund level disclose that fund's name, which no existing read does today.
+- P4: fund narrowing on more screens with fund-account rows. Candidates: the Operations Continuity
+  workflow list, the reporting delivery history and the statement fetch schedules. Each route is
+  added to `FUND_SCOPE_NARROWED_ROUTES` as its screen adopts the shared rule. Also open: rebuilding
+  the host bundle for the scope-option read, a WPF consumer of the same seam, inline account pickers
+  on other single-account screens as they are identified, and (if wanted) letting a trading,
+  direct-lending or accounting grant at fund level disclose that fund's name, which no existing read
+  does today.
 - The triage "Due · UTC" and "Observed · UTC" labels (`triageDateLabel`) still use a fixed-UTC
   `Intl.DateTimeFormat` without a zone label. They are honest as headed; moving them to the
   display zone needs the headers renamed.

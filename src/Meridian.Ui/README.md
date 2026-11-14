@@ -189,12 +189,18 @@ Dashboard source also carries the P4 entity, fund and period step (host bundle n
 - The scope bar reads `Scope  Entity … › Fund … › Account … › Period …`. An unset Entity, Fund
   or Account reads "All authorized"; an unset Period reads "All periods". Entity and fund are the
   `entityId` and `fundId` URL parameters, carried on every route and in storage, recent scopes,
-  saved layouts, Copy link and the server-side default scope. Accounting applies `entityId`; no
-  screen filters by fund yet, so a set fund shows as retained (muted).
-- The scope picker lists entities, funds and accounts from the existing organization read model
-  (`GET /api/fund-structure/graph?activeOnly=true`). An entity narrows the funds and accounts; a
-  fund narrows the accounts. Without fund-structure access the picker takes typed ids and narrows
-  nothing.
+  saved layouts, Copy link and the server-side default scope. Accounting applies `entityId`.
+  Portfolio > Brokerage sync (household accounts and positions) and Accounting > Close calendar
+  (close workflows) narrow their fund-account rows to the chosen fund or entity client-side, using
+  the organization graph; there the bar shows Entity and Fund as applied. Elsewhere, and on those
+  screens when the structure read is unavailable, a set fund shows as retained (muted) and nothing is hidden.
+- The Trading inline account picker narrows its suggestions by the chosen entity and fund as the
+  scope picker does, and flags an account the graph places outside them.
+- The scope picker lists entities, funds and accounts from `GET /api/workstation/scope-options`,
+  which every operator may call and which lists only what the caller's scoped grants let it read
+  (older hosts: the organization graph `GET /api/fund-structure/graph?activeOnly=true`). An entity
+  narrows the funds and accounts; a fund narrows the accounts. When the read fails the picker takes
+  typed ids and narrows nothing.
 - A Period control sets the window: All periods, Today, MTD, QTD, YTD, Last month, Custom range
   (shared date-range picker) or As of a date, on the operator's calendar day.
 
