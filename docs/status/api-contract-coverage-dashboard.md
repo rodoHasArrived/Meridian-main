@@ -562,7 +562,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/reference-data/bonds/connection-readiness` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:65` |
 | `POST` | `/api/reference-data/bonds/cutover` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:75` |
 | `GET` | `/api/reference-data/bonds/cutover-readiness` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:69` |
-| `GET` | `/api/reference-data/bonds/discovery` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs:19` |
+| `GET` | `/api/reference-data/bonds/discovery` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs:22` |
 | `POST` | `/api/reference-data/bonds/fred-observations/import` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:82` |
 | `POST` | `/api/reference-data/bonds/identifier-discovery` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:77` |
 | `GET` | `/api/reference-data/bonds/issuer-ladder` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:74` |

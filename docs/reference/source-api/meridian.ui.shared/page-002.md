@@ -759,7 +759,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondDiscoveryEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs#L14).
+Source: [src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs#L17).
 
 Provider lookup supplies candidate identity evidence, never approved Security Master terms.
 
@@ -771,7 +771,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapBondDiscoveryEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs#L16) |  |
+| <code>public static void MapBondDiscoveryEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs#L19) |  |
 
 ## BondMigrationEndpoints
 

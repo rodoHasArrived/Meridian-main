@@ -6297,6 +6297,7 @@ Meridian-main
 │   │   │   ├── DataProviderException.cs
 │   │   │   ├── MeridianException.cs
 │   │   │   ├── OperationTimeoutException.cs
+│   │   │   ├── ProviderSearchException.cs
 │   │   │   ├── RateLimitException.cs
 │   │   │   ├── SequenceValidationException.cs
 │   │   │   ├── StorageException.cs
@@ -14132,6 +14133,7 @@ Meridian-main
 │   │   │   ├── StrategySessionControlOrderingTests.cs
 │   │   │   └── StrategySessionShutdownTests.cs
 │   │   ├── SymbolSearch
+│   │   │   ├── AuthoritativeSymbolSearchTests.cs
 │   │   │   ├── BoundedSearchCacheTests.cs
 │   │   │   ├── OpenFigiBondLookupTests.cs
 │   │   │   ├── OpenFigiClientAmbiguityTests.cs
