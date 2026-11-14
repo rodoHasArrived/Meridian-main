@@ -65,6 +65,29 @@ public sealed class WorkstationScopeOptionsViewModelTests
     }
 
     [Fact]
+    public void Constrain_CountsAccountsWhoseRelationshipIsWithheldSeparately()
+    {
+        var hiddenFund = Guid.Parse("00000000-0000-0000-0000-0000000000c1");
+        var source = Options();
+        var options = source with
+        {
+            Accounts =
+            [
+                .. source.Accounts,
+                new WorkstationScopeAccountOptionDto(hiddenFund, "Fund not visible", FundId: null, EntityId: null, FundWithheld: true, EntityWithheld: true)
+            ]
+        };
+
+        var byFund = WorkstationScopeOptionsNarrowing.Constrain(options, optionsAvailable: true, entityId: null, FundTwo);
+        byFund.AccountsWithoutKnownRelationship.Should().Be(2, "'Booked to A' and the orphan state no fund");
+        byFund.AccountsWithWithheldRelationship.Should().Be(1, "the account's fund exists but is not visible to the caller");
+
+        var byEntity = WorkstationScopeOptionsNarrowing.Constrain(options, optionsAvailable: true, EntityA, fundId: null);
+        byEntity.AccountsWithoutKnownRelationship.Should().Be(1);
+        byEntity.AccountsWithWithheldRelationship.Should().Be(1);
+    }
+
+    [Fact]
     public void Constrain_WhenOptionsUnavailable_NarrowsNothing()
     {
         var narrowed = WorkstationScopeOptionsNarrowing.Constrain(Options(), optionsAvailable: false, EntityA, FundOne);

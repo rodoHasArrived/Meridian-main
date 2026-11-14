@@ -330,6 +330,17 @@ public sealed class WorkstationScopeOptionsViewModel : BindableBase
                 narrowed.AccountsWithoutKnownRelationship == 1 ? "is" : "are"));
         }
 
+        if (narrowed.AccountsWithWithheldRelationship > 0)
+        {
+            parts.Add(string.Format(
+                CultureInfo.InvariantCulture,
+                "{0} account{1} whose {2} is not visible to you {3} left out.",
+                narrowed.AccountsWithWithheldRelationship,
+                narrowed.AccountsWithWithheldRelationship == 1 ? string.Empty : "s",
+                _selectedFund is not null ? "fund" : "fund or entity",
+                narrowed.AccountsWithWithheldRelationship == 1 ? "is" : "are"));
+        }
+
         return string.Join(" ", parts);
     }
 

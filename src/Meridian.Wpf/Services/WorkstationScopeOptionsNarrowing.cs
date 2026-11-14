@@ -14,13 +14,19 @@ namespace Meridian.Wpf.Services;
 /// Accounts left out of a narrowed list because the data does not say which fund or entity they
 /// belong to.
 /// </param>
+/// <param name="AccountsWithWithheldRelationship">
+/// Accounts left out of a narrowed list because their fund or entity exists but is not visible to
+/// the caller (<see cref="WorkstationScopeAccountOptionDto.FundWithheld"/>,
+/// <see cref="WorkstationScopeAccountOptionDto.EntityWithheld"/>).
+/// </param>
 public sealed record WorkstationScopeNarrowedOptions(
     IReadOnlyList<WorkstationScopeEntityOptionDto> Entities,
     IReadOnlyList<WorkstationScopeFundOptionDto> Funds,
     IReadOnlyList<WorkstationScopeAccountOptionDto> Accounts,
     bool FundsConstrained,
     bool AccountsConstrained,
-    int AccountsWithoutKnownRelationship);
+    int AccountsWithoutKnownRelationship,
+    int AccountsWithWithheldRelationship = 0);
 
 /// <summary>
 /// The desktop port of the browser scope picker's narrowing rule
@@ -66,6 +72,7 @@ public static class WorkstationScopeOptionsNarrowing
             : options.Funds.Where(candidate => fundsForEntity.Contains(candidate.FundId)).ToArray();
 
         var withoutKnownRelationship = 0;
+        var withheldRelationship = 0;
         var accounts = new List<WorkstationScopeAccountOptionDto>();
         foreach (var account in options.Accounts)
         {
@@ -76,7 +83,15 @@ public static class WorkstationScopeOptionsNarrowing
             {
                 if (accountFund is null)
                 {
-                    withoutKnownRelationship++;
+                    if (account.FundWithheld)
+                    {
+                        withheldRelationship++;
+                    }
+                    else
+                    {
+                        withoutKnownRelationship++;
+                    }
+
                     continue;
                 }
 
@@ -110,7 +125,14 @@ public static class WorkstationScopeOptionsNarrowing
 
                 if (fund is null)
                 {
-                    withoutKnownRelationship++;
+                    if (account.FundWithheld || account.EntityWithheld)
+                    {
+                        withheldRelationship++;
+                    }
+                    else
+                    {
+                        withoutKnownRelationship++;
+                    }
                 }
 
                 continue;
@@ -125,7 +147,8 @@ public static class WorkstationScopeOptionsNarrowing
             accounts,
             FundsConstrained: entity is not null,
             AccountsConstrained: true,
-            AccountsWithoutKnownRelationship: withoutKnownRelationship);
+            AccountsWithoutKnownRelationship: withoutKnownRelationship,
+            AccountsWithWithheldRelationship: withheldRelationship);
     }
 
     /// <summary>
