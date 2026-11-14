@@ -5552,7 +5552,7 @@
       ]
     }
   ],
-  "fingerprint": "99e75866ce2cbf7b83ec644728e697ec0eb41c8c4379969d9689218e66991ab0",
+  "fingerprint": "f7f827a8b93595fa62aebd7bbedb4b5f235abcfdc658998db52bd8968ff24031",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -7453,7 +7453,7 @@
         "all-contracts",
         "ledger-contracts"
       ],
-      "fingerprint": "dcf2da34296e4c9a7054cdc7a7809417275f8e3629c9453d4c2889e69ee82a62",
+      "fingerprint": "c3eaeb6047ef439b44ec27a52dc037fc0affc1b2b06a56ea5008b64c600cd8b9",
       "mapped_schemas": [
         "ledger"
       ],
@@ -228865,7 +228865,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "f2f93c24cc0695ab7a88aa3e4ba43cde7b51608a9a6e4a545d46e78a9e1a252c",
+      "fingerprint": "b30902b741c7637c6791ea1e4c4d637c179bfb9f09c8bb0738a90d49bc7876a2",
       "full_name": "Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceDto",
       "id": "Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceDto",
       "kind": "record",
@@ -228912,7 +228912,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IntercompanyAccrualPreviewDto",
-          "source_line": 35,
+          "source_line": 36,
           "type": "IntercompanyAccrualPreviewDto"
         },
         {
@@ -228954,7 +228954,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 34,
+          "source_line": 35,
           "type": "decimal"
         },
         {
@@ -228968,7 +228968,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 33,
+          "source_line": 34,
           "type": "string"
         },
         {
@@ -228983,8 +228983,36 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "ConsolidationFxAmountDto?",
-          "source_line": 36,
+          "source_line": 37,
           "type": "ConsolidationFxAmountDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MonetaryAccountNodeId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 34,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OperatingAccountNodeId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 34,
+          "type": "string"
         },
         {
           "collection": false,
@@ -229053,7 +229081,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IntercompanyAccrualPrincipalEvidenceDto",
-          "source_line": 35,
+          "source_line": 36,
           "type": "IntercompanyAccrualPrincipalEvidenceDto"
         },
         {
@@ -229176,7 +229204,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "4d07be0437e8464f8eef999391b7ef04e38c52da52c0849d7adc400e47e0a3e5",
+      "fingerprint": "6e971a935a6d11cb9c1257001cd03218b79f275ddb9830ba854994e6fecbedcd",
       "full_name": "Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceGuard",
       "id": "Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceGuard",
       "kind": "class",
@@ -229190,12 +229218,12 @@
       "qualified_name": "Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceGuard",
       "references": [],
       "source": {
-        "line": 49,
+        "line": 50,
         "path": "src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs"
       },
       "sources": [
         {
-          "line": 49,
+          "line": 50,
           "path": "src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs"
         }
       ],
@@ -229216,7 +229244,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "2fc4592326197c1a9f4dc169837a23aad659078bbaaa4b8f32ce4a32369e0dcb",
+      "fingerprint": "66145095d90bf4e2d243e4a9ee64bd200e3d3bb79c5904901a2f5b96670bf0d3",
       "full_name": "Meridian.Contracts.Ledger.IntercompanyAccrualJsonContext",
       "id": "Meridian.Contracts.Ledger.IntercompanyAccrualJsonContext",
       "kind": "class",
@@ -229230,12 +229258,12 @@
       "qualified_name": "Meridian.Contracts.Ledger.IntercompanyAccrualJsonContext",
       "references": [],
       "source": {
-        "line": 132,
+        "line": 158,
         "path": "src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs"
       },
       "sources": [
         {
-          "line": 132,
+          "line": 158,
           "path": "src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs"
         }
       ],
@@ -229461,7 +229489,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "036315696c7385ff492b9f514afc9867329e8eff4aaacd15a2b6ffe721df4b29",
+      "fingerprint": "1d218b242699d7d82d9c3950a49c5dd0356fb0aa60b3f06a631d45ed8a360778",
       "full_name": "Meridian.Contracts.Ledger.IntercompanyAccrualProposalDto",
       "id": "Meridian.Contracts.Ledger.IntercompanyAccrualProposalDto",
       "kind": "record",
@@ -229480,7 +229508,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IntercompanyAccrualPreviewDto",
-          "source_line": 39,
+          "source_line": 40,
           "type": "IntercompanyAccrualPreviewDto"
         },
         {
@@ -229494,7 +229522,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 40,
+          "source_line": 41,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -229509,7 +229537,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "ManualJournalEntryDraftDto?",
-          "source_line": 43,
+          "source_line": 44,
           "type": "ManualJournalEntryDraftDto?"
         },
         {
@@ -229524,7 +229552,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IntercompanyAccrualEvidenceDto?",
-          "source_line": 41,
+          "source_line": 42,
           "type": "IntercompanyAccrualEvidenceDto?"
         },
         {
@@ -229539,7 +229567,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 42,
+          "source_line": 43,
           "type": "string?"
         }
       ],
@@ -229553,12 +229581,12 @@
         "Meridian.Contracts.Ledger.ManualJournalEntryDraftDto"
       ],
       "source": {
-        "line": 39,
+        "line": 40,
         "path": "src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs"
       },
       "sources": [
         {
-          "line": 39,
+          "line": 40,
           "path": "src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs"
         }
       ],

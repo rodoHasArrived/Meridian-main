@@ -63,7 +63,9 @@ result through the existing review and proposal pipeline. It never posts on its 
   rule posting uses, and that revision's pinned legal revision must itself be the applicable one.
 - The window is cut at every profile-revision boundary, schedule-period boundary and principal
   change. Each slice is `principal x annual rate x day-count fraction`, using its own revision's
-  rate, day-count convention and schedule.
+  rate, day-count convention and schedule. A slice's fraction is the difference of two fractions
+  measured from its schedule period's start, so cutting a period never changes the period's total;
+  under 30/360 a principal movement on the 31st cannot add a day.
 - **Rate resets and amendments inside a period** are therefore prorated by day: the days before the
   amendment's effective date use the earlier revision, the days from it use the amended one. An
   amendment that has no re-reviewed profile revision pinning it leaves those days without authority
@@ -178,9 +180,15 @@ the terms do not declare inside the same evidence chain.
 
 ### Neutral
 
-- Overlap is checked against posted journals when an accrual is previewed or drafted, and again by
-  the journal workbench before a draft is submitted, approved or posted. Two unposted drafts for
-  overlapping windows can coexist; once one posts, the other can no longer advance.
+- Overlap is checked against posted accrual journals of the profile, whatever account an earlier
+  profile revision posted them to, when an accrual is previewed or drafted and again by the journal
+  workbench before a draft is submitted, approved or posted. Two unposted drafts for overlapping
+  windows can coexist; once one posts, the other can no longer advance.
+- A posted accrual stops blocking its window only when a source-linked exact inverse reverses it.
+  Settling the receivable or payable does not: the balance nets to zero while the interest stays
+  posted. A recomputation after a reversal gets a new draft identity; the original is not reused.
+- The evidence guard binds the debit and credit direction to the retained lending direction, so a
+  balanced draft with both sides swapped is refused.
 
 ## Compliance
 

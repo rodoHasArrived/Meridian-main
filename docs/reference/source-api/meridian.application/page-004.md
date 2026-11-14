@@ -1035,7 +1035,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAccrualPreviewService</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs:20](../../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs#L20).
+Source: [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs:21](../../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs#L21).
 
 Turns declared fixed-rate loan terms into an interest amount for a half-open accrual window. Pure: it never reads a ledger, fetches a fixing, creates a draft or authorizes a journal.
 
@@ -1047,7 +1047,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IntercompanyAccrualPreviewDto Preview(IntercompanyAccrualComputationInput input);</code> | [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs:23](../../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs#L23) |  |
+| <code>public IntercompanyAccrualPreviewDto Preview(IntercompanyAccrualComputationInput input);</code> | [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs:24](../../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs#L24) |  |
 
 ## IntercompanyAgreementRules
 

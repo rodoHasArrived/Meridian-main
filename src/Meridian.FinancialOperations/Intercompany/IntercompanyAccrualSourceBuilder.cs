@@ -113,36 +113,67 @@ public static class IntercompanyAccrualSourceBuilder
     }
 
     /// <summary>
-    /// A posted accrual whose window intersects <c>[from, to)</c> and still carries a net balance. A fully
-    /// reversed accrual nets to zero and no longer blocks a recomputation.
+    /// A posted accrual of the profile whose window intersects <c>[from, to)</c> and has not been reversed.
+    /// Reversal is proved by correction lineage: a source-linked exact inverse of that journal. A settled
+    /// receivable or payable nets to zero too, but its interest income stays posted, so balances prove nothing.
     /// </summary>
     public static string? FindPostedOverlap(IReadOnlyList<LedgerJournalEntryRecord> records, Guid interestArrangementId,
-        IReadOnlySet<string> monetaryNodes, DateOnly from, DateOnly to)
+        DateOnly from, DateOnly to)
     {
-        var arrangement = interestArrangementId.ToString("D");
-        var net = new Dictionary<string, decimal>(StringComparer.Ordinal);
-        foreach (var line in records.SelectMany(record => record.Entry.Lines))
+        foreach (var (record, transaction) in PostedAccruals(records, interestArrangementId)
+            .OrderBy(item => item.Transaction, StringComparer.Ordinal))
         {
-            var dimensions = line.Dimensions;
-            if (!string.Equals(dimensions?.AccountingArrangementId, arrangement, StringComparison.OrdinalIgnoreCase)
-                || dimensions!.ChartAccountNodeId is not { } node || !monetaryNodes.Contains(node)
-                || !IntercompanyAccrualEvidenceGuard.TryParseWindow(dimensions.IntercompanyTransactionId, out _, out _))
+            if (IsInverse(record, records) || records.Any(candidate => candidate.SourceJournalEntryId == record.Entry.JournalEntryId
+                    && IntercompanyJournalCorrectionEvidence.IsExactInverse(candidate.Entry, record.Entry)))
                 continue;
-            net[dimensions.IntercompanyTransactionId!] = net.GetValueOrDefault(dimensions.IntercompanyTransactionId!)
-                + (line.Currency?.TransactionDebit ?? line.Debit) - (line.Currency?.TransactionCredit ?? line.Credit);
-        }
-        foreach (var (transaction, amount) in net.OrderBy(item => item.Key, StringComparer.Ordinal))
-            if (amount != 0m && IntercompanyAccrualEvidenceGuard.TryParseWindow(transaction, out var postedFrom, out var postedTo)
+            if (IntercompanyAccrualEvidenceGuard.TryParseWindow(transaction, out var postedFrom, out var postedTo)
                 && postedFrom < to && from < postedTo)
                 return transaction;
+        }
         return null;
     }
 
-    /// <summary>One window of one profile in one book has one draft identity; a recomputation updates it.</summary>
-    public static Guid DraftId(string tenantId, IntercompanyAccrualRequestDto request)
+    /// <summary>
+    /// How many accrual journals, originals and their corrections, are already posted for exactly this window.
+    /// It only grows when a journal posts, so it is stable across retries and gives a recomputation after a
+    /// reversal its own identity while the immutable original keeps its own.
+    /// </summary>
+    public static int PostedGeneration(IReadOnlyList<LedgerJournalEntryRecord> records, Guid interestArrangementId,
+        DateOnly from, DateOnly to)
+    {
+        var transaction = IntercompanyAccrualEvidenceGuard.TransactionId(from, to);
+        return PostedAccruals(records, interestArrangementId).Count(item => item.Transaction == transaction);
+    }
+
+    /// <summary>Journals the workbench posted from an accrual draft, identified by their retained evidence tag.</summary>
+    private static IEnumerable<(LedgerJournalEntryRecord Record, string Transaction)> PostedAccruals(
+        IReadOnlyList<LedgerJournalEntryRecord> records, Guid interestArrangementId)
+    {
+        var arrangement = interestArrangementId.ToString("D");
+        foreach (var record in records)
+        {
+            if (string.IsNullOrWhiteSpace(record.Entry.Metadata.Tags?.GetValueOrDefault(IntercompanyAccrualEvidenceGuard.DigestTag)))
+                continue;
+            var transaction = record.Entry.Lines.Select(line => line.Dimensions)
+                .Where(dimensions => string.Equals(dimensions?.AccountingArrangementId, arrangement, StringComparison.OrdinalIgnoreCase))
+                .Select(dimensions => dimensions!.IntercompanyTransactionId)
+                .FirstOrDefault(id => IntercompanyAccrualEvidenceGuard.TryParseWindow(id, out _, out _));
+            if (transaction is not null)
+                yield return (record, transaction);
+        }
+    }
+
+    private static bool IsInverse(LedgerJournalEntryRecord record, IReadOnlyList<LedgerJournalEntryRecord> records)
+        => record.SourceJournalEntryId is { } source
+            && records.FirstOrDefault(candidate => candidate.Entry.JournalEntryId == source) is { } original
+            && IntercompanyJournalCorrectionEvidence.IsExactInverse(record.Entry, original.Entry);
+
+    /// <summary>One window of one profile in one book has one live draft identity; a recomputation updates it.</summary>
+    public static Guid DraftId(string tenantId, IntercompanyAccrualRequestDto request, int generation = 0)
         => new(Sha256Digest.ComputeBytesUtf8(string.Join(":", IntercompanyAccrualRules.RuleVersion, tenantId,
             request.InterestArrangementId.ToString("D"), request.SourceBookId.ToString("D"),
-            request.AccrualFrom.ToString("yyyyMMdd"), request.AccrualTo.ToString("yyyyMMdd"))).AsSpan(0, 16));
+            request.AccrualFrom.ToString("yyyyMMdd"), request.AccrualTo.ToString("yyyyMMdd"))
+            + (generation == 0 ? string.Empty : FormattableString.Invariant($":g{generation}"))).AsSpan(0, 16));
 
     /// <summary>
     /// The source-side draft: the lender debits interest receivable and credits interest income; the borrower
@@ -153,7 +184,7 @@ public static class IntercompanyAccrualSourceBuilder
         string? companyId, string actor, LedgerBookRecord book, LedgerAccountingPeriod period,
         ResolvedIntercompanyAccountingArrangementDto posting, IntercompanyAccrualPreviewDto computation,
         IntercompanyAccrualPrincipalEvidenceDto principal, IReadOnlyList<IntercompanyAccountBindingDto> bindings,
-        IReadOnlyList<ChartOfAccountsNodeDto> chart, ConsolidationFxAmountDto? fx, DateTimeOffset now)
+        IReadOnlyList<ChartOfAccountsNodeDto> chart, ConsolidationFxAmountDto? fx, DateTimeOffset now, int generation = 0)
     {
         if (computation is not { IsReady: true, Amount: { } amount, Currency: { } currency })
             throw new InvalidOperationException("Only a ready computation can become an accrual draft.");
@@ -222,11 +253,11 @@ public static class IntercompanyAccrualSourceBuilder
             new ManualJournalEntryLineDto("interest", contraSide, functional, book.BaseCurrency, contra.Path,
                 EntityId: entity.ToString("D"), Dimensions: Dimensions(contra, contraBinding)) { TransactionCurrency = original }
         };
-        var draftId = DraftId(tenantId, request);
+        var draftId = DraftId(tenantId, request, generation);
         var evidence = new IntercompanyAccrualEvidenceDto(IntercompanyAccrualRules.RuleVersion, draftId, tenantId,
             book.LedgerBookId, entity, counterparty, posting.ArrangementId, posting.RevisionId,
             posting.CanonicalAgreementId, posting.CanonicalAgreementVersion, posting.CanonicalPayloadHash,
-            transaction, postingDate, principal.Role, book.BaseCurrency, functional, computation, principal, fx);
+            transaction, postingDate, principal.Role, main.NodeId, contra.NodeId, book.BaseCurrency, functional, computation, principal, fx);
         var evidenceJson = IntercompanyAccrualEvidenceGuard.Serialize(evidence);
         var digest = IntercompanyAccrualEvidenceGuard.Digest(evidenceJson);
         var versions = string.Join(", ", computation.Slices.Select(slice => slice.AgreementVersion).Distinct().Order()

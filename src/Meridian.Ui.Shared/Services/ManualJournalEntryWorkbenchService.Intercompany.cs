@@ -95,22 +95,24 @@ public sealed partial class ManualJournalEntryWorkbenchService
     /// </summary>
     private async Task EnsureAccrualWindowNotAlreadyPostedAsync(ManualJournalEntryDraftDto draft, Guid bookId, CancellationToken ct)
     {
-        if (!IntercompanyAccrualEvidenceGuard.IsAccrualDraft(draft)
+        // A reversal or rebook clones the original's provenance and window; it corrects the posted accrual
+        // rather than accruing the window again, so only the original draft is checked.
+        if (!IntercompanyAccrualEvidenceGuard.IsOriginalAccrualDraft(draft)
             || draft.Status is not (ManualJournalEntryStatusDto.Draft or ManualJournalEntryStatusDto.NeedsFix
                 or ManualJournalEntryStatusDto.Submitted or ManualJournalEntryStatusDto.Approved or ManualJournalEntryStatusDto.Rejected))
             return;
         var dimensions = draft.Lines.Select(line => line.Dimensions).FirstOrDefault(item => item?.AccountingArrangementId is not null
             && IntercompanyAccrualEvidenceGuard.TryParseWindow(item.IntercompanyTransactionId, out _, out _));
-        if (dimensions?.ChartAccountNodeId is not { } node || !Guid.TryParse(dimensions.AccountingArrangementId, out var arrangementId)
+        if (dimensions is null || !Guid.TryParse(dimensions.AccountingArrangementId, out var arrangementId)
             || !IntercompanyAccrualEvidenceGuard.TryParseWindow(dimensions.IntercompanyTransactionId, out var from, out var to))
-            return; // A reversal or rebook restates no accrual window; the evidence guard already covers a tampered original.
+            return; // The evidence guard already reports a tampered original.
         var own = draft.JournalEntryId.ToString("D");
         var posted = (await _journalStore!.QueryAsync(new(LedgerBookId: bookId,
                 LineDimensions: new() { AccountingArrangementId = dimensions.AccountingArrangementId }), ct).ConfigureAwait(false))
             .Where(record => record.Entry.JournalEntryId != draft.JournalEntryId
                 && record.Entry.Metadata.Tags?.GetValueOrDefault("manualJournalEntryId") != own).ToArray();
         if (Meridian.FinancialOperations.Intercompany.IntercompanyAccrualSourceBuilder.FindPostedOverlap(posted, arrangementId,
-            new HashSet<string>(StringComparer.Ordinal) { node }, from, to) is { } overlap)
+            from, to) is { } overlap)
             throw new InvalidOperationException($"Posted accrual {overlap} already covers part of this window. Reverse it or discard this draft; the same days are never accrued twice.");
     }
 }

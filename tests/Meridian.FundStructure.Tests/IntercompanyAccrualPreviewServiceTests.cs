@@ -76,6 +76,27 @@ public sealed class IntercompanyAccrualPreviewServiceTests
         Assert.True(preview.UnroundedAmount is > 0.0416m and < 0.0417m);
     }
 
+    [Theory]
+    [InlineData(IntercompanyDayCountDto.Thirty360)]
+    [InlineData(IntercompanyDayCountDto.ThirtyE360)]
+    [InlineData(IntercompanyDayCountDto.Actual360)]
+    public void CuttingAPeriodNeverChangesItsTotal_EvenOnThe31stUnderThirty360(IntercompanyDayCountDto dayCount)
+    {
+        // 30/360: January is 30 convention days, so 1,000,000 x 5% x 30/360 = 4,166.67 however it is cut.
+        // Restarting the convention at Jan 31 would count 30 + 1 days and give 4,305.56.
+        var loan = Loan(dayCount: dayCount);
+        var whole = Preview(new(2026, 1, 1), new(2026, 2, 1), [Authority(new(2026, 1, 1), new(2026, 2, 1), loan)],
+            [Principal(new(2026, 1, 1), new(2026, 2, 1), 1_000_000m)]);
+        var cut = Preview(new(2026, 1, 1), new(2026, 2, 1), [Authority(new(2026, 1, 1), new(2026, 2, 1), loan)],
+            [Principal(new(2026, 1, 1), new(2026, 1, 15), 1_000_000m), Principal(new(2026, 1, 15), new(2026, 1, 31), 1_000_000m),
+             Principal(new(2026, 1, 31), new(2026, 2, 1), 1_000_000m)]);
+
+        Assert.Equal(3, cut.Slices.Count);
+        Assert.Equal(whole.Amount, cut.Amount);
+        Assert.Equal(whole.Slices.Sum(slice => slice.YearFraction), cut.Slices.Sum(slice => slice.YearFraction));
+        Assert.Equal(dayCount == IntercompanyDayCountDto.Actual360 ? 4305.56m : 4166.67m, cut.Amount);
+    }
+
     [Fact]
     public void ZeroMinorUnitCurrency_RoundsToWholeUnits()
     {
@@ -169,7 +190,7 @@ public sealed class IntercompanyAccrualPreviewServiceTests
         => new(from, to, amount, "principal-evidence");
 
     private static IntercompanyAgreementRevisionDto Loan(int version = 1, decimal rate = 0.05m, DateOnly? effectiveFrom = null,
-        DateOnly? scheduleStart = null, string currency = "USD")
+        DateOnly? scheduleStart = null, string currency = "USD", IntercompanyDayCountDto dayCount = IntercompanyDayCountDto.Actual360)
     {
         var start = effectiveFrom ?? new DateOnly(2026, 1, 1);
         var draft = new IntercompanyAgreementDraftDto("IC-LOAN", "Synthetic loan", Lender, "Lender", Borrower, "Borrower",
@@ -178,7 +199,7 @@ public sealed class IntercompanyAccrualPreviewServiceTests
             {
                 StructuredTerms = new(new(scheduleStart ?? start, new(2027, 1, 1), IntercompanyFrequencyDto.Monthly, "WEEKENDS",
                         BusinessDayConvention.Following, 1), IntercompanyRateBasisDto.Fixed, rate,
-                    DayCount: IntercompanyDayCountDto.Actual360, Compounding: IntercompanyCompoundingDto.Simple)
+                    DayCount: dayCount, Compounding: IntercompanyCompoundingDto.Simple)
             },
             Action: version == 1 ? IntercompanyAgreementActionDto.Activate : IntercompanyAgreementActionDto.Amend);
         return new(AgreementId, version, version == 1 ? null : version - 1, version == 1 ? null : version - 1, draft.Action, draft,

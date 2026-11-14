@@ -163,7 +163,8 @@ public sealed class IntercompanyAccrualDraftServiceTests
                     IntercompanyTransactionId = transaction
                 }),
             new(Guid.NewGuid(), id, timestamp, new("Assets:Cash", LedgerAccountType.Asset), 0m, debit, "Synthetic journal")
-        ], new JournalEntryMetadata(EffectiveDate: date));
+        ], new JournalEntryMetadata(EffectiveDate: date, Tags: transaction.StartsWith(IntercompanyAccrualEvidenceGuard.TransactionPrefix, StringComparison.Ordinal)
+            ? new Dictionary<string, string> { [IntercompanyAccrualEvidenceGuard.DigestTag] = new string('e', 64) } : null));
         return new(entry, Guid.NewGuid(), Guid.NewGuid(), null, null, 1, timestamp);
     }
 

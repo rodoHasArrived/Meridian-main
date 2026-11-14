@@ -86,10 +86,10 @@ classDiagram
         +decimal FunctionalAmount
         +string FunctionalCurrency
         +ConsolidationFxAmountDto? Fx
+        +string MonetaryAccountNodeId
+        +string OperatingAccountNodeId
         +string PostingAgreementPayloadHash
         +int PostingAgreementVersion
-        +Guid PostingArrangementRevisionId
-        +DateOnly PostingDate
     }
     class Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceGuard["IntercompanyAccrualEvidenceGuard"] {
     }

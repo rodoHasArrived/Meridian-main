@@ -79,7 +79,7 @@ public sealed partial class AccountingConfigurationServiceTests
         var evidence = new IntercompanyAccrualEvidenceDto(IntercompanyAccrualRules.RuleVersion, draft.JournalEntryId, "tenant-a",
             draft.LedgerBookId!.Value, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), revision, agreement, 1, new string('a', 64),
             IntercompanyAccrualEvidenceGuard.TransactionId(from, to), draft.AccountingDate, IntercompanyAccountRoleDto.Receivable,
-            "USD", 100m, computation, new(Guid.NewGuid(), IntercompanyAccountRoleDto.Receivable, 24_000m, 1, new string('d', 64), []));
+            "interest-receivable", "interest-income", "USD", 100m, computation, new(Guid.NewGuid(), IntercompanyAccountRoleDto.Receivable, 24_000m, 1, new string('d', 64), []));
         var json = IntercompanyAccrualEvidenceGuard.Serialize(evidence);
         return draft with
         {

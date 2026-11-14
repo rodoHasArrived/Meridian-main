@@ -87,16 +87,13 @@ public sealed class IntercompanyAccrualDraftService(IntercompanyAccountingArrang
             if (!computation.IsReady)
                 return new(computation, computation.Diagnostics);
 
-            var interestMaps = interestHistory.Events
-                .Where(item => item.Action == IntercompanyAccountingArrangementActionDto.Approve)
-                .SelectMany(item => item.AffectedRevision.PartyMappings)
-                .Where(item => item.EntityId == book.FundStructureNodeId && item.LedgerBookId == book.LedgerBookId).ToArray();
             var interestJournals = await journals.QueryAsync(new(LedgerBookId: book.LedgerBookId,
                 LineDimensions: new() { AccountingArrangementId = request.InterestArrangementId.ToString("D") }), ct).ConfigureAwait(false);
             if (IntercompanyAccrualSourceBuilder.FindPostedOverlap(interestJournals, request.InterestArrangementId,
-                interestMaps.SelectMany(item => new[] { item.ReceivableAccountNodeId, item.PayableAccountNodeId })
-                    .ToHashSet(StringComparer.Ordinal), request.AccrualFrom, request.AccrualTo) is { } overlap)
+                request.AccrualFrom, request.AccrualTo) is { } overlap)
                 return Unavailable($"Posted accrual {overlap} already covers part of this window; reverse it before accruing those days again.", computation);
+            var generation = IntercompanyAccrualSourceBuilder.PostedGeneration(interestJournals, request.InterestArrangementId,
+                request.AccrualFrom, request.AccrualTo);
 
             var postingDate = request.AccrualTo.AddDays(-1);
             var periods = (await journals.ListPeriodsAsync(book.LedgerBookId, ct: ct).ConfigureAwait(false))
@@ -118,7 +115,7 @@ public sealed class IntercompanyAccrualDraftService(IntercompanyAccountingArrang
             var workspace = await configuration.GetWorkspaceAsync(book.FundProfileId, book.LedgerBookId, ct,
                 tenantId, companyId).ConfigureAwait(false);
             return IntercompanyAccrualSourceBuilder.BuildDraft(request, tenantId, companyId, actor, book, periods[0], posting,
-                computation, principal.Evidence, accounts, workspace.ChartOfAccounts, conversion, _clock.GetUtcNow());
+                computation, principal.Evidence, accounts, workspace.ChartOfAccounts, conversion, _clock.GetUtcNow(), generation);
         }
         catch (Exception error) when (error is InvalidOperationException or ArgumentException or KeyNotFoundException)
         {

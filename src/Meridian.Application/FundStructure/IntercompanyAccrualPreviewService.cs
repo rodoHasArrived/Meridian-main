@@ -14,7 +14,8 @@ namespace Meridian.Application.FundStructure;
 /// Proration (<see cref="IntercompanyAccrualRules.RuleVersion"/>): every day accrues under the approved
 /// revision applicable on that day. The window is cut at each authority, schedule-period and principal
 /// boundary; each slice is <c>principal x annual rate x day-count fraction</c> using its own revision's
-/// rate, convention and schedule. Slices are summed unrounded and rounded once, half away from zero, to
+/// rate, convention and schedule. A slice's fraction is the difference of two fractions measured from
+/// its schedule period's start, so cutting a period never changes the period's total. Slices are summed unrounded and rounded once, half away from zero, to
 /// the agreement currency's minor unit. Anything that would need an inferred term is refused whole.
 /// </remarks>
 public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource calendars)
@@ -86,8 +87,12 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
                     var end = Earlier(to, principal.To);
                     if (end <= start)
                         continue;
-                    if (!ScheduleDayCount.TryFraction(convention, period, generated, start, end, out var fraction, out var refusal))
+                    // Measure both ends from the period start so fractions stay additive: under 30/360 a cut on the
+                    // 31st must not add a day that the unsplit period does not contain.
+                    if (!ScheduleDayCount.TryFraction(convention, period, generated, period.AccrualStart, end, out var through, out var refusal)
+                        || !ScheduleDayCount.TryFraction(convention, period, generated, period.AccrualStart, start, out var before, out refusal))
                         return Unavailable(refusal);
+                    var fraction = through - before;
                     slices.Add(new(slices.Count + 1, start, end, authority.AccountingArrangementRevisionId,
                         legal.AgreementVersion, legal.PayloadHash, period.Sequence, principal.Principal, rate,
                         DayCountConventions.TermLabel(convention), fraction, principal.Principal * rate * fraction,

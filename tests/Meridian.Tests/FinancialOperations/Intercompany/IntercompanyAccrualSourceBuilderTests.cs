@@ -89,17 +89,55 @@ public sealed class IntercompanyAccrualSourceBuilderTests
     }
 
     [Fact]
-    public void PostedOverlap_BlocksReaccrual_UntilThePostedAccrualIsFullyReversed()
+    public void PostedOverlap_BlocksReaccrual_UntilASourceLinkedExactInverseReversesIt()
+    {
+        var interest = Data.AccountingArrangementId;
+        var window = IntercompanyAccrualEvidenceGuard.TransactionId(From, To);
+        var posted = AccrualJournal(interest, "a-int-recv", window, debit: 4166.67m);
+        var inverse = Inverse(posted);
+
+        Assert.Equal("loan-interest:20260601-20260701", IntercompanyAccrualSourceBuilder.FindPostedOverlap([posted], interest, new(2026, 6, 15), new(2026, 7, 15)));
+        Assert.Null(IntercompanyAccrualSourceBuilder.FindPostedOverlap([posted], interest, To, new(2026, 8, 1)));
+        Assert.Null(IntercompanyAccrualSourceBuilder.FindPostedOverlap([posted, inverse], interest, From, To));
+        Assert.Null(IntercompanyAccrualSourceBuilder.FindPostedOverlap([posted], Guid.NewGuid(), From, To));
+    }
+
+    [Fact]
+    public void PostedOverlap_IsNotClearedBySettlementOrByAnUnlinkedOffsettingEntry()
+    {
+        var interest = Data.AccountingArrangementId;
+        var window = IntercompanyAccrualEvidenceGuard.TransactionId(From, To);
+        var posted = AccrualJournal(interest, "a-int-recv", window, debit: 4166.67m);
+        // Cash settles the receivable under the same transaction identity: the receivable nets to zero while
+        // the interest income stays posted, so the window is still accrued.
+        var settlement = AccrualJournal(interest, "a-int-recv", window, credit: 4166.67m, accrualTag: false);
+        var unlinked = Inverse(posted) with { SourceJournalEntryId = null };
+        // A posted accrual on a node retired by a later profile revision still covers its days.
+        var oldNode = AccrualJournal(interest, "a-int-recv-retired", window, debit: 4166.67m);
+
+        Assert.NotNull(IntercompanyAccrualSourceBuilder.FindPostedOverlap([posted, settlement], interest, From, To));
+        Assert.NotNull(IntercompanyAccrualSourceBuilder.FindPostedOverlap([posted, unlinked], interest, From, To));
+        Assert.NotNull(IntercompanyAccrualSourceBuilder.FindPostedOverlap([oldNode], interest, From, To));
+    }
+
+    [Fact]
+    public void RecomputationAfterReversal_GetsANewRetryStableIdentity_AndLeavesTheOriginalAlone()
     {
         var interest = Data.AccountingArrangementId;
         var posted = AccrualJournal(interest, "a-int-recv", IntercompanyAccrualEvidenceGuard.TransactionId(From, To), debit: 4166.67m);
-        var inverse = AccrualJournal(interest, "a-int-recv", IntercompanyAccrualEvidenceGuard.TransactionId(From, To), credit: 4166.67m);
-        HashSet<string> nodes = ["a-int-recv", "a-int-pay"];
+        LedgerJournalEntryRecord[] reversed = [posted, Inverse(posted)];
 
-        Assert.Equal("loan-interest:20260601-20260701", IntercompanyAccrualSourceBuilder.FindPostedOverlap([posted], interest, nodes, new(2026, 6, 15), new(2026, 7, 15)));
-        Assert.Null(IntercompanyAccrualSourceBuilder.FindPostedOverlap([posted], interest, nodes, To, new(2026, 8, 1)));
-        Assert.Null(IntercompanyAccrualSourceBuilder.FindPostedOverlap([posted, inverse], interest, nodes, From, To));
-        Assert.Null(IntercompanyAccrualSourceBuilder.FindPostedOverlap([posted], Guid.NewGuid(), nodes, From, To));
+        var generation = IntercompanyAccrualSourceBuilder.PostedGeneration(reversed, interest, From, To);
+        var original = BuildDraft();
+        var replacement = BuildDraft(generation: generation);
+
+        Assert.Equal(0, IntercompanyAccrualSourceBuilder.PostedGeneration([], interest, From, To));
+        Assert.Equal(0, IntercompanyAccrualSourceBuilder.PostedGeneration(reversed, interest, From, new(2026, 6, 16)));
+        Assert.Equal(2, generation);
+        Assert.NotEqual(original.Draft!.JournalEntryId, replacement.Draft!.JournalEntryId);
+        Assert.Equal(replacement.Draft.JournalEntryId, BuildDraft(generation: generation).Draft!.JournalEntryId);
+        Assert.Equal(replacement.Draft.JournalEntryId, replacement.Evidence!.DraftId);
+        Assert.Null(IntercompanyAccrualEvidenceGuard.Validate(replacement.Draft));
     }
 
     [Fact]
@@ -169,6 +207,11 @@ public sealed class IntercompanyAccrualSourceBuilderTests
         var replaced = draft with { IntercompanyAccrualEvidenceJson = draft.IntercompanyAccrualEvidenceJson!.Replace("4166.67", "9999.00") };
         var stripped = draft with { IntercompanyAccrualEvidenceJson = null };
         var correction = draft with { JournalEntryId = Guid.NewGuid(), Lines = edited.Lines };
+        static AccountingTemplateLineSideDto Flip(AccountingTemplateLineSideDto side) => side == AccountingTemplateLineSideDto.Debit
+            ? AccountingTemplateLineSideDto.Credit : AccountingTemplateLineSideDto.Debit;
+        // Still balanced, same amounts and pins: only the direction says the lender owes instead of earns.
+        var swapped = draft with { Lines = draft.Lines.Select(line => line with { Side = Flip(line.Side) }).ToArray() };
+        var movedAccount = draft with { Lines = [draft.Lines[0], draft.Lines[1] with { Dimensions = draft.Lines[1].Dimensions! with { ChartAccountNodeId = "a-int-expense" } }] };
 
         Assert.Contains("retained amount", IntercompanyAccrualEvidenceGuard.Validate(edited));
         Assert.Contains("book, date", IntercompanyAccrualEvidenceGuard.Validate(redated));
@@ -176,6 +219,10 @@ public sealed class IntercompanyAccrualSourceBuilderTests
         Assert.Contains("retained server computation", IntercompanyAccrualEvidenceGuard.Validate(replaced));
         Assert.Contains("retained server computation", IntercompanyAccrualEvidenceGuard.Validate(stripped));
         Assert.True(IntercompanyAccrualEvidenceGuard.IsAccrualDraft(stripped));
+        Assert.Contains("lending direction", IntercompanyAccrualEvidenceGuard.Validate(swapped));
+        Assert.Contains("lending direction", IntercompanyAccrualEvidenceGuard.Validate(movedAccount));
+        Assert.True(IntercompanyAccrualEvidenceGuard.IsOriginalAccrualDraft(draft));
+        Assert.False(IntercompanyAccrualEvidenceGuard.IsOriginalAccrualDraft(correction));
         // A reversal or rebook is proved by the correction workflow against the immutable original.
         Assert.Null(IntercompanyAccrualEvidenceGuard.Validate(correction));
     }
@@ -275,13 +322,13 @@ public sealed class IntercompanyAccrualSourceBuilderTests
     private static IntercompanyAccrualProposalDto BuildDraft(LedgerBookRecord? book = null, LedgerAccountingPeriod? period = null,
         IntercompanyAccountRoleDto role = IntercompanyAccountRoleDto.Receivable, IReadOnlyList<ChartOfAccountsNodeDto>? chart = null,
         IReadOnlyList<IntercompanyAccountBindingDto>? bindings = null, string currency = "USD", ConsolidationFxAmountDto? fx = null,
-        DateTimeOffset? now = null)
+        DateTimeOffset? now = null, int generation = 0)
     {
         var posting = Interest(currency: currency);
         var source = book ?? SourceBook();
         return IntercompanyAccrualSourceBuilder.BuildDraft(Request() with { SourceBookId = source.LedgerBookId }, "tenant-a", "company-a",
             "preparer", source, period ?? SourcePeriod(), posting, Computation(posting), Principal(role),
-            bindings ?? Bindings("a", Data.BookA), chart ?? Chart("a"), fx, now ?? Data.Now);
+            bindings ?? Bindings("a", Data.BookA), chart ?? Chart("a"), fx, now ?? Data.Now, generation);
     }
 
     private static IntercompanyPartyMappingDto[] InterestMappings() =>
@@ -333,11 +380,22 @@ public sealed class IntercompanyAccrualSourceBuilderTests
         Guid? arrangement = null, string? transactionCurrency = null)
         => Journal(date, arrangement ?? PrincipalArrangement, node, "drawdown", debit, credit, transactionCurrency);
 
-    private static LedgerJournalEntryRecord AccrualJournal(Guid arrangement, string node, string transaction, decimal debit = 0m, decimal credit = 0m)
-        => Journal(Data.Date, arrangement, node, transaction, debit, credit, null);
+    private static LedgerJournalEntryRecord AccrualJournal(Guid arrangement, string node, string transaction, decimal debit = 0m,
+        decimal credit = 0m, bool accrualTag = true)
+        => Journal(Data.Date, arrangement, node, transaction, debit, credit, null, accrualTag);
+
+    /// <summary>The posted reversal the correction workflow produces: same scope and provenance, sides swapped, source-linked.</summary>
+    private static LedgerJournalEntryRecord Inverse(LedgerJournalEntryRecord original)
+    {
+        var id = Guid.NewGuid();
+        var entry = new JournalEntry(id, original.Entry.Timestamp, "Reversal", original.Entry.Lines.Select(line => new LedgerEntry(
+            Guid.NewGuid(), id, line.Timestamp, line.Account, line.Credit, line.Debit, "Reversal", line.Dimensions, null)).ToArray(),
+            original.Entry.Metadata);
+        return original with { Entry = entry, GlobalSequence = original.GlobalSequence + 1, SourceJournalEntryId = original.Entry.JournalEntryId };
+    }
 
     private static LedgerJournalEntryRecord Journal(DateOnly date, Guid arrangement, string node, string transaction,
-        decimal debit, decimal credit, string? transactionCurrency)
+        decimal debit, decimal credit, string? transactionCurrency, bool accrualTag = false)
     {
         var id = Guid.NewGuid();
         var timestamp = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
@@ -354,7 +412,8 @@ public sealed class IntercompanyAccrualSourceBuilderTests
                 transactionCurrency is null ? null : new(transactionCurrency, "USD", debit, credit, 1m)),
             new(Guid.NewGuid(), id, timestamp, new("Assets:Cash", LedgerAccountType.Asset), credit > 0m ? amount : 0m,
                 debit > 0m ? amount : 0m, "Synthetic journal")
-        ], new JournalEntryMetadata(EffectiveDate: date));
+        ], new JournalEntryMetadata(EffectiveDate: date, Tags: accrualTag
+            ? new Dictionary<string, string> { [IntercompanyAccrualEvidenceGuard.DigestTag] = new string('e', 64) } : null));
         return new(entry, Guid.NewGuid(), Guid.NewGuid(), null, null, 1, timestamp);
     }
 }

@@ -30,7 +30,8 @@ public sealed record IntercompanyAccrualEvidenceDto(string RuleVersion, Guid Dra
     Guid SourceBookId, Guid SourceEntityId, Guid CounterpartyEntityId,
     Guid AccountingArrangementId, Guid PostingArrangementRevisionId,
     Guid AgreementId, int PostingAgreementVersion, string PostingAgreementPayloadHash,
-    string TransactionId, DateOnly PostingDate, IntercompanyAccountRoleDto SourceRole, string FunctionalCurrency,
+    string TransactionId, DateOnly PostingDate, IntercompanyAccountRoleDto SourceRole,
+    string MonetaryAccountNodeId, string OperatingAccountNodeId, string FunctionalCurrency,
     [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal FunctionalAmount,
     IntercompanyAccrualPreviewDto Computation, IntercompanyAccrualPrincipalEvidenceDto Principal,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ConsolidationFxAmountDto? Fx = null);
@@ -75,6 +76,22 @@ public static class IntercompanyAccrualEvidenceGuard
     public static bool IsAccrualDraft(ManualJournalEntryDraftDto draft)
         => draft.IntercompanyAccrualEvidenceJson is not null || draft.IntercompanyAccrualEvidenceDigest is not null;
 
+    /// <summary>
+    /// True only for the draft the computation was retained for. A reversal or rebook clones the provenance
+    /// under a new journal identity and is a correction, not a new accrual of the window.
+    /// </summary>
+    public static bool IsOriginalAccrualDraft(ManualJournalEntryDraftDto draft)
+    {
+        if (string.IsNullOrWhiteSpace(draft.IntercompanyAccrualEvidenceJson))
+            return false;
+        try
+        {
+            return JsonSerializer.Deserialize(draft.IntercompanyAccrualEvidenceJson,
+                IntercompanyAccrualJsonContext.Default.IntercompanyAccrualEvidenceDto)?.DraftId == draft.JournalEntryId;
+        }
+        catch (JsonException) { return false; }
+    }
+
     /// <summary>Null when the draft still states exactly the retained computation; otherwise the refusal.</summary>
     public static string? Validate(ManualJournalEntryDraftDto draft)
     {
@@ -100,6 +117,15 @@ public static class IntercompanyAccrualEvidenceGuard
             return "The accrual draft's book, date, currency or tenant differs from the retained computation.";
         if (draft.Lines.Count != 2 || draft.Lines[0].Side == draft.Lines[1].Side)
             return "An accrual draft carries exactly the computed debit and credit; edit the source facts and recompute instead.";
+        // The lender debits its interest receivable; the borrower credits its interest payable. Swapping both
+        // sides keeps the journal balanced and the amounts equal, so direction is bound explicitly.
+        var monetarySide = evidence.SourceRole == IntercompanyAccountRoleDto.Receivable
+            ? AccountingTemplateLineSideDto.Debit : AccountingTemplateLineSideDto.Credit;
+        var monetary = draft.Lines.Where(line => line.Dimensions?.ChartAccountNodeId == evidence.MonetaryAccountNodeId).ToArray();
+        var operating = draft.Lines.Where(line => line.Dimensions?.ChartAccountNodeId == evidence.OperatingAccountNodeId).ToArray();
+        if (evidence.MonetaryAccountNodeId == evidence.OperatingAccountNodeId || monetary.Length != 1 || operating.Length != 1
+            || monetary[0].Side != monetarySide || operating[0].Side == monetarySide)
+            return "Accrual lines differ from the retained lending direction or accounts.";
         foreach (var line in draft.Lines)
         {
             var dimensions = line.Dimensions;
