@@ -584,6 +584,7 @@ describe("SettingsScreen", () => {
     );
     expect(screen.queryByRole("tablist", { name: "Settings routes" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Workstation setup checklist" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Operator control posture metrics")).not.toBeInTheDocument();
     expect(screen.getByText("Defaults or saved preferences active")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Preferences" })).toHaveAttribute("href", "/settings/preferences");
     expect(screen.queryByRole("region", { name: "Profile and authentication posture" })).not.toBeInTheDocument();
@@ -624,9 +625,9 @@ describe("SettingsScreen", () => {
     expect(screen.queryByText("Focused provider: polygon")).not.toBeInTheDocument();
   });
 
-  it("states the cross-screen counts as the source of provider health, with their own evidence", () => {
-    // The overview reloaded at 18:10. The cross-screen counts reload failed, so provider health
-    // is still the 17:40 figure: it must not borrow the overview's source, time or freshness.
+  it("keeps workspace KPIs out of the settings chooser when source freshness differs", () => {
+    // The overview and retained counts have different freshness. Settings still leads with
+    // setup work; operational figures belong to the workspaces that own them.
     renderWithRouter(
       <WorkspaceFigureContextProvider
         value={{
@@ -645,11 +646,10 @@ describe("SettingsScreen", () => {
       { initialEntries: ["/settings"] }
     );
 
-    const strip = screen.getByLabelText("Operator control posture metrics");
-    expect(within(strip).getByText("3 / 4")).toHaveClass("text-muted-foreground");
-    expect(strip.parentElement).toHaveTextContent(
-      "Stale figures · Active runs, Open positions, Storage health from System overview · As of Jun 30, 2026, 18:10 UTC · Scope: All authorized scopes; Providers healthy from Cross-screen counts · As of Jun 30, 2026, 17:40 UTC"
-    );
+    expect(screen.queryByLabelText("Operator control posture metrics")).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Workstation setup checklist" })).toBeInTheDocument();
+    expect(screen.queryByText("Open positions")).not.toBeInTheDocument();
+    expect(screen.queryByText("Storage health")).not.toBeInTheDocument();
   });
 
   it("renders recent events as accessible status evidence rows", () => {
@@ -680,6 +680,33 @@ describe("SettingsScreen", () => {
     expect(within(eventRow).getByText("Provider health")).toBeInTheDocument();
     expect(within(eventDetail).getByText("Brokerage sync delayed.")).toBeInTheDocument();
     expect(within(eventDetail).getByText("Provider health / evt-1")).toBeInTheDocument();
+  });
+
+  it("uses the holdings owner for access position facts instead of the system summary", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={{ ...overview, openPositions: 5 }} portfolio={portfolio} />, {
+      initialEntries: ["/settings/access"]
+    });
+
+    expect(screen.getByText("Open positions").parentElement).toHaveTextContent("Open positions0");
+    const count = screen.getByText("Positions").parentElement!;
+    expect(count).toHaveTextContent("Positions0");
+    expect(count).toHaveAttribute("data-kpi-id", "portfolio.open-positions");
+    expect(count).toHaveAttribute("data-kpi-display", "0");
+    expect(count.querySelector("[data-kpi-rendered-value]")).toHaveTextContent("0");
+    expect(screen.queryByLabelText("Operator control posture metrics")).not.toBeInTheDocument();
+  });
+
+  it("withholds access position facts when only the independent system summary is available", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={{ ...overview, openPositions: 5 }} />, {
+      initialEntries: ["/settings/access"]
+    });
+
+    expect(screen.getByText("Open positions").parentElement).toHaveTextContent("Open positionsUnavailable");
+    const count = screen.getByText("Positions").parentElement!;
+    expect(count).toHaveTextContent("PositionsUnavailable");
+    expect(count).toHaveAttribute("data-kpi-display", "Unavailable");
+    expect(count.querySelector("[data-kpi-rendered-value]")).toHaveTextContent("Unavailable");
+    expect(screen.getByText("Open positions").parentElement).not.toHaveTextContent("5");
   });
 
   it("renders profile authentication posture with authority handoffs", () => {

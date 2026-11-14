@@ -10,6 +10,7 @@ import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { DesignSystemStatus } from "@/design-system/status";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SectionDescription } from "@/components/ui/section-description";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { approveOperationsContinuityWorkflow, getOperationsContinuityWorkflow, getOperationsContinuityWorkflows, rejectOperationsContinuityWorkflow } from "@/lib/api";
@@ -164,10 +165,11 @@ export function AccountingApprovalsWorkstream() {
         }
       }}>
       <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Approvals</p>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h3 id="accounting-approvals-heading" className="workspace-section-title">Approval queue and audit gate</h3>
-          <p className="workspace-section-summary">Close approvals, missing evidence, signer context, and audit history come from the operations-continuity workflow.</p>
+          <SectionDescription descriptionKey="accounting:approval-audit-gate" label="About the approval queue and audit gate">
+            Close approvals, missing evidence, signer context, and audit history come from the operations-continuity workflow.
+          </SectionDescription>
         </div>
         <Button type="button" size="sm" variant="outline" disabled={loading} busy={loading} busyLabel="Refreshing approvals" onClick={() => void refreshWorkflows()}>
           <RefreshCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden="true" />
@@ -176,19 +178,21 @@ export function AccountingApprovalsWorkstream() {
       </div>
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_26rem]">
         <Card className="panel-surface">
-          <CardHeader>
+          <CardHeader className="flex flex-wrap items-center gap-2 px-3 py-1">
             <CardTitle className="flex items-center gap-2 text-base">
               <UserCheck className="h-4 w-4 text-primary" aria-hidden="true" />
               Approval queue
             </CardTitle>
-            <CardDescription>Pending, blocked, approved, and rejected close workflows ready for sign-off review.</CardDescription>
+            <SectionDescription descriptionKey="accounting:approval-queue" label="About the approval queue">
+              Pending, blocked, approved, and rejected close workflows ready for sign-off review.
+            </SectionDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-xs text-muted-foreground">With a queue row focused: j/k or arrow keys move; Enter or r reviews; a opens reviewer assignment when available. Escape returns from detail to the selected row.</p>
+          <CardContent className="space-y-2 px-3 py-1">
             <ApprovalStatusMessage loading={loading} error={error} empty={!loading && workflows.length === 0} />
             {workflows.length > 0 ? (
               <div className="overflow-hidden rounded-md border border-border/70" role="region" aria-label="Accounting approval queue">
                 <TableWorkbench<OperationsContinuityWorkflowSummary>
+                  compactToolbar
                   workbenchId="accounting-approval-workflows" sourceKey={new URLSearchParams(search).get("fundAccountId") ?? "authorized-workflows"}
                   sourceDescription="All authorized operations-continuity workflow summaries in the current approval queue."
                   completePopulation={!loading && !error} rows={workflows} getRowId={(workflow) => workflow.workflowId}
@@ -207,6 +211,9 @@ export function AccountingApprovalsWorkstream() {
                 />
               </div>
             ) : null}
+            <TechnicalDetails label="Approval queue keyboard shortcuts">
+              <p className="text-xs text-muted-foreground">With a queue row focused: j/k or arrow keys move; Enter or r reviews; a opens reviewer assignment when available. Escape returns from detail to the selected row.</p>
+            </TechnicalDetails>
           </CardContent>
         </Card>
 
