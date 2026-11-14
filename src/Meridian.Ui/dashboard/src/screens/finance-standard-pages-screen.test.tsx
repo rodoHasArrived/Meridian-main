@@ -16,6 +16,8 @@ import {
   ReportPreviewValidationScreen,
   ReportRunDetailScreen
 } from "@/screens/finance-standard-pages-screen";
+import { FundScopeNarrowingProvider, type FundScopeNarrowingContextValue } from "@/lib/operating-scope/fund-scope-context";
+import { collectScopeStructureOptions, UNAVAILABLE_SCOPE_STRUCTURE } from "@/lib/operating-scope/structure-options";
 import { requireFirst } from "@/test/fixtures";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type { AccountingWorkspaceResponse } from "@/types";
@@ -1395,6 +1397,72 @@ describe("finance standard pages", () => {
     expect(await screen.findByText(/June 2026: Run trial balance · Ledger Posting Draft · owner Controller · due Jul 3, 2026/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open close workflow for June 2026" })).toHaveAttribute("href", "/accounting/operations-continuity");
     expect(screen.getByRole("link", { name: "Open Operations Continuity" })).toHaveAttribute("href", "/accounting/operations-continuity");
+  });
+
+  describe("close calendar fund narrowing", () => {
+    const closeItem = (workflowId: string, fundAccountId: string, periodId: string) => ({
+      workflowId,
+      fundAccountId,
+      periodId,
+      status: "LedgerPostingDraft",
+      version: 1,
+      nextDueDate: "2026-07-03",
+      nextDueTaskId: "trial-balance",
+      nextDueLabel: `Close ${fundAccountId}`,
+      nextDueOwner: "Controller",
+      readinessSeverity: "Warning",
+      readinessScore: 68,
+      isReadyToClose: false,
+      blockerCount: 0,
+      openChecklistCount: 0,
+      requiredApprovalCount: 1,
+      completedApprovalCount: 0,
+      route: "/accounting/operations-continuity"
+    });
+    const structure = collectScopeStructureOptions({
+      entities: [{ entityId: "E-A", name: "Entity A" }],
+      funds: [{ fundId: "F-1", name: "Fund One", entityIds: ["E-A"] }, { fundId: "F-2", name: "Fund Two", entityIds: ["E-A"] }],
+      accounts: [
+        { accountId: "acct-1", displayName: "Fund one brokerage", fundId: "F-1", entityId: "E-A" },
+        { accountId: "acct-2", displayName: "Fund two brokerage", fundId: "F-2", entityId: "E-A" }
+      ]
+    });
+    const mockCalendar = () => vi.mocked(api.getOperationsCloseCalendar).mockResolvedValueOnce({
+      generatedAtUtc: "2026-06-30T02:00:00Z",
+      items: [
+        closeItem("wf-1", "acct-1", "2026-06"),
+        closeItem("wf-2", "acct-2", "2026-06"),
+        closeItem("wf-3", "acct-unfiled", "2026-06")
+      ]
+    } as never);
+    const renderWithFundScope = (value: FundScopeNarrowingContextValue) => renderPage(
+      <FundScopeNarrowingProvider value={value}>
+        <CloseCalendarScreen data={data} />
+      </FundScopeNarrowingProvider>,
+      "/accounting/close-calendar"
+    );
+
+    it("lists only the chosen fund's close workflows and counts the ones with no recorded fund", async () => {
+      mockCalendar();
+      await renderWithFundScope({ structure, loading: false, entityId: null, fundId: "F-1", names: { fundId: "Fund One" } });
+
+      const queue = screen.getByRole("list", { name: "Close workflow queue" });
+      expect(within(queue).getAllByRole("listitem")).toHaveLength(1);
+      expect(within(queue).getByText(/Close acct-1/)).toBeInTheDocument();
+      expect(screen.getByRole("status", { name: "Close calendar fund scope" })).toHaveTextContent(
+        "Narrowed to fund Fund One: showing 1 of 3 close workflows. 1 with no recorded fund not shown."
+      );
+    });
+
+    it("lists every close workflow, with an honest note, when the organization graph is unavailable", async () => {
+      mockCalendar();
+      await renderWithFundScope({ structure: UNAVAILABLE_SCOPE_STRUCTURE, loading: false, entityId: null, fundId: "F-1", names: { fundId: "F-1" } });
+
+      expect(within(screen.getByRole("list", { name: "Close workflow queue" })).getAllByRole("listitem")).toHaveLength(3);
+      expect(screen.getByRole("status", { name: "Close calendar fund scope" })).toHaveTextContent(
+        "Not narrowed by entity or fund: the organization structure needs fund-structure access, so all authorized close workflows are shown."
+      );
+    });
   });
 
   it("renders approval inbox rows with per-approval decision links", async () => {

@@ -1,10 +1,13 @@
-import { workspaceForPath } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import { splitContinuityRoute } from "@/app-shell.workflow-continuity";
 
 export interface AppShellOperatingScopeInput {
   /** Legal entity (fund-structure entity id). Carried on every route; applied where a screen reads it. */
   entityId?: string | null;
-  /** Fund (fund-structure fund id). Carried on every route; no screen filters by it yet. */
+  /**
+   * Fund (fund-structure fund id). Carried on every route; applied on the routes in
+   * {@link FUND_SCOPE_NARROWED_ROUTES} when the organization graph is loaded.
+   */
   fundId?: string | null;
   symbol?: string | null;
   fundAccountId?: string | null;
@@ -220,24 +223,53 @@ export function appendOperatingScopeToRoute(route: string, operatingScope: AppSh
 }
 
 /**
+ * Routes whose screen narrows its fund-account rows to the chosen entity and fund client-side,
+ * using the organization graph (`lib/operating-scope/fund-scope-narrowing.ts`): the Portfolio
+ * brokerage household (accounts and positions) and the Accounting close calendar (close
+ * workflows). A route matches itself and its sub-paths.
+ */
+export const FUND_SCOPE_NARROWED_ROUTES: readonly string[] = [
+  WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
+  WORKSTATION_ROUTE_CATALOG.accountingCloseCalendar
+];
+
+/**
+ * What the route resolver needs beyond the route. `fundStructureReady` is true when the
+ * organization graph is loaded: only then can a fund-narrowing screen place accounts under a fund
+ * or entity, so only then are Entity and Fund applied there. Without it they stay "retained".
+ */
+export interface OperatingScopeRouteOptions {
+  fundStructureReady?: boolean;
+}
+
+/** Whether the route's screen narrows rows by entity and fund (when the graph is loaded). */
+export function routeNarrowsByFundScope(route: string): boolean {
+  const pathname = splitContinuityRoute(route).pathname.replace(/\/+$/, "") || "/";
+  return FUND_SCOPE_NARROWED_ROUTES.some((candidate) => pathname === candidate || pathname.startsWith(`${candidate}/`));
+}
+
+/**
  * The scope dimensions that actually filter data on the given route's workspace.
  * A set dimension not in this list is carried (sticky) but not applied here — the
  * basis for the "not filtered on this workspace" hint in the scope display.
  */
-export function operatingScopeDimensionsForRoute(route: string): AppShellOperatingScopeQueryKey[] {
-  const keys = operatingScopeKeysForRoute(route);
-  return keys ? [...keys] : [];
+export function operatingScopeDimensionsForRoute(
+  route: string,
+  options: OperatingScopeRouteOptions = {}
+): AppShellOperatingScopeQueryKey[] {
+  return [...operatingScopeKeysForRoute(route, options)];
 }
 
 export function summarizeOperatingScopeForRoute(
   route: string,
-  operatingScope: AppShellOperatingScopeState
+  operatingScope: AppShellOperatingScopeState,
+  options: OperatingScopeRouteOptions = {}
 ): string | null {
   if (!operatingScope.hasScope) {
     return null;
   }
 
-  const allowedScopeKeys = operatingScopeKeysForRoute(route);
+  const allowedScopeKeys = operatingScopeKeysForRoute(route, options);
   const items = operatingScope.items.filter((item) => allowedScopeKeys.has(scopeKeyForOperatingScopeItem(item)));
   return items.length > 0
     ? items.map((item) => `${item.label}: ${item.value}`).join(" / ")
@@ -296,12 +328,16 @@ const ALWAYS_SHOWN_BAR_DIMENSIONS: ReadonlySet<AppShellOperatingScopeQueryKey> =
  * applies ("Account fund-1 · Subject MSFT"), or {@link OPERATING_SCOPE_EMPTY_SUMMARY} when none
  * is set or none applies on this route.
  */
-export function describeOperatingScopeForRoute(route: string, operatingScope: AppShellOperatingScopeState): string {
+export function describeOperatingScopeForRoute(
+  route: string,
+  operatingScope: AppShellOperatingScopeState,
+  options: OperatingScopeRouteOptions = {}
+): string {
   if (!operatingScope.hasScope) {
     return OPERATING_SCOPE_EMPTY_SUMMARY;
   }
 
-  const allowedScopeKeys = operatingScopeKeysForRoute(route);
+  const allowedScopeKeys = operatingScopeKeysForRoute(route, options);
   const items = operatingScope.items.filter((item) => allowedScopeKeys.has(scopeKeyForOperatingScopeItem(item)));
   return items.length > 0
     ? items.map((item) => `${item.label} ${item.value}`).join(" · ")
@@ -396,7 +432,19 @@ function formatOperatingScopeWindow({
   return asOf ? `as of ${asOf}` : null;
 }
 
-function operatingScopeKeysForRoute(route: string): Set<AppShellOperatingScopeQueryKey> {
+function operatingScopeKeysForRoute(
+  route: string,
+  options: OperatingScopeRouteOptions = {}
+): Set<AppShellOperatingScopeQueryKey> {
+  const keys = workspaceScopeKeysForRoute(route);
+  if (options.fundStructureReady && routeNarrowsByFundScope(route)) {
+    keys.add("entityId");
+    keys.add("fundId");
+  }
+  return keys;
+}
+
+function workspaceScopeKeysForRoute(route: string): Set<AppShellOperatingScopeQueryKey> {
   const workspaceKey = workspaceForPath(splitContinuityRoute(route).pathname).key;
   switch (workspaceKey) {
     case "data":
@@ -418,11 +466,11 @@ function operatingScopeKeysForRoute(route: string): Set<AppShellOperatingScopeQu
 
 /**
  * The scope dimensions written into a route's URL: the ones the workspace applies, plus Entity and
- * Fund, which are the top of the scope hierarchy and so travel in every link even where no screen
- * narrows by them yet (the bar shows them as retained there).
+ * Fund, which are the top of the scope hierarchy and so travel in every link even where the screen
+ * does not narrow by them (the bar shows them as retained there).
  */
 function operatingScopeCarriedKeysForRoute(route: string): Set<AppShellOperatingScopeQueryKey> {
-  const keys = operatingScopeKeysForRoute(route);
+  const keys = workspaceScopeKeysForRoute(route);
   keys.add("entityId");
   keys.add("fundId");
   return keys;

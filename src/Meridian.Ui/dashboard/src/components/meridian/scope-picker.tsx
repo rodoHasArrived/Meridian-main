@@ -12,6 +12,7 @@ import {
   type AppShellOperatingScopeQueryKey
 } from "@/app-shell.operating-scope";
 import type { ScopeFundAccountOption } from "@/lib/operating-scope/fund-accounts";
+import { describeAccountListNarrowing } from "@/lib/operating-scope/fund-scope-narrowing";
 import type { OperatingScopeWindow } from "@/lib/operating-scope/period";
 import {
   accountConflictsWithScope,
@@ -142,13 +143,8 @@ export function ScopePicker({
     : structure.status === "ready"
       ? null
       : "Entity and fund lists need fund-structure access, so enter an id. Accounts are not narrowed by entity or fund.";
-  const accountNarrowing = constrained.accountsConstrained
-    ? `Showing ${constrained.accounts.length} account${constrained.accounts.length === 1 ? "" : "s"} under the chosen ${fundId ? "fund" : "entity"}.${
-        constrained.accountsWithoutKnownRelationship > 0
-          ? ` ${constrained.accountsWithoutKnownRelationship} with no recorded ${fundId ? "fund" : "entity"} not shown.`
-          : ""
-      }`
-    : null;
+  // Shared with the inline account picker, so both say the same thing about the same narrowing.
+  const accountNarrowing = describeAccountListNarrowing(constrained, { entityId, fundId });
 
   useEffect(() => {
     if (!open) return;

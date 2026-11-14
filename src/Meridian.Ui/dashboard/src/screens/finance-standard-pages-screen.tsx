@@ -23,6 +23,7 @@ import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { getOperationsCloseCalendar, getRunTrialBalance } from "@/lib/api";
+import { narrowRowsWithFundScopeContext, useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
 import {
   normalizeReportingWorkspace,
   type ReportingWorkspacePayload
@@ -884,7 +885,15 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
     };
   }, [fundAccountId, periodId]);
 
-  const items = calendar?.items ?? [];
+  // Close workflows narrowed to the scope's fund (or entity) when the organization graph places
+  // their fund accounts; workflows it does not place are counted in the note, never hidden silently.
+  const fundScope = narrowRowsWithFundScopeContext(
+    useFundScopeNarrowingContext(),
+    calendar?.items ?? [],
+    (item) => item.fundAccountId,
+    "close workflows"
+  );
+  const items = fundScope.rows;
   const closeRows = items.map((item) => {
     const nextTask = item.nextDueLabel ?? "No next task retained";
     const owner = item.nextDueOwner ?? "Unassigned";
@@ -898,7 +907,15 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
     <div className="space-y-4">
       <OperationalTrustSummary
         source={{ value: "Close calendar", tone: calendar ? "ready" : errorText ? "blocked" : "review" }}
-        scope={{ value: periodId ? presentFinancePeriod(periodId) : "All periods", detail: fundAccountId ? "Selected fund account" : "All fund accounts", tone: "ready" }}
+        scope={{
+          value: periodId ? presentFinancePeriod(periodId) : "All periods",
+          detail: fundAccountId
+            ? "Selected fund account"
+            : fundScope.status === "applied"
+              ? `Fund accounts under the chosen ${fundScope.dimension}`
+              : "All fund accounts",
+          tone: "ready"
+        }}
         freshness={loading ? { value: "Loading", tone: "review" } : errorText ? { value: "Unavailable", tone: "blocked" } : calendarFreshness}
         completeness={{ value: `${items.length} workflow${items.length === 1 ? "" : "s"} retained`, tone: items.length > 0 ? "ready" : errorText ? "blocked" : "unknown" }}
         blocker={errorText ? { value: "Calendar unavailable", detail: errorText, tone: "blocked" } : undefined}
@@ -914,7 +931,12 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
           <FinanceFact label="Blocked workflows" value={String(items.filter((item) => item.blockerCount > 0).length)} />
         </CardContent>
       </Card>
-      {loading ? <StatusBanner role="status" tone="info" title="Loading close calendar" detail="Loading retained workflow deadlines, blockers, and approvals." /> : null}
+      {fundScope.note && !loading && !errorText ? (
+        <p role="status" aria-label="Close calendar fund scope" data-narrowing={fundScope.status} className="text-xs text-muted-foreground">
+          {fundScope.note}
+        </p>
+      ) : null}
+      {loading ? <StatusBanner role="status" tone="info" title="Loading close calendar"detail="Loading retained workflow deadlines, blockers, and approvals." /> : null}
       {errorText ? <StatusBanner role="alert" tone="danger" title="Close calendar unavailable" detail={errorText} /> : null}
       {!loading && !errorText ? (
         <Card className="panel-surface">

@@ -28,6 +28,7 @@ import { ScopePicker } from "@/components/meridian/scope-picker";
 import { collectScopeFundAccounts, type ScopeFundAccountOption } from "@/lib/operating-scope/fund-accounts";
 import { scopeValueLabels } from "@/lib/operating-scope/structure-options";
 import { useScopeStructure } from "@/lib/operating-scope/use-scope-structure";
+import { FundScopeNarrowingProvider, type FundScopeNarrowingContextValue } from "@/lib/operating-scope/fund-scope-context";
 import {
   compactOperatingScope,
   hasOperatingScopeValues,
@@ -618,8 +619,14 @@ function AppShell({
   handleRestoreLayoutRef.current = handleRestoreLayout;
 
   const scopeFundAccountOptions = useMemo(() => collectScopeFundAccounts(brokeragePortfolio), [brokeragePortfolio]);
+  // Entities, funds and their accounts for the scope picker, and names for the bar's entity and
+  // fund ids. Loaded only once the picker opens or the scope names an entity or fund.
+  const scopeStructure = useScopeStructure(
+    scopePickerOpen || Boolean(operatingScopeInput.entityId || operatingScopeInput.fundId)
+  );
   // The inline account picker on single-account screens offers the loaded accounts plus the ones
-  // in this operator's recent and default scopes, and sets only the fund-account dimension.
+  // in this operator's recent and default scopes, narrowed by the chosen entity and fund as the
+  // scope picker narrows them, and sets only the fund-account dimension.
   const fundAccountScopeSelection = useMemo<FundAccountScopeSelection>(() => {
     const options = new Map<string, ScopeFundAccountOption>(scopeFundAccountOptions.map((option) => [option.id, option]));
     [...recentScopes, ...(defaultScope ? [defaultScope] : [])].forEach((recent) => {
@@ -628,19 +635,53 @@ function AppShell({
     });
     return {
       options: [...options.values()],
-      select: (fundAccountId: string) => handleSetOperatingScopeRef.current({ ...currentOperatingScopeRef.current, fundAccountId })
+      select: (fundAccountId: string) => handleSetOperatingScopeRef.current({ ...currentOperatingScopeRef.current, fundAccountId }),
+      structure: scopeStructure.structure,
+      structureLoading: scopeStructure.loading,
+      scope: {
+        entityId: operatingScopeInput.entityId ?? null,
+        fundId: operatingScopeInput.fundId ?? null,
+        fundAccountId: operatingScopeInput.fundAccountId ?? null
+      }
     };
-  }, [scopeFundAccountOptions, recentScopes, defaultScope]);
-  const scopeDimensionsInEffect = useMemo(() => operatingScopeDimensionsForRoute(pathname), [pathname]);
-  // Entities, funds and their accounts for the scope picker, and names for the bar's entity and
-  // fund ids. Loaded only once the picker opens or the scope names an entity or fund.
-  const scopeStructure = useScopeStructure(
-    scopePickerOpen || Boolean(operatingScopeInput.entityId || operatingScopeInput.fundId)
+  }, [
+    scopeFundAccountOptions,
+    recentScopes,
+    defaultScope,
+    scopeStructure.structure,
+    scopeStructure.loading,
+    operatingScopeInput.entityId,
+    operatingScopeInput.fundId,
+    operatingScopeInput.fundAccountId
+  ]);
+  // Entity and Fund are applied on fund-narrowing routes only once the graph that places accounts
+  // under them has loaded; otherwise those screens show every row and the bar says "retained".
+  const fundStructureReady = scopeStructure.structure.status === "ready";
+  const scopeDimensionsInEffect = useMemo(
+    () => operatingScopeDimensionsForRoute(pathname, { fundStructureReady }),
+    [pathname, fundStructureReady]
   );
   const scopeBarValueLabels = useMemo(
     () => scopeValueLabels(operatingScopeInput, scopeStructure.structure, scopeStructure.structure.accounts),
     [operatingScopeInput, scopeStructure.structure]
   );
+  const fundScopeNarrowing = useMemo<FundScopeNarrowingContextValue>(() => ({
+    structure: scopeStructure.structure,
+    loading: scopeStructure.loading,
+    entityId: operatingScopeInput.entityId ?? null,
+    fundId: operatingScopeInput.fundId ?? null,
+    names: {
+      entityId: scopeBarValueLabels.entityId ?? operatingScopeInput.entityId ?? null,
+      fundId: scopeBarValueLabels.fundId ?? operatingScopeInput.fundId ?? null
+    }
+  }), [
+    scopeStructure.structure,
+    scopeStructure.loading,
+    operatingScopeInput.entityId,
+    operatingScopeInput.fundId,
+    scopeBarValueLabels.entityId,
+    scopeBarValueLabels.fundId
+  ]);
 
   useEffect(() => {
     const handleGlobalShortcut = (event: KeyboardEvent) => {
@@ -740,8 +781,8 @@ function AppShell({
   );
   // Every figures strip prints the scope it was counted over; this is the one the route applies.
   const figureScopeLabel = useMemo(
-    () => describeOperatingScopeForRoute(pathname, shell.workflowContinuity.operatingScope),
-    [pathname, shell.workflowContinuity.operatingScope]
+    () => describeOperatingScopeForRoute(pathname, shell.workflowContinuity.operatingScope, { fundStructureReady }),
+    [pathname, shell.workflowContinuity.operatingScope, fundStructureReady]
   );
   // Sidebar attention counts read the same queue selection the Daily Control Tower lists.
   const workspaceAttention = useMemo(
@@ -859,6 +900,7 @@ function AppShell({
     <EntityInspectorProvider scopeKey={JSON.stringify(operatingScopeInput)} sessionIdentity={session} refreshSequence={refreshStatus.inFlight ? 1 : 0}>
     <ScopePickerOpenerProvider open={openScopePicker}>
     <FundAccountScopeSelectionProvider value={fundAccountScopeSelection}>
+    <FundScopeNarrowingProvider value={fundScopeNarrowing}>
     <OperatingScopeLabelProvider value={figureScopeLabel}>
     <CrossScreenCountsProvider counts={crossScreenCounts}>
     <ShellStatusSignalsProvider value={shellStatusSignals}>
@@ -1118,6 +1160,7 @@ function AppShell({
     </ShellStatusSignalsProvider>
     </CrossScreenCountsProvider>
     </OperatingScopeLabelProvider>
+    </FundScopeNarrowingProvider>
     </FundAccountScopeSelectionProvider>
     </ScopePickerOpenerProvider>
     </EntityInspectorProvider>

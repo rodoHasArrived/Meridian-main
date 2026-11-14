@@ -11,7 +11,8 @@ import {
   OPERATING_SCOPE_EMPTY_SUMMARY,
   operatingScopeDimensionsForRoute,
   readOperatingScopeFromSearch,
-  removeOperatingScopeFromSearch
+  removeOperatingScopeFromSearch,
+  routeNarrowsByFundScope
 } from "@/app-shell.operating-scope";
 
 describe("operatingScopeDimensionsForRoute", () => {
@@ -26,6 +27,48 @@ describe("operatingScopeDimensionsForRoute", () => {
       "window"
     ]);
     expect(operatingScopeDimensionsForRoute("/settings")).toEqual(["fundAccountId", "provider"]);
+  });
+
+  it("applies Entity and Fund on fund-narrowing routes only once the organization graph is loaded", () => {
+    expect(routeNarrowsByFundScope("/portfolio/brokerage-sync")).toBe(true);
+    expect(routeNarrowsByFundScope("/accounting/close-calendar?periodId=2026-10")).toBe(true);
+    expect(routeNarrowsByFundScope("/portfolio")).toBe(false);
+    expect(routeNarrowsByFundScope("/trading/orders")).toBe(false);
+
+    expect(operatingScopeDimensionsForRoute("/portfolio/brokerage-sync")).not.toContain("fundId");
+    expect(operatingScopeDimensionsForRoute("/portfolio/brokerage-sync", { fundStructureReady: false })).not.toContain("entityId");
+    expect(operatingScopeDimensionsForRoute("/portfolio/brokerage-sync", { fundStructureReady: true })).toEqual(
+      expect.arrayContaining(["entityId", "fundId", "fundAccountId"])
+    );
+    expect(operatingScopeDimensionsForRoute("/accounting/close-calendar", { fundStructureReady: true })).toContain("fundId");
+    // Routes that do not narrow rows by fund keep it retained even with the graph.
+    expect(operatingScopeDimensionsForRoute("/portfolio", { fundStructureReady: true })).not.toContain("fundId");
+    expect(operatingScopeDimensionsForRoute("/accounting/ledger", { fundStructureReady: true })).not.toContain("fundId");
+  });
+
+  it("marks the bar's Entity and Fund applied on a fund-narrowing route and retained without the graph", () => {
+    const scope = buildOperatingScopeFromSearch("?entityId=E-A&fundId=F-1");
+    const ready = buildOperatingScopeBarSegments(
+      scope,
+      operatingScopeDimensionsForRoute("/portfolio/brokerage-sync", { fundStructureReady: true })
+    );
+    expect(ready.find((segment) => segment.id === "fundId")).toMatchObject({ isSet: true, applied: true });
+    expect(ready.find((segment) => segment.id === "entityId")).toMatchObject({ isSet: true, applied: true });
+
+    const unavailable = buildOperatingScopeBarSegments(
+      scope,
+      operatingScopeDimensionsForRoute("/portfolio/brokerage-sync", { fundStructureReady: false })
+    );
+    expect(unavailable.find((segment) => segment.id === "fundId")).toMatchObject({ isSet: true, applied: false });
+    expect(unavailable.find((segment) => segment.id === "entityId")).toMatchObject({ isSet: true, applied: false });
+
+    expect(describeOperatingScopeForRoute("/portfolio/brokerage-sync", scope, { fundStructureReady: true })).toBe("Entity E-A · Fund F-1");
+    expect(describeOperatingScopeForRoute("/portfolio/brokerage-sync", scope)).toBe(OPERATING_SCOPE_EMPTY_SUMMARY);
+  });
+
+  it("still carries Entity and Fund into links to every route", () => {
+    const scope = buildOperatingScopeFromSearch("?entityId=E-A&fundId=F-1");
+    expect(appendOperatingScopeToRoute("/trading/orders", scope)).toBe("/trading/orders?entityId=E-A&fundId=F-1");
   });
 
   it("keeps report-run identity in deep-link state without exposing the raw run ID in visible scope", () => {
