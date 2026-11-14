@@ -15,7 +15,7 @@ describe("TimeText", () => {
 
     const time = screen.getByText("Jun 30, 2026, 18:05 UTC");
     expect(time.tagName).toBe("TIME");
-    expect(time).toHaveAttribute("datetime", "2026-06-30T18:05:00.000Z");
+    expect(time).toHaveAttribute("datetime", "2026-06-30T18:05:00Z");
     expect(time).toHaveAttribute("title", "5m ago");
   });
 
@@ -24,7 +24,7 @@ describe("TimeText", () => {
 
     const time = screen.getByText("5m ago");
     expect(time).toHaveAttribute("title", "Jun 30, 2026, 18:05 UTC");
-    expect(time).toHaveAttribute("datetime", "2026-06-30T18:05:00.000Z");
+    expect(time).toHaveAttribute("datetime", "2026-06-30T18:05:00Z");
   });
 
   it("re-renders when the operator changes the display zone", () => {
@@ -33,7 +33,7 @@ describe("TimeText", () => {
       setDisplayTimeZone("America/New_York");
     });
 
-    expect(screen.getByText("Jun 30, 2026, 14:05 EDT")).toHaveAttribute("datetime", "2026-06-30T18:05:00.000Z");
+    expect(screen.getByText("Jun 30, 2026, 14:05 EDT")).toHaveAttribute("datetime", "2026-06-30T18:05:00Z");
   });
 
   it("renders the fallback without a dateTime for an absent or invalid instant", () => {

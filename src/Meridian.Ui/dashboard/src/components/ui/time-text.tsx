@@ -19,7 +19,7 @@ export interface TimeTextProps extends Omit<HTMLAttributes<HTMLElement>, "childr
 
 /**
  * An instant as text in the operator's display time zone. A valid instant renders as
- * `<time dateTime="2026-06-30T18:05:00.000Z">` with the other form (absolute or relative) in
+ * `<time dateTime>` (the ISO text as given, else `toISOString()`) with the other form (absolute or relative) in
  * `title`, so hovering a "5m ago" shows the exact time and hovering a timestamp shows its age.
  * Calendar dates (trade, settlement, period days) belong to `LocalDateText` instead.
  */
@@ -33,7 +33,7 @@ export function TimeText({ value, display = "absolute", now, fallback = "—", .
   const absolute = formatTimestamp(date, { timeZone });
   const relative = formatRelativeTime(date, now ?? Date.now());
   return (
-    <time title={display === "relative" ? absolute : relative} {...rest} dateTime={date.toISOString()}>
+    <time title={display === "relative" ? absolute : relative} {...rest} dateTime={typeof value === "string" ? value.trim() : date.toISOString()}>
       {display === "relative" ? relative : absolute}
     </time>
   );

@@ -12,7 +12,7 @@ import kebabFilename from "./scripts/eslint-rules/kebab-filename.mjs";
 // and lowering the baseline (`npm run ratchets:update`) brings each migrated file under the rule.
 const ratchetBaseline = JSON.parse(readFileSync(new URL("./scripts/design-system-ratchets.baseline.json", import.meta.url), "utf8"));
 const directIntlBaselineFiles = Object.keys(ratchetBaseline.directIntlFormatting ?? {});
-const directIntlMessage = "Format numbers, money and dates with @/lib/format (formatCount, formatMoney, formatQuantity, formatUtcTimestamp), not Intl or toLocale*String directly.";
+const directIntlMessage = "Format numbers, money and dates with @/lib/format (formatCount, formatMoney, formatQuantity, formatTimestamp), not Intl or toLocale*String directly.";
 
 export default tseslint.config(
   {

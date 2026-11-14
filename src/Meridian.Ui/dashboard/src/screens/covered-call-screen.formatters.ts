@@ -2,7 +2,7 @@ import {
   formatCount as formatCountShared,
   formatDecimal as formatDecimalShared,
   formatRatioAsPercent as formatRatioAsPercentShared,
-  formatUtcTimestamp
+  formatTimestamp
 } from "@/lib/format";
 
 export function formatPrice(value: number): string {
@@ -39,12 +39,12 @@ export function formatExitReason(value: string): string {
     .replace(/^\w/, (letter) => letter.toUpperCase());
 }
 
-export function formatUtcDateTime(value: string): string {
+export function formatCoveredCallDateTime(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return "Unavailable";
   }
 
-  return formatUtcTimestamp(date);
+  return formatTimestamp(date);
 }
 

@@ -11,7 +11,7 @@
 // now signed in is still that one; another operator in the same tab gets their own baseline.
 import { useEffect, useState } from "react";
 import { getOperatorSurfaceVisit, recordOperatorSurfaceVisit } from "@/lib/api/operator-workstation.api";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp } from "@/lib/format";
 import type { OperatorSurfaceVisit } from "@/types/operator-surface-visit";
 
 export const BREAK_QUEUE_VISIT_SURFACE = "reconciliation-breaks";
@@ -203,7 +203,7 @@ export function describeSinceLastVisit(state: SinceLastVisitState, summary: Sinc
     summary.newCount > 0 ? `${summary.newCount} new` : null,
     summary.updatedCount > 0 ? `${summary.updatedCount} updated` : null
   ].filter(Boolean);
-  const at = formatUtcTimestamp(new Date(since));
+  const at = formatTimestamp(new Date(since));
   return parts.length === 0
     ? `Nothing changed since your last visit (${at}).`
     : `${parts.join(" and ")} since your last visit (${at}).`;

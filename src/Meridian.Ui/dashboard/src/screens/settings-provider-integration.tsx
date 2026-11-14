@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   Trash2
 } from "lucide-react";
-import { formatCount, formatUtcTimestamp } from "@/lib/format";
+import { formatCount, formatTimestamp } from "@/lib/format";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -373,7 +373,7 @@ export function ProviderIntegrationRuntimePanel({
       <dl className="mt-3 grid gap-2 sm:grid-cols-2">
         <SettingsFieldRow
           label="Last sync"
-          value={formatProviderRuntimeUtcMinute(state.syncRuns?.latestStartedAt ?? latestRun?.startedAt)}
+          value={formatProviderRuntimeMinute(state.syncRuns?.latestStartedAt ?? latestRun?.startedAt)}
           tone={latestRun ? providerRuntimeRunTone(latestRun) : "muted"}
         />
         <SettingsFieldRow label="Sync runs" value={`${formatProviderRuntimeNumber(returnedRuns)} / ${formatProviderRuntimeNumber(totalRuns)}`} tone={returnedRuns > 0 ? "success" : "muted"} />
@@ -449,7 +449,7 @@ export function ProviderIntegrationRuntimePanel({
                 <SeverityBadge status={toSeverity(providerRuntimeRunVariant(run))} label={run.status} />
               </div>
               <div className="mt-1 text-[11px] text-muted-foreground">
-                {run.capability} · {formatProviderRuntimeUtcMinute(run.startedAt)} · {formatProviderRuntimeNumber(run.recordsAccepted)} accepted / {formatProviderRuntimeNumber(run.recordsQuarantined)} quarantined
+                {run.capability} · {formatProviderRuntimeMinute(run.startedAt)} · {formatProviderRuntimeNumber(run.recordsAccepted)} accepted / {formatProviderRuntimeNumber(run.recordsQuarantined)} quarantined
               </div>
             </div>
           ))}
@@ -471,11 +471,11 @@ export function ProviderIntegrationRuntimePanel({
                       <span className="font-mono text-[11px] text-foreground">{record.quarantineRecordId}</span>
                     </div>
                     <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
-                      {record.capability} · {formatProviderRuntimeUtcMinute(record.createdAt)} · {formatProviderRuntimeNumber(record.validationErrors.length)} issues
+                      {record.capability} · {formatProviderRuntimeMinute(record.createdAt)} · {formatProviderRuntimeNumber(record.validationErrors.length)} issues
                     </p>
                     {latestDecision ? (
                       <p className="mt-1 text-[11px] leading-4 text-success">
-                        Decision: {providerRuntimeQuarantineActionLabel(latestDecision.action)} by {latestDecision.reviewedBy} · {formatProviderRuntimeUtcMinute(latestDecision.reviewedAt)}
+                        Decision: {providerRuntimeQuarantineActionLabel(latestDecision.action)} by {latestDecision.reviewedBy} · {formatProviderRuntimeMinute(latestDecision.reviewedAt)}
                       </p>
                     ) : null}
                   </div>
@@ -1783,7 +1783,7 @@ export function formatProviderRuntimeNumber(value: number): string {
 }
 
 
-export function formatProviderRuntimeUtcMinute(value: string | Date | null | undefined, unavailableLabel = "Not synced"): string {
+export function formatProviderRuntimeMinute(value: string | Date | null | undefined, unavailableLabel = "Not synced"): string {
   if (!value) {
     return unavailableLabel;
   }
@@ -1793,7 +1793,7 @@ export function formatProviderRuntimeUtcMinute(value: string | Date | null | und
     return unavailableLabel;
   }
 
-  return formatUtcTimestamp(date);
+  return formatTimestamp(date);
 }
 
 

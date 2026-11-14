@@ -45,7 +45,7 @@ import {
 import {
   buildTradingReadinessSummaryRows,
   formatReadinessStatusValue,
-  formatTradingUtcDateTime as formatUtcDateTime,
+  formatTradingDateTime,
   type AcceptanceLevel,
   type TradingReadinessSummaryRow
 } from "@/screens/trading-screen.readiness-summary";
@@ -1063,7 +1063,7 @@ function buildTradingReadinessAnnouncement({
   }
 
   if (readiness) {
-    return `Trading readiness ${formatReadinessStatusValue(readiness.overallStatus).toLowerCase()} as of ${formatUtcDateTime(readiness.asOf)}.`;
+    return `Trading readiness ${formatReadinessStatusValue(readiness.overallStatus).toLowerCase()} as of ${formatTradingDateTime(readiness.asOf)}.`;
   }
 
   return "";
