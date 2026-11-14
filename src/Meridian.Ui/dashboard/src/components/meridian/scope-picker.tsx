@@ -12,12 +12,14 @@ import {
   type AppShellOperatingScopeQueryKey
 } from "@/app-shell.operating-scope";
 import type { ScopeFundAccountOption } from "@/lib/operating-scope/fund-accounts";
+import { describeAccountListNarrowing } from "@/lib/operating-scope/fund-scope-narrowing";
 import type { OperatingScopeWindow } from "@/lib/operating-scope/period";
 import {
   accountConflictsWithScope,
   constrainScopeOptions,
   fundConflictsWithEntity,
   mergeScopeAccountOptions,
+  scopeStructureHelp,
   UNAVAILABLE_SCOPE_STRUCTURE,
   type ScopeStructureOptions
 } from "@/lib/operating-scope/structure-options";
@@ -38,9 +40,10 @@ export interface ScopePickerProps {
   scope: AppShellOperatingScopeInput;
   fundAccounts: ScopeFundAccountOption[];
   /**
-   * Entities, funds and their accounts from the organization read model. When it is unavailable
-   * (not loaded, or the operator may not read it) the entity and fund fields take a typed id and
-   * nothing is narrowed.
+   * Entities, funds and their accounts the operator may scope to (`/api/workstation/scope-options`,
+   * or the organization graph on an older host). When it is unavailable (not loaded, or the read
+   * failed) the entity and fund fields take a typed id and nothing is narrowed; when it loaded with
+   * an empty list, that field takes a typed id too.
    */
   structure?: ScopeStructureOptions;
   /** True while the organization read model is loading. */
@@ -137,18 +140,9 @@ export function ScopePicker({
       setStructureNote(null);
     }
   };
-  const structureHelp = structureLoading
-    ? "Loading entities and funds…"
-    : structure.status === "ready"
-      ? null
-      : "Entity and fund lists need fund-structure access, so enter an id. Accounts are not narrowed by entity or fund.";
-  const accountNarrowing = constrained.accountsConstrained
-    ? `Showing ${constrained.accounts.length} account${constrained.accounts.length === 1 ? "" : "s"} under the chosen ${fundId ? "fund" : "entity"}.${
-        constrained.accountsWithoutKnownRelationship > 0
-          ? ` ${constrained.accountsWithoutKnownRelationship} with no recorded ${fundId ? "fund" : "entity"} not shown.`
-          : ""
-      }`
-    : null;
+  const structureHelp = scopeStructureHelp(structure, structureLoading);
+  // Shared with the inline account picker, so both say the same thing about the same narrowing.
+  const accountNarrowing = describeAccountListNarrowing(constrained, { entityId, fundId });
 
   useEffect(() => {
     if (!open) return;

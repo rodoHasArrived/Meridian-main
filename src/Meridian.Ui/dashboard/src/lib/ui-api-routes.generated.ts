@@ -689,6 +689,7 @@ export const UI_API_ROUTES = {
   WorkstationOperatorInbox: "/api/workstation/operator/inbox",
   WorkstationCrossScreenCounts: "/api/workstation/cross-screen-counts",
   WorkstationOperatorScopePreference: "/api/workstation/operator/scope-preference",
+  WorkstationScopeOptions: "/api/workstation/scope-options",
   WorkstationOperatorSurfaceVisit: "/api/workstation/operator/visits/{surface}",
   WorkstationEvidenceSubjects: "/api/workstation/evidence/subjects",
   WorkstationEvidenceSubjectPacket: "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/packet",

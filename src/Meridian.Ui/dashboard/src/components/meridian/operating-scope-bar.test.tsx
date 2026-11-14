@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { buildOperatingScopeFromSearch } from "@/app-shell.operating-scope";
+import { buildOperatingScopeFromSearch, operatingScopeDimensionsForRoute } from "@/app-shell.operating-scope";
 import { OperatingScopeBar } from "@/components/meridian/operating-scope-bar";
 
 describe("OperatingScopeBar", () => {
@@ -80,6 +80,37 @@ describe("OperatingScopeBar", () => {
     expect(within(bar).getByText("Growth Fund I").closest("[title]")).toHaveAttribute("title", "Fund: carried, but not applied on this screen");
     expect(bar).toHaveAccessibleDescription(
       "Applied on this screen: Entity Meridian Holdings LP, Period 2026-11-01 to 2026-11-14. Retained for other screens: Fund Growth Fund I."
+    );
+  });
+
+  it("shows Entity and Fund applied on a fund-narrowing route once the organization graph is loaded", () => {
+    const scope = buildOperatingScopeFromSearch("?entityId=entity-1&fundId=fund-9");
+    const { rerender } = render(
+      <OperatingScopeBar
+        operatingScope={scope}
+        onEditOperatingScope={vi.fn()}
+        scopeDimensionsInEffect={operatingScopeDimensionsForRoute("/portfolio/brokerage-sync", { fundStructureReady: true })}
+        valueLabels={{ fundId: "Growth Fund I" }}
+      />
+    );
+
+    let bar = screen.getByRole("button", { name: /^Operating scope:/ });
+    expect(within(bar).getByText("Growth Fund I").closest("[title]")).toHaveAttribute("title", "Fund: applied here");
+    expect(bar).not.toHaveAttribute("aria-describedby");
+
+    // Without the graph (permission-limited operator) the screen shows every row, so the bar keeps
+    // Entity and Fund retained.
+    rerender(
+      <OperatingScopeBar
+        operatingScope={scope}
+        onEditOperatingScope={vi.fn()}
+        scopeDimensionsInEffect={operatingScopeDimensionsForRoute("/portfolio/brokerage-sync", { fundStructureReady: false })}
+      />
+    );
+    bar = screen.getByRole("button", { name: /^Operating scope:/ });
+    expect(within(bar).getByText("fund-9").closest("[title]")).toHaveAttribute("title", "Fund: carried, but not applied on this screen");
+    expect(bar).toHaveAccessibleDescription(
+      "No selected scope dimensions apply on this screen. Retained for other screens: Entity entity-1, Fund fund-9."
     );
   });
 });

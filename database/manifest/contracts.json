@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "c31b6e4a600891dfaa89e8afa8c713c59263d30135fbdbf6fe6dd68ce071c6cd",
+      "fingerprint": "b0ffa13585e5074b2a8a45b2a1126a40f1abd3e8246c076a1c8e53f0b570a141",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -3726,6 +3726,11 @@
         "Meridian.Contracts.Workstation.WorkstationRiskGuardrail",
         "Meridian.Contracts.Workstation.WorkstationRunDigest",
         "Meridian.Contracts.Workstation.WorkstationRunDrillInLinks",
+        "Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto",
+        "Meridian.Contracts.Workstation.WorkstationScopeEntityOptionDto",
+        "Meridian.Contracts.Workstation.WorkstationScopeFundOptionDto",
+        "Meridian.Contracts.Workstation.WorkstationScopeOptionsDto",
+        "Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext",
         "Meridian.Contracts.Workstation.WorkstationSecurityCoverageGapPayload",
         "Meridian.Contracts.Workstation.WorkstationSecurityCoveragePayload",
         "Meridian.Contracts.Workstation.WorkstationSecurityCoverageReferencePayload",
@@ -5459,7 +5464,7 @@
       ]
     }
   ],
-  "fingerprint": "53cbf74660497fdeefa4d939b8befe1f470ad6dafcdab4b43fb000ab48fed0c2",
+  "fingerprint": "4cc80f99be1275315726bf9a734d16e23e88ae3463d55a9e8091670bf9a36cdd",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -8764,7 +8769,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "e3153c5f590ae33253916e6d69d7440d6ce6aabf635a95a6dea46eed0849a915",
+      "fingerprint": "2ebd1443deb45961dbd17fb1e62c7823cf7a2a336c14dbea92a5a086a9733799",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -9810,6 +9815,11 @@
         "Meridian.Contracts.Workstation.WorkstationRiskGuardrail",
         "Meridian.Contracts.Workstation.WorkstationRunDigest",
         "Meridian.Contracts.Workstation.WorkstationRunDrillInLinks",
+        "Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto",
+        "Meridian.Contracts.Workstation.WorkstationScopeEntityOptionDto",
+        "Meridian.Contracts.Workstation.WorkstationScopeFundOptionDto",
+        "Meridian.Contracts.Workstation.WorkstationScopeOptionsDto",
+        "Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext",
         "Meridian.Contracts.Workstation.WorkstationSecurityCoverageGapPayload",
         "Meridian.Contracts.Workstation.WorkstationSecurityCoveragePayload",
         "Meridian.Contracts.Workstation.WorkstationSecurityCoverageReferencePayload",
@@ -503268,6 +503278,349 @@
         {
           "line": 34,
           "path": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "2e9bf18d3a6f84f8c817ad595203ef7e822ae68bd6cbfe761c6ca34cd676d655",
+      "full_name": "Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto",
+      "id": "Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 42,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DisplayName",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 43,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EntityId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 45,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 44,
+          "type": "Guid?"
+        }
+      ],
+      "name": "WorkstationScopeAccountOptionDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto",
+      "references": [],
+      "source": {
+        "line": 41,
+        "path": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 41,
+          "path": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "68d1379981d4768fada40c96dbab4a6e24f13f066c66e8902074f7ee7f58008f",
+      "full_name": "Meridian.Contracts.Workstation.WorkstationScopeEntityOptionDto",
+      "id": "Meridian.Contracts.Workstation.WorkstationScopeEntityOptionDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EntityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 24,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Name",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 25,
+          "type": "string"
+        }
+      ],
+      "name": "WorkstationScopeEntityOptionDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.WorkstationScopeEntityOptionDto",
+      "references": [],
+      "source": {
+        "line": 23,
+        "path": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 23,
+          "path": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "8bfb9552734b3b454c8a098b2d9e72ce02e79555434ea6736860fd63adaad51c",
+      "full_name": "Meridian.Contracts.Workstation.WorkstationScopeFundOptionDto",
+      "id": "Meridian.Contracts.Workstation.WorkstationScopeFundOptionDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "Guid",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EntityIds",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<Guid>",
+          "source_line": 34,
+          "type": "IReadOnlyList<Guid>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 32,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Name",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 33,
+          "type": "string"
+        }
+      ],
+      "name": "WorkstationScopeFundOptionDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.WorkstationScopeFundOptionDto",
+      "references": [],
+      "source": {
+        "line": 31,
+        "path": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 31,
+          "path": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "9f04f508a287fad64360d08803aa2fd47978bf9a353050372320a77922a2f7f9",
+      "full_name": "Meridian.Contracts.Workstation.WorkstationScopeOptionsDto",
+      "id": "Meridian.Contracts.Workstation.WorkstationScopeOptionsDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "WorkstationScopeAccountOptionDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Accounts",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<WorkstationScopeAccountOptionDto>",
+          "source_line": 20,
+          "type": "IReadOnlyList<WorkstationScopeAccountOptionDto>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "WorkstationScopeEntityOptionDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Entities",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<WorkstationScopeEntityOptionDto>",
+          "source_line": 18,
+          "type": "IReadOnlyList<WorkstationScopeEntityOptionDto>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "WorkstationScopeFundOptionDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Funds",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<WorkstationScopeFundOptionDto>",
+          "source_line": 19,
+          "type": "IReadOnlyList<WorkstationScopeFundOptionDto>"
+        }
+      ],
+      "name": "WorkstationScopeOptionsDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.WorkstationScopeOptionsDto",
+      "references": [
+        "Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto",
+        "Meridian.Contracts.Workstation.WorkstationScopeEntityOptionDto",
+        "Meridian.Contracts.Workstation.WorkstationScopeFundOptionDto"
+      ],
+      "source": {
+        "line": 17,
+        "path": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 17,
+          "path": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "JsonSerializerContext"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "357c0a727801a8e9591df69d391f1d5dbb803a5a94c4c726d377642c922a8f3a",
+      "full_name": "Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext",
+      "id": "Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "WorkstationScopeOptionsJsonContext",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": true,
+      "qualified_name": "Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext",
+      "references": [],
+      "source": {
+        "line": 58,
+        "path": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 58,
+          "path": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs"
         }
       ],
       "type_parameters": []

@@ -561,19 +561,46 @@ Entity and fund (P4) are scope dimensions carried as the `entityId` and `fundId`
 (`app-shell.operating-scope.ts`), in browser storage, recent scopes, saved layouts, Copy link and
 the operator's server-side default scope. They are written into every route's URL because they head
 the scope hierarchy, but they are applied only where a screen reads them: Accounting reads
-`entityId` (close scope, intercompany and payment-approval panels); no screen filters by `fundId`
-yet, so the bar shows a set fund as retained everywhere. Payloads are never filtered by entity or
-fund on the client. The picker's entity, fund and account options come from the existing
-organization read model `GET /api/fund-structure/graph?activeOnly=true`
-(`lib/operating-scope/structure-options.ts`, loaded by `use-scope-structure.ts` when the picker
-first opens or the scope names an entity or fund). It lists entities, funds with the entities they
-hold, and accounts with their fund and entity; household brokerage accounts the graph does not list
-are added without a relationship. Choosing an entity narrows the funds to those holding it and the
-accounts to those booked to it; choosing a fund narrows the accounts to its own; an account with no
-recorded fund or entity is left out of a narrowed list and counted, and a fund or account known to
-sit outside a new entity or fund is cleared with a status note. The graph is gated to fund-structure
-permissions; without it the entity and fund fields take typed ids, nothing is narrowed, and the
-picker says so.
+`entityId` (close scope, intercompany and payment-approval panels), and the screens below narrow
+their fund-account rows by entity and fund. Elsewhere a set fund shows as retained. The picker's entity, fund and account options come from
+`GET /api/workstation/scope-options` (`lib/operating-scope/structure-options.ts`, loaded by
+`use-scope-structure.ts` when the picker first opens or the scope names an entity or fund). That
+read is open to every authenticated operator and lists only the entities, funds and accounts the
+caller's own scoped grants let it read (see the Ui.Shared README, "Operating-scope options"); a
+fund or entity the caller may not see is withheld as a null relationship. A host without that route
+answers 404 and the picker reads the organization graph `GET /api/fund-structure/graph?activeOnly=true`
+instead (same field names, gated to fund-structure permissions). Either way it lists entities, funds
+with the entities they hold, and accounts with their fund and entity; household brokerage accounts
+the payload does not list are added without a relationship. Choosing an entity narrows the funds to
+those holding it and the accounts to those booked to it; choosing a fund narrows the accounts to its
+own; an account with no recorded (or no visible) fund or entity is left out of a narrowed list and
+counted, and a fund or account known to sit outside a new entity or fund is cleared with a status
+note. A permission-limited operator (for example trading-only) gets its accounts and empty entity
+and fund lists; those fields then take typed ids and the picker says "No entities or funds are
+visible to you". When the read fails, the entity and fund fields take typed ids, nothing is
+narrowed, and the picker says the lists could not be loaded.
+
+Screens that narrow by fund apply the same rule to rows keyed by fund account
+(`lib/operating-scope/fund-scope-narrowing.ts`, fed by the shell's `FundScopeNarrowingProvider` in
+`lib/operating-scope/fund-scope-context.tsx`). A row is kept when the graph places its account under
+the chosen fund (or, with only an entity chosen, under that entity). A row whose account the graph
+does not place is left out and counted in a status note ("Narrowed to fund Growth Fund I: showing 3
+of 5 brokerage accounts. 1 with no recorded fund not shown."), never hidden silently. Without the
+structure read (loading, or the read failed) nothing is narrowed and the note says why. Server
+payloads are unchanged; the narrowing is client-side. Current screens (`FUND_SCOPE_NARROWED_ROUTES`):
+
+- Portfolio > Brokerage sync (`/portfolio/brokerage-sync`): household accounts and positions, with
+  household totals re-summed over the accounts kept. Other Portfolio routes keep the whole household.
+- Accounting > Close calendar (`/accounting/close-calendar`): the close-workflow queue and its counts.
+
+On those routes, and only once the graph has loaded, `operatingScopeDimensionsForRoute(route,
+{ fundStructureReady })` counts Entity and Fund as in effect, so the bar shows them applied and the
+figures-strip scope names them. Everywhere else a set fund stays retained (muted).
+
+The inline account picker (`components/meridian/inline-fund-account-picker.tsx`, used on Trading's
+brokerage-recovery step) narrows its suggestions exactly as the scope picker narrows its account
+list, prints the same "Showing N accounts under the chosen fund" help, and flags a typed or scoped
+account the graph places outside the chosen fund or entity. The operator can still use it.
 
 The picker's Period control sets the window: `All periods`, `Today`, `MTD`, `QTD`, `YTD`,
 `Last month` (computed on the operator's calendar day through `LocalDate`,
