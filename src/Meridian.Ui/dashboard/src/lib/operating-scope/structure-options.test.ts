@@ -4,12 +4,17 @@ import {
   collectScopeStructureOptions,
   constrainScopeOptions,
   fundConflictsWithEntity,
+  getScopeOptions,
   getScopeStructureGraph,
+  loadScopeStructure,
   mergeScopeAccountOptions,
+  SCOPE_OPTIONS_ENDPOINT,
   SCOPE_STRUCTURE_GRAPH_ENDPOINT,
+  scopeStructureHelp,
   scopeValueLabels,
   UNAVAILABLE_SCOPE_STRUCTURE
 } from "@/lib/operating-scope/structure-options";
+import { ApiError } from "@/lib/api-errors";
 
 const apiGetJson = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/api", async (importOriginal) => ({
@@ -141,5 +146,103 @@ describe("getScopeStructureGraph", () => {
       signal: controller.signal,
       allowDevelopmentFallback: false
     });
+  });
+});
+
+describe("getScopeOptions", () => {
+  it("reads the caller's scope options and refuses development fixtures", async () => {
+    const payload = { entities: [], funds: [], accounts: [] };
+    apiGetJson.mockResolvedValue(payload);
+    const controller = new AbortController();
+    await expect(getScopeOptions({ signal: controller.signal })).resolves.toBe(payload);
+    expect(SCOPE_OPTIONS_ENDPOINT).toBe("/api/workstation/scope-options");
+    expect(apiGetJson).toHaveBeenCalledWith(SCOPE_OPTIONS_ENDPOINT, {
+      signal: controller.signal,
+      allowDevelopmentFallback: false
+    });
+  });
+});
+
+describe("loadScopeStructure", () => {
+  const notFound = () => new ApiError({ path: "/api/workstation/scope-options", status: 404 });
+
+  it("uses the scope options when the host serves them, without reading the graph", async () => {
+    const payload = { entities: [], funds: [], accounts: [] };
+    const scopeOptions = vi.fn().mockResolvedValue(payload);
+    const graph = vi.fn();
+    await expect(loadScopeStructure({}, { scopeOptions, graph })).resolves.toBe(payload);
+    expect(graph).not.toHaveBeenCalled();
+  });
+
+  it("falls back to the organization graph only when the host has no scope-options route", async () => {
+    const controller = new AbortController();
+    const scopeOptions = vi.fn().mockRejectedValue(notFound());
+    const graph = vi.fn().mockResolvedValue(GRAPH);
+    await expect(loadScopeStructure({ signal: controller.signal }, { scopeOptions, graph })).resolves.toBe(GRAPH);
+    expect(graph).toHaveBeenCalledWith({ signal: controller.signal });
+  });
+
+  it("passes a refusal or any other failure on rather than retrying against the graph", async () => {
+    const graph = vi.fn().mockResolvedValue(GRAPH);
+    const forbidden = new ApiError({ path: "/api/workstation/scope-options", status: 403 });
+    await expect(loadScopeStructure({}, { scopeOptions: vi.fn().mockRejectedValue(forbidden), graph })).rejects.toBe(forbidden);
+    const unavailable = new ApiError({ path: "/api/workstation/scope-options", status: 503 });
+    await expect(loadScopeStructure({}, { scopeOptions: vi.fn().mockRejectedValue(unavailable), graph })).rejects.toBe(unavailable);
+    const network = new TypeError("Failed to fetch");
+    await expect(loadScopeStructure({}, { scopeOptions: vi.fn().mockRejectedValue(network), graph })).rejects.toBe(network);
+    expect(graph).not.toHaveBeenCalled();
+  });
+
+  it("does not start the fallback read once the request was aborted", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const missing = notFound();
+    const graph = vi.fn();
+    await expect(
+      loadScopeStructure({ signal: controller.signal }, { scopeOptions: vi.fn().mockRejectedValue(missing), graph })
+    ).rejects.toBe(missing);
+    expect(graph).not.toHaveBeenCalled();
+  });
+});
+
+describe("scope-options payload", () => {
+  it("reads the permission-limited shape: no entities or funds, accounts with withheld relationships", () => {
+    const structure = collectScopeStructureOptions({
+      entities: [],
+      funds: [],
+      accounts: [{ accountId: "A-1", displayName: "One brokerage", fundId: null, entityId: null }]
+    });
+    expect(structure).toEqual({
+      status: "ready",
+      entities: [],
+      funds: [],
+      accounts: [{ id: "A-1", label: "One brokerage", fundId: null, entityId: null }]
+    });
+  });
+
+  it("reads the empty shape as ready with nothing to choose, not as a failed load", () => {
+    expect(collectScopeStructureOptions({ entities: [], funds: [], accounts: [] })).toEqual({
+      status: "ready",
+      entities: [],
+      funds: [],
+      accounts: []
+    });
+  });
+});
+
+describe("scopeStructureHelp", () => {
+  const ready = collectScopeStructureOptions(GRAPH);
+
+  it("says why a list is missing, and nothing when both lists are there", () => {
+    expect(scopeStructureHelp(ready, true)).toBe("Loading entities and funds…");
+    expect(scopeStructureHelp(ready, false)).toBeNull();
+    expect(scopeStructureHelp(UNAVAILABLE_SCOPE_STRUCTURE, false)).toBe(
+      "Entity and fund lists could not be loaded, so enter an id. Accounts are not narrowed by entity or fund."
+    );
+    expect(scopeStructureHelp({ ...ready, entities: [], funds: [] }, false)).toBe(
+      "No entities or funds are visible to you, so enter an id."
+    );
+    expect(scopeStructureHelp({ ...ready, entities: [] }, false)).toBe("No entities are visible to you, so enter an entity id.");
+    expect(scopeStructureHelp({ ...ready, funds: [] }, false)).toBe("No funds are visible to you, so enter a fund id.");
   });
 });

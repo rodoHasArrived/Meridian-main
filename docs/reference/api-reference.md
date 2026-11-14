@@ -835,6 +835,7 @@ flows. Legacy governance/data-operations aliases remain compatibility routes for
 | POST | `/api/workstation/data/storage-assurance/actions/execute` | Execute an unexpired preview after permission, rationale, typed-confirmation, and candidate revalidation checks. |
 | GET | `/api/workstation/trading/readiness` | Trading readiness projection with operator sign-off and accounting-control work-item posture. |
 | GET | `/api/workstation/operator/inbox` | Account-scoped operator queue for readiness + reconciliation work. |
+| GET | `/api/workstation/scope-options` | Entities, funds and fund accounts the caller may scope to (`WorkstationScopeOptionsDto`). Open to any authenticated session with tenant and company scope; filtered to the caller's scoped grants (`AdminMaintenance` sees all). |
 | GET | `/api/workstation/trading` | Trading shell payload that embeds readiness state. |
 | GET | `/api/execution/sessions/{sessionId}/replay` | Replay explainability payload used for readiness verification evidence. |
 

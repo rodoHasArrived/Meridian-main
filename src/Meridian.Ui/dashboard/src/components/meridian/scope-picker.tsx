@@ -18,6 +18,7 @@ import {
   constrainScopeOptions,
   fundConflictsWithEntity,
   mergeScopeAccountOptions,
+  scopeStructureHelp,
   UNAVAILABLE_SCOPE_STRUCTURE,
   type ScopeStructureOptions
 } from "@/lib/operating-scope/structure-options";
@@ -38,9 +39,10 @@ export interface ScopePickerProps {
   scope: AppShellOperatingScopeInput;
   fundAccounts: ScopeFundAccountOption[];
   /**
-   * Entities, funds and their accounts from the organization read model. When it is unavailable
-   * (not loaded, or the operator may not read it) the entity and fund fields take a typed id and
-   * nothing is narrowed.
+   * Entities, funds and their accounts the operator may scope to (`/api/workstation/scope-options`,
+   * or the organization graph on an older host). When it is unavailable (not loaded, or the read
+   * failed) the entity and fund fields take a typed id and nothing is narrowed; when it loaded with
+   * an empty list, that field takes a typed id too.
    */
   structure?: ScopeStructureOptions;
   /** True while the organization read model is loading. */
@@ -137,11 +139,7 @@ export function ScopePicker({
       setStructureNote(null);
     }
   };
-  const structureHelp = structureLoading
-    ? "Loading entities and funds…"
-    : structure.status === "ready"
-      ? null
-      : "Entity and fund lists need fund-structure access, so enter an id. Accounts are not narrowed by entity or fund.";
+  const structureHelp = scopeStructureHelp(structure, structureLoading);
   const accountNarrowing = constrained.accountsConstrained
     ? `Showing ${constrained.accounts.length} account${constrained.accounts.length === 1 ? "" : "s"} under the chosen ${fundId ? "fund" : "entity"}.${
         constrained.accountsWithoutKnownRelationship > 0

@@ -1,17 +1,26 @@
 // Entity, fund and fund-account options for the operating-scope picker, and the rules that let a
 // chosen entity narrow the funds and a chosen fund narrow the accounts.
 //
-// Source: the existing shared organization read model, `GET /api/fund-structure/graph`
-// (`OrganizationStructureGraphDto` in Meridian.Contracts). It already lists the legal entities
-// (`entities[]`), the funds with the entities they hold (`funds[].entityIds`) and the accounts
-// with the fund and entity they belong to (`accounts[].fundId` / `accounts[].entityId`), filtered
-// server-side to what the operator may see. The account id there is the same fund-account id the
-// brokerage household payload uses. That endpoint is gated to fund-structure permissions, so for
-// other operators the picker falls back to the household accounts only, with no relationships,
-// and says so; it never guesses a relationship the payload does not carry.
+// Source: `GET /api/workstation/scope-options` (`WorkstationScopeOptionsDto` in
+// Meridian.Contracts). It is open to every authenticated operator and lists only the legal
+// entities (`entities[]`), funds with the entities they hold (`funds[].entityIds`) and accounts
+// with their fund and entity (`accounts[].fundId` / `accounts[].entityId`) that the caller's own
+// scoped grants let it read; a relationship pointing outside that set arrives as null. Its field
+// names match the organization graph's summaries, so one parser reads both. A host older than
+// that route answers 404, and the picker then falls back to the organization graph,
+// `GET /api/fund-structure/graph` (`OrganizationStructureGraphDto`), which is gated to
+// fund-structure permissions. The account id in either payload is the same fund-account id the
+// brokerage household payload uses. When neither loads, the picker falls back to the household
+// accounts only, with no relationships, and says so; it never guesses a relationship the payload
+// does not carry.
 import { apiGetJson, type ApiRequestOptions } from "@/lib/api";
+import { ApiError } from "@/lib/api-errors";
+import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type { AppShellOperatingScopeInput, OperatingScopeValueLabels } from "@/app-shell.operating-scope";
 import type { ScopeFundAccountOption } from "@/lib/operating-scope/fund-accounts";
+
+/** The caller's authorized scope options (active nodes only), open to every operator. */
+export const SCOPE_OPTIONS_ENDPOINT: string = WORKSTATION_API_ENDPOINTS.scopeOptions;
 
 /** Active nodes only: the scope picker offers what can be scoped to today. */
 export const SCOPE_STRUCTURE_GRAPH_ENDPOINT = "/api/fund-structure/graph?activeOnly=true";
@@ -49,7 +58,53 @@ export function getScopeStructureGraph(options: ApiRequestOptions = {}): Promise
   return apiGetJson<unknown>(SCOPE_STRUCTURE_GRAPH_ENDPOINT, { ...options, allowDevelopmentFallback: false });
 }
 
-/** Reads entities, funds and accounts from an organization graph payload, defensively. */
+/** Loads the caller's scope options. Development fixtures are refused: these are authority relationships. */
+export function getScopeOptions(options: ApiRequestOptions = {}): Promise<unknown> {
+  return apiGetJson<unknown>(SCOPE_OPTIONS_ENDPOINT, { ...options, allowDevelopmentFallback: false });
+}
+
+export interface ScopeStructureSources {
+  scopeOptions?: typeof getScopeOptions;
+  graph?: typeof getScopeStructureGraph;
+}
+
+/**
+ * Loads the scope structure: the scope-options read first, and the organization graph only when
+ * the host does not have that route (404). Any other failure, a 403 included, is passed on rather
+ * than retried against the graph, which the caller could not read either.
+ */
+export async function loadScopeStructure(
+  options: ApiRequestOptions = {},
+  { scopeOptions = getScopeOptions, graph = getScopeStructureGraph }: ScopeStructureSources = {}
+): Promise<unknown> {
+  try {
+    return await scopeOptions(options);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404 && !options.signal?.aborted) {
+      return graph(options);
+    }
+    throw error;
+  }
+}
+
+/**
+ * The picker's note under the entity and fund fields: why a list is missing, or null when both
+ * lists are there. An empty list is what the operator may see, not a failed load.
+ */
+export function scopeStructureHelp(structure: ScopeStructureOptions, loading: boolean): string | null {
+  if (loading) return "Loading entities and funds…";
+  if (structure.status !== "ready") {
+    return "Entity and fund lists could not be loaded, so enter an id. Accounts are not narrowed by entity or fund.";
+  }
+  const noEntities = structure.entities.length === 0;
+  const noFunds = structure.funds.length === 0;
+  if (noEntities && noFunds) return "No entities or funds are visible to you, so enter an id.";
+  if (noEntities) return "No entities are visible to you, so enter an entity id.";
+  if (noFunds) return "No funds are visible to you, so enter a fund id.";
+  return null;
+}
+
+/** Reads entities, funds and accounts from a scope-options or organization graph payload, defensively. */
 export function collectScopeStructureOptions(graph: unknown): ScopeStructureOptions {
   if (!isRecord(graph) || !(Array.isArray(graph.entities) || Array.isArray(graph.funds) || Array.isArray(graph.accounts))) {
     return UNAVAILABLE_SCOPE_STRUCTURE;
