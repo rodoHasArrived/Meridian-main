@@ -19,11 +19,11 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 1269 |
+| Total documentation files | 1270 |
 | Orphaned files | 396 |
 | Files without headings | 231 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 304 |
+| TODO/FIXME markers | 303 |
 | **Health score** | **85/100** |
 
 Line counts (total, average and per file) change on every Markdown edit, so they are not
@@ -95,7 +95,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 85 | 1269 | 396 | 0 |
+| 1970-01-01 | 85 | 1270 | 396 | 0 |
 
 ---
 

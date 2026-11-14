@@ -204,6 +204,34 @@ class GitBoundaryTests(unittest.TestCase):
         self.write("assets/new.js", "new asset\n")
         self.assertEqual(self.violations(), [])
 
+    def test_ci_output_file_and_tree_cannot_be_committed_by_publisher(self):
+        policy = copy.deepcopy(POLICY)
+        policy["delivery"] = {"ci_files": ["docs/generated.md"], "ci_trees": ["assets"]}
+        self.write("docs/generated.md", "machine snapshot\n")
+        (self.repo / "assets/old.js").unlink()
+        self.write("assets/new.js", "machine bundle\n")
+        self.assertEqual(
+            repair.validate_delta(self.repo, self.head, self.tree(), policy),
+            ["assets/new.js", "docs/generated.md"],
+        )
+
+    def test_unchanged_ci_outputs_in_final_tree_are_also_rejected(self):
+        policy = copy.deepcopy(POLICY)
+        policy["delivery"] = {"ci_files": ["docs/generated.md"], "ci_trees": ["assets"]}
+        # A head can force-add ignored outputs. Restricting only its generated
+        # delta would let the publisher preserve and commit those stale files.
+        self.assertEqual(
+            repair.validate_delta(self.repo, self.head, self.head, policy),
+            ["assets/old.js", "docs/generated.md"],
+        )
+
+    def test_removing_ci_outputs_keeps_reviewed_generation_publishable(self):
+        policy = copy.deepcopy(POLICY)
+        policy["delivery"] = {"ci_files": [], "ci_trees": ["assets"]}
+        (self.repo / "assets/old.js").unlink()
+        self.write("docs/generated.md", "reviewed generated view\n")
+        self.assertEqual(repair.validate_delta(self.repo, self.head, self.tree(), policy), [])
+
     def test_source_changes_cannot_hide_in_full_patch(self):
         self.write("src/code.py", "injected code\n")
         patch = self.git("diff", "--binary", "HEAD")

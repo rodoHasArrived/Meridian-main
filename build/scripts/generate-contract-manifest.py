@@ -75,6 +75,10 @@ def generate(root: Path, *, check: bool = False) -> list[str]:
     changed = sorted(existing - desired.keys())
     for relative, content in desired.items():
         path = regular_path(root, relative)
+        # Mechanical source fingerprints are emitted for CI consumers, not
+        # accepted as a reviewed snapshot. Check only the committed views.
+        if check and relative == f"{MANIFEST}/contracts.json":
+            continue
         if not path.exists() or path.read_bytes() != content:
             changed.append(relative)
     changed.sort()

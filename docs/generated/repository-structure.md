@@ -830,6 +830,7 @@ Meridian-main
 │   ├── docker-compose.yml
 │   └── Dockerfile
 ├── .githooks
+│   ├── post-merge
 │   └── pre-commit
 ├── .github
 │   ├── actions
@@ -1157,6 +1158,7 @@ Meridian-main
 │       │   ├── check-test-skip-register.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
+│       │   ├── check-workstation-assets.py
 │       │   ├── ci-metrics.py
 │       │   ├── collect-actions.py
 │       │   ├── dependency-locks.py
@@ -1240,6 +1242,7 @@ Meridian-main
 │       │   ├── generate-paper-replay-reliability-dashboard.py
 │       │   ├── generate-pilot-readiness-dashboard.py
 │       │   ├── generate-prompts.py
+│       │   ├── generate-source-inventory.py
 │       │   ├── generate-structure-docs.py
 │       │   ├── generate-ui-route-wiring-report.py
 │       │   ├── generate-workflow-manifest.py
@@ -1322,9 +1325,11 @@ Meridian-main
 │       ├── ai-repo-updater.py
 │       ├── check-execution-log-sanitization.py
 │       ├── duplication-audit.ps1
+│       ├── ensure-workstation-assets.py
 │       ├── generate-contract-manifest.py
 │       ├── generate-ui-api-routes-ts.py
 │       ├── generate-workspace-catalog-ts.py
+│       ├── generated_output_policy.py
 │       ├── maintained-generation-outputs.json
 │       ├── merge-reviewed-doc-hashes.py
 │       ├── repair-generated.py
@@ -1354,7 +1359,6 @@ Meridian-main
 │   │   │   ├── reporting.json
 │   │   │   └── security_master.json
 │   │   ├── catalog.json
-│   │   ├── contracts.json
 │   │   ├── dependencies.json
 │   │   ├── migrations.json
 │   │   └── policies.json
@@ -1839,6 +1843,7 @@ Meridian-main
 │   │   ├── execution-workflows.md
 │   │   ├── free-development-tools.md
 │   │   ├── generated-merge-recovery.md
+│   │   ├── generated-output-delivery.md
 │   │   ├── live-trading-engine.md
 │   │   ├── pipeline-benchmark.md
 │   │   ├── practical-csharp-wpf-financial-markets.md
@@ -2387,7 +2392,6 @@ Meridian-main
 │   │   │   ├── roadmap-items.yml
 │   │   │   └── stage-gates.yml
 │   │   ├── generated
-│   │   │   ├── MANIFEST.json
 │   │   │   ├── roadmap-register.md
 │   │   │   └── ROADMAP_SUMMARY.md
 │   │   ├── schemas
@@ -2770,7 +2774,6 @@ Meridian-main
 │   │   │   └── source-todos.yml
 │   │   ├── generated
 │   │   │   ├── adapter-readiness-matrix.md
-│   │   │   ├── MANIFEST.json
 │   │   │   ├── source-hash-manifest.json
 │   │   │   ├── source-module-index.md
 │   │   │   ├── source-roadmap-traceability.md
@@ -2801,14 +2804,6 @@ Meridian-main
 │   │   │   ├── prd-106-replay-parameter-recut-review-packet.md
 │   │   │   ├── wave2-cockpit-evidence-packet.md
 │   │   │   └── wave4-evidence-template.md
-│   │   ├── ai-handoff-checklist-report.json
-│   │   ├── ai-handoff-checklist-report.md
-│   │   ├── ai-handoff-packet.json
-│   │   ├── ai-handoff-packet.md
-│   │   ├── ai-inventory-report.json
-│   │   ├── ai-inventory-report.md
-│   │   ├── api-contract-coverage-dashboard.json
-│   │   ├── api-contract-coverage-dashboard.md
 │   │   ├── api-docs-report.md
 │   │   ├── badge-sync-report.md
 │   │   ├── CHANGELOG.md
@@ -2816,38 +2811,21 @@ Meridian-main
 │   │   ├── coverage-report.md
 │   │   ├── doc-health-dashboard.json
 │   │   ├── doc-health-dashboard.md
-│   │   ├── docs-automation-summary.json
-│   │   ├── docs-automation-summary.md
-│   │   ├── evidence-continuity-dashboard.json
-│   │   ├── evidence-continuity-dashboard.md
-│   │   ├── example-validation.md
 │   │   ├── FEATURE_INVENTORY.md
-│   │   ├── governance-readiness-dashboard.json
-│   │   ├── governance-readiness-dashboard.md
 │   │   ├── kernel-readiness-dashboard.md
 │   │   ├── link-repair-report.md
-│   │   ├── paper-replay-reliability-dashboard.json
-│   │   ├── paper-replay-reliability-dashboard.md
 │   │   ├── pilot-readiness-dashboard.json
 │   │   ├── pilot-readiness-dashboard.md
-│   │   ├── program-state-summary.json
-│   │   ├── program-state-summary.md
-│   │   ├── prompt-route-lint-report.json
 │   │   ├── provider-validation-matrix.md
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
-│   │   ├── TODO.md
 │   │   ├── ui-route-wiring-report.json
 │   │   ├── ui-route-wiring-report.md
-│   │   ├── workflow-drift-report.md
 │   │   ├── workflow-manifest.json
-│   │   ├── workflow-validation-summary.json
-│   │   ├── workstation-cockpit-acceptance-matrix.json
-│   │   ├── wpf-screen-development-tracker.json
-│   │   └── wpf-screen-development-tracker.md
+│   │   └── workstation-cockpit-acceptance-matrix.json
 │   ├── testing
 │   │   ├── evidence
 │   │   │   ├── ai-throughput-pilot-2026-10-28
@@ -8793,6 +8771,8 @@ Meridian-main
 │   │   │   │   ├── design-system-smoke-profile.mjs
 │   │   │   │   ├── design-system-smoke-runner.mjs
 │   │   │   │   ├── design-system-smoke.test.mjs
+│   │   │   │   ├── generate-contracts.mjs
+│   │   │   │   ├── generate-contracts.test.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
 │   │   │   │   ├── smoke-design-system-adoption.mjs
 │   │   │   │   ├── smoke-design-system.mjs
@@ -9779,7 +9759,6 @@ Meridian-main
 │   │   │   │   │   ├── time-zone.ts
 │   │   │   │   │   ├── time.test.ts
 │   │   │   │   │   ├── time.ts
-│   │   │   │   │   ├── ui-api-routes.generated.ts
 │   │   │   │   │   ├── use-queue-keyboard.test.tsx
 │   │   │   │   │   ├── use-queue-keyboard.ts
 │   │   │   │   │   ├── utils.ts
@@ -9787,7 +9766,6 @@ Meridian-main
 │   │   │   │   │   ├── view-state-envelope.ts
 │   │   │   │   │   ├── workflow-route-match.test.ts
 │   │   │   │   │   ├── workflow-route-match.ts
-│   │   │   │   │   ├── workspace-catalog.generated.ts
 │   │   │   │   │   ├── workspace-figure-context.test.ts
 │   │   │   │   │   ├── workspace-figure-context.tsx
 │   │   │   │   │   ├── workspace.test.ts
@@ -15364,6 +15342,7 @@ Meridian-main
 │   │   ├── test_build_profiles.py
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_buildctl_environment.py
+│   │   ├── test_buildctl_regen.py
 │   │   ├── test_buildctl_validation_metrics.py
 │   │   ├── test_buildctl_validation_runner.py
 │   │   ├── test_canonical_roadmap_yaml.py
@@ -15422,10 +15401,12 @@ Meridian-main
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
 │   │   ├── test_generate_guidance.py
 │   │   ├── test_generate_program_state_summary.py
+│   │   ├── test_generate_structure_docs.py
 │   │   ├── test_generate_ui_api_routes_ts.py
 │   │   ├── test_generate_ui_route_wiring_report.py
 │   │   ├── test_generate_workspace_catalog_ts.py
 │   │   ├── test_generated_conflict_policy.py
+│   │   ├── test_generated_output_delivery.py
 │   │   ├── test_generated_repair.py
 │   │   ├── test_generated_repair_outcomes.py
 │   │   ├── test_generated_repair_sandbox.py
@@ -15521,7 +15502,9 @@ Meridian-main
 │   │   ├── test_web_workstation_installer.py
 │   │   ├── test_windows_ci_runner.py
 │   │   ├── test_windows_desktop_build_workflow.py
+│   │   ├── test_workflow_manifest_cold_start.py
 │   │   ├── test_workflow_scheduling.py
+│   │   ├── test_workstation_asset_generation.py
 │   │   ├── test_wpf_msix_install_guidance.py
 │   │   ├── test_wpf_msix_manifest.py
 │   │   └── workflow_assertions.py

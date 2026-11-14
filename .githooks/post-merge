@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+if command -v python3 >/dev/null 2>&1; then
+  python_cmd=python3
+elif command -v python >/dev/null 2>&1; then
+  python_cmd=python
+else
+  echo "post-merge: Python is required to regenerate maintained outputs." >&2
+  echo "Install the documented generation dependencies, then run python build/python/cli/buildctl.py regen --fix." >&2
+  exit 1
+fi
+
+echo "post-merge: regenerating maintained outputs from the merged source."
+if "$python_cmd" build/python/cli/buildctl.py regen --fix; then
+  echo "post-merge: generated outputs refreshed; review any changed documentation before committing."
+else
+  result=$?
+  echo "post-merge: regeneration failed; the Git merge has already completed." >&2
+  echo "Inspect artifacts/maintained-generation/report.json and logs, fix the reported inputs or dependencies, then run python build/python/cli/buildctl.py regen --fix." >&2
+  exit "$result"
+fi

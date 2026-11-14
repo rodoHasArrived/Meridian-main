@@ -17,6 +17,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **Source ownership:** [Source registry](../source/README.md)
 - **Roadmap truth:** [Roadmap registry](../roadmap/README.md)
 - **Generated output rules:** [Documentation ownership](../documentation-ownership.md)
+- **CI-produced files and reviewed snapshots:** [Generated output delivery](generated-output-delivery.md)
 - **Detailed implementation and tooling guides:** [Development](../development/README.md)
 - **Writing or moving docs:** [Documentation Contribution Guide](../development/documentation-contribution-guide.md)
 - **Dead-code cleanup inventory:** [Dead-Code Inventory](dead-code-inventory.md)
