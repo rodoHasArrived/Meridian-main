@@ -1,6 +1,6 @@
 # Meridian Desktop User Manual
 
-> Auto-generated on 2026-11-14 01:46:32 +00:00 by scripts/dev/generate-desktop-user-manual.ps1.
+> Auto-generated on 2026-11-14 04:03:13 +00:00 by scripts/dev/generate-desktop-user-manual.ps1.
 
 This manual is captured from the WPF desktop shell in fixture mode so the walkthrough stays deterministic, offline-friendly, and safe to reproduce while debugging UI workflows.
 
