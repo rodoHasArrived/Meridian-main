@@ -13,7 +13,6 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
-using static Meridian.Contracts.Text.TextPrimitives;
 using Meridian.Ledger;
 using Meridian.Reporting;
 using Meridian.Storage.Export;
@@ -21,6 +20,7 @@ using Meridian.Storage.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
