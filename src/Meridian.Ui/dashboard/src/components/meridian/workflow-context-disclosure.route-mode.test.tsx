@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { buildWorkflowContinuityViewModel } from "@/app-shell.workflow-continuity-view-model";
-import { WorkflowContextDisclosure } from "@/components/meridian/workflow-continuity-dock";
+import { WorkflowContextDisclosure } from "@/components/meridian/workflow-context-disclosure";
 import { OperatingScopeBar } from "@/components/meridian/operating-scope-bar";
 import { workspaceForPath } from "@/lib/workspace";
 

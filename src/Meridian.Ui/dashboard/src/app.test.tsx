@@ -729,7 +729,7 @@ describe("App", () => {
       { timeout: 10_000 }
     )).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Daily Control Tower" })).toHaveAttribute("href", "/");
-    expect(container.querySelector(".workflow-continuity-dock")).not.toBeInTheDocument();
+    expect(container.querySelector(".workflow-continuity-operator-flow")).not.toBeInTheDocument();
   });
 
   it.each([

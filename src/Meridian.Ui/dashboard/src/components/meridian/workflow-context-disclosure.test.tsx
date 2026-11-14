@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { MemoryRouter } from "react-router-dom";
-import { WorkflowContextDisclosure } from "@/components/meridian/workflow-continuity-dock";
+import { WorkflowContextDisclosure } from "@/components/meridian/workflow-context-disclosure";
 import type { AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
 
 const workflowViewModel: AppShellWorkflowContinuityViewModel = {
@@ -65,7 +65,6 @@ const workflowViewModel: AppShellWorkflowContinuityViewModel = {
   },
   routeLabel: "/data/quotes?symbol=MSFT",
   stepsLabel: "Market Data To Paper workflow steps",
-  ariaLabel: "Market Data To Paper continuity",
   nextActionLabel: "Price alerts",
   nextActionAriaLabel: "Continue workflow to Price alerts",
   nextActionHref: "/data/alerts?symbol=MSFT",

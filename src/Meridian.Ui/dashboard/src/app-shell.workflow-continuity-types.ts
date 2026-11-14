@@ -58,7 +58,6 @@ export interface AppShellWorkflowContinuityViewModel {
   operatingScope: AppShellOperatingScopeState;
   routeLabel: string;
   stepsLabel: string;
-  ariaLabel: string;
   nextActionLabel: string;
   nextActionAriaLabel: string;
   nextActionHref: string;

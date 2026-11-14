@@ -162,7 +162,6 @@ export function buildWorkflowContinuityViewModel(
     operatingScope,
     routeLabel: currentRoute || "/",
     stepsLabel: trail ? `${trail.title} workflow steps` : `${contextOwnerLabel} task workflow steps`,
-    ariaLabel: trail ? `${trail.title} continuity` : `${contextOwnerLabel} task choice`,
     nextActionLabel,
     nextActionAriaLabel,
     nextActionHref,

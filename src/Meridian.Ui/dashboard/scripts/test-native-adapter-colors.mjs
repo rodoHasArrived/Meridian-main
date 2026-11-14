@@ -12,7 +12,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import '/src/styles/index.css';
 import '/src/styles/app-shell.css';
-import '/src/styles/workflow-continuity-dock.css';
+import '/src/styles/workflow-context-disclosure.css';
 import { ChartCard } from '/src/components/charts/ChartCard';
 import { CorrelationHeatmap } from '/src/components/charts/CorrelationHeatmap';
 import { TrialBalanceTable } from '/src/components/accounting/TrialBalanceTable';
@@ -31,7 +31,7 @@ createRoot(document.getElementById('root')).render(<main>
   <EvidenceLink label="Synthetic evidence" href="#source" />
   <GateRail gates={[{ key: 'source', label: 'Source', status: 'NotStarted' }, { key: 'review', label: 'Review', status: 'NotStarted' }]} />
   <CorrelationHeatmap labels={['A', 'B']} matrix={[[1, 0.2], [0.2, 1]]} />
-  <button className="workflow-continuity-edit">Edit workflow</button>
+  <div className="workflow-continuity-expanded-decision"><a href="#next" data-probe="link">Open next step</a></div>
   <button className="operating-scope-chip">Operating scope</button>
   <span data-probe="danger" className="border border-danger text-danger">Validation error</span>
   <span data-probe="warning" className="border border-warning text-warning">Validation warning</span>
@@ -83,13 +83,13 @@ try {
     }
     assert.equal(await page.locator('.mds-corr').evaluate(el => getComputedStyle(el).backgroundColor), colors.border, theme + ': matrix separators');
     assert.equal(await page.locator('.mds-gate').nth(1).evaluate(el => getComputedStyle(el, '::before').backgroundColor), colors.border, theme + ': gate connector');
-    assert.equal(await page.locator('.workflow-continuity-edit').evaluate(el => getComputedStyle(el).color), colors.link, theme + ': interaction link text');
+    assert.equal(await page.locator('[data-probe="link"]').evaluate(el => getComputedStyle(el).color), colors.link, theme + ': interaction link text');
     for (const role of ['danger', 'warning']) {
       const c = await page.locator('[data-probe="' + role + '"]').evaluate(el => ({ color: getComputedStyle(el).color, border: getComputedStyle(el).borderTopColor }));
       assert.deepEqual(c, { color: colors[role], border: colors[role] }, theme + ': validation colors');
     }
     await page.keyboard.press('Tab');
-    for (const selector of ['.workflow-continuity-edit', '.operating-scope-chip']) {
+    for (const selector of ['[data-probe="link"]', '.operating-scope-chip']) {
       await page.locator(selector).focus();
       const outline = await page.locator(selector).evaluate(el => ({ color: getComputedStyle(el).outlineColor, width: getComputedStyle(el).outlineWidth, style: getComputedStyle(el).outlineStyle }));
       assert.deepEqual(outline, { color: colors.ring, width: '2px', style: 'solid' }, theme + ': interaction-blue focus');
