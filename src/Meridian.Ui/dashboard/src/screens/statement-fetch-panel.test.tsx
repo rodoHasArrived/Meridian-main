@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
@@ -9,6 +9,8 @@ import {
   type StatementFetchPanelServices
 } from "@/screens/statement-fetch-panel.view-model";
 import { renderWithRouter } from "@/test/render";
+import { FundScopeNarrowingProvider, type FundScopeNarrowingContextValue } from "@/lib/operating-scope/fund-scope-context";
+import { collectScopeStructureOptions, UNAVAILABLE_SCOPE_STRUCTURE } from "@/lib/operating-scope/structure-options";
 import type {
   StatementConnectorDescriptor,
   StatementFetchSchedule,
@@ -293,5 +295,52 @@ describe("StatementFetchPanel", () => {
     }));
     await waitFor(() => expect(services.deleteSchedule).toHaveBeenCalledWith("alpaca-monthly"));
     expect(services.deleteSchedule).toHaveBeenCalledTimes(1);
+  });
+
+  describe("fund narrowing", () => {
+    const structure = collectScopeStructureOptions({
+      entities: [{ entityId: "E-A", name: "Entity A" }, { entityId: "E-B", name: "Entity B" }],
+      funds: [{ fundId: "F-1", name: "Fund One", entityIds: ["E-A"] }, { fundId: "F-2", name: "Fund Two", entityIds: ["E-B"] }],
+      accounts: [
+        { accountId: "FUND-ALPHA-BROKERAGE", displayName: "Fund one brokerage", fundId: "F-1", entityId: "E-A" },
+        { accountId: "FUND-BETA-BROKERAGE", displayName: "Fund two brokerage", fundId: "F-2", entityId: "E-B" }
+      ]
+    });
+    const otherFund: StatementFetchSchedule = { ...schedule, scheduleId: "beta-daily", fundAccountId: "FUND-BETA-BROKERAGE" };
+    const unfiled: StatementFetchSchedule = { ...schedule, scheduleId: "unfiled-daily", fundAccountId: "UNFILED-ACCOUNT" };
+    const renderWithFundScope = (value: FundScopeNarrowingContextValue) => {
+      const services = makeServices();
+      services.listSchedules = vi.fn(async () => [schedule, otherFund, unfiled]);
+      return renderWithRouter(
+        <FundScopeNarrowingProvider value={value}>
+          <StatementFetchPanel connectors={connectors} profiles={profiles} services={services} />
+        </FundScopeNarrowingProvider>,
+        { initialEntries: ["/accounting/statement-import"] }
+      );
+    };
+
+    it("lists only the chosen entity's schedules and counts the ones with no recorded entity", async () => {
+      renderWithFundScope({ structure, loading: false, entityId: "E-A", fundId: null, names: { entityId: "Entity A" } });
+
+      const table = await screen.findByRole("table", { name: "Statement fetch schedules" });
+      await waitFor(() => expect(screen.getByRole("status", { name: "Statement fetch schedules fund scope" })).toHaveTextContent(
+        "Narrowed to entity Entity A: showing 1 of 3 statement fetch schedules. 1 with no recorded entity not shown."
+      ));
+      expect(within(table).getByText("alpaca-daily")).toBeInTheDocument();
+      expect(within(table).queryByText("beta-daily")).not.toBeInTheDocument();
+      expect(within(table).queryByText("unfiled-daily")).not.toBeInTheDocument();
+    });
+
+    it("lists every schedule, with an honest note, when the organization graph is unavailable", async () => {
+      renderWithFundScope({ structure: UNAVAILABLE_SCOPE_STRUCTURE, loading: false, entityId: null, fundId: "F-1", names: { fundId: "F-1" } });
+
+      const table = await screen.findByRole("table", { name: "Statement fetch schedules" });
+      await waitFor(() => expect(within(table).getByText("unfiled-daily")).toBeInTheDocument());
+      expect(within(table).getByText("alpaca-daily")).toBeInTheDocument();
+      expect(within(table).getByText("beta-daily")).toBeInTheDocument();
+      expect(screen.getByRole("status", { name: "Statement fetch schedules fund scope" })).toHaveTextContent(
+        "Not narrowed by entity or fund: the organization structure could not be loaded, so all authorized statement fetch schedules are shown."
+      );
+    });
   });
 });

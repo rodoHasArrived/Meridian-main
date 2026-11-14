@@ -213,6 +213,22 @@ items, which is a follow-up.
   scoped account the graph places outside the chosen fund or entity. It still lets the operator
   use it. Trading has no other per-account list to narrow.
 
+**P4 fund narrowing on more screens (landed 2026-11-14, dashboard source; host bundle not yet rebuilt):**
+- Accounting > Operations continuity (`/accounting/operations-continuity`): the workflow list is
+  narrowed by each workflow's `fundAccountId` with the shared rule, the "N workflows" count is taken
+  over the kept workflows, and the selected workflow, its detail and its close calendar/cockpit
+  reads follow the kept list. The shared status note sits above the list. The route keeps applying
+  `entityId` to its close-readiness read (`ACCOUNTING_ENTITY_ROUTES`); with the graph loaded, Fund
+  is applied as well. Both add the same `entityId` key, so the bar shows it once.
+- Accounting > Statement import (`/accounting/statement-import`): the saved statement fetch
+  schedules (Scheduled tab) are narrowed by each schedule's `fundAccountId`, with the same note.
+- Both routes are in `FUND_SCOPE_NARROWED_ROUTES`.
+- Not adopted: the reporting delivery history. A `ReportPackDeliveryAttempt` carries a report id,
+  distribution id and (on its package) a reporting run id, but no fund account, fund or entity, and
+  neither the distribution records nor the run projections in the same payload carry one. There is
+  no reliable key to place an attempt under a fund, so no mapping was invented and Reporting does
+  not narrow by fund. Adopting it needs the server to state the attempt's fund account or fund.
+
 **P3 one money formatter (landed 2026-11-14):** `formatMoney` in `@/lib/format` is the only
 money formatter.
 - It accepts a number or a decimal string. Both are read by the exact-decimal core in
@@ -264,9 +280,10 @@ money formatter.
   `components/meridian/workflow-context-disclosure.tsx` with its own stylesheet.
 
 **Remaining in Phase 1:**
-- P4: fund narrowing on more screens with fund-account rows. Candidates: the Operations Continuity
-  workflow list, the reporting delivery history and the statement fetch schedules. Each route is
-  added to `FUND_SCOPE_NARROWED_ROUTES` as its screen adopts the shared rule. Also open: rebuilding
+- P4: fund narrowing on more screens with fund-account rows. The Operations Continuity workflow
+  list and the statement fetch schedules adopted the shared rule (above). The reporting delivery
+  history waits on a server-stated fund account or fund for each delivery attempt. Each further
+  route is added to `FUND_SCOPE_NARROWED_ROUTES` as its screen adopts the shared rule. Also open: rebuilding
   the host bundle for the scope-option read, inline account pickers
   on other single-account screens as they are identified, and (if wanted) letting a trading,
   direct-lending or accounting grant at fund level disclose that fund's name, which no existing read

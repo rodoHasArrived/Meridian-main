@@ -16,6 +16,7 @@ import {
 } from "@/lib/api";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
+import { useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TechnicalDetails } from "@/components/ui/technical-details";
@@ -1174,7 +1175,7 @@ export function OperationsContinuityScreen() {
       ledgerBookId: searchParams.get("ledgerBookId") ?? undefined,
       periodId: searchParams.get("periodId") ?? undefined
     }
-  });
+  }, useFundScopeNarrowingContext());
   const [breakCommand, setBreakCommand] = useState<{
     pending: { breakId: string; kind: BreakCommandKind } | null;
     message: string | null;
@@ -1609,6 +1610,16 @@ export function OperationsContinuityScreen() {
             <CardDescription>Select a workflow to inspect close-lane gates, blockers, next action, and timeline.</CardDescription>
           </CardHeader>
           <CardContent>
+            {vm.workflowsFundScopeNote && !vm.loading && !vm.errorText ? (
+              <p
+                role="status"
+                aria-label="Operations continuity fund scope"
+                data-narrowing={vm.workflowsFundScopeStatus}
+                className="mb-2 text-xs text-muted-foreground"
+              >
+                {vm.workflowsFundScopeNote}
+              </p>
+            ) : null}
             <DenseDataTable
               columns={workflowColumns}
               rows={vm.workflows}

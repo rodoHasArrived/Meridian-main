@@ -20,6 +20,7 @@ import {
 import { StatementImportPreviewDetails } from "@/screens/statement-import-preview";
 import type { StatementConnectorDescriptor, StatementMappingProfile } from "@/types";
 import { formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
+import { narrowRowsWithFundScopeContext, useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
 
 export interface StatementFetchPanelProps {
   connectors: StatementConnectorDescriptor[];
@@ -275,6 +276,15 @@ function StatementFetchSchedulesTable({
 }: {
   viewModel: ReturnType<typeof useStatementFetchPanelViewModel>;
 }) {
+  // Schedules narrowed to the scope's fund (or entity) when the organization graph places their
+  // fund accounts; schedules it does not place are counted in the note, never hidden silently.
+  const fundScope = narrowRowsWithFundScopeContext(
+    useFundScopeNarrowingContext(),
+    viewModel.schedules,
+    (schedule) => schedule.fundAccountId,
+    "statement fetch schedules"
+  );
+  const schedules = fundScope.rows;
   return (
     <Card>
       <CardHeader>
@@ -307,9 +317,14 @@ function StatementFetchSchedulesTable({
             detail="Complete the fetch and reconciliation fields above, then save the first statement schedule."
           />
         ) : null}
+        {fundScope.note && !viewModel.loading && !viewModel.loadError ? (
+          <p role="status" aria-label="Statement fetch schedules fund scope" data-narrowing={fundScope.status} className="mb-2 text-xs text-muted-foreground">
+            {fundScope.note}
+          </p>
+        ) : null}
         {viewModel.schedules.length > 0 ? (
           <div className="overflow-x-auto">
-            <TableWorkbench<(typeof viewModel.schedules)[number]> tableClassName={"w-full border-collapse text-xs"} maxVisibleRows={null}  workbenchId="accounting-statement-schedules" sourceKey={JSON.stringify(viewModel.schedules)} rows={viewModel.schedules} columns={[{id:"field-0",label:"Schedule",exportValue:schedule=>schedule.scheduleId,render:schedule=><>
+            <TableWorkbench<(typeof viewModel.schedules)[number]> tableClassName={"w-full border-collapse text-xs"} maxVisibleRows={null}  workbenchId="accounting-statement-schedules" sourceKey={JSON.stringify(schedules)} rows={schedules} columns={[{id:"field-0",label:"Schedule",exportValue:schedule=>schedule.scheduleId,render:schedule=><>
                       <div className="font-mono font-semibold">{schedule.scheduleId}</div>
                       <div className="mt-1 flex flex-wrap gap-1.5">
                         <Badge variant={schedule.enabled ? "success" : "outline"}>{schedule.enabled ? "Enabled" : "Paused"}</Badge>
@@ -379,7 +394,11 @@ function StatementFetchSchedulesTable({
                           </p>
                         ) : null}
                       </div>
-                    </>}]} getRowId={schedule=>schedule.scheduleId} getSearchText={schedule=>[schedule.scheduleId,schedule.sourceInstitution,schedule.externalAccountId,schedule.fundAccountId].join(" ")} completePopulation sourceDescription="Authorized persisted statement schedules; cadence is in hours and timestamps are in the display time zone." ariaLabel="Statement fetch schedules" caption="Persisted remote statement fetch schedules and run posture" emptyText="No statement schedules returned." />
+                    </>}]} getRowId={schedule=>schedule.scheduleId} getSearchText={schedule=>[schedule.scheduleId,schedule.sourceInstitution,schedule.externalAccountId,schedule.fundAccountId].join(" ")} completePopulation sourceDescription={fundScope.status === "applied"
+              ? `Authorized persisted statement schedules under the chosen ${fundScope.dimension}; cadence is in hours and timestamps are in the display time zone.`
+              : "Authorized persisted statement schedules; cadence is in hours and timestamps are in the display time zone."} ariaLabel="Statement fetch schedules" caption="Persisted remote statement fetch schedules and run posture" emptyText={fundScope.status === "applied"
+              ? `No statement schedules under the chosen ${fundScope.dimension}.`
+              : "No statement schedules returned."} />
           </div>
         ) : null}
       </CardContent>

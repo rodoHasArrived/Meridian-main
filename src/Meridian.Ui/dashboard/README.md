@@ -598,6 +598,15 @@ payloads are unchanged; the narrowing is client-side. Current screens (`FUND_SCO
 - Portfolio > Brokerage sync (`/portfolio/brokerage-sync`): household accounts and positions, with
   household totals re-summed over the accounts kept. Other Portfolio routes keep the whole household.
 - Accounting > Close calendar (`/accounting/close-calendar`): the close-workflow queue and its counts.
+- Accounting > Operations continuity (`/accounting/operations-continuity`): the workflow list and
+  its count, keyed by each workflow's fund account. The selected workflow, its detail and its close
+  reads follow the kept workflows. The route also applies `entityId` to its close-readiness read,
+  as before; with the graph loaded, Fund is applied alongside it.
+- Accounting > Statement import (`/accounting/statement-import`): the saved statement fetch
+  schedules on the Scheduled tab, keyed by each schedule's fund account.
+
+The reporting delivery history is not narrowed: its delivery attempts carry a report, distribution
+and run id but no fund account, fund or entity, so there is no reliable key to place them by.
 
 On those routes, and only once the graph has loaded, `operatingScopeDimensionsForRoute(route,
 { fundStructureReady })` counts Entity and Fund as in effect, so the bar shows them applied and the
