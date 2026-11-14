@@ -11,7 +11,7 @@ using Npgsql;
 namespace Meridian.Tests.Storage;
 
 [Trait("Category", "Integration")]
-public sealed class IntercompanyProposalPostgresTests
+public sealed partial class IntercompanyProposalPostgresTests
 {
     [LedgerDatabaseFact]
     public async Task NativeSourceRefusesCallerOwnedTransaction_ThenStandaloneCommitsJournalAndOutboxTogether()
