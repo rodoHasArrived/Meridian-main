@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingConfigurationSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingConfigurationStore.AccountingConfigurationSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:459](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L459).
+
+```csharp
+public sealed record AccountingConfigurationSnapshot(IReadOnlyList<AccountingConfigurationWorkspaceDto> Workspaces, IReadOnlyList<AccountingActionAuditEventDto> AuditEvents, AccountingAuditChainState? AuditChain = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static AccountingConfigurationSnapshot Empty { get; } = new ([], []);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:464](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L464) |  |
+
 ## FileAccountingMigrationRunArtifactStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingMigrationRunArtifactStore</code>. Kind: `class`.
@@ -1086,23 +1102,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public HmacReportingDeliveryGrantCredentialDeriver(ReadOnlySpan&lt;byte&gt; key);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L39) |  |
 | <code>public ReportingDerivedAccessGrantCredential Derive(string bindingKey);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:49](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L49) |  |
-
-## HmacReportingProviderReceiptAuthenticator
-
-Qualified name: <code>Meridian.Ui.Shared.Services.HmacReportingProviderReceiptAuthenticator</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:44](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L44).
-
-Verifies relay webhook receipts with an HMAC over every state-bearing field. The key is retained only in process memory and signatures are compared in constant time.
-
-```csharp
-public sealed class HmacReportingProviderReceiptAuthenticator : IReportingProviderReceiptAuthenticator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public HmacReportingProviderReceiptAuthenticator(ReadOnlySpan&lt;byte&gt; secret, TimeProvider? timeProvider = null, TimeSpan? maximumClockSkew = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:51](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L51) |  |
-| <code>public ValueTask&lt;bool&gt; AuthenticateAsync(ReportingProviderReceiptAuthenticationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:70](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L70) |  |
-| <code>public static string CreateSignature(ReadOnlySpan&lt;byte&gt; secret, ReportingProviderReceiptAuthenticationRequest request, long unixSeconds);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:110](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L110) |  |

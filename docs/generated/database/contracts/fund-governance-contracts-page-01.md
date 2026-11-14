@@ -2,7 +2,7 @@
 
 # `fund-governance-contracts` data objects - page 1 of 3
 
-Objects 1-80 of 201. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 221. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -181,6 +181,7 @@ classDiagram
         +Guid EntityId
         +string EvidenceReference
         +long ExpectedRevision
+        +IntercompanyExternalReviewDto? ExternalReview
         +string Reason
         +IReadOnlyList~EntityLifecycleStateDto~ Timeline
     }
@@ -547,12 +548,22 @@ classDiagram
         +LegalEntityLifecycleStatusDto? Status
         +bool Warning
     }
+    class Meridian_Contracts_FundStructure_EntityLifecycleExternalReviewIntegrity["EntityLifecycleExternalReviewIntegrity"] {
+    }
     class Meridian_Contracts_FundStructure_EntityLifecycleOperationDto["EntityLifecycleOperationDto"] {
+    }
+    class Meridian_Contracts_FundStructure_EntityLifecycleReviewPayloadDto["EntityLifecycleReviewPayloadDto"] {
+        +Guid EntityId
+        +string EvidenceReference
+        +long ExpectedRevision
+        +string Reason
+        +IReadOnlyList~EntityLifecycleStateDto~ Timeline
     }
     class Meridian_Contracts_FundStructure_EntityLifecycleRevisionDto["EntityLifecycleRevisionDto"] {
         +string ContentHash
         +Guid EntityId
         +string EvidenceReference
+        +IntercompanyExternalReviewAttestationDto? ExternalReview
         +bool LegacySnapshot
         +string PreviousHash
         +string Reason
@@ -577,6 +588,7 @@ classDiagram
         +IReadOnlyList~IntercompanyAgreementDetailDto~ Agreements
         +DateTimeOffset AsOf
         +IReadOnlyList~LedgerBookDto~ Books
+        +bool CanAttestExternalLifecycleReview
         +LegalEntitySummaryDto Entity
         +IReadOnlyList~EntityLifecycleRevisionDto~ LifecycleRevisions
         +Guid OrganizationId
@@ -646,21 +658,6 @@ classDiagram
     }
     class Meridian_Contracts_FundStructure_FundStructureContractsJsonContext["FundStructureContractsJsonContext"] {
     }
-    class Meridian_Contracts_FundStructure_FundStructureGraphDto["FundStructureGraphDto"] {
-        +IReadOnlyList~FundStructureAssignmentDto~ Assignments
-        +IReadOnlyList~FundStructureNodeDto~ Nodes
-        +IReadOnlyList~OwnershipLinkDto~ OwnershipLinks
-    }
-    class Meridian_Contracts_FundStructure_FundStructureNodeDto["FundStructureNodeDto"] {
-        +string Code
-        +string? Description
-        +DateTimeOffset EffectiveFrom
-        +DateTimeOffset? EffectiveTo
-        +bool IsActive
-        +FundStructureNodeKindDto Kind
-        +string Name
-        +Guid NodeId
-    }
     Meridian_Contracts_FundStructure_AccountReadinessIssueDto --> Meridian_Contracts_FundStructure_AccountReadinessSeverityDto
     Meridian_Contracts_FundStructure_AccountReadinessSnapshotDto --> Meridian_Contracts_FundStructure_AccountProviderLinkStatusDto
     Meridian_Contracts_FundStructure_AccountReadinessSnapshotDto --> Meridian_Contracts_FundStructure_AccountReadinessIssueDto
@@ -703,6 +700,7 @@ classDiagram
     Meridian_Contracts_FundStructure_CustodianHoldingSnapshotDto --> Meridian_Contracts_FundStructure_CustodianStatementBatchDto
     Meridian_Contracts_FundStructure_CustodianPositionLineDto --> Meridian_Contracts_FundStructure_BondHoldingEconomicsDto
     Meridian_Contracts_FundStructure_CustodianStatementBatchDto --> Meridian_Contracts_FundStructure_CustodianStatementAuthorityDto
+    Meridian_Contracts_FundStructure_EntityLifecycleReviewPayloadDto --> Meridian_Contracts_FundStructure_EntityLifecycleStateDto
     Meridian_Contracts_FundStructure_EntityLifecycleRevisionDto --> Meridian_Contracts_FundStructure_EntityLifecycleStateDto
     Meridian_Contracts_FundStructure_EntityTimelineDto --> Meridian_Contracts_FundStructure_EntityLifecycleRevisionDto
     Meridian_Contracts_FundStructure_FundAccountsDto --> Meridian_Contracts_FundStructure_AccountSummaryDto
@@ -712,6 +710,4 @@ classDiagram
     Meridian_Contracts_FundStructure_FundOperatingViewDto --> Meridian_Contracts_FundStructure_BusinessSummaryDto
     Meridian_Contracts_FundStructure_FundOperatingViewDto --> Meridian_Contracts_FundStructure_FundOperatingSliceDto
     Meridian_Contracts_FundStructure_FundSleeveOperatingViewDto --> Meridian_Contracts_FundStructure_AccountSummaryDto
-    Meridian_Contracts_FundStructure_FundStructureGraphDto --> Meridian_Contracts_FundStructure_FundStructureAssignmentDto
-    Meridian_Contracts_FundStructure_FundStructureGraphDto --> Meridian_Contracts_FundStructure_FundStructureNodeDto
 ```

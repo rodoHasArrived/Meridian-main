@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PortfolioImportEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.PortfolioImportEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs#L24).
+
+Account-scoped imports retain their source before subscription changes and opening-draft intake.
+
+```csharp
+public static class PortfolioImportEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapPortfolioImportEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs#L26) |  |
+
 ## PrivateCapitalRecordEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.PrivateCapitalRecordEndpoints</code>. Kind: `class`.
@@ -782,22 +800,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapStorageEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs#L20) |  |
-
-## StorageQualityEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.StorageQualityEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs#L18).
-
-Extension methods for registering storage quality API endpoints. Implements Phase 3B.3 — replaces 9 stub endpoints with working handlers.
-
-```csharp
-public static class StorageQualityEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapStorageQualityEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs#L20) |  |
-| <code>public static void MapQualityDropsEndpoints(this WebApplication app, DroppedEventAuditTrail? auditTrail, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs:285](../../../../src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs#L285) | Maps the /api/quality/drops endpoints exposing dropped event statistics from the pipeline&#x27;s audit trail. |

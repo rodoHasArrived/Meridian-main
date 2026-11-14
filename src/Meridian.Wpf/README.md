@@ -11,6 +11,11 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Wpf
 
+The existing agreement and entity controls expose native structured terms, date previews,
+external-review attestations, advisory obligations and reviewed legacy coverage successors.
+They consume shared APIs and preserve drafts on failed commands. WPF runtime verification requires
+Windows; cross-compilation alone does not establish that proof.
+
 Settings workspace and Preferences include a shared activation-status banner reading the host's
 `GET /api/config/changes` contract. It refreshes on entry, every 15 seconds, on demand and after
 successful desktop configuration saves. Page unload cancels reads; stale responses cannot restore

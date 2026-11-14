@@ -33,6 +33,7 @@ public sealed partial class PostgresIntercompanyAgreementStore
             var revision = next.Revisions[index];
             if (revision.AgreementId != agreementId || revision.AgreementVersion != index + 1)
                 throw new IntercompanyAgreementValidationException("Approved agreement versions must be contiguous and retain their agreement identity.");
+            IntercompanyAgreementReviewIntegrity.Validate(revision);
         }
 
         var audit = next.History[^1];

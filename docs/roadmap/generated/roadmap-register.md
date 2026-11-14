@@ -1947,7 +1947,7 @@ W10-PERF-001: planned; health green; evidence planned_evidence. Extend or supers
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-11-12 |
+| Last reviewed | 2026-11-13 |
 
 ### Current Summary
 
@@ -1973,6 +1973,8 @@ W10-CONSOL-001: planned; health green; evidence planned_evidence. Retained conso
 - Evidence: [src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs](../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs)
 - Evidence: [tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationTransitionServiceTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationTransitionServiceTests.cs)
 - Evidence: [tests/Meridian.Tests/Storage/ConsolidationBookCreationTests.cs](../../../tests/Meridian.Tests/Storage/ConsolidationBookCreationTests.cs)
+- Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs)
+- Evidence: [tests/Meridian.Tests/Integration/IntercompanyAgreementStorePostgresTests.StructuredTerms.cs](../../../tests/Meridian.Tests/Integration/IntercompanyAgreementStorePostgresTests.StructuredTerms.cs)
 
 
 ### Exit Criteria
