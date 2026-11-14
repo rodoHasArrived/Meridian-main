@@ -6,6 +6,122 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementBuiltInProfiles
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementBuiltInProfiles</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementBuiltInProfiles.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementBuiltInProfiles.cs#L9).
+
+Built-in mapping-profile documents shipped with the platform. The first two mirror the legacy code-defined defaults; the rest back the OFX, IB Flex, and Alpaca connectors. Built-ins cannot be edited or deleted through the profile store, but operators can clone them into custom documents.
+
+```csharp
+public static class StatementBuiltInProfiles
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string OfxBankV1ProfileId = &quot;ofx-bank-v1&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementBuiltInProfiles.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementBuiltInProfiles.cs#L11) |  |
+| <code>public const string IbFlexV1ProfileId = &quot;ib-flex-v1&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementBuiltInProfiles.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementBuiltInProfiles.cs#L12) |  |
+| <code>public const string AlpacaActivityV1ProfileId = &quot;alpaca-activity-v1&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementBuiltInProfiles.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementBuiltInProfiles.cs#L13) |  |
+| <code>public static IReadOnlyList&lt;StatementMappingProfileDocument&gt; All { get; } = [CanonicalCsvV1(), SampleBrokerCsvV1(), OfxBankV1(), IbFlexV1(), AlpacaActivityV1()];</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementBuiltInProfiles.cs:15](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementBuiltInProfiles.cs#L15) |  |
+
+## StatementCanonicalEvidenceArtifact
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementCanonicalEvidenceArtifact</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:179](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L179).
+
+Additive canonical evidence retained beside the reconciliation CSV. The CSV remains the stable row-ingestion contract; this sidecar preserves account, cursor, options, borrow, and tax-lot detail without flattening missing values into zeroes.
+
+```csharp
+public sealed record StatementCanonicalEvidenceArtifact(string ConnectorId, string? ProfileId, DateTimeOffset RetainedAtUtc, StatementFormatFingerprint Fingerprint, IReadOnlyList<StatementCanonicalRecord> Records, IReadOnlyList<BrokerageAccountSnapshotDto> AccountSnapshots, IReadOnlyList<BrokerageActivityEventDto> ActivityEvents, IReadOnlyList<BrokerageActivityCursorDto> ActivityCursors, IReadOnlyList<BrokerageTaxLotSnapshotDto> TaxLots, IReadOnlyList<BrokerageBorrowPositionSnapshotDto> BorrowPositions, string? FundAccountId = null);
+```
+
+## StatementCanonicalEvidenceEnvelope
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementCanonicalEvidenceEnvelope</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementCanonicalEvidenceReader.cs:5](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementCanonicalEvidenceReader.cs#L5).
+
+```csharp
+public sealed record StatementCanonicalEvidenceEnvelope(string RelativePath, StatementCanonicalEvidenceArtifact Artifact);
+```
+
+## StatementCanonicalEvidenceReader
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementCanonicalEvidenceReader</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementCanonicalEvidenceReader.cs:10](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementCanonicalEvidenceReader.cs#L10).
+
+Reads retained connector evidence for shared operator read models.
+
+```csharp
+public sealed class StatementCanonicalEvidenceReader(string dataRoot)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyList&lt;StatementCanonicalEvidenceEnvelope&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementCanonicalEvidenceReader.cs:14](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementCanonicalEvidenceReader.cs#L14) |  |
+
+## StatementCanonicalRecord
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementCanonicalRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:98](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L98).
+
+One canonical statement row as produced by a connector; rendered deterministically to the canonical CSV artifact on commit.
+
+```csharp
+public sealed record StatementCanonicalRecord(StatementRecordKind Kind, string Account, string Symbol, decimal Quantity, decimal Price, decimal CashAmount, string ActivityType, DateOnly TradeDate, DateOnly? SettlementDate = null, string? Currency = null, decimal? FeesCommission = null, string? ExternalTransactionId = null, string? ActivityCategory = null, string? ActivitySubtype = null, string? ProviderActivityCode = null, string? RelatedTransactionId = null, string? OrderId = null, string? Description = null);
+```
+
+## StatementColumnConfidenceScorer
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementColumnConfidenceScorer</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementColumnConfidenceScorer.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementColumnConfidenceScorer.cs#L11).
+
+Scores how confidently each detected source column maps to a canonical field for a given profile document: exact source-column match, declared alias, fuzzy match (normalized tokens or small edit distance), or unmapped. Powers the per-column confidence chips in the import preview and profile suggestion ranking.
+
+```csharp
+public static class StatementColumnConfidenceScorer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;StatementColumnMapping&gt; MapColumns(IReadOnlyList&lt;string&gt; detectedColumns, StatementMappingProfileDocument profile);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementColumnConfidenceScorer.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementColumnConfidenceScorer.cs#L18) |  |
+| <code>public static decimal ScoreProfile(IReadOnlyList&lt;string&gt; detectedColumns, StatementMappingProfileDocument profile);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementColumnConfidenceScorer.cs:53](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementColumnConfidenceScorer.cs#L53) | Mean mapping score across a profile&#x27;s required fields for the detected columns; used to rank profile suggestions in the import preview. |
+
+## StatementColumnMapping
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementColumnMapping</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:37](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L37).
+
+How a detected source column was mapped to a canonical statement field.
+
+```csharp
+public sealed record StatementColumnMapping(string SourceColumn, StatementCanonicalField? CanonicalField, StatementMappingConfidence Confidence, decimal Score, string Rationale);
+```
+
+## StatementConnectorDescriptor
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementConnectorDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L9).
+
+Describes a statement connector so operators can discover what formats can be imported and whether the connector can fetch statements remotely in addition to accepting files.
+
+```csharp
+public sealed record StatementConnectorDescriptor(string ConnectorId, string DisplayName, IReadOnlyList<string> FileExtensions, bool SupportsFileImport, bool SupportsRemoteFetch, bool RequiresMappingProfile, string? DefaultProfileId);
+```
+
 ## StatementConnectorLimits
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementConnectorLimits</code>. Kind: `class`.
@@ -59,7 +175,7 @@ public sealed record StatementFetchAuthorizationCommand(string TenantId, string 
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFetchDatasets</code>. Kind: `enum`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:196](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L196).
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:207](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L207).
 
 Which remote datasets a fetch-capable connector should pull.
 
@@ -71,9 +187,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Activity = 1</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:198](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L198) |  |
-| <code>Positions = 2</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:199](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L199) |  |
-| <code>All = Activity &#124; Positions</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:200](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L200) |  |
+| <code>Activity = 1</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:209](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L209) |  |
+| <code>Positions = 2</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:210](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L210) |  |
+| <code>All = Activity &#124; Positions</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:211](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L211) |  |
 
 ## StatementFetchIngestionCommand
 
@@ -95,7 +211,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFetchRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:207](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L207).
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:218](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L218).
 
 Requests remote statement data. When UntilExclusive is set, the connector must enforce the exact half-open window or fail closed.
 
@@ -156,7 +272,7 @@ public sealed record StatementFetchScheduleSnapshot(int Version, IReadOnlyList<S
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFormatFingerprint</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:112](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L112).
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:123](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L123).
 
 Structural fingerprint of a parsed source used for format-drift detection: when a custodian silently changes its export layout, the column set diff surfaces before rows are mapped incorrectly.
 
@@ -371,7 +487,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementParseResult</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:117](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L117).
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:128](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L128).
 
 ```csharp
 public sealed record StatementParseResult(string ConnectorId, string? ProfileId, IReadOnlyList<string> DetectedColumns, IReadOnlyList<StatementColumnMapping> ColumnMappings, IReadOnlyList<StatementCanonicalRecord> Records, IReadOnlyList<StatementParseIssue> Issues, StatementFormatFingerprint Fingerprint, IReadOnlyList<BrokerageAccountSnapshotDto>? AccountSnapshots = null, IReadOnlyList<BrokerageActivityEventDto>? ActivityEvents = null, IReadOnlyList<BrokerageActivityCursorDto>? ActivityCursors = null, IReadOnlyList<BrokerageTaxLotSnapshotDto>? TaxLots = null, IReadOnlyList<BrokerageBorrowPositionSnapshotDto>? BorrowPositions = null)
@@ -381,9 +497,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? ExecutedMappingFingerprint { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:132](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L132) |  |
-| <code>public bool HasErrors =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:134](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L134) |  |
-| <code>public int TotalRetainedRows =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:149](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L149) | Every row this parse retains, canonical and evidence-only alike. The record cap was applied to Records alone, which five sibling collections bypass entirely - a connector can return one canonical row and hundreds of thousands of tax lots, borrow positions, account snapshots, activity events or cursors, stay under the cap, and still have every one of them serialized into the retained canonical-evidence artifact. Bounding this total at the service is what makes the cap a property of the seam rather than of whichever loops a connector author remembered to guard. Per-connector guards still matter, because they refuse before the allocation happens rather than after; this is the backstop none of them can leave open, including connectors written later. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? ExecutedMappingFingerprint { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:143](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L143) |  |
+| <code>public bool HasErrors =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:145](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L145) |  |
+| <code>public int TotalRetainedRows =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:160](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L160) | Every row this parse retains, canonical and evidence-only alike. The record cap was applied to Records alone, which five sibling collections bypass entirely - a connector can return one canonical row and hundreds of thousands of tax lots, borrow positions, account snapshots, activity events or cursors, stay under the cap, and still have every one of them serialized into the retained canonical-evidence artifact. Bounding this total at the service is what makes the cap a property of the seam rather than of whichever loops a connector author remembered to guard. Per-connector guards still matter, because they refuse before the allocation happens rather than after; this is the backstop none of them can leave open, including connectors written later. |
 
 ## StatementProfileActivityCode
 
@@ -421,7 +537,7 @@ public sealed record StatementProfileFieldMapping(string CanonicalField, string 
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementRecordKind</code>. Kind: `enum`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:74](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L74).
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:85](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L85).
 
 The kind of statement data a canonical record carries. Mirrors the Domain StatementRowKind taxonomy so mixed statements (positions + transactions + cash + fees + dividends) classify identically across every connector.
 
@@ -433,17 +549,17 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Position</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:76](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L76) |  |
-| <code>CashBalance</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:77](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L77) |  |
-| <code>Transaction</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:78](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L78) |  |
-| <code>Fee</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:79](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L79) |  |
-| <code>Dividend</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:80](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L80) |  |
+| <code>Position</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:87](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L87) |  |
+| <code>CashBalance</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:88](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L88) |  |
+| <code>Transaction</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:89](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L89) |  |
+| <code>Fee</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:90](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L90) |  |
+| <code>Dividend</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:91](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L91) |  |
 
 ## StatementRecordKindResolver
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementRecordKindResolver</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:231](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L231).
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:242](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L242).
 
 Maps canonical activity types (position, cash, cashbalance, trade, fee, dividend, div) to record kinds with the same semantics as the downstream reconciliation row classifier, so every connector buckets mixed-kind statements identically.
 
@@ -455,7 +571,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static StatementRecordKind Resolve(string canonicalActivityType);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:233](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L233) |  |
+| <code>public static StatementRecordKind Resolve(string canonicalActivityType);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:244](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L244) |  |
 
 ## StatementSourceDocument
 
@@ -717,160 +833,3 @@ Declared public members:
 | <code>public FileStatementNormalizedEntityRepository(string dataDirectory);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:386](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L386) |  |
 | <code>public async Task SaveAsync(string runId, StatementNormalizedEntities entities, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:391](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L391) |  |
 | <code>public Task&lt;StatementNormalizedEntities?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:411](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L411) |  |
-
-## FileStatementReconciliationCheckpointStore
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementReconciliationCheckpointStore</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs#L16).
-
-File-backed IStatementReconciliationCheckpointStore that persists statement reconciliation checkpoints to a JSON snapshot using atomic writes. A checkpoint records the last completed stage of an import/reconcile run; persisting it is what makes StatementReconciliationOrchestrator resumable across process restarts and crashes, which the in-memory store cannot guarantee. Every operation reads the current snapshot from disk (no in-memory cache), so a checkpoint advanced by another process remains visible to reads.
-
-```csharp
-public sealed class FileStatementReconciliationCheckpointStore : JsonFileSnapshotStore<FileStatementReconciliationCheckpointStore.CheckpointSnapshot>, IStatementReconciliationCheckpointStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileStatementReconciliationCheckpointStore(string dataRoot, ILogger&lt;FileStatementReconciliationCheckpointStore&gt;? logger = null) : base(GetSnapshotPath(dataRoot), JsonOptions);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs:28](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs#L28) |  |
-| <code>public Task&lt;StatementReconciliationCheckpoint?&gt; GetAsync(Guid accountId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs:36](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs#L36) |  |
-| <code>public async Task UpsertAsync(StatementReconciliationCheckpoint checkpoint, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs:39](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs#L39) |  |
-
-## CheckpointSnapshot
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementReconciliationCheckpointStore.CheckpointSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs:80](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs#L80).
-
-Persisted snapshot shape. Public only because it parameterizes the base class.
-
-```csharp
-public sealed record CheckpointSnapshot(IReadOnlyList<StatementReconciliationCheckpoint> Checkpoints);
-```
-
-## FileStatementRunRecoveryRepository
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementRunRecoveryRepository</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:552](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L552).
-
-Persists statement-run recovery checkpoints with guarded create and update operations.
-
-```csharp
-public sealed class FileStatementRunRecoveryRepository : IStatementRunRecoveryRepository
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileStatementRunRecoveryRepository(string dataDirectory);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:558](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L558) |  |
-| <code>public Task&lt;StatementRunRecoveryCheckpoint?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:563](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L563) |  |
-| <code>public async Task&lt;bool&gt; TryCreateAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:571](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L571) |  |
-| <code>public async Task SaveAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:616](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L616) |  |
-
-## FileStatementRunRepository
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementRunRepository</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:278](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L278).
-
-Persists statement-run manifests in local files and supports account-filtered listing.
-
-```csharp
-public sealed class FileStatementRunRepository : IStatementRunRepository
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileStatementRunRepository(string dataDirectory);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:283](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L283) |  |
-| <code>public async Task SaveAsync(StatementRunManifest manifest, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:288](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L288) |  |
-| <code>public Task&lt;StatementRunManifest?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:304](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L304) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;StatementRunManifest&gt;&gt; ListAsync(string? fundAccountId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:310](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L310) |  |
-
-## FileStatementToleranceProfileProvider
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementToleranceProfileProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/FileStatementToleranceProfileProvider.cs:31](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementToleranceProfileProvider.cs#L31).
-
-Loads the production IStatementToleranceProfileProvider from an operator-maintained profile table under the deployment data root (reconciliation/tolerance-profiles.json). This is the seam that lets a statement run configured with a non-default ToleranceProfileId resolve the operator&#x27;s thresholds instead of throwing and silently falling back to the defaults.
-
-```csharp
-public static class FileStatementToleranceProfileProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string RelativePath = &quot;reconciliation/tolerance-profiles.json&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/FileStatementToleranceProfileProvider.cs:35](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementToleranceProfileProvider.cs#L35) |  |
-| <code>public static IStatementToleranceProfileProvider Load(string dataRoot, ILogger? logger = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileStatementToleranceProfileProvider.cs:37](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementToleranceProfileProvider.cs#L37) |  |
-
-## FileStatementValidationIssueRepository
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementValidationIssueRepository</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:344](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L344).
-
-Persists run-scoped statement validation issues in local files.
-
-```csharp
-public sealed class FileStatementValidationIssueRepository : IStatementValidationIssueRepository
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileStatementValidationIssueRepository(string dataDirectory);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:349](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L349) |  |
-| <code>public async Task SaveAsync(string runId, IReadOnlyList&lt;StatementValidationIssueDto&gt; issues, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:354](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L354) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;StatementValidationIssueDto&gt;&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:370](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L370) |  |
-
-## IAccountingCalendar
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IAccountingCalendar</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L48).
-
-Business-calendar seam for the reconciliation floor. Beyond mapping a posting timestamp to its accounting period, it exposes the business-day arithmetic the matcher needs so settlement proximity is measured in business days (a Friday wire against its Monday ledger posting is one business day apart, not three calendar days). The production implementation is BusinessDayAccountingCalendar; deployments load holiday sets through FileAccountingCalendar.
-
-```csharp
-public interface IAccountingCalendar
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>DateOnly ResolvePeriod(DateTimeOffset postedAtUtc);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:54](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L54) | Resolves the accounting period (business date) a posting belongs to. Postings stamped on a non-business day belong to the next business day&#x27;s period. |
-| <code>bool IsBusinessDay(DateOnly date);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:56](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L56) |  |
-| <code>DateOnly RollForwardToBusinessDay(DateOnly date);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:59](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L59) | Returns date when it is a business day, otherwise the next one. |
-| <code>DateOnly RollBackToBusinessDay(DateOnly date);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:62](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L62) | Returns date when it is a business day, otherwise the previous one. |
-| <code>int CountBusinessDaysBetween(DateOnly from, DateOnly to);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:68](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L68) | Signed business-day distance: the number of business days in (from, to&#93; when to is later, negated when earlier, and zero for the same date. |
-| <code>DateOnly AddBusinessDays(DateOnly date, int businessDays);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:70](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L70) |  |
-
-## IBrokerCustodianReconciliationFeedAdapter
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IBrokerCustodianReconciliationFeedAdapter</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:63](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L63).
-
-Reads broker or custodian source data into canonical reconciliation feed batches.
-
-```csharp
-public interface IBrokerCustodianReconciliationFeedAdapter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string AdapterId { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:65](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L65) |  |
-| <code>string AdapterVersion { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:66](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L66) |  |
-| <code>CanonicalReconciliationSourceKind SourceKind { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:67](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L67) |  |
-| <code>Task&lt;BrokerCustodianFeedBatch&gt; ReadAsync(BrokerCustodianFeedDescriptor descriptor, Stream source, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:69](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L69) |  |

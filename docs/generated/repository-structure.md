@@ -2011,6 +2011,7 @@ Meridian-main
 │   │   ├── security-master-normalized-identifier-migration.md
 │   │   ├── security-master-terms-contract-rollout.md
 │   │   ├── service-level-objectives.md
+│   │   ├── shadow-mode-onboarding.md
 │   │   ├── statement-reconciliation-report-operations.md
 │   │   └── verified-outcome-recovery.md
 │   ├── plans
@@ -2161,7 +2162,8 @@ Meridian-main
 │   │   │   │   ├── page-072.md
 │   │   │   │   ├── page-073.md
 │   │   │   │   ├── page-074.md
-│   │   │   │   └── page-075.md
+│   │   │   │   ├── page-075.md
+│   │   │   │   └── page-076.md
 │   │   │   ├── meridian.core
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -6239,6 +6241,7 @@ Meridian-main
 │   │   │   ├── MarkFreshnessDtos.cs
 │   │   │   ├── NumberPassportReferenceDtos.cs
 │   │   │   ├── OnboardingDtos.cs
+│   │   │   ├── OnboardingShadowDtos.cs
 │   │   │   ├── OperationsApprovalCollaborationDtos.cs
 │   │   │   ├── OperationsCloseChecklistHistoryDtos.cs
 │   │   │   ├── OperationsContinuityDtos.cs
@@ -6840,8 +6843,12 @@ Meridian-main
 │   │   │   ├── MiddleOfficeModels.cs
 │   │   │   └── MiddleOfficeOperationsService.cs
 │   │   ├── Onboarding
+│   │   │   ├── OpeningBalances
+│   │   │   │   └── OnboardingOpeningSources.cs
+│   │   │   ├── OnboardingBookOfRecordGuard.cs
 │   │   │   ├── OnboardingInterfaces.cs
-│   │   │   └── OnboardingWorkspaceService.cs
+│   │   │   ├── OnboardingWorkspaceService.cs
+│   │   │   └── OnboardingWorkspaceService.Shadow.cs
 │   │   ├── OperationsContinuity
 │   │   │   ├── CloseReadinessProjection.cs
 │   │   │   ├── FinancialOperationsCommandCenterReadService.CloseInputs.cs
@@ -9760,6 +9767,8 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.mark-preview.tsx
 │   │   │   │   │   ├── accounting-screen.onboarding-panel.test.tsx
 │   │   │   │   │   ├── accounting-screen.onboarding-panel.tsx
+│   │   │   │   │   ├── accounting-screen.onboarding-shadow-panel.test.tsx
+│   │   │   │   │   ├── accounting-screen.onboarding-shadow-panel.tsx
 │   │   │   │   │   ├── accounting-screen.operations-panels.tsx
 │   │   │   │   │   ├── accounting-screen.operator-focus.test.ts
 │   │   │   │   │   ├── accounting-screen.operator-focus.ts
@@ -10944,6 +10953,7 @@ Meridian-main
 │   │   │   ├── MultiAssetEvidenceClassRouter.cs
 │   │   │   ├── OmsIntegrationService.cs
 │   │   │   ├── OnboardingComparisonSource.cs
+│   │   │   ├── OnboardingOpeningStateSource.cs
 │   │   │   ├── OperationsContinuityReconciliationBridge.cs
 │   │   │   ├── OperationsReportPackAuthority.cs
 │   │   │   ├── OperatorInboxPriorityScoringService.cs
@@ -13554,6 +13564,7 @@ Meridian-main
 │   │   │   │   ├── StatementIngressLimitsTests.cs
 │   │   │   │   ├── StatementMappingProfileLoaderTests.cs
 │   │   │   │   ├── StatementMappingProfileStoreTests.cs
+│   │   │   │   ├── StatementOpeningBalanceRoleTests.cs
 │   │   │   │   └── StructuredStatementAmountTests.cs
 │   │   │   ├── Fixtures
 │   │   │   │   ├── statement-clean-reconciles.csv
@@ -14229,6 +14240,8 @@ Meridian-main
 │   │   │   └── FundAccountHoldingScopeAssignmentProviderTests.cs
 │   │   ├── TestData
 │   │   │   └── Golden
+│   │   │       ├── onboarding
+│   │   │       │   └── administrator-opening-pack.csv
 │   │   │       ├── statement-connectors
 │   │   │       │   ├── alpaca-combined-snapshot.json
 │   │   │       │   ├── bai2-sample.bai
@@ -14441,6 +14454,7 @@ Meridian-main
 │   │   │   ├── OmsIntegrationServiceTests.cs
 │   │   │   ├── OnboardingComparisonSourceTests.cs
 │   │   │   ├── OnboardingEndpointTests.cs
+│   │   │   ├── OnboardingShadowModeTests.cs
 │   │   │   ├── OnboardingWorkspaceServiceTests.cs
 │   │   │   ├── OperationsContinuityReconciliationBridgeTests.cs
 │   │   │   ├── OperationsReportPackAuthorityCompositionTests.cs

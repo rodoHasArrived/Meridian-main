@@ -43,6 +43,11 @@ public sealed class FileOnboardingWorkspaceStore(string snapshotPath)
 
             if (workspace.Packets.Any(packet => packet.ContentHash != OnboardingWorkspaceService.HashPacketContent(packet.Content)))
                 throw new InvalidDataException("A retained onboarding packet failed its integrity check.");
+            if ((workspace.Certificates ?? []).Any(certificate =>
+                    certificate.ContentHash != OnboardingWorkspaceService.HashCertificateContent(certificate.Content)))
+                throw new InvalidDataException("A retained parallel-run certificate failed its integrity check.");
+            if (!OnboardingWorkspaceService.VerifyShadowAudit(workspace.ShadowAudit))
+                throw new InvalidDataException("The retained shadow-mode audit trail failed its integrity check.");
         }
 
         return snapshot;
@@ -61,6 +66,17 @@ public sealed class FileOnboardingWorkspaceStore(string snapshotPath)
         RequireScope(tenantId, companyId);
         return ReadSnapshotAsync(snapshot => snapshot.Workspaces.SingleOrDefault(workspace =>
             workspace.WorkspaceId == workspaceId && Matches(workspace, tenantId, companyId)), ct);
+    }
+
+    public Task<IReadOnlyList<OnboardingWorkspaceDto>> ListByLedgerBookAsync(
+        string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(tenantId))
+            throw new OnboardingValidationException("A tenant is required for onboarding storage.");
+        return ReadSnapshotAsync<IReadOnlyList<OnboardingWorkspaceDto>>(snapshot => snapshot.Workspaces
+            .Where(workspace => workspace.Scope.TenantId == tenantId && workspace.Scope.LedgerBookId == ledgerBookId
+                && (companyId is null || workspace.Scope.CompanyId == companyId))
+            .OrderBy(workspace => workspace.CreatedAtUtc).ToArray(), ct);
     }
 
     public async Task SaveAsync(OnboardingWorkspaceDto workspace, int? expectedVersion, CancellationToken ct = default)
@@ -98,6 +114,14 @@ public sealed class FileOnboardingWorkspaceStore(string snapshotPath)
                 RequirePrefix(current.Assignments, retained.Assignments);
                 RequirePrefix(current.Reviews, retained.Reviews);
                 RequirePrefix(current.Packets, retained.Packets);
+                RequirePrefix(current.Explanations ?? [], retained.Explanations ?? []);
+                RequirePrefix(current.Certificates ?? [], retained.Certificates ?? []);
+                RequirePrefix(current.ShadowAudit ?? [], retained.ShadowAudit ?? []);
+                if (current.Promotion is not null && !Equal(current.Promotion, retained.Promotion))
+                    throw new OnboardingValidationException("A recorded promotion decision is immutable.");
+                if (current.ShadowDesignation?.State is OnboardingShadowStates.Promoted or OnboardingShadowStates.Withdrawn
+                    && !Equal(current.ShadowDesignation, retained.ShadowDesignation))
+                    throw new OnboardingValidationException("A promoted or withdrawn shadow designation is final.");
             }
 
             return new Snapshot(snapshot.Workspaces.Where(item => item.WorkspaceId != retained.WorkspaceId).Append(retained).ToArray());

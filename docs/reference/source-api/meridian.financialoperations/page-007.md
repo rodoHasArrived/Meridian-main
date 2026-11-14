@@ -6,6 +6,163 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileStatementReconciliationCheckpointStore
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementReconciliationCheckpointStore</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs#L16).
+
+File-backed IStatementReconciliationCheckpointStore that persists statement reconciliation checkpoints to a JSON snapshot using atomic writes. A checkpoint records the last completed stage of an import/reconcile run; persisting it is what makes StatementReconciliationOrchestrator resumable across process restarts and crashes, which the in-memory store cannot guarantee. Every operation reads the current snapshot from disk (no in-memory cache), so a checkpoint advanced by another process remains visible to reads.
+
+```csharp
+public sealed class FileStatementReconciliationCheckpointStore : JsonFileSnapshotStore<FileStatementReconciliationCheckpointStore.CheckpointSnapshot>, IStatementReconciliationCheckpointStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileStatementReconciliationCheckpointStore(string dataRoot, ILogger&lt;FileStatementReconciliationCheckpointStore&gt;? logger = null) : base(GetSnapshotPath(dataRoot), JsonOptions);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs:28](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs#L28) |  |
+| <code>public Task&lt;StatementReconciliationCheckpoint?&gt; GetAsync(Guid accountId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs:36](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs#L36) |  |
+| <code>public async Task UpsertAsync(StatementReconciliationCheckpoint checkpoint, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs:39](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs#L39) |  |
+
+## CheckpointSnapshot
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementReconciliationCheckpointStore.CheckpointSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs:80](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementReconciliationCheckpointStore.cs#L80).
+
+Persisted snapshot shape. Public only because it parameterizes the base class.
+
+```csharp
+public sealed record CheckpointSnapshot(IReadOnlyList<StatementReconciliationCheckpoint> Checkpoints);
+```
+
+## FileStatementRunRecoveryRepository
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementRunRecoveryRepository</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:552](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L552).
+
+Persists statement-run recovery checkpoints with guarded create and update operations.
+
+```csharp
+public sealed class FileStatementRunRecoveryRepository : IStatementRunRecoveryRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileStatementRunRecoveryRepository(string dataDirectory);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:558](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L558) |  |
+| <code>public Task&lt;StatementRunRecoveryCheckpoint?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:563](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L563) |  |
+| <code>public async Task&lt;bool&gt; TryCreateAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:571](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L571) |  |
+| <code>public async Task SaveAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:616](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L616) |  |
+
+## FileStatementRunRepository
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementRunRepository</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:278](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L278).
+
+Persists statement-run manifests in local files and supports account-filtered listing.
+
+```csharp
+public sealed class FileStatementRunRepository : IStatementRunRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileStatementRunRepository(string dataDirectory);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:283](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L283) |  |
+| <code>public async Task SaveAsync(StatementRunManifest manifest, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:288](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L288) |  |
+| <code>public Task&lt;StatementRunManifest?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:304](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L304) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;StatementRunManifest&gt;&gt; ListAsync(string? fundAccountId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:310](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L310) |  |
+
+## FileStatementToleranceProfileProvider
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementToleranceProfileProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/FileStatementToleranceProfileProvider.cs:31](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementToleranceProfileProvider.cs#L31).
+
+Loads the production IStatementToleranceProfileProvider from an operator-maintained profile table under the deployment data root (reconciliation/tolerance-profiles.json). This is the seam that lets a statement run configured with a non-default ToleranceProfileId resolve the operator&#x27;s thresholds instead of throwing and silently falling back to the defaults.
+
+```csharp
+public static class FileStatementToleranceProfileProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string RelativePath = &quot;reconciliation/tolerance-profiles.json&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/FileStatementToleranceProfileProvider.cs:35](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementToleranceProfileProvider.cs#L35) |  |
+| <code>public static IStatementToleranceProfileProvider Load(string dataRoot, ILogger? logger = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileStatementToleranceProfileProvider.cs:37](../../../../src/Meridian.FinancialOperations/Reconciliation/FileStatementToleranceProfileProvider.cs#L37) |  |
+
+## FileStatementValidationIssueRepository
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementValidationIssueRepository</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:344](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L344).
+
+Persists run-scoped statement validation issues in local files.
+
+```csharp
+public sealed class FileStatementValidationIssueRepository : IStatementValidationIssueRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileStatementValidationIssueRepository(string dataDirectory);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:349](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L349) |  |
+| <code>public async Task SaveAsync(string runId, IReadOnlyList&lt;StatementValidationIssueDto&gt; issues, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:354](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L354) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;StatementValidationIssueDto&gt;&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:370](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L370) |  |
+
+## IAccountingCalendar
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IAccountingCalendar</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L48).
+
+Business-calendar seam for the reconciliation floor. Beyond mapping a posting timestamp to its accounting period, it exposes the business-day arithmetic the matcher needs so settlement proximity is measured in business days (a Friday wire against its Monday ledger posting is one business day apart, not three calendar days). The production implementation is BusinessDayAccountingCalendar; deployments load holiday sets through FileAccountingCalendar.
+
+```csharp
+public interface IAccountingCalendar
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>DateOnly ResolvePeriod(DateTimeOffset postedAtUtc);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:54](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L54) | Resolves the accounting period (business date) a posting belongs to. Postings stamped on a non-business day belong to the next business day&#x27;s period. |
+| <code>bool IsBusinessDay(DateOnly date);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:56](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L56) |  |
+| <code>DateOnly RollForwardToBusinessDay(DateOnly date);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:59](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L59) | Returns date when it is a business day, otherwise the next one. |
+| <code>DateOnly RollBackToBusinessDay(DateOnly date);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:62](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L62) | Returns date when it is a business day, otherwise the previous one. |
+| <code>int CountBusinessDaysBetween(DateOnly from, DateOnly to);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:68](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L68) | Signed business-day distance: the number of business days in (from, to&#93; when to is later, negated when earlier, and zero for the same date. |
+| <code>DateOnly AddBusinessDays(DateOnly date, int businessDays);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:70](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L70) |  |
+
+## IBrokerCustodianReconciliationFeedAdapter
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IBrokerCustodianReconciliationFeedAdapter</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:63](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L63).
+
+Reads broker or custodian source data into canonical reconciliation feed batches.
+
+```csharp
+public interface IBrokerCustodianReconciliationFeedAdapter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string AdapterId { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:65](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L65) |  |
+| <code>string AdapterVersion { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:66](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L66) |  |
+| <code>CanonicalReconciliationSourceKind SourceKind { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:67](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L67) |  |
+| <code>Task&lt;BrokerCustodianFeedBatch&gt; ReadAsync(BrokerCustodianFeedDescriptor descriptor, Stream source, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:69](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L69) |  |
+
 ## IDataIntegrationIngestionService
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IDataIntegrationIngestionService</code>. Kind: `interface`.
@@ -741,140 +898,3 @@ Enum declarations:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>V1 = 1</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs:5](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs#L5) |  |
-
-## ReconciliationEngineService
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationEngineService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs:14](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs#L14).
-
-Orchestrates Security Master, ledger, and portfolio joins for governance reconciliation runs. Resolves security identifiers, builds projected cash flows from instrument terms, and classifies breaks using the F# reconciliation kernel.
-
-```csharp
-public sealed class ReconciliationEngineService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReconciliationEngineService(ISecurityMasterQueryService securityMaster, ILogger&lt;ReconciliationEngineService&gt;? log = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs:19](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs#L19) |  |
-| <code>public async Task&lt;EngineReconciliationResult&gt; RunAsync(EngineReconciliationRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs:34](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs#L34) | Runs a full portfolio-vs-ledger reconciliation using the Security Master as the authoritative instrument source. Returns a EngineReconciliationResult containing all matches and breaks together with security-enrichment metadata. |
-
-## ReconciliationFeatureFlagPolicy
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationFeatureFlagPolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs:27](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs#L27).
-
-Controls reconciliation rollout by client, team, and counterparty membership.
-
-```csharp
-public sealed class ReconciliationFeatureFlagPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public void EnableClient(string client) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs#L33) |  |
-| <code>public void EnableTeam(string team) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs:34](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs#L34) |  |
-| <code>public void EnableCounterparty(string counterparty) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs:35](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs#L35) |  |
-| <code>public bool IsEnabled(ReconciliationRolloutTarget target) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs:37](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs#L37) |  |
-
-## ReconciliationFxQuote
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationFxQuote</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:95](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L95).
-
-A single directional FX quote effective as of a business date, used to seed TableReconciliationFxRateProvider.
-
-```csharp
-public sealed record ReconciliationFxQuote(string FromCurrency, string ToCurrency, decimal Rate, DateOnly AsOf);
-```
-
-## ReconciliationFxRateProviderExtensions
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationFxRateProviderExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:40](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L40).
-
-Conversion helpers layered over IReconciliationFxRateProvider.
-
-```csharp
-public static class ReconciliationFxRateProviderExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool TryConvert(this IReconciliationFxRateProvider provider, decimal amount, string fromCurrency, string toCurrency, DateOnly asOf, out decimal converted);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L48) | Converts amount from fromCurrency to toCurrency. Returns true with the converted amount when a rate is available; otherwise returns false and echoes the original amount unchanged so callers can keep the line in its source currency. |
-
-## ReconciliationFxRateResolution
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationFxRateResolution</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:37](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L37).
-
-A resolved conversion rate with its evidence. RateDate is the date of the quote used (the older leg for a triangulated rate); Method is direct, inverse or triangulated; Source identifies the rate table and its content revision.
-
-```csharp
-public sealed record ReconciliationFxRateResolution(decimal Rate, DateOnly RateDate, string Method, string Source);
-```
-
-## ReconciliationIngestionOptions
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationIngestionOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs#L9).
-
-Capture policy for DefaultReconciliationIngestionScheduler: how many source adapters capture concurrently, how long a single capture attempt may run, and how transient per-source failures retry before the run fails. Retry delays grow exponentially from RetryBaseDelay (base, 2×, 4×, …) and honor cancellation.
-
-```csharp
-public sealed record ReconciliationIngestionOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ReconciliationIngestionOptions Default { get; } = new ();</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs#L11) |  |
-| <code>public static ReconciliationIngestionOptions NoRetry { get; } = new () { MaxAttemptsPerSource = 1 };</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs:14](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs#L14) | Single-attempt policy: any capture failure surfaces immediately. |
-| <code>public int MaxConcurrentCaptures { get; init; } = 4;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs#L16) |  |
-| <code>public int MaxAttemptsPerSource { get; init; } = 3;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs#L18) |  |
-| <code>public TimeSpan RetryBaseDelay { get; init; } = TimeSpan.FromMilliseconds(250);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs#L20) |  |
-| <code>public TimeSpan? PerSourceTimeout { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs:23](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs#L23) | Per-attempt timeout; null disables the timeout. |
-| <code>public TimeSpan CancellationGracePeriod { get; init; } = TimeSpan.FromSeconds(5);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs:31](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs#L31) | Extra time past PerSourceTimeout for an adapter to observe its cancellation token before the attempt is declared non-cooperative. A cooperative cancellation inside the grace window is retryable; blowing through it is terminal for the source — retrying would stack another live request on a vendor call that is neither finishing nor cancellable. |
-| <code>public void Validate();</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionOptions.cs#L33) |  |
-
-## ReconciliationIngestionRequest
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationIngestionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L26).
-
-```csharp
-public sealed record ReconciliationIngestionRequest(DateOnly BusinessDate, DateTimeOffset RunTimestampUtc, string BaseCurrency, int SnapshotVersion);
-```
-
-## ReconciliationMatchingEngine
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationMatchingEngine</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs:31](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs#L31).
-
-The canonical reconciliation matching floor. Matches positions and cash entries captured from multiple sources (prime / custodian / administrator / internal ledger) for one business date with the semantics the W9-INGEST-009 statement/ledger sided matcher inherits via ReconciliationMatchKernel: populations are sided — a candidate pair must span two different source snapshots, so a row never matches its own source and duplicated rows inside one feed surface as breaks; tolerance candidates are scored and assigned best-first with stable tie-breakers instead of first-encountered-wins; unmatched residuals are probed for bounded one-to-many / many-to-one split groups whose shape (anchor, legs, residual) is recorded in MatchEvidence attributes; cash timing consults the IAccountingCalendar: the exact stage requires the same accounting period, settlement windows of a day or longer also admit counterparts within the window measured in business days (a Friday wire and its Monday posting are one business day apart, not three calendar days), and evidence carries business-day distance alongside wall-clock deltas; currencies must agree before amounts are compared, so fail-closed FX normalization (a line kept in its source currency because no rate was available) surfaces as a break instead of a cross-currency mismatch; match-group, break, and evidence identifiers are content-derived from the run&#x27;s idempotency key, snapshot version, rule, and member ids — re-evaluating the same run yields identical artifacts, making re-runs idempotent.
-
-```csharp
-public sealed class ReconciliationMatchingEngine
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReconciliationMatchingEngine(IAccountingCalendar? calendar = null) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs:53](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs#L53) |  |
-| <code>public (IReadOnlyList&lt;MatchGroup&gt; matches, IReadOnlyList&lt;BreakRecord&gt; breaks, IReadOnlyList&lt;MatchEvidence&gt; evidence) Run(ReconciliationRun run, MatchingTolerances tolerances) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs:56](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs#L56) |  |
-| <code>public (IReadOnlyList&lt;MatchGroup&gt; matches, IReadOnlyList&lt;BreakRecord&gt; breaks, IReadOnlyList&lt;MatchEvidence&gt; evidence) Run(ReconciliationRun run, StatementToleranceProfile toleranceProfile);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs#L60) |  |

@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "46d882c2560c6ef9092802307ae2a5cb06c64f227f39010f5bb6146d8568789e",
+      "fingerprint": "446e33d66a203ecded9f1d1f6f26e06a5e66bd5a9bcde97c940a9f5117d9a82c",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -2727,6 +2727,7 @@
         "Meridian.Contracts.Workstation.BankStatementImportResultDto",
         "Meridian.Contracts.Workstation.BiasDisclosureDto",
         "Meridian.Contracts.Workstation.BiasDisclosureItemDto",
+        "Meridian.Contracts.Workstation.BookOfRecordStatusDto",
         "Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto",
         "Meridian.Contracts.Workstation.BrokerageAccountKindDto",
         "Meridian.Contracts.Workstation.BrokerageAccountLinkRequestDto",
@@ -2782,6 +2783,7 @@
         "Meridian.Contracts.Workstation.DataUploadWorkbookPreviewResultDto",
         "Meridian.Contracts.Workstation.DataUploadWorkbookSheetPreviewDto",
         "Meridian.Contracts.Workstation.DeltaOutlierResult",
+        "Meridian.Contracts.Workstation.DesignateShadowBookRequestDto",
         "Meridian.Contracts.Workstation.DesktopLaunchTicketRedemptionDto",
         "Meridian.Contracts.Workstation.DiscardSecurityMasterRevisionRequest",
         "Meridian.Contracts.Workstation.EquityCurvePoint",
@@ -2851,6 +2853,7 @@
         "Meridian.Contracts.Workstation.ExpectedAccountingEventKindDto",
         "Meridian.Contracts.Workstation.ExpectedJournalPreviewDto",
         "Meridian.Contracts.Workstation.ExpectedJournalPreviewLineDto",
+        "Meridian.Contracts.Workstation.ExplainOnboardingDifferenceRequestDto",
         "Meridian.Contracts.Workstation.ExposureSnapshotDto",
         "Meridian.Contracts.Workstation.ExposureTrendPointDto",
         "Meridian.Contracts.Workstation.FeatureCapabilitySettingsResponse",
@@ -2947,11 +2950,13 @@
         "Meridian.Contracts.Workstation.GovernanceReportValidationSeverityDto",
         "Meridian.Contracts.Workstation.HaircutRuleDto",
         "Meridian.Contracts.Workstation.IAutomatedJournalScheduleStatusSource",
+        "Meridian.Contracts.Workstation.IBookOfRecordGuard",
         "Meridian.Contracts.Workstation.IClosePublicationReadinessGuard",
         "Meridian.Contracts.Workstation.ICloseReadinessSubjectSource",
         "Meridian.Contracts.Workstation.IDailyValuationScheduleStatusSource",
         "Meridian.Contracts.Workstation.IFinancialOperationsCommandCenterReadService",
         "Meridian.Contracts.Workstation.ImportBrokerData",
+        "Meridian.Contracts.Workstation.ImportOnboardingOpeningBalancesRequestDto",
         "Meridian.Contracts.Workstation.IngestionCheckpointDto",
         "Meridian.Contracts.Workstation.IngestionOperationActionDto",
         "Meridian.Contracts.Workstation.IngestionOperationActionRequestDto",
@@ -2986,6 +2991,7 @@
         "Meridian.Contracts.Workstation.IPrivateCapitalCloseCockpitService",
         "Meridian.Contracts.Workstation.IRecurringJournalQueueSource",
         "Meridian.Contracts.Workstation.IReportingRunNotifier",
+        "Meridian.Contracts.Workstation.IssueParallelRunCertificateRequestDto",
         "Meridian.Contracts.Workstation.LedgerAmountApprovalClassification",
         "Meridian.Contracts.Workstation.LedgerAmountApprovalStateDto",
         "Meridian.Contracts.Workstation.LedgerAmountProofDto",
@@ -3024,19 +3030,32 @@
         "Meridian.Contracts.Workstation.NullReportingRunNotifier",
         "Meridian.Contracts.Workstation.NumberPassportDeclaredScopeDto",
         "Meridian.Contracts.Workstation.NumberPassportReferenceDto",
+        "Meridian.Contracts.Workstation.OnboardingClassificationCountDto",
         "Meridian.Contracts.Workstation.OnboardingComparisonDto",
         "Meridian.Contracts.Workstation.OnboardingCriteriaDto",
         "Meridian.Contracts.Workstation.OnboardingCriteriaRevisionDto",
         "Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto",
+        "Meridian.Contracts.Workstation.OnboardingDifferenceClassifications",
         "Meridian.Contracts.Workstation.OnboardingDifferenceDto",
+        "Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto",
         "Meridian.Contracts.Workstation.OnboardingMissingSourceDto",
         "Meridian.Contracts.Workstation.OnboardingObservationDto",
+        "Meridian.Contracts.Workstation.OnboardingOpeningAccountMappingDto",
+        "Meridian.Contracts.Workstation.OnboardingOpeningBalanceLineDto",
+        "Meridian.Contracts.Workstation.OnboardingOpeningBalanceReportDto",
+        "Meridian.Contracts.Workstation.OnboardingOpeningSourceKinds",
         "Meridian.Contracts.Workstation.OnboardingPacketContentDto",
+        "Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto",
+        "Meridian.Contracts.Workstation.OnboardingParallelRunCertificateDto",
         "Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto",
+        "Meridian.Contracts.Workstation.OnboardingPeriodSummaryDto",
         "Meridian.Contracts.Workstation.OnboardingReadinessDto",
         "Meridian.Contracts.Workstation.OnboardingReadinessPacketDto",
         "Meridian.Contracts.Workstation.OnboardingReviewDto",
         "Meridian.Contracts.Workstation.OnboardingScopeDto",
+        "Meridian.Contracts.Workstation.OnboardingShadowAuditEntryDto",
+        "Meridian.Contracts.Workstation.OnboardingShadowDesignationDto",
+        "Meridian.Contracts.Workstation.OnboardingShadowStates",
         "Meridian.Contracts.Workstation.OnboardingSourceCaptureDto",
         "Meridian.Contracts.Workstation.OnboardingSourceSelectionDto",
         "Meridian.Contracts.Workstation.OnboardingSourceSnapshotDto",
@@ -3186,6 +3205,7 @@
         "Meridian.Contracts.Workstation.PrivateCapitalNavSupportPackageDto",
         "Meridian.Contracts.Workstation.PrivateCapitalShadowNavTieOutDto",
         "Meridian.Contracts.Workstation.ProductExposureDto",
+        "Meridian.Contracts.Workstation.PromoteShadowBookRequestDto",
         "Meridian.Contracts.Workstation.ProviderCorporateActionEvidenceCandidateDto",
         "Meridian.Contracts.Workstation.ProviderCorporateActionLedgerEffectDto",
         "Meridian.Contracts.Workstation.ProviderCorporateActionReadinessDto",
@@ -3451,6 +3471,8 @@
         "Meridian.Contracts.Workstation.SecurityMasterTrustTone",
         "Meridian.Contracts.Workstation.SecurityMasterWorkstationDto",
         "Meridian.Contracts.Workstation.SettlementInstruction",
+        "Meridian.Contracts.Workstation.ShadowBookNotBookOfRecordException",
+        "Meridian.Contracts.Workstation.ShadowBookPromotionDecisionDto",
         "Meridian.Contracts.Workstation.SinglePrincipalAttestationAuditEventDto",
         "Meridian.Contracts.Workstation.SinglePrincipalAttestationPolicy",
         "Meridian.Contracts.Workstation.SinglePrincipalAttestationScopeDto",
@@ -3629,6 +3651,7 @@
         "Meridian.Contracts.Workstation.ValidateLedgerDraft",
         "Meridian.Contracts.Workstation.ValuationFreshnessPreviewDto",
         "Meridian.Contracts.Workstation.VersionedReportTemplateIdDto",
+        "Meridian.Contracts.Workstation.WithdrawShadowBookRequestDto",
         "Meridian.Contracts.Workstation.WorkflowActionDto",
         "Meridian.Contracts.Workstation.WorkflowBlockerSummary",
         "Meridian.Contracts.Workstation.WorkflowDefinitionDto",
@@ -5467,7 +5490,7 @@
       ]
     }
   ],
-  "fingerprint": "e014727c8515f541fd5de4c62b83920a0f17532582739b1f1c73693c2ef36ae7",
+  "fingerprint": "b95fd29d38802917f564b2f717c599f5a0d9a8db46900f6001c7bd50a0883a72",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -8788,7 +8811,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "93d097bb24e3a3147e30b212b6bc74813ed8896b1f226b887fd0af99086bbd3f",
+      "fingerprint": "82082afe5d1b0f00661fe410f5924eca802e6c8328f761678f00db5db0e47fd5",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -8819,6 +8842,7 @@
         "Meridian.Contracts.Workstation.BankStatementImportResultDto",
         "Meridian.Contracts.Workstation.BiasDisclosureDto",
         "Meridian.Contracts.Workstation.BiasDisclosureItemDto",
+        "Meridian.Contracts.Workstation.BookOfRecordStatusDto",
         "Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto",
         "Meridian.Contracts.Workstation.BrokerageAccountKindDto",
         "Meridian.Contracts.Workstation.BrokerageAccountLinkRequestDto",
@@ -8874,6 +8898,7 @@
         "Meridian.Contracts.Workstation.DataUploadWorkbookPreviewResultDto",
         "Meridian.Contracts.Workstation.DataUploadWorkbookSheetPreviewDto",
         "Meridian.Contracts.Workstation.DeltaOutlierResult",
+        "Meridian.Contracts.Workstation.DesignateShadowBookRequestDto",
         "Meridian.Contracts.Workstation.DesktopLaunchTicketRedemptionDto",
         "Meridian.Contracts.Workstation.DiscardSecurityMasterRevisionRequest",
         "Meridian.Contracts.Workstation.EquityCurvePoint",
@@ -8943,6 +8968,7 @@
         "Meridian.Contracts.Workstation.ExpectedAccountingEventKindDto",
         "Meridian.Contracts.Workstation.ExpectedJournalPreviewDto",
         "Meridian.Contracts.Workstation.ExpectedJournalPreviewLineDto",
+        "Meridian.Contracts.Workstation.ExplainOnboardingDifferenceRequestDto",
         "Meridian.Contracts.Workstation.ExposureSnapshotDto",
         "Meridian.Contracts.Workstation.ExposureTrendPointDto",
         "Meridian.Contracts.Workstation.FeatureCapabilitySettingsResponse",
@@ -9039,11 +9065,13 @@
         "Meridian.Contracts.Workstation.GovernanceReportValidationSeverityDto",
         "Meridian.Contracts.Workstation.HaircutRuleDto",
         "Meridian.Contracts.Workstation.IAutomatedJournalScheduleStatusSource",
+        "Meridian.Contracts.Workstation.IBookOfRecordGuard",
         "Meridian.Contracts.Workstation.IClosePublicationReadinessGuard",
         "Meridian.Contracts.Workstation.ICloseReadinessSubjectSource",
         "Meridian.Contracts.Workstation.IDailyValuationScheduleStatusSource",
         "Meridian.Contracts.Workstation.IFinancialOperationsCommandCenterReadService",
         "Meridian.Contracts.Workstation.ImportBrokerData",
+        "Meridian.Contracts.Workstation.ImportOnboardingOpeningBalancesRequestDto",
         "Meridian.Contracts.Workstation.IngestionCheckpointDto",
         "Meridian.Contracts.Workstation.IngestionOperationActionDto",
         "Meridian.Contracts.Workstation.IngestionOperationActionRequestDto",
@@ -9078,6 +9106,7 @@
         "Meridian.Contracts.Workstation.IPrivateCapitalCloseCockpitService",
         "Meridian.Contracts.Workstation.IRecurringJournalQueueSource",
         "Meridian.Contracts.Workstation.IReportingRunNotifier",
+        "Meridian.Contracts.Workstation.IssueParallelRunCertificateRequestDto",
         "Meridian.Contracts.Workstation.LedgerAmountApprovalClassification",
         "Meridian.Contracts.Workstation.LedgerAmountApprovalStateDto",
         "Meridian.Contracts.Workstation.LedgerAmountProofDto",
@@ -9116,19 +9145,32 @@
         "Meridian.Contracts.Workstation.NullReportingRunNotifier",
         "Meridian.Contracts.Workstation.NumberPassportDeclaredScopeDto",
         "Meridian.Contracts.Workstation.NumberPassportReferenceDto",
+        "Meridian.Contracts.Workstation.OnboardingClassificationCountDto",
         "Meridian.Contracts.Workstation.OnboardingComparisonDto",
         "Meridian.Contracts.Workstation.OnboardingCriteriaDto",
         "Meridian.Contracts.Workstation.OnboardingCriteriaRevisionDto",
         "Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto",
+        "Meridian.Contracts.Workstation.OnboardingDifferenceClassifications",
         "Meridian.Contracts.Workstation.OnboardingDifferenceDto",
+        "Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto",
         "Meridian.Contracts.Workstation.OnboardingMissingSourceDto",
         "Meridian.Contracts.Workstation.OnboardingObservationDto",
+        "Meridian.Contracts.Workstation.OnboardingOpeningAccountMappingDto",
+        "Meridian.Contracts.Workstation.OnboardingOpeningBalanceLineDto",
+        "Meridian.Contracts.Workstation.OnboardingOpeningBalanceReportDto",
+        "Meridian.Contracts.Workstation.OnboardingOpeningSourceKinds",
         "Meridian.Contracts.Workstation.OnboardingPacketContentDto",
+        "Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto",
+        "Meridian.Contracts.Workstation.OnboardingParallelRunCertificateDto",
         "Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto",
+        "Meridian.Contracts.Workstation.OnboardingPeriodSummaryDto",
         "Meridian.Contracts.Workstation.OnboardingReadinessDto",
         "Meridian.Contracts.Workstation.OnboardingReadinessPacketDto",
         "Meridian.Contracts.Workstation.OnboardingReviewDto",
         "Meridian.Contracts.Workstation.OnboardingScopeDto",
+        "Meridian.Contracts.Workstation.OnboardingShadowAuditEntryDto",
+        "Meridian.Contracts.Workstation.OnboardingShadowDesignationDto",
+        "Meridian.Contracts.Workstation.OnboardingShadowStates",
         "Meridian.Contracts.Workstation.OnboardingSourceCaptureDto",
         "Meridian.Contracts.Workstation.OnboardingSourceSelectionDto",
         "Meridian.Contracts.Workstation.OnboardingSourceSnapshotDto",
@@ -9278,6 +9320,7 @@
         "Meridian.Contracts.Workstation.PrivateCapitalNavSupportPackageDto",
         "Meridian.Contracts.Workstation.PrivateCapitalShadowNavTieOutDto",
         "Meridian.Contracts.Workstation.ProductExposureDto",
+        "Meridian.Contracts.Workstation.PromoteShadowBookRequestDto",
         "Meridian.Contracts.Workstation.ProviderCorporateActionEvidenceCandidateDto",
         "Meridian.Contracts.Workstation.ProviderCorporateActionLedgerEffectDto",
         "Meridian.Contracts.Workstation.ProviderCorporateActionReadinessDto",
@@ -9543,6 +9586,8 @@
         "Meridian.Contracts.Workstation.SecurityMasterTrustTone",
         "Meridian.Contracts.Workstation.SecurityMasterWorkstationDto",
         "Meridian.Contracts.Workstation.SettlementInstruction",
+        "Meridian.Contracts.Workstation.ShadowBookNotBookOfRecordException",
+        "Meridian.Contracts.Workstation.ShadowBookPromotionDecisionDto",
         "Meridian.Contracts.Workstation.SinglePrincipalAttestationAuditEventDto",
         "Meridian.Contracts.Workstation.SinglePrincipalAttestationPolicy",
         "Meridian.Contracts.Workstation.SinglePrincipalAttestationScopeDto",
@@ -9721,6 +9766,7 @@
         "Meridian.Contracts.Workstation.ValidateLedgerDraft",
         "Meridian.Contracts.Workstation.ValuationFreshnessPreviewDto",
         "Meridian.Contracts.Workstation.VersionedReportTemplateIdDto",
+        "Meridian.Contracts.Workstation.WithdrawShadowBookRequestDto",
         "Meridian.Contracts.Workstation.WorkflowActionDto",
         "Meridian.Contracts.Workstation.WorkflowBlockerSummary",
         "Meridian.Contracts.Workstation.WorkflowDefinitionDto",
@@ -349905,7 +349951,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "73c3a9cfc5be57e76dc30df0ad98018aed426965901366deb30bf77b328fc779",
+      "fingerprint": "ca7b5d0e378e2b8539e0bd10f62a21bf3c6d6e24eed36db8633782eacf360f5a",
       "full_name": "Meridian.Contracts.Workstation.AssignOnboardingDifferenceRequestDto",
       "id": "Meridian.Contracts.Workstation.AssignOnboardingDifferenceRequestDto",
       "kind": "record",
@@ -349922,7 +349968,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 33,
+          "source_line": 35,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -349936,7 +349982,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 33,
+          "source_line": 35,
           "type": "int"
         },
         {
@@ -349950,7 +349996,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 33,
+          "source_line": 35,
           "type": "string"
         },
         {
@@ -349964,7 +350010,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 33,
+          "source_line": 35,
           "type": "string"
         }
       ],
@@ -349974,12 +350020,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.AssignOnboardingDifferenceRequestDto",
       "references": [],
       "source": {
-        "line": 32,
+        "line": 34,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 32,
+          "line": 34,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -352333,6 +352379,155 @@
         {
           "line": 264,
           "path": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "37548c71a5a8d5fe9ef6f1ebbbf79d136f75789a617ff9daa83def602d7d45aa",
+      "full_name": "Meridian.Contracts.Workstation.BookOfRecordStatusDto",
+      "id": "Meridian.Contracts.Workstation.BookOfRecordStatusDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CleanPeriodCount",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "int?",
+          "source_line": 130,
+          "type": "int?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsBookOfRecord",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 129,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LedgerBookId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 129,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Reason",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 129,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RequiredPeriodCount",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "int?",
+          "source_line": 130,
+          "type": "int?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ShadowState",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 129,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ShadowWorkspaceId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 129,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "UnexplainedDifferenceCount",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "int?",
+          "source_line": 130,
+          "type": "int?"
+        }
+      ],
+      "name": "BookOfRecordStatusDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.BookOfRecordStatusDto",
+      "references": [],
+      "source": {
+        "line": 128,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 128,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
         }
       ],
       "type_parameters": []
@@ -354884,7 +355079,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "738b25c9d35675c852ac03d6f6abfa9543c4f2ae29b3d2d369bc3110bd3e89fb",
+      "fingerprint": "328d22ca546d248d0b7fe325ce141845333a1b319fc85335bc828844a6df95aa",
       "full_name": "Meridian.Contracts.Workstation.CaptureOnboardingComparisonRequestDto",
       "id": "Meridian.Contracts.Workstation.CaptureOnboardingComparisonRequestDto",
       "kind": "record",
@@ -354901,7 +355096,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 26,
+          "source_line": 28,
           "type": "DateOnly"
         },
         {
@@ -354915,7 +355110,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 26,
+          "source_line": 28,
           "type": "int"
         },
         {
@@ -354929,7 +355124,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 26,
+          "source_line": 28,
           "type": "string"
         },
         {
@@ -354943,7 +355138,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 27,
+          "source_line": 29,
           "type": "string"
         },
         {
@@ -354957,7 +355152,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 27,
+          "source_line": 29,
           "type": "string"
         },
         {
@@ -354972,7 +355167,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 27,
+          "source_line": 29,
           "type": "string?"
         },
         {
@@ -354986,7 +355181,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 26,
+          "source_line": 28,
           "type": "string"
         }
       ],
@@ -354996,12 +355191,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.CaptureOnboardingComparisonRequestDto",
       "references": [],
       "source": {
-        "line": 25,
+        "line": 27,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 25,
+          "line": 27,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -357782,7 +357977,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "3f38e0699912f993a4e985a21a0ab17640e725beff731f54a7f722195c9dda27",
+      "fingerprint": "dfc7c3a51abb3d077b3f7893bdb739f35790cec4b940c1d32dbc5a921775df1d",
       "full_name": "Meridian.Contracts.Workstation.CreateOnboardingWorkspaceRequestDto",
       "id": "Meridian.Contracts.Workstation.CreateOnboardingWorkspaceRequestDto",
       "kind": "record",
@@ -357799,7 +357994,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OnboardingCriteriaDto",
-          "source_line": 20,
+          "source_line": 22,
           "type": "OnboardingCriteriaDto"
         },
         {
@@ -357813,7 +358008,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 20,
+          "source_line": 22,
           "type": "string"
         },
         {
@@ -357827,7 +358022,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OnboardingScopeDto",
-          "source_line": 20,
+          "source_line": 22,
           "type": "OnboardingScopeDto"
         }
       ],
@@ -357840,12 +358035,12 @@
         "Meridian.Contracts.Workstation.OnboardingScopeDto"
       ],
       "source": {
-        "line": 19,
+        "line": 21,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 19,
+          "line": 21,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -360313,6 +360508,68 @@
         {
           "line": 15,
           "path": "src/Meridian.Contracts/Workstation/CashOperationsDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "9be658eeefb3444c096db4b9fbe999e66aab8e09f1a0a18be4a8df60e77572fc",
+      "full_name": "Meridian.Contracts.Workstation.DesignateShadowBookRequestDto",
+      "id": "Meridian.Contracts.Workstation.DesignateShadowBookRequestDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExpectedVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 40,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Rationale",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 40,
+          "type": "string"
+        }
+      ],
+      "name": "DesignateShadowBookRequestDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.DesignateShadowBookRequestDto",
+      "references": [],
+      "source": {
+        "line": 40,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 40,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
         }
       ],
       "type_parameters": []
@@ -370274,6 +370531,125 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
+      "fingerprint": "1b35b6ac5c778e959e76a6a62dcb24450a48db9fcf5446bc9d39f931721bfd76",
+      "full_name": "Meridian.Contracts.Workstation.ExplainOnboardingDifferenceRequestDto",
+      "id": "Meridian.Contracts.Workstation.ExplainOnboardingDifferenceRequestDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Classification",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 74,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ComparisonId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 74,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidenceIds",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 75,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExpectedReversalDate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 75,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExpectedVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 74,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Notes",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 74,
+          "type": "string"
+        }
+      ],
+      "name": "ExplainOnboardingDifferenceRequestDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.ExplainOnboardingDifferenceRequestDto",
+      "references": [],
+      "source": {
+        "line": 73,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 73,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
       "fingerprint": "3a565c6bc748c2f2e375b43a88ae0774b65f6138fafe7f377a1c4b9e7bf6e54e",
       "full_name": "Meridian.Contracts.Workstation.ExposureSnapshotDto",
       "id": "Meridian.Contracts.Workstation.ExposureSnapshotDto",
@@ -374029,7 +374405,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "efb1d2f448811974c251921e76ff49e74fbfe1b2edb46d32f33e19552793f107",
+      "fingerprint": "5f5278f3ce98cf43a16413f42e67c3bb24cce9f869edadd0f0b285e04d943580",
       "full_name": "Meridian.Contracts.Workstation.FreezeOnboardingPacketRequestDto",
       "id": "Meridian.Contracts.Workstation.FreezeOnboardingPacketRequestDto",
       "kind": "record",
@@ -374046,7 +374422,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 38,
+          "source_line": 40,
           "type": "int"
         }
       ],
@@ -374056,12 +374432,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.FreezeOnboardingPacketRequestDto",
       "references": [],
       "source": {
-        "line": 38,
+        "line": 40,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 38,
+          "line": 40,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -384813,6 +385189,39 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
+      "fingerprint": "8423fe6bc7f5f3c6a547113e6633722987e5a495dfee491d81bca6448d77ef6f",
+      "full_name": "Meridian.Contracts.Workstation.IBookOfRecordGuard",
+      "id": "Meridian.Contracts.Workstation.IBookOfRecordGuard",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "IBookOfRecordGuard",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.IBookOfRecordGuard",
+      "references": [],
+      "source": {
+        "line": 135,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 135,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
       "fingerprint": "f699d8ba1630a5bd5a4e03fafe71555751399e275d4a2718b27d073cd65aad5b",
       "full_name": "Meridian.Contracts.Workstation.IClosePublicationReadinessGuard",
       "id": "Meridian.Contracts.Workstation.IClosePublicationReadinessGuard",
@@ -384995,6 +385404,187 @@
         {
           "line": 19,
           "path": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "44f4b0a7f7707efb8aa46b1675cf8d27aae722995f1a23aaa3c0c214998f1a37",
+      "full_name": "Meridian.Contracts.Workstation.ImportOnboardingOpeningBalancesRequestDto",
+      "id": "Meridian.Contracts.Workstation.ImportOnboardingOpeningBalancesRequestDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "OnboardingOpeningAccountMappingDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountMappings",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<OnboardingOpeningAccountMappingDto>",
+          "source_line": 58,
+          "type": "IReadOnlyList<OnboardingOpeningAccountMappingDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ContentBase64",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 59,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExpectedVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 57,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FileName",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 59,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ImportId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 60,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MappingProfileId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 57,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MappingVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 57,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Notes",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 60,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 60,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceKind",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 57,
+          "type": "string"
+        }
+      ],
+      "name": "ImportOnboardingOpeningBalancesRequestDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.ImportOnboardingOpeningBalancesRequestDto",
+      "references": [
+        "Meridian.Contracts.Workstation.OnboardingOpeningAccountMappingDto"
+      ],
+      "source": {
+        "line": 56,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 56,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
         }
       ],
       "type_parameters": []
@@ -389356,6 +389946,54 @@
         {
           "line": 9,
           "path": "src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "d5ffdce38dc5810161f8ab6cf731cdd023bdd20196a64e30c2f1ced201fdc4da",
+      "full_name": "Meridian.Contracts.Workstation.IssueParallelRunCertificateRequestDto",
+      "id": "Meridian.Contracts.Workstation.IssueParallelRunCertificateRequestDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExpectedVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 97,
+          "type": "int"
+        }
+      ],
+      "name": "IssueParallelRunCertificateRequestDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.IssueParallelRunCertificateRequestDto",
+      "references": [],
+      "source": {
+        "line": 97,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 97,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
         }
       ],
       "type_parameters": []
@@ -396005,7 +396643,69 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "1dfc493097491604fd20257f0b76bf4392860ab5f2f55d73722b6a34814f527a",
+      "fingerprint": "147ed246c50f686f06726d2c4fb52d61723dc20a6b68d84385f7356c11261144",
+      "full_name": "Meridian.Contracts.Workstation.OnboardingClassificationCountDto",
+      "id": "Meridian.Contracts.Workstation.OnboardingClassificationCountDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Classification",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 88,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Count",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 88,
+          "type": "int"
+        }
+      ],
+      "name": "OnboardingClassificationCountDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.OnboardingClassificationCountDto",
+      "references": [],
+      "source": {
+        "line": 88,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 88,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "9b11846799e4da012be5e3b9329888b0eb54ca150a16f88930f4b2b9c2bc1174",
       "full_name": "Meridian.Contracts.Workstation.OnboardingComparisonDto",
       "id": "Meridian.Contracts.Workstation.OnboardingComparisonDto",
       "kind": "record",
@@ -396022,7 +396722,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 74,
+          "source_line": 76,
           "type": "string"
         },
         {
@@ -396036,7 +396736,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 79,
+          "source_line": 81,
           "type": "string"
         },
         {
@@ -396050,7 +396750,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 73,
+          "source_line": 75,
           "type": "DateOnly"
         },
         {
@@ -396065,7 +396765,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 79,
+          "source_line": 81,
           "type": "string?"
         },
         {
@@ -396079,7 +396779,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 74,
+          "source_line": 76,
           "type": "DateTimeOffset"
         },
         {
@@ -396093,7 +396793,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 73,
+          "source_line": 75,
           "type": "string"
         },
         {
@@ -396107,7 +396807,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 78,
+          "source_line": 80,
           "type": "string"
         },
         {
@@ -396121,7 +396821,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 78,
+          "source_line": 80,
           "type": "decimal"
         },
         {
@@ -396135,7 +396835,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OnboardingCriteriaDto",
-          "source_line": 76,
+          "source_line": 78,
           "type": "OnboardingCriteriaDto"
         },
         {
@@ -396149,7 +396849,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 73,
+          "source_line": 75,
           "type": "int"
         },
         {
@@ -396163,7 +396863,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingDifferenceDto>",
-          "source_line": 77,
+          "source_line": 79,
           "type": "IReadOnlyList<OnboardingDifferenceDto>"
         },
         {
@@ -396177,7 +396877,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 75,
+          "source_line": 77,
           "type": "string"
         },
         {
@@ -396191,8 +396891,23 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OnboardingSourceCaptureDto",
-          "source_line": 76,
+          "source_line": 78,
           "type": "OnboardingSourceCaptureDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "false",
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsOpening",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 83,
+          "type": "bool"
         },
         {
           "collection": false,
@@ -396205,7 +396920,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 75,
+          "source_line": 77,
           "type": "string"
         },
         {
@@ -396219,7 +396934,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 75,
+          "source_line": 77,
           "type": "string"
         },
         {
@@ -396233,7 +396948,22 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 74,
+          "source_line": 76,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "OpeningSourceKind",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 84,
           "type": "string?"
         },
         {
@@ -396247,7 +396977,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 78,
+          "source_line": 80,
           "type": "string?"
         },
         {
@@ -396261,7 +396991,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 75,
+          "source_line": 77,
           "type": "string"
         },
         {
@@ -396275,7 +397005,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 73,
+          "source_line": 75,
           "type": "int"
         }
       ],
@@ -396289,12 +397019,12 @@
         "Meridian.Contracts.Workstation.OnboardingSourceCaptureDto"
       ],
       "source": {
-        "line": 72,
+        "line": 74,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 72,
+          "line": 74,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -396310,7 +397040,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "27480e36c13f11b03bb9eb3d319377c7942279a131f79762e003894a396e2745",
+      "fingerprint": "a4f2681cf16452118c193b95e8a65a420d5f5d6e2a191a1db5fbf5ea98a588d1",
       "full_name": "Meridian.Contracts.Workstation.OnboardingCriteriaDto",
       "id": "Meridian.Contracts.Workstation.OnboardingCriteriaDto",
       "kind": "record",
@@ -396327,7 +397057,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 12,
+          "source_line": 14,
           "type": "decimal"
         },
         {
@@ -396341,7 +397071,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 13,
+          "source_line": 15,
           "type": "decimal"
         },
         {
@@ -396355,7 +397085,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 15,
+          "source_line": 17,
           "type": "int"
         },
         {
@@ -396369,7 +397099,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 12,
+          "source_line": 14,
           "type": "decimal"
         },
         {
@@ -396383,7 +397113,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 12,
+          "source_line": 14,
           "type": "decimal"
         },
         {
@@ -396397,7 +397127,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 16,
+          "source_line": 18,
           "type": "bool"
         },
         {
@@ -396411,7 +397141,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<DateOnly>",
-          "source_line": 10,
+          "source_line": 12,
           "type": "IReadOnlyList<DateOnly>"
         },
         {
@@ -396425,7 +397155,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 11,
+          "source_line": 13,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -396439,7 +397169,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 14,
+          "source_line": 16,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -396453,7 +397183,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 17,
+          "source_line": 19,
           "type": "string"
         }
       ],
@@ -396463,12 +397193,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.OnboardingCriteriaDto",
       "references": [],
       "source": {
-        "line": 9,
+        "line": 11,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 9,
+          "line": 11,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -396484,7 +397214,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "553b335a6e4b72d5ba4ae3e81396225362884e17b7963ecd15c5628f4180c4a4",
+      "fingerprint": "ef4be7441035318c2ef6a4467ed06cae78cc410b8564f1470cf8edfb999bc895",
       "full_name": "Meridian.Contracts.Workstation.OnboardingCriteriaRevisionDto",
       "id": "Meridian.Contracts.Workstation.OnboardingCriteriaRevisionDto",
       "kind": "record",
@@ -396501,7 +397231,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 63,
+          "source_line": 65,
           "type": "string"
         },
         {
@@ -396515,7 +397245,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OnboardingCriteriaDto",
-          "source_line": 63,
+          "source_line": 65,
           "type": "OnboardingCriteriaDto"
         },
         {
@@ -396529,7 +397259,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 63,
+          "source_line": 65,
           "type": "int"
         },
         {
@@ -396543,7 +397273,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 63,
+          "source_line": 65,
           "type": "DateTimeOffset"
         }
       ],
@@ -396555,12 +397285,12 @@
         "Meridian.Contracts.Workstation.OnboardingCriteriaDto"
       ],
       "source": {
-        "line": 62,
+        "line": 64,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 62,
+          "line": 64,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -396576,7 +397306,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "71c0c7998ea2b63822f758b97b67f638277d4b4023075eb3b82520467edc4a9f",
+      "fingerprint": "c5c5770b2990dba0a2ff06e81c769a897711436c5ab5a194a1170f397328ffe9",
       "full_name": "Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto",
       "id": "Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto",
       "kind": "record",
@@ -396593,7 +397323,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 83,
+          "source_line": 88,
           "type": "string"
         },
         {
@@ -396607,7 +397337,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 83,
+          "source_line": 88,
           "type": "int"
         },
         {
@@ -396621,7 +397351,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 82,
+          "source_line": 87,
           "type": "string"
         },
         {
@@ -396635,7 +397365,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 82,
+          "source_line": 87,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -396649,7 +397379,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 82,
+          "source_line": 87,
           "type": "string"
         },
         {
@@ -396663,7 +397393,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 82,
+          "source_line": 87,
           "type": "string"
         },
         {
@@ -396677,7 +397407,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 83,
+          "source_line": 88,
           "type": "DateTimeOffset"
         }
       ],
@@ -396687,13 +397417,46 @@
       "qualified_name": "Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto",
       "references": [],
       "source": {
-        "line": 81,
+        "line": 86,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 81,
+          "line": 86,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "ec0c6d8ae58113811e9a3e6e8bafb0eaa3e7c15c8650dea5c7cd9c8f456bb0e0",
+      "full_name": "Meridian.Contracts.Workstation.OnboardingDifferenceClassifications",
+      "id": "Meridian.Contracts.Workstation.OnboardingDifferenceClassifications",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "OnboardingDifferenceClassifications",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.OnboardingDifferenceClassifications",
+      "references": [],
+      "source": {
+        "line": 16,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 16,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
         }
       ],
       "type_parameters": []
@@ -396708,7 +397471,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "7881770a96d34b7e768b805b6f76839c27adb606791264216362b33cf030f361",
+      "fingerprint": "da0953129376231b57c6595583d4c1c7bb83e292c0aee7f296b6193a94c20865",
       "full_name": "Meridian.Contracts.Workstation.OnboardingDifferenceDto",
       "id": "Meridian.Contracts.Workstation.OnboardingDifferenceDto",
       "kind": "record",
@@ -396725,7 +397488,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 67,
+          "source_line": 69,
           "type": "string"
         },
         {
@@ -396739,7 +397502,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 67,
+          "source_line": 69,
           "type": "string"
         },
         {
@@ -396753,7 +397516,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 68,
+          "source_line": 70,
           "type": "decimal?"
         },
         {
@@ -396767,7 +397530,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 67,
+          "source_line": 69,
           "type": "string"
         },
         {
@@ -396781,7 +397544,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 70,
+          "source_line": 72,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -396795,7 +397558,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 68,
+          "source_line": 70,
           "type": "decimal?"
         },
         {
@@ -396809,7 +397572,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 69,
+          "source_line": 71,
           "type": "string"
         },
         {
@@ -396823,7 +397586,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 67,
+          "source_line": 69,
           "type": "string?"
         },
         {
@@ -396837,7 +397600,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 67,
+          "source_line": 69,
           "type": "string"
         },
         {
@@ -396851,7 +397614,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 69,
+          "source_line": 71,
           "type": "string"
         },
         {
@@ -396865,7 +397628,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 68,
+          "source_line": 70,
           "type": "decimal?"
         },
         {
@@ -396879,7 +397642,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 70,
+          "source_line": 72,
           "type": "string?"
         },
         {
@@ -396893,7 +397656,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 69,
+          "source_line": 71,
           "type": "string"
         },
         {
@@ -396907,7 +397670,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 69,
+          "source_line": 71,
           "type": "string"
         },
         {
@@ -396921,7 +397684,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 68,
+          "source_line": 70,
           "type": "decimal"
         }
       ],
@@ -396931,12 +397694,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.OnboardingDifferenceDto",
       "references": [],
       "source": {
-        "line": 66,
+        "line": 68,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 66,
+          "line": 68,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -396952,7 +397715,209 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "3f80647b7d81d6c92b921dfc5a52b90f353be746540bb73f43bdb02a198c610f",
+      "fingerprint": "df8bd99120b5cedc199584a40f6f89d2fb18185af24895705c59041827f63f5e",
+      "full_name": "Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto",
+      "id": "Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ActorId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 86,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Classification",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 83,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ComparisonId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 83,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DataRevision",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 86,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DifferenceKey",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 83,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidenceIds",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 84,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExpectedReversalDate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 84,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExplanationId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 83,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExternalAmount",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 85,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MeridianAmount",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 85,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Notes",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 83,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RecordedAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 86,
+          "type": "DateTimeOffset"
+        }
+      ],
+      "name": "OnboardingDifferenceExplanationDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto",
+      "references": [],
+      "source": {
+        "line": 82,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 82,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "992a12ff098b9df26396138505785ced4790dec25881f6bb3bd434545caf4f2e",
       "full_name": "Meridian.Contracts.Workstation.OnboardingMissingSourceDto",
       "id": "Meridian.Contracts.Workstation.OnboardingMissingSourceDto",
       "kind": "record",
@@ -396969,7 +397934,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 53,
+          "source_line": 55,
           "type": "string?"
         },
         {
@@ -396983,7 +397948,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 53,
+          "source_line": 55,
           "type": "string"
         },
         {
@@ -396997,7 +397962,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 53,
+          "source_line": 55,
           "type": "string"
         },
         {
@@ -397011,7 +397976,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 53,
+          "source_line": 55,
           "type": "string"
         }
       ],
@@ -397021,12 +397986,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.OnboardingMissingSourceDto",
       "references": [],
       "source": {
-        "line": 53,
+        "line": 55,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 53,
+          "line": 55,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -397042,7 +398007,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "428d0e85a72f3889dd722a7fe0c05c4595d36fca3fef1ebda599cf46e91df4df",
+      "fingerprint": "9441268c862adddfcf779a4b440b3889db2ab84edd30bc405c67b7f6a91c392d",
       "full_name": "Meridian.Contracts.Workstation.OnboardingObservationDto",
       "id": "Meridian.Contracts.Workstation.OnboardingObservationDto",
       "kind": "record",
@@ -397059,7 +398024,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 48,
+          "source_line": 50,
           "type": "string"
         },
         {
@@ -397073,7 +398038,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 48,
+          "source_line": 50,
           "type": "string"
         },
         {
@@ -397087,7 +398052,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 50,
+          "source_line": 52,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -397101,7 +398066,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 49,
+          "source_line": 51,
           "type": "decimal?"
         },
         {
@@ -397115,7 +398080,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 48,
+          "source_line": 50,
           "type": "string?"
         },
         {
@@ -397129,7 +398094,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 48,
+          "source_line": 50,
           "type": "string"
         },
         {
@@ -397143,7 +398108,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 49,
+          "source_line": 51,
           "type": "decimal?"
         },
         {
@@ -397158,7 +398123,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 51,
+          "source_line": 53,
           "type": "string?"
         },
         {
@@ -397172,7 +398137,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 50,
+          "source_line": 52,
           "type": "IReadOnlyList<string>"
         }
       ],
@@ -397182,12 +398147,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.OnboardingObservationDto",
       "references": [],
       "source": {
-        "line": 47,
+        "line": 49,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 47,
+          "line": 49,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -397203,7 +398168,494 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "0f80cd70af1ecdae9803045887e0346302a2b2a9a5df2c38cba308d4a532de4b",
+      "fingerprint": "77f26bae600d65c0ecf5e25467549bbbf992cefbbc4bc3de41eca58c6e5cb8f9",
+      "full_name": "Meridian.Contracts.Workstation.OnboardingOpeningAccountMappingDto",
+      "id": "Meridian.Contracts.Workstation.OnboardingOpeningAccountMappingDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 50,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExternalAccount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 50,
+          "type": "string"
+        }
+      ],
+      "name": "OnboardingOpeningAccountMappingDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.OnboardingOpeningAccountMappingDto",
+      "references": [],
+      "source": {
+        "line": 50,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 50,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "649e0636a37d314ada60120bdfe4c909c12e07fbd83129f9ce0ce10031ebe034",
+      "full_name": "Meridian.Contracts.Workstation.OnboardingOpeningBalanceLineDto",
+      "id": "Meridian.Contracts.Workstation.OnboardingOpeningBalanceLineDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 63,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Classification",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 65,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Currency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 63,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Difference",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 64,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DifferenceKey",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 63,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IncumbentAmount",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 64,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "InstrumentId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 63,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Kind",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 63,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MeridianAmount",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 64,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MissingReason",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 65,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Status",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 65,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Tolerance",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 64,
+          "type": "decimal"
+        }
+      ],
+      "name": "OnboardingOpeningBalanceLineDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.OnboardingOpeningBalanceLineDto",
+      "references": [],
+      "source": {
+        "line": 62,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 62,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "c2c4f7ac64da1da8d5170d42a368b85aaeeebf95a3c9af98715c0a16e5ad99da",
+      "full_name": "Meridian.Contracts.Workstation.OnboardingOpeningBalanceReportDto",
+      "id": "Meridian.Contracts.Workstation.OnboardingOpeningBalanceReportDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AsOfDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 69,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BreakCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 70,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ComparisonId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 69,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidenceIds",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 71,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExplainedCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 70,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsReconciled",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 70,
+          "type": "bool"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "OnboardingOpeningBalanceLineDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Lines",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<OnboardingOpeningBalanceLineDto>",
+          "source_line": 71,
+          "type": "IReadOnlyList<OnboardingOpeningBalanceLineDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MatchedCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 70,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MissingCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 70,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceContentHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 69,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceKind",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 69,
+          "type": "string"
+        }
+      ],
+      "name": "OnboardingOpeningBalanceReportDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.OnboardingOpeningBalanceReportDto",
+      "references": [
+        "Meridian.Contracts.Workstation.OnboardingOpeningBalanceLineDto"
+      ],
+      "source": {
+        "line": 68,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 68,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "a79b316d5d1797d3334001bb67e4caf872fe3a7537a7c3a4c7a88a04fde7b2e0",
+      "full_name": "Meridian.Contracts.Workstation.OnboardingOpeningSourceKinds",
+      "id": "Meridian.Contracts.Workstation.OnboardingOpeningSourceKinds",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "OnboardingOpeningSourceKinds",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.OnboardingOpeningSourceKinds",
+      "references": [],
+      "source": {
+        "line": 28,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 28,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "b9e89ef50e6ac2c11a412ede7cb4ee39a560875d678d4a6f12f8c2b85de68260",
       "full_name": "Meridian.Contracts.Workstation.OnboardingPacketContentDto",
       "id": "Meridian.Contracts.Workstation.OnboardingPacketContentDto",
       "kind": "record",
@@ -397220,7 +398672,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingDifferenceAssignmentDto>",
-          "source_line": 104,
+          "source_line": 112,
           "type": "IReadOnlyList<OnboardingDifferenceAssignmentDto>"
         },
         {
@@ -397234,7 +398686,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 106,
+          "source_line": 114,
           "type": "string"
         },
         {
@@ -397248,7 +398700,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingComparisonDto>",
-          "source_line": 102,
+          "source_line": 110,
           "type": "IReadOnlyList<OnboardingComparisonDto>"
         },
         {
@@ -397262,7 +398714,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OnboardingCriteriaDto",
-          "source_line": 100,
+          "source_line": 108,
           "type": "OnboardingCriteriaDto"
         },
         {
@@ -397276,7 +398728,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingCriteriaRevisionDto>",
-          "source_line": 101,
+          "source_line": 109,
           "type": "IReadOnlyList<OnboardingCriteriaRevisionDto>"
         },
         {
@@ -397290,8 +398742,223 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingDifferenceDto>",
-          "source_line": 103,
+          "source_line": 111,
           "type": "IReadOnlyList<OnboardingDifferenceDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DataRevision",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 108,
+          "type": "int"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "OnboardingDifferenceExplanationDto",
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "Explanations",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<OnboardingDifferenceExplanationDto>?",
+          "source_line": 115,
+          "type": "IReadOnlyList<OnboardingDifferenceExplanationDto>?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Name",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 107,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OwnerId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 107,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Readiness",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "OnboardingReadinessDto",
+          "source_line": 113,
+          "type": "OnboardingReadinessDto"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "OnboardingReviewDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Reviews",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<OnboardingReviewDto>",
+          "source_line": 113,
+          "type": "IReadOnlyList<OnboardingReviewDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Scope",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "OnboardingScopeDto",
+          "source_line": 107,
+          "type": "OnboardingScopeDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "ShadowDesignation",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "OnboardingShadowDesignationDto?",
+          "source_line": 116,
+          "type": "OnboardingShadowDesignationDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "WorkspaceId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 107,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "WorkspaceVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 108,
+          "type": "int"
+        }
+      ],
+      "name": "OnboardingPacketContentDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.OnboardingPacketContentDto",
+      "references": [
+        "Meridian.Contracts.Workstation.OnboardingComparisonDto",
+        "Meridian.Contracts.Workstation.OnboardingCriteriaDto",
+        "Meridian.Contracts.Workstation.OnboardingCriteriaRevisionDto",
+        "Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto",
+        "Meridian.Contracts.Workstation.OnboardingDifferenceDto",
+        "Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto",
+        "Meridian.Contracts.Workstation.OnboardingReadinessDto",
+        "Meridian.Contracts.Workstation.OnboardingReviewDto",
+        "Meridian.Contracts.Workstation.OnboardingScopeDto",
+        "Meridian.Contracts.Workstation.OnboardingShadowDesignationDto"
+      ],
+      "source": {
+        "line": 106,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 106,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "ff64fea29e22311fb6f029493304161cc27de8891a3b9e4f75cc3aac16ec78fd",
+      "full_name": "Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto",
+      "id": "Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "OnboardingReviewDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ApprovingReviews",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<OnboardingReviewDto>",
+          "source_line": 104,
+          "type": "IReadOnlyList<OnboardingReviewDto>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "DateOnly",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CleanPeriods",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<DateOnly>",
+          "source_line": 102,
+          "type": "IReadOnlyList<DateOnly>"
         },
         {
           "collection": false,
@@ -397308,6 +398975,20 @@
           "type": "int"
         },
         {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "OnboardingDifferenceExplanationDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Explanations",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<OnboardingDifferenceExplanationDto>",
+          "source_line": 103,
+          "type": "IReadOnlyList<OnboardingDifferenceExplanationDto>"
+        },
+        {
           "collection": false,
           "collection_kind": null,
           "element_type": null,
@@ -397318,7 +398999,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 99,
+          "source_line": 100,
           "type": "string"
         },
         {
@@ -397328,11 +399009,25 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "OwnerId",
+          "name": "Opening",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "OnboardingOpeningBalanceReportDto",
+          "source_line": 101,
+          "type": "OnboardingOpeningBalanceReportDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PacketContentHash",
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 99,
+          "source_line": 105,
           "type": "string"
         },
         {
@@ -397342,26 +399037,26 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "Readiness",
+          "name": "PacketId",
           "nullable": false,
           "origin": "positional_parameter",
-          "raw_type": "OnboardingReadinessDto",
+          "raw_type": "string",
           "source_line": 105,
-          "type": "OnboardingReadinessDto"
+          "type": "string"
         },
         {
           "collection": true,
           "collection_kind": "IReadOnlyList",
-          "element_type": "OnboardingReviewDto",
+          "element_type": "OnboardingPeriodSummaryDto",
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "Reviews",
+          "name": "Periods",
           "nullable": false,
           "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<OnboardingReviewDto>",
-          "source_line": 105,
-          "type": "IReadOnlyList<OnboardingReviewDto>"
+          "raw_type": "IReadOnlyList<OnboardingPeriodSummaryDto>",
+          "source_line": 102,
+          "type": "IReadOnlyList<OnboardingPeriodSummaryDto>"
         },
         {
           "collection": false,
@@ -397374,8 +399069,22 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OnboardingScopeDto",
-          "source_line": 99,
+          "source_line": 100,
           "type": "OnboardingScopeDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Statement",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 105,
+          "type": "string"
         },
         {
           "collection": false,
@@ -397388,46 +399097,29 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 99,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "WorkspaceVersion",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "int",
           "source_line": 100,
-          "type": "int"
+          "type": "string"
         }
       ],
-      "name": "OnboardingPacketContentDto",
+      "name": "OnboardingParallelRunCertificateContentDto",
       "namespace": "Meridian.Contracts.Workstation",
       "partial": false,
-      "qualified_name": "Meridian.Contracts.Workstation.OnboardingPacketContentDto",
+      "qualified_name": "Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto",
       "references": [
-        "Meridian.Contracts.Workstation.OnboardingComparisonDto",
-        "Meridian.Contracts.Workstation.OnboardingCriteriaDto",
-        "Meridian.Contracts.Workstation.OnboardingCriteriaRevisionDto",
-        "Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto",
-        "Meridian.Contracts.Workstation.OnboardingDifferenceDto",
-        "Meridian.Contracts.Workstation.OnboardingReadinessDto",
+        "Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto",
+        "Meridian.Contracts.Workstation.OnboardingOpeningBalanceReportDto",
+        "Meridian.Contracts.Workstation.OnboardingPeriodSummaryDto",
         "Meridian.Contracts.Workstation.OnboardingReviewDto",
         "Meridian.Contracts.Workstation.OnboardingScopeDto"
       ],
       "source": {
-        "line": 98,
-        "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
+        "line": 99,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
       },
       "sources": [
         {
-          "line": 98,
-          "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
+          "line": 99,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
         }
       ],
       "type_parameters": []
@@ -397442,7 +399134,127 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "2ad9c4dfcded964e1b7063c55d151fb7236cd1db8ca271607e02016cf6ca00e8",
+      "fingerprint": "e7a6e92c9b53fcfdc6601a8245bd30d6c6ddc5ad6901f08703128066313281f0",
+      "full_name": "Meridian.Contracts.Workstation.OnboardingParallelRunCertificateDto",
+      "id": "Meridian.Contracts.Workstation.OnboardingParallelRunCertificateDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CertificateId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 112,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Content",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "OnboardingParallelRunCertificateContentDto",
+          "source_line": 113,
+          "type": "OnboardingParallelRunCertificateContentDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ContentHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 113,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "HashAlgorithm",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 113,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IssuedAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 112,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IssuedBy",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 112,
+          "type": "string"
+        }
+      ],
+      "name": "OnboardingParallelRunCertificateDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.OnboardingParallelRunCertificateDto",
+      "references": [
+        "Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto"
+      ],
+      "source": {
+        "line": 111,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 111,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "f085be97ce91cd15b43d1e127bf94c52efde3f2c70cb2b0159e197f5790e2c56",
       "full_name": "Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto",
       "id": "Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto",
       "kind": "record",
@@ -397459,7 +399271,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 90,
+          "source_line": 95,
           "type": "DateOnly"
         },
         {
@@ -397473,7 +399285,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 90,
+          "source_line": 95,
           "type": "string"
         },
         {
@@ -397487,7 +399299,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OnboardingDifferenceDto",
-          "source_line": 90,
+          "source_line": 95,
           "type": "OnboardingDifferenceDto"
         }
       ],
@@ -397499,12 +399311,12 @@
         "Meridian.Contracts.Workstation.OnboardingDifferenceDto"
       ],
       "source": {
-        "line": 89,
+        "line": 94,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 89,
+          "line": 94,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -397520,7 +399332,225 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "8f31c2f5a2181aeab61e748e8fe81cdcd50b79a01f9d854631573d3a9c2ab39b",
+      "fingerprint": "e240f9fce8a5046ad63b1483efc0a71bb14a61e7e0e4521dc7e4edcb7c3a0dad",
+      "full_name": "Meridian.Contracts.Workstation.OnboardingPeriodSummaryDto",
+      "id": "Meridian.Contracts.Workstation.OnboardingPeriodSummaryDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AsOfDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 92,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ComparisonId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 92,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "OnboardingClassificationCountDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExplainedByClassification",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<OnboardingClassificationCountDto>",
+          "source_line": 95,
+          "type": "IReadOnlyList<OnboardingClassificationCountDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExplainedCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 94,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExternalNav",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 93,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsClean",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 95,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MatchedCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 94,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MeridianNav",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 93,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MissingSourceCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 94,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "NavCurrency",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 92,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "NavVariance",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 93,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ObservationCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 94,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "UnexplainedCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 94,
+          "type": "int"
+        }
+      ],
+      "name": "OnboardingPeriodSummaryDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.OnboardingPeriodSummaryDto",
+      "references": [
+        "Meridian.Contracts.Workstation.OnboardingClassificationCountDto"
+      ],
+      "source": {
+        "line": 91,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 91,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "d9d74d40df96a2973edea5fcc4647ae7dd3c9bfb2afed935ebecc7070769f2ee",
       "full_name": "Meridian.Contracts.Workstation.OnboardingReadinessDto",
       "id": "Meridian.Contracts.Workstation.OnboardingReadinessDto",
       "kind": "record",
@@ -397537,7 +399567,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 95,
+          "source_line": 100,
           "type": "int"
         },
         {
@@ -397551,8 +399581,23 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 95,
+          "source_line": 100,
           "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "0",
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExplainedDifferenceCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 104,
+          "type": "int"
         },
         {
           "collection": false,
@@ -397565,7 +399610,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 93,
+          "source_line": 98,
           "type": "bool"
         },
         {
@@ -397579,7 +399624,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<DateOnly>",
-          "source_line": 94,
+          "source_line": 99,
           "type": "IReadOnlyList<DateOnly>"
         },
         {
@@ -397593,8 +399638,38 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingMissingSourceDto>",
-          "source_line": 94,
+          "source_line": 99,
           "type": "IReadOnlyList<OnboardingMissingSourceDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "Opening",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "OnboardingOpeningBalanceReportDto?",
+          "source_line": 103,
+          "type": "OnboardingOpeningBalanceReportDto?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "OnboardingPeriodSummaryDto",
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "Periods",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<OnboardingPeriodSummaryDto>?",
+          "source_line": 102,
+          "type": "IReadOnlyList<OnboardingPeriodSummaryDto>?"
         },
         {
           "collection": false,
@@ -397607,7 +399682,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 95,
+          "source_line": 100,
           "type": "int"
         },
         {
@@ -397621,7 +399696,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 93,
+          "source_line": 98,
           "type": "string"
         },
         {
@@ -397635,7 +399710,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 93,
+          "source_line": 98,
           "type": "int"
         },
         {
@@ -397649,7 +399724,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingPeriodDifferenceDto>",
-          "source_line": 96,
+          "source_line": 101,
           "type": "IReadOnlyList<OnboardingPeriodDifferenceDto>"
         }
       ],
@@ -397659,15 +399734,17 @@
       "qualified_name": "Meridian.Contracts.Workstation.OnboardingReadinessDto",
       "references": [
         "Meridian.Contracts.Workstation.OnboardingMissingSourceDto",
-        "Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto"
+        "Meridian.Contracts.Workstation.OnboardingOpeningBalanceReportDto",
+        "Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto",
+        "Meridian.Contracts.Workstation.OnboardingPeriodSummaryDto"
       ],
       "source": {
-        "line": 92,
+        "line": 97,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 92,
+          "line": 97,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -397683,7 +399760,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "de917bb89140048196df29bff2a35cf732b9255bf58a8cf5178b43d079fe850e",
+      "fingerprint": "62878aaa6a142b9510bc484ee9c980be8a0fbd9c5dc76354ffad1811dc5d1031",
       "full_name": "Meridian.Contracts.Workstation.OnboardingReadinessPacketDto",
       "id": "Meridian.Contracts.Workstation.OnboardingReadinessPacketDto",
       "kind": "record",
@@ -397700,7 +399777,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OnboardingPacketContentDto",
-          "source_line": 111,
+          "source_line": 121,
           "type": "OnboardingPacketContentDto"
         },
         {
@@ -397714,7 +399791,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 111,
+          "source_line": 121,
           "type": "string"
         },
         {
@@ -397728,7 +399805,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 110,
+          "source_line": 120,
           "type": "DateTimeOffset"
         },
         {
@@ -397742,7 +399819,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 110,
+          "source_line": 120,
           "type": "string"
         },
         {
@@ -397756,7 +399833,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 111,
+          "source_line": 121,
           "type": "string"
         },
         {
@@ -397770,7 +399847,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 110,
+          "source_line": 120,
           "type": "string"
         }
       ],
@@ -397782,12 +399859,12 @@
         "Meridian.Contracts.Workstation.OnboardingPacketContentDto"
       ],
       "source": {
-        "line": 109,
+        "line": 119,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 109,
+          "line": 119,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -397803,7 +399880,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "28a25e1abee46f3a420a114fcdcb0c53d565d3b4c475e4a83307df1a7d6e701b",
+      "fingerprint": "a198cd27f810870c5bf666d5ce2d649b107e83a56166b4c1de814138359053ac",
       "full_name": "Meridian.Contracts.Workstation.OnboardingReviewDto",
       "id": "Meridian.Contracts.Workstation.OnboardingReviewDto",
       "kind": "record",
@@ -397820,7 +399897,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 86,
+          "source_line": 91,
           "type": "int"
         },
         {
@@ -397834,7 +399911,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 86,
+          "source_line": 91,
           "type": "string"
         },
         {
@@ -397848,7 +399925,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 87,
+          "source_line": 92,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -397862,7 +399939,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 87,
+          "source_line": 92,
           "type": "string"
         },
         {
@@ -397876,7 +399953,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 87,
+          "source_line": 92,
           "type": "DateTimeOffset"
         },
         {
@@ -397890,7 +399967,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 86,
+          "source_line": 91,
           "type": "string"
         },
         {
@@ -397904,7 +399981,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 86,
+          "source_line": 91,
           "type": "string"
         }
       ],
@@ -397914,12 +399991,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.OnboardingReviewDto",
       "references": [],
       "source": {
-        "line": 85,
+        "line": 90,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 85,
+          "line": 90,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -397935,7 +400012,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "29c2a03278df8609c99cb38e39ba937dca98efba884090a06be2e6eee8049b80",
+      "fingerprint": "341cf535f3b5f58ecd2cd32ce917c43e011922a138ea4966f97ba962a98b3f08",
       "full_name": "Meridian.Contracts.Workstation.OnboardingScopeDto",
       "id": "Meridian.Contracts.Workstation.OnboardingScopeDto",
       "kind": "record",
@@ -397952,7 +400029,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 6,
+          "source_line": 8,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -397966,7 +400043,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 5,
+          "source_line": 7,
           "type": "string"
         },
         {
@@ -397980,7 +400057,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 6,
+          "source_line": 8,
           "type": "DateOnly"
         },
         {
@@ -397994,7 +400071,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 5,
+          "source_line": 7,
           "type": "string"
         },
         {
@@ -398008,7 +400085,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 5,
+          "source_line": 7,
           "type": "string"
         },
         {
@@ -398022,7 +400099,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 6,
+          "source_line": 8,
           "type": "Guid"
         },
         {
@@ -398036,7 +400113,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 6,
+          "source_line": 8,
           "type": "DateOnly"
         },
         {
@@ -398050,7 +400127,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 5,
+          "source_line": 7,
           "type": "string"
         }
       ],
@@ -398060,12 +400137,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.OnboardingScopeDto",
       "references": [],
       "source": {
-        "line": 4,
+        "line": 6,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 4,
+          "line": 6,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -398081,7 +400158,350 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "00092fc0d1a5f88067864c88f27f240c5be2280e49d957b36cc2201d6bcaa52f",
+      "fingerprint": "cd2785fa05fb8069fd5058cbb23cf7f0d56794e48db3b4d7b6c7f4e057b73526",
+      "full_name": "Meridian.Contracts.Workstation.OnboardingShadowAuditEntryDto",
+      "id": "Meridian.Contracts.Workstation.OnboardingShadowAuditEntryDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Action",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 124,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ActorId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 124,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Detail",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 125,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EntryHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 125,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OccurredAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 124,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PreviousHash",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 125,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Sequence",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 124,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SubjectId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 124,
+          "type": "string"
+        }
+      ],
+      "name": "OnboardingShadowAuditEntryDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.OnboardingShadowAuditEntryDto",
+      "references": [],
+      "source": {
+        "line": 123,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 123,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "30ac734f3327297ecbf4baa8d5f3ac91c64aa34d6445f4bf21baecef9f0885be",
+      "full_name": "Meridian.Contracts.Workstation.OnboardingShadowDesignationDto",
+      "id": "Meridian.Contracts.Workstation.OnboardingShadowDesignationDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DesignatedAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 45,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DesignatedBy",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 45,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LedgerBookId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 45,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PromotionDecisionId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 47,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Rationale",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 45,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ResolvedAtUtc",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 46,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ResolvedBy",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 46,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "State",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 45,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "WithdrawalReason",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 47,
+          "type": "string?"
+        }
+      ],
+      "name": "OnboardingShadowDesignationDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.OnboardingShadowDesignationDto",
+      "references": [],
+      "source": {
+        "line": 44,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 44,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "df66a3fb3604d150ea40d83d720699381703c8dc157d6b3095dad604f7592d19",
+      "full_name": "Meridian.Contracts.Workstation.OnboardingShadowStates",
+      "id": "Meridian.Contracts.Workstation.OnboardingShadowStates",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "OnboardingShadowStates",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.OnboardingShadowStates",
+      "references": [],
+      "source": {
+        "line": 8,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 8,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "23b13cc0c89b5fd1da821a185e35f9a76066a7ea1a0a30924cc905d02c7b97b3",
       "full_name": "Meridian.Contracts.Workstation.OnboardingSourceCaptureDto",
       "id": "Meridian.Contracts.Workstation.OnboardingSourceCaptureDto",
       "kind": "record",
@@ -398098,7 +400518,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "CloseReadinessProjectionDto?",
-          "source_line": 60,
+          "source_line": 62,
           "type": "CloseReadinessProjectionDto?"
         },
         {
@@ -398112,7 +400532,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingMissingSourceDto>",
-          "source_line": 59,
+          "source_line": 61,
           "type": "IReadOnlyList<OnboardingMissingSourceDto>"
         },
         {
@@ -398126,7 +400546,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingObservationDto>",
-          "source_line": 58,
+          "source_line": 60,
           "type": "IReadOnlyList<OnboardingObservationDto>"
         },
         {
@@ -398140,7 +400560,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingSourceSnapshotDto>",
-          "source_line": 57,
+          "source_line": 59,
           "type": "IReadOnlyList<OnboardingSourceSnapshotDto>"
         }
       ],
@@ -398155,12 +400575,12 @@
         "Meridian.Contracts.Workstation.OnboardingSourceSnapshotDto"
       ],
       "source": {
-        "line": 56,
+        "line": 58,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 56,
+          "line": 58,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -398176,7 +400596,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "5faf91c7e7b28f0d95a701271e406374c63f97638716fdd68f7e53718e81265d",
+      "fingerprint": "529995ddcac6f2d7c32be34fce3c16e7490dd7908a151656f7a56ee2aa412756",
       "full_name": "Meridian.Contracts.Workstation.OnboardingSourceSelectionDto",
       "id": "Meridian.Contracts.Workstation.OnboardingSourceSelectionDto",
       "kind": "record",
@@ -398193,7 +400613,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 30,
+          "source_line": 32,
           "type": "DateOnly"
         },
         {
@@ -398207,7 +400627,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 30,
+          "source_line": 32,
           "type": "string"
         },
         {
@@ -398221,7 +400641,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 30,
+          "source_line": 32,
           "type": "string"
         },
         {
@@ -398235,7 +400655,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 30,
+          "source_line": 32,
           "type": "string"
         },
         {
@@ -398249,7 +400669,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 30,
+          "source_line": 32,
           "type": "string"
         }
       ],
@@ -398259,12 +400679,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.OnboardingSourceSelectionDto",
       "references": [],
       "source": {
-        "line": 29,
+        "line": 31,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 29,
+          "line": 31,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -398280,7 +400700,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "f9c5b93581d067a10213aba9d06a376830427dfd57ded05e2bcbbfd4a01ff8ef",
+      "fingerprint": "ffa193ff770f3086e0358c8478ed66f14926ae19cc845581083793dccb64ba03",
       "full_name": "Meridian.Contracts.Workstation.OnboardingSourceSnapshotDto",
       "id": "Meridian.Contracts.Workstation.OnboardingSourceSnapshotDto",
       "kind": "record",
@@ -398297,7 +400717,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 43,
+          "source_line": 45,
           "type": "DateOnly"
         },
         {
@@ -398311,7 +400731,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 43,
+          "source_line": 45,
           "type": "DateTimeOffset"
         },
         {
@@ -398325,7 +400745,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 43,
+          "source_line": 45,
           "type": "string"
         },
         {
@@ -398339,7 +400759,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 44,
+          "source_line": 46,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -398353,7 +400773,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 44,
+          "source_line": 46,
           "type": "string"
         },
         {
@@ -398367,7 +400787,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 44,
+          "source_line": 46,
           "type": "string"
         },
         {
@@ -398381,7 +400801,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 42,
+          "source_line": 44,
           "type": "string"
         },
         {
@@ -398395,7 +400815,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 42,
+          "source_line": 44,
           "type": "string"
         },
         {
@@ -398409,7 +400829,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 42,
+          "source_line": 44,
           "type": "string"
         },
         {
@@ -398423,7 +400843,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 42,
+          "source_line": 44,
           "type": "string"
         }
       ],
@@ -398433,12 +400853,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.OnboardingSourceSnapshotDto",
       "references": [],
       "source": {
-        "line": 41,
+        "line": 43,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 41,
+          "line": 43,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -398454,7 +400874,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "351eda133572099d7f92047667c8ab1b79a645154b986f1ed59a1f162b037a82",
+      "fingerprint": "ee6a624097032285d1669a3fe94ab70dd489cc0ac3a38ab4165b1e8477ec4654",
       "full_name": "Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
       "id": "Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
       "kind": "record",
@@ -398471,7 +400891,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingDifferenceAssignmentDto>",
-          "source_line": 119,
+          "source_line": 129,
           "type": "IReadOnlyList<OnboardingDifferenceAssignmentDto>"
         },
         {
@@ -398485,8 +400905,23 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 122,
+          "source_line": 132,
           "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "OnboardingParallelRunCertificateDto",
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "Certificates",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<OnboardingParallelRunCertificateDto>?",
+          "source_line": 135,
+          "type": "IReadOnlyList<OnboardingParallelRunCertificateDto>?"
         },
         {
           "collection": true,
@@ -398499,7 +400934,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingComparisonDto>",
-          "source_line": 117,
+          "source_line": 127,
           "type": "IReadOnlyList<OnboardingComparisonDto>"
         },
         {
@@ -398513,7 +400948,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 115,
+          "source_line": 125,
           "type": "DateTimeOffset"
         },
         {
@@ -398527,7 +400962,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OnboardingCriteriaDto",
-          "source_line": 116,
+          "source_line": 126,
           "type": "OnboardingCriteriaDto"
         },
         {
@@ -398541,7 +400976,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingCriteriaRevisionDto>",
-          "source_line": 116,
+          "source_line": 126,
           "type": "IReadOnlyList<OnboardingCriteriaRevisionDto>"
         },
         {
@@ -398555,7 +400990,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingDifferenceDto>",
-          "source_line": 118,
+          "source_line": 128,
           "type": "IReadOnlyList<OnboardingDifferenceDto>"
         },
         {
@@ -398569,8 +401004,23 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 115,
+          "source_line": 125,
           "type": "int"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "OnboardingDifferenceExplanationDto",
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "Explanations",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<OnboardingDifferenceExplanationDto>?",
+          "source_line": 134,
+          "type": "IReadOnlyList<OnboardingDifferenceExplanationDto>?"
         },
         {
           "collection": false,
@@ -398583,7 +401033,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 114,
+          "source_line": 124,
           "type": "string"
         },
         {
@@ -398597,7 +401047,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 114,
+          "source_line": 124,
           "type": "string"
         },
         {
@@ -398611,8 +401061,23 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingReadinessPacketDto>",
-          "source_line": 121,
+          "source_line": 131,
           "type": "IReadOnlyList<OnboardingReadinessPacketDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "Promotion",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "ShadowBookPromotionDecisionDto?",
+          "source_line": 136,
+          "type": "ShadowBookPromotionDecisionDto?"
         },
         {
           "collection": false,
@@ -398625,7 +401090,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OnboardingReadinessDto",
-          "source_line": 122,
+          "source_line": 132,
           "type": "OnboardingReadinessDto"
         },
         {
@@ -398639,7 +401104,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OnboardingReviewDto>",
-          "source_line": 120,
+          "source_line": 130,
           "type": "IReadOnlyList<OnboardingReviewDto>"
         },
         {
@@ -398653,8 +401118,38 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OnboardingScopeDto",
-          "source_line": 114,
+          "source_line": 124,
           "type": "OnboardingScopeDto"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "OnboardingShadowAuditEntryDto",
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "ShadowAudit",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<OnboardingShadowAuditEntryDto>?",
+          "source_line": 137,
+          "type": "IReadOnlyList<OnboardingShadowAuditEntryDto>?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "ShadowDesignation",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "OnboardingShadowDesignationDto?",
+          "source_line": 133,
+          "type": "OnboardingShadowDesignationDto?"
         },
         {
           "collection": false,
@@ -398667,7 +401162,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 115,
+          "source_line": 125,
           "type": "DateTimeOffset"
         },
         {
@@ -398681,7 +401176,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 115,
+          "source_line": 125,
           "type": "int"
         },
         {
@@ -398695,7 +401190,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 114,
+          "source_line": 124,
           "type": "string"
         }
       ],
@@ -398709,18 +401204,23 @@
         "Meridian.Contracts.Workstation.OnboardingCriteriaRevisionDto",
         "Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto",
         "Meridian.Contracts.Workstation.OnboardingDifferenceDto",
+        "Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto",
+        "Meridian.Contracts.Workstation.OnboardingParallelRunCertificateDto",
         "Meridian.Contracts.Workstation.OnboardingReadinessDto",
         "Meridian.Contracts.Workstation.OnboardingReadinessPacketDto",
         "Meridian.Contracts.Workstation.OnboardingReviewDto",
-        "Meridian.Contracts.Workstation.OnboardingScopeDto"
+        "Meridian.Contracts.Workstation.OnboardingScopeDto",
+        "Meridian.Contracts.Workstation.OnboardingShadowAuditEntryDto",
+        "Meridian.Contracts.Workstation.OnboardingShadowDesignationDto",
+        "Meridian.Contracts.Workstation.ShadowBookPromotionDecisionDto"
       ],
       "source": {
-        "line": 113,
+        "line": 123,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 113,
+          "line": 123,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -421716,6 +424216,96 @@
         {
           "line": 21,
           "path": "src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "30e44c9428322c2901fc72456641cee2bd67c4af4d621388d4263499303104b4",
+      "full_name": "Meridian.Contracts.Workstation.PromoteShadowBookRequestDto",
+      "id": "Meridian.Contracts.Workstation.PromoteShadowBookRequestDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CertificateId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 116,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidenceIds",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 116,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExpectedVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 116,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Rationale",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 116,
+          "type": "string"
+        }
+      ],
+      "name": "PromoteShadowBookRequestDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.PromoteShadowBookRequestDto",
+      "references": [],
+      "source": {
+        "line": 115,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 115,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
         }
       ],
       "type_parameters": []
@@ -451112,7 +453702,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "0760088e0b74df5589ceb34a17bdec64d80597c3f3c89c61412826fb878fa893",
+      "fingerprint": "b2d89a745829347ea432615158f14a6323cffc1601dfe61de5b48398a5af611e",
       "full_name": "Meridian.Contracts.Workstation.ReviewOnboardingWorkspaceRequestDto",
       "id": "Meridian.Contracts.Workstation.ReviewOnboardingWorkspaceRequestDto",
       "kind": "record",
@@ -451129,7 +453719,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 36,
+          "source_line": 38,
           "type": "int"
         },
         {
@@ -451143,7 +453733,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 36,
+          "source_line": 38,
           "type": "string"
         },
         {
@@ -451157,7 +453747,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 36,
+          "source_line": 38,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -451171,7 +453761,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 36,
+          "source_line": 38,
           "type": "int"
         },
         {
@@ -451185,7 +453775,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 36,
+          "source_line": 38,
           "type": "string"
         }
       ],
@@ -451195,12 +453785,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReviewOnboardingWorkspaceRequestDto",
       "references": [],
       "source": {
-        "line": 35,
+        "line": 37,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 35,
+          "line": 37,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -461770,6 +464360,187 @@
         {
           "line": 19,
           "path": "src/Meridian.Contracts/Workstation/CashOperationsDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "InvalidOperationException (message)"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "da7879b371d8f2a0e2c7143687ca9c5e372a4ae2d48cc88ab7cb487edf5bf072",
+      "full_name": "Meridian.Contracts.Workstation.ShadowBookNotBookOfRecordException",
+      "id": "Meridian.Contracts.Workstation.ShadowBookNotBookOfRecordException",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "ShadowBookNotBookOfRecordException",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.ShadowBookNotBookOfRecordException",
+      "references": [],
+      "source": {
+        "line": 142,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 142,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "67650779a0a28a2e0f8555684db93d4b213c37ea6a8fdeae987c4f43236153d0",
+      "full_name": "Meridian.Contracts.Workstation.ShadowBookPromotionDecisionDto",
+      "id": "Meridian.Contracts.Workstation.ShadowBookPromotionDecisionDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CertificateContentHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 119,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CertificateId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 119,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DataRevision",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 120,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DecidedAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 120,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DecidedBy",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 119,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DecisionId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 119,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidenceIds",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 120,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Rationale",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 120,
+          "type": "string"
+        }
+      ],
+      "name": "ShadowBookPromotionDecisionDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.ShadowBookPromotionDecisionDto",
+      "references": [],
+      "source": {
+        "line": 118,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 118,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
         }
       ],
       "type_parameters": []
@@ -487925,7 +490696,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "4362f12968051b264bb769e165b848eeab7e15904d73644e5cf896d1797edda3",
+      "fingerprint": "f589d47e2a347a3669284d5225e9d16bce328fe7f29c7d508394f50a3caba68b",
       "full_name": "Meridian.Contracts.Workstation.UpdateOnboardingCriteriaRequestDto",
       "id": "Meridian.Contracts.Workstation.UpdateOnboardingCriteriaRequestDto",
       "kind": "record",
@@ -487942,7 +490713,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OnboardingCriteriaDto",
-          "source_line": 22,
+          "source_line": 24,
           "type": "OnboardingCriteriaDto"
         },
         {
@@ -487956,7 +490727,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 22,
+          "source_line": 24,
           "type": "int"
         }
       ],
@@ -487968,12 +490739,12 @@
         "Meridian.Contracts.Workstation.OnboardingCriteriaDto"
       ],
       "source": {
-        "line": 22,
+        "line": 24,
         "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
       },
       "sources": [
         {
-          "line": 22,
+          "line": 24,
           "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs"
         }
       ],
@@ -488398,6 +491169,68 @@
         {
           "line": 1428,
           "path": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "8f3b631344edf197db03791428f98d3aed7ad241d7df00d993b2a2e72547e23c",
+      "full_name": "Meridian.Contracts.Workstation.WithdrawShadowBookRequestDto",
+      "id": "Meridian.Contracts.Workstation.WithdrawShadowBookRequestDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExpectedVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 42,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Reason",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 42,
+          "type": "string"
+        }
+      ],
+      "name": "WithdrawShadowBookRequestDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.WithdrawShadowBookRequestDto",
+      "references": [],
+      "source": {
+        "line": 42,
+        "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 42,
+          "path": "src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs"
         }
       ],
       "type_parameters": []

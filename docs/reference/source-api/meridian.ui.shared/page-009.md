@@ -481,14 +481,14 @@ Source: [src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs:8](..
 Resolves the shared reader lazily because that reader also consumes workflow state.
 
 ```csharp
-public sealed class ClosePublicationReadinessGuard(Func<IFinancialOperationsCommandCenterReadService?> authorityFactory, IWorkstationTenantContextAccessor? tenantAccessor = null, Func<IOperationsReportPackAuthority?>? reportAuthorityFactory = null) : IClosePublicationReadinessGuard
+public sealed class ClosePublicationReadinessGuard(Func<IFinancialOperationsCommandCenterReadService?> authorityFactory, IWorkstationTenantContextAccessor? tenantAccessor = null, Func<IOperationsReportPackAuthority?>? reportAuthorityFactory = null, Func<IBookOfRecordGuard?>? bookOfRecordGuardFactory = null) : IClosePublicationReadinessGuard
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;OperationsWorkflowBlockerDto&gt;&gt; ValidateAsync(Guid workflowId, long expectedVersion, CloseReadinessScopeDto? scope, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs:13](../../../../src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs#L13) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;OperationsWorkflowBlockerDto&gt;&gt; ValidateAsync(Guid workflowId, long expectedVersion, CloseReadinessScopeDto? scope, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs:14](../../../../src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs#L14) |  |
 
 ## CloseReadinessSubjectSource
 
