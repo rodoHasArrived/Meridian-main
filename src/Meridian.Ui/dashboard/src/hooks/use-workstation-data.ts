@@ -755,7 +755,7 @@ function createRefreshEntries(
       workspaceKeys: ["trading"],
       start: (requestOptions) => getTradingWorkspace({ ...requestOptions, fundAccountId: tradingFundAccountId })
     },
-    { key: "portfolio", category: "workspace", workspaceKeys: ["portfolio"], start: (requestOptions) => getPortfolioWorkspace(requestOptions) },
+    { key: "portfolio", category: "workspace", workspaceKeys: ["portfolio", "trading", "settings"], start: (requestOptions) => getPortfolioWorkspace(requestOptions) },
     {
       key: "portfolioMultiAssetCoverage",
       category: "workspace",

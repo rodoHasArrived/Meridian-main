@@ -589,6 +589,80 @@ function assertNoCaptureBrowserError(pageErrors, captureName) {
   }
 }
 
+function canonicalJson(value) {
+  if (Array.isArray(value)) return value.map(canonicalJson);
+  if (value !== null && typeof value === "object") {
+    return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonicalJson(value[key])]));
+  }
+  return value;
+}
+
+/** Compare observations only within the same dataset, operating scope and read revision. */
+export function checkKpiConsistency(captures) {
+  const observed = new Map();
+  const conflicts = [];
+  let observationCount = 0;
+  let comparisonCount = 0;
+  for (const capture of captures) {
+    if (capture.status !== "passed") continue;
+    for (const kpi of capture.kpis ?? []) {
+      observationCount += 1;
+      const scope = JSON.stringify(canonicalJson(JSON.parse(kpi.scope)));
+      const key = JSON.stringify([capture.scenario ?? null, kpi.id, scope, kpi.revision ?? null]);
+      const current = { ...kpi, scope, route: capture.route, capture: capture.name };
+      const previous = observed.get(key);
+      if (!previous) {
+        observed.set(key, current);
+        continue;
+      }
+      comparisonCount += 1;
+      if (previous.value !== current.value || previous.display !== current.display) {
+        conflicts.push({ id: kpi.id, scope, scenario: capture.scenario ?? null, previous, current });
+      }
+    }
+  }
+  return { observationCount, comparisonCount, conflicts };
+}
+
+export async function collectKpiSnapshots(page) {
+  const snapshots = await page.locator("[data-kpi-id]").evaluateAll((elements) => elements
+    .filter((element) => {
+      if (element.getClientRects().length === 0 || getComputedStyle(element).visibility === "hidden") return false;
+      // Closed native disclosures may retain layout boxes in Chromium. Their
+      // summary remains visible, but collapsed comparison content is not evidence.
+      for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        if (ancestor.tagName === "DETAILS" && !ancestor.hasAttribute("open")
+          && !ancestor.querySelector(":scope > summary")?.contains(element)) return false;
+      }
+      return true;
+    })
+    .map((element) => ({
+      id: element.getAttribute("data-kpi-id"),
+      scope: element.getAttribute("data-kpi-scope"),
+      value: element.getAttribute("data-kpi-value"),
+      display: element.getAttribute("data-kpi-display"),
+      renderedDisplay: element.querySelector("[data-kpi-rendered-value]")?.textContent?.trim() ?? null,
+      revision: element.getAttribute("data-kpi-revision")
+    })));
+  for (const snapshot of snapshots) {
+    if (!snapshot.id || !snapshot.scope || snapshot.value === null || snapshot.display === null) {
+      throw new Error(`Incomplete KPI screenshot contract for '${snapshot.id ?? "unknown"}'.`);
+    }
+    let scope;
+    try { scope = JSON.parse(snapshot.scope); } catch {
+      throw new Error(`KPI '${snapshot.id}' has invalid scope JSON: ${snapshot.scope}`);
+    }
+    if (scope === null || typeof scope !== "object" || Array.isArray(scope)) {
+      throw new Error(`KPI '${snapshot.id}' scope must be a JSON object.`);
+    }
+    if (snapshot.renderedDisplay == null || snapshot.renderedDisplay !== snapshot.display) {
+      throw new Error(`KPI '${snapshot.id}' display contract '${snapshot.display}' does not match `
+        + `its rendered value '${snapshot.renderedDisplay ?? "missing [data-kpi-rendered-value]"}'.`);
+    }
+  }
+  return snapshots;
+}
+
 async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs, readinessTimeoutMs) {
   pageErrors.reset();
   const viewport = {
@@ -681,6 +755,8 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     throw new Error(`Capture ${capture.name} ended on '${actualPath}', expected '${expectedPath}'.`);
   }
 
+  const kpis = await collectKpiSnapshots(page);
+
   await fs.mkdir(outputDir, { recursive: true });
   const buffer = await page.screenshot({ path: outputPath, fullPage: true });
   if (buffer.length < minBytes) {
@@ -704,6 +780,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     viewport,
     bytes: buffer.length,
     textLength,
+    kpis,
     durationSeconds: Number(((Date.now() - started) / 1000).toFixed(2)),
     status: "passed"
   };
@@ -1070,6 +1147,12 @@ async function main() {
     }
 
     const problems = [];
+    manifest.kpiConsistency = checkKpiConsistency(results);
+    for (const conflict of manifest.kpiConsistency.conflicts) {
+      problems.push(`KPI '${conflict.id}' disagrees for scope ${conflict.scope}: `
+        + `${conflict.previous.route} shows '${conflict.previous.display}' (${conflict.previous.value}), `
+        + `${conflict.current.route} shows '${conflict.current.display}' (${conflict.current.value}).`);
+    }
     if (missingCoverage.length > 0) {
       problems.push(`Live route(s) without a screenshot capture entry: ${missingCoverage.join(", ")}`);
     }

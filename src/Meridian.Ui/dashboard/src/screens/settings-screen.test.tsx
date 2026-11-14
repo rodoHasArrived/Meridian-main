@@ -651,6 +651,28 @@ describe("SettingsScreen", () => {
     expect(within(eventDetail).getByText("Provider health / evt-1")).toBeInTheDocument();
   });
 
+  it("uses the holdings owner for the headline count instead of the system summary", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={{ ...overview, openPositions: 5 }} portfolio={portfolio} />, {
+      initialEntries: ["/settings"]
+    });
+
+    const strip = screen.getByLabelText("Operator control posture metrics");
+    const count = strip.querySelector('[data-kpi-id="portfolio.open-positions"]');
+    expect(count).toHaveTextContent("Open positions");
+    expect(count).toHaveAttribute("data-kpi-display", "0");
+  });
+
+  it("withholds a holdings count when only the independent system summary is available", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={{ ...overview, openPositions: 5 }} />, {
+      initialEntries: ["/settings"]
+    });
+
+    const count = screen.getByLabelText("Operator control posture metrics")
+      .querySelector('[data-kpi-id="portfolio.open-positions"]');
+    expect(count).toHaveAttribute("data-kpi-display", "Unavailable");
+    expect(count).not.toHaveTextContent("5");
+  });
+
   it("renders profile authentication posture with authority handoffs", () => {
     // The profile/system row is scoped to the Access view.
     renderWithRouter(

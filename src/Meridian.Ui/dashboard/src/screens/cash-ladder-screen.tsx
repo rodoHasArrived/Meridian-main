@@ -4,7 +4,7 @@ import { ArrowLeft, Layers3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MetricCard, EmptyState } from "@/components/data/concrete";
+import { MetricTile, EmptyState } from "@/components/data/concrete";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { getPortfolioCashLadder } from "@/lib/api/portfolio-cash-ladder.api";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
@@ -271,7 +271,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
         <>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {summaryCards.map((card) => (
-              <MetricCard
+              <MetricTile
                 key={card.id}
                 label={card.label}
                 value={card.value}

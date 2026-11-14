@@ -7,7 +7,7 @@ import { WorkspaceInspectorHost } from "@/components/meridian/workspace-primitiv
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { cn } from "@/lib/utils";
 import { GateRail, SeverityBadge } from "@/components/operations";
-import { MetricCard } from "@/components/data/concrete";
+import { MetricTile } from "@/components/data/concrete";
 import {
   badgeVariantToSeverityStatus,
   readinessToneToPanelClass,
@@ -397,7 +397,7 @@ function OperationsRecordEvidenceDrawer({ vm }: { vm: OperationsRecordReleaseVie
 
 function ReleaseMetric({ metric }: { metric: OperationsRecordReleaseMetric }) {
   return (
-    <MetricCard
+    <MetricTile
       label={metric.label}
       value={metric.value}
       delta={metric.detail}

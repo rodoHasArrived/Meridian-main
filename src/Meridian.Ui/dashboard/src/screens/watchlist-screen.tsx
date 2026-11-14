@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScreenLayout } from "@/components/ui/screen-layout";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { SnapshotMetricTile } from "@/components/meridian/snapshot-metric-tile";
 import { PopOutPaneButton } from "@/components/meridian/pop-out-pane-button";
 import { DenseDataTable, type DenseDataTableColumn, ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
 import { isCompanionPaneRoute } from "@/lib/companion-pane/pane-window";
@@ -127,7 +127,7 @@ export function WatchlistScreen() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {vm.stats.map((stat) => (
-              <MetricSnapshotCard key={stat.id} {...stat} />
+              <SnapshotMetricTile key={stat.id} {...stat} />
             ))}
           </div>
 

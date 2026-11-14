@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { EmptyState, MetricCard } from "@/components/data/concrete";
+import { EmptyState, MetricTile } from "@/components/data/concrete";
 import { SeverityBadge } from "@/components/operations";
 import { cn } from "@/lib/utils";
 
@@ -92,10 +92,10 @@ export function BackfillValidationDashboard({
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <MetricCard label="Complete (≥95%)" value={summary.complete} tone="success" />
-              <MetricCard label="Good (80-95%)" value={summary.good} tone="warning" />
-              <MetricCard label="Poor (<80%)" value={summary.poor} tone="danger" />
-              <MetricCard label="Average Completeness" value={`${Math.round(summary.average * 100)}%`} tone="neutral" />
+              <MetricTile label="Complete (≥95%)" value={summary.complete} tone="success" />
+              <MetricTile label="Good (80-95%)" value={summary.good} tone="warning" />
+              <MetricTile label="Poor (<80%)" value={summary.poor} tone="danger" />
+              <MetricTile label="Average Completeness" value={`${Math.round(summary.average * 100)}%`} tone="neutral" />
             </div>
           </CardContent>
         </Card>

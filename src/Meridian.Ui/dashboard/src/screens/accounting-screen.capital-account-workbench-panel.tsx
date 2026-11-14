@@ -1,6 +1,6 @@
 import { RefreshCcw } from "lucide-react";
 import { Link } from "react-router-dom";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { SnapshotMetricTile } from "@/components/meridian/snapshot-metric-tile";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -71,7 +71,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {view.summaryCards.map((metric) => (
-            <MetricSnapshotCard
+            <SnapshotMetricTile
               key={metric.id}
               id={metric.id}
               label={metric.label}

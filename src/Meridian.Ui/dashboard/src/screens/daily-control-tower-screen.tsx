@@ -7,6 +7,8 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import { PanelSurface } from "@/components/ui/panel-surface";
 import { ScreenLayout } from "@/components/ui/screen-layout";
 import { KeyValueGrid } from "@/components/data/concrete";
+import { StatStrip } from "@/components/meridian/stat-strip";
+import { WORKSPACE_KPI_IDS } from "@/lib/kpi-registry";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
@@ -107,6 +109,7 @@ export function DailyControlTowerScreen({
       scope="Daily control tower"
       description="One priority, followed by a ranked finance queue with evidence available in place."
     >
+      <StatStrip ids={WORKSPACE_KPI_IDS.today} label="Today headline metrics" compact />
       <ReadinessPanel
         state={readinessToneToSeverityStatus(model.statusTone)}
         statusLabel={model.statusLabel}

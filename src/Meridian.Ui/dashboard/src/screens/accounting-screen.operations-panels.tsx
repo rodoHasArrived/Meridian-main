@@ -1,6 +1,6 @@
 import { AlertCircle, BookCheck, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { SnapshotMetricTile } from "@/components/meridian/snapshot-metric-tile";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -155,7 +155,7 @@ export function OperationalExceptionWorkbenchPanel({ view }: { view: Operational
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {view.metricRows.map((metric) => (
-          <MetricSnapshotCard
+          <SnapshotMetricTile
             key={metric.id}
             id={metric.id}
             label={metric.label}

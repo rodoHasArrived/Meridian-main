@@ -378,7 +378,7 @@ describe("PortfolioScreen", () => {
   });
 
   it("navigates between portfolio route views from the tab strip", async () => {
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+    await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />, {
       initialEntries: ["/portfolio"]
     });
 
@@ -400,30 +400,73 @@ describe("PortfolioScreen", () => {
     expect(screen.queryByRole("treegrid", { name: /run-linked equity/i })).toBeNull();
   });
 
-  it("renders position table with trading data", async () => {
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
+  it("renders live positions and opens retained records only on request", async () => {
+    await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />);
     expect(screen.getByRole("region", { name: /portfolio workbench context/i })).toBeDefined();
-    expect(screen.getByRole("heading", { name: "Portfolio Explorer" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Portfolio");
-    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Trading workspace");
-    expect(screen.getByLabelText("Saved explorer views")).toHaveTextContent("Open positions + run evidence");
-    expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("AAPL");
-    expect(screen.getByLabelText("Portfolio Explorer proof actions")).toHaveTextContent("Open evidence packet");
+    expect(screen.queryByRole("heading", { name: "Portfolio Explorer" })).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Position source" })).toHaveValue("live");
     expect(screen.getByRole("treegrid", { name: /open positions/i })).toBeDefined();
     expect(screen.getByRole("row", { name: /inspect aapl long holding/i })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: /aapl holding detail/i })).toBeDefined();
     expect(screen.getByText(/\$18,900 exposure with \+\$90 unrealized p&l/i)).toBeDefined();
+    await userEvent.setup().selectOptions(screen.getByRole("combobox", { name: "Position source" }), "retained");
+    expect(screen.getByRole("heading", { name: "Portfolio Explorer" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Trading workspace");
+    expect(screen.getByLabelText("Portfolio Explorer proof actions")).toHaveTextContent("Open evidence packet");
+    expect(screen.queryByRole("treegrid", { name: /open positions/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /aapl holding detail/i })).not.toBeInTheDocument();
+  });
+
+  it("switches the primary figure and holding source together while comparison stays optional", async () => {
+    const retained = createPortfolioFinancialRecordExplorer();
+    retained.scopeItems.push({ label: "Run", value: "42", tone: "Info" });
+    retained.summaryItems.push({ label: "Market value", value: "$25,587", detail: "Retained source total", tone: "Default" });
+    vi.mocked(api.getFinancialRecordExplorer).mockResolvedValue(retained);
+    const live = { ...portfolioFromTrading(trading, strategy), positions: [
+      { ...trading.positions[0], exposure: "$7,159" },
+      { ...trading.positions[0], symbol: "MSFT", exposure: "$30,540" }
+    ] };
+    const { container } = await renderPortfolioScreen(<PortfolioScreen portfolio={live} trading={trading} strategy={strategy} accounting={accounting} />);
+    const primary = screen.getByLabelText("Portfolio headline metrics");
+    expect(primary.querySelector('[data-kpi-id="portfolio.total-exposure"]')).toHaveAttribute("data-kpi-display", "$37,699");
+    expect(primary.querySelector('[data-kpi-id="portfolio.open-positions"]')).toHaveAttribute("data-kpi-display", "2");
+    const comparison = screen.getByText("Compare position sources").closest("details")!;
+    expect(comparison).not.toHaveAttribute("open");
+    const user = userEvent.setup();
+    await user.selectOptions(screen.getByRole("combobox", { name: "Position source" }), "retained");
+    expect(screen.getByRole("combobox", { name: "Position source" })).toHaveDisplayValue("Run 42 records");
+    const retainedPrimary = screen.getByLabelText("Portfolio headline metrics");
+    expect(retainedPrimary.querySelector('[data-kpi-id="portfolio.retained-market-value"]')).toHaveAttribute("data-kpi-display", "$25,587");
+    expect(retainedPrimary.querySelector('[data-kpi-id="portfolio.total-exposure"]')).toBeNull();
+    expect(screen.queryByRole("region", { name: "AAPL holding detail" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("42");
+    await user.click(comparison.querySelector("summary")!);
+    expect(comparison).toHaveAttribute("open");
+    expect(screen.getByLabelText("Live holdings comparison")).toHaveTextContent("$37,699");
+    expect(screen.getByLabelText("Retained records comparison")).toHaveTextContent("$25,587");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Position source" }), "live");
+    expect(screen.getByRole("region", { name: "AAPL holding detail" })).toHaveTextContent("$7,159");
+    expect(within(screen.getByRole("treegrid", { name: "Open positions" })).getByRole("columnheader", { name: "Exposure" })).toBeInTheDocument();
+    expect(container.querySelector('[data-kpi-id="portfolio.total-exposure"]')).toHaveAttribute("data-kpi-display", "$37,699");
+  });
+
+  it("keeps missing Portfolio holdings unavailable even when Trading has positions", async () => {
+    await renderPortfolioScreen(<PortfolioScreen portfolio={null} trading={trading} strategy={strategy} accounting={accounting} />);
+    expect(screen.getByLabelText("Portfolio headline metrics").querySelector('[data-kpi-id="portfolio.open-positions"]')).toHaveAttribute("data-kpi-display", "Unavailable");
+    expect(screen.queryByRole("treegrid", { name: "Open positions" })).not.toBeInTheDocument();
+    expect(screen.getAllByText("Portfolio workspace data unavailable.").length).toBeGreaterThan(0);
   });
 
   it("puts holdings before supporting records and lets the operator expand readiness", async () => {
     const user = userEvent.setup();
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+    await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />, {
       initialEntries: ["/portfolio"]
     });
     const holdings = screen.getByRole("treegrid", { name: /open positions/i });
-    const explorer = screen.getByRole("region", { name: "Portfolio Explorer" });
+    expect(screen.queryByRole("region", { name: "Portfolio Explorer" })).not.toBeInTheDocument();
+    const comparison = screen.getByText("Compare position sources").closest("details")!;
+    expect(comparison).not.toHaveAttribute("open");
     const handoff = screen.getByRole("region", { name: "Portfolio readiness handoff" });
-    expect(holdings.compareDocumentPosition(explorer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(holdings.compareDocumentPosition(handoff) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const disclosure = handoff.querySelector("details")!;
     expect(disclosure).not.toHaveAttribute("open");
@@ -438,14 +481,14 @@ describe("PortfolioScreen", () => {
     // this table before anything else. It used to be a bare statement of fact.
     const emptyTrading = { ...trading, positions: [] };
     await renderPortfolioScreen(
-      <PortfolioScreen trading={emptyTrading} strategy={strategy} accounting={accounting} />
+      <PortfolioScreen portfolio={portfolioFromTrading(emptyTrading, strategy)} trading={emptyTrading} strategy={strategy} accounting={accounting} />
     );
 
     expect(screen.getByText("No open holdings")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Open the trading desk" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Import a statement" })).toBeInTheDocument();
   });
 
-  it("presents raw explorer fixture metadata as operator-facing portfolio labels", async () => {
+  it("preserves retained run identity while presenting fixture source metadata", async () => {
     const explorer = createPortfolioFinancialRecordExplorer();
     explorer.description = "Explore retained portfolio records from no-host development fixtures.";
     explorer.sourceState = "Development fixture portfolio projection from run portfolio-run-dev-1.";
@@ -468,25 +511,40 @@ describe("PortfolioScreen", () => {
     });
     vi.mocked(api.getFinancialRecordExplorer).mockResolvedValue(explorer);
 
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
+    await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />);
 
+    await userEvent.setup().selectOptions(screen.getByRole("combobox", { name: "Position source" }), "retained");
     const scope = screen.getByLabelText("Explorer scope");
     expect(scope).toHaveTextContent("Demo portfolio data");
-    expect(scope).toHaveTextContent("Mean Reversion");
+    expect(scope).toHaveTextContent("portfolio-run-dev-1");
     expect(scope).toHaveTextContent("Apr 28, 18:14 UTC");
     const filters = screen.getByLabelText("Applied explorer filters");
     expect(filters).toHaveTextContent("Demo portfolio data");
-    expect(filters).toHaveTextContent("Mean Reversion");
-    expect(screen.getByLabelText("Record graph")).toHaveTextContent("Mean Reversion");
+    expect(filters).toHaveTextContent("portfolio-run-dev-1");
+    expect(screen.getByLabelText("Record graph")).toHaveTextContent("portfolio-run-dev-1");
     expect(screen.queryByText(/development fixture/i)).not.toBeInTheDocument();
-    expect(screen.queryByText("portfolio-run-dev-1")).not.toBeInTheDocument();
     expect(screen.queryByText("2026-04-28T18:14:30Z")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open evidence packet" })).toHaveAttribute("href", "/reporting/evidence");
   });
 
+  it("retains blocked record provenance when the live portfolio is unavailable", async () => {
+    const retained = createPortfolioFinancialRecordExplorer();
+    retained.isBlocked = true;
+    retained.blockedReason = "Retained source incomplete";
+    retained.sourceState = "Retained run 42 requires currency evidence";
+    retained.scopeItems = [{ label: "Source", value: "Retained account snapshot", tone: "Warning" }, { label: "Run", value: "42", tone: "Info" }];
+    vi.mocked(api.getFinancialRecordExplorer).mockResolvedValue(retained);
+    await renderPortfolioScreen(<PortfolioScreen portfolio={null} trading={trading} strategy={strategy} accounting={accounting} />);
+    await userEvent.setup().selectOptions(screen.getByRole("combobox", { name: "Position source" }), "retained");
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Retained account snapshot");
+    expect(screen.getByLabelText("Portfolio data confidence")).toHaveTextContent("Retained source incomplete");
+    expect(screen.getByRole("region", { name: "Portfolio Explorer" })).toHaveTextContent("Retained run 42 requires currency evidence");
+    expect(screen.getByRole("region", { name: "Portfolio Explorer" })).not.toHaveTextContent("evidence are ready for review");
+  });
+
   it("shows source, scope, freshness, and completeness in one operational summary", async () => {
     await renderPortfolioScreen(
-      <PortfolioScreen
+      <PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)}
         trading={trading}
         strategy={strategy}
         accounting={accounting}
@@ -507,14 +565,14 @@ describe("PortfolioScreen", () => {
     );
 
     const summary = screen.getByLabelText("Portfolio data confidence");
-    expect(summary).toHaveTextContent("Trading workspace");
+    expect(summary).toHaveTextContent("Portfolio workspace");
     expect(summary).toHaveTextContent("Freshness");
     expect(summary).toHaveTextContent("Holdings and run evidence loaded");
   });
 
   it("uses loaded snapshot evidence when the refresh lifecycle has no success timestamp", async () => {
     await renderPortfolioScreen(
-      <PortfolioScreen
+      <PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)}
         trading={trading}
         strategy={strategy}
         accounting={accounting}
@@ -560,7 +618,7 @@ describe("PortfolioScreen", () => {
   });
 
   it("renders a broad Portfolio readiness handoff with direct next routes", async () => {
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+    await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />, {
       initialEntries: ["/portfolio"]
     });
 
@@ -581,7 +639,7 @@ describe("PortfolioScreen", () => {
   });
 
   it("renders run-linked equity table with strategy data", async () => {
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+    await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />, {
       initialEntries: ["/portfolio/attribution"]
     });
     expect(screen.getByRole("treegrid", { name: /run-linked equity/i })).toBeDefined();
@@ -591,27 +649,27 @@ describe("PortfolioScreen", () => {
   });
 
   it("shows empty text when trading is null", async () => {
-    await renderPortfolioScreen(<PortfolioScreen trading={null} strategy={strategy} accounting={accounting} />);
+    await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(null, strategy)} trading={null} strategy={strategy} accounting={accounting} />);
     expect(screen.getAllByText(/portfolio workspace data unavailable/i)).toHaveLength(2);
     expect(screen.getAllByText(/no holding selected/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows empty text when strategy is null", async () => {
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={null} accounting={accounting} />, {
+    await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, null)} trading={trading} strategy={null} accounting={accounting} />, {
       initialEntries: ["/portfolio/attribution"]
     });
-    expect(screen.getByText(/strategy workspace data unavailable/i)).toBeDefined();
+    expect(screen.getByText(/No runs available in the Portfolio workspace/i)).toBeDefined();
   });
 
   it("shows cash-flow posture when accounting data is available", async () => {
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
+    await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />);
     expect(screen.getByText(/1 run needs variance review/i)).toBeDefined();
   });
 
   it("renders Alpaca account and selectable current positions when brokerage sync data is available", async () => {
     const user = userEvent.setup();
     await renderPortfolioScreen(
-      <PortfolioScreen
+      <PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)}
         trading={trading}
         strategy={strategy}
         accounting={accounting}
@@ -663,7 +721,7 @@ describe("PortfolioScreen", () => {
   it("keeps the raw multi-asset coverage endpoint behind technical disclosure", async () => {
     const user = userEvent.setup();
     await renderPortfolioScreen(
-      <PortfolioScreen
+      <PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)}
         trading={trading}
         strategy={strategy}
         accounting={accounting}
@@ -687,7 +745,7 @@ describe("PortfolioScreen", () => {
   it("selects live brokerage positions from the row with keyboard activation", async () => {
     const user = userEvent.setup();
     await renderPortfolioScreen(
-      <PortfolioScreen
+      <PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)}
         trading={trading}
         strategy={strategy}
         accounting={accounting}
@@ -709,7 +767,7 @@ describe("PortfolioScreen", () => {
   });
 
   it("offers a provider setup handoff when brokerage portfolio sync is unavailable", async () => {
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+    await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />, {
       initialEntries: ["/portfolio/brokerage-sync"]
     });
 
@@ -735,7 +793,7 @@ describe("PortfolioScreen", () => {
     };
 
     await renderPortfolioScreen(
-      <PortfolioScreen
+      <PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)}
         trading={trading}
         strategy={strategy}
         accounting={accounting}
@@ -760,7 +818,7 @@ describe("PortfolioScreen", () => {
   it("renders the brokerage account filter as a keyboard-operable button group", async () => {
     const user = userEvent.setup();
     await renderPortfolioScreen(
-      <PortfolioScreen
+      <PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)}
         trading={trading}
         strategy={strategy}
         accounting={accounting}
@@ -809,7 +867,7 @@ describe("PortfolioScreen", () => {
   it("filters brokerage positions from the account table row with keyboard activation", async () => {
     const user = userEvent.setup();
     await renderPortfolioScreen(
-      <PortfolioScreen
+      <PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)}
         trading={trading}
         strategy={strategy}
         accounting={accounting}
@@ -837,7 +895,7 @@ describe("PortfolioScreen", () => {
   });
 
   it("renders a dedicated brokerage-sync workflow panel on the route", async () => {
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+    await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />, {
       initialEntries: ["/portfolio/brokerage-sync"]
     });
 
@@ -876,7 +934,7 @@ describe("PortfolioScreen", () => {
       ]
     };
 
-    await renderPortfolioScreen(<PortfolioScreen trading={tradingWithTwoPositions} strategy={strategy} accounting={accounting} />);
+    await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(tradingWithTwoPositions, strategy)} trading={tradingWithTwoPositions} strategy={strategy} accounting={accounting} />);
 
     const msftRow = screen.getByRole("row", { name: /inspect msft short holding/i });
     expect(msftRow).toHaveAttribute("aria-controls", "portfolio-position-detail");
@@ -916,7 +974,7 @@ describe("PortfolioScreen", () => {
       ]
     };
 
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={researchWithTwoRuns} accounting={accounting} />, {
+    await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, researchWithTwoRuns)} trading={trading} strategy={researchWithTwoRuns} accounting={accounting} />, {
       initialEntries: ["/portfolio/attribution"]
     });
 
@@ -992,7 +1050,7 @@ describe("PortfolioScreen", () => {
     });
     const user = userEvent.setup();
 
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+    await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />, {
       initialEntries: ["/portfolio/attribution"]
     });
 
@@ -1063,7 +1121,7 @@ describe("PortfolioScreen", () => {
     });
     const user = userEvent.setup();
 
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+    await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />, {
       initialEntries: ["/portfolio/attribution"]
     });
 
@@ -1084,3 +1142,7 @@ describe("PortfolioScreen", () => {
     expect(within(distributionCard).getByText("-0.80%")).toBeDefined();
   });
 });
+
+function portfolioFromTrading(value: TradingWorkspaceResponse | null, strategyWorkspace: StrategyWorkspaceResponse | null) {
+  return value ? { metrics: [], positions: value.positions, risk: value.risk, brokerage: value.brokerage, runs: (strategyWorkspace?.runs ?? []).map(({ id, ...run }) => ({ ...run, runId: id, promotionState: run.promotionState ?? null })), cashFlow: null } : null;
+}

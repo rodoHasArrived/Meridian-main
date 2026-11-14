@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { MetricSnapshot } from "@/types";
+import { useKpiModels } from "@/lib/kpi-context";
+import { kpiAttributes, resolveKpi, type KpiId } from "@/lib/kpi-registry";
 
 const statToneClass: Record<MetricSnapshot["tone"], string> = {
   default: "text-foreground",
@@ -14,16 +16,18 @@ const statToneClass: Record<MetricSnapshot["tone"], string> = {
  * one strip; each stat stays scannable without spending a viewport band.
  */
 export function StatStrip({
-  metrics,
+  ids,
   label,
   className,
   compact = false
 }: {
-  metrics: MetricSnapshot[];
+  ids: readonly KpiId[];
   label: string;
   className?: string;
   compact?: boolean;
 }) {
+  const models = useKpiModels();
+  const metrics = ids.map((id) => resolveKpi(id, models));
   if (metrics.length === 0) {
     return null;
   }
@@ -38,12 +42,12 @@ export function StatStrip({
       )}
     >
       {metrics.map((metric) => (
-        <div key={metric.id} className={cn("flex min-w-0 gap-2", compact ? "flex-col gap-0.5" : "items-baseline")}>
+        <div key={metric.id} {...kpiAttributes(metric)} title={metric.delta || undefined} className={cn("flex min-w-0 gap-2", compact ? "flex-col gap-0.5" : "items-baseline")}>
           <dt className="whitespace-nowrap text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
             {metric.label}
           </dt>
           <dd className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className={cn("whitespace-nowrap font-mono text-sm font-semibold", statToneClass[metric.tone])}>
+            <span data-kpi-rendered-value className={cn("whitespace-nowrap font-mono text-sm font-semibold", statToneClass[metric.tone])}>
               {metric.value}
             </span>
             {metric.delta ? (

@@ -4,6 +4,8 @@ import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from 
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { BiasDisclosurePanel } from "@/components/meridian/bias-disclosure-panel";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { KpiProvider } from "@/lib/kpi-context";
+import { workspaceKpiIds } from "@/lib/kpi-registry";
 import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { QuantNotebook } from "@/components/meridian/quant-notebook";
 import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
@@ -237,7 +239,15 @@ const strategyRouteViewCopy: Record<StrategyRouteViewId, { title: string; descri
   }
 };
 
-export function StrategyScreen({ data }: StrategyScreenProps) {
+export function StrategyScreen(props: StrategyScreenProps) {
+  return (
+    <KpiProvider models={{ strategy: props.data }}>
+      <StrategyScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function StrategyScreenContent({ data }: StrategyScreenProps) {
   const vm = useStrategyRunLibraryViewModel(data);
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
@@ -446,7 +456,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
 
   return (
     <div className="space-y-5">
-      <StatStrip metrics={data.metrics} label="Strategy headline metrics" />
+      <StatStrip ids={workspaceKpiIds("strategy", data.metrics)} label="Strategy headline metrics" />
 
       <section
         role="region"

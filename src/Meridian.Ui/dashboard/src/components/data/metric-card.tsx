@@ -1,95 +1,43 @@
-// Meridian KPI tile (Concrete) — mirrors the desktop MetricCardStyle + its
-// success/danger/warning/info variants: a raised paper surface with a 3px LEFT-accent
-// border in the tone color, a small-caps label, a 24px mono value, and a signed delta
-// (green up / red down). This is the design-system MetricCard; read-model
-// adapters should derive their state before delegating here.
-import { memo, type ReactNode } from "react";
-import { injectStyle } from "../operations/inject-style";
+import { memo } from "react";
+import { MetricTile, type MetricTileTone } from "@/components/data/metric-tile";
+import { buildMetricCardViewModel } from "@/components/meridian/metric-card.view-model";
+import { useKpi } from "@/lib/kpi-context";
+import { kpiAttributes, type KpiId, type KpiScope } from "@/lib/kpi-registry";
+import type { MetricSnapshot } from "@/types";
 
-const CSS = `
-.mds-metric{background:var(--card-surface-raised,#F6F4F0);
-  border:1px solid var(--border,#E4E3DE);border-left-width:3px;
-  border-radius:var(--radius-card,2px);padding:18px;}
-.mds-metric--neutral{border-left-color:var(--border-strong,#AFABA1);}
-.mds-metric--info{border-left-color:var(--accent,#A85436);}
-.mds-metric--success{border-left-color:var(--severity-ready-fg,#2C5C40);}
-.mds-metric--warning{border-left-color:var(--severity-action-fg,#68450E);}
-.mds-metric--danger{border-left-color:var(--severity-blocked-fg,#7E332D);}
-.mds-metric__label{font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);margin:0;}
-.mds-metric__value{margin:8px 0 0;font-family:var(--font-data,monospace);font-size:24px;font-weight:600;
-  line-height:1;font-variant-numeric:tabular-nums;color:var(--text-primary,#22252A);}
-.mds-metric__delta{font-family:var(--font-data,monospace);font-size:11px;margin-top:6px;
-  font-variant-numeric:tabular-nums;}
-.mds-delta--up{color:var(--severity-ready-fg,#2C5C40);}
-.mds-delta--down{color:var(--severity-blocked-fg,#7E332D);}
-.mds-delta--flat{color:var(--text-muted,#5E666F);}
-`;
+export type MetricCardTone = MetricTileTone;
 
-export type MetricCardTone = "neutral" | "info" | "success" | "warning" | "danger";
-
+/** Shared KPI cards resolve their value, label, units and scope from the registry. */
 export interface MetricCardProps {
-  /** Small-caps label, e.g. "Net liquidation". */
-  label: ReactNode;
-  /** Mono tabular value, e.g. "$1,284,002.18". */
-  value: ReactNode;
-  /** Signed delta/context line, e.g. "+1.84% today". */
-  delta?: string;
-  /** Left-accent color. @default "neutral" */
-  tone?: MetricCardTone;
-  /** Force delta color; otherwise inferred from a leading +/− sign. */
-  trend?: "up" | "down" | "flat";
-  /** Override the composed group accessible name (label, value, change, status). */
-  ariaLabel?: string;
-  /** Override the delta accessible name when symbols need speech-safe labels. */
-  deltaAriaLabel?: string;
+  id: KpiId;
+  scope?: KpiScope;
 }
 
-const TONE_STATUS: Record<MetricCardTone, string> = {
-  neutral: "",
-  info: "",
-  success: "positive",
-  warning: "attention",
-  danger: "critical",
+const metricTone: Record<MetricSnapshot["tone"], MetricTileTone> = {
+  default: "neutral",
+  success: "success",
+  warning: "warning",
+  danger: "danger"
 };
 
-/**
- * MetricCard — the KPI tile with a 3px left-accent border. Lay out 4–5 in a row.
- *
- * @example
- * <MetricCard label="Net liquidation" value="$1,284,002.18" delta="+1.84% today" tone="success" />
- * <MetricCard label="Day P&L" value="-$4,118.22" delta="-0.32%" tone="danger" />
- */
-function MetricCardComponent({ label, value, delta, tone = "neutral", trend, ariaLabel, deltaAriaLabel }: MetricCardProps) {
-  injectStyle("metric", CSS);
-  const t =
-    trend ??
-    (delta?.trim().startsWith("-") ? "down" : delta?.trim().startsWith("+") ? "up" : "flat");
-  // Compose the group name so screen-reader users keep the change + status context
-  // that label/value alone would drop.
-  const composedLabel =
-    ariaLabel ??
-    [
-      typeof label === "string" ? label : undefined,
-      typeof value === "string" ? value : undefined,
-      delta ? `change ${delta}` : undefined,
-      TONE_STATUS[tone] ? `status ${TONE_STATUS[tone]}` : undefined,
-    ]
-      .filter(Boolean)
-      .join(", ");
+function MetricCardComponent({ id, scope }: MetricCardProps) {
+  const metric = useKpi(id, scope);
+  const view = buildMetricCardViewModel(metric);
+  const trend = view.deltaAriaLabel?.includes("Change up")
+    ? "up"
+    : view.deltaAriaLabel?.includes("Change down") ? "down" : "flat";
+
   return (
-    <div
-      className={`mds-metric mds-metric--${tone}`}
-      role="group"
-      aria-label={composedLabel}
-    >
-      <p className="mds-metric__label">{label}</p>
-      <p className="mds-metric__value">{value}</p>
-      {delta && (
-        <div className={`mds-metric__delta mds-delta--${t}`} aria-label={deltaAriaLabel}>
-          {delta}
-        </div>
-      )}
+    <div {...kpiAttributes(metric)}>
+      <MetricTile
+        label={view.label}
+        value={<span data-kpi-rendered-value>{view.value}</span>}
+        delta={view.delta ?? undefined}
+        tone={metricTone[metric.tone]}
+        trend={trend}
+        ariaLabel={view.ariaLabel}
+        deltaAriaLabel={view.deltaAriaLabel ?? undefined}
+      />
     </div>
   );
 }

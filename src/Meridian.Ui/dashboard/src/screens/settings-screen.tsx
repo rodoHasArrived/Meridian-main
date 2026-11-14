@@ -6,6 +6,8 @@ import { formatNumber as formatNumberAmount } from "@/lib/format";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { KpiProvider, useKpi, useKpiModels } from "@/lib/kpi-context";
+import { WORKSPACE_KPI_IDS } from "@/lib/kpi-registry";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -401,18 +403,6 @@ const diagnosticToneClass = {
   danger: "border-danger/35 bg-danger/10"
 } as const;
 
-// Storage-health headline metric tone — mirrors the view-model's storage tone mapping so the
-// MetricCard accent matches the "Storage health" system item.
-function settingsStorageHealthTone(
-  health: SystemOverviewResponse["storageHealth"] | undefined
-): "default" | "success" | "warning" | "danger" {
-  if (health === "Healthy") return "success";
-  if (health === "Warning") return "warning";
-  if (health === "Critical") return "danger";
-  return "default";
-}
-
-
 const requirementToneClass = {
   success: "border-success/30 bg-success/10 text-success",
   warning: "border-warning/35 bg-warning/10 text-warning",
@@ -581,7 +571,22 @@ function inferSettingsTaskView({
   return "access";
 }
 
-export function SettingsScreen({
+export function SettingsScreen(props: SettingsScreenProps) {
+  return (
+    <KpiProvider models={{
+      overview: props.overview,
+      portfolio: props.portfolio,
+      trading: props.trading,
+      strategy: props.strategy,
+      data: props.data,
+      accounting: props.accounting
+    }}>
+      <SettingsScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function SettingsScreenContent({
   session,
   overview,
   strategy = null,
@@ -611,12 +616,14 @@ export function SettingsScreen({
   workspaceErrors = {}
 }: SettingsScreenProps) {
   const location = useLocation();
+  const kpiModels = useKpiModels();
+  const openPositionsKpi = useKpi("portfolio.open-positions");
   const vm = buildSettingsScreenViewModel({
     session,
     overview,
     strategy,
     trading,
-    portfolio,
+    portfolio: kpiModels.portfolio ?? portfolio,
     data,
     accounting,
     reporting,
@@ -880,20 +887,6 @@ export function SettingsScreen({
     [allProviderRows]
   );
   const routeCopy = SETTINGS_ROUTE_VIEW_COPY[activeTaskView];
-  const settingsStatMetrics = [
-    {
-      id: "providers-online",
-      label: "Providers online",
-      value: overview ? `${overview.providersOnline} / ${overview.providersTotal}` : "—",
-      delta: "",
-      tone: overview
-        ? overview.providersOnline === overview.providersTotal ? "success" as const : "warning" as const
-        : "default" as const
-    },
-    { id: "active-runs", label: "Active runs", value: overview ? String(overview.activeRuns) : "—", delta: "", tone: "default" as const },
-    { id: "open-positions", label: "Open positions", value: overview ? String(overview.openPositions) : "—", delta: "", tone: "default" as const },
-    { id: "storage-health", label: "Storage health", value: overview?.storageHealth ?? "—", delta: "", tone: settingsStorageHealthTone(overview?.storageHealth) }
-  ];
   const showChooserSection = activeTaskView === "chooser";
   const showPreferencesSection = activeTaskView === "preferences";
   const showAccessSection = activeTaskView === "access";
@@ -2397,7 +2390,7 @@ export function SettingsScreen({
 
   return (
     <div className="space-y-5">
-      <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" />
+      <StatStrip ids={WORKSPACE_KPI_IDS.settings} label="Operator control posture metrics" />
 
       <section
         id="settings-overview"
@@ -2528,7 +2521,7 @@ export function SettingsScreen({
             <div className="flex flex-wrap gap-2">
               <SettingsChip label="Providers" value={overview ? `${overview.providersOnline} / ${overview.providersTotal}` : "—"} />
               <SettingsChip label="Runs" value={overview ? String(overview.activeRuns) : "—"} />
-              <SettingsChip label="Positions" value={overview ? String(overview.openPositions) : "—"} />
+              <SettingsChip label="Positions" value={openPositionsKpi.value} />
               <SettingsChip label="Storage" value={overview?.storageHealth ?? "—"} />
             </div>
             {vm.hasOverview ? (

@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/data/empty-state";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
-  MetricCard,
+  MetricTile,
   KeyValueGrid
 } from "@/components/data/concrete";
 import { ScreenLayout } from "@/components/ui/screen-layout";
@@ -414,7 +414,7 @@ function FamilyOfficePanel({ panel }: { panel: FamilyOfficePanelViewModel }) {
 
   return (
     <div className="grid gap-2" aria-label={panel.ariaLabel} role="group">
-      <MetricCard label={panel.label} value={panel.value} tone={semanticToneToMetricCardTone(panel.tone)} />
+      <MetricTile label={panel.label} value={panel.value} tone={semanticToneToMetricCardTone(panel.tone)} />
       <p className="flex items-start gap-2 px-1 text-xs leading-5 text-muted-foreground">
         <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
         <span>{panel.detail}</span>

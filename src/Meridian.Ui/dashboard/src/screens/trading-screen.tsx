@@ -39,6 +39,8 @@ import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-acce
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { KpiProvider } from "@/lib/kpi-context";
+import { workspaceKpiIds } from "@/lib/kpi-registry";
 import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { cn } from "@/lib/utils";
@@ -430,7 +432,15 @@ function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
   );
 }
 
-export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
+export function TradingScreen(props: TradingScreenProps) {
+  return (
+    <KpiProvider models={{ trading: props.data }}>
+      <TradingScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
   const { pathname, search } = useLocation();
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
   const blotterVm = useTradingBlotterViewModel(data);
@@ -563,7 +573,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
   return (
     <div className="space-y-5">
-      <StatStrip metrics={data.metrics} label="Trading headline metrics" />
+      <StatStrip ids={workspaceKpiIds("trading", data.metrics)} label="Trading headline metrics" />
 
       <section
         id="trading-overview"

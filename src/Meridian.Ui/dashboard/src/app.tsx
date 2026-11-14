@@ -59,6 +59,7 @@ import {
 } from "@/components/ui/sheet";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { ToastProvider } from "@/components/ui/toast";
+import { KpiProvider } from "@/lib/kpi-context";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { markWorkflowPresetUsed, pinWorkflowPreset } from "@/lib/api";
 import {
@@ -696,6 +697,7 @@ function AppShell({
   ]);
 
   return (
+    <KpiProvider models={{ portfolio, trading, overview, strategy, data, accounting }}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -934,6 +936,7 @@ function AppShell({
         </SheetContent>
       </Sheet>
     </div>
+    </KpiProvider>
   );
 }
 

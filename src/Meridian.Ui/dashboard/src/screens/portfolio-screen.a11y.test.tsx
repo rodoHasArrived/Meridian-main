@@ -214,7 +214,7 @@ describe("PortfolioScreen accessibility", () => {
 
   it("has no basic accessibility violations in the portfolio workbench", async () => {
     const { container } = renderWithRouter(
-      <PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />,
+      <PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />,
       { initialEntries: ["/portfolio"] }
     );
     await waitForAsyncEffects();
@@ -228,7 +228,7 @@ describe("PortfolioScreen accessibility", () => {
     ["brokerage-sync", "/portfolio/brokerage-sync"]
   ])("has no basic accessibility violations on the %s route", async (_view, pathname) => {
     const { container } = renderWithRouter(
-      <PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />,
+      <PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />,
       { initialEntries: [pathname] }
     );
     await waitForAsyncEffects();
@@ -240,3 +240,7 @@ describe("PortfolioScreen accessibility", () => {
     }))).toEqual([]);
   });
 });
+
+function portfolioFromTrading(value: TradingWorkspaceResponse | null, strategyWorkspace: StrategyWorkspaceResponse | null) {
+  return value ? { metrics: [], positions: value.positions, risk: value.risk, brokerage: value.brokerage, runs: (strategyWorkspace?.runs ?? []).map(({ id, ...run }) => ({ ...run, runId: id, promotionState: run.promotionState ?? null })), cashFlow: null } : null;
+}

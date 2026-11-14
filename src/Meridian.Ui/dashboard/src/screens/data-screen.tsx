@@ -16,6 +16,8 @@ import type { LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { KpiProvider } from "@/lib/kpi-context";
+import { workspaceKpiIds } from "@/lib/kpi-registry";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
@@ -165,7 +167,15 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
   }
 ];
 
-export function DataScreen({
+export function DataScreen(props: DataScreenProps) {
+  return (
+    <KpiProvider models={{ data: props.data }}>
+      <DataScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function DataScreenContent({
   data,
   session = null,
   providerConnections = null,
@@ -240,7 +250,7 @@ export function DataScreen({
 
   return (
     <div className="workspace-screen data-workspace-screen">
-      <StatStrip metrics={data.metrics} label="Data headline metrics" />
+      <StatStrip ids={workspaceKpiIds("data", data.metrics)} label="Data headline metrics" />
 
       <section
         role="region"

@@ -7,6 +7,8 @@ import { useAccountingCloseSources, type CloseWorkflowQuery } from "./accounting
 import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { KpiProvider } from "@/lib/kpi-context";
+import { workspaceKpiIds } from "@/lib/kpi-registry";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { Badge } from "@/components/ui/badge";
@@ -1567,7 +1569,15 @@ function AccountingCaseWorkbench({
   );
 }
 
-export function AccountingScreen({ data, multiAssetCoverage, session = null }: AccountingScreenProps) {
+export function AccountingScreen(props: AccountingScreenProps) {
+  return (
+    <KpiProvider models={{ accounting: props.data }}>
+      <AccountingScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function AccountingScreenContent({ data, multiAssetCoverage, session = null }: AccountingScreenProps) {
   const { pathname, search, hash } = useLocation();
   const navigate = useNavigate();
   const operatorIdentity = session?.displayName.trim() || null;
@@ -2151,7 +2161,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
 
   return (
     <div className="space-y-5">
-      <StatStrip metrics={data.metrics} label="Accounting headline metrics" />
+      <StatStrip ids={workspaceKpiIds("accounting", data.metrics)} label="Accounting headline metrics" />
       {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
 
       <AccountingWorkbenchContext

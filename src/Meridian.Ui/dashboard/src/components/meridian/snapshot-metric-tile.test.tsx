@@ -1,11 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { SnapshotMetricTile } from "@/components/meridian/snapshot-metric-tile";
 
-describe("MetricSnapshotCard", () => {
+describe("SnapshotMetricTile", () => {
   it("adapts snapshot view-model state to the Concrete metric card", () => {
     render(
-      <MetricSnapshotCard
+      <SnapshotMetricTile
         id="drawdown"
         label="DRAWDOWN"
         value="-2.41%"

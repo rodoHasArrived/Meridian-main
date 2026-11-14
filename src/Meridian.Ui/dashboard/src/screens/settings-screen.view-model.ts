@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { pluralizeCount } from "@/lib/format";
+import { resolveKpi } from "@/lib/kpi-registry";
 import {
   connectAlpacaConnection,
   revokeAlpacaConnection,
@@ -2833,7 +2834,7 @@ export function buildSettingsScreenViewModel(
         { label: "Status", value: overview.systemStatus, tone: systemTone(overview.systemStatus) },
         { label: "Providers online", value: `${overview.providersOnline} / ${overview.providersTotal}`, tone: overview.providersOnline === overview.providersTotal ? "success" : "warning" },
         { label: "Active runs", value: String(overview.activeRuns), tone: "default" },
-        { label: "Open positions", value: String(overview.openPositions), tone: "default" },
+        { label: "Open positions", value: resolveKpi("portfolio.open-positions", { portfolio: payload.portfolio }).value, tone: "default" },
         { label: "Symbols monitored", value: String(overview.symbolsMonitored), tone: "default" },
         { label: "Active backfills", value: String(overview.activeBackfills), tone: "muted" },
         { label: "Storage health", value: overview.storageHealth, tone: storageTone(overview.storageHealth) },

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { resolveKpi } from "@/lib/kpi-registry";
 import { presentMarkFreshness, markFreshnessFields, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
@@ -22,8 +23,7 @@ import {
   pnlTone,
   riskFieldTone,
   riskTone,
-  runStatusTone,
-  sumNumericStrings
+  runStatusTone
 } from "@/screens/portfolio-screen.presentation";
 import type {
   BrokerageConnectionStatus,
@@ -501,14 +501,7 @@ export interface PortfolioScreenViewModel {
 }
 
 export function buildPortfolioExplorerPresentation(
-  explorer: FinancialRecordExplorerDto | null,
-  {
-    sourceLabel,
-    runLabel
-  }: {
-    sourceLabel: string;
-    runLabel: string;
-  }
+  explorer: FinancialRecordExplorerDto | null
 ): FinancialRecordExplorerDto | null {
   if (!explorer) {
     return null;
@@ -522,15 +515,14 @@ export function buildPortfolioExplorerPresentation(
       .map((item) => item.value)
   ].join(" ");
   const usesDemoData = /\b(?:demo|fixture|no-host)\b/i.test(rawSourceCopy);
-  const operatorSourceLabel = usesDemoData ? "Demo portfolio data" : sourceLabel.trim() || "Portfolio records";
-  const operatorRunLabel = runLabel.trim() || "Linked strategy run";
+  const retainedSource = explorer.scopeItems.find((item) => item.label.trim().toLowerCase() === "source")?.value;
+  const operatorSourceLabel = usesDemoData ? "Demo portfolio data" : retainedSource?.trim() || "Retained portfolio records";
+  const retainedRunId = explorer.scopeItems.find((item) => /^(run|run id)$/i.test(item.label.trim()))?.value;
+  const operatorRunLabel = retainedRunId || "Retained run";
   const presentFilter = (filter: FinancialRecordExplorerDto["filters"][number]) => {
     const filterKind = (filter.label || filter.filterId).trim().toLowerCase();
     if (filterKind === "source") {
       return { ...filter, value: operatorSourceLabel };
-    }
-    if (filterKind === "run" || filterKind === "run id") {
-      return { ...filter, value: operatorRunLabel };
     }
     return filter;
   };
@@ -538,16 +530,15 @@ export function buildPortfolioExplorerPresentation(
   return {
     ...explorer,
     description: "Explore retained account and aggregate position records.",
-    sourceState: usesDemoData
-      ? `Demo portfolio data and ${operatorRunLabel} evidence are ready for review.`
-      : `${operatorSourceLabel} records and ${operatorRunLabel} evidence are ready for review.`,
+    sourceState: explorer.isBlocked
+      ? explorer.sourceState
+      : usesDemoData
+        ? `Demo portfolio data and ${operatorRunLabel} evidence are ready for review.`
+        : `${operatorSourceLabel} records and ${operatorRunLabel} evidence are ready for review.`,
     scopeItems: explorer.scopeItems.map((item) => {
       switch (item.label.trim().toLowerCase()) {
         case "source":
           return { ...item, value: operatorSourceLabel };
-        case "run":
-        case "run id":
-          return { ...item, value: operatorRunLabel };
         case "as of":
           return { ...item, value: formatDateTime(item.value) };
         default:
@@ -555,14 +546,7 @@ export function buildPortfolioExplorerPresentation(
       }
     }),
     filters: explorer.filters.map(presentFilter),
-    recordGraph: {
-      ...explorer.recordGraph,
-      nodes: explorer.recordGraph.nodes.map((node) =>
-        node.nodeType.trim().toLowerCase() === "run"
-          ? { ...node, label: operatorRunLabel }
-          : node
-      )
-    }
+    recordGraph: explorer.recordGraph
   };
 }
 
@@ -605,7 +589,7 @@ export function buildPortfolioScreenViewModel({
   selectBrokeragePosition?: (id: string) => void;
   selectBrokerageAccount?: (key: string) => void;
 }): PortfolioScreenViewModel {
-  const positions = portfolio?.positions ?? trading?.positions ?? [];
+  const positions = portfolio?.positions ?? [];
   const runs = portfolio
     ? portfolio.runs.map(toPortfolioRunRecord)
     : strategy?.runs ?? [];
@@ -710,8 +694,11 @@ export function buildPortfolioScreenViewModel({
     };
   });
 
-  const totalExposure = sumNumericStrings(positions.map((p) => p.exposure));
-  const totalUnrealizedPnl = sumNumericStrings(positions.map((p) => p.unrealizedPnl));
+  const exposureKpi = resolveKpi("portfolio.total-exposure", { portfolio });
+  const unrealizedPnlKpi = resolveKpi("portfolio.unrealized-pnl", { portfolio });
+  const positionCountKpi = resolveKpi("portfolio.open-positions", { portfolio });
+  const totalExposure = exposureKpi.value;
+  const totalUnrealizedPnl = unrealizedPnlKpi.value;
   const selectedRow = positionRows.find((row) => row.id === selectedId) ?? null;
   const selectedPosition = selectedRow
     ? buildSelectedPositionDetail(selectedRow, risk, brokerage)
@@ -742,24 +729,24 @@ export function buildPortfolioScreenViewModel({
     ? buildSelectedBrokeragePositionDetail(selectedBrokeragePositionRecord, brokerageAccounts, providerLabel)
     : null;
 
-  const fallbackStats = buildPortfolioFallbackMetrics({
-    openPositionCount: positions.length,
-    totalExposure,
-    totalUnrealizedPnl
-  });
+  const fallbackStats: MetricSnapshot[] = [
+    { ...exposureKpi, id: "portfolio-total-exposure" },
+    { ...unrealizedPnlKpi, id: "portfolio-unrealized-pnl" },
+    { ...resolveKpi("portfolio.cash", { portfolio }), id: "portfolio-cash" },
+    { ...positionCountKpi, id: "portfolio-open-positions" }
+  ];
   const cashVarianceLabel = cashFlow !== null ? formatCurrency(cashFlow.netVariance) : null;
 
   return {
-    metricsFromTrading: portfolio == null && trading !== null,
+    metricsFromTrading: false,
     metricCards: portfolio?.metrics ?? trading?.metrics ?? [],
     multiAssetCoveragePanel: buildMultiAssetCoveragePanel(multiAssetCoverage),
-    positionSourceLabel: portfolio ? "Portfolio workspace" : trading ? "Trading workspace" : "Unavailable",
+    positionSourceLabel: portfolio ? "Portfolio workspace" : "Unavailable",
     fallbackStats,
     headerChips: buildPortfolioHeaderChips({
-      openPositionCount: positions.length,
+      positionCountValue: positionCountKpi.value,
       totalExposure,
       totalUnrealizedPnl,
-      hasPositions: positions.length > 0,
       cashVarianceLabel,
       brokeragePortfolio,
       providerLabel
@@ -769,6 +756,7 @@ export function buildPortfolioScreenViewModel({
       risk,
       brokerage,
       openPositionCount: positions.length,
+      positionCountValue: positionCountKpi.value,
       totalExposure,
       totalUnrealizedPnl,
       cashFlow,
@@ -822,19 +810,15 @@ export function buildPortfolioScreenViewModel({
     selectedPositionChip: { label: "Selected detail", value: selectedPosition?.title ?? "None" },
     runEvidenceChip: { label: "Run evidence", value: buildLinkedRunEvidenceLabel(runRows.length) },
     positionDetailEmptyTitle: "No holding selected",
-    positionEmptyText: trading
-      ? "No open positions in the active paper session. Positions appear here once an order fills."
-      : portfolio
-        ? "No holdings yet. Import a statement or holdings file, or connect a provider, and they appear here."
-        : "Portfolio workspace data unavailable.",
+    positionEmptyText: portfolio
+      ? "No holdings yet. Import a statement or holdings file, or connect a provider, and they appear here."
+      : "Portfolio workspace data unavailable.",
     // Only offered where there is a true next step: a loaded workspace with nothing in it yet, or a
     // paper session waiting on a fill. "Unavailable" is a failure to load, not an empty desk, so it
     // gets no button -- routing an operator elsewhere would just hide the problem.
-    positionEmptyAction: trading
-      ? { label: "Open the trading desk", route: WORKSTATION_ROUTE_CATALOG.trading }
-      : portfolio
-        ? { label: "Import a statement", route: WORKSTATION_ROUTE_CATALOG.accountingStatementImport }
-        : null,
+    positionEmptyAction: portfolio
+      ? { label: "Import a statement", route: WORKSTATION_ROUTE_CATALOG.accountingStatementImport }
+      : null,
     selectedPosition,
     selectPosition,
     hasRuns: runRows.length > 0,
@@ -1263,18 +1247,16 @@ function buildPortfolioRunTradeEvidenceRows(trades: RunFillSummary | null): Port
 }
 
 function buildPortfolioHeaderChips({
-  openPositionCount,
+  positionCountValue,
   totalExposure,
   totalUnrealizedPnl,
-  hasPositions,
   cashVarianceLabel,
   brokeragePortfolio,
   providerLabel
 }: {
-  openPositionCount: number;
-  totalExposure: number;
-  totalUnrealizedPnl: number;
-  hasPositions: boolean;
+  positionCountValue: string;
+  totalExposure: string;
+  totalUnrealizedPnl: string;
   cashVarianceLabel: string | null;
   brokeragePortfolio: BrokerageHouseholdPortfolio | null | undefined;
   providerLabel: string;
@@ -1282,13 +1264,11 @@ function buildPortfolioHeaderChips({
   const chips: PortfolioHeaderChip[] = [
     { label: `${providerLabel} equity`, value: brokeragePortfolio ? formatCurrency(brokeragePortfolio.totalEquity) : "—" },
     { label: `${providerLabel} cash`, value: brokeragePortfolio ? formatCurrency(brokeragePortfolio.totalCash) : "—" },
-    { label: "Open positions", value: String(openPositionCount) },
-    { label: "Exposure", value: hasPositions ? formatCurrency(totalExposure) : "—" },
+    { label: "Open positions", value: positionCountValue },
+    { label: "Exposure", value: totalExposure },
     {
       label: "Unrealized P&L",
-      value: hasPositions
-        ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatCurrency(totalUnrealizedPnl)
-        : "—"
+      value: totalUnrealizedPnl
     }
   ];
 
@@ -1911,6 +1891,7 @@ function buildWorkflowTaskPanel({
   risk,
   brokerage,
   openPositionCount,
+  positionCountValue,
   totalExposure,
   totalUnrealizedPnl,
   cashFlow,
@@ -1923,8 +1904,9 @@ function buildWorkflowTaskPanel({
   risk: PortfolioRiskState | null;
   brokerage: PortfolioBrokerageStatus | null;
   openPositionCount: number;
-  totalExposure: number;
-  totalUnrealizedPnl: number;
+  positionCountValue: string;
+  totalExposure: string;
+  totalUnrealizedPnl: string;
   cashFlow: GovernanceCashFlowSummary | null;
   cashVarianceLabel: string | null;
   selectedRunId: string | null;
@@ -1937,6 +1919,7 @@ function buildWorkflowTaskPanel({
       risk,
       brokerage,
       openPositionCount,
+      positionCountValue,
       totalExposure,
       totalUnrealizedPnl,
       cashFlow,
@@ -1984,13 +1967,11 @@ function buildWorkflowTaskPanel({
     chips: [
       { label: "Provider", value: providerLabel },
       { label: "Account", value: accountLabel },
-      { label: "Positions", value: String(openPositionCount) },
-      { label: "Exposure", value: openPositionCount > 0 ? formatCurrency(totalExposure) : "—" },
+      { label: "Positions", value: positionCountValue },
+      { label: "Exposure", value: totalExposure },
       {
         label: "Unrealized P&L",
-        value: openPositionCount > 0
-          ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatCurrency(totalUnrealizedPnl)
-          : "—"
+        value: totalUnrealizedPnl
       }
     ],
     statusRows: [
@@ -2026,6 +2007,7 @@ function buildPortfolioReadinessTaskPanel({
   risk,
   brokerage,
   openPositionCount,
+  positionCountValue,
   totalExposure,
   totalUnrealizedPnl,
   cashFlow,
@@ -2037,8 +2019,9 @@ function buildPortfolioReadinessTaskPanel({
   risk: PortfolioRiskState | null;
   brokerage: PortfolioBrokerageStatus | null;
   openPositionCount: number;
-  totalExposure: number;
-  totalUnrealizedPnl: number;
+  positionCountValue: string;
+  totalExposure: string;
+  totalUnrealizedPnl: string;
   cashFlow: GovernanceCashFlowSummary | null;
   cashVarianceLabel: string | null;
   selectedRunId: string | null;
@@ -2088,13 +2071,11 @@ function buildPortfolioReadinessTaskPanel({
     chips: [
       { label: "Provider", value: providerLabel },
       { label: "Account", value: accountLabel },
-      { label: "Positions", value: String(openPositionCount) },
-      { label: "Exposure", value: openPositionCount > 0 ? formatCurrency(totalExposure) : "—" },
+      { label: "Positions", value: positionCountValue },
+      { label: "Exposure", value: totalExposure },
       {
         label: "Unrealized P&L",
-        value: openPositionCount > 0
-          ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatCurrency(totalUnrealizedPnl)
-          : "—"
+        value: totalUnrealizedPnl
       }
     ],
     statusRows: [

@@ -135,7 +135,7 @@
         "/api/workstation/portfolio"
       ],
       "waitForTexts": [
-        "Total exposure",
+        "Market value",
         "Mean Reversion FX"
       ]
     },
