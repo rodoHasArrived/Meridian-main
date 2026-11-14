@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationPlotToolSampleRowPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolSampleRowPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:278](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L278).
+
+```csharp
+public sealed record WorkstationPlotToolSampleRowPayload(string Id, string Timestamp, string SpreadText, string ImpliedVolText, string ZScoreText, string SignalText, string Tone);
+```
+
+## WorkstationPlotToolSignalCardPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolSignalCardPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:231](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L231).
+
+```csharp
+public sealed record WorkstationPlotToolSignalCardPayload(string Id, string Label, string Value, string Detail, string Tone);
+```
+
+## WorkstationPlotToolStatisticsPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolStatisticsPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:287](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L287).
+
+```csharp
+public sealed record WorkstationPlotToolStatisticsPayload(string Eyebrow, string Title, string Description, IReadOnlyList<WorkstationPlotToolSummaryTilePayload> SummaryTiles, IReadOnlyList<int> DistributionBars, string DistributionSummary, string DistributionFootnote, IReadOnlyList<WorkstationPlotToolMomentPayload> Moments, WorkstationPlotToolRegressionPayload Regression, IReadOnlyList<WorkstationPlotToolSampleRowPayload> SampleRows);
+```
+
 ## WorkstationPlotToolStudyPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolStudyPayload</code>. Kind: `record`.
@@ -549,40 +579,4 @@ Single entry in a run timeline strip. Fields match BuildTimelineCard in Workstat
 
 ```csharp
 public sealed record WorkstationTimelineCard(string RunId, string StrategyName, string Mode, string Status, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, DateTimeOffset LastUpdatedAt, decimal? TotalReturn);
-```
-
-## WorkstationTradingBrokerageState
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingBrokerageState</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:415](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L415).
-
-Brokerage connection summary embedded inside the trading payload.
-
-```csharp
-public sealed record WorkstationTradingBrokerageState(string Provider, string Account, string Environment, string Connection, string LastHeartbeat, string OrderIngress, string FillFeed, IReadOnlyList<string> Notes);
-```
-
-## WorkstationTradingFillRow
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingFillRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:368](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L368).
-
-A single fill row shown in the trading workstation fills table.
-
-```csharp
-public sealed record WorkstationTradingFillRow(string FillId, string OrderId, string Symbol, string Side, string Quantity, string Price, string Venue, string Timestamp);
-```
-
-## WorkstationTradingOrderRow
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingOrderRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:355](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L355).
-
-A single open-order row shown in the trading workstation orders table.
-
-```csharp
-public sealed record WorkstationTradingOrderRow(string OrderId, string Symbol, string Side, string Type, string Quantity, string LimitPrice, string Status, string SubmittedAt);
 ```
