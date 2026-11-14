@@ -224,6 +224,11 @@ public sealed class UiServer : IAsyncDisposable
                         options.DrainTimeout = tradeFillPostingOptions.DrainTimeout;
                         options.CancellationTimeout = tradeFillPostingOptions.CancellationTimeout;
                     });
+                builder.Services.AddSingleton(sp => new PaperFinancingPostingService(
+                    tradeFillStoreRoot, postingContext,
+                    sp.GetRequiredService<ITradeFillLedgerPostingTarget>(),
+                    sp.GetRequiredService<ILedgerJournalStore>().GetPeriodAsync,
+                    sp.GetRequiredService<ILedgerJournalStore>().GetLedgerBookAsync));
             }
 
             builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));

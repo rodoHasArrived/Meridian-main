@@ -78,8 +78,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 throw new LedgerValidationException("Authoritative agreement review requires a supported ledger writer and retained book/period.");
             var book = await _journalStore.GetLedgerBookAsync(bookId, ct).ConfigureAwait(false)
                 ?? throw new LedgerValidationException("The agreement review ledger book is unavailable.");
-            // Functional amounts belong to the destination book; retained transaction amounts
-            // carry the original legal agreement currency into the native posting guard.
+            // Functional amounts belong to the destination book; explicit retained transaction
+            // amounts preserve legal agreement FX, while native drafts retain identity translation.
             if (!string.Equals(draft.Currency?.Trim(), book.BaseCurrency.Trim(), StringComparison.OrdinalIgnoreCase))
                 throw new LedgerValidationException("The journal functional currency must match the destination book.");
             var timestamp = ToAccountingTimestamp(draft.AccountingDate);
@@ -100,13 +100,19 @@ public sealed partial class ManualJournalEntryWorkbenchService
                             line.Side == AccountingTemplateLineSideDto.Debit ? original.Amount : 0m,
                             line.Side == AccountingTemplateLineSideDto.Credit ? original.Amount : 0m,
                             original.FxRateToFunctional)
-                        : null);
+                        : string.Equals(line.Currency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase)
+                            && string.Equals(draft.Currency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase)
+                            ? new LedgerEntryCurrency(book.BaseCurrency, book.BaseCurrency,
+                                line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : 0m,
+                                line.Side == AccountingTemplateLineSideDto.Credit ? line.Amount : 0m, 1m)
+                            : null);
             }).ToArray();
+            var reviewLines = await MaterializeAgreementReversalCurrenciesAsync(draft, book, ledgerLines, ct).ConfigureAwait(false);
             var sourceId = draft.ReversalOfJournalEntryId ?? draft.RebookedFromJournalEntryId;
             var command = new AccountingPostingCommandDto(Guid.NewGuid(), bookId, periodId,
                 draft.AccountingDate, timestamp, "agreement-review:" + draft.JournalEntryId.ToString("D"),
                 Intent: BuildManualPostingIntent(draft), SourceJournalEntryId: sourceId, LedgerBookId: bookId);
-            var write = new LedgerJournalEntryWrite(new(draft.JournalEntryId, timestamp, "Agreement review", ledgerLines,
+            var write = new LedgerJournalEntryWrite(new(draft.JournalEntryId, timestamp, "Agreement review", reviewLines,
                 new(EffectiveDate: draft.AccountingDate)), bookId, periodId, AccountingBasis: draft.AccountingBasis,
                 SourceJournalEntryId: sourceId, PostingCommand: command, LedgerBookId: bookId);
             await validation.ValidateIntercompanyAgreementReferencesAsync(write, ct).ConfigureAwait(false);
@@ -117,5 +123,54 @@ public sealed partial class ManualJournalEntryWorkbenchService
             issues.Add(Issue("manual-je.agreement-authority-invalid", AccountingConfigurationValidationSeverityDto.Critical,
                 exception.Message, "intercompanyAgreement", "Repair the agreement reference and obtain renewed journal review."));
         }
+    }
+
+    private async Task<IReadOnlyList<LedgerEntry>> MaterializeAgreementReversalCurrenciesAsync(
+        ManualJournalEntryDraftDto draft, LedgerBookRecord book, IReadOnlyList<LedgerEntry> lines, CancellationToken ct)
+    {
+        if (!HasAgreementReferences(draft) || draft.ReversalOfJournalEntryId is not { } sourceId)
+            return lines;
+        if (_journalStore is null || draft.LedgerBookId != book.LedgerBookId
+            || draft.RebookedFromJournalEntryId is not null || draft.AccountingBasis != book.AccountingBasis)
+            throw new LedgerValidationException("Agreement reversal requires its exact retained source book and accounting basis.");
+        var records = await _journalStore.QueryAsync(new LedgerJournalEntryQuery(
+            LedgerBookId: book.LedgerBookId, JournalEntryId: sourceId), ct).ConfigureAwait(false);
+        if (records.Count != 1 || records[0].AccountingBasis != draft.AccountingBasis
+            || records[0].Entry.Lines.Count != lines.Count)
+            throw new LedgerValidationException("Agreement reversal requires the complete immutable same-book source journal.");
+
+        var remaining = records[0].Entry.Lines.ToList();
+        var materialized = new List<LedgerEntry>(lines.Count);
+        foreach (var candidate in lines)
+        {
+            var matches = remaining.Select((source, index) => (Source: source, Index: index))
+                .Where(item => item.Source.Account == candidate.Account
+                    && item.Source.Debit == candidate.Credit && item.Source.Credit == candidate.Debit
+                    && SamePostingDimensions(LedgerDimensionMapper.ToDto(item.Source.Dimensions),
+                        LedgerDimensionMapper.ToDto(candidate.Dimensions))).ToArray();
+            if (matches.Length == 0 || matches.Select(item => item.Source.Currency).Distinct().Count() != 1)
+                throw new LedgerValidationException("Agreement reversal source legs are missing, changed or ambiguous; accounts, inverse amounts and every dimension must match.");
+            var source = matches[0].Source;
+            LedgerEntryCurrency? inverseCurrency = null;
+            if (source.Currency is { } currency)
+            {
+                if (!string.Equals(currency.FunctionalCurrency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase))
+                    throw new LedgerValidationException("Agreement reversal currency must retain the immutable source's functional book currency.");
+                inverseCurrency = new(currency.TransactionCurrency, currency.FunctionalCurrency,
+                    currency.TransactionCredit, currency.TransactionDebit, currency.FxRateToFunctional);
+                if (!currency.IsFunctionalCurrency && candidate.Currency != inverseCurrency)
+                    throw new LedgerValidationException("Agreement reversal requires the exact retained transaction currency, inverse amounts and original FX rate.");
+            }
+            var hasExplicitCurrency = draft.Lines.Any(line => line.TransactionCurrency is not null &&
+                CreateDeterministicGuid("manual-je-line", draft.JournalEntryId.ToString("D"), line.LineId, line.Side.ToString()) == candidate.EntryId);
+            if (hasExplicitCurrency && candidate.Currency != inverseCurrency)
+                throw new LedgerValidationException("Agreement reversal transaction evidence differs from its immutable source inverse.");
+            // Null historical evidence stays null. Native and explicit transaction evidence are
+            // inverted exactly; neither a new currency nor a new rate is inferred from today's book.
+            materialized.Add(new(candidate.EntryId, candidate.JournalEntryId, candidate.Timestamp, candidate.Account,
+                candidate.Debit, candidate.Credit, candidate.Description, candidate.Dimensions, inverseCurrency));
+            remaining.RemoveAt(matches[0].Index);
+        }
+        return materialized;
     }
 }

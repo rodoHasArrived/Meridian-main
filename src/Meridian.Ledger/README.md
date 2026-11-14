@@ -11,6 +11,10 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ledger
 
+`LedgerJournalReversal` preserves explicit transaction/functional currency and acquisition FX
+while swapping both functional and transaction debit/credit amounts. A correction never drops the
+currency evidence from its immutable source.
+
 Explicitly classified investing activities recognize either an asset carrying leg or a
 liability carrying leg (short securities payable). A short cover with retained investing
 classification reports its actual cash cost while preserving the booked realized result.
@@ -234,6 +238,11 @@ Ledger legs can carry explicit `LedgerEntryCurrency` (transaction currency, tran
 and FX rate) alongside the functional debit/credit so currency no longer has to be inferred from
 account symbols; the currency-aware `Ledger.PostLines` overload and
 `MultiCurrencyJournalProjection.ToCurrencyAwareLedgerLines` post that detail durably.
+`JournalEntry.IsBalanced` refuses nominal offsets between different declared functional currencies.
+Fully declared single-transaction-currency journals must also balance their original amounts;
+cross-currency exchanges balance their converted functional amounts. Same-currency amounts require
+a rate of one. Legacy lines without currency detail remain readable, while the durable book guard
+checks every declared functional currency against the retained book's base currency.
 
 `LedgerReportPackBuilder` also emits `gl-detail.csv` (one row per journal line posted after the
 period start and up to the as-of time, the same window as the period statements, inside the pack's financial-account and dimension scope) and

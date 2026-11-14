@@ -6,6 +6,74 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingReconciliationEvidenceJsonContext
+
+Qualified name: <code>Meridian.Storage.Reporting.ReportingReconciliationEvidenceJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Reporting/ReportingReconciliationEvidenceJsonContext.cs:21](../../../../src/Meridian.Storage/Reporting/ReportingReconciliationEvidenceJsonContext.cs#L21).
+
+ADR-014 serialization metadata for current and verified legacy reconciliation evidence. Legacy receipts deliberately have no break-evidence field and are read only to prove recovery is required; they are never reserialized as current receipts.
+
+```csharp
+public sealed partial class ReportingReconciliationEvidenceJsonContext : JsonSerializerContext;
+```
+
+## ReportingReconciliationEvidenceLegacyMigrationRequiredException
+
+Qualified name: <code>Meridian.Storage.Reporting.ReportingReconciliationEvidenceLegacyMigrationRequiredException</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs:655](../../../../src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs#L655).
+
+Raised after a legacy PostgreSQL receipt has passed its original payload, key, and receipt-hash checks but cannot prove the current item-level break-evidence requirement.
+
+```csharp
+public sealed class ReportingReconciliationEvidenceLegacyMigrationRequiredException : ReportingReconciliationEvidenceRecoveryRequiredException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingReconciliationEvidenceLegacyMigrationRequiredException(string message) : base(message);</code> | [src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs:658](../../../../src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs#L658) |  |
+
+## JsonLifecycleReceiptStore
+
+Qualified name: <code>Meridian.Storage.Runtime.JsonLifecycleReceiptStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:16](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L16).
+
+Atomic, bounded JSON lifecycle receipt store rooted outside the install directory.
+
+```csharp
+public sealed class JsonLifecycleReceiptStore : ILifecycleReceiptStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonLifecycleReceiptStore(LifecycleReceiptStoreOptions options);</code> | [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:21](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L21) |  |
+| <code>public async ValueTask WriteHostReceiptAsync(LifecycleShutdownReceiptDto receipt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:30](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L30) |  |
+| <code>public async ValueTask&lt;LifecycleShutdownReceiptDto?&gt; ReadLatestHostReceiptAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:43](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L43) |  |
+| <code>public async ValueTask WriteSessionReceiptAsync(LifecycleSessionReceiptDto receipt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:74](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L74) |  |
+
+## LifecycleReceiptStoreOptions
+
+Qualified name: <code>Meridian.Storage.Runtime.LifecycleReceiptStoreOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:7](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L7).
+
+```csharp
+public sealed record LifecycleReceiptStoreOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string DataRoot { get; init; }</code> | [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:9](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L9) |  |
+| <code>public int RetainedReceiptCount { get; init; } = 50;</code> | [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:10](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L10) |  |
+
 ## AliasRevisionRecordedPayload
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.AliasRevisionRecordedPayload</code>. Kind: `record`.
@@ -784,84 +852,3 @@ Marks a typed governance payload. PostgresSecurityGovernanceEventLog.AppendAsync
 ```csharp
 public interface ISecurityGovernancePayload;
 ```
-
-## ISecurityIdentifierHistoryStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityIdentifierHistoryStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:73](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L73).
-
-Reads the append-only recorded history of Security Master identifier rows. Recorded cutoffs filter on stored recording timestamps (transaction-start time); like the alias history, these establish eligibility, not commit visibility, so a write committed later can still satisfy an earlier cutoff. Valid time is a separate filter over each revision&#x27;s valid-from/valid-to.
-
-```csharp
-public interface ISecurityIdentifierHistoryStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;SecurityIdentifierRevision&gt;&gt; GetIdentifierRevisionsAsync(Guid securityId, DateTimeOffset recordedAsOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:76](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L76) | Every retained revision recorded at or before recordedAsOfUtc, ordered by identity then revision. |
-| <code>Task&lt;SecurityIdentifiersRecordedView&gt; GetIdentifiersRecordedAsOfAsync(Guid securityId, DateTimeOffset recordedAsOfUtc, DateTimeOffset? validAsOfUtc = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:86](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L86) | The latest revision per identity recorded at or before recordedAsOfUtc, omitting removed identities and, when validAsOfUtc is given, identities not valid at that instant. |
-
-## ISecurityMasterCanonicalWriteScope
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterCanonicalWriteScope</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:9](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L9).
-
-The transaction boundary for one canonical Security Master write: the event append, the projection upsert and the per-field attribution that describes it. An atomic scope commits all of them or none; the passthrough scope used by in-memory hosts runs them in sequence.
-
-```csharp
-public interface ISecurityMasterCanonicalWriteScope
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>bool IsAtomic { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:16](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L16) | Whether writes inside ExecuteAsync{T} share one transaction. Callers record field attribution inside an atomic scope (a failure rolls the whole write back) and fall back to best-effort post-commit attribution otherwise. |
-| <code>Task&lt;T&gt; ExecuteAsync&lt;T&gt;(Guid securityId, Func&lt;Task&lt;T&gt;&gt; operation, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:18](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L18) |  |
-
-## ISecurityMasterCashFlowStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterCashFlowStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs#L8).
-
-Loads and updates the cash flow source retained for a security.
-
-```csharp
-public interface ISecurityMasterCashFlowStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityCashFlowSourceDto?&gt; GetSourceAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs#L10) |  |
-| <code>Task UpsertSourceAsync(SecurityCashFlowSourceDto source, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs#L11) |  |
-
-## ISecurityMasterEventStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterEventStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:41](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L41).
-
-Appends version-checked Security Master events and reads individual or sequenced event streams.
-
-```csharp
-public interface ISecurityMasterEventStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task AppendAsync(Guid securityId, long expectedVersion, IReadOnlyList&lt;SecurityMasterEventEnvelope&gt; events, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:43](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L43) |  |
-| <code>Task&lt;IReadOnlyList&lt;SecurityMasterEventEnvelope&gt;&gt; LoadAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:44](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L44) |  |
-| <code>Task&lt;IReadOnlyList&lt;SecurityMasterEventEnvelope&gt;&gt; LoadSinceSequenceAsync(long sequenceExclusive, int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:45](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L45) |  |
-| <code>Task&lt;long&gt; GetLatestSequenceAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:46](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L46) |  |
-| <code>Task AppendCorporateActionAsync(CorporateActionDto action, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:51](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L51) | Appends one or more corporate action events for a security. |
-| <code>Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; LoadCorporateActionsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:56](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L56) | Returns all corporate action events for a security in ascending ex-date order. |
-| <code>Task&lt;CorporateActionEventTypeNormalizationResult&gt; NormalizeCorporateActionEventTypesAsync(bool apply, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:65](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L65) | Reports — and when apply is true, rewrites in one transaction — stored corporate-action EventType values that are non-canonical aliases of the catalog vocabulary (e.g. legacy &quot;Split&quot; rows becoming &quot;StockSplit&quot;). Values that do not normalize are reported and left untouched. Stores without rewrite support (the default) report an empty result. |

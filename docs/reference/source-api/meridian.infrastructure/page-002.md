@@ -929,7 +929,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderDataQualityIssue</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L213).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:217](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L217).
 
 ```csharp
 public sealed record ProviderDataQualityIssue(ProviderDataQualitySeverity Severity, string ProviderName, string FieldPath, string? Entity, string Message, string SuggestedRecovery)
@@ -939,14 +939,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ProviderDataQualityIssue Error(string providerName, string fieldPath, string? entity, string message, string suggestedRecovery) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:221](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L221) |  |
-| <code>public static ProviderDataQualityIssue Warning(string providerName, string fieldPath, string? entity, string message, string suggestedRecovery) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:235](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L235) |  |
+| <code>public static ProviderDataQualityIssue Error(string providerName, string fieldPath, string? entity, string message, string suggestedRecovery) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:225](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L225) |  |
+| <code>public static ProviderDataQualityIssue Warning(string providerName, string fieldPath, string? entity, string message, string suggestedRecovery) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:239](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L239) |  |
 
 ## ProviderDataQualitySeverity
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderDataQualitySeverity</code>. Kind: `enum`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:207](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L207).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:211](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L211).
 
 ```csharp
 public enum ProviderDataQualitySeverity
@@ -956,8 +956,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Warning = 0</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:209](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L209) |  |
-| <code>Error = 1</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:210](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L210) |  |
+| <code>Warning = 0</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L213) |  |
+| <code>Error = 1</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:214](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L214) |  |
 
 ## ProviderDataQualityValidator
 

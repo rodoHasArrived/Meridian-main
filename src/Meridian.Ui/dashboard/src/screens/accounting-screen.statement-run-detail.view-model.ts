@@ -289,4 +289,3 @@ function resolveOrdinalLabel(
 function formatAmount(value: number): string {
   return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-

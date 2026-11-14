@@ -738,26 +738,6 @@ Reads (including `POST .../search`) require `ViewSecurityMaster` or `ModifySecur
 | POST | `/api/security-master/money-market-funds/{securityId}/rebuild` | Rebuild projections for one MMF |
 | GET | `/api/security-master/money-market-funds/rebuild/checkpoints` | Projection rebuild checkpoints |
 
-### Registry projection read (`/api/security-master/projections/*`)
-
-Requires `ViewSecurityMaster` or `ModifySecurityMaster`. Mapped only when Security Master storage
-is configured.
-
-| Method | Route | Description |
-|--------|-------|-------------|
-| GET | `/api/security-master/projections/{assetClass}/{securityId:guid}` | One security's relational terms projection for any class the projection registry writes, read from the registry descriptor as column-to-value data: the parent row, each child table's rows in ordinal order, and each satellite table's row (`SecurityTermsProjectionReadDto`). `assetClass` accepts a catalog name or alias in any casing. Returns 404 when the class has no registry projection (Option, CustomAsset, an unknown name), when the security does not exist, when its current asset class is a different class, or when it has no projection row. |
-
-### Security Master reclassification reports
-
-Report only: both scans build an inventory and write nothing; applying a proposal is a governed
-amendment. Both require `AdminMaintenance` and are mapped only when Security Master storage is
-configured.
-
-| Method | Route | Description |
-|--------|-------|-------------|
-| POST | `/api/security-master/structured-credit-reclassification/report` | Legacy securitised `Bond` and `CustomAsset` rows with the `StructuredCredit` terms the domain can carry over and the blockers it cannot resolve (`StructuredCreditReclassificationReportDto`). |
-| POST | `/api/security-master/profile-promotion/{profileId}/report` | Active `CustomAsset` records pinned to the reclassifying profile `profileId`, each Ready or Blocked after a dry run under the profile's target class: classification-metadata check, target decode, domain invariants, asset-pack admission and profile catalog validation (`SecurityMasterProfilePromotionReportDto`). This is not full write-path parity, so a Ready record can still be refused when amended. Returns 400 when `profileId` is not a reclassifying profile. See the [promotion runbook](../operators/security-master-custom-asset-promotion.md). |
-
 ### Packaging (`/api/packaging/*`)
 
 | Method | Route | Description |
@@ -924,7 +904,7 @@ This source reference records literal `MapGet`, `MapPost`, `MapPut`, `MapDelete`
 
 Handler parameters retain C# binding types, including injected services and infrastructure parameters; they are not all request-body fields. Body-read operations list explicitly decoded types. Response entries quote declared `.Produces*` metadata and observed `Results`/`TypedResults` factories, not an exhaustive response schema or status guarantee. A dash means the declaration supplies no extractable metadata; follow the source and detailed contracts above.
 
-**459 declarations** from **52 source files**.
+**466 declarations** from **56 source files**.
 
 
 ### HostAdapters
@@ -1168,19 +1148,27 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs](../../src/Merid
 | `/api/execution/controls/position-limits/{symbol}` | POST | `async (string symbol, UpdateExecutionSymbolPositionLimitRequest request, HttpContext context) => …` | `Produces<ExecutionControlSnapshot>(200)`; `Produces(403)`; `Produces(429)`; `Produces(503)`; `Results.Unauthorized`; `Results.Problem`; `Results.Json` | `WithName("UpdateExecutionSymbolPositionLimit")` | [L542](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L542) |
 | `/api/execution/controls/manual-overrides` | POST | `async (CreateExecutionManualOverrideRequest request, HttpContext context) => …` | `Produces<ExecutionManualOverride>(201)`; `Produces(403)`; `Produces(429)`; `Produces(400)`; `Produces(503)`; `Results.Unauthorized`; `Results.Problem`; `Results.Json`; `Results.BadRequest` | `WithName("CreateExecutionManualOverride")` | [L573](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L573) |
 | `/api/execution/controls/manual-overrides/{overrideId}/clear` | POST | `async (string overrideId, ClearExecutionManualOverrideRequest request, HttpContext context) => …` | `Produces<TradingActionResult>(200)`; `Produces(403)`; `Produces(429)`; `Produces(404)`; `Produces(503)`; `Results.Unauthorized`; `Results.Problem`; `Results.NotFound`; `Results.Json` | `WithName("ClearExecutionManualOverride")` | [L619](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L619) |
-| `/api/execution/sessions` | GET | `async (HttpContext context) => …` | `Produces<IReadOnlyList<PaperSessionSummaryDto>>(200)`; `Results.Json` | `WithName("GetExecutionSessions")` | [L667](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L667) |
-| `/api/execution/sessions/{sessionId}` | GET | `async (string sessionId, HttpContext context) => …` | `Produces<PaperSessionDetailDto>(200)`; `Produces(404)`; `Results.NotFound`; `Results.Json` | `WithName("GetExecutionSessionById")` | [L680](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L680) |
-| `/api/execution/sessions/{sessionId}/tca` | GET | `async (string sessionId, HttpContext context) => …` | `Produces<SessionTcaReport>(200)`; `Produces(404)`; `Results.NotFound`; `Results.Json` | `WithName("GetExecutionSessionTcaReport")` | [L694](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L694) |
-| `/api/execution/sessions/create` | POST | `async (CreatePaperSessionRequest request, HttpContext context) => …` | `Produces<PaperSessionSummaryDto>(201)`; `Produces(400)`; `Produces(429)`; `Produces(503)`; `Results.Unauthorized`; `Results.Problem`; `Results.BadRequest`; `Results.Json` | `WithName("CreateExecutionSession")` | [L716](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L716) |
-| `/api/execution/sessions/{sessionId}/close` | POST | `async (string sessionId, HttpContext context) => …` | `Produces<TradingActionResult>(200)`; `Produces(404)`; `Produces(503)`; `Results.Unauthorized`; `Results.Problem`; `Results.NotFound`; `Results.Json` | `WithName("CloseExecutionSession")` | [L785](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L785) |
-| `/api/execution/sessions/{sessionId}/replay` | GET | `async (string sessionId, HttpContext context) => …` | `Produces<PaperSessionReplayVerificationDto>(200)`; `Produces(404)`; `Produces(503)`; `Results.Unauthorized`; `Results.Problem`; `Results.NotFound`; `Results.Json` | `WithName("ReplayExecutionSession")` | [L840](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L840) |
-| `/api/execution/accounts` | GET | `(HttpContext context) => …` | `Produces<IReadOnlyList<ExecutionAccountDetailSnapshot>>(200)`; `Produces(503)`; `Results.Problem`; `Results.Json` | `WithName("GetExecutionAccounts")` | [L913](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L913) |
-| `/api/execution/accounts/{accountId}` | GET | `(string accountId, HttpContext context) => …` | `Produces<ExecutionAccountDetailSnapshot>(200)`; `Produces(404)`; `Produces(503)`; `Results.Problem`; `Results.NotFound`; `Results.Json` | `WithName("GetExecutionAccountById")` | [L933](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L933) |
-| `/api/execution/accounts/{accountId}/positions` | GET | `(string accountId, HttpContext context) => …` | `Produces<ExecutionPosition[]>(200)`; `Produces(404)`; `Produces(503)`; `Results.Problem`; `Results.NotFound`; `Results.Json` | `WithName("GetExecutionAccountPositions")` | [L955](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L955) |
-| `/api/execution/portfolio/aggregate` | GET | `(HttpContext context) => …` | `Produces<MultiAccountPortfolioSnapshot>(200)`; `Produces(503)`; `Results.Problem`; `Results.Json` | `WithName("GetExecutionPortfolioAggregate")` | [L979](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L979) |
-| `/api/execution/positions/actions/close` | POST | `async (ExecutionPositionActionRequest request, HttpContext context) => …` | `Produces<TradingActionResult>(200)`; `Produces<TradingActionResult>(400)`; `Produces(403)`; `Produces(503)`; `Results.Problem`; `Results.Json` | `WithName("ClosePositionByKey")` | [L999](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L999) |
-| `/api/execution/positions/actions/upsize` | POST | `async (ExecutionPositionActionRequest request, HttpContext context) => …` | `Produces<TradingActionResult>(200)`; `Produces<TradingActionResult>(400)`; `Produces(403)`; `Produces(503)`; `Results.Problem`; `Results.Json` | `WithName("UpsizePositionByKey")` | [L1062](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1062) |
-| `/api/execution/positions/{symbol}/close` | POST | `async (string symbol, Guid? fundAccountId, HttpContext context) => …` | `Produces<TradingActionResult>(200)`; `Produces<TradingActionResult>(400)`; `Produces(403)`; `Produces(429)`; `Produces(503)`; `Results.Problem`; `Results.Json` | `WithName("ClosePosition")` | [L1115](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1115) |
+| `/api/execution/accounts` | GET | `(HttpContext context) => …` | `Produces<IReadOnlyList<ExecutionAccountDetailSnapshot>>(200)`; `Produces(503)`; `Results.Problem`; `Results.Json` | `WithName("GetExecutionAccounts")` | [L671](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L671) |
+| `/api/execution/accounts/{accountId}` | GET | `(string accountId, HttpContext context) => …` | `Produces<ExecutionAccountDetailSnapshot>(200)`; `Produces(404)`; `Produces(503)`; `Results.Problem`; `Results.NotFound`; `Results.Json` | `WithName("GetExecutionAccountById")` | [L691](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L691) |
+| `/api/execution/accounts/{accountId}/positions` | GET | `(string accountId, HttpContext context) => …` | `Produces<ExecutionPosition[]>(200)`; `Produces(404)`; `Produces(503)`; `Results.Problem`; `Results.NotFound`; `Results.Json` | `WithName("GetExecutionAccountPositions")` | [L713](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L713) |
+| `/api/execution/portfolio/aggregate` | GET | `(HttpContext context) => …` | `Produces<MultiAccountPortfolioSnapshot>(200)`; `Produces(503)`; `Results.Problem`; `Results.Json` | `WithName("GetExecutionPortfolioAggregate")` | [L737](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L737) |
+| `/api/execution/positions/actions/close` | POST | `async (ExecutionPositionActionRequest request, HttpContext context) => …` | `Produces<TradingActionResult>(200)`; `Produces<TradingActionResult>(400)`; `Produces(403)`; `Produces(503)`; `Results.Problem`; `Results.Json` | `WithName("ClosePositionByKey")` | [L757](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L757) |
+| `/api/execution/positions/actions/upsize` | POST | `async (ExecutionPositionActionRequest request, HttpContext context) => …` | `Produces<TradingActionResult>(200)`; `Produces<TradingActionResult>(400)`; `Produces(403)`; `Produces(503)`; `Results.Problem`; `Results.Json` | `WithName("UpsizePositionByKey")` | [L820](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L820) |
+| `/api/execution/positions/{symbol}/close` | POST | `async (string symbol, Guid? fundAccountId, HttpContext context) => …` | `Produces<TradingActionResult>(200)`; `Produces<TradingActionResult>(400)`; `Produces(403)`; `Produces(429)`; `Produces(503)`; `Results.Problem`; `Results.Json` | `WithName("ClosePosition")` | [L873](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L873) |
+
+### ExecutionEndpoints.Sessions
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Sessions.cs](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Sessions.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/sessions/{sessionId}/financing` (relative declaration on `group`)<br>Caller-derived mounts: `/api/execution/sessions/{sessionId}/financing` | POST | `async (string sessionId, HttpContext context) => …`<br>Body reads: `DeserializeAsync` | `Produces(204)`; `Produces(400)`; `Produces(401)`; `Produces(403)`; `Produces(409)`; `Produces(503)`; `Results.Unauthorized`; `Results.StatusCode`; `Results.Problem`; `Results.BadRequest`; `Results.NoContent` | `WithName("PostPaperSessionFinancing")` | [L19](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Sessions.cs#L19) |
+| `/sessions` (relative declaration on `group`)<br>Caller-derived mounts: `/api/execution/sessions` | GET | `async (HttpContext context) => …` | `Produces<IReadOnlyList<PaperSessionSummaryDto>>(200)`; `Results.Json` | `WithName("GetExecutionSessions")` | [L55](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Sessions.cs#L55) |
+| `/sessions/{sessionId}` (relative declaration on `group`)<br>Caller-derived mounts: `/api/execution/sessions/{sessionId}` | GET | `async (string sessionId, HttpContext context) => …` | `Produces<PaperSessionDetailDto>(200)`; `Produces(404)`; `Results.NotFound`; `Results.Json` | `WithName("GetExecutionSessionById")` | [L68](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Sessions.cs#L68) |
+| `/sessions/{sessionId}/tca` (relative declaration on `group`)<br>Caller-derived mounts: `/api/execution/sessions/{sessionId}/tca` | GET | `async (string sessionId, HttpContext context) => …` | `Produces<SessionTcaReport>(200)`; `Produces(404)`; `Results.NotFound`; `Results.Json` | `WithName("GetExecutionSessionTcaReport")` | [L82](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Sessions.cs#L82) |
+| `/sessions/create` (relative declaration on `group`)<br>Caller-derived mounts: `/api/execution/sessions/create` | POST | `async (CreatePaperSessionRequest request, HttpContext context) => …` | `Produces<PaperSessionSummaryDto>(201)`; `Produces(400)`; `Produces(429)`; `Produces(503)`; `Results.Unauthorized`; `Results.Problem`; `Results.BadRequest`; `Results.Json` | `WithName("CreateExecutionSession")` | [L104](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Sessions.cs#L104) |
+| `/sessions/{sessionId}/close` (relative declaration on `group`)<br>Caller-derived mounts: `/api/execution/sessions/{sessionId}/close` | POST | `async (string sessionId, HttpContext context) => …` | `Produces<TradingActionResult>(200)`; `Produces(404)`; `Produces(503)`; `Results.Unauthorized`; `Results.Problem`; `Results.NotFound`; `Results.Json` | `WithName("CloseExecutionSession")` | [L173](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Sessions.cs#L173) |
+| `/sessions/{sessionId}/replay` (relative declaration on `group`)<br>Caller-derived mounts: `/api/execution/sessions/{sessionId}/replay` | GET | `async (string sessionId, HttpContext context) => …` | `Produces<PaperSessionReplayVerificationDto>(200)`; `Produces(404)`; `Produces(503)`; `Results.Unauthorized`; `Results.Problem`; `Results.NotFound`; `Results.Json` | `WithName("ReplayExecutionSession")` | [L228](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Sessions.cs#L228) |
 
 ### ExecutionEndpoints.Workflows
 
@@ -1457,6 +1445,24 @@ Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs](..
 | `/api/ledger/intercompany/proposals/{proposalId}/retry` | POST | `async (Guid proposalId, RetryIntercompanyProposalRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L135](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L135) |
 | `/api/ledger/intercompany/proposals/{proposalId}/link` | POST | `async (Guid proposalId, LinkIntercompanyCounterpartRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L158](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L158) |
 
+### LedgerEndpoints.CloseSnapshots
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.CloseSnapshots.cs](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.CloseSnapshots.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/ledger/period-adjustments/schedule-mark-reversal` | POST | `async (HttpContext context) => …`<br>Body reads: `ReadFromJsonAsync` | `Results.BadRequest`; `Results.NotFound`; `Results.Json`; `Results.Conflict` | `WithName("ScheduleLedgerPeriodEndMarkReversal")` | [L16](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.CloseSnapshots.cs#L16) |
+| `/api/ledger/period-adjustments/prepare` | POST | `async (HttpContext context) => …`<br>Body reads: `ReadFromJsonAsync` | `Results.BadRequest`; `Results.NotFound`; `Results.Json`; `Results.Conflict` | `WithName("PrepareLedgerPriorPeriodAdjustment")` | [L47](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.CloseSnapshots.cs#L47) |
+| `/api/ledger/periods/{periodId}/close-snapshot` | GET | `async (Guid periodId, long? periodVersion, HttpContext context) => …` | `Produces<LedgerPeriodCloseSnapshot>()`; `Produces(StatusCodes.Status404NotFound)`; `Produces(StatusCodes.Status409Conflict)`; `Results.BadRequest`; `Results.NotFound`; `Results.Json`; `Results.Problem` | `WithName("GetLedgerPeriodCloseSnapshot")` | [L77](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.CloseSnapshots.cs#L77) |
+
+### LedgerEndpoints.Completeness
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Completeness.cs](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Completeness.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/ledger/books/{ledgerBookId}/periods/{periodId}/completeness` | GET | `async (Guid ledgerBookId, Guid periodId, Guid aggregateId, string financialAccountId, string? sourceKinds, string? sessionId, HttpContext context) => …` | `Produces<LedgerAccountingCompletenessReadResult>(200)`; `Produces(400)`; `Produces(403)`; `Produces(404)`; `Produces(503)`; `Results.NotFound`; `Results.BadRequest`; `Results.Json`; `Results.Problem` | `WithName("GetLedgerAccountingCompleteness")` | [L20](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Completeness.cs#L20) |
+
 ### LedgerEndpoints.Consolidation
 
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs)
@@ -1582,6 +1588,15 @@ Source: [src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs](../..
 | --- | --- | --- | --- | --- | --- |
 | `/api/portfolio/cash-ladder` | GET | `async (HttpContext context, CancellationToken ct) => …` | `Produces<PortfolioCashLadderDto>(StatusCodes.Status200OK)`; `Results.Json` | `WithName("GetPortfolioCashLadder")` | [L33](../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L33) |
 | `/api/portfolio/cash-ladder/scenarios` | GET | `(HttpContext _) => …` | `Produces<IReadOnlyList<PortfolioCashScenarioDto>>(StatusCodes.Status200OK)`; `Results.Json` | `WithName("GetPortfolioCashLadderScenarios")` | [L56](../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L56) |
+
+### PortfolioImportEndpoints
+
+Source: [src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs](../../src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/portfolio/import-runs` | POST | `async (HttpContext context) => …`<br>Body reads: `DeserializeAsync` | `Results.Json` | `WithName("RunBrokerPortfolioImport")` | [L43](../../src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs#L43) |
+| `/api/portfolio/import-runs/{runId}` | GET | `async (Guid runId, HttpContext context) => …` | `Results.NotFound`; `Results.Json` | `WithName("GetBrokerPortfolioImportRun")` | [L59](../../src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs#L59) |
 
 ### PrivateCapitalRecordEndpoints
 
@@ -1726,8 +1741,8 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs](../../src/Mer
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/workstation` | GET | `(IWebHostEnvironment environment) => …` | — | — | [L1202](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L1202) |
-| `/workstation/{*path}` | GET | `(string? path, IWebHostEnvironment environment) => …` | `Results.NotFound`; `Results.File` | — | [L1205](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L1205) |
+| `/workstation` | GET | `(IWebHostEnvironment environment) => …` | — | — | [L1203](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L1203) |
+| `/workstation/{*path}` | GET | `(string? path, IWebHostEnvironment environment) => …` | `Results.NotFound`; `Results.File` | — | [L1206](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L1206) |
 
 ### WorkstationEndpoints.OperatorTriage
 
@@ -1745,9 +1760,9 @@ Source: [src/Meridian/UiServer.cs](../../src/Meridian/UiServer.cs)
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/system/lifecycle` | GET | `(HttpContext context) => …` | `Results.Ok` | — | [L672](../../src/Meridian/UiServer.cs#L672) |
-| `/api/system/shutdown` | POST | `async (HttpContext context) => …`<br>Body reads: `DeserializeAsync` | `Results.Json` | — | [L706](../../src/Meridian/UiServer.cs#L706) |
-| `/api/system/shutdown/{operationId}` | GET | `(string operationId, HttpContext context) => …` | `Results.Ok` | — | [L760](../../src/Meridian/UiServer.cs#L760) |
-| `/api/system/shutdown/receipts/latest` | GET | `async (HttpContext context) => …` | `Results.Ok` | — | [L781](../../src/Meridian/UiServer.cs#L781) |
+| `/api/system/lifecycle` | GET | `(HttpContext context) => …` | `Results.Ok` | — | [L677](../../src/Meridian/UiServer.cs#L677) |
+| `/api/system/shutdown` | POST | `async (HttpContext context) => …`<br>Body reads: `DeserializeAsync` | `Results.Json` | — | [L711](../../src/Meridian/UiServer.cs#L711) |
+| `/api/system/shutdown/{operationId}` | GET | `(string operationId, HttpContext context) => …` | `Results.Ok` | — | [L765](../../src/Meridian/UiServer.cs#L765) |
+| `/api/system/shutdown/receipts/latest` | GET | `async (HttpContext context) => …` | `Results.Ok` | — | [L786](../../src/Meridian/UiServer.cs#L786) |
 
 <!-- END GENERATED HTTP DECLARATION REFERENCE -->

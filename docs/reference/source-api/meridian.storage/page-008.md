@@ -6,6 +6,153 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PackageSchemaField
+
+Qualified name: <code>Meridian.Storage.Packaging.PackageSchemaField</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:381](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L381).
+
+Field definition within a schema.
+
+```csharp
+public sealed class PackageSchemaField
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:384](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L384) |  |
+| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:387](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L387) |  |
+| <code>[JsonPropertyName(&quot;nullable&quot;)] public bool Nullable { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:390](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L390) |  |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:393](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L393) |  |
+| <code>[JsonPropertyName(&quot;example&quot;)] public string? Example { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:396](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L396) |  |
+
+## PackageStage
+
+Qualified name: <code>Meridian.Storage.Packaging.PackageStage</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Packaging/PackageResult.cs:372](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L372).
+
+Stages of packaging/import operations.
+
+```csharp
+public enum PackageStage : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Initializing</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:375](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L375) | Initializing operation. |
+| <code>Scanning</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:378](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L378) | Scanning source files. |
+| <code>Validating</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:381](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L381) | Validating source data. |
+| <code>Processing</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:384](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L384) | Compressing/decompressing data. |
+| <code>Writing</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:387](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L387) | Writing package file. |
+| <code>GeneratingManifest</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:390](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L390) | Generating manifest. |
+| <code>ComputingChecksums</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:393](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L393) | Computing checksums. |
+| <code>Finalizing</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:396](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L396) | Finalizing package. |
+| <code>Complete</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:399](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L399) | Operation complete. |
+| <code>Failed</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:402](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L402) | Operation failed. |
+
+## PackageValidationResult
+
+Qualified name: <code>Meridian.Storage.Packaging.PackageValidationResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Packaging/PortableDataPackager.cs:441](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L441).
+
+Result of package validation.
+
+```csharp
+public sealed class PackageValidationResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsValid { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:443](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L443) |  |
+| <code>public PackageManifest? Manifest { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:444](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L444) |  |
+| <code>public string[]? Issues { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:445](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L445) |  |
+| <code>public string[]? MissingFiles { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:446](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L446) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:447](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L447) |  |
+
+## PortableDataPackager
+
+Qualified name: <code>Meridian.Storage.Packaging.PortableDataPackager</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Packaging/PortableDataPackager.Creation.cs:13](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.Creation.cs#L13).
+
+Package creation, file scanning, manifest building, and archive writing methods.
+
+```csharp
+public sealed partial class PortableDataPackager
+```
+
+Source: [src/Meridian.Storage/Packaging/PortableDataPackager.cs:21](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L21).
+
+Service for creating and importing portable data packages. Packages include all data, metadata, quality reports, and scripts needed for data portability and sharing. Split into partial classes: Creation, Validation, Scripts.
+
+```csharp
+public sealed partial class PortableDataPackager
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public event EventHandler&lt;PackageProgress&gt;? ProgressChanged;</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:39](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L39) | Event raised to report packaging progress. |
+| <code>public PortableDataPackager(string dataRoot, CompressionProfileManager? compressionManager = null) : this(dataRoot, compressionManager, ledgerValidator : null);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:41](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L41) |  |
+| <code>public PortableDataPackager(string dataRoot, CompressionProfileManager? compressionManager, IPortableLedgerValidator? ledgerValidator);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:48](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L48) | Configures an accounting-owned validator without introducing accounting model dependencies into the storage transport. The original constructor remains market-data only. |
+| <code>public async Task&lt;PackageResult&gt; CreatePackageAsync(PackageOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:59](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L59) | Create a portable data package. |
+| <code>public async Task&lt;ImportResult&gt; ImportPackageAsync(string packagePath, string destinationDirectory, bool validateChecksums = true, bool mergeWithExisting = false, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:167](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L167) | Import/extract a portable data package. |
+| <code>public async Task&lt;PackageValidationResult&gt; ValidatePackageAsync(string packagePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:279](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L279) | Validate a package without extracting. |
+| <code>public async Task&lt;PackageContents&gt; ListPackageContentsAsync(string packagePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:368](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L368) | List contents of a package without extracting. |
+
+Source: [src/Meridian.Storage/Packaging/PortableDataPackager.Ledger.cs:7](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.Ledger.cs#L7).
+
+```csharp
+public sealed partial class PortableDataPackager
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PortableLedgerPayload?&gt; ReadLedgerPayloadAsync(string packagePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.Ledger.cs:11](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.Ledger.cs#L11) | Reads opaque accounting evidence only after the configured adapter verifies it. This operation grants no posting authority. |
+
+Source: [src/Meridian.Storage/Packaging/PortableDataPackager.Scripts.cs:9](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.Scripts.cs#L9).
+
+Documentation generation and data loader script methods. Database import scripts are in Scripts.Sql.cs and Scripts.Import.cs.
+
+```csharp
+public sealed partial class PortableDataPackager
+```
+
+Source: [src/Meridian.Storage/Packaging/PortableDataPackager.Scripts.Import.cs:8](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.Scripts.Import.cs#L8).
+
+Language-specific database import script generation (Python, R, Spark).
+
+```csharp
+public sealed partial class PortableDataPackager
+```
+
+Source: [src/Meridian.Storage/Packaging/PortableDataPackager.Scripts.Sql.cs:8](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.Scripts.Sql.cs#L8).
+
+Database import script generation (PostgreSQL, ClickHouse, DuckDB).
+
+```csharp
+public sealed partial class PortableDataPackager
+```
+
+Source: [src/Meridian.Storage/Packaging/PortableDataPackager.Validation.cs:13](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.Validation.cs#L13).
+
+Package validation, manifest reading, import/extraction, and utility methods.
+
+```csharp
+public sealed partial class PortableDataPackager
+```
+
 ## PortableLedgerPayload
 
 Qualified name: <code>Meridian.Storage.Packaging.PortableLedgerPayload</code>. Kind: `record`.
@@ -923,71 +1070,3 @@ Declared public members:
 | <code>public ReportingOperationalStateCorruptionException(string entityType, string entityId, string detail, Exception innerException) : base($&quot;Retained reporting {entityType} &#x27;{entityId}&#x27; is corrupt: {detail}.&quot;, innerException);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:1284](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L1284) |  |
 | <code>public string EntityType { get; }</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:1295](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L1295) |  |
 | <code>public string EntityId { get; }</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:1297](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L1297) |  |
-
-## ReportingReconciliationEvidenceJsonContext
-
-Qualified name: <code>Meridian.Storage.Reporting.ReportingReconciliationEvidenceJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Reporting/ReportingReconciliationEvidenceJsonContext.cs:21](../../../../src/Meridian.Storage/Reporting/ReportingReconciliationEvidenceJsonContext.cs#L21).
-
-ADR-014 serialization metadata for current and verified legacy reconciliation evidence. Legacy receipts deliberately have no break-evidence field and are read only to prove recovery is required; they are never reserialized as current receipts.
-
-```csharp
-public sealed partial class ReportingReconciliationEvidenceJsonContext : JsonSerializerContext;
-```
-
-## ReportingReconciliationEvidenceLegacyMigrationRequiredException
-
-Qualified name: <code>Meridian.Storage.Reporting.ReportingReconciliationEvidenceLegacyMigrationRequiredException</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs:655](../../../../src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs#L655).
-
-Raised after a legacy PostgreSQL receipt has passed its original payload, key, and receipt-hash checks but cannot prove the current item-level break-evidence requirement.
-
-```csharp
-public sealed class ReportingReconciliationEvidenceLegacyMigrationRequiredException : ReportingReconciliationEvidenceRecoveryRequiredException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceLegacyMigrationRequiredException(string message) : base(message);</code> | [src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs:658](../../../../src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs#L658) |  |
-
-## JsonLifecycleReceiptStore
-
-Qualified name: <code>Meridian.Storage.Runtime.JsonLifecycleReceiptStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:16](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L16).
-
-Atomic, bounded JSON lifecycle receipt store rooted outside the install directory.
-
-```csharp
-public sealed class JsonLifecycleReceiptStore : ILifecycleReceiptStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JsonLifecycleReceiptStore(LifecycleReceiptStoreOptions options);</code> | [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:21](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L21) |  |
-| <code>public async ValueTask WriteHostReceiptAsync(LifecycleShutdownReceiptDto receipt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:30](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L30) |  |
-| <code>public async ValueTask&lt;LifecycleShutdownReceiptDto?&gt; ReadLatestHostReceiptAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:43](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L43) |  |
-| <code>public async ValueTask WriteSessionReceiptAsync(LifecycleSessionReceiptDto receipt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:74](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L74) |  |
-
-## LifecycleReceiptStoreOptions
-
-Qualified name: <code>Meridian.Storage.Runtime.LifecycleReceiptStoreOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:7](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L7).
-
-```csharp
-public sealed record LifecycleReceiptStoreOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string DataRoot { get; init; }</code> | [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:9](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L9) |  |
-| <code>public int RetainedReceiptCount { get; init; } = 50;</code> | [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:10](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L10) |  |

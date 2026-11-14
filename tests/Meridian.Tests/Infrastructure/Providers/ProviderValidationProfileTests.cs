@@ -48,6 +48,48 @@ public sealed class ProviderValidationProfileTests
     }
 
     [Fact]
+    public void AggregateBoundary_FreshMinuteBar_UsesEndTimeForLatencyAndKeepsStartStaleWarning()
+    {
+        var now = new DateTimeOffset(2026, 11, 14, 15, 0, 0, TimeSpan.Zero);
+        var aggregate = new AggregateBar("AAPL", now.AddMinutes(-1), now, 100m, 101m, 99m, 100m, 100);
+
+        var issues = ProviderDataQualityValidator.ValidateAggregate("polygon", aggregate, now,
+            profile: new ProviderValidationProfile(StaleThresholdSeconds: 10, MaxLatencyMs: 500));
+
+        issues.Should().NotContain(issue => issue.Severity == ProviderDataQualitySeverity.Error);
+        issues.Should().ContainSingle(issue => issue.FieldPath == "startTime"
+            && issue.Severity == ProviderDataQualitySeverity.Warning && issue.Message.Contains("stale"));
+    }
+
+    [Fact]
+    public void AggregateBoundary_DelayedEnd_StillRefusesExcessLatency()
+    {
+        var now = new DateTimeOffset(2026, 11, 14, 15, 0, 0, TimeSpan.Zero);
+        var aggregate = new AggregateBar("AAPL", now.AddSeconds(-61), now.AddSeconds(-1), 100m, 101m, 99m, 100m, 100);
+
+        var issues = ProviderDataQualityValidator.ValidateAggregate("polygon", aggregate, now,
+            profile: new ProviderValidationProfile(MaxLatencyMs: 500));
+
+        issues.Should().ContainSingle().Which.Should().Match<ProviderDataQualityIssue>(issue =>
+            issue.FieldPath == "endTime" && issue.Severity == ProviderDataQualitySeverity.Error && issue.Message.Contains("latency"));
+    }
+
+    [Fact]
+    public void AggregateBoundary_FutureStart_StillRefusesConfiguredSkew()
+    {
+        var now = new DateTimeOffset(2026, 11, 14, 15, 0, 0, TimeSpan.Zero);
+        var aggregate = new AggregateBar("AAPL", now.AddSeconds(1), now.AddSeconds(61), 100m, 101m, 99m, 100m, 100);
+
+        var issues = ProviderDataQualityValidator.ValidateAggregate("polygon", aggregate, now,
+            profile: new ProviderValidationProfile(FutureSkewSeconds: 0, MaxLatencyMs: 500));
+
+        issues.Should().HaveCount(2).And.OnlyContain(issue =>
+            issue.Severity == ProviderDataQualitySeverity.Error && issue.Message.Contains("future"));
+        issues.Should().ContainSingle(issue => issue.FieldPath == "startTime");
+        issues.Should().ContainSingle(issue => issue.FieldPath == "endTime");
+    }
+
+    [Fact]
     public void BackfillRecency_UsesThinlyTradedProfileTolerance()
     {
         var today = new DateOnly(2026, 11, 13);

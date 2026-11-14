@@ -1020,7 +1020,7 @@ public partial class LiveDataViewerPage : Page
 
 Qualified name: <code>Meridian.Wpf.Views.MainPage</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/MainPage.SplitPane.cs:11](../../../../src/Meridian.Wpf/Views/MainPage.SplitPane.cs#L11).
+Source: [src/Meridian.Wpf/Views/MainPage.SplitPane.cs:15](../../../../src/Meridian.Wpf/Views/MainPage.SplitPane.cs#L15).
 
 ```csharp
 public partial class MainPage
@@ -1039,9 +1039,9 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public MainPage(MainPageViewModel viewModel, IShellNavigationCoordinator? shellNavigationCoordinator = null);</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:27](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L27) |  |
-| <code>public void ShowCommandPaletteOverlay();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:141](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L141) |  |
-| <code>public Task WaitForShellReadyAsync();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:147](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L147) |  |
-| <code>public bool NavigateToLaunchPage(string pageTag);</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:157](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L157) |  |
+| <code>public void ShowCommandPaletteOverlay();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:149](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L149) |  |
+| <code>public Task WaitForShellReadyAsync();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:155](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L155) |  |
+| <code>public bool NavigateToLaunchPage(string pageTag);</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:165](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L165) |  |
 
 ## MeridianDockingManager
 

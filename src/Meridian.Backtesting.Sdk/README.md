@@ -11,6 +11,13 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Backtesting.Sdk
 
+`BacktestEngineMetadata` carries optional `FinancingCoverageStatus` and nullable
+`RunAttributedMarginInterest` as init properties, preserving its existing constructor. An explicit
+`Unavailable` status means the decimal metric is a compatibility placeholder and financing/gross
+P&L comparisons require review; `Available` with actual `0` represents a measured zero. The nullable
+actual is serialized even under null-omission settings. Legacy declarations remain unassessed,
+and native normalization preserves declared financing coverage instead of inventing it.
+
 Options-overwrite candidates preserve delta, open-interest and volume availability separately from numeric values. Required missing measurements and nonfinite delta are refused by preview filters; an absent provider delta cannot become an eligible zero-delta contract. Spread and contract-multiplier facts remain inspectable.
 
 `CanonicalOpenLotAdapter` now compares explicit simulation and retained canonical direction.

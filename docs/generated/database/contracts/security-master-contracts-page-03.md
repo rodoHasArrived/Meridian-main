@@ -197,6 +197,7 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_FaceValueAccrualHolding["FaceValueAccrualHolding"] {
         +decimal AccrualFactor
+        +BondAmortizationMethod? AmortizationMethod
         +DateOnly Date
         +FaceValueLot Lot
         +decimal OpenShare

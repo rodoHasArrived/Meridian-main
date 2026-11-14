@@ -10762,6 +10762,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalActivityProjectionDto"
     },
     {
@@ -27928,6 +27940,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalActivityProjectionDto"
     },
     {
@@ -43060,6 +43084,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ManualJournalEntryDraftDto",
+      "target": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ManualJournalEntryDraftDto",
       "target": "contract:Meridian.Contracts.Ledger.TreasuryLedgerContextDto"
     },
     {
@@ -43535,6 +43565,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
+      "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
+      "target": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto"
     },
     {
       "kind": "contract-reference",
@@ -45851,6 +45893,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.ExchangeCorporateActionTerms",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionTerms"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondAmortizationMethod"
     },
     {
       "kind": "contract-reference",
@@ -59964,6 +60012,81 @@
       "target": "database:ledger.accounting_periods_pkey"
     },
     {
+      "constraint": "period_close_snapshots_period_id_fkey",
+      "kind": "foreign-key",
+      "label": "period_id",
+      "source": "database:ledger.period_close_snapshots",
+      "target": "database:ledger.accounting_periods"
+    },
+    {
+      "constraint": "period_close_snapshots_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.period_close_snapshots",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "constraint": "period_close_snapshots_close_event_id_fkey",
+      "kind": "foreign-key",
+      "label": "close_event_id",
+      "source": "database:ledger.period_close_snapshots",
+      "target": "database:ledger.period_close_events"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.period_close_snapshots_close_event_id_fkey on ledger.period_close_snapshots",
+      "target": "database:ledger.period_close_events.event_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.period_close_snapshots_close_event_id_fkey on ledger.period_close_snapshots",
+      "target": "database:ledger.period_close_events_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.period_close_snapshots_content_hash_sha256_check on ledger.period_close_snapshots",
+      "target": "database:ledger.period_close_snapshots.content_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.period_close_snapshots_ledger_book_id_fkey on ledger.period_close_snapshots",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.period_close_snapshots_ledger_book_id_fkey on ledger.period_close_snapshots",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.period_close_snapshots_payload_json_check on ledger.period_close_snapshots",
+      "target": "database:ledger.period_close_snapshots.payload_json"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.period_close_snapshots_period_id_fkey on ledger.period_close_snapshots",
+      "target": "database:ledger.accounting_periods.period_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.period_close_snapshots_period_id_fkey on ledger.period_close_snapshots",
+      "target": "database:ledger.accounting_periods_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.period_close_snapshots_period_version_check on ledger.period_close_snapshots",
+      "target": "database:ledger.period_close_snapshots.period_version"
+    },
+    {
       "constraint": "private_capital_calls_ledger_book_id_fkey",
       "kind": "foreign-key",
       "label": "ledger_book_id",
@@ -65642,6 +65765,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.period_close_snapshots"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.private_capital_calls"
     },
     {
@@ -66736,7 +66865,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "59b1c75c8cf47c66d8234c7afdf3e7f8221de517ea75fc1d4ca8133b237b93d1",
+  "fingerprint": "f75765e6c69989b84c153b3254fa1b0f6d86248c111f84a0af81e530a607999e",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -77546,6 +77675,18 @@
       "id": "contract:Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto"
     },
     {
       "classification": "dto",
@@ -92584,6 +92725,57 @@
       "label": "ledger.period_close_events_pkey"
     },
     {
+      "id": "database:ledger.period_close_snapshots",
+      "kind": "database-table",
+      "label": "ledger.period_close_snapshots",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.period_close_snapshots.content_hash_sha256",
+      "kind": "database-object",
+      "label": "ledger.period_close_snapshots.content_hash_sha256"
+    },
+    {
+      "id": "database:ledger.period_close_snapshots.payload_json",
+      "kind": "database-object",
+      "label": "ledger.period_close_snapshots.payload_json"
+    },
+    {
+      "id": "database:ledger.period_close_snapshots.period_version",
+      "kind": "database-object",
+      "label": "ledger.period_close_snapshots.period_version"
+    },
+    {
+      "id": "database:ledger.period_close_snapshots_close_event_id_fkey on ledger.period_close_snapshots",
+      "kind": "database-object",
+      "label": "ledger.period_close_snapshots_close_event_id_fkey on ledger.period_close_snapshots"
+    },
+    {
+      "id": "database:ledger.period_close_snapshots_content_hash_sha256_check on ledger.period_close_snapshots",
+      "kind": "database-object",
+      "label": "ledger.period_close_snapshots_content_hash_sha256_check on ledger.period_close_snapshots"
+    },
+    {
+      "id": "database:ledger.period_close_snapshots_ledger_book_id_fkey on ledger.period_close_snapshots",
+      "kind": "database-object",
+      "label": "ledger.period_close_snapshots_ledger_book_id_fkey on ledger.period_close_snapshots"
+    },
+    {
+      "id": "database:ledger.period_close_snapshots_payload_json_check on ledger.period_close_snapshots",
+      "kind": "database-object",
+      "label": "ledger.period_close_snapshots_payload_json_check on ledger.period_close_snapshots"
+    },
+    {
+      "id": "database:ledger.period_close_snapshots_period_id_fkey on ledger.period_close_snapshots",
+      "kind": "database-object",
+      "label": "ledger.period_close_snapshots_period_id_fkey on ledger.period_close_snapshots"
+    },
+    {
+      "id": "database:ledger.period_close_snapshots_period_version_check on ledger.period_close_snapshots",
+      "kind": "database-object",
+      "label": "ledger.period_close_snapshots_period_version_check on ledger.period_close_snapshots"
+    },
+    {
       "id": "database:ledger.private_capital_calls",
       "kind": "database-table",
       "label": "ledger.private_capital_calls",
@@ -98001,11 +98193,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4145,
-    "contract_set_memberships": 5328,
-    "edges": 11086,
-    "foreign_keys": 203,
+    "contract_references": 4149,
+    "contract_set_memberships": 5332,
+    "edges": 11107,
+    "foreign_keys": 206,
     "logical_references": 6,
-    "nodes": 5435
+    "nodes": 5447
   }
 }

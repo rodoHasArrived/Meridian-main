@@ -1,3 +1,4 @@
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 
@@ -19,6 +20,32 @@ internal static class HistoricalTaxLotAccrual
         // Validate the complete chain before returning any historical entitlement. This also
         // validates mutations after the requested date and refuses unexplained current factors.
         _ = HistoricalTaxLotQuantity.Project(lot, history, through);
+        if (lot.Account.AccountType != LedgerAccountType.Asset || lot.Acquisition is { Direction: not OpenLotDirection.Long })
+            throw new LedgerValidationException("Retained accrual supports long asset lots only.");
+        var ordered = history.OrderBy(static mutation => mutation.ResultVersion).ToArray();
+        var version = lot.OriginatingMutationBatchId.HasValue ? 0L : 1L;
+        foreach (var mutation in ordered)
+        {
+            if (mutation.ExpectedVersion != version)
+                throw new LedgerValidationException("Retained accrual requires complete consecutive lot mutation history.");
+            version = mutation.ResultVersion;
+            if (mutation.EffectiveDate <= through && mutation.Kind is AtomicTaxLotMutationKind.CapitalReturn
+                or AtomicTaxLotMutationKind.BasisRedistribution or AtomicTaxLotMutationKind.Amortization)
+                throw new LedgerValidationException("Retained accrual does not model the lot's historical basis restatement.");
+        }
+        if (version != lot.Version || lot.BasisAdjustment is { } adjustment
+            && !history.Any(mutation => mutation.MutationBatchId == adjustment.MutationBatchId
+                && adjustment.Reason == (mutation.Kind switch
+                {
+                    AtomicTaxLotMutationKind.BasisRedistribution => OpenLotBasisAdjustmentReasons.AverageCostRedistribution,
+                    AtomicTaxLotMutationKind.Amortization => OpenLotBasisAdjustmentReasons.Amortization,
+                    AtomicTaxLotMutationKind.CorporateAction => OpenLotBasisAdjustmentReasons.CorporateActionSuccessor,
+                    AtomicTaxLotMutationKind.CapitalReturn => OpenLotBasisAdjustmentReasons.CapitalReturn,
+                    AtomicTaxLotMutationKind.FactorPaydown => OpenLotBasisAdjustmentReasons.FactorPaydown,
+                    AtomicTaxLotMutationKind.Disposal => OpenLotBasisAdjustmentReasons.DisposalRelief,
+                    _ => null
+                })))
+            throw new LedgerValidationException("Retained accrual cannot establish the lot's complete basis history.");
         if (lot.AcquiredDate > through)
             return [];
 
@@ -70,7 +97,7 @@ internal static class HistoricalTaxLotAccrual
                     ?? throw new LedgerValidationException($"Lot '{lot.LotId}' did not retain the face terms required for accrual.");
                 snapshots.Add(new(date, face, accrualQuantity / lot.OriginalQuantity,
                     accrualFactor ?? throw new LedgerValidationException($"Lot '{lot.LotId}' has no retained accrual factor."),
-                    lot.TaxLotRecordId, lot.Version));
+                    lot.TaxLotRecordId, lot.Version, lot.Acquisition?.FaceValueTerms?.AmortizationMethod));
             }
 
             if (date == through)

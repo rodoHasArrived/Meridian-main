@@ -323,10 +323,14 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             throw new InvalidOperationException("Consolidation drafts require authoritative consolidation intake; rerun consolidation to prepare an elimination.");
         }
         EnsureAssetAccountingSaveAuthority(request.Draft, existing, trustedAutomatedIntake);
+        EnsureOpeningBalanceSaveAuthority(request.Draft, existing, trustedAutomatedIntake);
         var normalizedDraft = await NormalizeAndValidateAsync(request.Draft with
         {
             TenantId = requestedTenantId,
             CompanyId = requestedCompanyId,
+            PriorPeriodAdjustmentSource = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.PriorPeriodAdjustmentSource : null)
+                : existing.PriorPeriodAdjustmentSource,
             // Automated evidence grades are server-produced accounting-control facts. A browser or
             // WPF resave may edit the draft, but cannot clear, replace, or upgrade the retained grade.
             AutomationEvidenceAssessment = existing is null
@@ -351,7 +355,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                  RecurringJournalEvidenceGuard.IsRecurring(existing.TreasuryContext?.IdempotencyKey) ||
                  existing.RequiresValuationMarkEvidence || existing.ValuationMarkEvidenceJson is not null ||
                  ValuationMarkEvidenceGuard.IsValuation(existing.TreasuryContext?.IdempotencyKey) ||
-                 IsConsolidationDraft(existing))
+                 IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null || IsOpeningCorrectionDraft(existing))
                 ? (request.Draft.TreasuryContext ?? existing.TreasuryContext) is { } valuationContext
                     ? valuationContext with { IdempotencyKey = existing.TreasuryContext?.IdempotencyKey }
                     : existing.TreasuryContext
@@ -362,10 +366,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             RecurringJournalEvidenceDigest = existing is null
                 ? (trustedAutomatedIntake ? request.Draft.RecurringJournalEvidenceDigest : null)
                 : existing.RecurringJournalEvidenceDigest,
-            ReversalOfJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing)) ? existing.ReversalOfJournalEntryId : request.Draft.ReversalOfJournalEntryId,
-            RebookedFromJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing)) ? existing.RebookedFromJournalEntryId : request.Draft.RebookedFromJournalEntryId,
-            Reversal = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing)) ? existing.Reversal : request.Draft.Reversal,
-            Rebook = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing)) ? existing.Rebook : request.Draft.Rebook,
+            ReversalOfJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null || IsOpeningCorrectionDraft(existing)) ? existing.ReversalOfJournalEntryId : request.Draft.ReversalOfJournalEntryId,
+            RebookedFromJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null || IsOpeningCorrectionDraft(existing)) ? existing.RebookedFromJournalEntryId : request.Draft.RebookedFromJournalEntryId,
+            Reversal = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null || IsOpeningCorrectionDraft(existing)) ? existing.Reversal : request.Draft.Reversal,
+            Rebook = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null || IsOpeningCorrectionDraft(existing)) ? existing.Rebook : request.Draft.Rebook,
             RequiresRecurringJournalEvidence = existing?.RequiresRecurringJournalEvidence == true ||
                 existing?.RecurringJournalEvidenceJson is not null || request.Draft.RequiresRecurringJournalEvidence ||
                 RecurringJournalEvidenceGuard.IsRecurring(existing?.TreasuryContext?.IdempotencyKey) ||
@@ -423,6 +427,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         }
 
         var now = DateTimeOffset.UtcNow;
+        if (existing is null && trustedAutomatedIntake && normalizedDraft.PriorPeriodAdjustmentSource is { } priorPeriodSource)
+            normalizedDraft = normalizedDraft with { PriorPeriodAdjustmentSource = priorPeriodSource with { ExpectedLines = normalizedDraft.Lines } };
         var saved = normalizedDraft with
         {
             Status = normalizedDraft.ValidationIssues.Any(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
@@ -491,6 +497,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             CompanyId = companyId,
             // A read-only validation request is not authority to invent a policy or source receipt.
             PrivateCapitalAuthorityJson = existing?.PrivateCapitalAuthorityJson,
+            PriorPeriodAdjustmentSource = existing?.PriorPeriodAdjustmentSource,
             DistributionDeclarationJson = existing?.DistributionDeclarationJson,
             RecurringJournalEvidenceJson = existing?.RecurringJournalEvidenceJson,
             RecurringJournalEvidenceDigest = existing?.RecurringJournalEvidenceDigest,
@@ -1045,14 +1052,24 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                         line.Side == AccountingTemplateLineSideDto.Debit ? original.Amount : 0m,
                         line.Side == AccountingTemplateLineSideDto.Credit ? original.Amount : 0m,
                         original.FxRateToFunctional)
-                    : null));
+                    : string.Equals(line.Currency, ledgerBook.BaseCurrency, StringComparison.OrdinalIgnoreCase)
+                        && string.Equals(draft.Currency, ledgerBook.BaseCurrency, StringComparison.OrdinalIgnoreCase)
+                        ? new LedgerEntryCurrency(ledgerBook.BaseCurrency, ledgerBook.BaseCurrency,
+                            line.Side == AccountingTemplateLineSideDto.Debit ? amount : 0m,
+                            line.Side == AccountingTemplateLineSideDto.Credit ? amount : 0m, 1m)
+                        : null));
         }
 
+        var postingLines = await MaterializeAgreementReversalCurrenciesAsync(draft, ledgerBook, lines, ct).ConfigureAwait(false);
+        // Compare the final materialized accounts as well: the chart can change between
+        // draft validation and this independently loaded posting configuration.
+        await EnsureMaterializedPriorPeriodInverseAsync(draft, postingLines, ct).ConfigureAwait(false);
+        await EnsureMaterializedOpeningInverseAsync(draft, postingLines, ct).ConfigureAwait(false);
         var entry = new JournalEntry(
             draft.JournalEntryId,
             timestamp,
             description,
-            lines,
+            postingLines,
             BuildManualJournalEntryMetadata(draft, postingCommand, evidenceLinks, recordedAtUtc, securityLineage));
 
         return new LedgerJournalEntryWrite(
@@ -1158,12 +1175,41 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         AddMetadataTag(tags, "accountingBasis", draft.AccountingBasis.ToString());
         AddMetadataTag(tags, "ledgerBookId", draft.LedgerBookId?.ToString("D"));
         AddMetadataTag(tags, "periodId", draft.PeriodId);
+        if (draft.PriorPeriodAdjustmentSource is { } priorPeriod)
+        {
+            AddMetadataTag(tags, "prior-period.sourceJournalEntryId", priorPeriod.SourceJournalEntryId.ToString("D"));
+            AddMetadataTag(tags, "prior-period.sourcePeriodId", priorPeriod.SourcePeriodId.ToString("D"));
+            AddMetadataTag(tags, "prior-period.originalEffectiveDate", priorPeriod.OriginalEffectiveDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            AddMetadataTag(tags, "prior-period.intentId", priorPeriod.IntentId);
+            AddMetadataTag(tags, "prior-period.reason", priorPeriod.Reason);
+            AddMetadataTag(tags, "prior-period.reversalPolicy", priorPeriod.ReversePeriodEndMark ? "reverse-period-end-mark" : "reviewed-prior-period-correction");
+            if (priorPeriod.Correction is { } priorCorrection)
+            {
+                AddMetadataTag(tags, "prior-period.correctionJournalEntryId", priorCorrection.JournalEntryId.ToString("D"));
+                AddMetadataTag(tags, "prior-period.correctionAction", priorCorrection.ReverseSides ? "Reverse" : "Rebook");
+                AddMetadataTag(tags, "prior-period.correctionReason", priorCorrection.Reason);
+            }
+        }
         AddMetadataTag(tags, "tenantId", draft.TenantId);
         AddMetadataTag(tags, "companyId", draft.CompanyId);
         AddMetadataTag(tags, "sourceEventId", postingCommand.SourceEventId?.ToString("D"));
         AddMetadataTag(tags, "sourceJournalEntryId", postingCommand.SourceJournalEntryId?.ToString("D"));
         AddMetadataTag(tags, "securityMasterProvenance", securityLineage?.Provenance);
         AddMetadataTag(tags, "securityMasterLineage", securityLineage?.Lineage);
+        if (securityLineage?.PerLine is { } perLine)
+        {
+            tags["securityMaster.lineageMode"] = "per-line";
+            foreach (var line in draft.Lines)
+            {
+                if (!perLine.TryGetValue(line.LineId, out var resolved))
+                    continue;
+                var entryId = CreateDeterministicGuid("manual-je-line", draft.JournalEntryId.ToString("D"), line.LineId, line.Side.ToString());
+                var prefix = $"securityMaster.line.{entryId:D}.";
+                tags[prefix + "securityId"] = resolved.SecurityId!.Value.ToString("D");
+                tags[prefix + "provenance"] = resolved.Provenance;
+                tags[prefix + "lineage"] = resolved.Lineage;
+            }
+        }
         if (evidenceLinks.Count > 0)
         {
             tags["evidenceLinks"] = string.Join("|", evidenceLinks);
@@ -1215,12 +1261,37 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         if (instrumentLines.Length == 0)
             return null;
 
+        if (instrumentLines.Any(item => (item.Line.SecurityId ?? item.Line.Dimensions?.InstrumentId).GetValueOrDefault() == Guid.Empty))
+            throw new InvalidOperationException("Every instrument-bearing opening line requires its own resolved Security Master identity before posting.");
+
         var securityIds = instrumentLines
             .Select(static item => item.Line.SecurityId ?? item.Line.Dimensions?.InstrumentId)
             .Where(static value => value.HasValue && value.Value != Guid.Empty)
             .Select(static value => value!.Value)
             .Distinct()
             .ToArray();
+        // A prior-period inverse retains server-owned source authority. A client-supplied
+        // idempotency prefix alone cannot authorize a mixed-security manual journal.
+        var verifiedPriorPeriodAdjustment = securityIds.Length > 1
+            && draft.PriorPeriodAdjustmentSource is not null
+            && await ValidatePriorPeriodAdjustmentAsync(draft, ct).ConfigureAwait(false) is null;
+        var verifiedOpeningCorrection = securityIds.Length > 1 && IsOpeningCorrectionDraft(draft)
+            && await ValidateOpeningCorrectionAsync(draft, chartByPath, ct).ConfigureAwait(false) is null;
+        if (securityIds.Length > 1 && (IsOpeningBalanceDraft(draft) || verifiedPriorPeriodAdjustment || verifiedOpeningCorrection))
+        {
+            var perLine = new Dictionary<string, ManualJournalSecurityMasterLineage>(StringComparer.Ordinal);
+            foreach (var group in instrumentLines.GroupBy(item => item.Line.SecurityId ?? item.Line.Dimensions?.InstrumentId))
+            {
+                var resolved = await ResolveSecurityMasterPostingLineageAsync(draft with { Lines = group.Select(item => item.Line).ToArray() }, chartByPath, ct)
+                    ?? throw new InvalidOperationException("Opening line Security Master provenance is unavailable.");
+                foreach (var item in group)
+                    perLine.Add(item.Line.LineId, resolved);
+            }
+            return new ManualJournalSecurityMasterLineage(null, null,
+                instrumentLines.Select(item => item.Line.LedgerAccountFinancialAccountId).Distinct(StringComparer.OrdinalIgnoreCase).SingleOrDefault(),
+                string.Join('|', perLine.Values.Select(value => value.Provenance).Distinct(StringComparer.Ordinal)),
+                string.Join('|', perLine.Values.Select(value => value.Lineage).Distinct(StringComparer.Ordinal)), perLine);
+        }
         if (securityIds.Length != 1)
         {
             throw new InvalidOperationException(
@@ -1303,11 +1374,12 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                alias.IsEnabled && string.Equals(alias.AliasValue?.Trim(), symbol, StringComparison.OrdinalIgnoreCase));
 
     private sealed record ManualJournalSecurityMasterLineage(
-        Guid SecurityId,
-        string Symbol,
+        Guid? SecurityId,
+        string? Symbol,
         string? FinancialAccountId,
         string Provenance,
-        string Lineage);
+        string Lineage,
+        IReadOnlyDictionary<string, ManualJournalSecurityMasterLineage>? PerLine = null);
 
     private static AccountingPostingIntentDto BuildManualPostingIntent(ManualJournalEntryDraftDto draft)
     {
@@ -1524,6 +1596,21 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                     EvidenceLink = line.EvidenceLink ?? request.EvidenceLinks.FirstOrDefault()
                 })
                 .ToArray();
+        var openingCorrection = IsOpeningBalanceDraft(posted) || IsOpeningCorrectionDraft(posted);
+        if (!reverseSides && (posted.PriorPeriodAdjustmentSource is not null || openingCorrection))
+        {
+            // An opening or prior-period rebook replaces the already posted journal. Retain its exact
+            // inverse and the reviewed replacement in one balanced draft; appending replacement
+            // lines alone would count the earlier adjustment twice. Unchanged terms net to zero.
+            var inverse = posted.Lines.Select((line, index) => line with
+            {
+                LineId = $"rebook-inverse-{index + 1}",
+                Side = ReverseSide(line.Side),
+                EvidenceLink = line.EvidenceLink ?? request.EvidenceLinks.FirstOrDefault()
+            });
+            correctionLines = inverse.Concat(correctionLines.Select((line, index) => line with
+            { LineId = $"rebook-replacement-{index + 1}" })).ToArray();
+        }
         var toStatus = reverseSides
             ? ManualJournalEntryStatusDto.Reversed
             : ManualJournalEntryStatusDto.Rebooked;
@@ -1578,6 +1665,27 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             Reversal = reversal,
             Rebook = rebook
         };
+        if (posted.PriorPeriodAdjustmentSource is { } priorPeriodSource)
+        {
+            correction = correction with
+            {
+                PriorPeriodAdjustmentSource = priorPeriodSource with
+                {
+                    ExpectedLines = correctionLines,
+                    Correction = new PriorPeriodAdjustmentCorrectionDto(posted.JournalEntryId, reverseSides, reason)
+                },
+                TreasuryContext = (correction.TreasuryContext ?? new TreasuryLedgerContextDto()) with
+                { IdempotencyKey = $"prior-period|book={posted.LedgerBookId:N}|source={priorPeriodSource.SourceJournalEntryId:N}|intent={Uri.EscapeDataString(priorPeriodSource.IntentId)}|correction={correctionId:N}" }
+            };
+        }
+        if (openingCorrection)
+        {
+            correction = correction with
+            {
+                TreasuryContext = (correction.TreasuryContext ?? new TreasuryLedgerContextDto()) with
+                { IdempotencyKey = $"portfolio-opening-correction:{posted.JournalEntryId:D}:{correctionId:D}" }
+            };
+        }
         if (posted.RecurringJournalEvidenceJson is { } recurringJson)
         {
             var evidence = RecurringJournalEvidenceGuard.Deserialize(recurringJson)
@@ -1588,11 +1696,14 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 { IdempotencyKey = RecurringJournalEvidenceGuard.CorrectionKey(evidence.OccurrenceKey, correctionId) }
             };
         }
-        correction = await NormalizeAndValidateAsync(correction, allowIncomplete: false, ct).ConfigureAwait(false);
+        correction = await NormalizeAndValidateAsync(correction, allowIncomplete: false, ct,
+            prospectiveOpeningCorrectionParent: openingCorrection ? corrected : null).ConfigureAwait(false);
         if (correction.ValidationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical))
         {
             throw new InvalidOperationException("Manual journal reversal and rebook actions cannot transition the posted entry while the generated correction draft has critical validation issues.");
         }
+        if (correction.PriorPeriodAdjustmentSource is { } normalizedPriorPeriod)
+            correction = correction with { PriorPeriodAdjustmentSource = normalizedPriorPeriod with { ExpectedLines = correction.Lines } };
 
         // The source transition and its source-linked correction are one accounting mutation.
         // Retaining either draft without the other creates an unrecoverable workbench state, so

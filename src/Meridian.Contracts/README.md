@@ -158,6 +158,18 @@ for floating v3 analytics. Its null omission preserves legacy context serializat
 fraction, original typed provider observation, recording actor/time, review justification and hash.
 Observed reset evidence is distinct from a forward curve or forecast assumption.
 
+`PriorPeriodAdjustmentSourceDto` binds a newly prepared correction to its retained source journal,
+closed period, original effective date, explicitly selected open target period, operator reason,
+intent identity and expected inverse lines. Workbench saves retain this server-produced authority;
+it does not reopen or modify the source period or grant approval/posting authority.
+Its optional `Correction` identifies the immediate posted adjustment being reversed or rebooked,
+preserving the original closed-period source as the root across later corrections.
+
+Strategy execution, portfolio and comparison reads expose `FinancingCoverageStatus` and nullable
+`RunAttributedMarginInterest`. An unavailable total remains explicit JSON null and carries
+coverage warnings into continuity reads. Existing decimal totals remain compatibility fields;
+financing comparisons require complete run-allocation evidence. Legacy coverage stays unassessed.
+
 `StructuredCashFlowScheduleEntry` carries an explicit stored row version and serialized measured
 interest dates; record equality covers all stored members. Receipt writers retain a frozen legacy
 row schema for historical receipts. The catalog declares StructuredNote valuation as fair value

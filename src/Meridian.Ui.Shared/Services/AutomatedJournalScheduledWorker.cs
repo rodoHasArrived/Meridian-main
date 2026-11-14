@@ -1,6 +1,7 @@
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.Storage.Ledger;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -38,6 +39,7 @@ public sealed class AutomatedJournalScheduledWorker
     private readonly ILogger<AutomatedJournalScheduledWorker> _logger;
     private readonly IAutomatedJournalDividendPositionResolver? _dividendPositionResolver;
     private readonly RecurringJournalRunner? _recurring;
+    private readonly PeriodAdjustmentPreparationService? _periodAdjustments;
     private readonly SemaphoreSlim _runGate = new(1, 1);
 
     public AutomatedJournalScheduledWorker(
@@ -45,13 +47,17 @@ public sealed class AutomatedJournalScheduledWorker
         AutomatedJournalIntakeRunner intakeRunner,
         ILogger<AutomatedJournalScheduledWorker> logger,
         IAutomatedJournalDividendPositionResolver? dividendPositionResolver = null,
-        RecurringJournalRunner? recurring = null)
+        RecurringJournalRunner? recurring = null,
+        ILedgerJournalStore? periodAdjustmentJournalStore = null,
+        AutomatedJournalDraftIntakeService? periodAdjustmentIntake = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _intakeRunner = intakeRunner ?? throw new ArgumentNullException(nameof(intakeRunner));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _dividendPositionResolver = dividendPositionResolver;
         _recurring = recurring;
+        _periodAdjustments = periodAdjustmentJournalStore is null || periodAdjustmentIntake is null ? null
+            : new PeriodAdjustmentPreparationService(periodAdjustmentJournalStore, periodAdjustmentIntake, store);
     }
 
     public async Task<AutomatedJournalScheduledBatchResult> RunDueAsync(
@@ -149,6 +155,19 @@ public sealed class AutomatedJournalScheduledWorker
 
         try
         {
+            if (item.Kind == AutomatedJournalScheduleKind.PeriodEndMarkReversal)
+            {
+                if (_periodAdjustments is null || item.PeriodAdjustment is null
+                    || item.TenantId is null || item.CompanyId is null)
+                    throw new InvalidOperationException("The retained period-end mark reversal authority or durable ledger is unavailable.");
+                using var authority = Meridian.Contracts.Tenancy.FundScopeTenantAuthority.Enter(item.TenantId,
+                    $"period-mark-reversal:{item.ScheduleId}");
+                var prepared = await _periodAdjustments.PrepareAsync(item.PeriodAdjustment,
+                    item.CreatedBy ?? item.Actor, item.TenantId, item.CompanyId, ct).ConfigureAwait(false);
+                return await CompleteFromIntakeAsync(running, runKey,
+                    new AutomatedJournalIntakeRunResult([], prepared), nowUtc, ct).ConfigureAwait(false);
+            }
+
             AutomatedJournalDividendPositionResolution? dividendPositions = null;
             if (item.Kind == AutomatedJournalScheduleKind.DividendCapture)
             {

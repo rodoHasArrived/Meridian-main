@@ -117,6 +117,46 @@ Declared public members:
 | --- | --- | --- |
 | <code>[McpServerResource(UriTemplate = &quot;mdc://templates/{type}&quot;, Name = &quot;provider_template&quot;, Title = &quot;Provider Implementation Template&quot;, MimeType = &quot;text/plain&quot;)][Description(&quot;Scaffold template for a new Meridian provider. type: streaming &#124; historical &#124; symbol-search &#124; factory &#124; config &#124; constants&quot;)] public string GetTemplate(string type);</code> | [src/Meridian.Mcp/Resources/TemplateResources.cs:13](../../../../src/Meridian.Mcp/Resources/TemplateResources.cs#L13) |  |
 
+## LedgerApiClient
+
+Qualified name: <code>Meridian.Mcp.Services.LedgerApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Mcp/Services/LedgerApiClient.cs:8](../../../../src/Meridian.Mcp/Services/LedgerApiClient.cs#L8).
+
+Read-only bridge to the workstation&#x27;s authenticated, tenant-scoped ledger API.
+
+```csharp
+public sealed class LedgerApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerApiClient(HttpClient client, LedgerApiCredentials? credentials = null);</code> | [src/Meridian.Mcp/Services/LedgerApiClient.cs:17](../../../../src/Meridian.Mcp/Services/LedgerApiClient.cs#L17) |  |
+| <code>public async Task&lt;string&gt; ReadAsync(string runId, string view, IReadOnlyDictionary&lt;string, string?&gt;? query, CancellationToken ct, int? maxResponseCharacters = null);</code> | [src/Meridian.Mcp/Services/LedgerApiClient.cs:24](../../../../src/Meridian.Mcp/Services/LedgerApiClient.cs#L24) |  |
+| <code>public Task&lt;string&gt; ReadPeriodAsync(Guid periodId, string view, string? account, CancellationToken ct);</code> | [src/Meridian.Mcp/Services/LedgerApiClient.cs:42](../../../../src/Meridian.Mcp/Services/LedgerApiClient.cs#L42) |  |
+| <code>public Task&lt;string&gt; ReadCompletenessAsync(Guid ledgerBookId, Guid periodId, Guid aggregateId, string financialAccountId, string sourceKinds, string? sessionId, CancellationToken ct);</code> | [src/Meridian.Mcp/Services/LedgerApiClient.cs:52](../../../../src/Meridian.Mcp/Services/LedgerApiClient.cs#L52) |  |
+| <code>public static HttpClient CreateHttpClient();</code> | [src/Meridian.Mcp/Services/LedgerApiClient.cs:177](../../../../src/Meridian.Mcp/Services/LedgerApiClient.cs#L177) |  |
+
+## LedgerApiCredentials
+
+Qualified name: <code>Meridian.Mcp.Services.LedgerApiCredentials</code>. Kind: `class`.
+
+Source: [src/Meridian.Mcp/Services/LedgerApiCredentials.cs:6](../../../../src/Meridian.Mcp/Services/LedgerApiCredentials.cs#L6).
+
+Operator credentials are process configuration, never MCP tool arguments or output.
+
+```csharp
+public sealed class LedgerApiCredentials(string? username = null, string? password = null, string? sessionToken = null, string? apiKey = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Mcp/Services/LedgerApiCredentials.cs:23](../../../../src/Meridian.Mcp/Services/LedgerApiCredentials.cs#L23) |  |
+
 ## RepoPathService
 
 Qualified name: <code>Meridian.Mcp.Services.RepoPathService</code>. Kind: `class`.
@@ -238,20 +278,28 @@ Declared public members:
 
 Qualified name: <code>Meridian.Mcp.Tools.LedgerTools</code>. Kind: `class`.
 
-Source: [src/Meridian.Mcp/Tools/LedgerTools.cs:9](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L9).
+Source: [src/Meridian.Mcp/Tools/LedgerTools.cs:8](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L8).
 
-Read-only accounting access through the workstation API&#x27;s existing authorization and run-visibility boundary. No archive or database path bypasses that boundary.
+Ledger reads use server authorization and never open journal files or post entries.
 
 ```csharp
-public sealed class LedgerTools(IHttpClientFactory clients)
+public sealed class LedgerTools(LedgerApiClient api)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string HttpClientName = &quot;meridian-ledger-read&quot;;</code> | [src/Meridian.Mcp/Tools/LedgerTools.cs:11](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L11) |  |
-| <code>[McpServerTool(Name = &quot;get_run_trial_balance&quot;)][Description(&quot;Read a strategy run&#x27;s trial balance at an inclusive as-of instant. Calls the configured Meridian workstation API and honors its authentication, tenant scope and run visibility. Returns an explicit unavailable/refused error when no authorized retained ledger exists.&quot;)] public async Task&lt;string&gt; GetRunTrialBalanceAsync([Description(&quot;Retained strategy run identifier&quot;)] string runId, [Description(&quot;Inclusive as-of instant with UTC offset, for example 2026-10-31T23:59:59Z&quot;)] DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Mcp/Tools/LedgerTools.cs:15](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L15) |  |
+| <code>[McpServerTool(Name = &quot;get_run_trial_balance&quot;)][Description(&quot;Read a strategy run&#x27;s trial balance at an inclusive as-of instant. Calls the configured Meridian workstation API and honors its issued operator session, tenant scope and run visibility. Returns an explicit unavailable/refused error when no authorized retained ledger exists.&quot;)] public async Task&lt;string&gt; GetRunTrialBalanceAsync([Description(&quot;Retained strategy run identifier&quot;)] string runId, [Description(&quot;Inclusive as-of instant with UTC offset, for example 2026-10-31T23:59:59Z&quot;)] DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Mcp/Tools/LedgerTools.cs:12](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L12) |  |
+| <code>[McpServerTool(Name = &quot;get_posted_ledger_journal&quot;)][Description(&quot;Read authoritative posted journal entries in an accessible accounting period, including policy, rule and source-event evidence.&quot;)] public Task&lt;string&gt; GetPostedJournalAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Mcp/Tools/LedgerTools.cs:51](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L51) |  |
+| <code>[McpServerTool(Name = &quot;get_posted_trial_balance&quot;)][Description(&quot;Read the authoritative accounting-period trial balance using server-owned book and tenant access.&quot;)] public Task&lt;string&gt; GetPostedTrialBalanceAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Mcp/Tools/LedgerTools.cs:56](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L56) |  |
+| <code>[McpServerTool(Name = &quot;get_posted_running_balance&quot;)][Description(&quot;Read an account&#x27;s posted accounting-period running balance. The server applies ledger, period and tenant authorization.&quot;)] public Task&lt;string&gt; GetPostedRunningBalanceAsync(Guid periodId, string account, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Mcp/Tools/LedgerTools.cs:61](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L61) |  |
+| <code>[McpServerTool(Name = &quot;get_ledger_completeness&quot;)][Description(&quot;Compare independent fill, asset and loan source populations against posted journals in an exact book/period/aggregate/account scope. Unavailable source populations remain incomplete.&quot;)] public Task&lt;string&gt; GetCompletenessAsync(Guid ledgerBookId, Guid periodId, Guid aggregateId, string financialAccountId, string sourceKinds = &quot;Fill,AssetEvent,LoanEvent&quot;, string? sessionId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Mcp/Tools/LedgerTools.cs:66](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L66) |  |
+| <code>[McpServerTool(Name = &quot;get_ledger_journal&quot;)][Description(&quot;Read complete journal entries and audit metadata for a retained strategy run. Results are paged; offset starts at 0 and limit is 1..10000.&quot;)] public Task&lt;string&gt; GetJournalAsync(string runId, string? from = null, string? to = null, int offset = 0, int limit = 500, CancellationToken ct = default);</code> | [src/Meridian.Mcp/Tools/LedgerTools.cs:72](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L72) |  |
+| <code>[McpServerTool(Name = &quot;get_ledger_trial_balance&quot;)][Description(&quot;Read the current or ISO-8601 as-of trial balance of a retained run, with debit/credit totals and financial-account identity.&quot;)] public Task&lt;string&gt; GetTrialBalanceAsync(string runId, string? asOf = null, string? financialAccountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Mcp/Tools/LedgerTools.cs:87](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L87) |  |
+| <code>[McpServerTool(Name = &quot;get_ledger_accounts&quot;)][Description(&quot;Read ledger account summaries, including balances, debit/credit totals, posting counts and first/last dates.&quot;)] public Task&lt;string&gt; GetAccountsAsync(string runId, string? financialAccountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Mcp/Tools/LedgerTools.cs:93](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L93) |  |
+| <code>[McpServerTool(Name = &quot;get_ledger_running_balance&quot;)][Description(&quot;Read one account&#x27;s running balance with source journal metadata. Qualify ambiguous account names with type, symbol and financial account; empty string selects unscoped.&quot;)] public Task&lt;string&gt; GetRunningBalanceAsync(string runId, string accountName, string? accountType = null, string? symbol = null, string? financialAccountId = null, string? from = null, string? to = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Mcp/Tools/LedgerTools.cs:98](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L98) |  |
+| <code>[McpServerTool(Name = &quot;get_symbol_ledger&quot;)][Description(&quot;Read complete journals linked to a symbol through metadata or securities account lines, including counterpart cash legs.&quot;)] public Task&lt;string&gt; GetSymbolLedgerAsync(string runId, string symbol, string? from = null, string? to = null, int offset = 0, int limit = 500, CancellationToken ct = default);</code> | [src/Meridian.Mcp/Tools/LedgerTools.cs:111](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L111) |  |
 
 ## ProviderTools
 

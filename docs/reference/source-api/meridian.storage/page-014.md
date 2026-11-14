@@ -6,6 +6,78 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QualityReportSummary
+
+Qualified name: <code>Meridian.Storage.Services.QualityReportSummary</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/DataQualityScoringService.cs:496](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L496).
+
+Summarizes retained file quality scores by quality band, source, and symbol.
+
+```csharp
+public sealed class QualityReportSummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:498](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L498) |  |
+| <code>public double AverageScore { get; set; }</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:499](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L499) |  |
+| <code>public int HighQualityFiles { get; set; }</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:500](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L500) |  |
+| <code>public int MediumQualityFiles { get; set; }</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:501](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L501) |  |
+| <code>public int LowQualityFiles { get; set; }</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:502](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L502) |  |
+| <code>public Dictionary&lt;string, double&gt; BySource { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:503](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L503) |  |
+| <code>public Dictionary&lt;string, double&gt; BySymbol { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:504](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L504) |  |
+
+## QualityTrend
+
+Qualified name: <code>Meridian.Storage.Services.QualityTrend</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataQualityService.cs:1215](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1215).
+
+```csharp
+public sealed record QualityTrend(string Symbol, double CurrentScore, double PreviousScore, double TrendDirection, string[] DegradingDimensions, string[] ImprovingDimensions, DateTimeOffset[] ScoreHistory, double[] ScoreValues, string WindowGranularity = "day", bool HasConfidence = false, bool IsSparseData = true, IReadOnlyDictionary<string, double[]>? DimensionSeries = null);
+```
+
+## QualityTrendPoint
+
+Qualified name: <code>Meridian.Storage.Services.QualityTrendPoint</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/QualityTrendStore.cs:186](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L186).
+
+```csharp
+public sealed record QualityTrendPoint(string Symbol, DateOnly Date, string Provider, DateTimeOffset ScoredAt, double OverallScore, IReadOnlyDictionary<string, double> DimensionScores)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? EvaluationId { get; init; }</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:194](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L194) |  |
+| <code>public string? InputHashSha256 { get; init; }</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:195](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L195) |  |
+| <code>public string? ResultHashSha256 { get; init; }</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:196](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L196) |  |
+| <code>public string? RulesetVersion { get; init; }</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:197](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L197) |  |
+| <code>public VerifiedOperationOutcome? Outcome { get; init; }</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:198](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L198) |  |
+
+## QualityTrendResultHash
+
+Qualified name: <code>Meridian.Storage.Services.QualityTrendResultHash</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/QualityTrendStore.cs:204](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L204).
+
+Computes a deterministic digest binding a quality evaluation to its inputs, rules, and scored results.
+
+```csharp
+public static class QualityTrendResultHash
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string Compute(string evaluationId, string rulesetVersion, string inputHashSha256, string symbol, DateOnly date, string provider, DateTimeOffset scoredAt, double overallScore, IReadOnlyDictionary&lt;string, double&gt; dimensionScores);</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:206](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L206) |  |
+
 ## QuotaCheckResult
 
 Qualified name: <code>Meridian.Storage.Services.QuotaCheckResult</code>. Kind: `record`.
@@ -786,84 +858,3 @@ Declared public members:
 | <code>public static JsonlBatchOptions HighThroughput =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:60](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L60) | Optimized for high throughput with larger batches. |
 | <code>public static JsonlBatchOptions LowLatency =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:69](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L69) | Optimized for low latency with smaller batches. |
 | <code>public static JsonlBatchOptions NoBatching =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:78](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L78) | Disable batching - write each event immediately. |
-
-## JsonlStorageSink
-
-Qualified name: <code>Meridian.Storage.Sinks.JsonlStorageSink</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:103](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L103).
-
-Buffered JSONL writer with per-path writers and configurable batch writes. Supports both immediate and batched write modes for optimal performance.
-
-```csharp
-public sealed class JsonlStorageSink : IStorageSink
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public long EventsBuffered =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:144](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L144) | Total events currently buffered across all paths. |
-| <code>public long EventsWritten =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:149](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L149) | Total events written to disk. |
-| <code>public long BatchesWritten =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:154](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L154) | Total batches written to disk. |
-| <code>public bool IsBatchingEnabled =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:159](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L159) | Gets whether sink-side batching is enabled. |
-| <code>public int BatchSize =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:164](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L164) | Gets the configured batch size threshold. |
-| <code>public TimeSpan FlushInterval =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:169](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L169) | Gets the configured periodic flush interval for buffered batches. |
-| <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, ILogger&lt;JsonlStorageSink&gt;? logger = null) : this(options, policy, JsonlBatchOptions.NoBatching, logger);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:174](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L174) | Creates a JsonlStorageSink with default options (no batching for backward compatibility). |
-| <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, JsonlBatchOptions batchOptions, ILogger&lt;JsonlStorageSink&gt;? logger = null);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:193](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L193) | Creates a JsonlStorageSink with configurable batch options. |
-| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:241](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L241) |  |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:407](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L407) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:424](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L424) |  |
-| <code>public JsonlStorageSinkStatistics GetStatistics();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:489](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L489) | Returns a diagnostics snapshot for buffered JSONL persistence. |
-
-## JsonlStorageSinkStatistics
-
-Qualified name: <code>Meridian.Storage.Sinks.JsonlStorageSinkStatistics</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1146](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1146).
-
-```csharp
-public sealed record JsonlStorageSinkStatistics(bool IsBatchingEnabled, int BatchSize, TimeSpan FlushInterval, long EventsBuffered, long EventsWritten, long BatchesWritten, int WriterCount, int BufferCount, DateTimeOffset Timestamp, long FsyncCount = 0, int OpenWriterHandles = 0);
-```
-
-## JsonlWriteMode
-
-Qualified name: <code>Meridian.Storage.Sinks.JsonlWriteMode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:87](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L87).
-
-Append mechanism for JSONL day files.
-
-```csharp
-public enum JsonlWriteMode : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>AppendStream</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:90](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L90) | Persistent append-only file handle; new bytes only, fsync on the flush barrier. |
-| <code>CopyOnWrite</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:93](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L93) | Legacy whole-file copy through AtomicFileWriter.AppendAsync per batch. |
-
-## ParquetStorageOptions
-
-Qualified name: <code>Meridian.Storage.Sinks.ParquetStorageOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:728](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L728).
-
-Configuration options for Parquet storage.
-
-```csharp
-public sealed class ParquetStorageOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int BufferSize { get; init; } = 10000;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:733](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L733) | Number of events to buffer before writing to disk. |
-| <code>public TimeSpan FlushInterval { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:738](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L738) | Maximum time between flushes. |
-| <code>public CompressionMethod CompressionMethod { get; init; } = CompressionMethod.Snappy;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:743](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L743) | Compression method for Parquet files. |
-| <code>public static ParquetStorageOptions Default =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:745](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L745) |  |
-| <code>public static ParquetStorageOptions HighCompression =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:747](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L747) |  |
-| <code>public static ParquetStorageOptions LowLatency =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:753](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L753) |  |

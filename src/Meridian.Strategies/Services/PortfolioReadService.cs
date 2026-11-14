@@ -137,7 +137,11 @@ public sealed class PortfolioReadService
             SleeveScopeId: scope.SleeveId,
             SleeveScopeDisplayName: scope.SleeveDisplayName,
             VehicleScopeId: scope.VehicleId,
-            VehicleScopeDisplayName: scope.VehicleDisplayName);
+            VehicleScopeDisplayName: scope.VehicleDisplayName)
+        {
+            FinancingCoverageStatus = result.EngineMetadata?.FinancingCoverageStatus,
+            RunAttributedMarginInterest = result.EngineMetadata?.RunAttributedMarginInterest
+        };
     }
 
     private static IReadOnlyDictionary<string, SecurityReferenceLookupRequest> BuildLookupRequests(

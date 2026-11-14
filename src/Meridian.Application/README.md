@@ -151,6 +151,25 @@ fixings, factors and lifecycle notices. A configured connection or general certi
 establishes task entitlement, freshness or verification: missing instrument evidence remains unknown.
 IBKR bond support no longer implies unsupported bond streaming in the detailed adapter profiles.
 
+`PortfolioImportRunService` retains the complete broker snapshot and its content hash before
+subscription changes. Explicit account selection, strict quantities, IB position pagination and
+cash summary retrieval prevent an incomplete population from becoming opening books. Run IDs bind
+the tenant/company, financial account, book, period, source account and command; partial runs resume
+the retained symbol plan, deterministic watchlist and opening-draft receipt after restart. The new
+`/api/portfolio/import-runs` route requires an authenticated human operator and retained account
+ownership. Opening intake supports same-currency, unit-priced equities with observed cash and cost
+basis; unsupported price conventions, missing evidence and mismatched direction fail closed.
+Drafts await the existing submit/approve/post lifecycle; import success never means posted books.
+Canonical acquisition lots require their separate reviewed acquisition/backfill evidence.
+
+`LoanAccountingProjector` retains explicit transaction and functional currency amounts on every
+new lending line (the loan's contractual currency at rate one), preserving them through Security
+Master and dimension enrichment. A different ledger-book functional currency requires a supported
+FX treatment; the durable book guard refuses an unexplained currency mismatch. The source-history
+completeness reader uses `HasAccountingImpact`, which shares the posting kernel so zero-value and
+non-accounting events do not create false missing-journal breaks. Malformed and negative source
+amounts raise validation errors rather than disappearing from the accounting population.
+
 Cash-flow context v5 persists schedule row version 2 with piecewise interest-principal evidence.
 Frozen row-0 and row-1 serializers preserve context v1–v3 and v4 receipt hashes and arithmetic.
 Unsupported model/row combinations refuse replay. Fixed-rate pool accrual reconciles dated source

@@ -25,11 +25,10 @@ public sealed class Bai2StatementConnector : IStatementConnector
     private const string ClosingLedgerStatusCode = "015";
     private const string ClosingAvailableStatusCode = "045";
     private const string OpeningLedgerStatusCode = "010";
-    private const string OpeningAvailableStatusCode = "040";
 
     private readonly StatementIngressLimits _limits;
     private readonly string _ledgerStatusCode;
-    private readonly string _availableStatusCode;
+    private readonly string? _availableStatusCode;
 
     public Bai2StatementConnector()
         : this(StatementIngressLimits.Default)
@@ -43,8 +42,8 @@ public sealed class Bai2StatementConnector : IStatementConnector
 
     /// <summary>
     /// Creates a connector that emits the closing ledger balance (015, falling back to 045; the default used
-    /// by every reconciliation run) or, only when explicitly requested, the opening ledger balance (010,
-    /// falling back to 040).
+    /// by every reconciliation run) or, only when explicitly requested, the opening ledger balance (010).
+    /// Opening available cash (040) cannot establish the opening booked balance.
     /// </summary>
     public Bai2StatementConnector(StatementIngressLimits limits, StatementBalanceRole balanceRole)
     {
@@ -53,7 +52,7 @@ public sealed class Bai2StatementConnector : IStatementConnector
         (_ledgerStatusCode, _availableStatusCode) = balanceRole switch
         {
             StatementBalanceRole.Closing => (ClosingLedgerStatusCode, ClosingAvailableStatusCode),
-            StatementBalanceRole.Opening => (OpeningLedgerStatusCode, OpeningAvailableStatusCode),
+            StatementBalanceRole.Opening => (OpeningLedgerStatusCode, null),
             _ => throw new ArgumentOutOfRangeException(nameof(balanceRole))
         };
     }
@@ -570,7 +569,7 @@ public sealed class Bai2StatementConnector : IStatementConnector
         BadLayout,
     }
 
-    private static Bai2BalanceResult ResolveClosingBalance(string[] fields, string ledgerStatusCode, string availableStatusCode, out long minorUnits)
+    private static Bai2BalanceResult ResolveClosingBalance(string[] fields, string ledgerStatusCode, string? availableStatusCode, out long minorUnits)
     {
         // Walk status/amount/item-count/funds-type tuples. Searching every field for 015/045
         // mistakes an amount, count or availability value for a status code. Funds types S/V/D

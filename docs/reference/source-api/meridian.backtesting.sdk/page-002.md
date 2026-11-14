@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OrderRequest
+
+Qualified name: <code>Meridian.Backtesting.Sdk.OrderRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/Order.cs:74](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L74).
+
+Provider-independent order request accepted by the backtest context. The simulator interprets the common fields directly and preserves any provider-specific extensions in ProviderParameters. Setting TakeProfitPrice and/or StopLossPrice creates contingent exit orders after the entry order fills.
+
+```csharp
+public sealed record OrderRequest(string Symbol, long Quantity, OrderType Type, decimal? LimitPrice = null, decimal? StopPrice = null, decimal? TakeProfitPrice = null, decimal? StopLossPrice = null, TimeInForce TimeInForce = TimeInForce.Day, ExecutionModel ExecutionModel = ExecutionModel.Auto, bool AllowPartialFills = true, IReadOnlyDictionary<string, string>? ProviderParameters = null, string? AccountId = null);
+```
+
 ## OrderStatus
 
 Qualified name: <code>Meridian.Backtesting.Sdk.OrderStatus</code>. Kind: `enum`.
@@ -850,24 +862,3 @@ Complete Transaction Cost Analysis (TCA) report generated after each simulation 
 ```csharp
 public sealed record TcaReport(DateTimeOffset GeneratedAtUtc, string? StrategyAssemblyPath, TcaCostSummary CostSummary, IReadOnlyList<SymbolTcaSummary> SymbolSummaries, IReadOnlyList<TcaFillOutlier> Outliers);
 ```
-
-## TimeInForce
-
-Qualified name: <code>Meridian.Backtesting.Sdk.TimeInForce</code>. Kind: `enum`.
-
-Source: [src/Meridian.Backtesting.Sdk/Order.cs:13](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L13).
-
-Controls how long an order should remain eligible for execution.
-
-```csharp
-public enum TimeInForce
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Day</code> | [src/Meridian.Backtesting.Sdk/Order.cs:15](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L15) |  |
-| <code>GoodTilCancelled</code> | [src/Meridian.Backtesting.Sdk/Order.cs:16](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L16) |  |
-| <code>ImmediateOrCancel</code> | [src/Meridian.Backtesting.Sdk/Order.cs:17](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L17) |  |
-| <code>FillOrKill</code> | [src/Meridian.Backtesting.Sdk/Order.cs:18](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L18) |  |

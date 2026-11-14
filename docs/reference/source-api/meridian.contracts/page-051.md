@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterImportRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterImportRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L55).
+
+Request for bulk importing securities via the HTTP API.
+
+```csharp
+public sealed record SecurityMasterImportRequest(string FileContent, string FileExtension);
+```
+
+## SecurityMasterLedgerSymbol
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterLedgerSymbol</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs#L4).
+
+Resolves one dated ticker for instrument-bearing native ledger lines.
+
+```csharp
+public static class SecurityMasterLedgerSymbol
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string? ResolveUniqueActiveTicker(IReadOnlyList&lt;SecurityIdentifierDto&gt; identifiers, DateTimeOffset asOfUtc);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs#L6) |  |
+
 ## SecurityMasterOptions
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterOptions</code>. Kind: `class`.
@@ -820,49 +850,3 @@ One member of a per-class record and the flat key that carries it.
 ```csharp
 public sealed record SecurityTermBinding(string Path, string? Key, SecurityTermRead? Read, string? DecodeExpression = null, string? WriteVia = null, bool DecodeOnly = false, bool WriteOnly = false, string? WriteExpression = null, IReadOnlyList<SecurityListItemBinding>? Items = null);
 ```
-
-## SecurityTermBlocks
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermBlocks</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs#L26).
-
-The nested term blocks each asset class declares, taken from the asset-class registry: every SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array field. Scalars go through the governed field-edit route; blocks are replaced whole here, so no asset class needs its own amendment endpoint for its nested structures.
-
-```csharp
-public static class SecurityTermBlocks
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string AmendedEventType = &quot;TermBlockAmended&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs#L29) | The event type recorded for a generic block replacement. |
-| <code>public static IReadOnlyList&lt;SecurityAssetTermField&gt; For(string assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs#L31) |  |
-| <code>public static bool TryDescribeReadableOnlyBlock(string assetClass, string blockKey, [NotNullWhen(true)] out string? reason);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs#L43) | Whether blockKey names a block assetClass declares but this node only reads (ADR-024, readable before writable), with the not-yet-writable reason a block amendment of it is refused with. |
-| <code>public static JsonElement BuildPatch(string assetClass, JsonElement currentTerms, string blockKey, JsonElement block);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs:65](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs#L65) | Returns the asset-specific terms with blockKey replaced by block. Every other term is carried unchanged. Throws ArgumentException when the class declares no such block or the JSON kind does not match the declared type. |
-
-## SecurityTermConventionKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermConventionKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L116).
-
-The typed convention a string term field carries. A field declared with a convention keeps its raw text verbatim in the payload, so every value already stored still reads back, but writes and governed edits must name a value the convention&#x27;s parser recognizes, and consumers read the typed value through SecurityTermConventions instead of matching strings.
-
-```csharp
-public enum SecurityTermConventionKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None = 0</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:118](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L118) |  |
-| <code>DayCount</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:121](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L121) | A day-count convention (DayCountConvention). |
-| <code>SettlementMethod</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L124) | A derivative settlement method (SecuritySettlementMethod). |
-| <code>PaymentFrequency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:127](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L127) | A payment, reset or sweep cadence (SecurityPaymentFrequency). |
-| <code>CouponFrequency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:135](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L135) | A coupon cadence that drives a calculated cash-flow schedule: a SecurityPaymentFrequency whose period is a whole number of months, or SecurityPaymentFrequency.AtMaturity. The schedule engines step coupon periods in months, so a sub-monthly or irregular cadence on these fields would silently produce the wrong number of coupons. |
-| <code>BusinessDayConvention</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:141](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L141) | A business-day convention (Meridian.Contracts.Calendars.BusinessDayConvention): how a schedule date that falls on a non-business day is moved. |
-| <code>RollConvention</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:147](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L147) | A schedule roll (Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll): the anchor&#x27;s day, the end of the month, the IMM date or a fixed day of the month from 1 to 31. |
-| <code>StubPolicy</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:153](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L153) | What a schedule does with a remainder that does not fill a regular period (Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy). |

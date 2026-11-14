@@ -34,6 +34,8 @@
     <Compile Include="../Meridian.Storage/FundStructure/**/*.cs" Link="FundStructure/%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="../Meridian.Storage/FundStructure/Migrations/*.sql" Link="FundStructure/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../Meridian.Storage/Ledger/**/*.cs" Link="Ledger/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../Meridian.Storage/Export/LedgerJournalExporter.cs" Link="Export/LedgerJournalExporter.cs" />
+    <Compile Include="../Meridian.Storage/Export/LedgerJournalExportJsonContext.cs" Link="Export/LedgerJournalExportJsonContext.cs" />
     <Content Include="../Meridian.Storage/Ledger/Migrations/*.sql" Link="Ledger/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../Meridian.Storage/MoneyMarket/**/*.cs" Link="MoneyMarket/%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="../Meridian.Storage/MoneyMarket/Migrations/*.sql" Link="MoneyMarket/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

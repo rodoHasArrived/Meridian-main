@@ -2,9 +2,9 @@
 
 # `ledger` schema
 
-- Relations: 54
-- Functions/procedures: 30
-- Triggers: 60
+- Relations: 55
+- Functions/procedures: 31
+- Triggers: 61
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -583,6 +583,15 @@ erDiagram
         uuid balance_checkpoint_id
         text balance_checkpoint_hash
     }
+    ledger_period_close_snapshots {
+        uuid period_id PK,FK
+        bigint period_version PK
+        uuid ledger_book_id FK
+        uuid close_event_id FK
+        timestamp_with_time_zone closed_at
+        text payload_json
+        text content_hash_sha256
+    }
     ledger_private_capital_calls {
         text tenant_id PK
         text company_id PK
@@ -720,6 +729,7 @@ erDiagram
     ledger_accounting_periods ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_period_id_fkey"
     ledger_accounting_periods ||--o{ ledger_ledger_balance_checkpoints : "ledger_balance_checkpoints_period_id_fkey"
     ledger_accounting_periods ||--o{ ledger_period_close_events : "period_close_events_period_id_fkey"
+    ledger_accounting_periods ||--o{ ledger_period_close_snapshots : "period_close_snapshots_period_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_corrects_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_mutation_batch_id_fkey"
@@ -762,6 +772,7 @@ erDiagram
     ledger_ledger_books ||--o{ ledger_open_lot_backfill_evidence : "open_lot_backfill_evidence_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_open_lot_backfill_exceptions : "open_lot_backfill_exceptions_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_open_lot_backfill_receipts : "open_lot_backfill_receipts_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_period_close_snapshots : "period_close_snapshots_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_private_capital_calls : "private_capital_calls_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_private_capital_commitments : "private_capital_commitments_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_private_capital_postings : "private_capital_postings_ledger_book_id_fkey"
@@ -773,6 +784,7 @@ erDiagram
     ledger_open_lot_backfill_reviews ||--o{ ledger_open_lot_backfill_receipts : "open_lot_backfill_receipts_evidence_record_id_fkey"
     ledger_operations_continuity_workflows ||--o{ ledger_operations_continuity_audit : "operations_continuity_audit_workflow_id_fkey"
     ledger_period_close_events ||--o{ ledger_ledger_balance_checkpoints : "ledger_balance_checkpoints_close_event_id_fkey"
+    ledger_period_close_events ||--o{ ledger_period_close_snapshots : "period_close_snapshots_close_event_id_fkey"
     ledger_private_capital_calls ||--o{ ledger_private_capital_postings : "private_capital_postings_tenant_id_company_id_fund_profile_fkey"
     ledger_private_capital_commitments ||--o{ ledger_private_capital_postings : "private_capital_postings_tenant_id_company_id_fund_profil_fkey1"
     ledger_tax_lots ||--o{ ledger_bond_coupon_cash_consumption : "bond_coupon_cash_consumption_tax_lot_record_id_fkey"
@@ -833,6 +845,7 @@ erDiagram
 | `operations_continuity_audit` | table | 19 | `audit_id` | 1 | 5 | - |
 | `operations_continuity_workflows` | table | 13 | `workflow_id` | 0 | 6 | - |
 | `period_close_events` | table | 10 | `event_id` | 1 | 2 | - |
+| `period_close_snapshots` | table | 7 | `period_id`, `period_version` | 3 | 2 | - |
 | `private_capital_calls` | table | 6 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `call_id` | 1 | 2 | Immutable reviewed capital-call allocations bound to exact approved commitment revisions and accounting scope. |
 | `private_capital_commitments` | table | 7 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `commitment_id`, `revision` | 1 | 2 | Effective-dated source-backed investor commitment revisions; approval changes only retained review metadata. |
 | `private_capital_postings` | table | 17 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `posting_id` | 4 | 8 | Immutable issuance and funding receipts committed atomically with their ledger journals and source identities. |

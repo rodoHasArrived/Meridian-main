@@ -6,6 +6,87 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityIdentifierHistoryStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityIdentifierHistoryStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:73](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L73).
+
+Reads the append-only recorded history of Security Master identifier rows. Recorded cutoffs filter on stored recording timestamps (transaction-start time); like the alias history, these establish eligibility, not commit visibility, so a write committed later can still satisfy an earlier cutoff. Valid time is a separate filter over each revision&#x27;s valid-from/valid-to.
+
+```csharp
+public interface ISecurityIdentifierHistoryStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;SecurityIdentifierRevision&gt;&gt; GetIdentifierRevisionsAsync(Guid securityId, DateTimeOffset recordedAsOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:76](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L76) | Every retained revision recorded at or before recordedAsOfUtc, ordered by identity then revision. |
+| <code>Task&lt;SecurityIdentifiersRecordedView&gt; GetIdentifiersRecordedAsOfAsync(Guid securityId, DateTimeOffset recordedAsOfUtc, DateTimeOffset? validAsOfUtc = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:86](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L86) | The latest revision per identity recorded at or before recordedAsOfUtc, omitting removed identities and, when validAsOfUtc is given, identities not valid at that instant. |
+
+## ISecurityMasterCanonicalWriteScope
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterCanonicalWriteScope</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:9](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L9).
+
+The transaction boundary for one canonical Security Master write: the event append, the projection upsert and the per-field attribution that describes it. An atomic scope commits all of them or none; the passthrough scope used by in-memory hosts runs them in sequence.
+
+```csharp
+public interface ISecurityMasterCanonicalWriteScope
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>bool IsAtomic { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:16](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L16) | Whether writes inside ExecuteAsync{T} share one transaction. Callers record field attribution inside an atomic scope (a failure rolls the whole write back) and fall back to best-effort post-commit attribution otherwise. |
+| <code>Task&lt;T&gt; ExecuteAsync&lt;T&gt;(Guid securityId, Func&lt;Task&lt;T&gt;&gt; operation, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:18](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L18) |  |
+
+## ISecurityMasterCashFlowStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterCashFlowStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs#L8).
+
+Loads and updates the cash flow source retained for a security.
+
+```csharp
+public interface ISecurityMasterCashFlowStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityCashFlowSourceDto?&gt; GetSourceAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs#L10) |  |
+| <code>Task UpsertSourceAsync(SecurityCashFlowSourceDto source, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs#L11) |  |
+
+## ISecurityMasterEventStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterEventStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:41](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L41).
+
+Appends version-checked Security Master events and reads individual or sequenced event streams.
+
+```csharp
+public interface ISecurityMasterEventStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task AppendAsync(Guid securityId, long expectedVersion, IReadOnlyList&lt;SecurityMasterEventEnvelope&gt; events, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:43](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L43) |  |
+| <code>Task&lt;IReadOnlyList&lt;SecurityMasterEventEnvelope&gt;&gt; LoadAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:44](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L44) |  |
+| <code>Task&lt;IReadOnlyList&lt;SecurityMasterEventEnvelope&gt;&gt; LoadSinceSequenceAsync(long sequenceExclusive, int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:45](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L45) |  |
+| <code>Task&lt;long&gt; GetLatestSequenceAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:46](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L46) |  |
+| <code>Task AppendCorporateActionAsync(CorporateActionDto action, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:51](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L51) | Appends one or more corporate action events for a security. |
+| <code>Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; LoadCorporateActionsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:56](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L56) | Returns all corporate action events for a security in ascending ex-date order. |
+| <code>Task&lt;CorporateActionEventTypeNormalizationResult&gt; NormalizeCorporateActionEventTypesAsync(bool apply, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:65](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L65) | Reports — and when apply is true, rewrites in one transaction — stored corporate-action EventType values that are non-canonical aliases of the catalog vocabulary (e.g. legacy &quot;Split&quot; rows becoming &quot;StockSplit&quot;). Values that do not normalize are reported and left untouched. Stores without rewrite support (the default) report an empty result. |
+
 ## ISecurityMasterMutationParticipant
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterMutationParticipant</code>. Kind: `interface`.
@@ -1041,86 +1122,3 @@ Declared public members:
 | <code>public static async Task AppendAsync&lt;TPayload&gt;(NpgsqlConnection connection, NpgsqlTransaction? transaction, string schema, Guid? securityId, string stream, string eventType, string actor, DateTimeOffset occurredAt, TPayload payload, CancellationToken ct) where TPayload : class, ISecurityGovernancePayload;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:108](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L108) | Appends one governance event inside the caller&#x27;s transaction. The payload must be the type declared for stream/eventType in SecurityGovernancePayloadContracts; it is serialized through SecurityGovernanceJsonContext, and its contract&#x27;s current version is written to payload_version explicitly rather than left to the column default. |
 | <code>public async Task&lt;IReadOnlyList&lt;SecurityGovernanceEvent&gt;&gt; GetForSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:146](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L146) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;SecurityGovernanceEvent&gt;&gt; GetForStreamAsync(string stream, long afterSequence = 0, int limit = 500, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:162](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L162) |  |
-
-## PostgresSecurityMasterCanonicalWriteScope
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresSecurityMasterCanonicalWriteScope</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:36](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L36).
-
-PostgreSQL canonical write scope over PostgresSecurityMasterMutation.ExecuteCanonicalAsync{T}.
-
-```csharp
-public sealed class PostgresSecurityMasterCanonicalWriteScope : ISecurityMasterCanonicalWriteScope
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresSecurityMasterCanonicalWriteScope(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:40](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L40) |  |
-| <code>public bool IsAtomic =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:45](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L45) |  |
-| <code>public Task&lt;T&gt; ExecuteAsync&lt;T&gt;(Guid securityId, Func&lt;Task&lt;T&gt;&gt; operation, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:47](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L47) |  |
-
-## PostgresSecurityMasterCashFlowStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresSecurityMasterCashFlowStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs#L9).
-
-Persists security cash flow source definitions in PostgreSQL.
-
-```csharp
-public sealed class PostgresSecurityMasterCashFlowStore : ISecurityMasterCashFlowStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresSecurityMasterCashFlowStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs#L13) |  |
-| <code>public async Task&lt;SecurityCashFlowSourceDto?&gt; GetSourceAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs:18](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs#L18) |  |
-| <code>public async Task UpsertSourceAsync(SecurityCashFlowSourceDto source, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs:48](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs#L48) |  |
-
-## PostgresSecurityMasterEventStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs:14](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs#L14).
-
-Appends version-checked Security Master event streams and reads retained events from PostgreSQL.
-
-```csharp
-public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresSecurityMasterEventStore(SecurityMasterOptions options, ILogger&lt;PostgresSecurityMasterEventStore&gt;? logger = null);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs:19](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs#L19) |  |
-| <code>public async Task AppendAsync(Guid securityId, long expectedVersion, IReadOnlyList&lt;SecurityMasterEventEnvelope&gt; events, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs#L27) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SecurityMasterEventEnvelope&gt;&gt; LoadAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs:124](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs#L124) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SecurityMasterEventEnvelope&gt;&gt; LoadSinceSequenceAsync(long sequenceExclusive, int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs:151](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs#L151) |  |
-| <code>public async Task&lt;long&gt; GetLatestSequenceAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs:180](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs#L180) |  |
-| <code>public async Task AppendCorporateActionAsync(CorporateActionDto action, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs:257](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs#L257) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; LoadCorporateActionsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs:469](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs#L469) |  |
-| <code>public async Task&lt;CorporateActionEventTypeNormalizationResult&gt; NormalizeCorporateActionEventTypesAsync(bool apply, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs:511](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs#L511) |  |
-
-## PostgresSecurityMasterMutation
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresSecurityMasterMutation</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:18](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L18).
-
-A transaction shared only by the overlay and governed revision stores. The durable generation fences readers on other instances, including the first edit (there need not be an overlay yet). No external workflow, event publication or downstream handler is enlisted in this transaction.
-
-```csharp
-public static class PostgresSecurityMasterMutation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static async Task&lt;T&gt; ExecuteAsync&lt;T&gt;(SecurityMasterOptions options, Guid securityId, Func&lt;Task&lt;T&gt;&gt; operation, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:22](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L22) |  |

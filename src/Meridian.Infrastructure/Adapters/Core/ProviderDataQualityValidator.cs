@@ -124,7 +124,9 @@ public static class ProviderDataQualityValidator
         // AggregateBar enforces price, volume and window ordering invariants at construction.
         // Source window boundaries also need the same clock checks as trades and quotes.
         var issues = new List<ProviderDataQualityIssue>(capacity: 2);
-        ValidateCommon(providerName, update.Symbol, update.StartTime, now, staleThreshold, issues, "startTime", profile);
+        // Window duration is not delivery latency; only the completed end owns that check.
+        ValidateCommon(providerName, update.Symbol, update.StartTime, now, staleThreshold, issues, "startTime", profile,
+            enforceLatency: false);
         ValidateTimestamp(providerName, update.Symbol, update.EndTime, now, staleThreshold, issues, "endTime", profile);
         return issues.Count == 0 ? Array.Empty<ProviderDataQualityIssue>() : issues;
     }
@@ -137,7 +139,8 @@ public static class ProviderDataQualityValidator
         TimeSpan? staleThreshold,
         List<ProviderDataQualityIssue> issues,
         string timestampField = "timestamp",
-        ProviderValidationProfile? profile = null)
+        ProviderValidationProfile? profile = null,
+        bool enforceLatency = true)
     {
         if (string.IsNullOrWhiteSpace(symbol))
         {
@@ -149,7 +152,7 @@ public static class ProviderDataQualityValidator
                 "Drop the event and inspect provider symbol mapping."));
         }
 
-        ValidateTimestamp(providerName, symbol, timestamp, now, staleThreshold, issues, timestampField, profile);
+        ValidateTimestamp(providerName, symbol, timestamp, now, staleThreshold, issues, timestampField, profile, enforceLatency);
     }
 
     private static void ValidateTimestamp(
@@ -160,7 +163,8 @@ public static class ProviderDataQualityValidator
         TimeSpan? staleThreshold,
         List<ProviderDataQualityIssue> issues,
         string fieldPath,
-        ProviderValidationProfile? profile = null)
+        ProviderValidationProfile? profile = null,
+        bool enforceLatency = true)
     {
         if (timestamp == default)
         {
@@ -185,7 +189,7 @@ public static class ProviderDataQualityValidator
         }
 
         staleThreshold ??= profile?.StaleThresholdSeconds is { } seconds ? TimeSpan.FromSeconds(seconds) : null;
-        if (profile is { MaxLatencyMs: > 0 } && (referenceTime - timestamp).TotalMilliseconds > profile.MaxLatencyMs)
+        if (enforceLatency && profile is { MaxLatencyMs: > 0 } && (referenceTime - timestamp).TotalMilliseconds > profile.MaxLatencyMs)
         {
             issues.Add(ProviderDataQualityIssue.Error(providerName, fieldPath, symbol,
                 "Provider event latency exceeds the configured validation profile.",
