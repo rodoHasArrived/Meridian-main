@@ -496,7 +496,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
         bool allowIncomplete,
         CancellationToken ct,
         bool periodIsLocked = false,
-        bool allowHardClosedCloseLock = false)
+        bool allowHardClosedCloseLock = false,
+        ManualJournalEntryDraftDto? prospectiveOpeningCorrectionParent = null)
     {
         ArgumentNullException.ThrowIfNull(draft);
         EnsureAssetAccountingDraftMatchesSource(draft);
@@ -504,6 +505,15 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var configuration = await _configurationService.GetWorkspaceAsync(fundProfileId, draft.LedgerBookId, ct, draft.TenantId, draft.CompanyId).ConfigureAwait(false);
         var chartByPath = BuildChartByPath(configuration.ChartOfAccounts);
         var issues = new List<AccountingConfigurationValidationIssueDto>();
+        var priorPeriodReason = await ValidatePriorPeriodAdjustmentAsync(draft, ct, allowHardClosedCloseLock).ConfigureAwait(false);
+        if (priorPeriodReason is not null)
+            issues.Add(Issue("manual-je.prior-period-authority-required", AccountingConfigurationValidationSeverityDto.Critical,
+                priorPeriodReason, "priorPeriodAdjustmentSource", "Prepare a fresh source-linked correction in an explicitly selected open period."));
+        var openingCorrectionReason = await ValidateOpeningCorrectionAsync(draft, chartByPath, ct,
+            prospectiveOpeningCorrectionParent, allowHardClosedCloseLock).ConfigureAwait(false);
+        if (openingCorrectionReason is not null)
+            issues.Add(Issue("manual-je.opening-correction-authority-required", AccountingConfigurationValidationSeverityDto.Critical,
+                openingCorrectionReason, "openingCorrectionSource", "Create a source-linked correction from the retained posted opening lifecycle."));
         if (draft.PrivateCapitalAuthorityJson is not null ||
             PrivateCapitalPostingAuthority.IsCapitalCall(draft.TreasuryContext?.IdempotencyKey, draft.TreasuryContext?.FundEventType))
         {

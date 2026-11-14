@@ -11,6 +11,10 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Strategies
 
+Scoped paper/live run ledger reads use an optional `IStrategyRunLedgerSource` to rebuild from
+posted journals with the exact retained run identity. The source authorizes the financial account
+and book independently; terminal metrics are not required. Backtests retain their recorded books.
+
 Run ledger read models support inclusive economic-time cuts without mutating retained journals.
 Scoped result reads reuse the tenant/company run-visibility guard for downstream accounting
 exports. Historical journal rows, account balances and posting counts are rebuilt from the same
@@ -25,6 +29,16 @@ before mutation, retain existing maker-checker rules, and fail closed if configu
 cannot be read. No attestation grants waiver, supersession, material-break suppression or sign-off.
 
 `LiveRunMetricsTracker` uses the `BacktestMetricsEngine` formulas (geometric annualisation over the session's start-to-end interval, sample-deviation Sharpe, losing-day Sortino); a run with no losing day reports Sortino 0 so persisted metrics stay finite, and annualised return is capped at 1e12.
+
+Live/paper finalization records financing as `Unavailable` until an explicit complete allocation
+ties account charges to the run. The context's private ledger and an account's expense balance do
+not establish that allocation. `BacktestEngineMetadata.FinancingCoverageStatus` and nullable
+`RunAttributedMarginInterest` survive durable history and the execution, portfolio and comparison
+read models; `Available` with `0` differs from `Unavailable` with `null`. Existing decimal
+`TotalMarginInterest` remains a compatibility placeholder when coverage is unavailable, and gross
+P&L financing decomposition is provisional. Continuity and comparison reads expose a financing
+review warning/incomplete cash-flow coverage. No shared account charge is assigned to every run.
+Legacy and backtest results with no coverage declaration retain an unassessed null status.
 
 Live strategy-run cash flows scale the quoted fill price by the report's `LotMultiplier` (stamped by the
 OMS), so a run's retained cash-flow history reconciles with the paper portfolio for multiplied contracts;
@@ -251,6 +265,10 @@ allowing paper-to-live promotion to evaluate the newly retained out-of-sample ev
 organization, customer, vendor, project, and `externalGl.*` run-parameter filters so workstation
 ledger drill-throughs stay aligned with accounting dimensions instead of a strategy-only scope
 vocabulary.
+`StrategyRunReadService.GetLedgerSnapshotAsync` applies that run's tenant/company visibility before
+replaying an isolated journal snapshot, optionally bounded by an as-of timestamp. The full journal,
+account and running-balance endpoints consume that same retained accounting source; a missing
+ledger remains unavailable instead of becoming an empty success.
 Promotion requires an explicitly successful completed lifecycle; an end timestamp and qualifying
 metrics on a failed or cancelled attempt never establish eligibility. `PromotionReadiness.isTerminal`
 continues to classify terminal lifecycle states independently of eligibility.

@@ -69,7 +69,7 @@ public sealed record StatementParseIssue(
 /// <summary>
 /// Which booked balance a statement connector emits as its <see cref="StatementRecordKind.CashBalance"/> row.
 /// Reconciliation runs always use <see cref="Closing"/>; <see cref="Opening"/> is an explicit opt-in used only
-/// by shadow-mode onboarding to read the incumbent's opening booked balance (camt.053 OPBD, BAI2 010/040).
+/// by shadow-mode onboarding to read the incumbent's opening booked balance (camt.053 OPBD, BAI2 010 only).
 /// </summary>
 public enum StatementBalanceRole
 {

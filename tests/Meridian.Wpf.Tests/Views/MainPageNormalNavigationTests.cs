@@ -179,6 +179,7 @@ public sealed class MainPageNormalNavigationTests
             var frame = paneHost.GetPaneFrame(0)!;
             NavigationHostInspector.ResolveInnermostContent(frame.Content)
                 .Should().BeOfType<AccountingWorkspaceShellPage>();
+            var accountingContent = frame.Content;
             var baselineBackStackCount = frame.BackStack?.Cast<object>().Count() ?? 0;
 
             facade.ViewModel.SelectWorkspaceCommand.Execute("data");
@@ -186,6 +187,7 @@ public sealed class MainPageNormalNavigationTests
 
             NavigationHostInspector.ResolveInnermostContent(frame.Content)
                 .Should().BeOfType(ShellNavigationCatalog.GetPage("DataShell")!.PageType);
+            var dataContent = frame.Content;
             (frame.BackStack?.Cast<object>().Count() ?? 0).Should().Be(baselineBackStackCount + 1);
 
             facade.ViewModel.SelectWorkspaceCommand.Execute("trading");
@@ -194,23 +196,156 @@ public sealed class MainPageNormalNavigationTests
             paneHost.GetPaneFrame(0).Should().BeSameAs(frame);
             NavigationHostInspector.ResolveInnermostContent(frame.Content)
                 .Should().BeOfType(ShellNavigationCatalog.GetPage("TradingShell")!.PageType);
+            var tradingContent = frame.Content;
             (frame.BackStack?.Cast<object>().Count() ?? 0).Should().Be(baselineBackStackCount + 2);
 
             frame.CanGoBack.Should().BeTrue();
-            frame.GoBack();
+            facade.ViewModel.GoBackCommand.Execute(null);
             RunMatUiAutomationFacade.DrainDispatcher();
 
-            NavigationHostInspector.ResolveInnermostContent(frame.Content)
-                .Should().BeOfType(ShellNavigationCatalog.GetPage("DataShell")!.PageType);
-            AutomationProperties.GetItemStatus(frame).Should().Be("DataShell");
+            AssertVisibleWorkspaceHome(facade, paneHost, "DataShell", 0);
+            facade.ViewModel.CurrentWorkspace.Should().Be("data");
+            AssertRetainedHistoryAfterPaneSync(facade, frame, dataContent, baselineBackStackCount + 1, 1);
+            AssertVisibleWorkspaceHome(facade, paneHost, "DataShell", 0);
 
             frame.CanGoBack.Should().BeTrue();
-            frame.GoBack();
+            facade.ViewModel.GoBackCommand.Execute(null);
             RunMatUiAutomationFacade.DrainDispatcher();
 
-            NavigationHostInspector.ResolveInnermostContent(frame.Content)
-                .Should().BeOfType<AccountingWorkspaceShellPage>();
-            AutomationProperties.GetItemStatus(frame).Should().Be("AccountingShell");
+            AssertVisibleWorkspaceHome(facade, paneHost, "AccountingShell", 0);
+            facade.ViewModel.CurrentWorkspace.Should().Be("accounting");
+            AssertRetainedHistoryAfterPaneSync(facade, frame, accountingContent, baselineBackStackCount, 2);
+            AssertVisibleWorkspaceHome(facade, paneHost, "AccountingShell", 0);
+
+            frame.CanGoForward.Should().BeTrue();
+            frame.GoForward();
+            RunMatUiAutomationFacade.DrainDispatcher();
+
+            AssertVisibleWorkspaceHome(facade, paneHost, "DataShell", 0);
+            facade.ViewModel.CurrentWorkspace.Should().Be("data");
+            AssertRetainedHistoryAfterPaneSync(facade, frame, dataContent, baselineBackStackCount + 1, 1);
+            AssertVisibleWorkspaceHome(facade, paneHost, "DataShell", 0);
+
+            frame.CanGoForward.Should().BeTrue();
+            frame.GoForward();
+            RunMatUiAutomationFacade.DrainDispatcher();
+
+            AssertVisibleWorkspaceHome(facade, paneHost, "TradingShell", 0);
+            facade.ViewModel.CurrentWorkspace.Should().Be("trading");
+            AssertRetainedHistoryAfterPaneSync(facade, frame, tradingContent, baselineBackStackCount + 2, 0);
+            AssertVisibleWorkspaceHome(facade, paneHost, "TradingShell", 0);
+        });
+    }
+
+    [Fact]
+    public void WorkflowJournalNavigation_ShouldSynchronizeTheLandedPageWithoutReplacingItsInstance()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var facade = new MainPageUiAutomationFacade(validateScopes: true);
+            var paneHost = InitializePaneHost(facade);
+            facade.Page.NavigateToLaunchPage("AccountingShell").Should().BeTrue();
+            RunMatUiAutomationFacade.DrainDispatcher();
+            var accountingContent = paneHost.GetPaneFrame(0)!.Content;
+            facade.ViewModel.NavigateToPageCommand.Execute("RunMat");
+            RunMatUiAutomationFacade.DrainDispatcher();
+            var frame = facade.ContentFrame;
+            var runMatContent = frame.Content;
+            var baselineBackStackCount = frame.BackStack?.Cast<object>().Count() ?? 0;
+            facade.ViewModel.NavigateToPageCommand.Execute("Backtest");
+            RunMatUiAutomationFacade.DrainDispatcher();
+            var backtestContent = frame.Content;
+
+            facade.ViewModel.GoBackCommand.Execute(null);
+            RunMatUiAutomationFacade.DrainDispatcher();
+
+            AssertWorkflowHistoryLanding("RunMat", runMatContent, baselineBackStackCount, 1);
+
+            frame.CanGoForward.Should().BeTrue();
+            frame.GoForward();
+            RunMatUiAutomationFacade.DrainDispatcher();
+
+            AssertWorkflowHistoryLanding("Backtest", backtestContent, baselineBackStackCount + 1, 0);
+
+            void AssertWorkflowHistoryLanding(string pageTag, object content, int backCount, int forwardCount)
+            {
+                facade.ViewModel.CurrentPageTag.Should().Be(pageTag);
+                facade.ViewModel.CurrentWorkspace.Should().Be("strategy");
+                facade.ContentFrame.Visibility.Should().Be(Visibility.Visible);
+                facade.WorkspaceHomeSurface.Visibility.Should().Be(Visibility.Collapsed);
+                AutomationProperties.GetItemStatus(frame).Should().Be(pageTag);
+                NavigationHostInspector.ResolveInnermostContent(frame.Content)
+                    .Should().BeOfType(ShellNavigationCatalog.GetPage(pageTag)!.PageType);
+                AssertRetainedHistoryAfterPaneSync(facade, frame, content, backCount, forwardCount);
+                facade.ViewModel.CurrentPageTag.Should().Be(pageTag);
+                facade.ViewModel.PaneHost.GetAssignedPageTag(0).Should().Be("AccountingShell");
+                paneHost.GetPaneFrame(0)!.Content.Should().BeSameAs(accountingContent);
+            }
+        });
+    }
+
+    [Fact]
+    public void InactivePaneJournalNavigation_ShouldNotChangeTheActiveShellRoute()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var facade = new MainPageUiAutomationFacade(validateScopes: true);
+            var paneHost = InitializePaneHost(facade);
+            facade.ViewModel.PaneHost.SelectLayoutCommand.Execute(PaneLayouts.TradingCockpit);
+            RunMatUiAutomationFacade.DrainDispatcher();
+            facade.Page.NavigateToLaunchPage("AccountingShell").Should().BeTrue();
+            RunMatUiAutomationFacade.DrainDispatcher();
+            facade.ViewModel.SelectWorkspaceCommand.Execute("data");
+            RunMatUiAutomationFacade.DrainDispatcher();
+            var inactiveFrame = paneHost.GetPaneFrame(0)!;
+            facade.ViewModel.PaneHost.SetActivePaneCommand.Execute(1);
+            facade.ViewModel.SelectWorkspaceCommand.Execute("trading");
+            RunMatUiAutomationFacade.DrainDispatcher();
+            var activeFrame = paneHost.GetPaneFrame(1)!;
+            var activeContent = activeFrame.Content;
+
+            inactiveFrame.CanGoBack.Should().BeTrue();
+            inactiveFrame.GoBack();
+            RunMatUiAutomationFacade.DrainDispatcher();
+
+            NavigationService.GetContentPageTag(inactiveFrame.Content).Should().Be("AccountingShell");
+            AssertVisibleWorkspaceHome(facade, paneHost, "TradingShell", 1);
+            facade.ViewModel.CurrentWorkspace.Should().Be("trading");
+            facade.ViewModel.PaneHost.GetAssignedPageTag(0).Should().Be("DataShell");
+            activeFrame.Content.Should().BeSameAs(activeContent);
+            NavigationService.Instance.IsNavigationFrame(activeFrame, WorkspaceChromePresentationMode.Docked)
+                .Should().BeTrue();
+        });
+    }
+
+    [Theory]
+    [InlineData(WorkspaceChromePresentationMode.Standalone)]
+    [InlineData(WorkspaceChromePresentationMode.Docked)]
+    public void FormerShellFrameJournalNavigation_ShouldNotTakeOverAnExplicitForeignFrame(
+        WorkspaceChromePresentationMode presentationMode)
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var facade = new MainPageUiAutomationFacade(validateScopes: true);
+            var paneHost = InitializePaneHost(facade);
+            facade.Page.NavigateToLaunchPage("AccountingShell").Should().BeTrue();
+            RunMatUiAutomationFacade.DrainDispatcher();
+            facade.ViewModel.SelectWorkspaceCommand.Execute("data");
+            RunMatUiAutomationFacade.DrainDispatcher();
+            var formerFrame = paneHost.GetPaneFrame(0)!;
+            var foreignFrame = new Frame();
+            NavigationService.Instance.Initialize(foreignFrame, presentationMode);
+
+            formerFrame.CanGoBack.Should().BeTrue();
+            formerFrame.GoBack();
+            RunMatUiAutomationFacade.DrainDispatcher();
+
+            NavigationService.GetContentPageTag(formerFrame.Content).Should().Be("AccountingShell");
+            facade.ViewModel.CurrentPageTag.Should().Be("DataShell");
+            facade.ViewModel.CurrentWorkspace.Should().Be("data");
+            facade.ViewModel.PaneHost.GetAssignedPageTag(0).Should().Be("DataShell");
+            foreignFrame.Content.Should().BeNull();
+            NavigationService.Instance.IsNavigationFrame(foreignFrame, presentationMode).Should().BeTrue();
         });
     }
 
@@ -283,6 +418,28 @@ public sealed class MainPageNormalNavigationTests
         paneHost.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent, paneHost));
         RunMatUiAutomationFacade.DrainDispatcher();
         return paneHost;
+    }
+
+    private static void AssertRetainedHistoryAfterPaneSync(
+        MainPageUiAutomationFacade facade,
+        Frame frame,
+        object content,
+        int backStackCount,
+        int forwardStackCount)
+    {
+        var breadcrumbCount = NavigationService.Instance.GetBreadcrumbs().Count;
+        frame.Content.Should().BeSameAs(content);
+        (frame.BackStack?.Cast<object>().Count() ?? 0).Should().Be(backStackCount);
+        (frame.ForwardStack?.Cast<object>().Count() ?? 0).Should().Be(forwardStackCount);
+
+        facade.ViewModel.PaneHost.SetActivePaneCommand.Execute(facade.ViewModel.PaneHost.ActivePaneIndex);
+        RunMatUiAutomationFacade.DrainDispatcher();
+
+        frame.Content.Should().BeSameAs(content, "pane synchronization must retain the landed journal instance");
+        (frame.BackStack?.Cast<object>().Count() ?? 0).Should().Be(backStackCount);
+        (frame.ForwardStack?.Cast<object>().Count() ?? 0).Should().Be(forwardStackCount);
+        NavigationService.Instance.GetBreadcrumbs().Should().HaveCount(breadcrumbCount,
+            "synchronizing a landed journal entry must not issue another navigation");
     }
 
     private static void AssertVisibleWorkspaceHome(

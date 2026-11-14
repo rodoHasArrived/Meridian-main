@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingGovernanceApprovalRequestDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceApprovalRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:13](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L13).
+
+Human approval rationale plus the required optimistic concurrency token.
+
+```csharp
+public sealed record ReportingGovernanceApprovalRequestDto(long ExpectedVersion, string DecisionNote);
+```
+
+## ReportingGovernanceArtifactDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceArtifactDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:97](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L97).
+
+```csharp
+public sealed record ReportingGovernanceArtifactDto(string ArtifactId, string ArtifactHash, long ByteLength);
+```
+
 ## ReportingGovernanceAuditEntryDto
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAuditEntryDto</code>. Kind: `record`.
@@ -638,28 +660,4 @@ Descriptive metadata: one shared set of reporting dimensions for every pack, sho
 
 ```csharp
 public sealed record AssetPackReportingTaxonomy(IReadOnlyList<string> AssetClass, IReadOnlyList<string> Liquidity, IReadOnlyList<string> Geography, IReadOnlyList<string> Industry, IReadOnlyList<string> Risk, IReadOnlyList<string> Tax, IReadOnlyList<string> CustomClientClassifications);
-```
-
-## AssetPackSharedCoverage
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackSharedCoverage</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.SharedCoverage.cs:117](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.SharedCoverage.cs#L117).
-
-One asset class that several built-in packs cover on purpose, claimed or planned, and why.
-
-```csharp
-public sealed record AssetPackSharedCoverage(string AssetClass, IReadOnlyList<string> PackIds, string Reason);
-```
-
-## AssetPackValidationRules
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackValidationRules</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:917](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L917).
-
-Descriptive metadata: one shared set of phrases for every pack, shown on the readiness surface. Nothing evaluates these as rules; executable validation lives in the terms schema and validators.
-
-```csharp
-public sealed record AssetPackValidationRules(IReadOnlyList<string> RequiredFields, IReadOnlyList<string> ExpectedSchedules, IReadOnlyList<string> ToleranceChecks, IReadOnlyList<string> IncompatibleCombinations);
 ```

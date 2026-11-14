@@ -335,10 +335,14 @@ public sealed partial class OnboardingWorkspaceService(
             .ToDictionary(group => group.Key, group => group.MaxBy(run => run.Sequence)!);
         var missingDates = workspace.Criteria.RequiredDates.Where(date => !latestByDate.ContainsKey(date)).Order().ToArray();
         var requiredRuns = workspace.Criteria.RequiredDates.Where(latestByDate.ContainsKey).Select(date => latestByDate[date]).ToArray();
+        var openingRun = workspace.Comparisons.Where(run => run.IsOpening).MaxBy(run => run.Sequence);
         var missing = requiredRuns.SelectMany(run => run.Inputs.MissingSources.Select(source => source with
         {
             Message = $"{run.AsOfDate:yyyy-MM-dd}: {source.Message}"
-        })).ToArray();
+        })).Concat(openingRun?.Inputs.MissingSources.Select(source => source with
+        {
+            Message = $"Opening {openingRun.AsOfDate:yyyy-MM-dd}: {source.Message}"
+        }) ?? []).ToArray();
         // An explained difference (unchanged amounts, evidence attached, not a Meridian error) no longer blocks.
         var unresolved = requiredRuns.SelectMany(run => run.Differences
             .Where(row => row.Status != "Resolved" && ApplicableExplanation(workspace, run, row) is null)
@@ -364,10 +368,19 @@ public sealed partial class OnboardingWorkspaceService(
         var opening = BuildOpeningReport(workspace);
         if (workspace.ShadowDesignation?.State == OnboardingShadowStates.Shadow)
         {
-            if (opening is null)
+            if (opening is null || openingRun is null)
                 blockers.Add("Import and reconcile the incumbent opening balances for the shadow book.");
-            else if (!opening.IsReconciled)
-                blockers.Add($"Reconcile {opening.BreakCount + opening.MissingCount} opening-balance difference(s) with the incumbent.");
+            else
+            {
+                if (Hash(openingRun.Criteria) != Hash(workspace.Criteria))
+                    blockers.Add("Reimport the incumbent opening balances against the current owner criteria.");
+                if (openingRun.Inputs.MissingSources.Count > 0)
+                    blockers.Add($"Reimport the incumbent opening balances after supplying {openingRun.Inputs.MissingSources.Count} missing opening source requirement(s).");
+                if (Coverage(workspace, openingRun.Inputs) < workspace.Criteria.MinimumCoveragePercent)
+                    blockers.Add("Reimport the incumbent opening balances with coverage of the selected accounts and required comparison kinds.");
+                if (!opening.IsReconciled && opening.BreakCount + opening.MissingCount > 0)
+                    blockers.Add($"Reconcile {opening.BreakCount + opening.MissingCount} opening-balance difference(s) with the incumbent.");
+            }
         }
         var reviews = workspace.Reviews.Where(review => review.DataRevision == workspace.DataRevision
                 && !SameActor(review.ReviewerId, workspace.OwnerId)

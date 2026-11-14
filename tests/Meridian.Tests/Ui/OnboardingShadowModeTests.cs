@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Onboarding;
@@ -191,6 +192,137 @@ public sealed class OnboardingShadowModeTests
             .Should().BeEquivalentTo(report);
     }
 
+    [Theory]
+    [InlineData("account")]
+    [InlineData("kind")]
+    [InlineData("source")]
+    public async Task OpeningImport_MissingCoverageOnBothSidesOrMissingSource_BlocksCertificationAfterIndependentReview(string gap)
+    {
+        using var fixture = new Fixture();
+        var harness = new Harness(fixture);
+        var request = fixture.Request();
+        if (gap == "account")
+        {
+            request = request with { Scope = request.Scope with { AccountIds = [Fixture.Account, "d8ca0d85-d433-4bed-bbc8-98b48225cc93"] } };
+        }
+        var workspace = await harness.Service().CreateAsync(request, Fixture.Owner);
+        var capture = await new OpeningState(fixture).CaptureOpeningAsync(workspace);
+        byte[]? pack = null;
+        if (gap == "kind")
+        {
+            capture = capture with { Observations = capture.Observations.Where(row => row.Kind != "Nav").ToArray() };
+            pack = Pack("CASH,ADMIN-001,USD,,,,100,2026-01-31", "POSITION,ADMIN-001,USD,security-a,10,,,2026-01-31");
+        }
+        else if (gap == "source")
+        {
+            capture = capture with
+            {
+                MissingSources = [new("unverified-opening-source", "Position", Fixture.Account, "The retained opening source is incomplete.")]
+            };
+        }
+        var payload = JsonSerializer.Serialize(new { workspace.Scope, capture.Observations, capture.MissingSources });
+        capture = capture with
+        {
+            Snapshots = capture.Snapshots.Select(snapshot => snapshot with
+            {
+                PayloadJson = payload,
+                ContentHash = OnboardingWorkspaceService.HashSourcePayload(payload)
+            }).ToArray()
+        };
+        var service = harness.Service(new CapturedOpeningState(capture));
+        workspace = await service.DesignateShadowAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version, "Check the complete opening population."), Fixture.Owner);
+        workspace = await service.ImportOpeningBalancesAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            harness.AdminPackRequest(workspace.Version, pack), Fixture.Owner);
+
+        workspace.Readiness.Opening!.Lines.Should().NotBeEmpty().And.OnlyContain(line => line.Status == "Matched",
+            "these omissions occur on both sides or only in source completeness, outside the present matched rows");
+        workspace.Readiness.Opening.IsReconciled.Should().BeFalse();
+        workspace.Readiness.MissingSources.Should().Contain(source => source.Message.StartsWith("Opening ", StringComparison.Ordinal));
+
+        workspace = await ReviewCleanPeriodsAsync(fixture, service, workspace);
+
+        workspace.Readiness.Periods.Should().OnlyContain(period => period.IsClean);
+        workspace.Readiness.ApprovedReviewers.Should().Be(1);
+        workspace.Readiness.IsReady.Should().BeFalse();
+        workspace.Readiness.Blockers.Should().Contain(blocker => blocker.Contains("missing opening source", StringComparison.Ordinal));
+        var certify = () => service.IssueCertificateAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version), Fixture.Owner);
+        await certify.Should().ThrowAsync<OnboardingValidationException>();
+        var guard = new OnboardingBookOfRecordGuard(new FileOnboardingWorkspaceStore(fixture.StorePath));
+        (await guard.GetStatusAsync(Fixture.Tenant, Fixture.Company, workspace.Scope.LedgerBookId)).IsBookOfRecord.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task OpeningImport_ChangedCriteriaRequiresReimportAndFreshIndependentReviewBeforeCertificationAndPromotion()
+    {
+        using var fixture = new Fixture();
+        var harness = new Harness(fixture);
+        var service = harness.Service();
+        var workspace = await service.CreateAsync(fixture.Request() with
+        {
+            Criteria = fixture.Criteria with { BalanceTolerance = 10m }
+        }, Fixture.Owner);
+        workspace = await service.DesignateShadowAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version, "Parallel run."), Fixture.Owner);
+        var loosePack = Pack("CASH,ADMIN-001,USD,,,,95,2026-01-31", "NAV,ADMIN-001,USD,,,,100,2026-01-31",
+            "POSITION,ADMIN-001,USD,security-a,10,,,2026-01-31");
+        workspace = await service.ImportOpeningBalancesAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            harness.AdminPackRequest(workspace.Version, loosePack), Fixture.Owner);
+        workspace.Readiness.Opening!.IsReconciled.Should().BeTrue();
+        workspace = await ReviewCleanPeriodsAsync(fixture, service, workspace);
+        var certificate = await service.IssueCertificateAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version), Fixture.Owner);
+        workspace = (await service.GetAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId))!;
+
+        workspace = await service.UpdateCriteriaAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version, fixture.Criteria), Fixture.Owner);
+        workspace = await ReviewCleanPeriodsAsync(fixture, service, workspace);
+
+        workspace.Readiness.Periods.Should().OnlyContain(period => period.IsClean);
+        workspace.Readiness.ApprovedReviewers.Should().Be(1);
+        workspace.Readiness.Opening!.IsReconciled.Should().BeFalse();
+        workspace.Readiness.Opening.Lines.Single(line => line.Kind == "Balance").Tolerance.Should().Be(10m,
+            "the retained opening comparison must display the criteria it actually used");
+        workspace.Readiness.Blockers.Should().Contain("Reimport the incumbent opening balances against the current owner criteria.");
+        workspace.Readiness.Blockers.Should().NotContain(blocker => blocker.Contains("Reconcile 0", StringComparison.Ordinal));
+        var staleCertify = () => service.IssueCertificateAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version), Fixture.Owner);
+        await staleCertify.Should().ThrowAsync<OnboardingValidationException>();
+        var stalePromote = () => service.PromoteAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version, certificate.CertificateId, "Use the stale opening.", []), Fixture.Reviewer);
+        (await stalePromote.Should().ThrowAsync<OnboardingValidationException>()).WithMessage("*changed after the certificate*");
+
+        workspace = await service.ImportOpeningBalancesAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            harness.AdminPackRequest(workspace.Version, loosePack), Fixture.Owner);
+        workspace.Readiness.Opening!.IsReconciled.Should().BeFalse();
+        workspace.Readiness.Opening.Lines.Single(line => line.Kind == "Balance").Should()
+            .Match<OnboardingOpeningBalanceLineDto>(line => line.Status == "Break" && line.Difference == 5m && line.Tolerance == fixture.Criteria.BalanceTolerance);
+
+        workspace = await service.ImportOpeningBalancesAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            harness.AdminPackRequest(workspace.Version), Fixture.Owner);
+        workspace.Readiness.Opening!.IsReconciled.Should().BeTrue();
+        workspace.Readiness.ApprovedReviewers.Should().Be(0);
+        var unreviewedCertify = () => service.IssueCertificateAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version), Fixture.Owner);
+        await unreviewedCertify.Should().ThrowAsync<OnboardingValidationException>();
+        var ownerReview = () => service.ReviewAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version, workspace.DataRevision, "Approved", "Owner cannot review.", ["review:owner"]), Fixture.Owner);
+        await ownerReview.Should().ThrowAsync<UnauthorizedAccessException>();
+        workspace = await service.ReviewAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version, workspace.DataRevision, "Approved", "Reimport agrees under the current criteria.", ["review:reimport"]), Fixture.Reviewer);
+        workspace.Readiness.IsReady.Should().BeTrue();
+        var currentCertificate = await service.IssueCertificateAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version), Fixture.Owner);
+        workspace = (await service.GetAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId))!;
+        var ownerPromote = () => service.PromoteAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version, currentCertificate.CertificateId, "Owner cannot promote.", []), Fixture.Owner);
+        await ownerPromote.Should().ThrowAsync<UnauthorizedAccessException>();
+        workspace = await service.PromoteAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version, currentCertificate.CertificateId, "Complete current opening and reviewed periods.", []), Fixture.Reviewer);
+        workspace.ShadowDesignation!.State.Should().Be(OnboardingShadowStates.Promoted);
+    }
+
     [Fact]
     public async Task Promotion_RefusesStaleCertificate_AndWithdrawnTrialNeverBecomesBookOfRecord()
     {
@@ -267,8 +399,8 @@ public sealed class OnboardingShadowModeTests
 
     private sealed class Harness(Fixture fixture)
     {
-        internal OnboardingWorkspaceService Service() => new(new FileOnboardingWorkspaceStore(fixture.StorePath), fixture.Source,
-            new FixedClock(), new OnboardingOpeningSourceReader(), new OpeningState(fixture));
+        internal OnboardingWorkspaceService Service(IOnboardingOpeningStateProvider? state = null) => new(new FileOnboardingWorkspaceStore(fixture.StorePath), fixture.Source,
+            new FixedClock(), new OnboardingOpeningSourceReader(), state ?? new OpeningState(fixture));
 
         internal ImportOnboardingOpeningBalancesRequestDto AdminPackRequest(int version, byte[]? content = null)
             => new(version, OnboardingOpeningSourceKinds.AdministratorPack, "admin-map", "mapping-v1", Mappings,
@@ -291,6 +423,38 @@ public sealed class OnboardingShadowModeTests
             workspace.Readiness.IsReady.Should().BeTrue();
             return workspace;
         }
+    }
+
+    private static async Task<OnboardingWorkspaceDto> ReviewCleanPeriodsAsync(
+        Fixture fixture, OnboardingWorkspaceService service, OnboardingWorkspaceDto workspace)
+    {
+        foreach (var date in fixture.Criteria.RequiredDates)
+        {
+            var id = $"clean:{date:yyyy-MM-dd}:{workspace.Version}";
+            var capture = fixture.Capture(date, id, 100m, 10m, 100m);
+            var observations = workspace.Scope.AccountIds.SelectMany(accountId =>
+                capture.Observations.Select(row => row with { AccountId = accountId })).ToArray();
+            var payload = JsonSerializer.Serialize(new { workspace.Scope, AsOfDate = date, Observations = observations });
+            capture = capture with
+            {
+                Observations = observations,
+                Snapshots = capture.Snapshots.Select(snapshot => snapshot with
+                {
+                    PayloadJson = payload,
+                    ContentHash = OnboardingWorkspaceService.HashSourcePayload(payload)
+                }).ToArray()
+            };
+            fixture.Source.Set(id, capture);
+            workspace = await fixture.Compare(service, workspace, date, id);
+        }
+        return await service.ReviewAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version, workspace.DataRevision, "Approved", "Every required period reconciles.", ["review:clean-periods"]), Fixture.Reviewer);
+    }
+
+    private sealed class CapturedOpeningState(OnboardingSourceCaptureDto capture) : IOnboardingOpeningStateProvider
+    {
+        public Task<OnboardingSourceCaptureDto> CaptureOpeningAsync(OnboardingWorkspaceDto workspace, CancellationToken ct = default)
+            => Task.FromResult(capture);
     }
 
     /// <summary>Meridian's opening records: cash 100, NAV 100 and ten units of security-a.</summary>

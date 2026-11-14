@@ -13,7 +13,7 @@ namespace Meridian.Tests.Integration;
 
 /// <summary>Exercises the composed feature, rather than constructing approved registry snapshots by hand.</summary>
 [Trait("Category", "Integration")]
-public sealed class IntercompanyAgreementFeaturePostgresTests
+public sealed partial class IntercompanyAgreementFeaturePostgresTests
 {
     [FundAccountDatabaseFact]
     public async Task ApprovedRegistryRevisionsGovernRealLedgerAppendsWithoutRewritingPostedProvenance()

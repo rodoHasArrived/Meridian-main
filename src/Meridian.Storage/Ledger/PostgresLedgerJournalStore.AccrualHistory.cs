@@ -1,5 +1,7 @@
 using System.Data;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Ledger;
 
 namespace Meridian.Storage.Ledger;
 
@@ -27,6 +29,8 @@ public sealed partial class PostgresLedgerJournalStore
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct).ConfigureAwait(false);
         await EnsureBookWriteAuthorityAsync(connection, transaction, ledgerBookId, ct).ConfigureAwait(false);
+        var book = await LoadLedgerBookAsync(connection, transaction, ledgerBookId, ct).ConfigureAwait(false)
+            ?? throw new LedgerValidationException("The accrual ledger book is unavailable.");
         // One snapshot reads every lot and its complete retained history once, including closed
         // rows. Returning only currently open lots would discard a full paydown's final interest.
         var (lots, mutations) = await ReadAssetScopedTaxLotHistoryAsync(connection, transaction, ledgerBookId,
@@ -36,6 +40,18 @@ public sealed partial class PostgresLedgerJournalStore
         foreach (var lot in lots)
         {
             ct.ThrowIfCancellationRequested();
+            if (lot.Currency != book.BaseCurrency || lot.Account.AccountType != LedgerAccountType.Asset
+                || lot.Acquisition is { Direction: not OpenLotDirection.Long })
+                throw new LedgerValidationException("Retained accrual requires long asset lots stated in the ledger book's functional currency.");
+            if (lot.Acquisition is { } acquisition)
+            {
+                if (acquisition.FunctionalCurrency != book.BaseCurrency)
+                    throw new LedgerValidationException("Retained accrual acquisition functional currency must match the ledger book.");
+                // Prove the actual current record's basis convention and retained FX before the
+                // historical face projection discards denominations. Already converted functional
+                // basis is valid even when the acquisition FX rate was not one.
+                _ = lot.ToOpenLot();
+            }
             result.AddRange(HistoricalTaxLotAccrual.Project(lot, histories[lot.TaxLotRecordId].ToArray(), from, through, ct));
         }
         await transaction.CommitAsync(ct).ConfigureAwait(false);

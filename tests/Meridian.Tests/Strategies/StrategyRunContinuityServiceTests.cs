@@ -14,6 +14,31 @@ namespace Meridian.Tests.Strategies;
 public sealed class StrategyRunContinuityServiceTests
 {
     [Fact]
+    public async Task UnallocatedFinancing_IsAContinuityReviewWarningEvenWithRecordedCashFlows()
+    {
+        var store = new StrategyRunStore();
+        var run = BuildContinuityRun("unallocated-financing");
+        run = run with
+        {
+            Metrics = run.Metrics! with
+            {
+                EngineMetadata = new BacktestEngineMetadata("BrokerPaper")
+                {
+                    FinancingCoverageStatus = BacktestFinancingCoverageStatuses.Unavailable,
+                    RunAttributedMarginInterest = null
+                }
+            }
+        };
+        await store.RecordRunAsync(run);
+        var continuity = (await BuildContinuityService(store).GetRunContinuityAsync(run.RunId))!;
+        continuity.ContinuityStatus.HasCashFlow.Should().BeTrue();
+        continuity.ContinuityStatus.CashFlowHealth.Should().NotBe(StrategyRunContinuitySeamHealthStatus.Healthy);
+        continuity.ContinuityStatus.Warnings.Should().Contain(warning =>
+            warning.Code == "unavailable-run-financing" && warning.SourceSeam == "cash-flow"
+            && warning.Message.Contains("gross P&L", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task GetRunContinuityAsync_WithParentAndMismatchedPromotionSource_EmitsLineageMismatchWarning()
     {
         var store = new StrategyRunStore();

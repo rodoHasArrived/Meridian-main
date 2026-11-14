@@ -11,6 +11,10 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Core
 
+Subscription import contracts include an explicit broker-account selection and durable import
+run identity, ownership/book scope, immutable source hash, checkpoints and terminal status.
+Missing broker quantities remain invalid source data rather than implicit zero holdings.
+
 `Config/BackfillProviderCatalog.cs` owns secret-free historical-provider tier presets, conservative
 request ceilings and pure option edits. Provider records retain the declared tier; editor updates
 preserve stored credentials and archive adjustment semantics. Unknown providers (including IB and

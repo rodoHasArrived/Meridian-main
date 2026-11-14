@@ -24,26 +24,35 @@ public sealed class LedgerReadService
     }
 
     public LedgerSummary? BuildSummary(StrategyRunEntry entry)
-        => BuildBaseSummary(entry, asOf: null);
+        => BuildBaseSummary(entry, asOf: null, postedLedger: null);
 
     public LedgerSummary? BuildSummary(StrategyRunEntry entry, DateTimeOffset asOf)
-        => BuildBaseSummary(entry, asOf);
+        => BuildBaseSummary(entry, asOf, postedLedger: null);
 
-    public async Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default)
-        => await BuildSummaryCoreAsync(entry, asOf: null, ct).ConfigureAwait(false);
+    public Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default)
+        => BuildSummaryAsync(entry, ct, postedLedger: null);
+
+    public Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct,
+        IReadOnlyLedger? postedLedger)
+        => BuildSummaryCoreAsync(entry, asOf: null, ct, postedLedger);
 
     public Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf, CancellationToken ct = default)
-        => BuildSummaryCoreAsync(entry, asOf, ct);
+        => BuildSummaryCoreAsync(entry, asOf, ct, postedLedger: null);
 
-    private async Task<LedgerSummary?> BuildSummaryCoreAsync(StrategyRunEntry entry, DateTimeOffset? asOf, CancellationToken ct)
+    public Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf,
+        CancellationToken ct, IReadOnlyLedger? postedLedger)
+        => BuildSummaryCoreAsync(entry, asOf, ct, postedLedger);
+
+    private async Task<LedgerSummary?> BuildSummaryCoreAsync(StrategyRunEntry entry, DateTimeOffset? asOf,
+        CancellationToken ct, IReadOnlyLedger? postedLedger)
     {
-        var summary = BuildBaseSummary(entry, asOf);
+        var summary = BuildBaseSummary(entry, asOf, postedLedger);
         if (summary is null || _securityReferenceLookup is null || summary.TrialBalance.Count == 0)
         {
             return summary;
         }
 
-        var requests = BuildLookupRequests(entry, summary.TrialBalance);
+        var requests = BuildLookupRequests(entry, summary.TrialBalance, postedLedger, asOf);
         var lookup = await ResolveSecuritiesAsync(requests, ct).ConfigureAwait(false);
 
         var trialBalance = summary.TrialBalance
@@ -84,11 +93,12 @@ public sealed class LedgerReadService
         ];
     }
 
-    private static LedgerSummary? BuildBaseSummary(StrategyRunEntry entry, DateTimeOffset? asOf)
+    private static LedgerSummary? BuildBaseSummary(StrategyRunEntry entry, DateTimeOffset? asOf,
+        IReadOnlyLedger? postedLedger)
     {
         ArgumentNullException.ThrowIfNull(entry);
 
-        var ledger = entry.Metrics?.Ledger;
+        var ledger = postedLedger ?? entry.Metrics?.Ledger;
         if (ledger is null)
         {
             return null;
@@ -200,9 +210,12 @@ public sealed class LedgerReadService
 
     private static IReadOnlyDictionary<string, SecurityReferenceLookupRequest> BuildLookupRequests(
         StrategyRunEntry entry,
-        IReadOnlyList<LedgerTrialBalanceLine> trialBalance)
+        IReadOnlyList<LedgerTrialBalanceLine> trialBalance,
+        IReadOnlyLedger? postedLedger = null,
+        DateTimeOffset? asOf = null)
     {
-        var metadataByKey = entry.Metrics?.Ledger?.Journal
+        var metadataByKey = (postedLedger ?? entry.Metrics?.Ledger)?.Journal
+            .Where(item => !asOf.HasValue || item.Timestamp <= asOf.Value)
             .Where(static item => !string.IsNullOrWhiteSpace(item.Metadata.Symbol))
             .GroupBy(
                 static item => ComposeLineKey(item.Metadata.Symbol!, item.Metadata.FinancialAccountId),
