@@ -15,6 +15,7 @@ import { renderWithRouter } from "@/test/render";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { FirstRunStatus } from "@/features/first-run/types";
 import type {
+  BrokerageHouseholdPortfolio,
   DataWorkspaceResponse,
   PortfolioWorkspaceResponse,
   SystemOverviewResponse,
@@ -1013,6 +1014,7 @@ describe("App", () => {
     mockWorkstationData({
       session: { displayName: "Ops Desk", role: "Operator", environment: "paper", activeWorkspace: "trading", commandCount: 7 },
       overview,
+      brokeragePortfolio: { accounts: [{ fundAccountId, displayName: "Main fund" }] } as BrokerageHouseholdPortfolio,
       trading: {
         metrics: [{ id: "m1", label: "Open Orders", value: "4", delta: "", tone: "default" }],
         positions: [],
@@ -1027,11 +1029,17 @@ describe("App", () => {
       const location = useLocation();
       return <output aria-label="Current route">{location.pathname}{location.search}</output>;
     }
-    renderWithRouter(<><App /><LocationProbe /></>, { initialEntries: ["/trading/orders?symbol=MSFT"] });
+    const view = renderWithRouter(<><App /><LocationProbe /></>, { initialEntries: ["/trading/orders?symbol=MSFT"] });
 
     const recovery = await screen.findByRole("region", { name: "Brokerage recovery" }, { timeout: 10_000 });
     expect(within(recovery).getByRole("status", { name: "Brokerage recovery readiness" })).toHaveTextContent("No fund account in scope");
-    await user.type(within(recovery).getByLabelText("Fund account"), fundAccountId);
+    const blotter = screen.getByRole("region", { name: "Order blotter and selected detail" });
+    const journal = screen.getByRole("region", { name: "Operational trade journal" });
+    expect(recovery.compareDocumentPosition(blotter) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(blotter.compareDocumentPosition(journal) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(journal).toHaveTextContent("Select an account to see its journal");
+    await user.type(within(recovery).getByLabelText("Fund account"), "Main fund");
+    await user.keyboard("{Enter}");
     await user.click(within(recovery).getByRole("button", { name: "Use account" }));
 
     await waitFor(() => {
@@ -1046,6 +1054,11 @@ describe("App", () => {
     const portfolioLink = within(screen.getAllByRole("navigation").find((nav) => within(nav).queryByRole("link", { name: /Portfolio/ }))!)
       .getAllByRole("link", { name: /Portfolio/ })[0]!;
     expect(new URLSearchParams(portfolioLink.getAttribute("href")!.split("?")[1]).get("fundAccountId")).toBe(fundAccountId);
+    expect(JSON.parse(window.localStorage.getItem(OPERATING_CONTEXT_STORAGE_KEY)!)).toMatchObject({ fundAccountId, symbol: "MSFT" });
+    view.unmount();
+    renderWithRouter(<App />, { initialEntries: ["/trading/orders"] });
+    await waitFor(() => expect(scopeBar()).toHaveAccessibleName(new RegExp(`Account ${fundAccountId}`)));
+    expect(screen.queryByRole("combobox", { name: "Fund account" })).not.toBeInTheDocument();
   });
 
   it("prints the scope on a figures strip inside the shell without per-screen wiring (P4)", async () => {
@@ -1064,9 +1077,9 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/providers?fundAccountId=fund-1"] });
 
     const footnote = (await screen.findAllByTestId("stat-strip-provenance", {}, { timeout: 10_000 }))[0]!;
-    // The Data payload is not filtered by fund account, so its figures say they cover everything
-    // authorized rather than borrowing the selected account the bar shows.
-    expect(footnote).toHaveTextContent("Scope: All authorized scopes");
+    // Data figures cover loaded accounts and must not borrow the selected account scope.
+    expect(footnote).toHaveTextContent("Scope: All loaded accounts");
+    expect(footnote).not.toHaveTextContent("fund-1");
     expect(scopeBar()).toHaveTextContent("fund-1");
   });
 
