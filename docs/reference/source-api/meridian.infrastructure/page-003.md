@@ -24,8 +24,8 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static ProviderRateLimitHistory Shared { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:8](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L8) |  |
 | <code>public ProviderRateLimitHistory(int capacity = 1024);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:13](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L13) |  |
-| <code>public void Record(string provider, RateLimitStatus? status, string? nextProvider = null, int? httpStatus = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L19) |  |
-| <code>public IReadOnlyList&lt;ProviderRateLimitEventDto&gt; Read(string provider, int hours, DateTimeOffset? now = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:32](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L32) |  |
+| <code>public void Record(string provider, RateLimitStatus? status, string? nextProvider = null, int? httpStatus = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:20](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L20) |  |
+| <code>public IReadOnlyList&lt;ProviderRateLimitEventDto&gt; Read(string provider, int hours, DateTimeOffset? now = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L34) |  |
 
 ## ProviderRateLimitProfile
 

@@ -40,11 +40,15 @@ public sealed class GuardedSharedConfigServiceTests : IDisposable
     [InlineData(true)]
     public async Task DtoWriterOmitsOptionalNullScalarsAndPreservesExplicitSymbolEnums(bool useSharedBaseOptions)
     {
-        var draft = new AppConfigDto { DataSource = "Synthetic", Symbols = [new()
+        var draft = new AppConfigDto
+        {
+            DataSource = "Synthetic",
+            Symbols = [new()
         {
             Symbol = "SPX", SecurityType = "OPT", InstrumentType = "IndexOption", OptionStyle = "European",
             Strike = 5000m, Right = "Call", LastTradeDateOrContractMonth = "20270115"
-        }] };
+        }]
+        };
         string json;
         if (useSharedBaseOptions)
             json = SharedOptionsProbe.Serialize(draft);
@@ -81,7 +85,8 @@ public sealed class GuardedSharedConfigServiceTests : IDisposable
         var service = CreateService();
         await Assert.ThrowsAsync<UiConfigurationValidationException>(() => service.SaveAlpacaOptionsAsync(new AlpacaOptionsDto
         {
-            KeyId = "fixture-private-key", SecretKey = "fixture-private-secret"
+            KeyId = "fixture-private-key",
+            SecretKey = "fixture-private-secret"
         }));
         File.Exists(ConfigPath).Should().BeFalse();
     }
@@ -126,7 +131,8 @@ public sealed class GuardedSharedConfigServiceTests : IDisposable
 
     public void Dispose()
     {
-        if (Directory.Exists(_root)) Directory.Delete(_root, recursive: true);
+        if (Directory.Exists(_root))
+            Directory.Delete(_root, recursive: true);
     }
 
     private sealed class SharedOptionsProbe : ConfigServiceBase

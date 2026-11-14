@@ -12,7 +12,8 @@ public sealed class ProviderRateLimitHistory
 
     public ProviderRateLimitHistory(int capacity = 1024)
     {
-        if (capacity is < 1 or > 100000) throw new ArgumentOutOfRangeException(nameof(capacity));
+        if (capacity is < 1 or > 100000)
+            throw new ArgumentOutOfRangeException(nameof(capacity));
         _capacity = capacity;
     }
 
@@ -24,7 +25,8 @@ public sealed class ProviderRateLimitHistory
             nextProvider is null ? "rate-limited" : "rotated", nextProvider, httpStatus);
         lock (_sync)
         {
-            while (_events.Count >= _capacity) _events.Dequeue();
+            while (_events.Count >= _capacity)
+                _events.Dequeue();
             _events.Enqueue((provider, entry));
         }
     }

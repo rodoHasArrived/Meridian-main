@@ -60,8 +60,12 @@ internal static class FailoverControlOperations
 
             return Results.Json(new
             {
-                success = true, implemented = true, triggered = !reset, reset,
-                ruleId = selectedRule.Id, targetProviderId = target,
+                success = true,
+                implemented = true,
+                triggered = !reset,
+                reset,
+                ruleId = selectedRule.Id,
+                targetProviderId = target,
                 currentActiveProviderId = service.GetActiveProviderId(selectedRule.Id),
                 message = alreadyActive ? "The requested provider is already active." : "The live provider hand-off completed.",
                 timestamp = DateTimeOffset.UtcNow

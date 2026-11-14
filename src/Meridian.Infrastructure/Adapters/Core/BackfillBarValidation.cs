@@ -56,17 +56,20 @@ public static class BackfillBarValidation
     private static StaleBarsVerdict? EvaluateRecency<T>(IReadOnlyList<T> bars, Func<T, DateOnly> sessionDate,
         DateOnly? requestedTo, DateOnly? today, int staleToleranceDays)
     {
-        if (bars.Count == 0) return null;
+        if (bars.Count == 0)
+            return null;
         var utcToday = today ?? DateOnly.FromDateTime(DateTime.UtcNow);
         var expectedThrough = requestedTo is { } to && to < utcToday ? to : utcToday;
         var latest = sessionDate(bars[0]);
         foreach (var bar in bars)
         {
             var current = sessionDate(bar);
-            if (current > latest) latest = current;
+            if (current > latest)
+                latest = current;
         }
         var staleDays = expectedThrough.DayNumber - latest.DayNumber;
-        if (staleDays <= staleToleranceDays) return null;
+        if (staleDays <= staleToleranceDays)
+            return null;
         return new StaleBarsVerdict(latest, expectedThrough, staleDays,
             $"newest bar {latest:yyyy-MM-dd} is {staleDays} calendar days short of the requested range end {expectedThrough:yyyy-MM-dd}");
     }

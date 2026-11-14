@@ -236,8 +236,11 @@ public static class ProviderExtendedEndpoints
                 autoRecover = settings.AutoRecover,
                 rules = rules.Select(rule => new
                 {
-                    rule.Id, rule.FailoverThreshold, rule.RecoveryThreshold,
-                    rule.DataQualityThreshold, rule.MaxLatencyMs
+                    rule.Id,
+                    rule.FailoverThreshold,
+                    rule.RecoveryThreshold,
+                    rule.DataQualityThreshold,
+                    rule.MaxLatencyMs
                 }).ToArray(),
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);

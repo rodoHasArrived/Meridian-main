@@ -293,11 +293,14 @@ public static class FailoverEndpoints
                         previous.FailoverThreshold, previous.FailoverThreshold, previous.RecoveryThreshold, previous.RecoveryThreshold,
                         Operation: "RuleDeleted", PrimaryProviderId: previous.PrimaryProviderId, BackupProviderIds: previous.BackupProviderIds);
                     rules.Remove(previous);
-                    return (cfg with { DataSources = dataSources with
+                    return (cfg with
                     {
-                        FailoverRules = rules.ToArray(),
-                        FailoverRuleAudit = [.. (dataSources.FailoverRuleAudit ?? []), audit]
-                    } }, null);
+                        DataSources = dataSources with
+                        {
+                            FailoverRules = rules.ToArray(),
+                            FailoverRuleAudit = [.. (dataSources.FailoverRuleAudit ?? []), audit]
+                        }
+                    }, null);
                 }, ct).ConfigureAwait(false);
 
                 if (outcome is null)

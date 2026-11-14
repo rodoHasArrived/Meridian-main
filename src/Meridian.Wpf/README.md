@@ -25,8 +25,10 @@ re-read the current file under the shared write lease and run the shared whole-d
 before atomic persistence. Empty, malformed or null documents cannot be replaced by load defaults;
 provider tiers, profiles/audits, tenancy, credentials and live-gateway changes retain the same guard
 as browser saves. Automatic configuration recovery runs at desktop initialization, not ordinary
-settings reads. Unchanged legacy credentials may round-trip; new plaintext credential writes are
-refused. `UiConfigurationSaveGuardTests` covers the portable JSON validation boundary.
+settings reads. First-run defaults use the supported offline `Synthetic` provider and leave the
+storage profile unset, so the initial document passes host validation and remains editable through
+the shared save guard. Unchanged legacy credentials may round-trip; new plaintext credential writes
+are refused. `UiConfigurationSaveGuardTests` covers the portable JSON validation boundary.
 
 The retained run ledger page offers an inclusive UTC date filter through the shared strategy-run read service. Clearing the picker restores the complete retained run. Delayed reads from an earlier run or date cannot overwrite the current selection. Journal, trial balance and posting counts use one economic-time cut.
 

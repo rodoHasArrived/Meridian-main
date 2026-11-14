@@ -175,7 +175,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderValidationProfileRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:94](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L94).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:97](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L97).
 
 ```csharp
 public sealed record ProviderValidationProfileRequest(ProviderValidationProfile Profile, string? Reason = null);

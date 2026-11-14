@@ -129,7 +129,8 @@ public sealed class ProviderValidationProfileMutationTests
         {
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "profile-test-tenant";
-            if (actor) context.Items[LoginSessionMiddleware.CurrentUserKey] = "profile-test-operator";
+            if (actor)
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = "profile-test-operator";
             await next();
         });
         app.UseRateLimiter();

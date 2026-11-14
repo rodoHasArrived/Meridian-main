@@ -380,16 +380,23 @@ public sealed class FailoverEndpointTests : IDisposable, IClassFixture<EndpointT
         var store = _fixture.Services.GetRequiredService<UiConfigStore>();
         var created = await PostJsonAsync("/api/failover/rules", new
         {
-            Id = ruleId, PrimaryProviderId = "test-alpaca", BackupProviderIds = new[] { "test-backup" },
-            DataQualityThreshold = 90, MaxLatencyMs = 100
+            Id = ruleId,
+            PrimaryProviderId = "test-alpaca",
+            BackupProviderIds = new[] { "test-backup" },
+            DataQualityThreshold = 90,
+            MaxLatencyMs = 100
         });
         created.StatusCode.Should().Be(HttpStatusCode.OK);
         var auditCount = store.Load().DataSources!.FailoverRuleAudit?.Length ?? 0;
         using var actorless = _fixture.CreatePermittedClient(UserPermission.ViewDiagnostics, UserPermission.ManageProviders);
         var lowered = await actorless.PostAsync("/api/failover/rules", new StringContent(JsonSerializer.Serialize(new
         {
-            Id = ruleId, PrimaryProviderId = "test-alpaca", BackupProviderIds = new[] { "test-backup" },
-            DataQualityThreshold = 70, MaxLatencyMs = 200, Reason = "Caller claims a reason without an actor"
+            Id = ruleId,
+            PrimaryProviderId = "test-alpaca",
+            BackupProviderIds = new[] { "test-backup" },
+            DataQualityThreshold = 70,
+            MaxLatencyMs = 200,
+            Reason = "Caller claims a reason without an actor"
         }), Encoding.UTF8, "application/json"));
         lowered.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         var removed = await actorless.SendAsync(new HttpRequestMessage(HttpMethod.Delete, $"/api/failover/rules/{ruleId}")

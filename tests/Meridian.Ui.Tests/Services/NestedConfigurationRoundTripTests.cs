@@ -59,11 +59,15 @@ public sealed class NestedConfigurationRoundTripTests
         await service.SaveSymbolsAsync([new SymbolConfigDto { Symbol = "MSFT" }]);
         await service.SetBackfillProviderOptionsAsync("polygon", new BackfillProviderOptionsDto
         {
-            Enabled = true, Priority = 3, TierId = "starter", RateLimitPerMinute = 20
+            Enabled = true,
+            Priority = 3,
+            TierId = "starter",
+            RateLimitPerMinute = 20
         });
         await service.SetBackfillProviderOptionsAsync("nasdaq", new BackfillProviderOptionsDto
         {
-            Enabled = true, Priority = 2
+            Enabled = true,
+            Priority = 2
         });
         var restored = JsonSerializer.Deserialize<DomainAppConfig>(service.Json, AppConfigJsonOptions.Read)!;
         AssertProtectedConfigurationPreserved(original, restored);

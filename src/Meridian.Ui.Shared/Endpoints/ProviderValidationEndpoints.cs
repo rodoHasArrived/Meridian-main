@@ -83,11 +83,14 @@ public static class ProviderValidationEndpoints
         foreach (var pair in backfill.ValidationProfiles ?? new Dictionary<string, ProviderValidationProfile>())
             profiles[pair.Key] = pair.Value;
         profiles[provider] = request.Profile;
-        return (config with { Backfill = backfill with
+        return (config with
         {
-            ValidationProfiles = profiles,
-            ValidationProfileAudit = (backfill.ValidationProfileAudit ?? []).Append(audit).ToArray()
-        } }, audit);
+            Backfill = backfill with
+            {
+                ValidationProfiles = profiles,
+                ValidationProfileAudit = (backfill.ValidationProfileAudit ?? []).Append(audit).ToArray()
+            }
+        }, audit);
     }
 }
 

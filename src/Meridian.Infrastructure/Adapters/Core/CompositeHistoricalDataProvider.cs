@@ -129,7 +129,8 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
 
         _symbolResolver = symbolResolver;
         _validationProfiles = validationProfiles;
-        foreach (var profile in validationProfiles?.Values ?? Enumerable.Empty<ProviderValidationProfile>()) profile.Validate();
+        foreach (var profile in validationProfiles?.Values ?? Enumerable.Empty<ProviderValidationProfile>())
+            profile.Validate();
         _enableCrossValidation = enableCrossValidation;
         // Overall wall-clock budget for waiting out rate limits across all retry attempts.
         // Bounds the worst case (previously ~15 min: 3 retries x 5 min) to a single knob.

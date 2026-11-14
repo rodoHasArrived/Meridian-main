@@ -31,7 +31,8 @@ public sealed class SyntheticRoutingProvenanceTests
         using var tracker = new ProviderRateLimitTracker();
         tracker.RegisterProvider("real", 10, TimeSpan.FromMinutes(1), TimeSpan.Zero);
         tracker.RegisterProvider("synthetic", 10, TimeSpan.FromMinutes(1), TimeSpan.Zero);
-        for (var i = 0; i < 9; i++) tracker.RecordRequest("real");
+        for (var i = 0; i < 9; i++)
+            tracker.RecordRequest("real");
         var rotation = new ProviderRotationStrategy(tracker, rotationEnabled, 0.8);
         rotation.OrderByAvailability([synthetic.Object, real.Object]).First().Name.Should().Be("real");
     }

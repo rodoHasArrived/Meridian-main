@@ -33,7 +33,8 @@ public static class ConfigEndpoints
         group.RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ModifyConfig);
         group.AddEndpointFilter(async (context, next) =>
         {
-            try { return await next(context); }
+            try
+            { return await next(context); }
             catch (UiConfigurationValidationException failure)
             {
                 return Results.ValidationProblem(failure.Errors.ToDictionary(entry => entry.Key, entry => entry.Value));

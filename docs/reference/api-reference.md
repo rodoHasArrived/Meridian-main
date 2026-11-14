@@ -999,7 +999,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs](../../src/Meridian
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/config/changes` | GET | `(ConfigStore store) => …` | `Produces<ConfigurationChangeStatus>(200)`; `Results.Json` | `WithName("GetConfigurationChangeStatus")`; `WithDescription("Saved setting impacts and changes awaiting provider reconnect or host restart; no setting values are returned.")` | [L43](../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L43) |
+| `/api/config/changes` | GET | `(ConfigStore store) => …` | `Produces<ConfigurationChangeStatus>(200)`; `Results.Json` | `WithName("GetConfigurationChangeStatus")`; `WithDescription("Saved setting impacts and changes awaiting provider reconnect or host restart; no setting values are returned.")` | [L44](../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L44) |
 
 ### DirectLendingEndpoints
 

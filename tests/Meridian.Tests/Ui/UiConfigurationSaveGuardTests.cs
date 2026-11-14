@@ -102,10 +102,13 @@ public sealed class UiConfigurationSaveGuardTests : IDisposable
     {
         var store = await CreateStore(new AppConfig(Backfill: new BackfillConfig()));
         var current = store.Load();
-        await store.SaveAsync(current with { Backfill = current.Backfill! with
+        await store.SaveAsync(current with
         {
-            Providers = new BackfillProvidersConfig(Polygon: new(RateLimitPerMinute: 3))
-        } });
+            Backfill = current.Backfill! with
+            {
+                Providers = new BackfillProvidersConfig(Polygon: new(RateLimitPerMinute: 3))
+            }
+        });
         store.Load().Backfill!.Providers!.Polygon!.RateLimitPerMinute.Should().Be(3);
         store.GetChangeStatus().RequiresRestart.Should().BeTrue();
     }
@@ -115,10 +118,16 @@ public sealed class UiConfigurationSaveGuardTests : IDisposable
     {
         var store = await CreateStore(new AppConfig(Backfill: new BackfillConfig()));
         var current = store.Load();
-        var next = current with { Backfill = current.Backfill! with { ValidationProfiles = new Dictionary<string, ProviderValidationProfile>
+        var next = current with
         {
-            ["yahoo"] = new()
-        }}};
+            Backfill = current.Backfill! with
+            {
+                ValidationProfiles = new Dictionary<string, ProviderValidationProfile>
+                {
+                    ["yahoo"] = new()
+                }
+            }
+        };
         await Assert.ThrowsAsync<UiConfigurationValidationException>(() => store.SaveAsync(next));
         // Dedicated Application services retain their own typed audit/permission authority.
         await new AppConfigStore(store.ConfigPath).UpdateAsync(config => config with { Backfill = next.Backfill });
@@ -190,6 +199,7 @@ public sealed class UiConfigurationSaveGuardTests : IDisposable
 
     public void Dispose()
     {
-        if (Directory.Exists(_root)) Directory.Delete(_root, recursive: true);
+        if (Directory.Exists(_root))
+            Directory.Delete(_root, recursive: true);
     }
 }

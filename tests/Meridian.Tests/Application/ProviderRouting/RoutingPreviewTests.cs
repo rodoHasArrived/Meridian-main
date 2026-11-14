@@ -98,7 +98,8 @@ public sealed class RoutingPreviewTests
     public void BackfillPreview_CancellationAndInvalidRangeNeverConstructAdapters()
     {
         var calls = 0;
-        IReadOnlyList<IHistoricalDataProvider> Create(AppConfig _) { calls++; return []; }
+        IReadOnlyList<IHistoricalDataProvider> Create(AppConfig _)
+        { calls++; return []; }
         var cancelled = () => BackfillRoutingPreview.Preview(new AppConfig(), Request(), Create, new CancellationToken(true));
         cancelled.Should().Throw<OperationCanceledException>();
         var invalid = () => BackfillRoutingPreview.Preview(new AppConfig(), Request() with { From = new DateOnly(2025, 1, 1) }, Create);

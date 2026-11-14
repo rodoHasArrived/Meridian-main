@@ -39,10 +39,13 @@ public sealed class ConfigurationChangeTrackingTests : IDisposable
     {
         var baseline = new BackfillConfig(Providers: new BackfillProvidersConfig(Yahoo: new YahooFinanceConfig(Priority: 10)));
         var store = await CreateStore(new AppConfig(Backfill: baseline));
-        await store.UpdateAsync(config => config with { Backfill = baseline with
+        await store.UpdateAsync(config => config with
         {
-            Providers = baseline.Providers! with { Yahoo = baseline.Providers.Yahoo! with { Priority = 4 } }
-        }});
+            Backfill = baseline with
+            {
+                Providers = baseline.Providers! with { Yahoo = baseline.Providers.Yahoo! with { Priority = 4 } }
+            }
+        });
         store.GetChangeStatus().RequiresRestart.Should().BeTrue();
         await store.UpdateAsync(config => config with { Backfill = baseline });
         store.GetChangeStatus().PendingChanges.Should().BeEmpty();
@@ -69,6 +72,7 @@ public sealed class ConfigurationChangeTrackingTests : IDisposable
 
     public void Dispose()
     {
-        if (Directory.Exists(_root)) Directory.Delete(_root, recursive: true);
+        if (Directory.Exists(_root))
+            Directory.Delete(_root, recursive: true);
     }
 }

@@ -54,7 +54,8 @@ public static class UiConfigurationSaveGuard
         foreach (var path in new[] { "ProviderConnections", "ProviderModules" })
             if (!JsonNode.DeepEquals(At(before, path), At(after, path)))
                 errors[path] = ["Use the dedicated owned-provider workflow; whole-document settings saves cannot change host provider bindings or modules."];
-        if (errors.Count > 0) throw new UiConfigurationValidationException(errors);
+        if (errors.Count > 0)
+            throw new UiConfigurationValidationException(errors);
     }
 
     internal static void Validate(AppConfig current, AppConfig next, bool confirmDataSemantics, bool wholeDocument)
@@ -65,7 +66,8 @@ public static class UiConfigurationSaveGuard
         {
             // Credential presence belongs to the vault/environment and connection checks. Never
             // require inline secrets merely to save a provider's operational settings.
-            if (failure.PropertyName is "Alpaca" or "IB" or "Alpaca.KeyId" or "Alpaca.SecretKey") continue;
+            if (failure.PropertyName is "Alpaca" or "IB" or "Alpaca.KeyId" or "Alpaca.SecretKey")
+                continue;
             errors[failure.PropertyName] = [failure.ErrorMessage];
         }
         foreach (var entry in next.Backfill?.ValidationProfiles ?? new Dictionary<string, ProviderValidationProfile>())
@@ -84,7 +86,8 @@ public static class UiConfigurationSaveGuard
         }
         // Invalid floating-point values cannot be serialized. Refuse them with safe property-only
         // validation evidence before producing the before/after JSON used by the remaining guards.
-        if (errors.ContainsKey("Backfill.ValidationProfiles")) throw new UiConfigurationValidationException(errors);
+        if (errors.ContainsKey("Backfill.ValidationProfiles"))
+            throw new UiConfigurationValidationException(errors);
         if (next.Backfill?.Providers is { } providers)
         {
             foreach (var provider in BackfillProviderCatalog.Providers)
@@ -115,7 +118,8 @@ public static class UiConfigurationSaveGuard
                     errors[path] = ["Use the dedicated provider editor so validation reasons and audit evidence are retained."];
             }
         }
-        if (errors.Count > 0) throw new UiConfigurationValidationException(errors);
+        if (errors.Count > 0)
+            throw new UiConfigurationValidationException(errors);
     }
 
     private static void RefuseAmbiguousProperties(JsonNode? node)
@@ -125,19 +129,22 @@ public static class UiConfigurationSaveGuard
             var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var (name, child) in obj)
             {
-                if (!names.Add(name)) throw new JsonException();
+                if (!names.Add(name))
+                    throw new JsonException();
                 RefuseAmbiguousProperties(child);
             }
         }
         else if (node is JsonArray array)
-            foreach (var child in array) RefuseAmbiguousProperties(child);
+            foreach (var child in array)
+                RefuseAmbiguousProperties(child);
     }
 
     private static JsonNode? At(JsonNode? root, string path)
     {
         foreach (var segment in path.Split('.'))
         {
-            if (root is not JsonObject obj) return null;
+            if (root is not JsonObject obj)
+                return null;
             root = obj.FirstOrDefault(entry => entry.Key.Equals(segment, StringComparison.OrdinalIgnoreCase)).Value;
         }
         return root;
@@ -149,7 +156,8 @@ public static class UiConfigurationSaveGuard
     private static void CheckChanges(JsonNode? before, JsonNode? after, string path, bool confirmed,
         Dictionary<string, string[]> errors)
     {
-        if (JsonNode.DeepEquals(before, after)) return;
+        if (JsonNode.DeepEquals(before, after))
+            return;
         var property = path.Split('.').Last();
         if (CredentialProperties.Contains(property) && after is JsonValue value
             && value.TryGetValue<string>(out var credential) && !string.IsNullOrWhiteSpace(credential))
