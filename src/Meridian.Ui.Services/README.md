@@ -54,6 +54,13 @@ input, server capabilities, exact approved versions, evidence and review history
 agreement authority in the desktop client. Source-line responses verify agreement/book/date identity
 and retain exact amount strings. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+`IntercompanyCounterpartQueueWorkspace` is the desktop state for counterpart delivery records and
+booking breaks over the same `/api/ledger/intercompany/proposals` and `/breaks` routes as the
+browser queue. Retry, explicit linking and FX repricing send a reasoned request whose identity is
+reused for an identical retry; the server decides permission, target-book authority and every
+amount. Responses for another book, proposal, link target or repricing request are refused, a
+break outage reads as unknown rather than empty, and amounts render from exact decimals.
+
 Shared API response options accept exact decimal strings as well as legacy numeric tokens, so
 typed fixed-income reads preserve nullable and nested financial values. API request serialization
 continues to emit numbers; compact storage, pretty-print and retained calculation serializers are
