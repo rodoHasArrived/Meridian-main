@@ -285,7 +285,7 @@ public sealed class SecurityValidationService : ISecurityValidationService
                     "Asset-specific terms format is unknown",
                     $"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey} '{declared}' is not a terms format this node understands; the projection store refuses to persist it.",
                     [$"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}"],
-                    $"Declare one of {string.Join(", ", SecurityTermsFormats.All)} or upgrade this node before the record is used downstream.")
+                    $"Declare {SecurityTermsEnvelope.FormatKey} as '{SecurityTermsFormats.Flat}' or '{SecurityTermsFormats.CustomProfile}' (SecurityTermsEnvelope.StampDeclaredFormat or StampFlat; '{SecurityTermsFormats.Economic}' is not accepted on writes), or upgrade this node before the record is used downstream.")
             ];
         }
 

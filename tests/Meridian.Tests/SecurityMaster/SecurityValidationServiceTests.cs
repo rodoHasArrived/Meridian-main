@@ -807,10 +807,13 @@ public sealed class SecurityValidationServiceTests
 
         var report = service.ValidateRecord(record, [record], Now);
 
-        report.Issues.Should().Contain(issue =>
-            issue.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_UNKNOWN"
-            && issue.Severity == SecurityValidationSeverityDto.Error
-            && issue.Message.Contains("'tabular'", StringComparison.Ordinal));
+        var issue = report.Issues.Should().ContainSingle(static issue => issue.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_UNKNOWN").Subject;
+        issue.Severity.Should().Be(SecurityValidationSeverityDto.Error);
+        issue.Message.Should().Contain("'tabular'");
+        issue.SuggestedAction.Should().Contain($"'{SecurityTermsFormats.Flat}' or '{SecurityTermsFormats.CustomProfile}'")
+            .And.Contain($"'{SecurityTermsFormats.Economic}' is not accepted on writes",
+                "the remediation names only the families a write accepts")
+            .And.NotContain($"one of {string.Join(", ", SecurityTermsFormats.All)}");
     }
 
     [Fact]
