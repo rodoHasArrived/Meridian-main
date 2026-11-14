@@ -137,7 +137,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.StrategyWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:282](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L282).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:285](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L285).
 
 Binds derived pages to the strategy workspace shell definition.
 
