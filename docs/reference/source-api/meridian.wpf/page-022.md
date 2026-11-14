@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TableViewModel (generic arity 1)
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.TableViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/TableViewModel.cs:9](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/TableViewModel.cs#L9).
+
+Maintains bindable table rows and row-availability state, with batched replacement.
+
+```csharp
+public abstract class TableViewModel<TRow>: Meridian.Wpf.ViewModels.BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ObservableCollection&lt;TRow&gt; Rows =&gt; …;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/TableViewModel.cs:20](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/TableViewModel.cs#L20) |  |
+| <code>public bool HasRows { get; private set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/TableViewModel.cs:22](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/TableViewModel.cs#L22) |  |
+| <code>public virtual void ReplaceRows(IEnumerable&lt;TRow&gt; rows);</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/TableViewModel.cs:28](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/TableViewModel.cs#L28) |  |
+
 ## ValidationStateViewModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.ValidationStateViewModel</code>. Kind: `class`.

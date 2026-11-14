@@ -520,12 +520,12 @@ public sealed record WorkstationRunDrillInLinks(string EquityCurve, string Fills
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L41).
+Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L56).
 
-A fund account the caller may scope to. FundId and EntityId are null when the account has no such relationship or when it points at a fund or entity the caller may not see.
+A fund account the caller may scope to. FundId and EntityId are null when the account has no such relationship or when it points at a fund or entity the caller may not see; FundWithheld and EntityWithheld tell the two apart.
 
 ```csharp
-public sealed record WorkstationScopeAccountOptionDto(Guid AccountId, string DisplayName, Guid? FundId, Guid? EntityId);
+public sealed record WorkstationScopeAccountOptionDto(Guid AccountId, string DisplayName, Guid? FundId, Guid? EntityId, bool FundWithheld = false, bool EntityWithheld = false);
 ```
 
 ## WorkstationScopeEntityOptionDto
