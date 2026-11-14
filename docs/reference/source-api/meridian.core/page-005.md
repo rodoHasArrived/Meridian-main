@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FigiLookupRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.FigiLookupRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:212](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L212).
+
+Bulk OpenFIGI lookup request item.
+
+```csharp
+public sealed record FigiLookupRequest(string IdType, string IdValue, string? ExchCode = null, string? MarketSecDes = null);
+```
+
+## FigiMapping
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.FigiMapping</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:180](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L180).
+
+OpenFIGI mapping result.
+
+```csharp
+public sealed record FigiMapping(string Figi, string? CompositeFigi = null, string? SecurityType = null, string? MarketSector = null, string? Ticker = null, string? Name = null, string? ExchangeCode = null, string? ShareClassFigi = null, string? SecurityDescription = null);
+```
+
 ## ImportDefaults
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.ImportDefaults</code>. Kind: `record`.

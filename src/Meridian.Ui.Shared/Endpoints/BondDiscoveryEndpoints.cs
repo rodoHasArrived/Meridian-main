@@ -1,8 +1,11 @@
 using System.Text.Json;
 using Meridian.Application.Subscriptions.Services;
+using Meridian.Application.ProviderRouting;
+using Meridian.Application.UI;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Subscriptions.Models;
+using Meridian.Core.Exceptions;
 using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -23,26 +26,38 @@ public static class BondDiscoveryEndpoints
                 return Results.Problem("Provider-backed bond discovery is not configured on this host.", statusCode: 503);
 
             var normalized = query?.Trim() ?? string.Empty;
+            if (normalized.Length == 0)
+                return Results.BadRequest(new { error = "Enter a bond symbol or issuer before lookup." });
             if (normalized.Length > 200)
                 return Results.BadRequest(new { error = "Bond lookup accepts at most 200 characters." });
 
             // Alpaca is the retained implementation with a fixed_income filter. Other symbol
             // providers must not silently broaden this bond-only surface to equities.
-            var provider = (await search.GetProvidersAsync(context.RequestAborted).ConfigureAwait(false))
-                .FirstOrDefault(candidate => string.Equals(candidate.Name, "alpaca", StringComparison.OrdinalIgnoreCase));
-            var available = provider?.Available == true;
+            var available = false;
+            string? failureReason = null;
             SymbolSearchResponse? results = null;
-            if (available && normalized.Length > 0)
+            // The configuration lease protects dispatch ownership. Bound the whole operation so
+            // quota pacing or an unresponsive provider cannot indefinitely block credential maintenance.
+            using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(20),
+                context.RequestServices.GetService<TimeProvider>() ?? TimeProvider.System);
+            using var lookup = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted, deadline.Token);
+            try
             {
-                try
-                {
-                    results = await search.SearchAuthoritativeAsync(new SymbolSearchRequest(normalized, Limit: 25,
-                        AssetType: "fixed_income", Provider: "alpaca", IncludeFigi: false), context.RequestAborted).ConfigureAwait(false);
-                }
-                catch (InvalidOperationException)
-                {
-                    return Results.Problem("Alpaca bond lookup could not be completed. The provider may be unavailable or throttled; retry lookup before reviewing candidates.", statusCode: 503);
-                }
+                using var ownership = await AcquireOwnershipAsync(context, lookup.Token).ConfigureAwait(false);
+                if (!ownership.TenantAllowed)
+                    return Results.Problem("Bond discovery is unavailable in this tenant.", statusCode: StatusCodes.Status403Forbidden);
+
+                results = await search.SearchAuthoritativeAsync(new SymbolSearchRequest(normalized, Limit: 25,
+                    AssetType: "fixed_income", Provider: "alpaca", IncludeFigi: false), lookup.Token).ConfigureAwait(false);
+                available = true;
+            }
+            catch (ProviderSearchException ex)
+            {
+                failureReason = JsonNamingPolicy.CamelCase.ConvertName(ex.Failure.ToString());
+            }
+            catch (OperationCanceledException) when (deadline.IsCancellationRequested && !context.RequestAborted.IsCancellationRequested)
+            {
+                failureReason = "lookupTimedOut";
             }
             var candidates = (results?.Results ?? []).Where(candidate =>
                 string.Equals(candidate.AssetType, "FixedIncome", StringComparison.OrdinalIgnoreCase)
@@ -56,12 +71,13 @@ public static class BondDiscoveryEndpoints
                 provider = "alpaca",
                 providerLabel = "Alpaca",
                 available,
-                unavailableReason = available ? null : "Alpaca bond lookup is unavailable or its credentials are not configured.",
+                unavailableReason = available ? null : "Alpaca bond lookup could not be completed. Retry lookup before reviewing candidates.",
+                failureReason,
                 canStage = (permissions & UserPermission.ModifySecurityMaster) == UserPermission.ModifySecurityMaster,
                 query = normalized,
                 candidates,
                 observedAtUtc = DateTimeOffset.UtcNow
-            }, jsonOptions);
+            }, jsonOptions, statusCode: failureReason is null ? StatusCodes.Status200OK : StatusCodes.Status503ServiceUnavailable);
         })
         .WithName("DiscoverProviderBonds")
         .RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
@@ -69,5 +85,48 @@ public static class BondDiscoveryEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status503ServiceUnavailable);
+    }
+
+    private sealed record OwnershipLease(IDisposable ConfigurationLease, bool TenantAllowed) : IDisposable
+    {
+        public void Dispose() => ConfigurationLease.Dispose();
+    }
+
+    private static async Task<OwnershipLease> AcquireOwnershipAsync(HttpContext context, CancellationToken ct)
+    {
+        var config = context.RequestServices.GetService<ConfigStore>()
+            ?? throw new ProviderSearchException(ProviderSearchFailure.CredentialsUnavailable,
+                "Owned provider configuration is unavailable.");
+        IDisposable? lease = null;
+        var transferred = false;
+        try
+        {
+            // A binding cannot be removed or reassigned between this check and provider dispatch.
+            lease = await config.AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
+            var scope = ProviderRuntimeCredentialService.ResolveScope(config.LoadRequired(), "alpaca")
+                ?? throw new InvalidOperationException("An owned Alpaca runtime binding is required.");
+            var tenantAllowed = string.Equals(scope.TenantId, context.Items[LoginSessionMiddleware.CurrentTenantIdKey] as string, StringComparison.Ordinal);
+            if (tenantAllowed)
+            {
+                var runtime = context.RequestServices.GetService<ProviderRuntimeCredentialService>()
+                    ?? throw new InvalidOperationException("Runtime credential application status is unavailable.");
+                var status = runtime.GetApplicationStatus("alpaca", scope.ConnectionId, scope.TenantId);
+                if (!status.IsBound || status.PendingRestart)
+                    throw new InvalidOperationException("The owned credential binding has not reached running provider instances.");
+            }
+            var result = new OwnershipLease(lease, tenantAllowed);
+            transferred = true;
+            return result;
+        }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or JsonException or UnauthorizedAccessException or InvalidOperationException or TimeoutException)
+        {
+            throw new ProviderSearchException(ProviderSearchFailure.CredentialsUnavailable,
+                "Owned provider credentials are unavailable.", ex);
+        }
+        finally
+        {
+            if (!transferred)
+                lease?.Dispose();
+        }
     }
 }

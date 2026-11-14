@@ -6,6 +6,51 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConnectionWarmUp
+
+Qualified name: <code>Meridian.Core.Performance.ConnectionWarmUp</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:12](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L12).
+
+Connection warm-up utilities for establishing and priming network connections before critical market hours to minimize latency variance.
+
+```csharp
+public sealed class ConnectionWarmUp
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WarmUpStatistics? LastWarmUpStats { get; private set; }</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:21](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L21) | Statistics from the last warm-up operation. |
+| <code>public ConnectionWarmUp(TimeSpan? warmUpInterval = null, int warmUpIterations = 10);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:23](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L23) |  |
+| <code>public bool ShouldWarmUp();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:32](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L32) | Determines if a warm-up cycle should be performed based on elapsed time. |
+| <code>public async Task&lt;WarmUpStatistics&gt; ExecuteWarmUpAsync(Func&lt;CancellationToken, Task&gt; warmUpAction, CancellationToken ct = default);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:47](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L47) | Executes a warm-up cycle using the provided action. Measures latency statistics for monitoring. |
+| <code>public async Task&lt;WarmUpStatistics&gt; ExecuteWarmUpAsync(Action warmUpAction, CancellationToken ct = default);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:103](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L103) | Executes a synchronous warm-up cycle using the provided action. The action is executed synchronously, but delays between iterations use async Task.Delay. |
+
+## ExponentialBackoffRetry
+
+Qualified name: <code>Meridian.Core.Performance.ExponentialBackoffRetry</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:182](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L182).
+
+Exponential backoff retry logic for connection management.
+
+```csharp
+public sealed class ExponentialBackoffRetry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int CurrentRetryCount =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:192](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L192) |  |
+| <code>public bool CanRetry =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:193](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L193) |  |
+| <code>public ExponentialBackoffRetry(TimeSpan? initialDelay = null, TimeSpan? maxDelay = null, int maxRetries = - 1, double multiplier = 2.0, double jitterFactor = 0.1);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:195](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L195) |  |
+| <code>public TimeSpan GetNextDelay();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:212](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L212) | Gets the next delay duration and increments the retry counter. |
+| <code>public async Task WaitAsync(CancellationToken ct = default);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:228](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L228) | Waits for the next retry delay. |
+| <code>public void Reset();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:237](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L237) | Resets the retry counter and delay to initial values. |
+
 ## HeartbeatMonitor
 
 Qualified name: <code>Meridian.Core.Performance.HeartbeatMonitor</code>. Kind: `class`.
@@ -892,27 +937,3 @@ Declared public members:
 | <code>public static readonly string[] Standard = { Symbol, SubscribeTrades, SubscribeDepth, DepthLevels, SecurityType, Exchange, Currency, PrimaryExchange };</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:96](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L96) |  |
 | <code>public static readonly string[] Full = { Symbol, SubscribeTrades, SubscribeDepth, DepthLevels, SecurityType, Exchange, Currency, PrimaryExchange, LocalSymbol, TradingClass, ConId };</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:102](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L102) |  |
 | <code>public static readonly string[] WithMetadata = { Symbol, Name, Sector, Industry, MarketCap, SubscribeTrades, SubscribeDepth, DepthLevels, SecurityType, Exchange, Currency, PrimaryExchange };</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:109](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L109) |  |
-
-## FigiLookupRequest
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.FigiLookupRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:212](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L212).
-
-Bulk OpenFIGI lookup request item.
-
-```csharp
-public sealed record FigiLookupRequest(string IdType, string IdValue, string? ExchCode = null, string? MarketSecDes = null);
-```
-
-## FigiMapping
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.FigiMapping</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:180](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L180).
-
-OpenFIGI mapping result.
-
-```csharp
-public sealed record FigiMapping(string Figi, string? CompositeFigi = null, string? SecurityType = null, string? MarketSector = null, string? Ticker = null, string? Name = null, string? ExchangeCode = null, string? ShareClassFigi = null, string? SecurityDescription = null);
-```

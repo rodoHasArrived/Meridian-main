@@ -293,6 +293,47 @@ Declared public members:
 | <code>public OperationTimeoutException(string message, string? operationName = null, TimeSpan? timeout = null, string? provider = null) : base(message);</code> | [src/Meridian.Core/Exceptions/OperationTimeoutException.cs:16](../../../../src/Meridian.Core/Exceptions/OperationTimeoutException.cs#L16) |  |
 | <code>public OperationTimeoutException(string message, Exception innerException) : base(message, innerException);</code> | [src/Meridian.Core/Exceptions/OperationTimeoutException.cs:28](../../../../src/Meridian.Core/Exceptions/OperationTimeoutException.cs#L28) |  |
 
+## ProviderSearchException
+
+Qualified name: <code>Meridian.Core.Exceptions.ProviderSearchException</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Exceptions/ProviderSearchException.cs:15](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L15).
+
+Unavailable search evidence, kept separate from a successful search with no matches.
+
+```csharp
+public sealed class ProviderSearchException(ProviderSearchFailure failure, string message, Exception? innerException = null) : InvalidOperationException(message, innerException)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderSearchFailure Failure { get; } = failure;</code> | [src/Meridian.Core/Exceptions/ProviderSearchException.cs:19](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L19) |  |
+
+## ProviderSearchFailure
+
+Qualified name: <code>Meridian.Core.Exceptions.ProviderSearchFailure</code>. Kind: `enum`.
+
+Source: [src/Meridian.Core/Exceptions/ProviderSearchException.cs:4](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L4).
+
+The reason an explicit provider lookup could not establish a complete result.
+
+```csharp
+public enum ProviderSearchFailure
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unavailable</code> | [src/Meridian.Core/Exceptions/ProviderSearchException.cs:6](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L6) |  |
+| <code>CredentialsUnavailable</code> | [src/Meridian.Core/Exceptions/ProviderSearchException.cs:7](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L7) |  |
+| <code>TransportError</code> | [src/Meridian.Core/Exceptions/ProviderSearchException.cs:8](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L8) |  |
+| <code>MalformedPayload</code> | [src/Meridian.Core/Exceptions/ProviderSearchException.cs:9](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L9) |  |
+| <code>IncompleteResponse</code> | [src/Meridian.Core/Exceptions/ProviderSearchException.cs:10](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L10) |  |
+| <code>Throttled</code> | [src/Meridian.Core/Exceptions/ProviderSearchException.cs:11](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L11) |  |
+
 ## RateLimitException
 
 Qualified name: <code>Meridian.Core.Exceptions.RateLimitException</code>. Kind: `class`.
@@ -959,48 +1000,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static readonly NullReconnectionMetrics Instance = new ();</code> | [src/Meridian.Core/Monitoring/IReconnectionMetrics.cs:26](../../../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs#L26) |  |
 | <code>public void RecordAttempt(string provider, bool success);</code> | [src/Meridian.Core/Monitoring/IReconnectionMetrics.cs:28](../../../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs#L28) |  |
-
-## ConnectionWarmUp
-
-Qualified name: <code>Meridian.Core.Performance.ConnectionWarmUp</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:12](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L12).
-
-Connection warm-up utilities for establishing and priming network connections before critical market hours to minimize latency variance.
-
-```csharp
-public sealed class ConnectionWarmUp
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WarmUpStatistics? LastWarmUpStats { get; private set; }</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:21](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L21) | Statistics from the last warm-up operation. |
-| <code>public ConnectionWarmUp(TimeSpan? warmUpInterval = null, int warmUpIterations = 10);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:23](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L23) |  |
-| <code>public bool ShouldWarmUp();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:32](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L32) | Determines if a warm-up cycle should be performed based on elapsed time. |
-| <code>public async Task&lt;WarmUpStatistics&gt; ExecuteWarmUpAsync(Func&lt;CancellationToken, Task&gt; warmUpAction, CancellationToken ct = default);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:47](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L47) | Executes a warm-up cycle using the provided action. Measures latency statistics for monitoring. |
-| <code>public async Task&lt;WarmUpStatistics&gt; ExecuteWarmUpAsync(Action warmUpAction, CancellationToken ct = default);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:103](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L103) | Executes a synchronous warm-up cycle using the provided action. The action is executed synchronously, but delays between iterations use async Task.Delay. |
-
-## ExponentialBackoffRetry
-
-Qualified name: <code>Meridian.Core.Performance.ExponentialBackoffRetry</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:182](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L182).
-
-Exponential backoff retry logic for connection management.
-
-```csharp
-public sealed class ExponentialBackoffRetry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int CurrentRetryCount =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:192](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L192) |  |
-| <code>public bool CanRetry =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:193](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L193) |  |
-| <code>public ExponentialBackoffRetry(TimeSpan? initialDelay = null, TimeSpan? maxDelay = null, int maxRetries = - 1, double multiplier = 2.0, double jitterFactor = 0.1);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:195](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L195) |  |
-| <code>public TimeSpan GetNextDelay();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:212](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L212) | Gets the next delay duration and increments the retry counter. |
-| <code>public async Task WaitAsync(CancellationToken ct = default);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:228](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L228) | Waits for the next retry delay. |
-| <code>public void Reset();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:237](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L237) | Resets the retry counter and delay to initial values. |

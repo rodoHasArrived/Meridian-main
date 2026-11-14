@@ -19,6 +19,10 @@ Catalog options retain each configuration record's defaults. Alpha Vantage runti
 still requires an explicitly enabled provider configuration and a resolved credential; a catalog
 preset alone does not activate it.
 
+`ProviderSearchException` and `ProviderSearchFailure` identify unavailable credentials, transport failures, malformed or
+incomplete responses and throttling for explicit provider lookups. A successful empty search is
+represented by its result rather than a failure category.
+
 `Meridian.Core.Currency.CurrencyMinorUnits.GetPrecision` delegates to `Meridian.Contracts.Ledger.CurrencyMinorUnits`, so the ISO 4217 minor-unit table is maintained in one place.
 
 `ProviderConnectionsConfig.RuntimeCredentials` holds optional explicit host defaults keyed by
