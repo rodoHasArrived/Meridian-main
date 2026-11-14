@@ -20,6 +20,17 @@ public static class UiApiRoutes
     public const string OnboardingPacketExport = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/packets/{packetId:guid}/download";
     public const string OnboardingReplay = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/comparisons/{comparisonId}/replay";
 
+    // Shadow-mode onboarding (W11-SHADOW-001): parallel run, certificate and the audited promotion decision.
+    public const string OnboardingShadowDesignation = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/shadow-designation";
+    public const string OnboardingShadowWithdrawal = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/shadow-designation/withdraw";
+    public const string OnboardingOpeningBalances = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/opening-balances";
+    public const string OnboardingOpeningBalanceReport = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/opening-balances/report";
+    public const string OnboardingDifferenceExplanation = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/differences/{differenceKey}/explanation";
+    public const string OnboardingCertificates = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/certificates";
+    public const string OnboardingCertificate = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/certificates/{certificateId:guid}";
+    public const string OnboardingPromotion = "/api/accounting/onboarding/workspaces/{workspaceId:guid}/promotion";
+    public const string OnboardingBookOfRecordStatus = "/api/accounting/onboarding/ledger-books/{ledgerBookId:guid}/book-of-record";
+
     // Health and status endpoints served by the ASP.NET Core workstation host
     public const string Health = "/health";
     public const string HealthDetailed = "/health/detailed";
@@ -818,6 +829,12 @@ public static class UiApiRoutes
     /// <summary>The signed-in operator's default operating scope (C1).</summary>
     public const string WorkstationOperatorScopePreference = "/api/workstation/operator/scope-preference";
 
+    /// <summary>
+    /// The entities, funds and fund accounts the calling operator may scope to (P4): read-only, open
+    /// to any authenticated workstation operator, filtered to the caller's own scoped grants.
+    /// </summary>
+    public const string WorkstationScopeOptions = "/api/workstation/scope-options";
+
     /// <summary>The signed-in operator's last visit to a workstation surface, for "since last visit" markers (C3).</summary>
     public const string WorkstationOperatorSurfaceVisit = "/api/workstation/operator/visits/{surface}";
     public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";
@@ -927,6 +944,12 @@ public static class UiApiRoutes
     public const string RunsLedgerTrialBalance = "/api/workstation/runs/{runId}/ledger/trial-balance";
     public const string RunsLedgerExport = "/api/workstation/runs/{runId}/ledger/export";
     public const string RunsLedgerJournal = "/api/workstation/runs/{runId}/ledger/journal";
+    public const string RunsLedgerEntries = "/api/workstation/runs/{runId}/ledger/entries";
+    public const string RunsLedgerAccounts = "/api/workstation/runs/{runId}/ledger/accounts";
+    public const string RunsLedgerTrialBalanceAsOf = "/api/workstation/runs/{runId}/ledger/trial-balance/as-of";
+    public const string RunsLedgerRunningBalance = "/api/workstation/runs/{runId}/ledger/running-balance";
+    public const string RunsLedgerSymbol = "/api/workstation/runs/{runId}/ledger/symbols/{symbol}";
+    public const string LedgerPeriodJournalExport = "/api/ledger/periods/{periodId:guid}/journal-export";
     public const string LedgerBooks = "/api/ledger/books";
     public const string LedgerBookRolloutAssessment = "/api/ledger/books/rollout-assessment";
     public const string LedgerBookById = "/api/ledger/books/{ledgerBookId:guid}";

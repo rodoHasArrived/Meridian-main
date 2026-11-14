@@ -110,6 +110,7 @@ public static class UiEndpoints
                 IntercompanyExternalReviewJsonContext.Default,
                 ConsolidationFxJsonContext.Default,
                 ConsolidationTransitionJsonContext.Default,
+                Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext.Default,
                 new DefaultJsonTypeInfoResolver())
         };
 
@@ -160,6 +161,7 @@ public static class UiEndpoints
         app.MapPlaidEndpoints(jsonOptions);
         app.MapAccountingSystemEndpoints(jsonOptions);
         app.MapOnboardingEndpoints(jsonOptions);
+        app.MapPortfolioImportEndpoints();
 
         app.MapStorageEndpoints(jsonOptions);
         app.MapStorageQualityEndpoints(jsonOptions);

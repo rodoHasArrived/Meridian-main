@@ -12,6 +12,9 @@ namespace Meridian.Strategies.Live;
 /// </summary>
 internal sealed class LiveRunMetricsTracker
 {
+    internal const string FinancingUnavailableWarning =
+        "Run-attributed margin interest is unavailable without an explicit account-charge allocation. "
+        + "TotalMarginInterest is a compatibility placeholder; gross P&L financing decomposition requires review.";
     private readonly decimal _initialEquity;
     private readonly DateTimeOffset _startedAt;
     private readonly List<PortfolioSnapshot> _snapshots = [];
@@ -121,9 +124,13 @@ internal sealed class LiveRunMetricsTracker
         IReadOnlySet<string> universe,
         decimal finalEquity,
         IReadOnlyLedger ledger,
-        DateTimeOffset endedAt)
+        DateTimeOffset endedAt,
+        decimal? runAttributedMarginInterest = null)
     {
         var netPnl = finalEquity - _initialEquity;
+        // A context ledger, even when populated, does not prove that account-level charges
+        // were allocated to this run. Only an explicit complete run allocation supplies a total.
+        var marginInterest = runAttributedMarginInterest ?? 0m;
         var totalReturn = _initialEquity > 0m ? netPnl / _initialEquity : 0m;
         var elapsed = endedAt - _startedAt;
         // Same formulas as BacktestMetricsEngine (risk-free rate zero), so live and backtest runs
@@ -153,7 +160,7 @@ internal sealed class LiveRunMetricsTracker
         var metrics = new BacktestMetrics(
             InitialCapital: _initialEquity,
             FinalEquity: finalEquity,
-            GrossPnl: netPnl + _totalCommissions,
+            GrossPnl: netPnl + _totalCommissions + marginInterest,
             NetPnl: netPnl,
             TotalReturn: totalReturn,
             AnnualizedReturn: annualizedReturn,
@@ -169,7 +176,7 @@ internal sealed class LiveRunMetricsTracker
             WinningTrades: 0,
             LosingTrades: 0,
             TotalCommissions: _totalCommissions,
-            TotalMarginInterest: 0m,
+            TotalMarginInterest: marginInterest,
             TotalShortRebates: 0m,
             Xirr: double.NaN,
             SymbolAttribution: new Dictionary<string, SymbolAttribution>(StringComparer.OrdinalIgnoreCase));
@@ -200,7 +207,13 @@ internal sealed class LiveRunMetricsTracker
                 CoverageWarnings:
                 [
                     "Win-rate, profit-factor, drawdown-recovery, and XIRR require closed-trade accounting not yet tracked by the live engine.",
-                ]));
+                    .. (runAttributedMarginInterest.HasValue ? Array.Empty<string>() : new[] { FinancingUnavailableWarning })
+                ])
+            {
+                FinancingCoverageStatus = runAttributedMarginInterest.HasValue
+                    ? BacktestFinancingCoverageStatuses.Available : BacktestFinancingCoverageStatuses.Unavailable,
+                RunAttributedMarginInterest = runAttributedMarginInterest
+            });
     }
     private static decimal ComputeAnnualizedReturn(decimal totalReturn, TimeSpan elapsed)
     {

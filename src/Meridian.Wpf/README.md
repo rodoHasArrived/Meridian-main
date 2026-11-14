@@ -16,6 +16,25 @@ external-review attestations, advisory obligations and reviewed legacy coverage 
 They consume shared APIs and preserve drafts on failed commands. WPF runtime verification requires
 Windows; cross-compilation alone does not establish that proof.
 
+Settings workspace and Preferences include a shared activation-status banner reading the host's
+`GET /api/config/changes` contract. It refreshes on entry, every 15 seconds, on demand and after
+successful desktop configuration saves. Page unload cancels reads; stale responses cannot restore
+prior status. Pending reconnect impacts require host restart while in-process recycling is
+unavailable. Desktop file saves are explicitly unverified by a host-only receipt and remain marked
+for verification/restart through this desktop session. The banner never restarts the host or enables
+execution. `ConfigurationChangeStatusViewModelTests` covers shared impact projection, local-save
+honesty, failures, cancellation and superseded responses. Native rendering still requires Windows.
+
+Ordinary desktop configuration saves strictly
+re-read the current file under the shared write lease and run the shared whole-document guard
+before atomic persistence. Empty, malformed or null documents cannot be replaced by load defaults;
+provider tiers, profiles/audits, tenancy, credentials and live-gateway changes retain the same guard
+as browser saves. Automatic configuration recovery runs at desktop initialization, not ordinary
+settings reads. First-run defaults use the supported offline `Synthetic` provider and leave the
+storage profile unset, so the initial document passes host validation and remains editable through
+the shared save guard. Unchanged legacy credentials may round-trip; new plaintext credential writes
+are refused. `UiConfigurationSaveGuardTests` covers the portable JSON validation boundary.
+
 The retained run ledger page offers an inclusive UTC date filter through the shared strategy-run read service. Clearing the picker restores the complete retained run. Delayed reads from an earlier run or date cannot overwrite the current selection. Journal, trial balance and posting counts use one economic-time cut.
 
 Intercompany accounting profiles link to the canonical legal registry through exact approved
@@ -231,6 +250,9 @@ require another test. The credential editor does not create connections or activ
 runtime routing; those remain separate workflows. Credential-free providers show that no managed
 credentials are required. The wizard and credential management use the service's vault field schema,
 not local catalog field names, and never read secrets back into editors or write environment variables.
+
+The desktop close publication guard also resolves the optional book-of-record guard lazily, so a shadow
+onboarding book cannot hard-close; the shadow onboarding panel itself is browser-only for now.
 
 Provider badges and selections join canonical IDs, including retained aliases. Credential management
 retains a selected connection's field schema when a status read finishes during or after verification,
@@ -871,6 +893,20 @@ extra page-registration block.
 Shell coordinator, pane-host, and direct `NavigationService` paths accept compatibility aliases as
 inbound route requests but store and execute canonical page tags in active pane state, restored
 content creation, navigation history, navigation events, and pane-drop results.
+Normal shell commands, forwarded `--page` requests and restored operating-context pages render workspace homes, including
+`HomeWorkspace`, in the active split pane and leaf workflows in the main content frame.
+Updating an existing pane preserves its layout and the other pane instances.
+Frame selection occurs before command or workspace-body navigation creates content, and pane layout
+or selection changes retain the main content frame as the target while a leaf workflow is visible.
+The shell routes only its own docked frames; explicitly initialized detached frames keep their target.
+Preparing a home route updates its pane assignment without preloading the same content, so one
+navigation adds one entry to the native frame journal.
+Direct navigation and split-pane content creation resolve scoped presentation services through the
+registered workspace's retained scope when no caller scope is supplied; explicit scopes take precedence.
+Desktop capture readiness compares the shell tag with the visible active frame's `ItemStatus`,
+which is derived from the created page content after navigation rather than from shell labels.
+`MainPageLaunchNavigationTests` covers home/leaf transitions, aliases, rendered identity and retained panes;
+these native checks require Windows.
 Workspace id compatibility normalization and the canonical legacy-alias list are centralized through
 `WorkstationNavigationDefaults` instead of repeated shell-local switch expressions.
 The shared context-strip service normalizes legacy workspace titles before rendering owner copy, so

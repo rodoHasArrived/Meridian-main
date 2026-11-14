@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyWorkspaceShellPageBase
+
+Qualified name: <code>Meridian.Wpf.Views.StrategyWorkspaceShellPageBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:282](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L282).
+
+Binds derived pages to the strategy workspace shell definition.
+
+```csharp
+public class StrategyWorkspaceShellPageBase : WorkspaceShellPageBase<StrategyWorkspaceShellStateProvider, StrategyWorkspaceShellViewModel>
+```
+
+## SymbolMappingPage
+
+Qualified name: <code>Meridian.Wpf.Views.SymbolMappingPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:17](../../../../src/Meridian.Wpf/Views/Pages.cs#L17).
+
+```csharp
+public partial class SymbolMappingPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs#L14).
+
+Symbol mapping page for managing provider-specific symbol translations, testing mappings, and importing/exporting CSV mapping files.
+
+```csharp
+public partial class SymbolMappingPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolMappingPage() : this(new SymbolMappingViewModel());</code> | [src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs:19](../../../../src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs#L19) |  |
+| <code>public SymbolMappingPage(SymbolMappingViewModel viewModel);</code> | [src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs:24](../../../../src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs#L24) |  |
+
 ## SymbolsPage
 
 Qualified name: <code>Meridian.Wpf.Views.SymbolsPage</code>. Kind: `class`.
@@ -1107,28 +1144,4 @@ Provides a content surface for data-quality detail.
 
 ```csharp
 public sealed class DataQualityPanelControl : ContentControl
-```
-
-## DiagnosticsChecklistControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Diagnostics.DiagnosticsChecklistControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs:13](../../../../src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs#L13).
-
-Provides an items-control surface for diagnostic checklist entries.
-
-```csharp
-public sealed class DiagnosticsChecklistControl : ItemsControl
-```
-
-## ProviderSelectorControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Diagnostics.ProviderSelectorControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs:18](../../../../src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs#L18).
-
-Provides a combo-box surface for selecting a provider.
-
-```csharp
-public sealed class ProviderSelectorControl : ComboBox
 ```

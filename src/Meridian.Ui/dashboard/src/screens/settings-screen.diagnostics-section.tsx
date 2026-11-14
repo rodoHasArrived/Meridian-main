@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
-import { badgeVariantToOperatorSeverity } from "@/lib/shared-tone-mappings";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { type SettingsRecentEventDetail, type SettingsRecentEventTableRow } from "@/screens/settings-screen.view-model";
@@ -16,6 +15,7 @@ import { Link } from "react-router-dom";
 import { diagnosticToneClass, itemToneClass } from "./settings-provider-integration";
 import type { SettingsDiagnosticLink, SettingsRecentEventsSelectionViewModel, SettingsScreenViewModel } from "@/screens/settings-screen.view-model";
 import { SettingsChip } from "@/screens/settings-screen.section-primitives";
+import { toSeverity } from "@/design-system/status-styles";
 
 interface SettingsDiagnosticsSectionProps {
   vm: SettingsScreenViewModel;
@@ -115,7 +115,7 @@ export function SettingsDiagnosticsSection({ vm, overview, recentEventsVm, showA
               <CardDescription className="mt-2">{vm.diagnosticSummary}</CardDescription>
             </div>
             <SeverityBadge
-              status={badgeVariantToOperatorSeverity(vm.diagnosticStatusVariant)}
+              status={toSeverity(vm.diagnosticStatusVariant)}
               label={vm.diagnosticStatusLabel}
             />
           </div>
@@ -150,7 +150,7 @@ export function SettingsDiagnosticsSection({ vm, overview, recentEventsVm, showA
                     </span>
                     <span className="inline-flex items-center gap-2">
                       <SeverityBadge
-                        status={badgeVariantToOperatorSeverity(link.badgeVariant)}
+                        status={toSeverity(link.badgeVariant)}
                         label={link.statusLabel}
                         className="shrink-0"
                       />
@@ -264,7 +264,7 @@ function RecentEventDetailPanel({
                 <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
               </div>
               <SeverityBadge
-                status={badgeVariantToOperatorSeverity(detail.statusVariant)}
+                status={toSeverity(detail.statusVariant)}
                 label={detail.statusLabel}
                 className="shrink-0"
               />

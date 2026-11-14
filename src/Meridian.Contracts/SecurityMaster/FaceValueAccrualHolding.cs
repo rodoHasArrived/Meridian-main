@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using Meridian.Contracts.FixedIncome;
+
 namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>
@@ -13,7 +16,9 @@ public sealed record FaceValueAccrualHolding(
     decimal OpenShare,
     decimal AccrualFactor,
     Guid? TaxLotRecordId = null,
-    long? Version = null)
+    long? Version = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    BondAmortizationMethod? AmortizationMethod = null)
 {
     /// <summary>Face entitled to the date's interest, with the factor and open share applied once.</summary>
     public decimal AccrualFace => Lot.ParFace * OpenShare * AccrualFactor;

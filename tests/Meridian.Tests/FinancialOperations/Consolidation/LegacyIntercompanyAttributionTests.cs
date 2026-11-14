@@ -177,6 +177,56 @@ public sealed class LegacyIntercompanyAttributionTests
     }
 
     [Fact]
+    public async Task RevocationHoldsBothConfigurationAuthorityFencesUntilTheDecisionCompletes()
+    {
+        var actions = new List<string>();
+        var (_, validator, first) = Setup(superseded: true, configureAuthorities: (bindings, arrangements) =>
+        {
+            bindings.Setup(x => x.AcquireAuthorityLeaseAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() =>
+            {
+                actions.Add("acquire-binding");
+                return new TrackedLease(() => actions.Add("release-binding"));
+            });
+            arrangements.Setup(x => x.AcquireAuthorityLeaseAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() =>
+            {
+                actions.Add("acquire-arrangement");
+                return new TrackedLease(() => actions.Add("release-arrangement"));
+            });
+        });
+        var revoked = Revoke(first);
+        await using (await validator.AcquireAuthorityLeaseAsync(revoked))
+        {
+            await validator.ValidateAsync(revoked);
+            Assert.Equal(["acquire-binding", "acquire-arrangement"], actions);
+        }
+        Assert.Equal(["acquire-binding", "acquire-arrangement", "release-arrangement", "release-binding"], actions);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RevocationCannotBypassUnavailableConfigurationAuthority(bool bindingUnavailable)
+    {
+        var releasedBinding = false;
+        var (_, validator, first) = Setup(superseded: true, configureAuthorities: (bindings, arrangements) =>
+        {
+            if (bindingUnavailable)
+                bindings.Setup(x => x.AcquireAuthorityLeaseAsync(It.IsAny<CancellationToken>()))
+                    .ThrowsAsync(new InvalidOperationException("Binding authority unavailable."));
+            else
+            {
+                bindings.Setup(x => x.AcquireAuthorityLeaseAsync(It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new TrackedLease(() => releasedBinding = true));
+                arrangements.Setup(x => x.AcquireAuthorityLeaseAsync(It.IsAny<CancellationToken>()))
+                    .ThrowsAsync(new InvalidOperationException("Arrangement authority unavailable."));
+            }
+        });
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => validator.AcquireAuthorityLeaseAsync(Revoke(first)));
+        Assert.Equal(bindingUnavailable ? "Binding authority unavailable." : "Arrangement authority unavailable.", error.Message);
+        Assert.Equal(!bindingUnavailable, releasedBinding);
+    }
+
+    [Fact]
     public async Task FileStoreRetainsReviewedRevocationAcrossRestartAndExactRetryAfterProfileChange()
     {
         var (_, validator, first) = Setup(superseded: true);
@@ -228,7 +278,8 @@ public sealed class LegacyIntercompanyAttributionTests
     };
 
     private static (Fixture, LegacyIntercompanyAttributionValidator, LegacyIntercompanyAttributionDto) Setup(Guid? agreementCounterparty = null, bool superseded = false,
-        Guid? retainedCanonicalId = null, int retainedCanonicalVersion = 1)
+        Guid? retainedCanonicalId = null, int retainedCanonicalVersion = 1,
+        Action<Mock<IIntercompanyAccountBindingStore>, Mock<IIntercompanyAccountingArrangementStore>>? configureAuthorities = null)
     {
         var fixture = new Fixture();
         var book = new LedgerBookRecord(Fixture.FirstBookId, Fixture.Profile, Fixture.FirstId,
@@ -256,6 +307,9 @@ public sealed class LegacyIntercompanyAttributionTests
             Fixture.Date.AddYears(-1), null, [], "tenant-test", "company-test", "preparer", Fixture.Time, "Reviewed legacy mapping");
         var agreements = new Mock<IIntercompanyAccountingArrangementStore>(MockBehavior.Strict);
         var bindings = new Mock<IIntercompanyAccountBindingStore>(MockBehavior.Strict);
+        bindings.Setup(x => x.AcquireAuthorityLeaseAsync(It.IsAny<CancellationToken>())).ReturnsAsync(EmptyLedgerAuthorityLease.Instance);
+        agreements.Setup(x => x.AcquireAuthorityLeaseAsync(It.IsAny<CancellationToken>())).ReturnsAsync(EmptyLedgerAuthorityLease.Instance);
+        configureAuthorities?.Invoke(bindings, agreements);
         bindings.Setup(x => x.GetRevisionAsync(binding.RevisionId, It.IsAny<CancellationToken>())).ReturnsAsync(binding);
         var resolved = IntercompanyArrangementTestData.Create(Guid.NewGuid(), Fixture.OrganizationId,
             IntercompanyAccountingTemplateKindDto.Loan, Fixture.FirstId, agreementCounterparty ?? Fixture.SecondId, "USD",
@@ -286,5 +340,10 @@ public sealed class LegacyIntercompanyAttributionTests
             IntercompanyAgreementPayloadHash = resolved.CanonicalPayloadHash
         };
         return (fixture, new LegacyIntercompanyAttributionValidator(fixture.Store.Object, bindings.Object, agreements.Object, IntercompanyArrangementTestData.LegalAuthority(resolved).Object), fact);
+    }
+
+    private sealed class TrackedLease(Action release) : IAsyncDisposable
+    {
+        public ValueTask DisposeAsync() { release(); return ValueTask.CompletedTask; }
     }
 }

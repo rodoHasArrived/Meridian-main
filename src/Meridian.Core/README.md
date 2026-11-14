@@ -11,6 +11,22 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Core
 
+Subscription import contracts include an explicit broker-account selection and durable import
+run identity, ownership/book scope, immutable source hash, checkpoints and terminal status.
+Missing broker quantities remain invalid source data rather than implicit zero holdings.
+
+`Config/BackfillProviderCatalog.cs` owns secret-free historical-provider tier presets, conservative
+request ceilings and pure option edits. Provider records retain the declared tier; editor updates
+preserve stored credentials and archive adjustment semantics. Unknown providers (including IB and
+synthetic provenance controls), unknown tiers and rate increases beyond the declared tier cap refuse.
+Catalog options retain each configuration record's defaults. Alpha Vantage runtime construction
+still requires an explicitly enabled provider configuration and a resolved credential; a catalog
+preset alone does not activate it.
+
+`ProviderSearchException` and `ProviderSearchFailure` identify unavailable credentials, transport failures, malformed or
+incomplete responses and throttling for explicit provider lookups. A successful empty search is
+represented by its result rather than a failure category.
+
 `Meridian.Core.Currency.CurrencyMinorUnits.GetPrecision` delegates to `Meridian.Contracts.Ledger.CurrencyMinorUnits`, so the ISO 4217 minor-unit table is maintained in one place.
 
 `ProviderConnectionsConfig.RuntimeCredentials` holds optional explicit host defaults keyed by
@@ -140,7 +156,9 @@ See the [Security Master extensibility review](../../docs/architecture/security-
 
 `EventPipelinePolicy.CreateChannel` accepts an item-dropped callback so the owning pipeline can count
 evictions. `ConfigJsonSchemaGenerator` declares the sample configuration's `Settings`, `Serilog` and
-`$schema` keys.
+`$schema` keys. It emits string-keyed mutable and read-only dictionaries as JSON objects
+with typed `additionalProperties`, before considering enumerable collection shapes. Nullable
+interface-backed maps accept null, matching serialized provider validation profiles and rollout modes.
 
 ## Diagrams
 

@@ -1,3 +1,4 @@
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using DomainLedger = Meridian.Ledger.Ledger;
@@ -31,6 +32,9 @@ public sealed partial class SecurityMasterAmortizationLedgerBridge
             throw new InvalidOperationException("Retained accrual requires the source's original principal face.");
 
         var holdings = context.AccrualHoldings!;
+        if (holdings.Any(holding => holding.AmortizationMethod is not
+                (BondAmortizationMethod.NoAmortization or BondAmortizationMethod.StraightLine)))
+            throw new InvalidOperationException("Retained accrual requires an explicit supported lot amortization policy (NoAmortization or StraightLine).");
         if (holdings.Any(holding => holding.Lot.SecurityId != securityId || holding.Date > window.End
                 || holding.Date < holding.Lot.AcquiredDate || holding.OpenShare is <= 0m or > 1m
                 || holding.AccrualFactor is < 0m or > 1m)
@@ -116,6 +120,8 @@ public sealed partial class SecurityMasterAmortizationLedgerBridge
             var before = 0m;
             foreach (var holding in byDay[date])
             {
+                if (holding.AmortizationMethod == BondAmortizationMethod.NoAmortization)
+                    continue;
                 var lot = holding.Lot;
                 if (lot.AcquiredDate >= date || lot.AcquiredDate >= maturity)
                     continue;

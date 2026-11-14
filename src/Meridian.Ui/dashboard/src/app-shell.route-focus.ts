@@ -19,7 +19,7 @@ export function buildRouteFocusState(
 ): AppShellRouteFocusState {
   // Name the page the way the header breadcrumb does ("Trading", "Orders - Trading"), page first so
   // browser tabs stay distinguishable; the product name already ends the document title.
-  const pageParts = pathname === "/" ? ["Daily Control Tower"] : routePageParts(pathname, activeWorkspace);
+  const pageParts = pathname === "/" ? ["Today"] : routePageParts(pathname, activeWorkspace);
   const workspaceTitle = pageParts.join(" - ");
   const announcedTitle = pageParts.join(", ");
   const targetElementId = normalizeHashTarget(hash);

@@ -15,6 +15,7 @@ import {
 import {
   appendOperatingScopeToRoute,
   buildOperatingScopeFromSearch,
+  describeOperatingScopeForRoute,
   operatingScopeDimensionsForRoute,
   readOperatingScopeFromSearch,
   removeOperatingScopeFromSearch,
@@ -24,7 +25,10 @@ import { CommandPalette } from "@/components/meridian/command-palette";
 import { KeyboardShortcutsSheet } from "@/components/meridian/keyboard-shortcuts-sheet";
 import { getGlobalKeyBinding, matchesKeyCombo } from "@/lib/keymap";
 import { ScopePicker } from "@/components/meridian/scope-picker";
-import { collectScopeFundAccounts } from "@/lib/operating-scope/fund-accounts";
+import { collectScopeFundAccounts, type ScopeFundAccountOption } from "@/lib/operating-scope/fund-accounts";
+import { scopeValueLabels } from "@/lib/operating-scope/structure-options";
+import { useScopeStructure } from "@/lib/operating-scope/use-scope-structure";
+import { FundScopeNarrowingProvider, type FundScopeNarrowingContextValue } from "@/lib/operating-scope/fund-scope-context";
 import {
   compactOperatingScope,
   hasOperatingScopeValues,
@@ -33,7 +37,8 @@ import {
   readStoredOperatingScope,
   writeStoredOperatingScope
 } from "@/lib/operating-scope/persistence";
-import { WorkflowContinuityDock, WorkflowContextDisclosure } from "@/components/meridian/workflow-continuity-dock";
+import { WorkflowContextDisclosure } from "@/components/meridian/workflow-context-disclosure";
+import { OperatingScopeBar } from "@/components/meridian/operating-scope-bar";
 import { WorkspaceViewsMenu } from "@/components/meridian/workspace-views-menu";
 import { WorkspaceStatus } from "@/components/meridian/workspace-status";
 import { EntityInspectorProvider } from "@/components/meridian/entity-inspector";
@@ -45,7 +50,12 @@ import { isCompanionPaneRoute, openCompanionPane } from "@/lib/companion-pane/pa
 import { setOpenCompanionPaneIds } from "@/lib/companion-pane/open-registry";
 import { broadcastCompanionState } from "@/lib/companion-pane/opener-broadcast";
 import { applyDensity, writeStoredDensity } from "@/lib/density";
-import { ScopePickerOpenerProvider } from "@/lib/operating-scope/scope-picker-context";
+import {
+  FundAccountScopeSelectionProvider,
+  ScopePickerOpenerProvider,
+  type FundAccountScopeSelection
+} from "@/lib/operating-scope/scope-picker-context";
+import { OperatingScopeLabelProvider } from "@/lib/operating-scope/scope-label-context";
 import { readRecentScopes, rememberRecentScope } from "@/lib/operating-scope/recent-scopes";
 import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
 import { PageTrustProvider, usePageTrustRegistry } from "@/lib/page-trust-context";
@@ -582,6 +592,8 @@ function AppShell({
     operatorChoseScopeRef.current = true;
     applyOperatingScope(next);
   };
+  const handleSetOperatingScopeRef = useRef(handleSetOperatingScope);
+  handleSetOperatingScopeRef.current = handleSetOperatingScope;
 
   // Replay a saved layout: apply density and operating scope, re-open the recorded
   // companion panes, then navigate the captured route. Window placement across
@@ -607,7 +619,69 @@ function AppShell({
   handleRestoreLayoutRef.current = handleRestoreLayout;
 
   const scopeFundAccountOptions = useMemo(() => collectScopeFundAccounts(brokeragePortfolio), [brokeragePortfolio]);
-  const scopeDimensionsInEffect = useMemo(() => operatingScopeDimensionsForRoute(pathname), [pathname]);
+  // Entities, funds and their accounts for the scope picker, and names for the bar's entity and
+  // fund ids. Loaded only once the picker opens or the scope names an entity or fund.
+  const scopeStructure = useScopeStructure(
+    scopePickerOpen || Boolean(operatingScopeInput.entityId || operatingScopeInput.fundId)
+  );
+  // The inline account picker on single-account screens offers the loaded accounts plus the ones
+  // in this operator's recent and default scopes, narrowed by the chosen entity and fund as the
+  // scope picker narrows them, and sets only the fund-account dimension.
+  const fundAccountScopeSelection = useMemo<FundAccountScopeSelection>(() => {
+    const options = new Map<string, ScopeFundAccountOption>(scopeFundAccountOptions.map((option) => [option.id, option]));
+    [...recentScopes, ...(defaultScope ? [defaultScope] : [])].forEach((recent) => {
+      const id = recent.fundAccountId?.trim();
+      if (id && !options.has(id)) options.set(id, { id, label: id });
+    });
+    return {
+      options: [...options.values()],
+      select: (fundAccountId: string) => handleSetOperatingScopeRef.current({ ...currentOperatingScopeRef.current, fundAccountId }),
+      structure: scopeStructure.structure,
+      structureLoading: scopeStructure.loading,
+      scope: {
+        entityId: operatingScopeInput.entityId ?? null,
+        fundId: operatingScopeInput.fundId ?? null,
+        fundAccountId: operatingScopeInput.fundAccountId ?? null
+      }
+    };
+  }, [
+    scopeFundAccountOptions,
+    recentScopes,
+    defaultScope,
+    scopeStructure.structure,
+    scopeStructure.loading,
+    operatingScopeInput.entityId,
+    operatingScopeInput.fundId,
+    operatingScopeInput.fundAccountId
+  ]);
+  // Entity and Fund are applied on fund-narrowing routes only once the graph that places accounts
+  // under them has loaded; otherwise those screens show every row and the bar says "retained".
+  const fundStructureReady = scopeStructure.structure.status === "ready";
+  const scopeDimensionsInEffect = useMemo(
+    () => operatingScopeDimensionsForRoute(pathname, { fundStructureReady }),
+    [pathname, fundStructureReady]
+  );
+  const scopeBarValueLabels = useMemo(
+    () => scopeValueLabels(operatingScopeInput, scopeStructure.structure, scopeStructure.structure.accounts),
+    [operatingScopeInput, scopeStructure.structure]
+  );
+  const fundScopeNarrowing = useMemo<FundScopeNarrowingContextValue>(() => ({
+    structure: scopeStructure.structure,
+    loading: scopeStructure.loading,
+    entityId: operatingScopeInput.entityId ?? null,
+    fundId: operatingScopeInput.fundId ?? null,
+    names: {
+      entityId: scopeBarValueLabels.entityId ?? operatingScopeInput.entityId ?? null,
+      fundId: scopeBarValueLabels.fundId ?? operatingScopeInput.fundId ?? null
+    }
+  }), [
+    scopeStructure.structure,
+    scopeStructure.loading,
+    operatingScopeInput.entityId,
+    operatingScopeInput.fundId,
+    scopeBarValueLabels.entityId,
+    scopeBarValueLabels.fundId
+  ]);
 
   useEffect(() => {
     const handleGlobalShortcut = (event: KeyboardEvent) => {
@@ -704,6 +778,11 @@ function AppShell({
       operatingScope: shell.workflowContinuity.operatingScope
     }),
     [shell.attention.sourceSignals, shell.workflowContinuity.operatingScope]
+  );
+  // Every figures strip prints the scope it was counted over; this is the one the route applies.
+  const figureScopeLabel = useMemo(
+    () => describeOperatingScopeForRoute(pathname, shell.workflowContinuity.operatingScope, { fundStructureReady }),
+    [pathname, shell.workflowContinuity.operatingScope, fundStructureReady]
   );
   // Sidebar attention counts read the same queue selection the Daily Control Tower lists.
   const workspaceAttention = useMemo(
@@ -820,6 +899,9 @@ function AppShell({
     <MetricPassportSessionProvider scopeKey={JSON.stringify([operatingScopeInput, refreshStatus.inFlight])} sessionIdentity={session}>
     <EntityInspectorProvider scopeKey={JSON.stringify(operatingScopeInput)} sessionIdentity={session} refreshSequence={refreshStatus.inFlight ? 1 : 0}>
     <ScopePickerOpenerProvider open={openScopePicker}>
+    <FundAccountScopeSelectionProvider value={fundAccountScopeSelection}>
+    <FundScopeNarrowingProvider value={fundScopeNarrowing}>
+    <OperatingScopeLabelProvider value={figureScopeLabel}>
     <CrossScreenCountsProvider counts={crossScreenCounts}>
     <ShellStatusSignalsProvider value={shellStatusSignals}>
     <WorkspaceFigureContextProvider value={workspaceFigureContext}>
@@ -890,11 +972,12 @@ function AppShell({
             )}
             overflowActions={<CopyLinkButton operatingScope={operatingScopeInput} />}
             routeKey={shell.routeFocus.routeKey}
-            context={(
-              <WorkflowContinuityDock
-                viewModel={shell.workflowContinuity}
-                onEditOperatingContext={() => setScopePickerOpen(true)}
+            scope={(
+              <OperatingScopeBar
+                operatingScope={shell.workflowContinuity.operatingScope}
+                onEditOperatingScope={openScopePicker}
                 scopeDimensionsInEffect={scopeDimensionsInEffect}
+                valueLabels={scopeBarValueLabels}
               />
             )}
             breadcrumbItems={breadcrumbItems}
@@ -1014,7 +1097,6 @@ function AppShell({
           workspaceLabel: headerWorkspace.label,
           refreshing: loading || refreshStatus.inFlight,
           hasError: Boolean(error),
-          attention: shell.attention,
           pageFreshness
         })}
       />
@@ -1039,6 +1121,8 @@ function AppShell({
         onOpenChange={setScopePickerOpen}
         scope={operatingScopeInput}
         fundAccounts={scopeFundAccountOptions}
+        structure={scopeStructure.structure}
+        structureLoading={scopeStructure.loading}
         onApply={handleSetOperatingScope}
         recentScopes={recentScopes}
         defaultScope={defaultScope}
@@ -1075,6 +1159,9 @@ function AppShell({
     </WorkspaceFigureContextProvider>
     </ShellStatusSignalsProvider>
     </CrossScreenCountsProvider>
+    </OperatingScopeLabelProvider>
+    </FundScopeNarrowingProvider>
+    </FundAccountScopeSelectionProvider>
     </ScopePickerOpenerProvider>
     </EntityInspectorProvider>
     </MetricPassportSessionProvider>

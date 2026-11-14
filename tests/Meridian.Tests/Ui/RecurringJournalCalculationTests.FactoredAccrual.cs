@@ -165,7 +165,7 @@ public sealed partial class RecurringJournalCalculationTests
             return new FaceValueAccrualHolding(date,
                 new FaceValueLot("paid-pool", SecurityId, new DateOnly(2025, 12, 31), 80_000m, 100m,
                     bookedFactor: 0.8m, currentFactor: date == JanuaryEnd ? 0m : 0.8m),
-                1m, 0.8m);
+                1m, 0.8m, AmortizationMethod: BondAmortizationMethod.NoAmortization);
         }).ToArray();
         var fixture = await CreateFixtureAsync(cashFlows: FactoredCouponCashFlows(fullPaydown: true),
             assetClass: "StructuredCredit", accrualHoldings: holdings);
@@ -211,6 +211,54 @@ public sealed partial class RecurringJournalCalculationTests
         (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData(BondAmortizationMethod.NoAmortization)]
+    [InlineData(BondAmortizationMethod.StraightLine)]
+    [InlineData(BondAmortizationMethod.ConstantYield)]
+    [InlineData(BondAmortizationMethod.AuctionRate)]
+    [InlineData(null)]
+    public async Task FixedIncome_RetainedAcquisitionPolicyControlsTheRealDraftCalculation(BondAmortizationMethod? method)
+    {
+        await SeedAsync(FixedIncomeAccrualCalculation.CalculationKind, new(),
+            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker, ["bookPositionId"] = Position },
+            endsOn: JanuaryEnd);
+        var holdings = FactoredHoldings().Select(holding => holding with
+        {
+            Lot = new FaceValueLot(holding.Lot.LotId, holding.Lot.SecurityId, holding.Lot.AcquiredDate,
+                holding.Lot.OriginalFace, holding.Lot.ParBasis * 1.10m, holding.Lot.BookedFactor,
+                holding.Lot.ParBasis, holding.Lot.CurrentFactor),
+            AmortizationMethod = method
+        }).ToArray();
+        var fixture = await CreateFixtureAsync(cashFlows: FactoredCouponCashFlows(), assetClass: "StructuredCredit",
+            accrualHoldings: holdings);
+
+        var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
+        if (method is not (BondAmortizationMethod.NoAmortization or BondAmortizationMethod.StraightLine))
+        {
+            result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
+            result.Blockers.Should().ContainSingle().Which.Should().Contain("explicit supported lot amortization policy");
+            (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
+            return;
+        }
+
+        result.State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
+        var draft = (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
+        draft.TotalDebits.Should().Be(draft.TotalCredits);
+        draft.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
+        var premiums = draft.Lines.Where(line => line.AccountPath == "Assets:Securities UST30").ToArray();
+        if (method == BondAmortizationMethod.NoAmortization)
+        {
+            premiums.Should().BeEmpty("the retained policy holds the premium basis flat");
+            draft.TotalDebits.Should().Be(2_550m);
+        }
+        else
+        {
+            premiums.Should().ContainSingle().Which.Amount.Should().BeGreaterThan(0m);
+            premiums.Single().Side.Should().Be(AccountingTemplateLineSideDto.Credit);
+        }
+        _ledger.Journal.Should().BeEmpty("the real runner prepares approval drafts without posting them");
+    }
+
     [Fact]
     public async Task FixedIncome_AccrualHistoryRead_ForwardsExactBookPositionAndDateScope()
     {
@@ -237,9 +285,9 @@ public sealed partial class RecurringJournalCalculationTests
         FaceValueAccrualHolding[] history =
         [
             new(new DateOnly(2026, 1, 1), new FaceValueLot("pool", SecurityId, start, 80_000m, 100m,
-                bookedFactor: 0.8m), 1m, 0.8m),
+                bookedFactor: 0.8m), 1m, 0.8m, AmortizationMethod: BondAmortizationMethod.NoAmortization),
             new(februaryStart, new FaceValueLot("pool", SecurityId, start, 80_000m, 100m,
-                bookedFactor: 0.8m), 1m, 0.8m)
+                bookedFactor: 0.8m), 1m, 0.8m, AmortizationMethod: BondAmortizationMethod.NoAmortization)
         ];
         inputs.Setup(value => value.ListAccrualHoldingsAsync(Scope, SecurityId, Guid.Parse(Position), start, FebruaryEnd,
             It.IsAny<CancellationToken>())).ReturnsAsync(history);
@@ -290,10 +338,12 @@ public sealed partial class RecurringJournalCalculationTests
             var accrualFactor = date <= new DateOnly(2026, 1, 15) ? 0.8m : 0.6m;
             var first = new FaceValueLot("pool-a", SecurityId, new DateOnly(2025, 12, 31), 80_000m, 100m,
                 bookedFactor: 0.8m, currentFactor: currentFactor);
-            holdings.Add(new(date, first, date < new DateOnly(2026, 1, 23) ? 1m : 0.5m, accrualFactor));
+            holdings.Add(new(date, first, date < new DateOnly(2026, 1, 23) ? 1m : 0.5m, accrualFactor,
+                AmortizationMethod: BondAmortizationMethod.NoAmortization));
             if (date >= new DateOnly(2026, 1, 20))
                 holdings.Add(new(date, new FaceValueLot("pool-b", SecurityId, new DateOnly(2026, 1, 20),
-                    60_000m, 1m, bookedFactor: 0.6m, parBasis: 1m), 1m, 0.6m));
+                    60_000m, 1m, bookedFactor: 0.6m, parBasis: 1m), 1m, 0.6m,
+                    AmortizationMethod: BondAmortizationMethod.NoAmortization));
         }
         return holdings;
     }

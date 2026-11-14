@@ -100,8 +100,9 @@ public sealed partial class PostgresLedgerJournalStore :
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
-        await AcquireCashDividendEntitlementsForWritesAsync(connection, transaction, [entry], ct).ConfigureAwait(false);
-        if (await TryResolveCommittedReplayAsync(connection, transaction, entry, ct).ConfigureAwait(false))
+        await AcquireAppendEntitlementBookAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        if (await TryRecoverAgreementPostingAsync(connection, transaction, entry, ct).ConfigureAwait(false)
+            || await TryResolveCommittedReplayAsync(connection, transaction, entry, ct).ConfigureAwait(false))
         {
             await transaction.CommitAsync(ct).ConfigureAwait(false);
             return;
@@ -205,7 +206,7 @@ public sealed partial class PostgresLedgerJournalStore :
             throw new LedgerValidationException($"Journal entry '{entry.Entry.JournalEntryId}' is not balanced.");
         }
 
-        await AcquireCashDividendEntitlementsForWritesAsync(connection, transaction, [entry], ct).ConfigureAwait(false);
+        var entitlementBookId = await AcquireAppendEntitlementBookAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         if (await TryResolveCommittedReplayAsync(connection, transaction, entry, ct).ConfigureAwait(false))
             return;
         await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id", entry.PeriodId, false, ct).ConfigureAwait(false);
@@ -223,6 +224,8 @@ public sealed partial class PostgresLedgerJournalStore :
         {
             throw new LedgerValidationException($"Ledger period '{entry.PeriodId}' was not found.");
         }
+        if (period.LedgerBookId != entitlementBookId)
+            throw new LedgerValidationException("The accounting period's ledger book changed while acquiring entitlement authority; reload the posting scope.");
 
         if (entry.PostingCommand?.ExpectedVersion is { } expectedVersion && expectedVersion != period.Version)
         {
@@ -230,7 +233,12 @@ public sealed partial class PostgresLedgerJournalStore :
                 $"Accounting period version {period.Version} does not match expected version {expectedVersion}.");
         }
 
-        if (verifiedAmortizationReversal)
+        var verifiedPriorPeriodAdjustment = await VerifyPriorPeriodAdjustmentAsync(
+            connection, transaction, entry, period, ct).ConfigureAwait(false);
+        await ValidatePortfolioOpeningCorrectionAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
+        if (verifiedPriorPeriodAdjustment)
+            LedgerPeriodPostingGuard.ValidateRetainedPriorPeriodAdjustment(entry, period);
+        else if (verifiedAmortizationReversal)
             LedgerPeriodPostingGuard.ValidateRetainedAmortizationReversal(entry, period);
         else
             LedgerPeriodPostingGuard.Validate(entry, period);
@@ -238,6 +246,7 @@ public sealed partial class PostgresLedgerJournalStore :
         entry = RetainPostingAuthorityDecision(transaction, entry, period);
         await ValidateAndRecordCouponRecognitionAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         var auditHead = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
+        await ValidateOpeningCutoverAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         await ValidateAgreementReversalNotAlreadyPostedAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await ValidateCurrentConsolidationSourcesAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await ValidateAndRecordCapitalPostingAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
@@ -247,6 +256,15 @@ public sealed partial class PostgresLedgerJournalStore :
         await AppendLedgerAuditAsync(connection, transaction, auditHead, "journal", entry.Entry.JournalEntryId, 1,
             entry.PostingCommand?.Intent == AccountingPostingIntentDto.Reversal ? "JournalReversed" : "JournalPosted",
             entry.PostingCommand?.Actor, closeEvent: null, ct).ConfigureAwait(false);
+    }
+
+    private async Task<Guid?> AcquireAppendEntitlementBookAsync(NpgsqlConnection connection,
+        NpgsqlTransaction transaction, LedgerJournalEntryWrite entry, CancellationToken ct)
+    {
+        // The generalized authority reader preserves history -> actual-book entitlement ->
+        // period lock order, and rejects a conflicting caller book before any book barrier.
+        var mappings = await AcquireCashDividendEntitlementsForWritesAsync(connection, transaction, [entry], ct).ConfigureAwait(false);
+        return mappings[entry.PeriodId];
     }
 
     public async Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
@@ -620,7 +638,33 @@ public sealed partial class PostgresLedgerJournalStore :
                 ct: ct)
             .ConfigureAwait(false);
 
+        if (requireClosedTemporaryAccounts)
+        {
+            if (current is not null)
+                await LockCloseSnapshotHistoryAsync(connection, transaction, current, ct).ConfigureAwait(false);
+        }
+
         var auditHead = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
+        if (requireClosedTemporaryAccounts)
+        {
+            if (current is { Status: "HardClosed" } && current.Version == expectedVersion + 1 && closeEvent is not null)
+            {
+                var retained = await LoadCloseSnapshotAsync(connection, transaction, period.PeriodId, current.Version, ct).ConfigureAwait(false);
+                if (retained is not null)
+                {
+                    var payload = retained.VerifyIntegrity();
+                    var replayEvent = closeEvent with { RecordedAt = LedgerPeriodCloseSnapshot.DatabaseTimestamp(closeEvent.RecordedAt) };
+                    if (payload.CloseEvent == replayEvent && payload.Period == (period with
+                    {
+                        Version = current.Version,
+                        OpenedAt = LedgerPeriodCloseSnapshot.DatabaseTimestamp(period.OpenedAt),
+                        ClosedAt = period.ClosedAt is { } closed ? LedgerPeriodCloseSnapshot.DatabaseTimestamp(closed) : null
+                    }))
+                        return current;
+                }
+            }
+        }
+
         LedgerAccountingPeriod saved;
         if (current is null)
         {
@@ -685,6 +729,9 @@ public sealed partial class PostgresLedgerJournalStore :
         if (checkpoint is not null)
             await InsertBalanceCheckpointAsync(connection, transaction, checkpoint, checkpointHash!, ct)
                 .ConfigureAwait(false);
+
+        if (requireClosedTemporaryAccounts && closeEvent is not null)
+            await SaveCloseSnapshotAsync(connection, transaction, saved, closeEvent, ct).ConfigureAwait(false);
 
         await AppendLedgerAuditAsync(connection, transaction, auditHead, "period", saved.PeriodId, saved.Version,
             current is null ? "PeriodCreated" : saved.Status == "Open" && current.Status != "Open" ? "PeriodReopened"

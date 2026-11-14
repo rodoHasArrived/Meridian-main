@@ -18,6 +18,15 @@ record external legal review while ordinary independent review remains available
 revisions retain the same separate audit facts. See
 [terms and review boundaries](../../docs/domain/intercompany-agreements.md).
 
+Shared `ConfigStore` saves retain a host-lifetime activation record containing only field names,
+impact classes and timestamps. Symbol changes are `Live`, streaming provider selection/options
+require `ReconnectProvider`, and construction-time settings conservatively require `RestartHost`.
+The current runtime cannot rebuild providers in process, so pending provider reconnects also expose
+`RequiresRestart=true`; clients must not imply that a connection retry applies new provider options.
+Later live saves retain outstanding restart/reconnect changes; reverting a field to its host baseline
+clears that field's pending state. The journal stores value hashes rather than configuration values.
+`SaveAsync` now also refuses to overwrite a malformed existing authoritative document.
+
 Provider routing rejects disabled connections and policy-gated fallbacks consistently across direct
 and scored selection. Catalog metadata placeholders yield to the first concrete capability factory.
 Corporate-action ingest and inbox outcomes distinguish complete empty history from unknown, failed
@@ -28,6 +37,9 @@ Provider failures propagate to the discovery surface as unavailable, separately 
 empty search. It never consumes best-effort autocomplete cache entries; swallowed autocomplete
 failures cannot become authoritative candidate evidence. The browser discovery journey currently
 uses Alpaca's fixed-income filter and stages identity evidence for review without approving terms.
+The authoritative request establishes availability directly, without an unrelated tolerant symbol
+health probe. Typed failures preserve missing/rejected credentials, transport, malformed payload,
+incomplete response and throttling distinctions. Unsupported strict decoders fail closed.
 
 Loan portfolio reads include server-decimal maturity buckets by contractual quarter and currency;
 these summarize current principal and do not project repayments. Corporate-action calendar reads
@@ -145,6 +157,25 @@ Provider capability matrices separate terms, evaluated prices, executable quotes
 fixings, factors and lifecycle notices. A configured connection or general certification never
 establishes task entitlement, freshness or verification: missing instrument evidence remains unknown.
 IBKR bond support no longer implies unsupported bond streaming in the detailed adapter profiles.
+
+`PortfolioImportRunService` retains the complete broker snapshot and its content hash before
+subscription changes. Explicit account selection, strict quantities, IB position pagination and
+cash summary retrieval prevent an incomplete population from becoming opening books. Run IDs bind
+the tenant/company, financial account, book, period, source account and command; partial runs resume
+the retained symbol plan, deterministic watchlist and opening-draft receipt after restart. The new
+`/api/portfolio/import-runs` route requires an authenticated human operator and retained account
+ownership. Opening intake supports same-currency, unit-priced equities with observed cash and cost
+basis; unsupported price conventions, missing evidence and mismatched direction fail closed.
+Drafts await the existing submit/approve/post lifecycle; import success never means posted books.
+Canonical acquisition lots require their separate reviewed acquisition/backfill evidence.
+
+`LoanAccountingProjector` retains explicit transaction and functional currency amounts on every
+new lending line (the loan's contractual currency at rate one), preserving them through Security
+Master and dimension enrichment. A different ledger-book functional currency requires a supported
+FX treatment; the durable book guard refuses an unexplained currency mismatch. The source-history
+completeness reader uses `HasAccountingImpact`, which shares the posting kernel so zero-value and
+non-accounting events do not create false missing-journal breaks. Malformed and negative source
+amounts raise validation errors rather than disappearing from the accounting population.
 
 Cash-flow context v5 persists schedule row version 2 with piecewise interest-principal evidence.
 Frozen row-0 and row-1 serializers preserve context v1–v3 and v4 receipt hashes and arithmetic.
@@ -624,6 +655,16 @@ withheld, including when a host supplies a later instance/factory override. Stri
 requires per-loan tenant authority before those workers can be enabled.
 
 Bond cash-flow context overloads resolve retained terms once, honor forward-curve recorded cutoffs, and retain content-addressed calculation receipts under `bonds/calculations`. The passive `GetProjectionBlockerAsync` capability read uses the same current calculation rules on selected terms and cutoffs, retains no receipt, and returns only a typed refusal. Replay reloads immutable inputs and checks calendar hashes rather than substituting current terms. Storage composition shares the durable bond-cutover policy with calculation and accounting orchestration; the ledger composition preserves independent approval and replay. See [bond expansion](../../docs/engineering/plans/bond-capability-expansion.md).
+
+Provider routing previews accept a restricted, read-only proposed configuration: tenant-owned binding
+priority/enabled changes or host backfill provider priority/enabled changes. The host backfill preview
+constructs adapters with the authoritative prepared credential resolver, then disposes them without
+fetching data or changing saved configuration. Daily symbol/date queries disclose that vendor coverage,
+network health and current quota remain unverified; fabricated Synthetic selections and enabled but
+unavailable vendors are explicit. Composite and quota-rotation ordering hold fabricated adapters behind
+observed vendors regardless of numeric priority, retaining explicit Source stamps when real-vendor failure
+requires a synthetic fallback. `BackfillRoutingLint` adds fabricated-fallback warnings to the unified
+configuration pipeline after credential resolution. Focused invariant coverage is in `RoutingPreviewTests`.
 
 ## Purpose
 

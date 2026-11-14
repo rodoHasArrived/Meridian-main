@@ -8,7 +8,8 @@ namespace Meridian.Ui.Shared.Services;
 public sealed class ClosePublicationReadinessGuard(
     Func<IFinancialOperationsCommandCenterReadService?> authorityFactory,
     IWorkstationTenantContextAccessor? tenantAccessor = null,
-    Func<IOperationsReportPackAuthority?>? reportAuthorityFactory = null) : IClosePublicationReadinessGuard
+    Func<IOperationsReportPackAuthority?>? reportAuthorityFactory = null,
+    Func<IBookOfRecordGuard?>? bookOfRecordGuardFactory = null) : IClosePublicationReadinessGuard
 {
     public async Task<IReadOnlyList<OperationsWorkflowBlockerDto>> ValidateAsync(
         Guid workflowId, long expectedVersion, CloseReadinessScopeDto? scope,
@@ -44,6 +45,14 @@ public sealed class ClosePublicationReadinessGuard(
         }
         if (!TenantReadPredicate.IsResolvedTenant(tenantId) || !TenantReadPredicate.IsResolvedTenant(companyId))
             return Block("CLOSE_TENANT_SCOPE_REQUIRED", "An authenticated tenant and company scope is required to evaluate close evidence.");
+        // Resolved lazily, like the other authorities, so composing the guard never builds onboarding storage.
+        if (bookOfRecordGuardFactory?.Invoke() is { } bookOfRecordGuard)
+        {
+            // A shadow book may compute and reconcile periods but never hard-closes as the book of record.
+            var bookStatus = await bookOfRecordGuard.GetStatusAsync(tenantId!, companyId, scope.LedgerBookId.Value, ct).ConfigureAwait(false);
+            if (!bookStatus.IsBookOfRecord)
+                return Block("CLOSE_SHADOW_BOOK", bookStatus.Reason);
+        }
 
         try
         {

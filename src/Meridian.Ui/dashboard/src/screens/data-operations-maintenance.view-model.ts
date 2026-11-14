@@ -8,6 +8,7 @@
  * the enum in this file.
  */
 
+import { formatDecimal, formatRatioAsPercent } from "@/lib/format";
 import type {
   ArchiveMaintenanceExecution,
   MaintenanceScheduleSummary,
@@ -177,7 +178,7 @@ function formatSuccessRate(statistics: MaintenanceStatistics): string {
     return "No runs yet";
   }
 
-  return `${((statistics.successfulExecutions / statistics.totalExecutions) * 100).toFixed(1)}%`;
+  return formatRatioAsPercent(statistics.successfulExecutions / statistics.totalExecutions, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
 /** Renders a .NET TimeSpan (`d.hh:mm:ss.fffffff` or `hh:mm:ss.fffffff`) compactly. */
@@ -220,5 +221,5 @@ export function formatBytes(value: number): string {
     index += 1;
   }
 
-  return `${current.toFixed(1)} ${units[index]}`;
+  return `${formatDecimal(current, 1)} ${units[index]}`;
 }

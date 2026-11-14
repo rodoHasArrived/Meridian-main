@@ -1129,7 +1129,10 @@ internal sealed class LiveStrategyRunSession
         _context.Universe,
         _context.PortfolioValue,
         _context.Ledger,
-        DateTimeOffset.UtcNow);
+        DateTimeOffset.UtcNow,
+        // Account financing has no retained run allocation. The private context ledger is
+        // not evidence of a measured zero; retain explicit unavailable coverage instead.
+        runAttributedMarginInterest: null);
 
     private static Exception? CombineFailures(Exception? first, Exception? second) =>
         first is null ? second : second is null || ReferenceEquals(first, second) ? first :

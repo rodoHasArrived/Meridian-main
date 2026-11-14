@@ -1,6 +1,8 @@
 using System.Net;
 using System.Threading;
 using Meridian.Core.Exceptions;
+using Meridian.Core.Config;
+using DataSourceType = Meridian.Infrastructure.DataSources.DataSourceType;
 using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
@@ -35,6 +37,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     private readonly BackfillProgressTracker _progressTracker;
     private readonly bool _ownsProgressTracker;
     private readonly ILogger _log;
+    private readonly IReadOnlyDictionary<string, ProviderValidationProfile>? _validationProfiles;
     private bool _disposed;
 
     // Maximum number of times the whole provider chain is retried after every candidate has
@@ -111,16 +114,23 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         double rateLimitRotationThreshold = 0.8,
         TimeSpan? maxRateLimitRetryBudget = null,
         ILogger? log = null,
-        BackfillProgressTracker? progressTracker = null)
+        BackfillProgressTracker? progressTracker = null,
+        IReadOnlyDictionary<string, ProviderValidationProfile>? validationProfiles = null,
+        ProviderRateLimitHistory? rateLimitHistory = null)
     {
+        // Fabricated bars are a last resort even when their numeric priority is lower.
         _providers = providers
-            .OrderBy(p => p.Priority)
+            .OrderBy(p => p.IsSimulated)
+            .ThenBy(p => p.Priority)
             .ToList();
 
         if (_providers.Count == 0)
             throw new ArgumentException("At least one provider is required", nameof(providers));
 
         _symbolResolver = symbolResolver;
+        _validationProfiles = validationProfiles;
+        foreach (var profile in validationProfiles?.Values ?? Enumerable.Empty<ProviderValidationProfile>())
+            profile.Validate();
         _enableCrossValidation = enableCrossValidation;
         // Overall wall-clock budget for waiting out rate limits across all retry attempts.
         // Bounds the worst case (previously ~15 min: 3 retries x 5 min) to a single knob.
@@ -135,7 +145,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         {
             rateLimitTracker.RegisterProvider(provider);
         }
-        _rotation = new ProviderRotationStrategy(rateLimitTracker, enableRateLimitRotation, rateLimitRotationThreshold);
+        _rotation = new ProviderRotationStrategy(rateLimitTracker, enableRateLimitRotation, rateLimitRotationThreshold, rateLimitHistory);
 
         // Per-provider health status and failure backoff bookkeeping.
         _health = new ProviderHealthTracker(
@@ -145,6 +155,10 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         // Best-effort cross-provider validation (only invoked when enabled).
         _validator = new CrossProviderValidator(_providers, ResolveSymbolForProviderAsync, _log);
     }
+
+    private ProviderValidationProfile ResolveValidationProfile(string provider) =>
+        _validationProfiles?.FirstOrDefault(pair => string.Equals(pair.Key, provider, StringComparison.OrdinalIgnoreCase)).Value
+        ?? ProviderValidationProfile.Default;
 
     public async Task<bool> IsAvailableAsync(CancellationToken ct = default)
     {
@@ -175,7 +189,8 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             allFailedMessageFactory: summary => $"All providers failed for {symbol}: {summary}",
             rangeStart: from,
             rangeEnd: to,
-            recencyEvaluator: bars => BackfillBarValidation.EvaluateDailyRecency(bars, to),
+            recencyEvaluator: (bars, provider) => BackfillBarValidation.EvaluateDailyRecency(bars, to,
+                staleToleranceDays: ResolveValidationProfile(provider).StaleToleranceDays),
             ct: ct).ConfigureAwait(false);
     }
 
@@ -233,7 +248,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         Func<string, string> allFailedMessageFactory,
         DateOnly? rangeStart,
         DateOnly? rangeEnd,
-        Func<IReadOnlyList<TResult>, StaleBarsVerdict?>? recencyEvaluator,
+        Func<IReadOnlyList<TResult>, string, StaleBarsVerdict?>? recencyEvaluator,
         CancellationToken ct)
     {
         var requestStartedAt = DateTimeOffset.UtcNow;
@@ -242,6 +257,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         IReadOnlyList<TResult>? freshestStaleResult = null;
         StaleBarsVerdict? freshestStaleVerdict = null;
         string? freshestStaleProvider = null;
+        string? throttledProvider = null;
 
         for (var attempt = 0; ; attempt++)
         {
@@ -314,6 +330,15 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
 
                     var startTime = DateTimeOffset.UtcNow;
 
+                    // Retain the actual next attempted provider, not a guessed fallback.
+                    if (throttledProvider is not null && throttledProvider != provider.Name)
+                    {
+                        _rotation.RecordRotation(throttledProvider, provider.Name);
+                        throttledProvider = null;
+                    }
+                    var validationProfile = ResolveValidationProfile(provider.Name);
+                    _log.Debug("Applying provider validation profile {Provider} {StaleToleranceDays} {FutureSkewSeconds} {StaleThresholdSeconds} {MaxLatencyMs}",
+                        provider.Name, validationProfile.StaleToleranceDays, validationProfile.FutureSkewSeconds, validationProfile.StaleThresholdSeconds, validationProfile.MaxLatencyMs);
                     // Record the request attempt
                     _rotation.RecordRequest(provider.Name);
 
@@ -328,7 +353,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                         _health.ClearFailure(provider.Name);
                         _rotation.ClearRateLimitState(provider.Name);
 
-                        var staleVerdict = recencyEvaluator?.Invoke(results);
+                        var staleVerdict = recencyEvaluator?.Invoke(results, provider.Name);
                         if (staleVerdict is not null)
                         {
                             _log.Warning(
@@ -347,6 +372,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                             continue;
                         }
 
+                        WarnIfSimulated(provider, symbol, operationLabel);
                         _log.Information("Successfully retrieved {Count} {Operation} from {Provider} for {Symbol}",
                             results.Count, operationLabel, provider.Name, symbol);
                         Report(provider.Name, "completed", results.Count);
@@ -373,7 +399,9 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     if (IsRateLimitException(ex))
                     {
                         var retryAfter = ExtractRetryAfter(ex);
-                        _rotation.RecordRateLimitHit(provider.Name, retryAfter);
+                        _rotation.RecordRateLimitHit(provider.Name, retryAfter,
+                            HasHttpTooManyRequestsStatus(ex) ? 429 : null);
+                        throttledProvider = provider.Name;
                         rateLimitedCandidates.Add(provider);
                         _log.Warning("Provider {Provider} hit rate limit for {Symbol} {Operation}, rotating to next provider",
                             provider.Name, symbol, operationLabel);
@@ -491,6 +519,13 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     /// <summary>
     /// Get all providers ordered by rate limit capacity when rotation is enabled.
     /// </summary>
+    private void WarnIfSimulated(IHistoricalDataProvider provider, string symbol, string operation)
+    {
+        if (provider.IsSimulated)
+            _log.Warning("FABRICATED data fallback selected {Provider} for {Symbol} {Operation}; Sample={Sample}. Source provenance is retained.",
+                provider.Name, symbol, operation, true);
+    }
+
     private IEnumerable<IHistoricalDataProvider> GetOrderedProviders()
         => _rotation.OrderByAvailability(_providers);
 
@@ -541,93 +576,32 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     public async Task<IReadOnlyList<AdjustedHistoricalBar>> GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        var requestStartedAt = DateTimeOffset.UtcNow;
-        var providerAttempt = 0;
-
-        void Report(string providerName, string status, int barsDownloaded = 0, string? error = null) =>
-            RaiseProgress(
-                symbol,
-                providerName,
-                requestStartedAt,
-                barsDownloaded,
-                status,
-                error,
-                from,
-                to,
-                providerAttempt,
-                retryRound: 0,
-                operation: "adjusted bars");
-
-        // Get providers that support adjusted prices, ordered by rate limit availability
-        var adjustedProviders = _rotation.OrderByAvailability(
-            _providers.Where(p => p.Capabilities.AdjustedPrices));
-
-        foreach (var provider in adjustedProviders)
-        {
-            if (_health.IsInBackoffPeriod(provider.Name))
-            {
-                Report(provider.Name, "skipped-backoff");
-                continue;
-            }
-
-            // Skip rate-limited providers if rotation is enabled
-            if (_rotation.Enabled && _rotation.IsRateLimited(provider.Name))
-            {
-                _log.Debug("Skipping {Provider} for adjusted bars - rate limited", provider.Name);
-                Report(provider.Name, "skipped-rate-limited");
-                continue;
-            }
-
-            providerAttempt++;
-            try
-            {
-                var resolvedSymbol = await ResolveSymbolForProviderAsync(symbol, provider.Name, ct).ConfigureAwait(false);
-                Report(provider.Name, "trying");
-
-                // Record the request attempt
-                _rotation.RecordRequest(provider.Name);
-
-                var bars = await provider.GetAdjustedDailyBarsAsync(resolvedSymbol, from, to, ct).ConfigureAwait(false);
-
-                if (bars is { Count: > 0 })
-                {
-                    _health.ClearFailure(provider.Name);
-                    _rotation.ClearRateLimitState(provider.Name);
-                    Report(provider.Name, "completed", bars.Count);
-                    return bars;
-                }
-
-                Report(provider.Name, "no-data");
-            }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                if (IsRateLimitException(ex))
-                {
-                    var retryAfter = ExtractRetryAfter(ex);
-                    _rotation.RecordRateLimitHit(provider.Name, retryAfter);
-                    _log.Warning("Provider {Provider} hit rate limit for adjusted bars, rotating to next",
-                        provider.Name);
-                    Report(provider.Name, "rate-limited", error: ex.Message);
-                }
-                else
-                {
-                    _log.Warning(ex, "Provider {Provider} failed for adjusted bars", provider.Name);
-                    _health.RecordFailure(provider.Name, ex.Message);
-                    Report(provider.Name, "failed", error: ex.Message);
-                }
-            }
-        }
-
-        // Fallback to standard bars
-        Report(Name, "falling-back-to-unadjusted");
-        var standardBars = await GetDailyBarsAsync(symbol, from, to, ct).ConfigureAwait(false);
-        return standardBars.Select(b => new AdjustedHistoricalBar(
-            b.Symbol, b.SessionDate, b.Open, b.High, b.Low, b.Close, b.Volume, b.Source, b.SequenceNumber
-        )).ToList();
+        ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
+        // A real-data chain must not conceal missing adjusted coverage with fabricated prices.
+        // An explicitly synthetic-only development chain remains usable and is logged as simulated.
+        var hasRealProvider = _providers.Any(provider => !provider.IsSimulated);
+        bool CanServeAdjusted(IHistoricalDataProvider provider) => provider.Capabilities.AdjustedPrices &&
+            (!hasRealProvider || !provider.IsSimulated);
+        ct.ThrowIfCancellationRequested();
+        if (!_providers.Any(CanServeAdjusted))
+            throw new DataProviderException("No eligible provider can supply adjusted history. Raw bars were not substituted.",
+                provider: Name, symbol: symbol);
+        var bars = await ExecuteWithFailoverAsync<AdjustedHistoricalBar>(
+            symbol,
+            operationLabel: "adjusted daily bars",
+            candidateSelector: () => GetOrderedProviders().Where(CanServeAdjusted),
+            fetchAsync: (provider, resolved, token) => provider.GetAdjustedDailyBarsAsync(resolved, from, to, token),
+            onSuccessAsync: null,
+            allFailedMessageFactory: summary => $"Adjusted history is unavailable for {symbol}; raw bars were not substituted: {summary}",
+            rangeStart: from,
+            rangeEnd: to,
+            recencyEvaluator: (result, provider) => BackfillBarValidation.EvaluateAdjustedDailyRecency(result, to,
+                staleToleranceDays: ResolveValidationProfile(provider).StaleToleranceDays),
+            ct: ct).ConfigureAwait(false);
+        if (bars.Count == 0)
+            throw new DataProviderException("No provider could supply adjusted history. Raw bars were not substituted.",
+                provider: Name, symbol: symbol);
+        return bars;
     }
 
     /// <summary>

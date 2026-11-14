@@ -6,6 +6,270 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerAccountingJournalObservation
+
+Qualified name: <code>Meridian.Ledger.LedgerAccountingJournalObservation</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerAccountingCompleteness.cs:34](../../../../src/Meridian.Ledger/LedgerAccountingCompleteness.cs#L34).
+
+An authoritative retained journal and its source attribution. The adapter must supply the exact store scope and policy purpose; it must not infer either from a matching amount. A missing source identity is retained as a completeness break rather than silently dropping the journal.
+
+```csharp
+public sealed record LedgerAccountingJournalObservation(JournalEntry Entry, LedgerAccountingScope Scope, LedgerAccountingSourceKind SourceKind, string? SourceId, string PostingKey)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerAccountingJournalObservation FromFill(JournalEntry entry, LedgerAccountingScope scope, string postingKey) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccountingCompleteness.cs:42](../../../../src/Meridian.Ledger/LedgerAccountingCompleteness.cs#L42) | Reads existing fill provenance without manufacturing a fill identity. |
+| <code>public static LedgerAccountingJournalObservation FromSourceEvent(JournalEntry entry, LedgerAccountingScope scope, LedgerAccountingSourceKind kind, string postingKey);</code> | [src/Meridian.Ledger/LedgerAccountingCompleteness.cs:50](../../../../src/Meridian.Ledger/LedgerAccountingCompleteness.cs#L50) | Reads the retained source-event tag used by loan and asset adapters. |
+
+## LedgerAccountingScope
+
+Qualified name: <code>Meridian.Ledger.LedgerAccountingScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerAccountingCompleteness.cs:16](../../../../src/Meridian.Ledger/LedgerAccountingCompleteness.cs#L16).
+
+Authoritative scope supplied by the source/store adapter. Book and financial-account identities are compared ordinally; a journal in another scope cannot satisfy an expected posting.
+
+```csharp
+public sealed record LedgerAccountingScope(string LedgerBook, string FinancialAccountId);
+```
+
+## LedgerAccountingSourceKind
+
+Qualified name: <code>Meridian.Ledger.LedgerAccountingSourceKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ledger/LedgerAccountingCompleteness.cs:4](../../../../src/Meridian.Ledger/LedgerAccountingCompleteness.cs#L4).
+
+The economic source populations covered by an accounting completeness run.
+
+```csharp
+public enum LedgerAccountingSourceKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Fill</code> | [src/Meridian.Ledger/LedgerAccountingCompleteness.cs:6](../../../../src/Meridian.Ledger/LedgerAccountingCompleteness.cs#L6) |  |
+| <code>AssetEvent</code> | [src/Meridian.Ledger/LedgerAccountingCompleteness.cs:7](../../../../src/Meridian.Ledger/LedgerAccountingCompleteness.cs#L7) |  |
+| <code>LoanEvent</code> | [src/Meridian.Ledger/LedgerAccountingCompleteness.cs:8](../../../../src/Meridian.Ledger/LedgerAccountingCompleteness.cs#L8) |  |
+| <code>FinancingCharge</code> | [src/Meridian.Ledger/LedgerAccountingCompleteness.cs:9](../../../../src/Meridian.Ledger/LedgerAccountingCompleteness.cs#L9) |  |
+
+## LedgerAccountRole
+
+Qualified name: <code>Meridian.Ledger.LedgerAccountRole</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ledger/LedgerAccountRole.cs:7](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L7).
+
+Registered economic roles shared by simulation, execution, and direct-lending postings. These values are lookup keys, not persisted account identities or inferred account types.
+
+```csharp
+public enum LedgerAccountRole
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Cash</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:9](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L9) |  |
+| <code>Capital</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:10](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L10) |  |
+| <code>Securities</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:11](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L11) |  |
+| <code>ShortSecuritiesPayable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:12](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L12) |  |
+| <code>RealizedGain</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:13](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L13) |  |
+| <code>RealizedLoss</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:14](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L14) |  |
+| <code>CommissionExpense</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:15](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L15) |  |
+| <code>MarginInterestExpense</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:16](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L16) |  |
+| <code>CashInterestIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:17](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L17) |  |
+| <code>ShortRebateIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:18](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L18) |  |
+| <code>DividendIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:19](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L19) |  |
+| <code>DividendExpense</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:20](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L20) |  |
+| <code>CouponIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:21](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L21) |  |
+| <code>CouponExpense</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:22](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L22) |  |
+| <code>CorporateActionIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:23](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L23) |  |
+| <code>CorporateActionExpense</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:24](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L24) |  |
+| <code>FuturesMtmSettlement</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:25](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L25) |  |
+| <code>LoanPrincipal</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:26](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L26) |  |
+| <code>LoanAccruedInterestReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:27](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L27) |  |
+| <code>LoanInterestIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:28](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L28) |  |
+| <code>LoanPikInterestReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:29](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L29) |  |
+| <code>LoanPikInterestIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:30](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L30) |  |
+| <code>LoanCommitmentFeeReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:31](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L31) |  |
+| <code>LoanCommitmentFeeIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:32](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L32) |  |
+| <code>LoanFeeReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:33](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L33) |  |
+| <code>LoanFeeIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:34](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L34) |  |
+| <code>LoanPenaltyReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:35](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L35) |  |
+| <code>LoanPenaltyIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:36](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L36) |  |
+| <code>LoanAndAccrualsClearing</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:37](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L37) |  |
+| <code>LoanPrepaidInterestLiability</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:38](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L38) |  |
+| <code>LoanUnappliedCashLiability</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:39](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L39) |  |
+| <code>LoanWriteOffExpense</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:40](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L40) |  |
+| <code>LoanDiscountAmortizationExpense</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:41](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L41) |  |
+| <code>LoanDiscount</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:42](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L42) |  |
+| <code>LoanPremium</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:43](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L43) |  |
+| <code>LoanPremiumAmortizationIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:44](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L44) |  |
+| <code>LoanRestructuringLoss</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:45](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L45) |  |
+| <code>MarginLoanPayable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:46](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L46) |  |
+| <code>ShortSaleCollateralReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:47](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L47) |  |
+
+## LedgerAccounts
+
+Qualified name: <code>Meridian.Ledger.LedgerAccounts</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/LedgerAccounts.cs:8](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L8).
+
+Well-known chart-of-accounts entries used in double-entry bookkeeping.
+
+```csharp
+public static class LedgerAccounts
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly LedgerAccount Cash = new (&quot;Cash&quot;, LedgerAccountType.Asset);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:11](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L11) | Simulated cash held in the trading account. |
+| <code>public static readonly LedgerAccount CapitalAccount = new (&quot;Capital Account&quot;, LedgerAccountType.Equity);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:15](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L15) | Initial capital deposited into the account at the start of the run. |
+| <code>public static readonly LedgerAccount RealizedGain = new (&quot;Realized Gain&quot;, LedgerAccountType.Revenue);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:19](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L19) | Realized gain on trades where proceeds exceed cost basis. |
+| <code>public static readonly LedgerAccount RealizedLoss = new (&quot;Realized Loss&quot;, LedgerAccountType.Expense);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:23](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L23) | Realized loss on trades where cost basis exceeds proceeds. |
+| <code>public static readonly LedgerAccount CommissionExpense = new (&quot;Commission Expense&quot;, LedgerAccountType.Expense);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:27](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L27) | Brokerage commission expense charged on each order fill. |
+| <code>public static readonly LedgerAccount MarginInterestExpense = new (&quot;Margin Interest Expense&quot;, LedgerAccountType.Expense);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:31](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L31) | Margin interest expense charged daily on debit (borrowed) balances. |
+| <code>public static readonly LedgerAccount CashInterestIncome = new (&quot;Cash Interest Income&quot;, LedgerAccountType.Revenue);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:35](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L35) | Interest income credited to positive idle cash balances. |
+| <code>public static readonly LedgerAccount ShortRebateIncome = new (&quot;Short Rebate Income&quot;, LedgerAccountType.Revenue);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:39](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L39) | Short-sale rebate income credited daily by the broker on short positions. |
+| <code>public static readonly LedgerAccount DividendIncome = new (&quot;Dividend Income&quot;, LedgerAccountType.Revenue);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:43](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L43) | Dividend income received on long positions. |
+| <code>public static LedgerAccount CashAccount(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:46](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L46) |  |
+| <code>public static LedgerAccount CashFor(string? financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:50](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L50) | The cash account that settles activity on financialAccountId, or the unscoped account when none is given. |
+| <code>public static LedgerAccount RealizedGainOrDefault(string? financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:54](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L54) | The realized-gain account for financialAccountId, or the unscoped account when none is given. |
+| <code>public static LedgerAccount RealizedLossOrDefault(string? financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:58](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L58) | The realized-loss account for financialAccountId, or the unscoped account when none is given. |
+| <code>public static LedgerAccount CommissionExpenseOrDefault(string? financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:62](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L62) | The commission expense account for financialAccountId, or the unscoped account when none is given. |
+| <code>public static LedgerAccount RealizedFxGainOrDefault(string? financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:66](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L66) | The realized FX gain account for financialAccountId, or the unscoped account when none is given. |
+| <code>public static LedgerAccount RealizedFxLossOrDefault(string? financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:70](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L70) | The realized FX loss account for financialAccountId, or the unscoped account when none is given. |
+| <code>public static LedgerAccount StockBorrowFeeExpenseOrDefault(string? financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:74](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L74) | The stock borrow fee expense account for financialAccountId, or the unscoped account when none is given. |
+| <code>public static LedgerAccount DividendExpenseOrDefault(string? financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:78](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L78) | The dividend expense account (payments in lieu on short positions) for financialAccountId, or the unscoped account when none is given. |
+| <code>public static LedgerAccount CapitalAccountFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:81](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L81) |  |
+| <code>public static LedgerAccount RealizedGainFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:84](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L84) |  |
+| <code>public static LedgerAccount RealizedLossFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:87](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L87) |  |
+| <code>public static LedgerAccount CommissionExpenseFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:90](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L90) |  |
+| <code>public static LedgerAccount MarginInterestExpenseFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:93](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L93) |  |
+| <code>public static LedgerAccount CashInterestIncomeFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:96](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L96) |  |
+| <code>public static LedgerAccount ShortRebateIncomeFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:99](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L99) |  |
+| <code>public static LedgerAccount DividendIncomeFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:102](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L102) |  |
+| <code>public static LedgerAccount DividendExpenseFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:105](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L105) |  |
+| <code>public static LedgerAccount CouponIncomeFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:108](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L108) |  |
+| <code>public static LedgerAccount CouponExpenseFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:111](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L111) |  |
+| <code>public static LedgerAccount CorporateActionIncomeFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:114](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L114) |  |
+| <code>public static LedgerAccount CorporateActionExpenseFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:117](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L117) |  |
+| <code>public static readonly LedgerAccount UnrealizedGain = new (&quot;Unrealized Gain&quot;, LedgerAccountType.Revenue);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:121](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L121) | Unrealized gain on open long positions marked to current market value. |
+| <code>public static readonly LedgerAccount UnrealizedLoss = new (&quot;Unrealized Loss&quot;, LedgerAccountType.Expense);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:125](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L125) | Unrealized loss on open long positions marked to current market value. |
+| <code>public static readonly LedgerAccount RetainedEarnings = new (&quot;Retained Earnings&quot;, LedgerAccountType.Equity);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:129](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L129) | Retained earnings carried forward from prior reporting periods. |
+| <code>public static LedgerAccount UnrealizedGainFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:132](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L132) |  |
+| <code>public static LedgerAccount UnrealizedLossFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:135](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L135) |  |
+| <code>public static LedgerAccount RetainedEarningsFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:138](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L138) |  |
+| <code>public static LedgerAccount InvestorCapitalFor(string investorId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:141](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L141) |  |
+| <code>public static LedgerAccount CapitalCallReceivableFor(string investorId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:144](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L144) |  |
+| <code>public static LedgerAccount CapitalCallDefaultInterestReceivableFor(string investorId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:147](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L147) |  |
+| <code>public static LedgerAccount CapitalCallDefaultInterestIncomeFor(string fundId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:150](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L150) |  |
+| <code>public static LedgerAccount CarriedInterestAllocationFor(string investorId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:153](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L153) |  |
+| <code>public static LedgerAccount GpClawbackReceivableFor(string fundId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:156](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L156) |  |
+| <code>public static LedgerAccount ManagementFeeExpenseFor(string fundId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:159](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L159) |  |
+| <code>public static LedgerAccount ManagementFeePayableFor(string fundId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:162](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L162) |  |
+| <code>public static LedgerAccount PerformanceFeeExpenseFor(string fundId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:165](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L165) |  |
+| <code>public static LedgerAccount PerformanceFeePayableFor(string fundId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:168](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L168) |  |
+| <code>public static LedgerAccount FundOperatingExpenseFor(string fundId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:171](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L171) |  |
+| <code>public static LedgerAccount AccruedExpensesPayableFor(string fundId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:174](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L174) |  |
+| <code>public static LedgerAccount FundDistributionPayableFor(string investorId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:177](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L177) |  |
+| <code>public static LedgerAccount CommissionPayableFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:180](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L180) |  |
+| <code>public static LedgerAccount WithholdingTaxExpenseFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:183](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L183) |  |
+| <code>public static LedgerAccount WithholdingTaxPayableFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:186](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L186) |  |
+| <code>public static LedgerAccount UnrealizedFxGainFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:189](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L189) |  |
+| <code>public static LedgerAccount UnrealizedFxLossFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:192](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L192) |  |
+| <code>public static readonly LedgerAccount DividendExpense = new (&quot;Dividend Expense&quot;, LedgerAccountType.Expense);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:196](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L196) | Dividend expense owed on short positions or other negative dividend adjustments. |
+| <code>public static readonly LedgerAccount CouponIncome = new (&quot;Coupon Income&quot;, LedgerAccountType.Revenue);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:200](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L200) | Bond or fund coupon income received on held units. |
+| <code>public static readonly LedgerAccount CouponExpense = new (&quot;Coupon Expense&quot;, LedgerAccountType.Expense);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:204](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L204) | Coupon expense owed on short positions or negative coupon adjustments. |
+| <code>public static readonly LedgerAccount CorporateActionIncome = new (&quot;Corporate Action Income&quot;, LedgerAccountType.Revenue);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:208](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L208) | Income from non-dividend corporate actions, merger cash, and miscellaneous asset events. |
+| <code>public static readonly LedgerAccount CorporateActionExpense = new (&quot;Corporate Action Expense&quot;, LedgerAccountType.Expense);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:212](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L212) | Expense from fees, merger charges, and other negative asset-event cash adjustments. |
+| <code>public static LedgerAccount Securities(string symbol, string? financialAccountId = null);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:220](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L220) | Returns the asset account representing equity holdings in symbol. Each symbol has its own securities account so per-symbol cost-basis is tracked separately. The symbol is normalized to upper-case so accounts are case-insensitive by identity. |
+| <code>public static LedgerAccount DividendReceivable(string symbol, string? financialAccountId = null);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:233](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L233) | Returns the asset account representing dividends declared but not yet received for symbol (ex-date passed; pay-date still pending). Post: Dr DividendReceivable / Cr DividendIncome on declaration. Dr Cash / Cr DividendReceivable when payment arrives. The symbol is normalized to upper-case. |
+| <code>public static LedgerAccount AccruedInterestReceivable(string symbol, string? financialAccountId = null);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:244](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L244) | Returns the asset account representing bond or fund coupon interest accrued but not yet received for symbol. The symbol is normalized to upper-case. |
+| <code>public static LedgerAccount CorpActionDistribution(string symbol, string? financialAccountId = null);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:255](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L255) | Returns the revenue account for non-dividend corporate action distributions (spin-off proceeds, rights issue income, merger cash, etc.) for symbol. The symbol is normalized to upper-case. |
+| <code>public static LedgerAccount ShortSecuritiesPayable(string symbol, string? financialAccountId = null);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:266](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L266) | Returns the liability account representing the obligation to return borrowed shares for a short position in symbol. Each symbol has its own short payable account. The symbol is normalized to upper-case. |
+| <code>public static readonly LedgerAccount UnrealizedFxGain = new (&quot;Unrealized FX Gain&quot;, LedgerAccountType.Revenue);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:280](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L280) | Unrealized FX gain on a foreign-currency cash balance or position translated to the reporting (base) currency. |
+| <code>public static readonly LedgerAccount UnrealizedFxLoss = new (&quot;Unrealized FX Loss&quot;, LedgerAccountType.Expense);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:287](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L287) | Unrealized FX loss on a foreign-currency cash balance or position translated to the reporting (base) currency. |
+| <code>public static readonly LedgerAccount RealizedFxGain = new (&quot;Realized FX Gain&quot;, LedgerAccountType.Revenue);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:291](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L291) | Realized FX gain crystallized when a foreign-currency cash balance is repatriated. |
+| <code>public static readonly LedgerAccount RealizedFxLoss = new (&quot;Realized FX Loss&quot;, LedgerAccountType.Expense);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:295](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L295) | Realized FX loss crystallized when a foreign-currency cash balance is repatriated. |
+| <code>public static LedgerAccount CashInCurrency(string currencyCode, string? financialAccountId = null);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:304](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L304) | Cash account for a specific currencyCode balance. Enables per-currency cash tracking in multi-currency portfolios. |
+| <code>public static readonly LedgerAccount MarginLoanPayable = new (&quot;Margin Loan Payable&quot;, LedgerAccountType.Liability);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:316](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L316) | Margin loan payable — the debit balance owed to the broker for leveraged positions. |
+| <code>public static readonly LedgerAccount ShortSaleCollateralReceivable = new (&quot;Short Sale Collateral Receivable&quot;, LedgerAccountType.Asset);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:325](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L325) | Collateral the broker holds against open Reg T short sales — the retained short proceeds plus the additional margin the trader posted. An asset: it returns to cash as the short is covered. Booking it here keeps ledger cash equal to the account&#x27;s free cash while the short is open, instead of showing the retained proceeds as spendable cash. |
+| <code>public static readonly LedgerAccount StockBorrowFeeExpense = new (&quot;Stock Borrow Fee Expense&quot;, LedgerAccountType.Expense);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:329](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L329) | Borrow fee expense charged daily on short-sold securities. |
+| <code>public static LedgerAccount MarginLoanPayableFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:335](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L335) | Margin loan payable scoped to a specific brokerage account. |
+| <code>public static LedgerAccount StockBorrowFeeExpenseFor(string financialAccountId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:341](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L341) | Stock borrow fee expense scoped to a specific brokerage account. |
+| <code>public static LedgerAccount OptionPremiumAsset(string symbol, string? financialAccountId = null);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:352](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L352) | Option premium asset — the cost paid to acquire a long option position. Amortized to zero on expiry; relieved on close or exercise. |
+| <code>public static LedgerAccount OptionPremiumLiability(string symbol, string? financialAccountId = null);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:362](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L362) | Option premium liability — the premium received for writing (selling) an option. Recognized as revenue on expiry; offset on close or assignment. |
+| <code>public static LedgerAccount FuturesMtmSettlement(string symbol, string? financialAccountId = null);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:372](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L372) | Daily mark-to-market cash settlement account for futures positions. Debited or credited each day to reflect change in futures price. |
+| <code>public static readonly LedgerAccount AllocationControl = new (&quot;Allocation Control&quot;, LedgerAccountType.Asset);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:387](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L387) | Allocation control account used as a clearing entry when a block trade is split across multiple sleeves or vehicles before individual sleeve ledgers are posted. Must net to zero across all posts in the same allocation batch. |
+| <code>public static LedgerAccount FixedAssetCostFor(string assetId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:395](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L395) | Gross capitalized cost of a fixed asset, scoped by asset identity. |
+| <code>public static LedgerAccount AccumulatedDepreciationFor(string assetId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:402](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L402) | Accumulated depreciation for a fixed asset — a contra-asset that carries a credit balance and nets against FixedAssetCostFor to yield net book value. |
+| <code>public static LedgerAccount DepreciationExpenseFor(string assetId) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:406](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L406) | Periodic depreciation expense charged on a fixed asset. |
+| <code>public static bool UsesInstrumentSymbol(LedgerAccount account) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccounts.cs:432](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L432) | Returns true when account is one of the per-symbol instrument accounts (e.g. Securities) whose LedgerAccount.Symbol is a ticker rather than a currency code, so currency inference must not read the symbol as a denomination. |
+| <code>public static bool IsFundFeeExpenseAccount(LedgerAccount account);</code> | [src/Meridian.Ledger/LedgerAccounts.cs:453](../../../../src/Meridian.Ledger/LedgerAccounts.cs#L453) | Returns true when account is a fund-level management or performance/incentive fee expense account, so a partners&#x27; capital statement can present fee allocations separately from other operating-expense allocations. |
+
+## LedgerAccountSummary
+
+Qualified name: <code>Meridian.Ledger.LedgerAccountSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerAccountSummary.cs:6](../../../../src/Meridian.Ledger/LedgerAccountSummary.cs#L6).
+
+Aggregate summary for a posted ledger account.
+
+```csharp
+public sealed record LedgerAccountSummary(LedgerAccount Account, decimal Balance, decimal TotalDebits, decimal TotalCredits, int EntryCount, DateTimeOffset? FirstPostedAt, DateTimeOffset? LastPostedAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal Debits =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccountSummary.cs:18](../../../../src/Meridian.Ledger/LedgerAccountSummary.cs#L18) | Backward-compatible alias for TotalDebits. |
+| <code>public decimal Credits =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccountSummary.cs:23](../../../../src/Meridian.Ledger/LedgerAccountSummary.cs#L23) | Backward-compatible alias for TotalCredits. |
+| <code>public static LedgerAccountSummary Empty(LedgerAccount account);</code> | [src/Meridian.Ledger/LedgerAccountSummary.cs:28](../../../../src/Meridian.Ledger/LedgerAccountSummary.cs#L28) | Creates an empty summary for an account with no postings. |
+
+## LedgerAccountTaxLotPolicy
+
+Qualified name: <code>Meridian.Ledger.LedgerAccountTaxLotPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerAccountTaxLotPolicy.cs:6](../../../../src/Meridian.Ledger/LedgerAccountTaxLotPolicy.cs#L6).
+
+Account-level tax-lot relief policy used to align ledger accounting with front-office P&amp;L.
+
+```csharp
+public sealed record LedgerAccountTaxLotPolicy(LedgerAccount Account, LedgerTaxLotReliefMethod ReliefMethod, string PolicyId, DateOnly EffectiveDate, string? Rationale = null);
+```
+
+## LedgerAccountTaxLotPolicyBook
+
+Qualified name: <code>Meridian.Ledger.LedgerAccountTaxLotPolicyBook</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs:6](../../../../src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs#L6).
+
+Resolves tax-lot relief methods at the ledger-account level.
+
+```csharp
+public sealed class LedgerAccountTaxLotPolicyBook
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerTaxLotReliefMethod DefaultReliefMethod { get; }</code> | [src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs:11](../../../../src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs#L11) | Default relief method used when no account-specific policy exists. |
+| <code>public IReadOnlyList&lt;LedgerAccountTaxLotPolicy&gt; Policies =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs:14](../../../../src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs#L14) | All registered account-level policies sorted by account identity. |
+| <code>public LedgerAccountTaxLotPolicyBook(LedgerTaxLotReliefMethod defaultReliefMethod = LedgerTaxLotReliefMethod.Fifo);</code> | [src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs:21](../../../../src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs#L21) |  |
+| <code>public LedgerAccountTaxLotPolicy Register(LedgerAccount account, LedgerTaxLotReliefMethod reliefMethod, string policyId, DateOnly effectiveDate, string? rationale = null);</code> | [src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs:27](../../../../src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs#L27) | Registers or replaces the relief policy for a specific ledger account. |
+| <code>public LedgerAccountTaxLotPolicy Resolve(LedgerAccount account, DateOnly asOf);</code> | [src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs:49](../../../../src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs#L49) | Returns the effective policy for account, or a default policy when none is registered. |
+| <code>public bool HasPolicy(LedgerAccount account);</code> | [src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs:71](../../../../src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs#L71) | Returns true when an account-specific policy exists. |
+
 ## LedgerAccountType
 
 Qualified name: <code>Meridian.Ledger.LedgerAccountType</code>. Kind: `enum`.
@@ -264,13 +528,13 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public LedgerEntryCurrency(string transactionCurrency, string functionalCurrency, decimal transactionDebit, decimal transactionCredit, decimal fxRateToFunctional);</code> | [src/Meridian.Ledger/LedgerEntryCurrency.cs:12](../../../../src/Meridian.Ledger/LedgerEntryCurrency.cs#L12) |  |
-| <code>public string TransactionCurrency { get; }</code> | [src/Meridian.Ledger/LedgerEntryCurrency.cs:44](../../../../src/Meridian.Ledger/LedgerEntryCurrency.cs#L44) | ISO-style code of the currency the transaction amounts are denominated in. |
-| <code>public string FunctionalCurrency { get; }</code> | [src/Meridian.Ledger/LedgerEntryCurrency.cs:47](../../../../src/Meridian.Ledger/LedgerEntryCurrency.cs#L47) | ISO-style code of the functional/base currency the leg&#x27;s debit/credit are in. |
-| <code>public decimal TransactionDebit { get; }</code> | [src/Meridian.Ledger/LedgerEntryCurrency.cs:50](../../../../src/Meridian.Ledger/LedgerEntryCurrency.cs#L50) | Original debit amount in TransactionCurrency. |
-| <code>public decimal TransactionCredit { get; }</code> | [src/Meridian.Ledger/LedgerEntryCurrency.cs:53](../../../../src/Meridian.Ledger/LedgerEntryCurrency.cs#L53) | Original credit amount in TransactionCurrency. |
-| <code>public decimal FxRateToFunctional { get; }</code> | [src/Meridian.Ledger/LedgerEntryCurrency.cs:56](../../../../src/Meridian.Ledger/LedgerEntryCurrency.cs#L56) | Multiplier converting a transaction-currency amount to the functional currency. |
-| <code>public bool IsFunctionalCurrency =&gt; …;</code> | [src/Meridian.Ledger/LedgerEntryCurrency.cs:59](../../../../src/Meridian.Ledger/LedgerEntryCurrency.cs#L59) | True when the transaction and functional currencies are the same. |
-| <code>public bool IsDebit =&gt; …;</code> | [src/Meridian.Ledger/LedgerEntryCurrency.cs:63](../../../../src/Meridian.Ledger/LedgerEntryCurrency.cs#L63) | Which side of the leg carries the amount, mirroring the functional debit/credit. |
+| <code>public string TransactionCurrency { get; }</code> | [src/Meridian.Ledger/LedgerEntryCurrency.cs:47](../../../../src/Meridian.Ledger/LedgerEntryCurrency.cs#L47) | ISO-style code of the currency the transaction amounts are denominated in. |
+| <code>public string FunctionalCurrency { get; }</code> | [src/Meridian.Ledger/LedgerEntryCurrency.cs:50](../../../../src/Meridian.Ledger/LedgerEntryCurrency.cs#L50) | ISO-style code of the functional/base currency the leg&#x27;s debit/credit are in. |
+| <code>public decimal TransactionDebit { get; }</code> | [src/Meridian.Ledger/LedgerEntryCurrency.cs:53](../../../../src/Meridian.Ledger/LedgerEntryCurrency.cs#L53) | Original debit amount in TransactionCurrency. |
+| <code>public decimal TransactionCredit { get; }</code> | [src/Meridian.Ledger/LedgerEntryCurrency.cs:56](../../../../src/Meridian.Ledger/LedgerEntryCurrency.cs#L56) | Original credit amount in TransactionCurrency. |
+| <code>public decimal FxRateToFunctional { get; }</code> | [src/Meridian.Ledger/LedgerEntryCurrency.cs:59](../../../../src/Meridian.Ledger/LedgerEntryCurrency.cs#L59) | Multiplier converting a transaction-currency amount to the functional currency. |
+| <code>public bool IsFunctionalCurrency =&gt; …;</code> | [src/Meridian.Ledger/LedgerEntryCurrency.cs:62](../../../../src/Meridian.Ledger/LedgerEntryCurrency.cs#L62) | True when the transaction and functional currencies are the same. |
+| <code>public bool IsDebit =&gt; …;</code> | [src/Meridian.Ledger/LedgerEntryCurrency.cs:66](../../../../src/Meridian.Ledger/LedgerEntryCurrency.cs#L66) | Which side of the leg carries the amount, mirroring the functional debit/credit. |
 
 ## LedgerFinancialReportPack
 
@@ -831,161 +1095,3 @@ Declared public members:
 | <code>public Guid? SecurityId { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:97](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L97) | Optional Security Master identity for this lot. When present, the relief engine can be fed day-count, factor, and corporate-action basis adjustments sourced from the master (see LedgerTaxLotBasisAdjustment), linking cost-basis accounting to authoritative reference data instead of relying on quantity/unit-cost alone. |
 | <code>public DateOnly? HoldingPeriodStartDate { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:105](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L105) | Holding-period start carried onto this lot by a prior wash sale, when one applied. Under IRC §1223(3) a replacement lot inherits the disallowed sale&#x27;s holding period, so a lot that absorbed a wash sale starts its clock before it was actually acquired. Null for a lot whose holding period simply starts at AcquiredDate. |
 | <code>public DateOnly HoldingPeriodStart =&gt; …;</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:111](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L111) | The date the lot&#x27;s holding period actually starts: HoldingPeriodStartDate when a wash sale extended it, otherwise AcquiredDate. |
-
-## LedgerTaxLotBasisAdjuster
-
-Qualified name: <code>Meridian.Ledger.LedgerTaxLotBasisAdjuster</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs:11](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs#L11).
-
-Applies reference-data-derived LedgerTaxLotBasisAdjustments to open tax lots, producing the effective lots the relief engine relieves against. This is the seam that lets day-count (amortized cost), factor (pool paydown), and corporate-action (split, return of capital) economics from the Security Master flow into cost-basis accounting.
-
-```csharp
-public static class LedgerTaxLotBasisAdjuster
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;LedgerTaxLot&gt; Apply(IReadOnlyList&lt;LedgerTaxLot&gt; openLots, IReadOnlyList&lt;LedgerTaxLotBasisAdjustment&gt; adjustments);</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs:20](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs#L20) | Returns openLots restated by adjustments. Adjustments are applied per lot in LedgerTaxLotBasisAdjustment.EffectiveDate order; a lot whose quantity is reduced to zero or below (a full factor paydown or reverse split) is dropped from the effective set. When adjustments is empty the original lots are returned unchanged. |
-
-## LedgerTaxLotBasisAdjustment
-
-Qualified name: <code>Meridian.Ledger.LedgerTaxLotBasisAdjustment</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs:35](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs#L35).
-
-A single reference-data-derived cost-basis adjustment applied to open tax lots before realized-gain relief. The adjustment is intentionally numeric and Security-Master-agnostic: the application layer reads day-count, factor, and corporate-action data from the master and projects it into these primitives, keeping the ledger relief engine free of reference-data dependencies.
-
-```csharp
-public sealed record LedgerTaxLotBasisAdjustment(LedgerTaxLotBasisAdjustmentKind Kind, decimal Value, DateOnly EffectiveDate, Guid? SecurityId = null, string? LotId = null, string? Reference = null, DateOnly? HoldingPeriodCarryDate = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerTaxLotBasisAdjustment EnsureValid();</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs:45](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs#L45) | Validates the Value magnitude against the Kind. |
-| <code>public bool AppliesTo(LedgerTaxLot lot);</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs:67](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs#L67) | Returns true when this adjustment applies to lot. |
-
-## LedgerTaxLotBasisAdjustmentKind
-
-Qualified name: <code>Meridian.Ledger.LedgerTaxLotBasisAdjustmentKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs:9](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs#L9).
-
-The kind of cost-basis adjustment applied to an open LedgerTaxLot before realized-gain relief. Each kind fixes the meaning of LedgerTaxLotBasisAdjustment.Value so the relief engine can consume reference-data-derived adjustments without depending on Security Master contracts.
-
-```csharp
-public enum LedgerTaxLotBasisAdjustmentKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Split</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs:17](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs#L17) | Share-count restatement from a forward or reverse split. LedgerTaxLotBasisAdjustment.Value is the split ratio R (new shares per old share; forward split R&gt;1, reverse split 0&lt;R&lt;1). Quantity is multiplied by R and unit cost is divided by R, preserving total basis. |
-| <code>ReturnOfCapital</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs:24](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs#L24) | Return-of-capital distribution that reduces cost basis rather than recognizing income. LedgerTaxLotBasisAdjustment.Value is the per-unit capital returned; unit cost is reduced by that amount (floored at zero). |
-| <code>Factor</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs:33](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs#L33) | Pool-factor restatement for amortizing debt (MBS/ABS/loans). LedgerTaxLotBasisAdjustment.Value is the factor ratio applied to the lot&#x27;s outstanding face (current factor ÷ prior factor, 0&lt;ratio≤1). Quantity (face) is scaled by the ratio while unit cost is unchanged, so basis is relieved in proportion to the principal paid down. Lots are assumed to be recorded at their prior-factor face. |
-| <code>Amortization</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs:41](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs#L41) | Premium amortization / discount accretion of a fixed-income lot toward par. LedgerTaxLotBasisAdjustment.Value is the signed per-unit change applied to unit cost: negative amortizes a premium down toward par, positive accretes a discount up toward par (floored at zero). |
-| <code>WashSale</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs:52](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs#L52) | A wash-sale loss deferred from an earlier disposal and capitalized into this replacement lot under IRC §1091(d). LedgerTaxLotBasisAdjustment.Value is the total (not per-unit) disallowed amount added to the lot&#x27;s basis, spread across the lot&#x27;s quantity, and LedgerTaxLotBasisAdjustment.HoldingPeriodCarryDate carries the disallowed sale&#x27;s holding-period start onto the replacement under §1223(3). Unlike the reference-data kinds this adjustment targets one named lot and applies whether the replacement was acquired before or after the sale, because the §1091 window is symmetric. |
-
-## LedgerTaxLotDisposalHistory
-
-Qualified name: <code>Meridian.Ledger.LedgerTaxLotDisposalHistory</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs:30](../../../../src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs#L30).
-
-A disposal as retained in durable tax-lot history, with enough of the original economics to rebuild the relief projection that produced it.
-
-```csharp
-public sealed record LedgerTaxLotDisposalHistory(Guid MutationBatchId, Guid JournalEntryId, LedgerAccount Account, DateOnly SaleDate, LedgerTaxLotReliefMethod ReliefMethod, IReadOnlyList<LedgerTaxLotDisposalHistoryLot> Lots, decimal RecognizedGainOrLoss, IReadOnlyList<WashSaleBasisIncrease> WashSaleBasisIncreases, decimal MatchedReplacementQuantity, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? ProceedsAllocationVersion = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? SalePrice = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal DisallowedWashSaleLoss =&gt; …;</code> | [src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs:46](../../../../src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs#L46) | Total wash-sale loss deferred out of this disposal. |
-
-## LedgerTaxLotDisposalHistoryLot
-
-Qualified name: <code>Meridian.Ledger.LedgerTaxLotDisposalHistoryLot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs:11](../../../../src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs#L11).
-
-One lot relieved by a retained disposal, as recorded at the time it was booked.
-
-```csharp
-public sealed record LedgerTaxLotDisposalHistoryLot(string LotId, DateOnly AcquiredDate, DateOnly HoldingPeriodStart, decimal Quantity, decimal UnitCost, decimal CostBasis);
-```
-
-## LedgerTaxLotReliefHistoryProjector
-
-Qualified name: <code>Meridian.Ledger.LedgerTaxLotReliefHistoryProjector</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs:60](../../../../src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs#L60).
-
-Rebuilds LedgerTaxLotReliefProjections from retained disposal history so a governed report pack can carry real realized-gain rows. The pack&#x27;s tax-lot artifact accepts projections but production never supplied any, so it shipped as a header with no rows — including a DisallowedWashSaleLoss column that could never report anything. This projector closes that gap from durable history rather than requiring the original in-memory projection to have been kept.
-
-```csharp
-public static class LedgerTaxLotReliefHistoryProjector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static LedgerTaxLotReliefProjection? Project(LedgerTaxLotDisposalHistory history);</code> | [src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs:68](../../../../src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs#L68) | Rebuilds one disposal&#x27;s projection, or returns null when the retained economics cannot produce a well-formed one. Returning null rather than throwing is deliberate: a report pack must not fail to generate because a single historical row is unreconstructable — the caller reports the omission instead. |
-
-## LedgerTaxLotReliefInput
-
-Qualified name: <code>Meridian.Ledger.LedgerTaxLotReliefInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/LedgerTaxLotReliefInput.cs:6](../../../../src/Meridian.Ledger/LedgerTaxLotReliefInput.cs#L6).
-
-Sale input used to relieve tax lots and project realized gain/loss accounting lines.
-
-```csharp
-public sealed record LedgerTaxLotReliefInput
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerTaxLotReliefInput(LedgerAccount account, DateOnly saleDate, decimal quantitySold, decimal salePrice, LedgerTaxLotReliefMethod reliefMethod, IReadOnlyList&lt;LedgerTaxLot&gt; openLots, string? financialAccountId = null, IReadOnlyList&lt;string&gt;? specificLotIds = null, IReadOnlyList&lt;LedgerTaxLotBasisAdjustment&gt;? basisAdjustments = null, WashSalePolicy? washSalePolicy = null, IReadOnlyList&lt;WashSaleReplacementAcquisition&gt;? replacementAcquisitions = null);</code> | [src/Meridian.Ledger/LedgerTaxLotReliefInput.cs:8](../../../../src/Meridian.Ledger/LedgerTaxLotReliefInput.cs#L8) |  |
-| <code>public LedgerAccount Account { get; }</code> | [src/Meridian.Ledger/LedgerTaxLotReliefInput.cs:54](../../../../src/Meridian.Ledger/LedgerTaxLotReliefInput.cs#L54) |  |
-| <code>public DateOnly SaleDate { get; }</code> | [src/Meridian.Ledger/LedgerTaxLotReliefInput.cs:56](../../../../src/Meridian.Ledger/LedgerTaxLotReliefInput.cs#L56) |  |
-| <code>public decimal QuantitySold { get; }</code> | [src/Meridian.Ledger/LedgerTaxLotReliefInput.cs:58](../../../../src/Meridian.Ledger/LedgerTaxLotReliefInput.cs#L58) |  |
-| <code>public decimal SalePrice { get; }</code> | [src/Meridian.Ledger/LedgerTaxLotReliefInput.cs:60](../../../../src/Meridian.Ledger/LedgerTaxLotReliefInput.cs#L60) |  |
-| <code>public LedgerTaxLotReliefMethod ReliefMethod { get; }</code> | [src/Meridian.Ledger/LedgerTaxLotReliefInput.cs:62](../../../../src/Meridian.Ledger/LedgerTaxLotReliefInput.cs#L62) |  |
-| <code>public IReadOnlyList&lt;LedgerTaxLot&gt; OpenLots { get; }</code> | [src/Meridian.Ledger/LedgerTaxLotReliefInput.cs:64](../../../../src/Meridian.Ledger/LedgerTaxLotReliefInput.cs#L64) |  |
-| <code>public string? FinancialAccountId { get; }</code> | [src/Meridian.Ledger/LedgerTaxLotReliefInput.cs:66](../../../../src/Meridian.Ledger/LedgerTaxLotReliefInput.cs#L66) |  |
-| <code>public IReadOnlyList&lt;string&gt; SpecificLotIds { get; }</code> | [src/Meridian.Ledger/LedgerTaxLotReliefInput.cs:68](../../../../src/Meridian.Ledger/LedgerTaxLotReliefInput.cs#L68) |  |
-| <code>public IReadOnlyList&lt;LedgerTaxLotBasisAdjustment&gt; BasisAdjustments { get; }</code> | [src/Meridian.Ledger/LedgerTaxLotReliefInput.cs:75](../../../../src/Meridian.Ledger/LedgerTaxLotReliefInput.cs#L75) | Reference-data-derived cost-basis adjustments (day-count amortization, pool factor, and corporate-action restatements) applied to OpenLots before relief. Empty when the sale relieves lots at their recorded quantity and unit cost. |
-| <code>public WashSalePolicy WashSalePolicy { get; }</code> | [src/Meridian.Ledger/LedgerTaxLotReliefInput.cs:81](../../../../src/Meridian.Ledger/LedgerTaxLotReliefInput.cs#L81) | Wash-sale deferral policy. Defaults to WashSalePolicy.Disabled, in which case realized losses are recognized in full and relief behaves exactly as before. |
-| <code>public IReadOnlyList&lt;WashSaleReplacementAcquisition&gt; ReplacementAcquisitions { get; }</code> | [src/Meridian.Ledger/LedgerTaxLotReliefInput.cs:88](../../../../src/Meridian.Ledger/LedgerTaxLotReliefInput.cs#L88) | Candidate replacement acquisitions of the sold security considered for wash-sale matching. The relief engine filters these to acquisitions within the WashSalePolicy window and matching the sold security; empty when no wash-sale evaluation is required. |
-
-## LedgerTaxLotReliefMethod
-
-Qualified name: <code>Meridian.Ledger.LedgerTaxLotReliefMethod</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ledger/LedgerTaxLotReliefMethod.cs:6](../../../../src/Meridian.Ledger/LedgerTaxLotReliefMethod.cs#L6).
-
-Cost-basis relief method selected for a ledger account.
-
-```csharp
-public enum LedgerTaxLotReliefMethod
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Fifo</code> | [src/Meridian.Ledger/LedgerTaxLotReliefMethod.cs:9](../../../../src/Meridian.Ledger/LedgerTaxLotReliefMethod.cs#L9) | First in, first out; oldest lots are relieved first. |
-| <code>Lifo</code> | [src/Meridian.Ledger/LedgerTaxLotReliefMethod.cs:12](../../../../src/Meridian.Ledger/LedgerTaxLotReliefMethod.cs#L12) | Last in, first out; newest lots are relieved first. |
-| <code>Hifo</code> | [src/Meridian.Ledger/LedgerTaxLotReliefMethod.cs:15](../../../../src/Meridian.Ledger/LedgerTaxLotReliefMethod.cs#L15) | Highest in, first out; highest cost-basis lots are relieved first. |
-| <code>SpecificId</code> | [src/Meridian.Ledger/LedgerTaxLotReliefMethod.cs:18](../../../../src/Meridian.Ledger/LedgerTaxLotReliefMethod.cs#L18) | Specific identification; selected lot IDs determine relief order. |
-| <code>AverageCost</code> | [src/Meridian.Ledger/LedgerTaxLotReliefMethod.cs:26](../../../../src/Meridian.Ledger/LedgerTaxLotReliefMethod.cs#L26) | Average cost; every open lot is pooled into a single average unit cost and each sold share is relieved at that pooled cost. Lots are still depleted in acquisition order so lot-closing and holding-period tracking stay deterministic, but the cost basis is the pooled average rather than any individual lot&#x27;s recorded unit cost. |

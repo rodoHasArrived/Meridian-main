@@ -12,7 +12,6 @@ import { SinglePrincipalAttestationPanel } from "@/components/meridian/single-pr
 import { PreparerAttestationEvidence } from "@/components/meridian/preparer-attestation-evidence";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
-import { evidenceStatusToneToTextClass, readinessToneToBadgeVariant } from "@/lib/shared-tone-mappings";
 import { EvidenceList, EvidenceSlaRows } from "@/screens/evidence-workbench-assurance-lists";
 import {
   useEvidenceLineageSelectionViewModel,
@@ -44,6 +43,7 @@ import type {
   EvidenceVaultIntakeRequest
 } from "@/types";
 import { eyebrowClassName } from "@/design-system/label-case";
+import { statusBadgeVariant, statusTextClass } from "@/design-system/status-styles";
 
 const actionBadgeVariant: Record<EvidencePacketActionTone, "success" | "warning" | "danger" | "outline"> = {
   primary: "outline",
@@ -131,7 +131,7 @@ export function EvidenceWorkbenchScreen() {
           ) : null}
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <Badge variant={readinessToneToBadgeVariant(vm.statusTone)} dot>{vm.statusLabel}</Badge>
+          <Badge variant={statusBadgeVariant(vm.statusTone)} dot>{vm.statusLabel}</Badge>
           <Badge variant="outline">{vm.scoreLabel}</Badge>
           <Badge variant="outline">{vm.generatedLabel}</Badge>
           {vm.sourceWorkflowHref && vm.sourceWorkflowLabel && vm.sourceWorkflowAriaLabel ? (
@@ -421,7 +421,7 @@ export function EvidenceWorkbenchScreen() {
                                 <ListChecks className="h-3.5 w-3.5" aria-hidden="true" />
                                 <span>{requestList.requestListKindLabel}</span>
                                 <Badge variant="outline">{requestList.requestListFamilyLabel}</Badge>
-                                <Badge variant={readinessToneToBadgeVariant(requestList.highestSeverityTone)}>{requestList.highestSeverityLabel}</Badge>
+                                <Badge variant={statusBadgeVariant(requestList.highestSeverityTone)}>{requestList.highestSeverityLabel}</Badge>
                                 <Badge variant="outline">{requestList.statusLabel}</Badge>
                               </div>
                               <p className="mt-1 text-xs leading-5 text-primary/90">{requestList.summary}</p>
@@ -448,7 +448,7 @@ export function EvidenceWorkbenchScreen() {
                               <div className="flex flex-wrap items-center gap-2 font-semibold">
                                 <ListChecks className="h-3.5 w-3.5" aria-hidden="true" />
                                 <span>{request.requestKindLabel}</span>
-                                <Badge variant={readinessToneToBadgeVariant(request.severityTone)}>{request.severityLabel}</Badge>
+                                <Badge variant={statusBadgeVariant(request.severityTone)}>{request.severityLabel}</Badge>
                                 <Badge variant="outline">{request.statusLabel}</Badge>
                               </div>
                               <p className="mt-1 text-xs leading-5 text-primary/90">{request.summary}</p>
@@ -634,7 +634,7 @@ function EvidenceMetric({ label, value, tone = "muted" }: { label: string; value
   return (
     <div className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2">
       <div className={eyebrowClassName(label)}>{label}</div>
-      <div className={cn("mt-1 font-mono tabular-nums text-lg font-semibold", evidenceStatusToneToTextClass(tone))}>{value}</div>
+      <div className={cn("mt-1 font-mono tabular-nums text-lg font-semibold", statusTextClass(tone))}>{value}</div>
     </div>
   );
 }
@@ -651,7 +651,7 @@ function EvidenceProofChainPanel({ panel }: { panel: EvidenceProofChainPanelView
             </CardTitle>
             <CardDescription>{panel.summaryLabel}</CardDescription>
           </div>
-          <Badge variant={readinessToneToBadgeVariant(panel.statusTone)}>{panel.statusLabel}</Badge>
+          <Badge variant={statusBadgeVariant(panel.statusTone)}>{panel.statusLabel}</Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -667,7 +667,7 @@ function EvidenceProofChainPanel({ panel }: { panel: EvidenceProofChainPanelView
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-semibold text-foreground">{row.label}</span>
                   <span className="flex flex-wrap gap-2">
-                    <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                     <Badge variant="outline">{row.coverageLabel}</Badge>
                   </span>
                 </div>
@@ -759,7 +759,7 @@ const nodeColumns: DenseDataTableColumn<EvidenceNodeRowViewModel>[] = [
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+    render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
   },
   {
     id: "source",
@@ -771,7 +771,7 @@ const nodeColumns: DenseDataTableColumn<EvidenceNodeRowViewModel>[] = [
     id: "freshness",
     label: "Freshness",
     className: "min-w-[9rem]",
-    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.freshnessTone)}>{row.freshnessLabel}</Badge>
+    render: (row) => <Badge variant={statusBadgeVariant(row.freshnessTone)}>{row.freshnessLabel}</Badge>
   },
   {
     id: "artifacts",
@@ -797,8 +797,8 @@ function EvidenceNodeDetailPanel({ detail, id }: { detail: EvidenceNodeDetailVie
       <div className="head flex flex-wrap items-center justify-between gap-2">
         <span>{detail.eyebrow}</span>
         <span className="flex flex-wrap gap-2">
-          <Badge variant={readinessToneToBadgeVariant(detail.statusTone)}>{detail.statusLabel}</Badge>
-          <Badge variant={readinessToneToBadgeVariant(detail.freshnessTone)}>{detail.freshnessLabel}</Badge>
+          <Badge variant={statusBadgeVariant(detail.statusTone)}>{detail.statusLabel}</Badge>
+          <Badge variant={statusBadgeVariant(detail.freshnessTone)}>{detail.freshnessLabel}</Badge>
         </span>
       </div>
       <div className="body space-y-4">
@@ -1312,8 +1312,8 @@ function EvidenceVaultDocumentQueueItem({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 font-semibold text-foreground">
             <span className="break-all">{document.fileName}</span>
-            <Badge variant={readinessToneToBadgeVariant(document.extractionTone)}>{document.extractionLabel}</Badge>
-            <Badge variant={readinessToneToBadgeVariant(document.reviewTone)}>{document.reviewLabel}</Badge>
+            <Badge variant={statusBadgeVariant(document.extractionTone)}>{document.extractionLabel}</Badge>
+            <Badge variant={statusBadgeVariant(document.reviewTone)}>{document.reviewLabel}</Badge>
           </div>
           <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{document.classificationLabel}</div>
         </div>
@@ -1368,7 +1368,7 @@ function EvidenceVaultDocumentDetailPanel({ detail }: { detail: EvidenceVaultDoc
           <p className="mt-1 text-sm text-muted-foreground">{detail.subtitle}</p>
         </div>
         <div className="flex flex-wrap justify-end gap-2">
-          <Badge variant={readinessToneToBadgeVariant(detail.statusTone)}>{detail.statusLabel}</Badge>
+          <Badge variant={statusBadgeVariant(detail.statusTone)}>{detail.statusLabel}</Badge>
           <Button
             type="button"
             variant="outline"
@@ -1444,7 +1444,7 @@ function EvidenceVaultDocumentReviewFields({ detail }: { detail: EvidenceVaultDo
             <li key={field.id} aria-label={field.ariaLabel} className="rounded-sm border border-border/60 bg-background/40 px-2 py-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-semibold text-foreground">{field.fieldLabel}</span>
-                <Badge variant={readinessToneToBadgeVariant(field.statusTone)}>{field.statusLabel}</Badge>
+                <Badge variant={statusBadgeVariant(field.statusTone)}>{field.statusLabel}</Badge>
                 <Badge variant="outline">{field.reviewStateLabel}</Badge>
               </div>
               <div className="mt-2 grid gap-1 font-mono text-muted-foreground">
@@ -1522,7 +1522,7 @@ function EvidenceVaultDocumentSupportRequests({ detail }: { detail: EvidenceVaul
             <li key={request.id} aria-label={request.ariaLabel} className="rounded-sm border border-border/60 bg-background/40 px-2 py-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-semibold text-foreground">{request.requestKindLabel}</span>
-                <Badge variant={readinessToneToBadgeVariant(request.severityTone)}>{request.severityLabel}</Badge>
+                <Badge variant={statusBadgeVariant(request.severityTone)}>{request.severityLabel}</Badge>
               </div>
               <p className="mt-1 leading-5">{request.summary}</p>
               <TechnicalDetails label="Technical details" className="mt-2">
@@ -1579,7 +1579,7 @@ function EvidenceVaultRequestListPanel({ panel }: { panel: EvidenceVaultRequestL
                     <div className="flex flex-wrap items-center gap-2 font-semibold text-foreground">
                       <span>{requestList.requestListKindLabel}</span>
                       <Badge variant="outline">{requestList.requestListFamilyLabel}</Badge>
-                      <Badge variant={readinessToneToBadgeVariant(requestList.highestSeverityTone)}>{requestList.highestSeverityLabel}</Badge>
+                      <Badge variant={statusBadgeVariant(requestList.highestSeverityTone)}>{requestList.highestSeverityLabel}</Badge>
                       <Badge variant="outline">{requestList.statusLabel}</Badge>
                     </div>
                     <div className="mt-1 text-xs font-medium text-muted-foreground">Selected subject · {panel.scopeLabel}</div>
@@ -1639,7 +1639,7 @@ function EvidenceVaultRequestListPanel({ panel }: { panel: EvidenceVaultRequestL
                       >
                         <div className="flex flex-wrap items-center gap-2 font-semibold text-foreground">
                           <span>{request.requestKindLabel}</span>
-                          <Badge variant={readinessToneToBadgeVariant(request.severityTone)}>{request.severityLabel}</Badge>
+                          <Badge variant={statusBadgeVariant(request.severityTone)}>{request.severityLabel}</Badge>
                           <Badge variant="outline">{request.statusLabel}</Badge>
                         </div>
                         <p className="mt-1 leading-5 text-muted-foreground">{request.summary}</p>
@@ -1784,7 +1784,7 @@ function EvidenceAssurancePanel({ panel }: { panel: EvidenceAssurancePanelViewMo
             </CardTitle>
             <CardDescription>{panel.summaryLabel}</CardDescription>
           </div>
-          <Badge variant={readinessToneToBadgeVariant(panel.statusTone)}>{panel.scoreLabel}</Badge>
+          <Badge variant={statusBadgeVariant(panel.statusTone)}>{panel.scoreLabel}</Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -1793,7 +1793,7 @@ function EvidenceAssurancePanel({ panel }: { panel: EvidenceAssurancePanelViewMo
           <EvidenceMetric label="No orphan rule" value={panel.orphanSummaryLabel} tone={panel.orphanTone} />
         </div>
         <div className="flex flex-wrap gap-2">
-          <Badge variant={readinessToneToBadgeVariant(panel.orphanTone)}>{panel.noOrphanRuleLabel}</Badge>
+          <Badge variant={statusBadgeVariant(panel.orphanTone)}>{panel.noOrphanRuleLabel}</Badge>
           <Badge variant="outline">{panel.validationIssueLabel}</Badge>
         </div>
         {panel.componentRows.length > 0 ? (
@@ -1807,7 +1807,7 @@ function EvidenceAssurancePanel({ panel }: { panel: EvidenceAssurancePanelViewMo
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-semibold text-foreground">{component.label}</span>
                   <span className="flex flex-wrap gap-2">
-                    <Badge variant={readinessToneToBadgeVariant(component.statusTone)}>{component.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(component.statusTone)}>{component.statusLabel}</Badge>
                     <Badge variant="outline">{component.scoreLabel}</Badge>
                   </span>
                 </div>

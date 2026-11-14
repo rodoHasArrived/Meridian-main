@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AnalysisExportWizardPage
+
+Qualified name: <code>Meridian.Wpf.Views.AnalysisExportWizardPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/AnalysisExportWizardPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/AnalysisExportWizardPage.xaml.cs#L10).
+
+Provides the desktop page to configure analysis export steps with guided prompts.
+
+```csharp
+public partial class AnalysisExportWizardPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AnalysisExportWizardPage();</code> | [src/Meridian.Wpf/Views/AnalysisExportWizardPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/AnalysisExportWizardPage.xaml.cs#L14) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:42](../../../../src/Meridian.Wpf/Views/Pages.cs#L42).
+
+```csharp
+public partial class AnalysisExportWizardPage : Page
+```
+
+## ApiKeyDialog
+
+Qualified name: <code>Meridian.Wpf.Views.ApiKeyDialog</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs:11](../../../../src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs#L11).
+
+Dialog for entering or updating an API key for a provider. Replaces the former imperative ApiKeyDialog Window class that was embedded in BackfillPage.xaml.cs.
+
+```csharp
+public partial class ApiKeyDialog : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ApiKey =&gt; …;</code> | [src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs:14](../../../../src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs#L14) | Gets the API key entered by the user. |
+| <code>public ApiKeyDialog(string providerName, string envVarName, bool isOptional = false);</code> | [src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs:16](../../../../src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs#L16) |  |
+
 ## ArchiveHealthPage
 
 Qualified name: <code>Meridian.Wpf.Views.ArchiveHealthPage</code>. Kind: `class`.
@@ -1001,13 +1044,13 @@ public partial class LiveDataViewerPage : Page
 
 Qualified name: <code>Meridian.Wpf.Views.MainPage</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/MainPage.SplitPane.cs:9](../../../../src/Meridian.Wpf/Views/MainPage.SplitPane.cs#L9).
+Source: [src/Meridian.Wpf/Views/MainPage.SplitPane.cs:15](../../../../src/Meridian.Wpf/Views/MainPage.SplitPane.cs#L15).
 
 ```csharp
 public partial class MainPage
 ```
 
-Source: [src/Meridian.Wpf/Views/MainPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L17).
+Source: [src/Meridian.Wpf/Views/MainPage.xaml.cs:19](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L19).
 
 Hosts the desktop navigation frame, workspace chrome, and command-palette overlay.
 
@@ -1019,10 +1062,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public MainPage(MainPageViewModel viewModel, IShellNavigationCoordinator? shellNavigationCoordinator = null);</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:24](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L24) |  |
-| <code>public void ShowCommandPaletteOverlay();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:86](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L86) |  |
-| <code>public Task WaitForShellReadyAsync();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:92](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L92) |  |
-| <code>public bool NavigateToLaunchPage(string pageTag);</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:102](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L102) |  |
+| <code>public MainPage(MainPageViewModel viewModel, IShellNavigationCoordinator? shellNavigationCoordinator = null);</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:27](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L27) |  |
+| <code>public void ShowCommandPaletteOverlay();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:149](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L149) |  |
+| <code>public Task WaitForShellReadyAsync();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:155](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L155) |  |
+| <code>public bool NavigateToLaunchPage(string pageTag);</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:165](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L165) |  |
 
 ## MeridianDockingManager
 
@@ -1053,52 +1096,4 @@ Source: [src/Meridian.Wpf/Views/Pages.cs:114](../../../../src/Meridian.Wpf/Views
 
 ```csharp
 public partial class MeridianDockingManager : UserControl
-```
-
-## MessagingHubPage
-
-Qualified name: <code>Meridian.Wpf.Views.MessagingHubPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/MessagingHubPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/MessagingHubPage.xaml.cs#L13).
-
-Messaging Hub page — thin code-behind. All state, timer management, and statistics live in MessagingHubViewModel.
-
-```csharp
-public partial class MessagingHubPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public MessagingHubPage(WpfServices.MessagingService messagingService);</code> | [src/Meridian.Wpf/Views/MessagingHubPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/MessagingHubPage.xaml.cs#L17) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:62](../../../../src/Meridian.Wpf/Views/Pages.cs#L62).
-
-```csharp
-public partial class MessagingHubPage : Page
-```
-
-## NotificationCenterPage
-
-Qualified name: <code>Meridian.Wpf.Views.NotificationCenterPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/NotificationCenterPage.xaml.cs:19](../../../../src/Meridian.Wpf/Views/NotificationCenterPage.xaml.cs#L19).
-
-Notification Center page for viewing and managing all application notifications. Code-behind handles only: DI wiring, alert group card building (uses FindResource), playbook display, and snooze/suppress actions.
-
-```csharp
-public partial class NotificationCenterPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public NotificationCenterPage(WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/NotificationCenterPage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/NotificationCenterPage.xaml.cs#L25) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:96](../../../../src/Meridian.Wpf/Views/Pages.cs#L96).
-
-```csharp
-public partial class NotificationCenterPage : Page
 ```

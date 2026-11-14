@@ -60,8 +60,13 @@ import { CoverageGapsRegion, DataQualityRegion } from "@/screens/data-screen.dat
 import { DataOverviewHub, RouteFocusCard } from "@/screens/data-screen-navigation-panels";
 import { CanonicalSymbolRegistryRegion } from "@/screens/data-screen.canonical-symbols";
 import { ProviderAccountingRegion } from "@/screens/data-screen.provider-accounting";
+import { FailoverRegion } from "@/screens/data-screen.failover";
+import { BackfillProviderEditorRegion } from "@/screens/data-screen.backfill-provider-editor";
+import { DataRoutingPreviewPanel } from "@/screens/data-screen.routing-preview";
+import { ProviderValidationPanel } from "@/screens/data-screen.provider-validation";
+import { RateLimitHistoryPanel } from "@/screens/data-screen.rate-limit-history";
+import { SettingsChangeImpactBanner } from "@/screens/settings-change-impact";
 import { DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
-import { resultToneClass } from "@/screens/data-screen.tone-styles";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
 import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
 import {
@@ -95,6 +100,7 @@ import type {
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
+import { statusPanelClass, statusTextClass } from "@/design-system/status-styles";
 
 interface DataScreenProps {
   data: DataWorkspaceResponse | null;
@@ -288,6 +294,7 @@ export function DataScreen({
       </section>
 
       <StatStrip metrics={applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, providers: data.providers }))} label="Data headline metrics" source="Data workspace" figureSource="data" />
+      {showProviderWorkstream ? <SettingsChangeImpactBanner /> : null}
 
       {showHealthMonitoring ? (
         <div className="space-y-4">
@@ -458,6 +465,16 @@ export function DataScreen({
             )}
           </CardContent>
         </section>
+        ) : null}
+
+        {showProviderWorkstream ? (
+          <>
+            <FailoverRegion />
+            <BackfillProviderEditorRegion />
+            <DataRoutingPreviewPanel />
+            <ProviderValidationPanel />
+            <RateLimitHistoryPanel />
+          </>
         ) : null}
 
         {showBackfillWorkstream ? <DataBackfillWorkstream vm={vm} /> : null}
@@ -1895,7 +1912,7 @@ function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
     <div
       role="status"
       aria-label={state.ariaLabel}
-      className={cn("mt-4 rounded-md border p-3 text-sm", resultToneClass[state.tone])}
+      className={cn("mt-4 rounded-md border p-3 text-sm", cn(statusPanelClass(state.tone), statusTextClass(state.tone)))}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="font-semibold">{state.title}</div>

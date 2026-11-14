@@ -143,7 +143,12 @@ public sealed record StrategyRunExecutionSummary(
     bool HasPortfolio,
     bool HasLedger,
     bool HasAuditTrail,
-    string? AuditReference);
+    string? AuditReference)
+{
+    public string? FinancingCoverageStatus { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
+    public decimal? RunAttributedMarginInterest { get; init; }
+}
 
 /// <summary>
 /// Shared promotion summary used by Strategy, Trading, and Accounting workflows.
@@ -559,7 +564,12 @@ public sealed record PortfolioSummary(
     string? RuleId = null,
     string? RuleVersion = null,
     string? SourceEventId = null,
-    Guid? SourceJournalEntryId = null);
+    Guid? SourceJournalEntryId = null)
+{
+    public string? FinancingCoverageStatus { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
+    public decimal? RunAttributedMarginInterest { get; init; }
+}
 
 /// <summary>
 /// Shared position row for workstation portfolio views.
@@ -671,7 +681,12 @@ public sealed record StrategyRunComparison(
     bool HasLedger = false,
     bool HasAuditTrail = false,
     IReadOnlyList<string>? CompatibilityWarnings = null,
-    StrategyRunArtifactCompleteness? ArtifactCompleteness = null);
+    StrategyRunArtifactCompleteness? ArtifactCompleteness = null)
+{
+    public string? FinancingCoverageStatus { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
+    public decimal? RunAttributedMarginInterest { get; init; }
+}
 
 /// <summary>
 /// Completeness indicator for run artifacts used by comparison workflows.
@@ -799,7 +814,12 @@ public sealed record RunComparisonDto(
     string LedgerCoverageStatus = "Missing",
     string CashFlowHealth = "Missing",
     IReadOnlyList<string>? CompatibilityWarnings = null,
-    StrategyRunArtifactCompleteness? ArtifactCompleteness = null);
+    StrategyRunArtifactCompleteness? ArtifactCompleteness = null)
+{
+    public string? FinancingCoverageStatus { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
+    public decimal? RunAttributedMarginInterest { get; init; }
+}
 
 /// <summary>Request to compare multiple strategy runs side by side.</summary>
 public sealed record RunComparisonRequest(

@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IQuantScriptLayoutService
+
+Qualified name: <code>Meridian.Wpf.Services.IQuantScriptLayoutService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs:6](../../../../src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs#L6).
+
+Persists and restores the QuantScript page layout (chart/editor row heights and active tab).
+
+```csharp
+public interface IQuantScriptLayoutService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>(double ChartHeight, double EditorHeight) LoadRowHeights();</code> | [src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs:8](../../../../src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs#L8) |  |
+| <code>void SaveRowHeights(double chartHeight, double editorHeight);</code> | [src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs:9](../../../../src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs#L9) |  |
+| <code>int LoadLastActiveTab();</code> | [src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs:10](../../../../src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs#L10) |  |
+| <code>void SaveLastActiveTab(int tabIndex);</code> | [src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs:11](../../../../src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs#L11) |  |
+
 ## ISecurityAssetProfileWorkflowClient
 
 Qualified name: <code>Meridian.Wpf.Services.ISecurityAssetProfileWorkflowClient</code>. Kind: `interface`.
@@ -702,15 +723,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static NavigationService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:56](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L56) | Gets the singleton instance of the NavigationService. |
-| <code>public bool IsInitialized =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:59](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L59) |  |
-| <code>public override bool CanGoBack =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:62](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L62) |  |
-| <code>public void SetServiceProvider(IServiceProvider serviceProvider);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:72](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L72) | Sets the DI service provider used to resolve page instances. Called once during application startup after the DI container is built. |
-| <code>public void Initialize(Frame frame) =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:80](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L80) | Initializes the navigation service with the main frame. |
-| <code>public void Initialize(Frame frame, WorkspaceChromePresentationMode presentationMode);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:83](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L83) |  |
-| <code>public void ResetForTests();</code> | [src/Meridian.Wpf/Services/NavigationService.cs:92](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L92) | Clears frame and DI state so WPF tests can start from a known navigation baseline. |
-| <code>public FrameworkElement CreatePageContent(string pageTag, object? parameter = null, WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked, IServiceScope? workspaceScope = null);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:120](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L120) | Creates page content without mutating the frame navigation stack. Used by workstation shells when embedding pages into dock panes. |
-| <code>public bool NavigateTo(string pageTag, object? parameter = null, IServiceScope? workspaceScope = null);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:143](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L143) | Navigates using a workspace-scoped service provider when provided. |
+| <code>public static NavigationService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:66](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L66) | Gets the singleton instance of the NavigationService. |
+| <code>public bool IsInitialized =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:69](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L69) |  |
+| <code>public override bool CanGoBack =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:72](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L72) |  |
+| <code>public void SetServiceProvider(IServiceProvider serviceProvider);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:82](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L82) | Sets the DI service provider used to resolve page instances. Called once during application startup after the DI container is built. |
+| <code>public void Initialize(Frame frame) =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:90](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L90) | Initializes the navigation service with the main frame. |
+| <code>public void Initialize(Frame frame, WorkspaceChromePresentationMode presentationMode);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:93](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L93) |  |
+| <code>public void ResetForTests();</code> | [src/Meridian.Wpf/Services/NavigationService.cs:102](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L102) | Clears frame and DI state so WPF tests can start from a known navigation baseline. |
+| <code>public FrameworkElement CreatePageContent(string pageTag, object? parameter = null, WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked, IServiceScope? workspaceScope = null);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:131](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L131) | Creates page content without mutating the frame navigation stack. Used by workstation shells when embedding pages into dock panes. |
+| <code>public bool NavigateTo(string pageTag, object? parameter = null, IServiceScope? workspaceScope = null);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:154](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L154) | Navigates using the explicit scope or the registered workspace&#x27;s retained scope. |
 
 ## NotificationService
 
@@ -1032,38 +1053,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public ReportingWorkspaceShellStateProvider(FundContextService fundContextService, WorkstationOperatingContextService? operatingContextService) : base(operatingContextService);</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:180](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L180) |  |
 | <code>public override WorkspaceShellDefinition Definition =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:188](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L188) |  |
-
-## RetentionAssuranceService
-
-Qualified name: <code>Meridian.Wpf.Services.RetentionAssuranceService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:24](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L24).
-
-Service for retention policy assurance with guardrails, legal holds, and verification. Implements Feature Refinement #23 - File Retention Assurance. This service provides WPF-specific features (legal holds, guardrails, UI persistence) and delegates file operations to the core service via HTTP API endpoints: - /api/storage/health/check - File health checks with checksum validation - /api/storage/health/orphans - Find orphaned files - /api/storage/catalog - Storage catalog for file discovery - /api/storage/search/files - Search files by criteria
-
-```csharp
-public sealed class RetentionAssuranceService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static RetentionAssuranceService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:48](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L48) |  |
-| <code>public RetentionConfiguration Configuration =&gt; …;</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:63](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L63) | Gets the current retention configuration. |
-| <code>public IReadOnlyList&lt;LegalHold&gt; LegalHolds =&gt; …;</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:68](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L68) | Gets active legal holds. |
-| <code>public IReadOnlyList&lt;RetentionAuditReport&gt; AuditReports =&gt; …;</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:73](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L73) | Gets recent audit reports. |
-| <code>public async Task LoadConfigurationAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:78](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L78) | Loads configuration from storage. |
-| <code>public async Task SaveConfigurationAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:122](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L122) | Saves configuration to storage. |
-| <code>public RetentionValidationResult ValidateRetentionPolicy(RetentionPolicy policy);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:151](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L151) | Validates a retention policy against guardrails. |
-| <code>public async Task&lt;RetentionDryRunResult&gt; PerformDryRunAsync(RetentionPolicy policy, string dataRoot, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:219](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L219) | Performs a dry run of retention cleanup using the core API for file discovery. Falls back to local scanning if the API is unavailable. |
-| <code>public async Task&lt;StorageHealthCheckResult?&gt; RunHealthCheckAsync(bool validateChecksums = true, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:361](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L361) | Runs a health check on storage via the core API. |
-| <code>public async Task&lt;OrphanFilesResult?&gt; FindOrphanedFilesAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:386](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L386) | Finds orphaned files via the core API. |
-| <code>public async Task&lt;ChecksumVerificationResult&gt; VerifyChecksumsAsync(IEnumerable&lt;FileToDelete&gt; files, string archiveManifestPath, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:545](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L545) | Verifies file checksums before deletion. |
-| <code>public async Task&lt;RetentionAuditReport&gt; ExecuteRetentionCleanupAsync(RetentionDryRunResult dryRun, bool verifyChecksums, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:601](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L601) | Executes retention cleanup with full audit trail. |
-| <code>public async Task CreateLegalHoldAsync(string name, string reason, IEnumerable&lt;string&gt; symbols, DateTime? expiresAt = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:686](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L686) | Creates a legal hold for specified symbols. |
-| <code>public async Task ReleaseLegalHoldAsync(string holdId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:712](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L712) | Releases a legal hold. |
-| <code>public HashSet&lt;string&gt; GetSymbolsUnderLegalHold();</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:728](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L728) | Gets all symbols currently under legal hold. |
-| <code>public Task&lt;string&gt; ExportAuditReportAsync(RetentionAuditReport report, string format = &quot;json&quot;);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:746](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L746) | Exports audit report to file. |
-| <code>public event EventHandler&lt;LegalHoldEventArgs&gt;? LegalHoldCreated;</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:792](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L792) | Event raised when a legal hold is created. |
-| <code>public event EventHandler&lt;LegalHoldEventArgs&gt;? LegalHoldReleased;</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:797](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L797) | Event raised when a legal hold is released. |

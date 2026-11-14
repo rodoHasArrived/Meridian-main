@@ -19,6 +19,7 @@ WEB_SCREENSHOT_ROUTES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-routes.j
 WEB_SCREENSHOT_FIXTURES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-fixtures.json"
 WEB_SCREENSHOT_CAPTURE_SCRIPT = REPO_ROOT / "scripts" / "dev" / "capture-web-screenshots.mjs"
 DESKTOP_WORKFLOWS = REPO_ROOT / "scripts" / "dev" / "desktop-workflows.json"
+DESKTOP_SCREENSHOT_PROFILE = REPO_ROOT / "scripts" / "dev" / "workflow-profiles" / "screenshot-catalog.json"
 WORKSTATION_ROUTE_CATALOG = REPO_ROOT / "src" / "Meridian.Ui" / "dashboard" / "src" / "lib" / "workspace.ts"
 WORKSTATION_APP_SHELL = REPO_ROOT / "src" / "Meridian.Ui" / "dashboard" / "src" / "app.tsx"
 ACCOUNTING_SCENARIO_PAYLOAD = REPO_ROOT / "src" / "Meridian.Ui" / "dashboard" / "src" / "scenarios" / "accounting-payload.ts"
@@ -162,7 +163,27 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("[string]$OutputRoot", self.capture_desktop_screenshots_script)
         self.assertIn("capture-{0}-{1}", self.capture_desktop_screenshots_script)
         self.assertIn("'-OutputRoot', $workflowArtifactRoot", self.capture_desktop_screenshots_script)
+        self.assertIn("'-ScreenshotDirectory', $screenshotDirectory", self.capture_desktop_screenshots_script)
         self.assertNotIn("'-OutputRoot', 'artifacts/desktop-workflows'", self.capture_desktop_screenshots_script)
+
+    def test_desktop_catalog_run_bundles_are_inside_generic_runner_artifact_upload(self) -> None:
+        profile = json.loads(DESKTOP_SCREENSHOT_PROFILE.read_text(encoding="utf-8"))
+        output_root = (REPO_ROOT / profile["screenshots"]["outputRoot"]).resolve()
+        workflow = yaml.load(self.desktop_workflow_runner, Loader=yaml.BaseLoader)
+        upload_roots = [
+            (REPO_ROOT / path.strip()).resolve()
+            for step in workflow["jobs"]["run-workflow"]["steps"]
+            if step.get("uses", "").startswith("actions/upload-artifact@")
+            for path in step["with"]["path"].splitlines()
+            if path.strip()
+        ]
+
+        self.assertTrue(
+            any(output_root.is_relative_to(upload_root) for upload_root in upload_roots),
+            f"Catalog run bundles at {output_root} would be omitted from uploads {upload_roots}",
+        )
+        catalog = next(workflow for workflow in self.desktop_workflows["workflows"] if workflow["name"] == "screenshot-catalog")
+        self.assertEqual(catalog["publish"]["directory"], "docs/screenshots/desktop")
 
     def test_desktop_workflow_runner_exposes_manual_capture_workflows(self) -> None:
         self.assertIn("manual-data", self.desktop_workflow_runner)

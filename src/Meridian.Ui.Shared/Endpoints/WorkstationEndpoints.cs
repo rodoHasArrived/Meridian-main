@@ -127,6 +127,7 @@ public static partial class WorkstationEndpoints
         MapCloseChecklistHistoryEndpoints(group, jsonOptions);
         MapApprovalCollaborationEndpoints(group, jsonOptions);
         MapWorkstationChartEvidenceEndpoints(group, jsonOptions);
+        MapRunLedgerQueryEndpoints(group);
         MapFamilyOfficeEndpoints(group);
         MapDataUploadEndpoints(group, jsonOptions);
         MapDataOperationsAssuranceEndpoints(group);
@@ -192,6 +193,7 @@ public static partial class WorkstationEndpoints
 
         MapCollateralEndpoints(group, jsonOptions);
         MapOperatorScopePreferenceEndpoints(group, jsonOptions);
+        MapScopeOptionEndpoints(group, jsonOptions);
         MapOperatorSurfaceVisitEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowPresets), async (HttpContext context) =>

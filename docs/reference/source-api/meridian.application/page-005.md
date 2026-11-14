@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderIntegrationHttpClientTransport
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationHttpClientTransport</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:14](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L14).
+
+Sends integration HTTP requests through the configured host resolver and transport safeguards.
+
+```csharp
+public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegrationHttpTransport
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static HttpClient CreateHttpClient(IProviderIntegrationHostResolver? resolver = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:17](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L17) | Creates the production client with connection-time DNS validation and address pinning. |
+| <code>public ProviderIntegrationHttpClientTransport(HttpClient httpClient, ILogger&lt;ProviderIntegrationHttpClientTransport&gt;? logger = null, IProviderIntegrationHostResolver? hostResolver = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:54](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L54) |  |
+| <code>public async Task&lt;ProviderIntegrationHttpResponse&gt; SendAsync(ProviderIntegrationHttpRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:64](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L64) |  |
+
 ## ProviderIntegrationHttpRequest
 
 Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationHttpRequest</code>. Kind: `record`.
@@ -1015,32 +1035,3 @@ Declared public members:
 | <code>public IngestionJobSummary GetSummary();</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:335](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L335) | Gets a summary of all jobs. |
 | <code>public Task&lt;bool&gt; DeleteJobAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:358](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L358) | Deletes a terminal job by ID. |
 | <code>public void Dispose();</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:411](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L411) |  |
-
-## IngestionJobSummary
-
-Qualified name: <code>Meridian.Application.Pipeline.IngestionJobSummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Pipeline/IngestionJobService.cs:423](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L423).
-
-Summary statistics for all ingestion jobs.
-
-```csharp
-public sealed class IngestionJobSummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int TotalJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:425](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L425) |  |
-| <code>public int DraftJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:426](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L426) |  |
-| <code>public int QueuedJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:427](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L427) |  |
-| <code>public int RunningJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:428](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L428) |  |
-| <code>public int PausedJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:429](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L429) |  |
-| <code>public int CompletedJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:430](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L430) |  |
-| <code>public int FailedJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:431](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L431) |  |
-| <code>public int CancelledJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:432](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L432) |  |
-| <code>public int ResumableJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:433](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L433) |  |
-| <code>public int RealtimeJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:434](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L434) |  |
-| <code>public int HistoricalJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:435](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L435) |  |
-| <code>public int GapFillJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:436](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L436) |  |

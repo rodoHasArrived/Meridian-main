@@ -6,6 +6,64 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IMarginModel
+
+Qualified name: <code>Meridian.Execution.Margin.IMarginModel</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution/Margin/IMarginModel.cs:9](../../../../src/Meridian.Execution/Margin/IMarginModel.cs#L9).
+
+Calculates margin requirements for individual positions and for the portfolio as a whole. Implementations encode brokerage-specific or regulatory margin rules.
+
+```csharp
+public interface IMarginModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string ModelName { get; }</code> | [src/Meridian.Execution/Margin/IMarginModel.cs:12](../../../../src/Meridian.Execution/Margin/IMarginModel.cs#L12) | Human-readable name of this margin model (e.g., &quot;Reg T&quot;, &quot;Portfolio Margin&quot;). |
+| <code>MarginRequirement CalculateForPosition(ExecutionPosition position, decimal lastPrice, decimal portfolioEquity);</code> | [src/Meridian.Execution/Margin/IMarginModel.cs:24](../../../../src/Meridian.Execution/Margin/IMarginModel.cs#L24) | Calculates the margin requirement for a single position described by position. |
+| <code>MarginRequirement CalculatePortfolioRequirement(IReadOnlyDictionary&lt;string, ExecutionPosition&gt; positions, IReadOnlyDictionary&lt;string, decimal&gt; prices, decimal cash);</code> | [src/Meridian.Execution/Margin/IMarginModel.cs:36](../../../../src/Meridian.Execution/Margin/IMarginModel.cs#L36) | Calculates the aggregate portfolio-level margin requirement across all open positions. |
+
+## MarginAccountType
+
+Qualified name: <code>Meridian.Execution.Margin.MarginAccountType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution/Margin/MarginAccountType.cs:6](../../../../src/Meridian.Execution/Margin/MarginAccountType.cs#L6).
+
+Classifies the margin regime of a brokerage account.
+
+```csharp
+public enum MarginAccountType
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Cash</code> | [src/Meridian.Execution/Margin/MarginAccountType.cs:11](../../../../src/Meridian.Execution/Margin/MarginAccountType.cs#L11) | Cash account — no borrowing allowed. Positions must be fully funded by available cash. |
+| <code>RegT</code> | [src/Meridian.Execution/Margin/MarginAccountType.cs:18](../../../../src/Meridian.Execution/Margin/MarginAccountType.cs#L18) | Regulation T (Reg T) margin account. FINRA/SEC rules: 50 % initial margin for long positions; 25 % maintenance margin. Short positions require 150 % of the short value as initial collateral. Buying power is up to 2× the available cash equity. |
+| <code>PortfolioMargin</code> | [src/Meridian.Execution/Margin/MarginAccountType.cs:24](../../../../src/Meridian.Execution/Margin/MarginAccountType.cs#L24) | Portfolio margin account. Risk-based margining using stress-test scenarios rather than fixed percentage requirements. Typically requires a minimum equity threshold. |
+
+## MarginCallStatus
+
+Qualified name: <code>Meridian.Execution.Margin.MarginCallStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Margin/MarginCallStatus.cs:24](../../../../src/Meridian.Execution/Margin/MarginCallStatus.cs#L24).
+
+Captures the current margin health for one account at a given point in time. Returned by Services.PaperTradingPortfolio.CheckMarginStatus.
+
+```csharp
+public sealed record MarginCallStatus(string AccountId, MarginRequirement PortfolioRequirement, IReadOnlyList<MarginRequirement> PositionRequirements, bool IsMarginCall, decimal MarginDeficiency)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static MarginCallStatus NoMarginRequired(string accountId) =&gt; …;</code> | [src/Meridian.Execution/Margin/MarginCallStatus.cs:35](../../../../src/Meridian.Execution/Margin/MarginCallStatus.cs#L35) | Convenience factory that represents a cash account or one with no open positions (no margin call possible, zero requirements). |
+
 ## MarginPriceUnavailableException
 
 Qualified name: <code>Meridian.Execution.Margin.MarginPriceUnavailableException</code>. Kind: `class`.
@@ -961,11 +1019,31 @@ Result from a Security Master gate check for an order symbol.
 public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = null);
 ```
 
+## PaperFinancingApiJsonContext
+
+Qualified name: <code>Meridian.Execution.Serialization.PaperFinancingApiJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Serialization/PaperFinancingApiJsonContext.cs:10](../../../../src/Meridian.Execution/Serialization/PaperFinancingApiJsonContext.cs#L10).
+
+```csharp
+public partial class PaperFinancingApiJsonContext : JsonSerializerContext
+```
+
+## PaperFinancingRequest
+
+Qualified name: <code>Meridian.Execution.Serialization.PaperFinancingRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Serialization/PaperFinancingApiJsonContext.cs:5](../../../../src/Meridian.Execution/Serialization/PaperFinancingApiJsonContext.cs#L5).
+
+```csharp
+public sealed record PaperFinancingRequest(DateOnly AccrualDate, decimal Amount, string SourceReference, string Rationale);
+```
+
 ## AccountDefinition
 
 Qualified name: <code>Meridian.Execution.Services.AccountDefinition</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1444](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1444).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1383](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1383).
 
 Defines one account within a multi-account paper trading session.
 
@@ -1044,100 +1122,3 @@ Source: [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService
 ```csharp
 public sealed record BrokerageExecutionOrderMatch(string LocalOrderId, string BrokerOrderId, string Symbol, OrderStatus Status);
 ```
-
-## BrokerageExecutionReconciliationBreak
-
-Qualified name: <code>Meridian.Execution.Services.BrokerageExecutionReconciliationBreak</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:508](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L508).
-
-```csharp
-public sealed record BrokerageExecutionReconciliationBreak(BrokerageExecutionReconciliationBreakKind Kind, string? LocalOrderId, string? BrokerOrderId, string? ClientOrderId, string? Symbol, string Description, string? LocalValue, string? BrokerValue);
-```
-
-## BrokerageExecutionReconciliationBreakKind
-
-Qualified name: <code>Meridian.Execution.Services.BrokerageExecutionReconciliationBreakKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:518](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L518).
-
-```csharp
-public enum BrokerageExecutionReconciliationBreakKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>BrokerOpenOrderQueryFailed</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:520](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L520) |  |
-| <code>BrokerOrderMissingClientOrderId</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:521](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L521) |  |
-| <code>MissingInOrderManager</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:522](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L522) |  |
-| <code>MissingInBrokerage</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:523](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L523) |  |
-| <code>SymbolMismatch</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:524](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L524) |  |
-| <code>SideMismatch</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:525](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L525) |  |
-| <code>TypeMismatch</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:526](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L526) |  |
-| <code>QuantityMismatch</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:527](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L527) |  |
-| <code>FilledQuantityMismatch</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:528](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L528) |  |
-| <code>StatusMismatch</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:529](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L529) |  |
-| <code>AccountScopeMismatch</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:530](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L530) |  |
-| <code>DuplicateBrokerClientOrderId</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:531](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L531) |  |
-| <code>PendingLocalExposure</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:532](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L532) |  |
-
-## BrokerageExecutionReconciliationReport
-
-Qualified name: <code>Meridian.Execution.Services.BrokerageExecutionReconciliationReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:481](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L481).
-
-```csharp
-public sealed record BrokerageExecutionReconciliationReport(string GatewayId, string BrokerDisplayName, BrokerHealthStatus Health, IReadOnlyList<BrokerageExecutionOrderMatch> MatchedOpenOrders, IReadOnlyList<BrokerageExecutionReconciliationBreak> Breaks, DateTimeOffset ReconciledAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Guid? FundAccountId { get; init; }</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:489](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L489) |  |
-| <code>public int LocalOpenOrderCount { get; init; }</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:492](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L492) | Distinct OMS orders whose exposure is still reserved in the reconciled scope. |
-| <code>public int? BrokerOpenOrderCount { get; init; }</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:495](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L495) | Broker rows returned, including duplicates; unknown when the broker query fails. |
-| <code>public string? BrokerOrderSnapshotFingerprint { get; init; }</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:498](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L498) | Canonical fingerprint of all observed broker order rows; unavailable when the query fails. |
-| <code>public bool IsClean =&gt; …;</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:499](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L499) |  |
-
-## BrokerageExecutionReconciliationService
-
-Qualified name: <code>Meridian.Execution.Services.BrokerageExecutionReconciliationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:14](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L14).
-
-Compares active broker order state against the local OMS view before operators rely on broker-backed live execution evidence.
-
-```csharp
-public sealed class BrokerageExecutionReconciliationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BrokerageExecutionReconciliationService(ILogger&lt;BrokerageExecutionReconciliationService&gt; logger);</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:18](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L18) |  |
-| <code>public async Task RecoverOrdersAsync(IBrokerageGateway gateway, OrderManagementSystem orderManager, Guid fundAccountId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:27](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L27) | Resolves retained dispatch uncertainty using a broker lookup by the original client id. Missing broker evidence remains unresolved; no recovery path submits an order. |
-| <code>public Task&lt;BrokerageExecutionReconciliationReport&gt; ReconcileOpenOrdersAsync(IBrokerageGateway gateway, IOrderManager orderManager, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:130](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L130) |  |
-| <code>public async Task&lt;BrokerageExecutionReconciliationReport&gt; ReconcileOpenOrdersAsync(IBrokerageGateway gateway, IOrderManager orderManager, Guid? fundAccountId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs:140](../../../../src/Meridian.Execution/Services/BrokerageExecutionReconciliationService.cs#L140) | Reconciles the exposure-reserving OMS book for one account against a gateway already bound to that account. Reconciliation reports evidence; it never submits or updates orders. |
-
-## BrokerageOrderTombstone
-
-Qualified name: <code>Meridian.Execution.Services.BrokerageOrderTombstone</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs:176](../../../../src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs#L176).
-
-Minimal terminal identity that permanently reserves a dispatched client order id.
-
-```csharp
-public sealed record BrokerageOrderTombstone(string OrderId, OrderStatus Status, decimal Quantity, decimal FilledQuantity)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string[]? BrokerOrderAliases { get; init; }</code> | [src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs:179](../../../../src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs#L179) |  |

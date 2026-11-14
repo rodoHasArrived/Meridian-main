@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OrderBookHeatmapViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.OrderBookHeatmapViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs:30](../../../../src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs#L30).
+
+Holds live L2 order book state and renders a color-density heatmap via direct pixel manipulation. All data is stored in pre-allocated arrays so RenderFrame is completely allocation-free on every call.
+
+```csharp
+public sealed class OrderBookHeatmapViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ObservableCollection&lt;PriceLabelViewModel&gt; PriceLabels { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs:57](../../../../src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs#L57) |  |
+| <code>public long RenderVersion =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs:63](../../../../src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs#L63) | Monotonic version incremented whenever inputs that affect the rendered bitmap change. The WPF control uses this as a lightweight dirty flag so idle timer ticks do not redraw. |
+| <code>public void SetControlHeight(double height);</code> | [src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs:69](../../../../src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs#L69) | Called by the UserControl code-behind whenever the control is resized so price-label Y positions stay accurate. |
+| <code>public void UpdateFromSnapshot(IReadOnlyList&lt;OrderBookDisplayLevel&gt; bids, IReadOnlyList&lt;OrderBookDisplayLevel&gt; asks);</code> | [src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs:82](../../../../src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs#L82) | Updates the snapshot from the UI thread. bids should be sorted descending (best bid first). asks should be sorted ascending (best ask first). The method re-sorts internally so callers need not guarantee order. |
+| <code>public void RenderFrame(int[] pixelBuffer, int width, int height);</code> | [src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs:157](../../../../src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs#L157) | Fills pixelBuffer with Bgra32 pixel data for the current order book snapshot. Called every frame from the DispatcherTimer on the UI thread. Expected: &lt; 1 ms for a 400 × 200 buffer with 20 levels. |
+
+## OrderBookPosture
+
+Qualified name: <code>Meridian.Wpf.ViewModels.OrderBookPosture</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:735](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L735).
+
+```csharp
+public sealed record OrderBookPosture(string Title, string Detail, string ScopeText, string ActionText);
+```
+
 ## OrderBookViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.OrderBookViewModel</code>. Kind: `class`.
@@ -1471,29 +1503,3 @@ Source: [src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs:45](../../../
 ```csharp
 public sealed record SecurityConflictAssessment(string SeverityLabel, string SeverityTone, int SeverityRank, string ConfidenceLabel, string AutoResolveHint, string ImpactSummary, string ImpactDetail, string NextStepSummary, bool RoutesToFundReview, bool RoutesToReconciliation, bool RoutesToCashFlow, bool RoutesToReportPack, bool RequiresTradingBackfill, bool IsAutoResolveSafe);
 ```
-
-## SecurityConflictLaneEntry
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SecurityConflictLaneEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs:20](../../../../src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs#L20).
-
-```csharp
-public sealed record SecurityConflictLaneEntry(SecurityMasterConflict Conflict, string SecurityLabel, string SecurityIdentifier, string FieldLabel, string SeverityLabel, string SeverityTone, int SeverityRank, string ConfidenceLabel, string AutoResolveHint, string ImpactSummary, string ImpactDetail, string NextStepSummary, bool RoutesToFundReview, bool RoutesToReconciliation, bool RoutesToCashFlow, bool RoutesToReportPack, bool RequiresTradingBackfill, bool IsAutoResolveSafe);
-```
-
-## SecurityConflictLaneGroup
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SecurityConflictLaneGroup</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs:7](../../../../src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs#L7).
-
-```csharp
-public sealed record SecurityConflictLaneGroup(Guid SecurityId, string SecurityLabel, string SecurityIdentifier, string GroupSummary, string HighestSeverityLabel, string HighestSeverityTone, int SafeAutoResolveCount, IReadOnlyList<SecurityConflictLaneEntry> Conflicts)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int ConflictCount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs:17](../../../../src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs#L17) |  |

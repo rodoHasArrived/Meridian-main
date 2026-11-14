@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IngestionJobSummary
+
+Qualified name: <code>Meridian.Application.Pipeline.IngestionJobSummary</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Pipeline/IngestionJobService.cs:423](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L423).
+
+Summary statistics for all ingestion jobs.
+
+```csharp
+public sealed class IngestionJobSummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int TotalJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:425](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L425) |  |
+| <code>public int DraftJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:426](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L426) |  |
+| <code>public int QueuedJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:427](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L427) |  |
+| <code>public int RunningJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:428](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L428) |  |
+| <code>public int PausedJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:429](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L429) |  |
+| <code>public int CompletedJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:430](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L430) |  |
+| <code>public int FailedJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:431](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L431) |  |
+| <code>public int CancelledJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:432](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L432) |  |
+| <code>public int ResumableJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:433](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L433) |  |
+| <code>public int RealtimeJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:434](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L434) |  |
+| <code>public int HistoricalJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:435](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L435) |  |
+| <code>public int GapFillJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:436](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L436) |  |
+
 ## PersistentDedupLedger
 
 Qualified name: <code>Meridian.Application.Pipeline.PersistentDedupLedger</code>. Kind: `class`.
@@ -55,11 +84,29 @@ Declared public members:
 | <code>public static ValidationResult Failed(params string[] errors) =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:44](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L44) | Creates a failed validation result with one or more error messages. |
 | <code>public static ValidationResult Failed(IReadOnlyList&lt;string&gt; errors) =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:51](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L51) | Creates a failed validation result from a list of error messages. |
 
+## BackfillRoutingPreview
+
+Qualified name: <code>Meridian.Application.ProviderRouting.BackfillRoutingPreview</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/BackfillRoutingPreview.cs:9](../../../../src/Meridian.Application/ProviderRouting/BackfillRoutingPreview.cs#L9).
+
+Construction-only preview. Does not fetch data, consume vendor quota, save config or install providers.
+
+```csharp
+public static class BackfillRoutingPreview
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RoutePreviewResponse Preview(AppConfig current, RoutePreviewRequest request, Func&lt;AppConfig, IReadOnlyList&lt;IHistoricalDataProvider&gt;&gt; createProviders, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BackfillRoutingPreview.cs:11](../../../../src/Meridian.Application/ProviderRouting/BackfillRoutingPreview.cs#L11) |  |
+
 ## BestOfBreedProviderSelector
 
 Qualified name: <code>Meridian.Application.ProviderRouting.BestOfBreedProviderSelector</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:21](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L21).
+Source: [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:24](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L24).
 
 Selects provider routes using configured capability, preference, and availability evidence.
 
@@ -71,15 +118,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BestOfBreedProviderSelector(ProviderRoutingService routingService, IProviderConnectionHealthSource healthSource, ConfigStore store, IDataQualityService? dataQualityService = null);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:34](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L34) |  |
-| <code>public Task&lt;ProviderRouteResult&gt; SelectAsync(ProviderRouteContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:46](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L46) |  |
-| <code>public Task&lt;ProviderRouteResult&gt; SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:49](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L49) |  |
+| <code>public BestOfBreedProviderSelector(ProviderRoutingService routingService, IProviderConnectionHealthSource healthSource, ConfigStore store, IDataQualityService? dataQualityService = null);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:37](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L37) |  |
+| <code>public Task&lt;ProviderRouteResult&gt; SelectAsync(ProviderRouteContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:49](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L49) |  |
+| <code>public Task&lt;ProviderRouteResult&gt; SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:52](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L52) |  |
+| <code>public Task&lt;ProviderRouteResult&gt; PreviewForTenantAsync(ProviderRouteContext context, string tenantId, ProviderRoutingProposedConfig proposed, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:58](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L58) |  |
 
 ## IBestOfBreedProviderSelector
 
 Qualified name: <code>Meridian.Application.ProviderRouting.IBestOfBreedProviderSelector</code>. Kind: `interface`.
 
-Source: [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:11](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L11).
+Source: [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:12](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L12).
 
 Selects a provider route for a request, including tenant-scoped routing.
 
@@ -91,14 +139,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;ProviderRouteResult&gt; SelectAsync(ProviderRouteContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:13](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L13) |  |
-| <code>Task&lt;ProviderRouteResult&gt; SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:14](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L14) |  |
+| <code>Task&lt;ProviderRouteResult&gt; SelectAsync(ProviderRouteContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:14](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L14) |  |
+| <code>Task&lt;ProviderRouteResult&gt; SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:15](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L15) |  |
+| <code>Task&lt;ProviderRouteResult&gt; PreviewForTenantAsync(ProviderRouteContext context, string tenantId, ProviderRoutingProposedConfig proposed, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:17](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L17) |  |
 
 ## IProviderFamilyCatalogService
 
 Qualified name: <code>Meridian.Application.ProviderRouting.IProviderFamilyCatalogService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:541](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L541).
+Source: [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:552](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L552).
 
 Exposes the provider-family adapters available to routing.
 
@@ -110,8 +159,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>IReadOnlyList&lt;IProviderFamilyAdapter&gt; GetFamilies();</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:543](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L543) |  |
-| <code>IProviderFamilyAdapter? GetFamily(string providerFamilyId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:545](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L545) |  |
+| <code>IReadOnlyList&lt;IProviderFamilyAdapter&gt; GetFamilies();</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:554](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L554) |  |
+| <code>IProviderFamilyAdapter? GetFamily(string providerFamilyId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:556](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L556) |  |
 
 ## IProviderRuntimeCredentialApplier
 
@@ -411,7 +460,26 @@ Declared public members:
 | <code>public ProviderRouteExplainabilityService(IBestOfBreedProviderSelector selector, ProviderRoutingService routingService);</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:298](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L298) |  |
 | <code>public async Task&lt;RoutePreviewResponse&gt; PreviewAsync(RoutePreviewRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:306](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L306) |  |
 | <code>public async Task&lt;RoutePreviewResponse&gt; PreviewForTenantAsync(RoutePreviewRequest request, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:312](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L312) |  |
-| <code>public Task&lt;IReadOnlyList&lt;RoutePreviewResponse&gt;&gt; GetHistoryAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:318](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L318) |  |
+| <code>public Task&lt;IReadOnlyList&lt;RoutePreviewResponse&gt;&gt; GetHistoryAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:328](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L328) |  |
+
+## ProviderRoutingPreviewConfig
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRoutingPreviewConfig</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderRoutingPreviewConfig.cs:7](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingPreviewConfig.cs#L7).
+
+Copies only bounded operational settings; never merges arbitrary JSON into host configuration.
+
+```csharp
+public static class ProviderRoutingPreviewConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static AppConfig ApplyBindings(AppConfig config, string tenantId, ProviderRoutingProposedConfig proposed);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingPreviewConfig.cs:9](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingPreviewConfig.cs#L9) |  |
+| <code>public static AppConfig ApplyBackfill(AppConfig config, ProviderRoutingProposedConfig? proposed);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingPreviewConfig.cs:38](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingPreviewConfig.cs#L38) |  |
 
 ## ProviderRoutingService
 
@@ -432,7 +500,8 @@ Declared public members:
 | <code>public ProviderRoutingService(UI.ConfigStore store, IProviderConnectionHealthSource healthSource, IProviderFamilyCatalogService catalog, KernelObservabilityService? kernelObservability = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:25](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L25) |  |
 | <code>public ValueTask&lt;ProviderRouteResult&gt; RouteAsync(ProviderRouteContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:37](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L37) |  |
 | <code>public ValueTask&lt;ProviderRouteResult&gt; RouteForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:41](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L41) | Routes using only connections retained for the authorized tenant. |
-| <code>public IReadOnlyList&lt;ProviderRouteResult&gt; GetRouteHistory() =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:292](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L292) |  |
+| <code>public ValueTask&lt;ProviderRouteResult&gt; PreviewForTenantAsync(ProviderRouteContext context, string tenantId, ProviderRoutingProposedConfig proposed, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:48](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L48) | Evaluates a cloned, restricted config without publishing a runtime snapshot or route history. |
+| <code>public IReadOnlyList&lt;ProviderRouteResult&gt; GetRouteHistory() =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:303](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L303) |  |
 
 ## ProviderRuntimeCredentialApplicationTracker
 
@@ -1042,69 +1111,3 @@ Declared public members:
 | <code>public string? ErrorMessage { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:254](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L254) |  |
 | <code>public DateTimeOffset? StartedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:255](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L255) |  |
 | <code>public DateTimeOffset? CompletedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:256](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L256) |  |
-
-## SystemExecutionSummary
-
-Qualified name: <code>Meridian.Application.Scheduling.SystemExecutionSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:543](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L543).
-
-System-wide execution summary.
-
-```csharp
-public sealed record SystemExecutionSummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TimeSpan Period { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:545](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L545) |  |
-| <code>public int TotalExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:546](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L546) |  |
-| <code>public int CompletedExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:547](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L547) |  |
-| <code>public int FailedExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:548](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L548) |  |
-| <code>public double SuccessRate { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:549](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L549) |  |
-| <code>public long TotalBarsRetrieved { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:550](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L550) |  |
-| <code>public int TotalGapsFilled { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:551](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L551) |  |
-| <code>public double AverageDurationMinutes { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:552](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L552) |  |
-| <code>public Dictionary&lt;string, int&gt; ProviderUsage { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:553](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L553) |  |
-
-## AlternativeAssetLotExtensions
-
-Qualified name: <code>Meridian.Application.SecurityMaster.AlternativeAssetLotExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs:11](../../../../src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs#L11).
-
-Adapts the canonical commitment, fund-unit and notional lots to the LedgerTaxLot shape the relief engines consume, the way FaceValueLotExtensions does for face-value lots.
-
-```csharp
-public static class AlternativeAssetLotExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static LedgerTaxLot ToLedgerTaxLot(this FundUnitLot lot);</code> | [src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs:17](../../../../src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs#L17) | A fund unit lot is already in ledger shape: quantity is the unit count and unit cost is the acquisition NAV per unit, so quantity times unit cost reproduces FundUnitLot.CostBasis. |
-| <code>public static LedgerTaxLot ToLedgerTaxLot(this CommitmentLot lot);</code> | [src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs:35](../../../../src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs#L35) | The ledger carries contributed capital, not the commitment: the relief engines relieve what was paid in, while the unfunded balance is an obligation the ledger projects separately. The ledger lot is therefore SecurityLotUnitKind.CurrencyAmount of CommitmentLot.FundedAmount at a unit cost of one, and an unfunded commitment has no ledger lot yet. |
-| <code>public static LedgerTaxLot ToLedgerTaxLot(this NotionalLot lot);</code> | [src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs:54](../../../../src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs#L54) | A notional lot&#x27;s quantity is the notional outstanding and its only cost is the upfront payment, so the ledger lot carries that notional at a unit cost that reproduces NotionalLot.CostBasis (zero for a par contract). A fully amortized lot has no notional left to carry. |
-
-## AmortizationAccrualWindow
-
-Qualified name: <code>Meridian.Application.SecurityMaster.AmortizationAccrualWindow</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:87](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L87).
-
-An inclusive range of accounting dates whose accrual is posted as one entry.
-
-```csharp
-public sealed record AmortizationAccrualWindow
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AmortizationAccrualWindow(DateOnly start, DateOnly end);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:89](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L89) |  |
-| <code>public DateOnly Start { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:97](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L97) |  |
-| <code>public DateOnly End { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:99](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L99) |  |

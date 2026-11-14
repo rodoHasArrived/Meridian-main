@@ -44,6 +44,38 @@ public sealed partial class PostgresAssetOperationsProjectionStore
             .ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<AssetAccountingEventProjectionRecord>> ListByBookPeriodAsync(
+        Guid ledgerBookId, Guid periodId, CancellationToken ct = default)
+    {
+        if (ledgerBookId == Guid.Empty || periodId == Guid.Empty)
+            throw new ArgumentException("Exact asset-event book and period identities are required.");
+        var identities = new List<(Guid EventId, long EventVersion, long SpineVersion)>();
+        await using (var connection = await OpenConnectionAsync(ct).ConfigureAwait(false))
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = $"""
+                select distinct on (event_id, event_version) event_id, event_version, spine_version
+                from {_options.Schema}.asset_accounting_event_projections
+                where ledger_book_id = @book_id and period_id = @period_id
+                order by event_id, event_version, spine_version desc;
+                """;
+            command.Parameters.AddWithValue("book_id", ledgerBookId);
+            command.Parameters.AddWithValue("period_id", periodId);
+            await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+                identities.Add((reader.GetGuid(0), reader.GetInt64(1), reader.GetInt64(2)));
+        }
+        var records = new List<AssetAccountingEventProjectionRecord>();
+        foreach (var identity in identities)
+        {
+            // Exact immutable reads reuse the retained canonical fingerprint check.
+            var record = await GetAsync(identity.EventId, identity.EventVersion, identity.SpineVersion, ct).ConfigureAwait(false)
+                ?? throw new InvalidDataException("A retained asset-event population row disappeared during the read.");
+            records.Add(record);
+        }
+        return records.AsReadOnly();
+    }
+
     public async Task<AssetAccountingEventAppendResult> AppendAsync(
         AssetAccountingEventSpineDto projection,
         long expectedSpineVersion,

@@ -1453,16 +1453,16 @@ Rank 3 of the 2026-10 charter direction slate (DEC-CHARTER-DIRECTION-001). The c
 | Field | Value |
 | --- | --- |
 | Wave | W11 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | medium |
 | Owner lane | Data Confidence and Validation |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-10-16 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-13 |
 
 ### Current Summary
 
-Rank 4 of the 2026-10 charter direction slate (DEC-CHARTER-DIRECTION-001). The charter claims lower-risk adoption through shadow mode (Section 1.4) and makes it the entry posture of the Control Tower wedge (Section 22), but no section specifies it and no row tracks it. This row defines and delivers a shadow workspace - a tenant runs Meridian beside its official books, imports their opening balances and ongoing activity, and reconciles Meridian's records against them - before migrating any official books.
+Rank 4 of the 2026-10 charter direction slate (DEC-CHARTER-DIRECTION-001). Shadow mode now extends the existing read-only onboarding workspace rather than forking it. An owner designates the workspace's ledger book as a shadow book; the shared book-of-record guard (IBookOfRecordGuard, OnboardingBookOfRecordGuard) then refuses governed report release (ReportingGovernanceService.ReleaseAsync, 409) and period hard-close (ClosePublicationReadinessGuard, CLOSE_SHADOW_BOOK) until promotion. Incumbent opening balances import from camt.053 OPBD / BAI2 010 (an opt-in StatementBalanceRole.Opening on the connectors; closing-balance reconciliation is unchanged), an administrator opening-pack CSV, or a retained external GL trial balance, with the raw source retained in the hash-chained comparison and a governed opening-balance reconciliation report. Per-period differences are explained (Timing with an expected reversal date, Pricing, Treatment, SourceData; MeridianError never clears; explanations bind to the exact compared amounts) and readiness carries per-period agreement. A parallel-run certificate is issued only when opening balances reconcile, every required period is clean and independent review approved the current revision; promotion requires a designated reviewer independent of the owner, re-verifies the certificate against the unchanged revision, and is recorded in a hash-chained shadow audit trail. The browser workstation onboarding panel exposes designation, opening import, period agreement, explanation, certificate and promotion. Remaining before done: WPF parity for the shadow panel, a shadow contributor inside the CloseReadinessProjectionDto itself (agreement is reported today through book-of-record status and the close guard), and Postgres-backed onboarding storage.
 
 ### Exit Criteria
 

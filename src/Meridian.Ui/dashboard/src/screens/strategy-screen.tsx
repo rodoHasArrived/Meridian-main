@@ -32,7 +32,6 @@ import {
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import { formatNumber } from "@/lib/format";
-import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { exportTableQuery } from "@/lib/table-workbench";
 import { cn } from "@/lib/utils";
 import { StrategyRunEquityPathCompare } from "@/screens/strategy-screen.equity-paths";
@@ -65,6 +64,7 @@ import {
 import { useEffect, useMemo, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { StrategyOverviewHub } from "./strategy-overview-hub";
+import { toSeverity } from "@/design-system/status-styles";
 
 interface StrategyScreenProps {
   fundAccountId?: string | null;
@@ -429,7 +429,7 @@ export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
     {
       id: "status",
       label: "Status",
-      render: (row) => <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.statusText} />
+      render: (row) => <SeverityBadge status={toSeverity(row.statusBadgeVariant)} label={row.statusText} />
     },
     {
       id: "net-pnl",
@@ -925,7 +925,7 @@ export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
                     description={vm.selectedComparisonDetail.description}
                     fields={vm.selectedComparisonDetail.fields}
                     ariaLabel={vm.selectedComparisonDetail.ariaLabel}
-                    status={<SeverityBadge status={categoricalVariantToSeverityStatus(vm.selectedComparisonDetail.statusVariant)} label={vm.selectedComparisonDetail.statusLabel} />}
+                    status={<SeverityBadge status={toSeverity(vm.selectedComparisonDetail.statusVariant)} label={vm.selectedComparisonDetail.statusLabel} />}
                   />
                 </div>
               ) : (

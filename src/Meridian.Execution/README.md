@@ -103,6 +103,74 @@ recovery and may exceed the display-cache limit. The permanent minimal identity 
 
 ## Purpose
 
+Paper financing assessments use `PaperFinancingPostingService`, composed alongside
+`Execution:TradeFillLedgerPosting`. An authenticated administrator can record a dated,
+cash-paid margin charge through `POST /api/execution/sessions/{sessionId}/financing` with
+`accrualDate`, `amount`, `sourceReference`, and `rationale`. The authenticated actor is retained
+by the server. This records an assessed charge; it does not invent a daily financing rate.
+
+The scope-partitioned source outbox syncs each accepted assessment through the existing WAL,
+publishes an atomic source snapshot, and confirms the journal through the same governed target
+as fills. A lifetime file lease permits one writer per scope directory. The store publishes its
+initialized marker only after the first complete snapshot exists; loss of an initialized snapshot
+blocks recovery instead of treating compacted financing history as an empty account. Retries retain the
+same source identity (session, account, accrual date, source reference); different economics
+under that identity fail closed. Accepted assessments survive interrupted posting and are
+recovered before a session book is exposed. They debit margin-interest expense and credit cash
+without increasing the loan principal. The authoritative journal remains in the configured
+ledger store; the outbox retains source evidence and delivery state.
+Before retaining a new source, admission reads the authoritative period and validates the exact
+book, dates, open status and expected version, normalizes the complete posting command, and requires
+the retained book's identity, Primary basis and policy/version to match the command. Dedicated
+consolidation books are refused. The amount must fit the journal's numeric(38,10) storage exactly.
+New assessments retain the normalized book base currency before acceptance and post native
+transaction amounts on both legs with an exchange rate of one. Legacy accepted or posted
+assessments keep their original null-currency journal format during recovery; currency is not
+inferred from today's book. Financing sources do not retain entity dimensions, so the UI's
+prior-period correction workflow remains unavailable when it requires retained entity scope.
+A rejected assessment creates
+no pending source and does not block the next valid assessment. Existing accepted-source retries keep
+their immutable context and can confirm already-posted journals after the period closes.
+This admission read does not lock the period across the local WAL and database append. A close that
+races after acceptance remains subject to the authoritative posting guard; the source stays pending
+and requires governed recovery instead of deletion or automatic period reassignment.
+If confirmation fails, the current session refuses further fills, settlements and close until
+the same source is successfully retried or startup recovers the pending assessment. Order history
+and cancellation evidence remain recordable while recovery is pending.
+
+New sessions created with this composition retain the exact book, period, aggregate and
+policy binding, plus their local `default` account identity. A missing accounting owner makes
+that session's portfolio unavailable instead of silently omitting financing. Legacy sessions remain
+unbound and require an explicit migration before accepting these charges. Session reconstruction
+merges financing and settlements into fill replay, preserving paid charges when subsequent fills
+rebuild the projection. This endpoint serves single-account paper sessions; account-level charge
+allocation to promoted strategy runs requires a retained run allocation and is not inferred.
+
+The financing writer owns one immutable posting context. After an explicit period rollover,
+the catalog preserves historical bindings and permits new sessions in the current context.
+Historical sessions are read-only: fills, order updates, settlements, financing and close cannot
+write through an obsolete context. Their original scope must use a distinct posting-scope label;
+reusing a label for a different context still fails immutable store validation.
+For the same authorized aggregate, book and policy, historical portfolio reads require the
+original financing store's exact completed checkpoint and a checked WAL with no newer evidence.
+The source assessments must also match the retained session's financing journals in both
+directions, including their deterministic identities, legs and projection metadata. Other
+opening and fill journal identities are not part of that comparison. The session projection
+does not retain native-currency pins or all authoritative command facts, so this cash check
+does not re-verify those facts or infer them from the current book. A missing cached financing
+journal can be refreshed only by the original current owner after confirming its source against
+the governed ledger, and only if every existing cached financing journal already matches.
+The same current-owner confirmation can refresh a pre-metadata cache only when its complete
+scalar and line facts match and its optional full metadata is absent. Nonnull conflicting
+metadata is never replaced. Historical reads remain unavailable until that refresh completes.
+Conflicting or unexpected cached charges remain evidence and are never overwritten by recovery.
+These reads never post, initialize, or acknowledge historical deliveries. Missing, conflicting,
+busy or pending evidence leaves `Portfolio` null with `AccountingUnavailableReason`; stored
+session metadata, fills, orders and journal remain readable. Recovery requires the original
+accounting owner. New bound sessions retain an empty checkpoint before metadata publication,
+so subsequent historical reads can prove that no financing was accepted. No scope rebinding,
+period migration or strategy-run allocation is inferred.
+
 Broker reconciliation propagates caller cancellation from health and open-order queries so cancelled requests do not become unhealthy-broker or query-failure evidence.
 
 Execution owns order routing, execution services, allocation, margin, derivatives, tax-lot, and broker gateway behavior.

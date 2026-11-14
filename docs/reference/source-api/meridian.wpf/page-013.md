@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FinancialRecordExplorerRelationshipModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.FinancialRecordExplorerViewModel.FinancialRecordExplorerRelationshipModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:782](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L782).
+
+```csharp
+public sealed record FinancialRecordExplorerRelationshipModel(string RelationshipId, string Label, string Description, string Href, string TargetPageTag, string Tone)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FinancialRecordExplorerRelationshipModel FromDto(FinancialRecordExplorerRelationshipDto relationship) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:790](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L790) |  |
+
+## FinancialRecordExplorerRowModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.FinancialRecordExplorerViewModel.FinancialRecordExplorerRowModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:649](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L649).
+
+Presents a financial record&#x27;s identity, type, source, status, and inspection detail.
+
+```csharp
+public sealed class FinancialRecordExplorerRowModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string RecordId { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:671](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L671) |  |
+| <code>public string RecordType { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:673](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L673) |  |
+| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:675](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L675) |  |
+| <code>public string Source { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:677](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L677) |  |
+| <code>public string Status { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:679](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L679) |  |
+| <code>public string Tone { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:681](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L681) |  |
+| <code>public IReadOnlyDictionary&lt;string, string&gt; Cells { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:683](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L683) |  |
+| <code>public FinancialRecordExplorerSelectedRecordDto Detail { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:685](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L685) |  |
+| <code>public static FinancialRecordExplorerRowModel FromDto(FinancialRecordExplorerRowDto row, IReadOnlyList&lt;FinancialRecordExplorerColumnDto&gt; columns);</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:687](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L687) |  |
+
 ## FinancialRecordExplorerSavedViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.FinancialRecordExplorerViewModel.FinancialRecordExplorerSavedViewModel</code>. Kind: `record`.
@@ -1869,35 +1911,3 @@ Declared public members:
 | <code>public Task RefreshAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/OptionsViewModel.cs:175](../../../../src/Meridian.Wpf/ViewModels/OptionsViewModel.cs#L175) |  |
 | <code>public Task StopAsync() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/OptionsViewModel.cs:192](../../../../src/Meridian.Wpf/ViewModels/OptionsViewModel.cs#L192) | Cancels and drains the current page-load generation. A later page load starts a fresh generation, which keeps navigation unload/reload behavior reusable. |
 | <code>public async ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/OptionsViewModel.cs:195](../../../../src/Meridian.Wpf/ViewModels/OptionsViewModel.cs#L195) |  |
-
-## OrderBookHeatmapViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.OrderBookHeatmapViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs:30](../../../../src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs#L30).
-
-Holds live L2 order book state and renders a color-density heatmap via direct pixel manipulation. All data is stored in pre-allocated arrays so RenderFrame is completely allocation-free on every call.
-
-```csharp
-public sealed class OrderBookHeatmapViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ObservableCollection&lt;PriceLabelViewModel&gt; PriceLabels { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs:57](../../../../src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs#L57) |  |
-| <code>public long RenderVersion =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs:63](../../../../src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs#L63) | Monotonic version incremented whenever inputs that affect the rendered bitmap change. The WPF control uses this as a lightweight dirty flag so idle timer ticks do not redraw. |
-| <code>public void SetControlHeight(double height);</code> | [src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs:69](../../../../src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs#L69) | Called by the UserControl code-behind whenever the control is resized so price-label Y positions stay accurate. |
-| <code>public void UpdateFromSnapshot(IReadOnlyList&lt;OrderBookDisplayLevel&gt; bids, IReadOnlyList&lt;OrderBookDisplayLevel&gt; asks);</code> | [src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs:82](../../../../src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs#L82) | Updates the snapshot from the UI thread. bids should be sorted descending (best bid first). asks should be sorted ascending (best ask first). The method re-sorts internally so callers need not guarantee order. |
-| <code>public void RenderFrame(int[] pixelBuffer, int width, int height);</code> | [src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs:157](../../../../src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs#L157) | Fills pixelBuffer with Bgra32 pixel data for the current order book snapshot. Called every frame from the DispatcherTimer on the UI thread. Expected: &lt; 1 ms for a 400 × 200 buffer with 20 levels. |
-
-## OrderBookPosture
-
-Qualified name: <code>Meridian.Wpf.ViewModels.OrderBookPosture</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:735](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L735).
-
-```csharp
-public sealed record OrderBookPosture(string Title, string Detail, string ScopeText, string ActionText);
-```

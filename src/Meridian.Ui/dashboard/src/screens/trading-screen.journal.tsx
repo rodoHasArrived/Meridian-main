@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getJournal, getJournalOrder, getJournalSummary, type JournalOrder, type JournalSummary } from "@/lib/api/execution-workflows.api";
-import { formatCurrency, formatUtcTimestamp } from "@/lib/format";
+import { formatCurrency, formatTimestamp } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -80,11 +80,11 @@ export function ExecutionJournalPanel({ accountId }: { accountId?: string | null
           { id: "status", label: "Status", render: (order) => order.status, exportValue: (order) => order.status },
           { id: "quantity", label: "Filled / requested", numeric: true, render: (order) => `${order.filledQuantity} / ${order.quantity}`, exportValue: (order) => `${order.filledQuantity} / ${order.quantity}` },
           { id: "strategy", label: "Strategy / tag", render: (order) => `${order.strategyId ?? "Unattributed"} / ${order.tag ?? "—"}`, exportValue: (order) => `${order.strategyId ?? "Unattributed"} / ${order.tag ?? "—"}` },
-          { id: "updated", label: "Updated", render: (order) => formatUtcTimestamp(new Date(order.updatedAt)), exportValue: (order) => order.updatedAt }
+          { id: "updated", label: "Updated", render: (order) => formatTimestamp(new Date(order.updatedAt)), exportValue: (order) => order.updatedAt }
         ]}
       />
       {!loading && !error && visibleOrders.length === 0 ? <p className="text-xs">No retained orders match these filters. This does not establish complete historical coverage.</p> : null}
-      {detail ? <section aria-label={`Order ${detail.orderId} history`} className="border-t border-border pt-3"><h4 className="text-sm font-semibold">Order evidence: {detail.orderId}</h4><p className="break-all text-xs">Scope: {detail.scope} · Run: {detail.runId ?? "Unattributed"}</p><ol className="mt-2 space-y-2 text-xs">{detail.events.map((event) => <li key={event.eventId}><strong>{event.kind}</strong> · {formatUtcTimestamp(new Date(event.recordedAt))}{event.report ? <p>Broker identity {event.report.gatewayOrderId ?? "unknown"}; predecessor {event.report.replacesOrderId ?? "none"}; cumulative fill {event.report.filledQuantity}; price {event.report.fillPrice ?? "unknown"}; commission {money(event.report.commission)}; fees {money(event.report.fees)}</p> : null}{event.activityFill ? <p>Provider fill {event.activityFill.fillId}: {event.activityFill.quantity} at {event.activityFill.price}; commission {money(event.activityFill.commission)}</p> : null}{event.detail ? <p>{event.detail}</p> : null}</li>)}</ol></section> : null}
+      {detail ? <section aria-label={`Order ${detail.orderId} history`} className="border-t border-border pt-3"><h4 className="text-sm font-semibold">Order evidence: {detail.orderId}</h4><p className="break-all text-xs">Scope: {detail.scope} · Run: {detail.runId ?? "Unattributed"}</p><ol className="mt-2 space-y-2 text-xs">{detail.events.map((event) => <li key={event.eventId}><strong>{event.kind}</strong> · {formatTimestamp(new Date(event.recordedAt))}{event.report ? <p>Broker identity {event.report.gatewayOrderId ?? "unknown"}; predecessor {event.report.replacesOrderId ?? "none"}; cumulative fill {event.report.filledQuantity}; price {event.report.fillPrice ?? "unknown"}; commission {money(event.report.commission)}; fees {money(event.report.fees)}</p> : null}{event.activityFill ? <p>Provider fill {event.activityFill.fillId}: {event.activityFill.quantity} at {event.activityFill.price}; commission {money(event.activityFill.commission)}</p> : null}{event.detail ? <p>{event.detail}</p> : null}</li>)}</ol></section> : null}
     </>}
   </section>;
 }

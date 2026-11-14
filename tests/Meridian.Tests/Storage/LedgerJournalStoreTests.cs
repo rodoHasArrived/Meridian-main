@@ -441,6 +441,21 @@ public sealed class LedgerJournalStoreTests
             retainedContext,
             book.AccountingPolicyId,
             book.AccountingPolicyVersion);
+
+        var foreignFunctionalEntry = new JournalEntry(
+            validWrite.Entry.JournalEntryId,
+            validWrite.Entry.Timestamp,
+            validWrite.Entry.Description,
+            validWrite.Entry.Lines.Select(line => new LedgerEntry(
+                line.EntryId, line.JournalEntryId, line.Timestamp, line.Account, line.Debit, line.Credit,
+                line.Description, line.Dimensions,
+                new LedgerEntryCurrency("EUR", "EUR", line.Debit, line.Credit, 1m))).ToArray(),
+            validWrite.Entry.Metadata);
+        var foreignFunctionalWrite = validWrite with { Entry = foreignFunctionalEntry };
+        var appendForeignCurrency = () => database.JournalStore.AppendAsync(foreignFunctionalWrite);
+        await appendForeignCurrency.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*line functional currency 'EUR'*retained ledger book*currency 'USD'*");
+
         await database.JournalStore.AppendAsync(validWrite);
 
         var retained = await database.JournalStore.QueryAsync(

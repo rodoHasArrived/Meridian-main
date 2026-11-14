@@ -53,6 +53,40 @@ class FakeCursor:
         self.closed = True
 
 
+class RepositoryMigrationRegistrationTests(unittest.TestCase):
+    """Exercise the actual registry so a newly shipped migration owner cannot be omitted."""
+
+    def test_every_repository_migration_directory_is_registered(self) -> None:
+        root = Path(__file__).resolve().parents[2]
+        config = json.loads((root / "database/schema-control.json").read_text(encoding="utf-8"))
+
+        inventory = build_migration_inventory(root, config)
+
+        self.assertFalse(inventory.has_errors, inventory.findings)
+        triage = next(item for item in inventory.files if item.filename == "001_operator_triage.sql")
+        self.assertEqual("src/Meridian.Storage/Workstation/Migrations/001_operator_triage.sql", triage.path)
+
+    def test_operator_triage_registration_matches_its_runtime_migration_owner(self) -> None:
+        root = Path(__file__).resolve().parents[2]
+        config = json.loads((root / "database/schema-control.json").read_text(encoding="utf-8"))
+        module = next(item for item in config["migration_sets"] if item["id"] == "operator-triage")
+        runner = (root / module["owner"] / "PostgresOperatorTriageStore.cs").read_text(encoding="utf-8")
+        options = (root / module["owner"] / "OperatorTriageStoreOptions.cs").read_text(encoding="utf-8")
+
+        self.assertEqual(module["owner"] + "/Migrations", module["directory"])
+        self.assertIn(f'LedgerTableName = "{module["ledger"]["table"]}"', runner)
+        self.assertIn(f'= "{module["schema"]}";', options)
+        for variable in module["connection_variables"]:
+            composition = (root / "src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs").read_text(encoding="utf-8")
+            self.assertIn(variable, composition)
+        # The runtime uses the shared runner's append-only, unquoted, filename-keyed defaults.
+        self.assertEqual("throw", module["drift_policy"])
+        self.assertFalse(module["quote_schema"])
+        self.assertFalse(module["track_ordinals"])
+        self.assertEqual("filename", module["ledger"]["key_column"])
+        self.assertEqual("checksum", module["ledger"]["checksum_column"])
+
+
 class FakeConnection:
     def __init__(self, cursor: FakeCursor | None = None) -> None:
         self.fake_cursor = cursor or FakeCursor()

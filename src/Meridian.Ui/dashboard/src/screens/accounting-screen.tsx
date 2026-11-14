@@ -35,7 +35,6 @@ import { ReconciliationComparisonPanel } from "@/components/accounting";
 import { TieOutPanel } from "@/components/accounting/TieOutPanel";
 import { approveAndPostDailyValuationBatch, certifyAccountingSystemExportPackage, configureDailyValuationSchedule, createAccountingSystemExportPackage, getAccountingSystemExportPackageManifest, getAccountingSystemMappingProfiles, getAccountingSystemProviders, getLatestAccountingSystemImport, getLatestAccountingSystemReconciliation, getFinancialRecordExplorer, listAccountingSystemExportPackages, previewAccountingSystemImport, runDueDailyValuationSchedules, saveFinancialRecordExplorerView } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { cashFlowTextClass } from "@/screens/accounting-screen.styles";
 import { StatusBadge, toneToSeverity } from "@/design-system/status";
 import { workspaceForPath } from "@/lib/workspace";
 import { CapitalAccountWorkbenchPanel } from "@/screens/accounting-screen.capital-account-workbench-panel";
@@ -72,6 +71,7 @@ import { AccountingConfigurationPanel } from "@/screens/accounting-screen.config
 import { ManualJournalEntryWorkbenchPanel } from "@/screens/accounting-screen.manual-journal-panel";
 import { AccountingApprovalsWorkstream } from "@/screens/accounting-screen.approvals-workstream";
 import { AccountingValue } from "@/screens/accounting-screen.accounting-value";
+import { statusTextClass } from "@/design-system/status-styles";
 
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
@@ -1103,7 +1103,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                   key={row.id}
                   label={row.label}
                   value={row.value}
-                  tone={cashFlowTextClass(row.tone)}
+                  tone={statusTextClass(row.tone)}
                   ariaLabel={row.ariaLabel}
                 />
               ))}
@@ -1199,7 +1199,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                       key={field.label}
                       label={field.label}
                       value={field.value}
-                      tone={cashFlowTextClass(field.tone)}
+                      tone={statusTextClass(field.tone)}
                       ariaLabel={field.ariaLabel}
                     />
                   ))}

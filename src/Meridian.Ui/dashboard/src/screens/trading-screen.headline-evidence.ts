@@ -50,7 +50,10 @@ export function withTradingHeadlineEvidence<T extends MetricSnapshot>(
     provenance: {
       source: "Trading workspace",
       asOf: payload.asOf ?? (lastHeartbeat || null),
-      scope: (loadedAccount !== undefined ? loadedAccount : fundAccountId) ?? brokerageAccount ?? "All loaded accounts"
+      // With no fund account behind the payload the totals are the brokerage account's, and are
+      // named as such so they do not read as a fund-account scope the scope bar does not show.
+      scope: (loadedAccount !== undefined ? loadedAccount : fundAccountId)
+        ?? (brokerageAccount ? `Brokerage account ${brokerageAccount}` : "All loaded accounts")
     },
     freshness: combineMetricFreshness(payload.freshness, brokerFreshness, retainedFromAnotherAccount ? "stale" : null)
   });

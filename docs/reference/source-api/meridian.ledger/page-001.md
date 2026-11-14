@@ -158,6 +158,8 @@ Enum declarations:
 | <code>CapitalCallDefaultInterestAccrued</code> | [src/Meridian.Ledger/AutomatedJournalEventKind.cs:51](../../../../src/Meridian.Ledger/AutomatedJournalEventKind.cs#L51) | Default interest accrued on an unfunded capital call past its grace period. |
 | <code>RecurringTemplate</code> | [src/Meridian.Ledger/AutomatedJournalEventKind.cs:54](../../../../src/Meridian.Ledger/AutomatedJournalEventKind.cs#L54) | Occurrence of a retained versioned recurring journal template. |
 | <code>DistributionDeclared</code> | [src/Meridian.Ledger/AutomatedJournalEventKind.cs:57](../../../../src/Meridian.Ledger/AutomatedJournalEventKind.cs#L57) | A distribution to an investor, declared and split through the waterfall. |
+| <code>OpeningBalanceImported</code> | [src/Meridian.Ledger/AutomatedJournalEventKind.cs:60](../../../../src/Meridian.Ledger/AutomatedJournalEventKind.cs#L60) | Complete broker-account opening balances retained for human review. |
+| <code>PriorPeriodAdjustment</code> | [src/Meridian.Ledger/AutomatedJournalEventKind.cs:63](../../../../src/Meridian.Ledger/AutomatedJournalEventKind.cs#L63) | Source-linked correction prepared in a later open period for independent approval. |
 
 ## AutomatedJournalPostingContext
 

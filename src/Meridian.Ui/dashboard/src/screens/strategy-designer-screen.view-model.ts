@@ -1,6 +1,6 @@
 import { BACKTEST_EVIDENCE_BLOCKER } from "@/screens/strategy-designer-screen.copy";
 import { useCallback, useMemo, useState } from "react";
-import { formatMoney, formatNumber, formatPnl, formatPrefixedCurrency } from "@/lib/format";
+import { formatFixed, formatMoney, formatNumber, formatPercent, formatPnl, formatPrefixedCurrency } from "@/lib/format";
 import { STRATEGY_DESIGNER_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 
 export type StrategyLegKind =
@@ -1700,8 +1700,8 @@ export function buildParticipationViewModel(legs: StrategyLeg[], spotPrice: numb
       instrument: leg.instrument,
       notional,
       share,
-      sharePercent: `${(share * 100).toFixed(1)}%`,
-      barWidth: `${(share * 100).toFixed(2)}%`,
+      sharePercent: formatPercent(share * 100, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+      barWidth: `${formatFixed(share * 100, 2)}%`,
       tone: leg.direction === "Long" ? "long" : "short",
       detail: buildSliceDetail(leg)
     };
@@ -1709,7 +1709,7 @@ export function buildParticipationViewModel(legs: StrategyLeg[], spotPrice: numb
 
   return {
     totalNotional,
-    totalNotionalLabel: formatCurrency(totalNotional),
+    totalNotionalLabel: formatPrefixedCurrency(totalNotional, { maximumFractionDigits: 0 }),
     longNotional,
     shortNotional,
     netDirection,
@@ -2181,7 +2181,7 @@ function buildStrategyBuilderTransitionViewModels(
     const to = cells.get(transition.toCellId) ?? transition.toCellId;
     return {
       ...transition,
-      label: `${from} -> ${to}`,
+      label: `${from} → ${to}`,
       status: hasError ? "blocked" : transition.kind === "loop" ? "warning" : "ready",
       statusLabel: hasError ? "Blocked" : transition.kind === "loop" ? "Guarded loop" : "Ready",
       detail: transition.kind === "loop"
@@ -2350,8 +2350,8 @@ function buildSliceDetail(leg: StrategyLeg): string {
 
 function buildNetDirectionLabel(direction: "Long" | "Short" | "Flat", longNotional: number, shortNotional: number): string {
   if (direction === "Flat") return "Balanced long/short notional";
-  if (direction === "Long") return `Long-biased by ${formatCurrency(longNotional - shortNotional)} notional`;
-  return `Short-biased by ${formatCurrency(shortNotional - longNotional)} notional`;
+  if (direction === "Long") return `Long-biased by ${formatPrefixedCurrency(longNotional - shortNotional, { maximumFractionDigits: 0 })} notional`;
+  return `Short-biased by ${formatPrefixedCurrency(shortNotional - longNotional, { maximumFractionDigits: 0 })} notional`;
 }
 
 function formatPrice(value: number): string {
@@ -2361,10 +2361,6 @@ function formatPrice(value: number): string {
 function formatQuantity(value: number): string {
   if (!Number.isFinite(value)) return "—";
   return formatNumber(value, { maximumFractionDigits: 4 });
-}
-
-function formatCurrency(value: number): string {
-  return formatPrefixedCurrency(value, { maximumFractionDigits: 0 });
 }
 
 function slugifyId(value: string): string {

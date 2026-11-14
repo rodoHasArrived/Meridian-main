@@ -334,7 +334,7 @@ public sealed record ConfigProfile(string Id, string Name, string Description, b
 
 Qualified name: <code>Meridian.Ui.Services.Services.ConfigServiceBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:37](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L37).
+Source: [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:38](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L38).
 
 Abstract base class for configuration management shared between platforms. Provides platform-agnostic config validation, backfill provider management, data source management, and symbol management. Platform-specific config file I/O is delegated to derived classes. Part of Phase 2 service extraction.
 
@@ -346,28 +346,28 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public abstract string ConfigPath { get; }</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:50](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L50) | Gets the path to the configuration file. |
-| <code>public async Task&lt;ConfigValidationResultDetail&gt; ValidateConfigDetailAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:120](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L120) | Validates the current configuration. |
-| <code>public async Task&lt;DataSourcesConfigDto&gt; GetDataSourcesConfigDtoAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:189](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L189) | Gets the data sources configuration. |
-| <code>public Task AddOrUpdateDataSourceAsync(DataSourceConfigDto dataSource, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:198](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L198) | Adds or updates a data source configuration. |
-| <code>public Task DeleteDataSourceAsync(string id, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:223](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L223) | Deletes a data source by ID. |
-| <code>public Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:238](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L238) | Sets the default data source for real-time or historical data. |
-| <code>public Task UpdateFailoverSettingsAsync(bool enableFailover, int failoverTimeoutSeconds, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:258](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L258) | Updates failover settings for data sources. |
-| <code>public async Task&lt;BackfillProvidersConfigDto&gt; GetBackfillProvidersConfigAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:272](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L272) | Gets backfill provider configuration, creating defaults when missing. |
-| <code>public async Task&lt;BackfillProviderOptionsDto?&gt; GetBackfillProviderOptionsAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:283](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L283) | Gets options for a single historical backfill provider. |
-| <code>public async Task&lt;(string? PreviousJson, string NewJson)&gt; SetBackfillProviderOptionsAsync(string providerId, BackfillProviderOptionsDto options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:298](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L298) | Sets backfill provider options. Returns the previous and new JSON for audit trail purposes. |
-| <code>public async Task&lt;string?&gt; ResetBackfillProviderOptionsAsync(string providerId, BackfillProviderOptionsDto defaultOptions, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:333](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L333) | Resets a provider&#x27;s configuration back to defaults. Returns the previous JSON for audit trail purposes. |
-| <code>public async Task&lt;SymbolConfigDto[]&gt; GetConfiguredSymbolsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:361](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L361) | Gets the configured symbols from configuration. |
-| <code>public Task SaveSymbolsAsync(SymbolConfigDto[] symbols, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:370](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L370) | Saves symbols to the configuration. |
-| <code>public Task AddSymbolAsync(SymbolConfigDto symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:376](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L376) | Adds a symbol to the configuration. |
-| <code>public Task RemoveSymbolAsync(string symbolName, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:393](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L393) | Removes a symbol from the configuration. |
-| <code>public static string NormalizeProviderId(string providerId);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:463](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L463) |  |
+| <code>public abstract string ConfigPath { get; }</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:52](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L52) | Gets the path to the configuration file. |
+| <code>public async Task&lt;ConfigValidationResultDetail&gt; ValidateConfigDetailAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:122](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L122) | Validates the current configuration. |
+| <code>public async Task&lt;DataSourcesConfigDto&gt; GetDataSourcesConfigDtoAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:191](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L191) | Gets the data sources configuration. |
+| <code>public Task AddOrUpdateDataSourceAsync(DataSourceConfigDto dataSource, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:200](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L200) | Adds or updates a data source configuration. |
+| <code>public Task DeleteDataSourceAsync(string id, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:225](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L225) | Deletes a data source by ID. |
+| <code>public Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:240](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L240) | Sets the default data source for real-time or historical data. |
+| <code>public Task UpdateFailoverSettingsAsync(bool enableFailover, int failoverTimeoutSeconds, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:260](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L260) | Updates failover settings for data sources. |
+| <code>public async Task&lt;BackfillProvidersConfigDto&gt; GetBackfillProvidersConfigAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:274](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L274) | Gets backfill provider configuration, creating defaults when missing. |
+| <code>public async Task&lt;BackfillProviderOptionsDto?&gt; GetBackfillProviderOptionsAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:285](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L285) | Gets options for a single historical backfill provider. |
+| <code>public async Task&lt;(string? PreviousJson, string NewJson)&gt; SetBackfillProviderOptionsAsync(string providerId, BackfillProviderOptionsDto options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:300](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L300) | Sets backfill provider options. Returns the previous and new JSON for audit trail purposes. |
+| <code>public async Task&lt;string?&gt; ResetBackfillProviderOptionsAsync(string providerId, BackfillProviderOptionsDto defaultOptions, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:335](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L335) | Resets a provider&#x27;s configuration back to defaults. Returns the previous JSON for audit trail purposes. |
+| <code>public async Task&lt;SymbolConfigDto[]&gt; GetConfiguredSymbolsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:363](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L363) | Gets the configured symbols from configuration. |
+| <code>public Task SaveSymbolsAsync(SymbolConfigDto[] symbols, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:372](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L372) | Saves symbols to the configuration. |
+| <code>public Task AddSymbolAsync(SymbolConfigDto symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:378](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L378) | Adds a symbol to the configuration. |
+| <code>public Task RemoveSymbolAsync(string symbolName, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:395](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L395) | Removes a symbol from the configuration. |
+| <code>public static string NormalizeProviderId(string providerId);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:481](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L481) |  |
 
 ## ConfigValidationResultDetail
 
 Qualified name: <code>Meridian.Ui.Services.Services.ConfigValidationResultDetail</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L16).
+Source: [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L17).
 
 Result of configuration validation. Platform-agnostic version for shared use.
 
@@ -379,11 +379,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool IsValid { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:18](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L18) |  |
-| <code>public string[] Errors { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L19) |  |
-| <code>public string[] Warnings { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L20) |  |
-| <code>public static ConfigValidationResultDetail Success() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L22) |  |
-| <code>public static ConfigValidationResultDetail Failure(params string[] errors) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:23](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L23) |  |
+| <code>public bool IsValid { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L19) |  |
+| <code>public string[] Errors { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L20) |  |
+| <code>public string[] Warnings { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L21) |  |
+| <code>public static ConfigValidationResultDetail Success() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:23](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L23) |  |
+| <code>public static ConfigValidationResultDetail Failure(params string[] errors) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:24](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L24) |  |
 
 ## ConnectionServiceBase
 

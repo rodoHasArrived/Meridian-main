@@ -171,6 +171,7 @@ public sealed class SupportedPostureStartupIntegrationTests
                         return Task.CompletedTask;
                     }));
                     services.AddSingleton<IReportingMigrationStartup>(migration);
+                    services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, WorkstationReportingMigrationHostedService>());
                     services.AddSingleton<IHostedService>(_ =>
                     {
                         events.Add("hosted-construction");
@@ -183,6 +184,8 @@ public sealed class SupportedPostureStartupIntegrationTests
             await server.StartAsync(startTimeout.Token);
 
             migration.CallCount.Should().Be(1);
+            migration.InvocationCount.Should().Be(2,
+                "pre-start readiness and the hosted fallback must share one idempotent initialization");
             events.Should().Equal("database", "reporting", "hosted-construction");
             hostedServiceObservedReady.Should().BeTrue(
                 "reporting schema readiness must precede construction of schedule and distribution hosted services");
@@ -229,6 +232,7 @@ public sealed class SupportedPostureStartupIntegrationTests
                         return failInitialization ? Task.FromException(failure) : Task.CompletedTask;
                     }));
                     services.AddSingleton<IReportingMigrationStartup>(migration);
+                    services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, WorkstationReportingMigrationHostedService>());
                     services.AddSingleton<IHostedService>(_ =>
                     {
                         events.Add("hosted-construction");
@@ -248,6 +252,8 @@ public sealed class SupportedPostureStartupIntegrationTests
 
             events.Should().Equal("schema", "schema", "dependent", "reporting", "hosted-construction");
             migration.CallCount.Should().Be(1);
+            migration.InvocationCount.Should().Be(2,
+                "the retried startup must initialize once before the hosted fallback rechecks readiness");
             await server.StopAsync(timeout.Token);
         }
         finally
@@ -640,18 +646,28 @@ public sealed class SupportedPostureStartupIntegrationTests
 
     private sealed class RecordingReportingMigrationStartup(Action? onReady = null) : IReportingMigrationStartup
     {
+        private readonly object _gate = new();
         private int _callCount;
+        private int _invocationCount;
         private int _ready;
 
         public int CallCount => Volatile.Read(ref _callCount);
+        public int InvocationCount => Volatile.Read(ref _invocationCount);
         public bool IsReady => Volatile.Read(ref _ready) == 1;
 
         public Task EnsureReadyAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            onReady?.Invoke();
-            Interlocked.Increment(ref _callCount);
-            Volatile.Write(ref _ready, 1);
+            Interlocked.Increment(ref _invocationCount);
+            lock (_gate)
+            {
+                if (IsReady)
+                    return Task.CompletedTask;
+
+                onReady?.Invoke();
+                Interlocked.Increment(ref _callCount);
+                Volatile.Write(ref _ready, 1);
+            }
             return Task.CompletedTask;
         }
     }

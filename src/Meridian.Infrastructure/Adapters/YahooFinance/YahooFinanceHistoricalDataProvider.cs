@@ -41,10 +41,12 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
     public override string DisplayName => "Yahoo Finance (free)";
     public override string Description => "Free daily and intraday OHLCV with adjusted prices for global equities, ETFs, and indices.";
     protected override string HttpClientName => HttpClientNames.YahooFinanceHistorical;
-    public override int Priority => 22;
-    public override TimeSpan RateLimitDelay => TimeSpan.FromSeconds(0.5);
-    public override int MaxRequestsPerWindow => 2000;
-    public override TimeSpan RateLimitWindow => TimeSpan.FromHours(1);
+    public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.YahooPriority;
+    public override TimeSpan RateLimitDelay => RuntimeOptions?.Requests is { } requests
+        ? TimeSpan.FromTicks((RuntimeOptions.Window ?? RateLimitWindow).Ticks / requests)
+        : TimeSpan.FromSeconds(0.5);
+    public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? Meridian.Core.Config.BackfillProviderCatalog.YahooPerHour;
+    public override TimeSpan RateLimitWindow => RuntimeOptions?.Window ?? TimeSpan.FromHours(1);
 
     public override HistoricalDataCapabilities Capabilities { get; } =
         HistoricalDataCapabilities.BarsOnly with
@@ -55,8 +57,8 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
 
     public IReadOnlyList<DataGranularity> SupportedGranularities => IntradayGranularities;
 
-    public YahooFinanceHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null)
-        : base(httpClient, log)
+    public YahooFinanceHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(httpClient, log, runtimeOptions: runtimeOptions)
     {
         if (!Http.DefaultRequestHeaders.Contains("User-Agent"))
             Http.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");

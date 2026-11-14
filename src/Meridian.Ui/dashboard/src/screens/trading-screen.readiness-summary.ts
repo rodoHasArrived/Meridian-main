@@ -3,7 +3,7 @@ import type {
   TradingOperatorReadiness,
   WorkstationBrokerageSyncStatus
 } from "@/types";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp } from "@/lib/format";
 
 export type AcceptanceLevel = "ready" | "review" | "atRisk";
 
@@ -63,7 +63,7 @@ export function buildTradingReadinessSummaryRows(
     ? formatBrokerageSyncValue(readiness.brokerageSync)
     : "No account sync";
   const executionReconciliation = readiness.executionReconciliation ?? null;
-  const asOfLabel = formatTradingUtcDateTime(readiness.asOf);
+  const asOfLabel = formatTradingDateTime(readiness.asOf);
   const rows: TradingReadinessSummaryRow[] = [
     {
       id: "overall",
@@ -128,13 +128,13 @@ export function buildTradingReadinessSummaryRows(
   return rows;
 }
 
-export function formatTradingUtcDateTime(value: string): string {
+export function formatTradingDateTime(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return value;
   }
 
-  return formatUtcTimestamp(date);
+  return formatTimestamp(date);
 }
 
 function formatLiveOperationRequirementAriaLabel(

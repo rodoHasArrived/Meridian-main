@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IGovernedPublicationAmender
+
+Qualified name: <code>Meridian.Application.SecurityMaster.IGovernedPublicationAmender</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs:26](../../../../src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs#L26).
+
+The publication write path of the governed workbench lifecycle. Only the published-revision merge (ApprovedFieldEditCanonicalMergeHandler) uses it.
+
+```csharp
+public interface IGovernedPublicationAmender
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityDetailDto&gt; AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs:29](../../../../src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs#L29) | Applies the merged amendment of an approved revision named by request.SourceRecordId. |
+
+## IGovernedTermAmendmentPolicy
+
+Qualified name: <code>Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:19](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L19).
+
+Whether direct term amendments are refused in favour of the governed workbench (Draft → Submitted → Approved → Published). One policy for every client so the web API and the WPF editor cannot disagree. It reads the effective requirement from ISecurityMasterGovernanceRequirements, so it refuses when SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments is on or the Institutional governance profile is in force.
+
+```csharp
+public interface IGovernedTermAmendmentPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string? RefusalReason { get; }</code> | [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:22](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L22) | The refusal an operator should see, or null when direct amendments are permitted. |
+
+## ILedgerPeriodLockReader
+
+Qualified name: <code>Meridian.Application.SecurityMaster.ILedgerPeriodLockReader</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:17](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L17).
+
+Authoritative read of accounting-period lock status for a date, backing the Security Master Passport Workbench period-aware propagation (Phase 3). The authority is the ledger accounting period status (LedgerAccountingPeriod.Status), the same source LedgerPeriodPostingGuard enforces at post-time — not close-readiness. Default-deny: when the covering period is missing, indeterminate, or its status is unrecognized, the reader returns LedgerPeriodStatusDto.HardClosed so an upstream reference-data edit can never silently mutate a book whose lock state could not be confirmed.
+
+```csharp
+public interface ILedgerPeriodLockReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LedgerPeriodStatusDto&gt; GetPeriodStatusAsync(Guid ledgerBookId, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:23](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L23) | Resolves the accounting period covering date for ledgerBookId and returns its lock status; LedgerPeriodStatusDto.HardClosed when indeterminate. |
+
 ## IMultiAssetCoverageInvalidator
 
 Qualified name: <code>Meridian.Application.SecurityMaster.IMultiAssetCoverageInvalidator</code>. Kind: `interface`.
@@ -967,60 +1021,3 @@ Declared public members:
 | <code>public SecurityMasterRebuildOrchestrator(ISecurityMasterEventStore eventStore, ISecurityMasterStore store, SecurityMasterProjectionCache cache, SecurityMasterAggregateRebuilder rebuilder, SecurityMasterProjectionService projectionService, SecurityMasterOptions options, ILogger&lt;SecurityMasterRebuildOrchestrator&gt; logger, ISecurityMasterConflictService? conflictService = null, ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterRebuildOrchestrator.cs:28](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterRebuildOrchestrator.cs#L28) |  |
 | <code>public async Task RebuildAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterRebuildOrchestrator.cs:52](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterRebuildOrchestrator.cs#L52) |  |
 | <code>public async Task&lt;int&gt; RebuildAssetClassAsync(string assetClass, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterRebuildOrchestrator.cs:173](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterRebuildOrchestrator.cs#L173) | Rebuilds ONLY the securities whose stored projection carries assetClass, bounding the rebuild cost to that class&#x27;s population instead of a full shared replay. The shared replay checkpoint is deliberately untouched — the scoped rebuild is a repair/refresh of one class&#x27;s projections (event-stream fold, store upsert, cache upsert), not a stream-cursor advance, so it can never mark unrelated classes&#x27; events as replayed. Returns the number of projections rebuilt. |
-
-## SecurityProjectionRebuildHandler
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Rebuild.SecurityProjectionRebuildHandler</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs:21](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs#L21).
-
-Published-revision side effect (Order = 10, runs first): refreshes the edited security&#x27;s cached economic projection from the durable event stream so reads taken after the publish are coherent with the persisted stream. Rebuilds only the edited security — SecurityMasterAggregateRebuilder.RebuildAsync folds the snapshot plus the tail events for that single stream (the per-edit hot path) and upserts the result into the shared SecurityMasterProjectionCache. It deliberately does NOT trigger a full multi-asset / UFL replay, which is reserved for ingest/maintenance. Idempotent: a retried publish rebuilds and upserts the same cache key. The rebuilder and cache are optional dependencies (registered only when the Security Master backend is configured); with no backend there is no projection cache to refresh and the handler is a no-op.
-
-```csharp
-public sealed class SecurityProjectionRebuildHandler : ISecurityMasterRevisionPublishedHandler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityProjectionRebuildHandler(ILogger&lt;SecurityProjectionRebuildHandler&gt; logger, SecurityMasterAggregateRebuilder? rebuilder = null, SecurityMasterProjectionCache? cache = null);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs:27](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs#L27) |  |
-| <code>public int Order =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs:37](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs#L37) |  |
-| <code>public async Task HandleAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs:39](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs#L39) |  |
-
-## UflProjectionRebuilder
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Rebuild.UflProjectionRebuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs:10](../../../../src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs#L10).
-
-Routes UFL projection rebuild requests through the shared Security Master rebuild pipeline.
-
-```csharp
-public sealed class UflProjectionRebuilder : IUflProjectionRebuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public UflProjectionRebuilder(SecurityMasterRebuildOrchestrator orchestrator, ILogger&lt;UflProjectionRebuilder&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs:15](../../../../src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs#L15) |  |
-| <code>public async Task RebuildAsync(string assetClass, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs:23](../../../../src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs#L23) |  |
-
-## RestatementCandidateResult
-
-Qualified name: <code>Meridian.Application.SecurityMaster.RestatementCandidateResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:46](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L46).
-
-The outcome of locating report packs that consumed a changed line in a locked period: the actionable restatement Candidates, plus HasNonActionableMatches — true when at least one published pack referenced the security but could not be turned into an actionable candidate (for example an already-restated pack the workflow cannot re-restate). The caller uses the flag to require a manual follow-up for a soft-closed book even when no actionable candidate was produced, so a real match is never silently dropped. RestatementCandidateResult.IsAuthoritative is false when the configured reporting authority cannot answer the lookup at all; that indeterminate state also requires manual follow-up and must not be interpreted as an authoritative empty result.
-
-```csharp
-public sealed record RestatementCandidateResult(IReadOnlyList<RestatementCandidateDto> Candidates, bool HasNonActionableMatches, bool IsAuthoritative = true)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static RestatementCandidateResult Empty { get; } = new ([], false);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:51](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L51) |  |

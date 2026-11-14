@@ -81,6 +81,10 @@ reports the evidence gap and is not represented as a complete tax filing.
 
 ## Portable ledger evidence
 
+The run journal CSV/Parquet exporter and its source-generated JSON context are linked from
+`Meridian.Storage/Export` into this accounting assembly. Their paths and namespaces remain
+stable while the generic Storage assembly retains its ledger-free dependency boundary.
+
 `PortableLedgerSnapshot.CapturePayload` captures typed journals into the model-neutral
 `PortableLedgerPayload`. `PortableLedgerPackaging.CreatePackager` installs the accounting
 validator that replays journals and verifies the balance digest before publication or import.

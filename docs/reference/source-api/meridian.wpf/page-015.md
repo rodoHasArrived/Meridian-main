@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityConflictLaneEntry
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SecurityConflictLaneEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs:20](../../../../src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs#L20).
+
+```csharp
+public sealed record SecurityConflictLaneEntry(SecurityMasterConflict Conflict, string SecurityLabel, string SecurityIdentifier, string FieldLabel, string SeverityLabel, string SeverityTone, int SeverityRank, string ConfidenceLabel, string AutoResolveHint, string ImpactSummary, string ImpactDetail, string NextStepSummary, bool RoutesToFundReview, bool RoutesToReconciliation, bool RoutesToCashFlow, bool RoutesToReportPack, bool RequiresTradingBackfill, bool IsAutoResolveSafe);
+```
+
+## SecurityConflictLaneGroup
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SecurityConflictLaneGroup</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs:7](../../../../src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs#L7).
+
+```csharp
+public sealed record SecurityConflictLaneGroup(Guid SecurityId, string SecurityLabel, string SecurityIdentifier, string GroupSummary, string HighestSeverityLabel, string HighestSeverityTone, int SafeAutoResolveCount, IReadOnlyList<SecurityConflictLaneEntry> Conflicts)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int ConflictCount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs:17](../../../../src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs#L17) |  |
+
 ## SecurityConflictSecurityContext
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SecurityConflictSecurityContext</code>. Kind: `record`.
@@ -1831,57 +1857,3 @@ Declared public members:
 | <code>public void CancelRemoveMapping();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:394](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L394) |  |
 | <code>public async Task&lt;int&gt; ImportCsvContentAsync(string csvContent, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:401](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L401) |  |
 | <code>public string ExportCsv();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:426](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L426) |  |
-
-## SymbolQualityDisplayItem
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SymbolQualityDisplayItem</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:774](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L774).
-
-Presents a symbol&#x27;s quality grade, completeness, integrity, and issue count.
-
-```csharp
-public sealed class SymbolQualityDisplayItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:776](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L776) |  |
-| <code>public string Grade { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:777](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L777) |  |
-| <code>public SolidColorBrush? GradeBackground { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:778](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L778) |  |
-| <code>public double OverallScore { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:779](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L779) |  |
-| <code>public string CompletenessText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:780](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L780) |  |
-| <code>public string IntegrityText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:781](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L781) |  |
-| <code>public string IssueCount { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:782](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L782) |  |
-
-## SymbolsPageSectionViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SymbolsPageSectionViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs:9](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs#L9).
-
-Groups symbol and watchlist collections with search and subscription and exchange filter state.
-
-```csharp
-public sealed class SymbolsPageSectionViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ObservableCollection&lt;SymbolViewModel&gt; Symbols { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs:22](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs#L22) |  |
-| <code>public ObservableCollection&lt;SymbolViewModel&gt; FilteredSymbols { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs:23](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs#L23) |  |
-| <code>public ObservableCollection&lt;WatchlistInfo&gt; Watchlists { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs:24](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs#L24) |  |
-| <code>public string SearchText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs:26](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs#L26) |  |
-| <code>public string SelectedSubscriptionFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs:27](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs#L27) |  |
-| <code>public string SelectedExchangeFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs:28](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs#L28) |  |
-| <code>public string VisibleSymbolScopeText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs:29](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs#L29) |  |
-| <code>public bool HasActiveFilters { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs:30](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs#L30) |  |
-| <code>public bool HasVisibleSymbols { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs:31](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs#L31) |  |
-| <code>public bool IsSymbolsEmptyStateVisible { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs:32](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs#L32) |  |
-| <code>public string SymbolsEmptyStateTitle { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs:33](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs#L33) |  |
-| <code>public string SymbolsEmptyStateDetail { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs:34](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs#L34) |  |
-| <code>public SymbolViewModel? SelectedItem { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs:35](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.Sections.cs#L35) |  |

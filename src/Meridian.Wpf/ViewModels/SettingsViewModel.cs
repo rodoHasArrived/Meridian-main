@@ -769,7 +769,7 @@ public sealed partial class SettingsViewModel : BindableBase
     }
 
     private async Task SaveConfigAsync() => await SaveOrApplyConfigAsync("Configuration Saved");
-    private async Task ApplyConfigAsync() => await SaveOrApplyConfigAsync("Configuration Applied");
+    private async Task ApplyConfigAsync() => await SaveOrApplyConfigAsync("Configuration Saved");
     private async Task SaveOrApplyConfigAsync(string messageTitle)
     {
         var validation = await RefreshValidationAsync();
@@ -779,11 +779,25 @@ public sealed partial class SettingsViewModel : BindableBase
             return;
         }
 
-        var existingConfig = await _configService.LoadConfigFromDiskAsync();
-        var updatedConfig = BuildConfigDtoFromSettings(existingConfig);
-        await _configService.WriteConfigAsync(updatedConfig);
-        HasUnsavedChanges = false;
-        _notificationService.ShowNotification(messageTitle, "Settings have been written to disk.", NotificationType.Success);
+        try
+        {
+            var existingConfig = await _configService.LoadConfigFromDiskAsync();
+            var updatedConfig = BuildConfigDtoFromSettings(existingConfig);
+            await _configService.WriteConfigAsync(updatedConfig);
+            HasUnsavedChanges = false;
+            _notificationService.ShowNotification(messageTitle,
+                "Settings have been written to disk. Host activation is not confirmed; inspect the setting activation banner.", NotificationType.Success);
+        }
+        catch (Meridian.Ui.Shared.Services.UiConfigurationValidationException failure)
+        {
+            _notificationService.ShowNotification("Configuration not saved",
+                string.Join(Environment.NewLine, failure.Errors.SelectMany(entry => entry.Value.Select(message => $"{entry.Key}: {message}"))), NotificationType.Error);
+        }
+        catch (Exception failure) when (failure is IOException or InvalidDataException or UnauthorizedAccessException or System.Text.Json.JsonException)
+        {
+            _notificationService.ShowNotification("Configuration not saved",
+                "The source configuration could not be read or validated. Repair or restore it explicitly before retrying. Your edits remain unsaved.", NotificationType.Error);
+        }
     }
 
     private async Task<WpfServices.ConfigServiceValidationResult> RefreshValidationAsync()

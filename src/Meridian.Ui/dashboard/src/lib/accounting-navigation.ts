@@ -39,7 +39,8 @@ export const ACCOUNTING_NAVIGATION_GROUPS: readonly AccountingNavigationGroupDef
     items: [
       {
         id: "today",
-        label: "Today",
+        // Not "Today": that name belongs to the global front door (the Daily Control Tower).
+        label: "Close cockpit",
         route: WORKSTATION_ROUTE_CATALOG.accounting,
         match: "exact"
       },

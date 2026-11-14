@@ -1376,18 +1376,6 @@ function withReportingSchedule(state: "Active" | "Paused" | "Disabled" = "Active
   };
 }
 
-function formatExpectedScheduleTimestamp(value: string): string {
-  const timestamp = new Date(value);
-  return timestamp.toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: "UTC",
-    timeZoneName: "short"
-  });
-}
-
 describe("ReportingScreen", () => {
   const fetchMock = vi.fn();
 
@@ -4567,7 +4555,7 @@ describe("ReportingScreen", () => {
     });
     expect(boardPlan).toHaveTextContent("Will deliver Pdf/Xlsx/Csv by SecurePortal to Board reporting committee");
     expect(boardPlan).toHaveTextContent("Pdf, Xlsx, Csv");
-    expect(boardPlan).toHaveTextContent(formatExpectedScheduleTimestamp("2026-05-17T20:15:00Z"));
+    expect(boardPlan).toHaveTextContent("May 17, 2026, 20:15 UTC");
     expect(boardPlan).toHaveTextContent("Email-link package is available through the token-gated route /reporting/package/board.");
     expect(boardPlan).toHaveTextContent("EmailLink delivery to Board reporting committee via Board portal.");
     expect(boardPlan).toHaveTextContent("3 artifact(s) retained as Pdf/Xlsx/Csv; manifest workstation/reporting/deliveries/board/manifest.json.");
@@ -5392,7 +5380,7 @@ describe("ReportingScreen", () => {
     expect(within(restatement).getByText("report-restated-1")).toBeInTheDocument();
     expect(within(restatement).getByRole("list", { name: "Restatement changed lines" })).toBeInTheDocument();
     expect(within(restatement).getByLabelText("nav.total changed from 1250000 to 1249500 with 1 evidence link")).toHaveTextContent(
-      "1250000 -> 1249500"
+      "1250000 → 1249500"
     );
     expect(within(restatement).getByRole("link", { name: "Open evidence for nav.total" })).toHaveAttribute(
       "href",
@@ -5401,7 +5389,7 @@ describe("ReportingScreen", () => {
 
     const publication = screen.getByRole("region", { name: "Report-pack publication review" });
     expect(within(publication).getByText("Publication review")).toBeInTheDocument();
-    expect(within(publication).getByText("Publication signed off by Reporting ops on May 28, 3:20 PM UTC.")).toBeInTheDocument();
+    expect(within(publication).getByText("Publication signed off by Reporting ops on May 28, 2026, 15:20 UTC.")).toBeInTheDocument();
     expect(within(publication).getByText("Controller")).toBeInTheDocument();
     expect(within(publication).getByText("Approved NAV correction package.")).toBeInTheDocument();
     expect(within(publication).getByText("Authenticated actor 'Reporting ops' with role 'Controller' approved publication via Human operator.")).toBeInTheDocument();

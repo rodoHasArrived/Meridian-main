@@ -11,6 +11,11 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui
 
+The Providers workstation includes guarded failover, historical provider limits and routing previews,
+symbol rollout, validation profiles and quota history. Data and Settings share pending activation
+status from the host; rebuild the dashboard to refresh these served controls. See the dashboard and
+shared-service READMEs for validation and runtime boundaries.
+
 The browser bond workstation extends the existing Data/Security Master and Portfolio cash screens. Shared endpoints retain accepted holdings, input revisions, comparisons, forecasts, collection watches, risk and governed income preparations. See [bond operations](../../docs/operators/bond-workflows.md) for source formats and activation boundaries.
 
 The served bundle also includes linked analytical investigation views across the existing workspaces: orders, displayed depth, options, margin, maturities, ownership, retained private capital, fixed-income exercises, corporate dates, tax parcels and retained strategy sweeps. The dashboard and shared-source READMEs document their source, unit and authority boundaries; generated assets must be rebuilt after integration.
@@ -60,7 +65,9 @@ independent close-price review and dated cash forecasts, with source evidence an
 
 Accounting's External GL surface includes bounded onboarding backed by shared retained workspace
 services. Rebuild the dashboard to serve source selection, comparison history, review controls and
-canonical frozen packet downloads. The host exposes no onboarding posting or authority transition.
+canonical frozen packet downloads. The host exposes no onboarding posting. Shadow-mode onboarding adds
+one audited authority transition: promoting a shadow book to book of record, which needs an
+independent reviewer and a verified parallel-run certificate.
 
 The checked-in workstation bundle includes retained manual-journal amount proof and durable
 reconciliation lineage display. Regenerate it from the dashboard after related source changes;
@@ -139,16 +146,66 @@ with reasons in `scripts/dev/web-screenshot-routes.json`.
 It also carries the Phase 3 trust fixes from the same plan:
 - Data overview shows a provider's "Latency" only as a reported duration or "Latency not
   reported"; the "Trust / last good" column keeps the last response time.
-- Today lists the finance queue that the sidebar badges count, above the operator inbox, and each
-  count names its unit (for example "+5 more issues" in the status bar).
+- Today has one queue grid. Workspace signals (the items the sidebar badges count) and shared
+  inbox items are interleaved by severity, then age, and a Source column names each row's source.
+  The Source filter (All sources, Workspace signals, Shared inbox) filters rows of that grid and
+  shows a count per source. Inbox rows keep assign, snooze, acknowledge, bulk assign and
+  unconfirmed-command retry. Each count names its unit (for example "+5 more issues" in the
+  masthead trust strip).
+- The bottom status bar holds connectivity and freshness only; the masthead trust strip is the one
+  shell place that names the worst open issue.
 - Trading shows a neutral "Choose a fund account" state instead of a red recovery block when no
   account is in scope in a non-live brokerage environment; live, unknown and failed states still
   block.
-- A metric basis the source does not declare reads "Not declared by source" once per strip.
-- The screenshot harness fails a route that shows a time under "Latency" or a "Basis unavailable"
-  or "Saved views unavailable" placeholder.
+- A figures strip prints a basis line only when its source declares a basis or an as-of time;
+  the figure passport still states an undeclared basis.
+- The screenshot harness fails a route that shows a time under "Latency", a "Basis unavailable"
+  or "Saved views unavailable" placeholder, or a status badge whose text is clipped
+  (`truncated-badge`). Badges never truncate: one- or two-word badges keep their width and
+  longer ones wrap.
 
 No shared contract changed.
+
+Dashboard source carries the first P4 step of the
+[UX consolidation plan](../../docs/engineering/plans/workstation-ux-consolidation-plan-2026-11.md)
+(the host-served bundle is not yet rebuilt from it):
+- The top bar shows the operating scope as a permanent, labelled scope bar,
+  `Scope  Account … › Period …`, with Subject, Run and Provider added when set. An unset dimension
+  reads "All authorized"; the header no longer has a "Context: No scope selected" control, and the
+  empty scope reads "All authorized scopes" wherever it is summarized, as Today already did. The
+  bar opens the scope picker, which still holds the workflow detail.
+- Every figures strip prints the scope its figures were counted over, inherited from the shell: the
+  account the supplying payload was loaded for, "All authorized scopes" for a payload the shell
+  loads without a scope filter, or the scope the route applies. A screen can pass its own. Trading's
+  totals without a fund account read "Brokerage account …".
+- Trading (overview and the one-line row on Orders and the other Trading routes) offers an inline
+  fund-account picker in place of the "Choose a fund account" empty state in a non-live
+  environment; live, unknown and failed states still block. Applying an account sets it in the
+  operating scope and the URL, so links carry it.
+
+No shared contract changed in that step.
+
+Dashboard source also carries the P4 entity, fund and period step (host bundle not yet rebuilt):
+- The scope bar reads `Scope  Entity … › Fund … › Account … › Period …`. An unset Entity, Fund
+  or Account reads "All authorized"; an unset Period reads "All periods". Entity and fund are the
+  `entityId` and `fundId` URL parameters, carried on every route and in storage, recent scopes,
+  saved layouts, Copy link and the server-side default scope. Accounting applies `entityId`.
+  Portfolio > Brokerage sync (household accounts and positions) and Accounting > Close calendar
+  (close workflows) narrow their fund-account rows to the chosen fund or entity client-side, using
+  the organization graph; there the bar shows Entity and Fund as applied. Elsewhere, and on those
+  screens when the structure read is unavailable, a set fund shows as retained (muted) and nothing is hidden.
+- The Trading inline account picker narrows its suggestions by the chosen entity and fund as the
+  scope picker does, and flags an account the graph places outside them.
+- The scope picker lists entities, funds and accounts from `GET /api/workstation/scope-options`,
+  which every operator may call and which lists only what the caller's scoped grants let it read
+  (older hosts: the organization graph `GET /api/fund-structure/graph?activeOnly=true`). An entity
+  narrows the funds and accounts; a fund narrows the accounts. When the read fails the picker takes
+  typed ids and narrows nothing.
+- A Period control sets the window: All periods, Today, MTD, QTD, YTD, Last month, Custom range
+  (shared date-range picker) or As of a date, on the operator's calendar day.
+
+Shared contract change (additive): `OperatingScopeValuesDto` gained optional `EntityId` and
+`FundId`, appended last; WPF is unaffected.
 
 The host-served bundle carries the browser presentation correctness fixes: font stacks that end
 in a generic family (no serif fallback for data text), Ledger Explorer amounts at currency

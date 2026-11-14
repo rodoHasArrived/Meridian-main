@@ -47,20 +47,10 @@ describe("WorkstationStatusBar", () => {
     ]);
   });
 
-  it("repeats the masthead attention state so a green sync is never the whole answer", () => {
-    const build = (attention: Parameters<typeof buildWorkstationStatusItems>[0]["attention"]) =>
-      buildWorkstationStatusItems({ workspaceLabel: "Accounting", refreshing: false, hasError: false, attention });
-
-    expect(build({ tone: "review", title: "Providers: 1 warning", moreCount: 0 })).toEqual([
-      { key: "sync", status: "ok", label: "Sync", value: "up to date" },
-      { key: "attention", status: "warn", label: "Attention", value: "Providers: 1 warning" }
-    ]);
-    expect(build({ tone: "blocked", title: "Cash variance needs review", moreCount: 2 })[1])
-      .toEqual({ key: "attention", status: "err", label: "Attention", value: "Cash variance needs review +2 more issues" });
-    // Clear and still-loading states leave the footer on sync alone.
-    expect(build({ tone: "ready", title: "No open issues", moreCount: 0 }).map((item) => item.key)).toEqual(["sync"]);
-    expect(build({ tone: "pending", title: "Workspace data loading", moreCount: 0 }).map((item) => item.key)).toEqual(["sync"]);
-    expect(build(null).map((item) => item.key)).toEqual(["sync"]);
+  it("holds connectivity and freshness only, never the attention queue's items", () => {
+    const items = buildWorkstationStatusItems({ workspaceLabel: "Accounting", refreshing: false, hasError: false });
+    expect(items.map((item) => item.key)).toEqual(["sync"]);
+    expect(items.some((item) => item.label === "Attention")).toBe(false);
   });
   it("never says up to date while the page's own freshness needs review", () => {
     const build = (pageFreshness: Parameters<typeof buildWorkstationStatusItems>[0]["pageFreshness"]) =>
@@ -83,17 +73,15 @@ describe("WorkstationStatusBar", () => {
     expect(build(null).map((item) => item.key)).toEqual(["sync"]);
   });
 
-  it("retains the shared blocked issue and page freshness together without repeating navigation", () => {
+  it("reports page freshness beside sync without repeating navigation", () => {
     expect(buildWorkstationStatusItems({
       workspaceLabel: "Portfolio",
       refreshing: false,
       hasError: false,
-      attention: { tone: "blocked", title: "Brokerage sync failed", moreCount: 1 },
       pageFreshness: { tone: "review", value: "Stale · 187d ago" }
     })).toEqual([
       { key: "sync", status: "ok", label: "Sync", value: "connected" },
-      { key: "freshness", status: "warn", label: "Freshness", value: "Stale · 187d ago" },
-      { key: "attention", status: "err", label: "Attention", value: "Brokerage sync failed +1 more issue" }
+      { key: "freshness", status: "warn", label: "Freshness", value: "Stale · 187d ago" }
     ]);
   });
 

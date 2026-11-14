@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowSummaryStripViewModel
+
+Qualified name: <code>Meridian.Wpf.Shell.ViewModels.WorkflowSummaryStripViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:15](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L15).
+
+Presents a primary workflow summary and expandable secondary summaries with navigation targets.
+
+```csharp
+public sealed class WorkflowSummaryStripViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkflowSummaryStripViewModel();</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:22](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L22) |  |
+| <code>public ReadOnlyObservableCollection&lt;WorkspaceWorkflowSummary&gt; Summaries { get; }</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:28](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L28) |  |
+| <code>public ReadOnlyObservableCollection&lt;WorkspaceWorkflowSummary&gt; SecondarySummaries { get; }</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:30](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L30) |  |
+| <code>public WorkspaceWorkflowSummary? PrimarySummary { get; private set; }</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:32](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L32) |  |
+| <code>public bool HasPrimarySummary =&gt; …;</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:48](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L48) |  |
+| <code>public string PrimaryTargetText =&gt; …;</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:50](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L50) |  |
+| <code>public bool HasSecondarySummaries =&gt; …;</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:54](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L54) |  |
+| <code>public bool AreSecondarySummariesExpanded { get; private set; }</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:56](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L56) |  |
+| <code>public Visibility SecondarySummariesVisibility =&gt; …;</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:72](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L72) |  |
+| <code>public string SecondaryToggleText =&gt; …;</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:76](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L76) |  |
+| <code>public Visibility PrimaryDetailVisibility =&gt; …;</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:80](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L80) |  |
+| <code>public void Apply(IReadOnlyCollection&lt;WorkspaceWorkflowSummary&gt; summaries, string currentWorkspace);</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:85](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L85) |  |
+| <code>public void UpdatePrimary(string currentWorkspace);</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:91](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L91) |  |
+| <code>public void ToggleSecondarySummaries();</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:115](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L115) |  |
+
 ## AccountingClosePostingBalanceRow
 
 Qualified name: <code>Meridian.Wpf.ViewModels.Accounting.AccountingClosePostingBalanceRow</code>. Kind: `record`.
@@ -2257,24 +2288,3 @@ Declared public members:
 | <code>public bool IsAmountPositive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:627](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L627) |  |
 | <code>public string Time =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:628](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L628) |  |
 | <code>public string Symbol =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:629](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L629) |  |
-
-## ChartIndicatorToggle
-
-Qualified name: <code>Meridian.Wpf.ViewModels.ChartIndicatorToggle</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:784](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L784).
-
-Exposes the identity, label, and observable enabled state of a chart indicator.
-
-```csharp
-public sealed class ChartIndicatorToggle : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ChartIndicatorToggle(string id, string label, Action&lt;string, bool&gt; toggleChanged);</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:789](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L789) |  |
-| <code>public string Id { get; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:796](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L796) |  |
-| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:798](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L798) |  |
-| <code>public bool IsEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:800](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L800) |  |

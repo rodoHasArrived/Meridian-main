@@ -1,17 +1,22 @@
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.Onboarding.OpeningBalances;
 
 namespace Meridian.FinancialOperations.Onboarding;
 
 /// <summary>
 /// Owns bounded onboarding casework and reproducible comparison history. The only source dependency
-/// is a read-only capture seam; neither readiness nor a packet can change accounting authority.
+/// is a read-only capture seam; neither readiness nor a packet can change accounting authority. Shadow-mode
+/// onboarding (see the Shadow partial) adds opening-balance reconciliation, difference explanations, a
+/// parallel-run certificate and an explicit, audited promotion decision.
 /// </summary>
-public sealed class OnboardingWorkspaceService(
+public sealed partial class OnboardingWorkspaceService(
     IOnboardingWorkspaceStore store,
     IOnboardingSourceProvider sources,
-    TimeProvider? clock = null)
+    TimeProvider? clock = null,
+    IOnboardingOpeningSourceReader? openingSources = null,
+    IOnboardingOpeningStateProvider? openingState = null)
 {
     public const string ReadOnlyAuthorityPosture = "ExternalBooksReadOnly;AccountingAuthorityTransitionSeparatelyControlled";
     public const string ComparisonAlgorithmVersion = "onboarding-comparison/1";
@@ -151,7 +156,7 @@ public sealed class OnboardingWorkspaceService(
             workspace.WorkspaceId, workspace.Name, workspace.OwnerId, workspace.Scope, workspace.Version,
             workspace.DataRevision, workspace.Criteria, workspace.CriteriaHistory, workspace.Comparisons,
             CurrentDifferences(workspace), workspace.Assignments, workspace.Reviews, CalculateReadiness(workspace),
-            ReadOnlyAuthorityPosture));
+            ReadOnlyAuthorityPosture, NullIfEmpty(workspace.Explanations), workspace.ShadowDesignation));
         var packet = new OnboardingReadinessPacketDto(Guid.NewGuid().ToString("N"), _clock.GetUtcNow(), actorId,
             content, HashPacketContent(content), "SHA-256");
         await SaveAsync(Advance(workspace, false) with { Packets = [.. workspace.Packets, packet] }, workspace.Version, ct);
@@ -197,7 +202,8 @@ public sealed class OnboardingWorkspaceService(
         var request = new CaptureOnboardingComparisonRequestDto(0, run.AsOfDate, run.ProviderId, run.ImportId,
             run.MappingProfileId, run.MappingVersion, run.Notes);
         var inputs = ValidateCapture(historical, request, Copy(run.Inputs));
-        var replay = BuildComparison(historical, request, inputs, run.ActorId, run.ComparisonId, run.CapturedAtUtc, run.DataRevision);
+        var replay = BuildComparison(historical, request, inputs, run.ActorId, run.ComparisonId, run.CapturedAtUtc, run.DataRevision,
+            run.IsOpening, run.OpeningSourceKind);
         if (replay.ContentHash != run.ContentHash)
             throw new InvalidOperationException("The retained comparison failed reproducibility validation.");
         return Copy(replay);
@@ -245,12 +251,15 @@ public sealed class OnboardingWorkspaceService(
 
     private static OnboardingComparisonDto BuildComparison(
         OnboardingWorkspaceDto workspace, CaptureOnboardingComparisonRequestDto request, OnboardingSourceCaptureDto capture,
-        string actorId, string comparisonId, DateTimeOffset capturedAtUtc, int dataRevision)
+        string actorId, string comparisonId, DateTimeOffset capturedAtUtc, int dataRevision,
+        bool isOpening = false, string? openingSourceKind = null)
     {
         // A correction compares with its prior same-date result. A new period compares with the latest
         // earlier period. Append sequence and its separate hash chain never rewrite chronological history.
-        var predecessor = workspace.Comparisons.LastOrDefault(item => item.AsOfDate == request.AsOfDate)
-            ?? workspace.Comparisons.Where(item => item.AsOfDate < request.AsOfDate)
+        // Opening-balance comparisons form their own lineage so they never mark period rows as disappeared.
+        var lineage = workspace.Comparisons.Where(item => item.IsOpening == isOpening).ToArray();
+        var predecessor = lineage.LastOrDefault(item => item.AsOfDate == request.AsOfDate)
+            ?? lineage.Where(item => item.AsOfDate < request.AsOfDate)
                 .OrderBy(item => item.AsOfDate).ThenBy(item => item.Sequence).LastOrDefault();
         var previous = predecessor?.Differences.ToDictionary(row => row.DifferenceKey, StringComparer.Ordinal)
             ?? new Dictionary<string, OnboardingDifferenceDto>(StringComparer.Ordinal);
@@ -299,13 +308,13 @@ public sealed class OnboardingWorkspaceService(
             request.ProviderId, request.ImportId, request.MappingProfileId, request.MappingVersion,
             Copy(workspace.Criteria), capture, differences.OrderBy(row => row.DifferenceKey, StringComparer.Ordinal).ToArray(),
             Coverage(workspace, capture), "", workspace.Comparisons.LastOrDefault()?.ContentHash, ComparisonAlgorithmVersion,
-            predecessor?.ComparisonId);
+            predecessor?.ComparisonId, isOpening, isOpening ? openingSourceKind : null);
         return comparison with { ContentHash = Hash(comparison) };
     }
 
     private static IReadOnlyList<OnboardingDifferenceDto> CurrentDifferences(OnboardingWorkspaceDto workspace)
     {
-        var latest = workspace.Comparisons.OrderBy(item => item.AsOfDate).ThenBy(item => item.Sequence).LastOrDefault();
+        var latest = PeriodComparisons(workspace).OrderBy(item => item.AsOfDate).ThenBy(item => item.Sequence).LastOrDefault();
         return latest?.Differences.Select(row => WithAssignment(row, workspace.Assignments)).ToArray() ?? [];
     }
 
@@ -322,16 +331,24 @@ public sealed class OnboardingWorkspaceService(
 
     private static OnboardingReadinessDto CalculateReadiness(OnboardingWorkspaceDto workspace)
     {
-        var latestByDate = workspace.Comparisons.GroupBy(run => run.AsOfDate)
+        var latestByDate = PeriodComparisons(workspace).GroupBy(run => run.AsOfDate)
             .ToDictionary(group => group.Key, group => group.MaxBy(run => run.Sequence)!);
         var missingDates = workspace.Criteria.RequiredDates.Where(date => !latestByDate.ContainsKey(date)).Order().ToArray();
         var requiredRuns = workspace.Criteria.RequiredDates.Where(latestByDate.ContainsKey).Select(date => latestByDate[date]).ToArray();
+        var openingRun = workspace.Comparisons.Where(run => run.IsOpening).MaxBy(run => run.Sequence);
         var missing = requiredRuns.SelectMany(run => run.Inputs.MissingSources.Select(source => source with
         {
             Message = $"{run.AsOfDate:yyyy-MM-dd}: {source.Message}"
-        })).ToArray();
-        var unresolved = requiredRuns.SelectMany(run => run.Differences.Where(row => row.Status != "Resolved")
+        })).Concat(openingRun?.Inputs.MissingSources.Select(source => source with
+        {
+            Message = $"Opening {openingRun.AsOfDate:yyyy-MM-dd}: {source.Message}"
+        }) ?? []).ToArray();
+        // An explained difference (unchanged amounts, evidence attached, not a Meridian error) no longer blocks.
+        var unresolved = requiredRuns.SelectMany(run => run.Differences
+            .Where(row => row.Status != "Resolved" && ApplicableExplanation(workspace, run, row) is null)
             .Select(row => new OnboardingPeriodDifferenceDto(run.ComparisonId, run.AsOfDate, WithAssignment(row, workspace.Assignments)))).ToArray();
+        var explainedCount = requiredRuns.Sum(run => run.Differences
+            .Count(row => row.Status != "Resolved" && ApplicableExplanation(workspace, run, row) is not null));
         var blockers = new List<string>();
         if (missingDates.Length > 0)
             blockers.Add($"Capture {missingDates.Length} required date(s).");
@@ -348,6 +365,23 @@ public sealed class OnboardingWorkspaceService(
             if (workspace.Criteria.RequireCloseReadiness && run.Inputs.CloseReadiness is not { IsComplete: true, IsReadyToClose: true })
                 blockers.Add($"Close-readiness evidence for {run.AsOfDate:yyyy-MM-dd} is incomplete or blocked.");
         }
+        var opening = BuildOpeningReport(workspace);
+        if (workspace.ShadowDesignation?.State == OnboardingShadowStates.Shadow)
+        {
+            if (opening is null || openingRun is null)
+                blockers.Add("Import and reconcile the incumbent opening balances for the shadow book.");
+            else
+            {
+                if (Hash(openingRun.Criteria) != Hash(workspace.Criteria))
+                    blockers.Add("Reimport the incumbent opening balances against the current owner criteria.");
+                if (openingRun.Inputs.MissingSources.Count > 0)
+                    blockers.Add($"Reimport the incumbent opening balances after supplying {openingRun.Inputs.MissingSources.Count} missing opening source requirement(s).");
+                if (Coverage(workspace, openingRun.Inputs) < workspace.Criteria.MinimumCoveragePercent)
+                    blockers.Add("Reimport the incumbent opening balances with coverage of the selected accounts and required comparison kinds.");
+                if (!opening.IsReconciled && opening.BreakCount + opening.MissingCount > 0)
+                    blockers.Add($"Reconcile {opening.BreakCount + opening.MissingCount} opening-balance difference(s) with the incumbent.");
+            }
+        }
         var reviews = workspace.Reviews.Where(review => review.DataRevision == workspace.DataRevision
                 && !SameActor(review.ReviewerId, workspace.OwnerId)
                 && workspace.Criteria.RequiredReviewerIds.Any(reviewer => SameActor(reviewer, review.ReviewerId)))
@@ -361,7 +395,9 @@ public sealed class OnboardingWorkspaceService(
         var ready = blockers.Count == 0;
         var status = ready ? "Ready" : workspace.Comparisons.Count == 0 ? "AwaitingSources" : dataBlocked ? "Exceptions" : "AwaitingReview";
         return new(status, ready, unresolved.Length, missingDates, missing, blockers.ToArray(), approved,
-            workspace.Criteria.MinimumReviewers, unresolved);
+            workspace.Criteria.MinimumReviewers, unresolved,
+            NullIfEmpty(requiredRuns.OrderBy(run => run.AsOfDate).Select(run => SummarizePeriod(workspace, run)).ToArray()),
+            opening, explainedCount);
     }
 
     private static decimal Coverage(OnboardingWorkspaceDto workspace, OnboardingSourceCaptureDto capture)

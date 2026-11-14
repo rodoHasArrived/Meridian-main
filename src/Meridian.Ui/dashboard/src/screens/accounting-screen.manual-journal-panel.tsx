@@ -11,11 +11,11 @@ import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
-import { accountingToolingBadgeVariant, accountingToolingBorderClass } from "@/screens/accounting-screen.styles";
 import { focusManualJournalCell, handleManualJournalCellKeyDown, ManualJournalDimensionsInspector, ManualJournalHealthBar, ManualJournalValidationNavigator } from "@/screens/accounting-screen.journal-entry-enhancements";
 import type { ManualJournalEntryWorkbenchViewModel } from "@/screens/accounting-screen.view-model";
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { Select } from "@/components/ui/select";
+import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
 
 function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: ManualJournalEntryWorkbenchViewModel["privateCapitalActivity"] }) {
   return (
@@ -1184,10 +1184,10 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
               <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Lifecycle checklist</div>
               <div role="list" className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
                 {view.lifecycleChecklist.map((item) => (
-                  <div key={item.id} role="listitem" className={cn("rounded border bg-secondary/20 px-2.5 py-2 text-xs", accountingToolingBorderClass(item.tone))}>
+                  <div key={item.id} role="listitem" className={cn("rounded border bg-secondary/20 px-2.5 py-2 text-xs", statusPanelClass(item.tone))}>
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <span className="font-semibold text-foreground">{item.label}</span>
-                      <Badge variant={accountingToolingBadgeVariant(item.tone)}>{item.value}</Badge>
+                      <Badge variant={statusBadgeVariant(item.tone)}>{item.value}</Badge>
                     </div>
                     <p className="mt-2 leading-5 text-muted-foreground">{item.detail}</p>
                   </div>

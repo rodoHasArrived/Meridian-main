@@ -6,6 +6,82 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ParquetStorageOptions
+
+Qualified name: <code>Meridian.Storage.Sinks.ParquetStorageOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:728](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L728).
+
+Configuration options for Parquet storage.
+
+```csharp
+public sealed class ParquetStorageOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int BufferSize { get; init; } = 10000;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:733](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L733) | Number of events to buffer before writing to disk. |
+| <code>public TimeSpan FlushInterval { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:738](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L738) | Maximum time between flushes. |
+| <code>public CompressionMethod CompressionMethod { get; init; } = CompressionMethod.Snappy;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:743](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L743) | Compression method for Parquet files. |
+| <code>public static ParquetStorageOptions Default =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:745](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L745) |  |
+| <code>public static ParquetStorageOptions HighCompression =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:747](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L747) |  |
+| <code>public static ParquetStorageOptions LowLatency =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:753](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L753) |  |
+
+## ParquetStorageSink
+
+Qualified name: <code>Meridian.Storage.Sinks.ParquetStorageSink</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:38](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L38).
+
+Apache Parquet storage sink for high-performance columnar storage. Provides 10-20x better compression than JSONL and optimized for analytics. Deliberately KEEPS copy-on-write row-group appends (unlike the JSONL sink&#x27;s persistent append streams): Parquet&#x27;s footer-at-end format means a persistently open writer leaves an unreadable, footerless file after a crash, violating the published-artifact readability invariant that copy-plus-rename guarantees; part-file compaction would change the one-file-per-day contract query/export paths consume. Row-group flushes are batched and lower-cadence than the JSONL hot path, so the O(day-file) copy is the accepted cost. Revisit only with a measured need. Based on: https://github.com/aloneguid/parquet-dotnet (MIT) Reference: docs/open-source-references.md #20
+
+```csharp
+public sealed class ParquetStorageSink : IStorageSink
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ParquetStorageSink(StorageOptions options, ParquetStorageOptions? parquetOptions = null, IStoragePolicy? policy = null) : this(options, parquetOptions, WriteAtomicallyAsync, policy);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:106](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L106) |  |
+| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:134](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L134) |  |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:156](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L156) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:682](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L682) |  |
+
+## SinkHealth
+
+Qualified name: <code>Meridian.Storage.Sinks.SinkHealth</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Sinks/CompositeSink.cs:28](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L28).
+
+Immutable snapshot of per-sink health information, suitable for metrics and diagnostics.
+
+```csharp
+public sealed record SinkHealth(string SinkType, int SinkIndex, SinkHealthState State, int ConsecutiveFailures, DateTimeOffset LastFailureTime, DateTimeOffset? CircuitResetTime, long TotalFailures);
+```
+
+## SinkHealthState
+
+Qualified name: <code>Meridian.Storage.Sinks.SinkHealthState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Sinks/CompositeSink.cs:13](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L13).
+
+Health state of an individual storage sink within the composite.
+
+```csharp
+public enum SinkHealthState : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Healthy</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:16](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L16) | Sink is operating normally. |
+| <code>Degraded</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:19](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L19) | Sink has experienced failures but is still receiving writes. |
+| <code>Failed</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:22](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L22) | Sink circuit breaker is open; writes are being skipped. |
+
 ## StorageConfigExtensions
 
 Qualified name: <code>Meridian.Storage.StorageConfigExtensions</code>. Kind: `class`.

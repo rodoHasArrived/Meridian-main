@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Backtesting.Sdk;
 
 namespace Meridian.Strategies.Services;
 
@@ -160,6 +161,16 @@ public sealed class StrategyRunContinuityService
         var warnings = new List<StrategyRunContinuityWarning>();
         warnings.AddRange(_runReadService.GetPortfolioContinuityWarnings(run));
         warnings.AddRange(_runReadService.GetLedgerContinuityWarnings(run));
+
+        if (run.Execution?.FinancingCoverageStatus == BacktestFinancingCoverageStatuses.Unavailable)
+        {
+            cashFlowHealth = StrategyRunContinuitySeamHealthStatus.Missing;
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "unavailable-run-financing",
+                Severity: StrategyRunContinuityWarningSeverity.Warning,
+                Message: "Run-attributed margin interest is unavailable without an explicit account-charge allocation; gross P&L financing comparisons require review.",
+                SourceSeam: "cash-flow"));
+        }
 
         if (!hasCashFlow)
         {

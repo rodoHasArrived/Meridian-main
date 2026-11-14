@@ -13,6 +13,37 @@ namespace Meridian.Tests.Infrastructure.Providers;
 public sealed class CanonicalRegistrySymbolResolverTests
 {
     [Fact]
+    public async Task MapSymbolAsync_ProviderRollout_ChangesOnlySelectedOutboundProvider()
+    {
+        var registry = new Mock<ICanonicalSymbolRegistry>();
+        registry.Setup(r => r.TryResolveWithProvider("BRK.B", "canonical")).Returns("BRK.B");
+        registry.Setup(r => r.GetProviderSymbol("BRK.B", "yahoo")).Returns("BRK-B");
+        registry.Setup(r => r.GetProviderSymbol("BRK.B", "alpaca")).Returns("BRK.B");
+        var inner = new Mock<ISymbolResolver>();
+        inner.Setup(i => i.MapSymbolAsync("BRK.B", "canonical", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync("legacy-value");
+        using var resolver = new CanonicalRegistrySymbolResolver(registry.Object, inner.Object,
+            mode: SymbolResolutionMode.Compare,
+            providerModes: new Dictionary<string, SymbolResolutionMode> { ["yahoo"] = SymbolResolutionMode.Canonical });
+
+        (await resolver.MapSymbolAsync("BRK.B", "canonical", "yahoo")).Should().Be("BRK-B");
+        (await resolver.MapSymbolAsync("BRK.B", "canonical", "alpaca")).Should().Be("legacy-value");
+        resolver.GetProviderMode("interactive-brokers").Should().Be(SymbolResolutionMode.Compare);
+    }
+
+    [Fact]
+    public void ProviderRollout_RecognizesIbAliases_AndCopiesStartupModes()
+    {
+        var modes = new Dictionary<string, SymbolResolutionMode> { ["ib"] = SymbolResolutionMode.Canonical };
+        using var resolver = new CanonicalRegistrySymbolResolver(new Mock<ICanonicalSymbolRegistry>().Object,
+            mode: SymbolResolutionMode.Compare, providerModes: modes);
+        modes["ib"] = SymbolResolutionMode.Legacy;
+
+        resolver.GetProviderMode("Interactive-Brokers").Should().Be(SymbolResolutionMode.Canonical);
+        resolver.GetProviderMode("polygon").Should().Be(SymbolResolutionMode.Compare);
+    }
+
+    [Fact]
     public async Task MapSymbolAsync_RegistryHit_AnswersWithoutInnerResolver()
     {
         var registry = new Mock<ICanonicalSymbolRegistry>();

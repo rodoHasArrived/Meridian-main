@@ -1,0 +1,4 @@
+record_type,account,currency,instrument,quantity,market_value,amount,as_of_date
+CASH,ADMIN-001,USD,,,,100.00,2026-01-31
+NAV,ADMIN-001,USD,,,,100.00,2026-01-31
+POSITION,ADMIN-001,USD,security-a,10,,,2026-01-31

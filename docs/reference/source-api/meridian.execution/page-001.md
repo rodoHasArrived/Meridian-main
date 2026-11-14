@@ -545,6 +545,67 @@ Declared public members:
 | <code>public Task PublishAsync(TradeExecutedEvent tradeEvent) =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:219](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L219) | Durably accepts a TradeExecutedEvent for asynchronous ledger posting. Returning means the fill can replay after restart. While the channel has capacity the call returns after the WAL append; when full it awaits until the consumer frees space. Intentionally not cancellable: once called, the fill must reach the durable store. |
 | <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:297](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L297) | Stops accepting fills, gives accepted fills one bounded drain window, and then applies a bounded cancellation fallback. Repeated calls await the same shutdown operation. Once the method returns, no in-flight validation can cross the posting boundary into the ledger. |
 
+## PaperFinancingAdmissionException
+
+Qualified name: <code>Meridian.Execution.Events.PaperFinancingAdmissionException</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:359](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L359).
+
+This call failed before accepting a new durable source. An earlier acceptance can still exist on a retry. The original error preserves validation, cancellation and availability.
+
+```csharp
+public sealed class PaperFinancingAdmissionException : Exception
+```
+
+## PaperFinancingCharge
+
+Qualified name: <code>Meridian.Execution.Events.PaperFinancingCharge</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Events/PaperFinancingCharge.cs:8](../../../../src/Meridian.Execution/Events/PaperFinancingCharge.cs#L8).
+
+An immutable cash-paid financing assessment. SourceReference identifies the broker charge or scheduled accrual, independently of its amount, so retries detect conflicts.
+
+```csharp
+public sealed record PaperFinancingCharge(string SessionId, string AccountId, DateOnly AccrualDate, decimal Amount, string SourceReference, string Rationale, string ActorId)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTimeOffset OccurredAt =&gt; …;</code> | [src/Meridian.Execution/Events/PaperFinancingCharge.cs:17](../../../../src/Meridian.Execution/Events/PaperFinancingCharge.cs#L17) |  |
+| <code>public Guid SourceEventId =&gt; …;</code> | [src/Meridian.Execution/Events/PaperFinancingCharge.cs:19](../../../../src/Meridian.Execution/Events/PaperFinancingCharge.cs#L19) |  |
+| <code>public PaperFinancingCharge Validate();</code> | [src/Meridian.Execution/Events/PaperFinancingCharge.cs:22](../../../../src/Meridian.Execution/Events/PaperFinancingCharge.cs#L22) |  |
+
+## PaperFinancingPostingService
+
+Qualified name: <code>Meridian.Execution.Events.PaperFinancingPostingService</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:14](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L14).
+
+Retains financing source assessments and pending delivery, using the same governed journal target as fills. This outbox is source evidence, not another ledger.
+
+```csharp
+public sealed partial class PaperFinancingPostingService : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TradeFillLedgerPostingContext PostingContext =&gt; …;</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:32](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L32) |  |
+| <code>public PaperFinancingPostingService(string rootDirectory, TradeFillLedgerPostingContext context, ITradeFillLedgerPostingTarget target, Func&lt;Guid, CancellationToken, Task&lt;LedgerAccountingPeriod?&gt;&gt; readPeriod, Func&lt;Guid, CancellationToken, Task&lt;LedgerBookRecord?&gt;&gt; readBook);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:34](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L34) |  |
+| <code>public async Task&lt;bool&gt; PostAsync(PaperFinancingCharge charge, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:62](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L62) | Durably accepts and confirms a cash-paid charge. Cancellation is observed before acceptance; after acceptance failures retain the assessment for an idempotent retry. |
+| <code>public async Task&lt;IReadOnlyList&lt;PaperFinancingCharge&gt;&gt; LoadAndRecoverAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:140](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L140) | Replays pending assessments before exposing a rebuilt session book. |
+| <code>public async Task&lt;IReadOnlyList&lt;PaperFinancingCharge&gt;&gt; LoadSourcesAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:161](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L161) | Reads independent accepted source assessments for completeness controls. This does not post or acknowledge any journal. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:334](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L334) |  |
+
+Source: [src/Meridian.Execution/Events/PaperFinancingPostingService.HistoricalReads.cs:8](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.HistoricalReads.cs#L8).
+
+```csharp
+public sealed partial class PaperFinancingPostingService
+```
+
 ## PendingTradeFillPosting
 
 Qualified name: <code>Meridian.Execution.Events.PendingTradeFillPosting</code>. Kind: `record`.
@@ -968,61 +1029,3 @@ Declared public members:
 | <code>public int ActiveSubscriptionCount =&gt; …;</code> | [src/Meridian.Execution/Live/LiveMarketEventHub.cs:34](../../../../src/Meridian.Execution/Live/LiveMarketEventHub.cs#L34) | Number of active subscriptions (diagnostics only). |
 | <code>public void Publish(LiveMarketEvent evt);</code> | [src/Meridian.Execution/Live/LiveMarketEventHub.cs:40](../../../../src/Meridian.Execution/Live/LiveMarketEventHub.cs#L40) | Publishes one live event to all subscriptions whose symbol set contains the event&#x27;s symbol. Never blocks; full subscriber queues drop their oldest event. |
 | <code>public async IAsyncEnumerable&lt;LiveMarketEvent&gt; SubscribeAsync(IReadOnlyCollection&lt;string&gt; symbols, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/Live/LiveMarketEventHub.cs:51](../../../../src/Meridian.Execution/Live/LiveMarketEventHub.cs#L51) |  |
-
-## IMarginModel
-
-Qualified name: <code>Meridian.Execution.Margin.IMarginModel</code>. Kind: `interface`.
-
-Source: [src/Meridian.Execution/Margin/IMarginModel.cs:9](../../../../src/Meridian.Execution/Margin/IMarginModel.cs#L9).
-
-Calculates margin requirements for individual positions and for the portfolio as a whole. Implementations encode brokerage-specific or regulatory margin rules.
-
-```csharp
-public interface IMarginModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string ModelName { get; }</code> | [src/Meridian.Execution/Margin/IMarginModel.cs:12](../../../../src/Meridian.Execution/Margin/IMarginModel.cs#L12) | Human-readable name of this margin model (e.g., &quot;Reg T&quot;, &quot;Portfolio Margin&quot;). |
-| <code>MarginRequirement CalculateForPosition(ExecutionPosition position, decimal lastPrice, decimal portfolioEquity);</code> | [src/Meridian.Execution/Margin/IMarginModel.cs:24](../../../../src/Meridian.Execution/Margin/IMarginModel.cs#L24) | Calculates the margin requirement for a single position described by position. |
-| <code>MarginRequirement CalculatePortfolioRequirement(IReadOnlyDictionary&lt;string, ExecutionPosition&gt; positions, IReadOnlyDictionary&lt;string, decimal&gt; prices, decimal cash);</code> | [src/Meridian.Execution/Margin/IMarginModel.cs:36](../../../../src/Meridian.Execution/Margin/IMarginModel.cs#L36) | Calculates the aggregate portfolio-level margin requirement across all open positions. |
-
-## MarginAccountType
-
-Qualified name: <code>Meridian.Execution.Margin.MarginAccountType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Execution/Margin/MarginAccountType.cs:6](../../../../src/Meridian.Execution/Margin/MarginAccountType.cs#L6).
-
-Classifies the margin regime of a brokerage account.
-
-```csharp
-public enum MarginAccountType
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Cash</code> | [src/Meridian.Execution/Margin/MarginAccountType.cs:11](../../../../src/Meridian.Execution/Margin/MarginAccountType.cs#L11) | Cash account — no borrowing allowed. Positions must be fully funded by available cash. |
-| <code>RegT</code> | [src/Meridian.Execution/Margin/MarginAccountType.cs:18](../../../../src/Meridian.Execution/Margin/MarginAccountType.cs#L18) | Regulation T (Reg T) margin account. FINRA/SEC rules: 50 % initial margin for long positions; 25 % maintenance margin. Short positions require 150 % of the short value as initial collateral. Buying power is up to 2× the available cash equity. |
-| <code>PortfolioMargin</code> | [src/Meridian.Execution/Margin/MarginAccountType.cs:24](../../../../src/Meridian.Execution/Margin/MarginAccountType.cs#L24) | Portfolio margin account. Risk-based margining using stress-test scenarios rather than fixed percentage requirements. Typically requires a minimum equity threshold. |
-
-## MarginCallStatus
-
-Qualified name: <code>Meridian.Execution.Margin.MarginCallStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Margin/MarginCallStatus.cs:24](../../../../src/Meridian.Execution/Margin/MarginCallStatus.cs#L24).
-
-Captures the current margin health for one account at a given point in time. Returned by Services.PaperTradingPortfolio.CheckMarginStatus.
-
-```csharp
-public sealed record MarginCallStatus(string AccountId, MarginRequirement PortfolioRequirement, IReadOnlyList<MarginRequirement> PositionRequirements, bool IsMarginCall, decimal MarginDeficiency)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static MarginCallStatus NoMarginRequired(string accountId) =&gt; …;</code> | [src/Meridian.Execution/Margin/MarginCallStatus.cs:35](../../../../src/Meridian.Execution/Margin/MarginCallStatus.cs#L35) | Convenience factory that represents a cash account or one with no open positions (no margin call possible, zero requirements). |

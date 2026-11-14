@@ -95,7 +95,8 @@ public sealed class LoanAccountingProjector
                 account,
                 debit,
                 credit,
-                description));
+                description,
+                currency: new LedgerEntryCurrency(currency, currency, debit, credit, 1m)));
         }
 
         foreach (var line in DirectLendingJournalLines.ForEvent(eventType, payload.RootElement, loanId.ToString("D")))
@@ -230,6 +231,14 @@ public sealed class LoanAccountingProjector
         ];
     }
 
+    /// <summary>
+    /// Reports whether a retained loan event requires a journal, using exactly the same amount
+    /// validation and line projection as posting. Zero-value and non-accounting events have no
+    /// required journal; malformed or negative accounting amounts fail closed.
+    /// </summary>
+    public static bool HasAccountingImpact(string eventType, JsonElement payload)
+        => DirectLendingJournalLines.ForEvent(eventType, payload, Guid.Empty.ToString("D")).Count > 0;
+
     private async Task<LedgerAccountingPeriod?> ResolvePostingPeriodAsync(
         DateOnly accountingDate,
         LedgerPostingKindDto postingKind,
@@ -283,7 +292,8 @@ public sealed class LoanAccountingProjector
                 line.Debit,
                 line.Credit,
                 line.Description,
-                line.Dimensions))
+                line.Dimensions,
+                line.Currency))
             .ToList();
 
     private static List<LedgerEntry> ApplyLineDimensions(
@@ -309,7 +319,8 @@ public sealed class LoanAccountingProjector
                 line.Debit,
                 line.Credit,
                 line.Description,
-                dimensions))
+                dimensions,
+                line.Currency))
             .ToList();
     }
 

@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ChartIndicatorToggle
+
+Qualified name: <code>Meridian.Wpf.ViewModels.ChartIndicatorToggle</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:784](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L784).
+
+Exposes the identity, label, and observable enabled state of a chart indicator.
+
+```csharp
+public sealed class ChartIndicatorToggle : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ChartIndicatorToggle(string id, string label, Action&lt;string, bool&gt; toggleChanged);</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:789](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L789) |  |
+| <code>public string Id { get; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:796](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L796) |  |
+| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:798](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L798) |  |
+| <code>public bool IsEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:800](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L800) |  |
+
 ## ChartingPageViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.ChartingPageViewModel</code>. Kind: `class`.
@@ -275,6 +296,30 @@ A single row in the comparison diff table.
 ```csharp
 public sealed record ComparisonRow(string Label, string ValueA, string ValueB);
 ```
+
+## ConfigurationChangeStatusViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.ConfigurationChangeStatusViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:6](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L6).
+
+Displays the host&#x27;s shared activation evidence without inferring that a disk save applied.
+
+```csharp
+public sealed class ConfigurationChangeStatusViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ConfigurationChangeStatusViewModel(Func&lt;CancellationToken, Task&lt;ConfigurationChangeStatus?&gt;&gt; load) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:15](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L15) |  |
+| <code>public string Title { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:18](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L18) |  |
+| <code>public string Detail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:19](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L19) |  |
+| <code>public string Paths { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:20](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L20) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:21](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L21) |  |
+| <code>public async Task RefreshAsync(bool hasLocalSave, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:23](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L23) |  |
+| <code>public void CancelPending();</code> | [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:71](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L71) |  |
 
 ## CoverageCellVm
 
@@ -1552,7 +1597,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.FeatureCapabilityToggleViewModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:909](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L909).
+Source: [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:923](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L923).
 
 Binds a feature capability descriptor to its current enabled state and toggle availability.
 
@@ -1564,17 +1609,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FeatureCapabilityToggleViewModel(FeatureCapabilityDescriptor descriptor, IFeatureCapabilityGate gate);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:914](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L914) |  |
-| <code>public FeatureCapabilityDescriptor Descriptor { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:923](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L923) |  |
-| <code>public string CapabilityKey =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:925](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L925) |  |
-| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:927](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L927) |  |
-| <code>public string Description =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:929](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L929) |  |
-| <code>public bool IsPermanent =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:931](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L931) |  |
-| <code>public bool CanToggle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:933](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L933) |  |
-| <code>public string StateText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:935](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L935) |  |
-| <code>public bool IsEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:941](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L941) |  |
-| <code>public void Refresh() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:966](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L966) |  |
-| <code>public void Refresh(bool isEnabled);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:969](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L969) |  |
+| <code>public FeatureCapabilityToggleViewModel(FeatureCapabilityDescriptor descriptor, IFeatureCapabilityGate gate);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:928](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L928) |  |
+| <code>public FeatureCapabilityDescriptor Descriptor { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:937](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L937) |  |
+| <code>public string CapabilityKey =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:939](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L939) |  |
+| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:941](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L941) |  |
+| <code>public string Description =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:943](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L943) |  |
+| <code>public bool IsPermanent =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:945](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L945) |  |
+| <code>public bool CanToggle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:947](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L947) |  |
+| <code>public string StateText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:949](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L949) |  |
+| <code>public bool IsEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:955](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L955) |  |
+| <code>public void Refresh() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:980](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L980) |  |
+| <code>public void Refresh(bool isEnabled);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:983](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L983) |  |
 
 ## FillEventVm
 
@@ -1695,45 +1740,3 @@ Source: [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:627](..
 ```csharp
 public sealed record FinancialRecordExplorerPresentation(string Title, string Description, string SourceState, bool IsBlocked, string BlockedReason, WorkstationTableModel<FinancialRecordExplorerRowModel> Table, IReadOnlyList<FinancialRecordExplorerRowModel> Rows, IReadOnlyList<FinancialRecordExplorerFactModel> SummaryItems, IReadOnlyList<FinancialRecordExplorerFactModel> ScopeItems, IReadOnlyList<FinancialRecordExplorerFactModel> FilterItems, IReadOnlyList<FinancialRecordExplorerSavedViewModel> SavedViews, IReadOnlyList<FinancialRecordExplorerActionModel> ExplorerActions, FinancialRecordExplorerRowModel? SelectedRecord, string EmptyStateTitle, string EmptyStateDetail);
 ```
-
-## FinancialRecordExplorerRelationshipModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.FinancialRecordExplorerViewModel.FinancialRecordExplorerRelationshipModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:782](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L782).
-
-```csharp
-public sealed record FinancialRecordExplorerRelationshipModel(string RelationshipId, string Label, string Description, string Href, string TargetPageTag, string Tone)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static FinancialRecordExplorerRelationshipModel FromDto(FinancialRecordExplorerRelationshipDto relationship) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:790](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L790) |  |
-
-## FinancialRecordExplorerRowModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.FinancialRecordExplorerViewModel.FinancialRecordExplorerRowModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:649](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L649).
-
-Presents a financial record&#x27;s identity, type, source, status, and inspection detail.
-
-```csharp
-public sealed class FinancialRecordExplorerRowModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string RecordId { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:671](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L671) |  |
-| <code>public string RecordType { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:673](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L673) |  |
-| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:675](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L675) |  |
-| <code>public string Source { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:677](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L677) |  |
-| <code>public string Status { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:679](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L679) |  |
-| <code>public string Tone { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:681](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L681) |  |
-| <code>public IReadOnlyDictionary&lt;string, string&gt; Cells { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:683](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L683) |  |
-| <code>public FinancialRecordExplorerSelectedRecordDto Detail { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:685](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L685) |  |
-| <code>public static FinancialRecordExplorerRowModel FromDto(FinancialRecordExplorerRowDto row, IReadOnlyList&lt;FinancialRecordExplorerColumnDto&gt; columns);</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:687](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L687) |  |

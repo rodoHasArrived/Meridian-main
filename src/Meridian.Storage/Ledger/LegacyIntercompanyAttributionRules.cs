@@ -82,18 +82,22 @@ public sealed class LegacyIntercompanyAttributionValidator(ILedgerJournalStore j
         var source = await journals.QueryAsync(new(LedgerBookId: fact.LedgerBookId, JournalEntryId: fact.JournalEntryId), ct).ConfigureAwait(false);
         if (source.Count != 1)
             throw new InvalidOperationException("The exact immutable legacy source is unavailable.");
-        // Revocation retracts an assertion. Its immutable predecessor pins are checked atomically by
-        // the store; an amended or withdrawn legal/configuration record must not prevent retraction.
-        if (fact.Revoked)
-            return new AuthorityLease([]);
-        var date = source[0].Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(source[0].Entry.Timestamp.UtcDateTime);
-        var reference = new IntercompanyCanonicalAgreementReferenceDto(fact.IntercompanyAgreementId,
-            fact.IntercompanyAgreementVersion, fact.IntercompanyAgreementPayloadHash);
-        var legal = await legalAuthority.AcquireLeaseAsync(fact.TenantId, [reference], ct: ct).ConfigureAwait(false);
-        var leases = new List<IAsyncDisposable> { legal };
+        var leases = new List<IAsyncDisposable>();
         try
         {
-            _ = legal.ResolveEffective(reference, date);
+            // A retraction must remain possible after its legal revision expires or is superseded.
+            // Its exact predecessor pins are checked atomically by the attribution store.
+            if (!fact.Revoked)
+            {
+                var date = source[0].Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(source[0].Entry.Timestamp.UtcDateTime);
+                var reference = new IntercompanyCanonicalAgreementReferenceDto(fact.IntercompanyAgreementId,
+                    fact.IntercompanyAgreementVersion, fact.IntercompanyAgreementPayloadHash);
+                var legal = await legalAuthority.AcquireLeaseAsync(fact.TenantId, [reference], ct: ct).ConfigureAwait(false);
+                leases.Add(legal);
+                _ = legal.ResolveEffective(reference, date);
+            }
+            // Both decisions require the configuration authority fences. These leases do not
+            // resolve current terms, so they also protect retraction of an obsolete assertion.
             leases.Add(await bindings.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false));
             leases.Add(await agreements.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false));
             return new AuthorityLease(leases);

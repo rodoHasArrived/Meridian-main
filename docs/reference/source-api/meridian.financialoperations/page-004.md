@@ -59,7 +59,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Onboarding.IOnboardingSourceProvider</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:14](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L14).
+Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:18](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L18).
 
 Composes existing reconciliation, ledger/NAV, close and evidence services without writes.
 
@@ -71,7 +71,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;OnboardingSourceCaptureDto&gt; CaptureAsync(OnboardingWorkspaceDto workspace, CaptureOnboardingComparisonRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:16](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L16) |  |
+| <code>Task&lt;OnboardingSourceCaptureDto&gt; CaptureAsync(OnboardingWorkspaceDto workspace, CaptureOnboardingComparisonRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:20](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L20) |  |
 
 ## IOnboardingWorkspaceStore
 
@@ -92,12 +92,31 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:8](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L8) |  |
 | <code>Task&lt;OnboardingWorkspaceDto?&gt; GetAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:9](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L9) |  |
 | <code>Task SaveAsync(OnboardingWorkspaceDto workspace, int? expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:10](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L10) |  |
+| <code>Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListByLedgerBookAsync(string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:13](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L13) | Workspaces in the tenant (and company, when given) whose scope selects the ledger book. |
+
+## OnboardingBookOfRecordGuard
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.OnboardingBookOfRecordGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingBookOfRecordGuard.cs:9](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingBookOfRecordGuard.cs#L9).
+
+Resolves book-of-record status from retained onboarding workspaces. A book with no shadow designation is authoritative. A book in shadow mode, or one whose shadow trial was withdrawn without promotion, is not.
+
+```csharp
+public sealed class OnboardingBookOfRecordGuard(IOnboardingWorkspaceStore store) : IBookOfRecordGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BookOfRecordStatusDto&gt; GetStatusAsync(string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingBookOfRecordGuard.cs:11](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingBookOfRecordGuard.cs#L11) |  |
 
 ## OnboardingConcurrencyException
 
 Qualified name: <code>Meridian.FinancialOperations.Onboarding.OnboardingConcurrencyException</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:23](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L23).
+Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:27](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L27).
 
 Indicates that retained onboarding state changed during a requested mutation.
 
@@ -109,7 +128,7 @@ public sealed class OnboardingConcurrencyException(string message) : InvalidOper
 
 Qualified name: <code>Meridian.FinancialOperations.Onboarding.OnboardingValidationException</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:28](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L28).
+Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:32](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L32).
 
 Indicates invalid input for an accounting onboarding operation.
 
@@ -121,34 +140,155 @@ public sealed class OnboardingValidationException(string message) : ArgumentExce
 
 Qualified name: <code>Meridian.FinancialOperations.Onboarding.OnboardingWorkspaceService</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:11](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L11).
+Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:14](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L14).
 
-Owns bounded onboarding casework and reproducible comparison history. The only source dependency is a read-only capture seam; neither readiness nor a packet can change accounting authority.
+Owns bounded onboarding casework and reproducible comparison history. The only source dependency is a read-only capture seam; neither readiness nor a packet can change accounting authority. Shadow-mode onboarding (see the Shadow partial) adds opening-balance reconciliation, difference explanations, a parallel-run certificate and an explicit, audited promotion decision.
 
 ```csharp
-public sealed class OnboardingWorkspaceService(IOnboardingWorkspaceStore store, IOnboardingSourceProvider sources, TimeProvider? clock = null)
+public sealed partial class OnboardingWorkspaceService(IOnboardingWorkspaceStore store, IOnboardingSourceProvider sources, TimeProvider? clock = null, IOnboardingOpeningSourceReader? openingSources = null, IOnboardingOpeningStateProvider? openingState = null)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string ReadOnlyAuthorityPosture = &quot;ExternalBooksReadOnly;AccountingAuthorityTransitionSeparatelyControlled&quot;;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:16](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L16) |  |
-| <code>public const string ComparisonAlgorithmVersion = &quot;onboarding-comparison/1&quot;;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:17](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L17) |  |
-| <code>public async Task&lt;OnboardingWorkspaceDto&gt; CreateAsync(CreateOnboardingWorkspaceRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:22](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L22) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:42](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L42) |  |
-| <code>public async Task&lt;OnboardingWorkspaceDto?&gt; GetAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:52](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L52) |  |
-| <code>public async Task&lt;OnboardingWorkspaceDto&gt; UpdateCriteriaAsync(string tenantId, string companyId, string workspaceId, UpdateOnboardingCriteriaRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:65](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L65) |  |
-| <code>public async Task&lt;OnboardingWorkspaceDto&gt; CompareAsync(string tenantId, string companyId, string workspaceId, CaptureOnboardingComparisonRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:82](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L82) |  |
-| <code>public async Task&lt;OnboardingWorkspaceDto&gt; AssignDifferenceAsync(string tenantId, string companyId, string workspaceId, string differenceKey, AssignOnboardingDifferenceRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:100](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L100) |  |
-| <code>public async Task&lt;OnboardingWorkspaceDto&gt; ReviewAsync(string tenantId, string companyId, string workspaceId, ReviewOnboardingWorkspaceRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:120](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L120) |  |
-| <code>public async Task&lt;OnboardingReadinessPacketDto&gt; FreezePacketAsync(string tenantId, string companyId, string workspaceId, FreezeOnboardingPacketRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:143](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L143) |  |
-| <code>public async Task&lt;OnboardingReadinessPacketDto?&gt; GetPacketAsync(string tenantId, string companyId, string workspaceId, string packetId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:161](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L161) |  |
-| <code>public async Task&lt;OnboardingComparisonDto?&gt; ReplayComparisonAsync(string tenantId, string companyId, string workspaceId, string comparisonId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:172](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L172) | Recomputes solely from retained inputs and preceding retained history, with no live source calls. |
-| <code>public static string HashSourcePayload(string payload) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:206](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L206) |  |
-| <code>public static string HashPacketContent(OnboardingPacketContentDto content) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:209](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L209) |  |
-| <code>public static bool VerifyComparisonHash(OnboardingComparisonDto comparison) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:211](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L211) |  |
-| <code>public static string DifferenceKey(OnboardingObservationDto observation) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:214](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L214) |  |
+| <code>public const string ReadOnlyAuthorityPosture = &quot;ExternalBooksReadOnly;AccountingAuthorityTransitionSeparatelyControlled&quot;;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:21](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L21) |  |
+| <code>public const string ComparisonAlgorithmVersion = &quot;onboarding-comparison/1&quot;;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:22](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L22) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; CreateAsync(CreateOnboardingWorkspaceRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:27](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L27) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:47](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L47) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto?&gt; GetAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:57](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L57) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; UpdateCriteriaAsync(string tenantId, string companyId, string workspaceId, UpdateOnboardingCriteriaRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:70](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L70) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; CompareAsync(string tenantId, string companyId, string workspaceId, CaptureOnboardingComparisonRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:87](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L87) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; AssignDifferenceAsync(string tenantId, string companyId, string workspaceId, string differenceKey, AssignOnboardingDifferenceRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:105](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L105) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; ReviewAsync(string tenantId, string companyId, string workspaceId, ReviewOnboardingWorkspaceRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:125](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L125) |  |
+| <code>public async Task&lt;OnboardingReadinessPacketDto&gt; FreezePacketAsync(string tenantId, string companyId, string workspaceId, FreezeOnboardingPacketRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:148](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L148) |  |
+| <code>public async Task&lt;OnboardingReadinessPacketDto?&gt; GetPacketAsync(string tenantId, string companyId, string workspaceId, string packetId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:166](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L166) |  |
+| <code>public async Task&lt;OnboardingComparisonDto?&gt; ReplayComparisonAsync(string tenantId, string companyId, string workspaceId, string comparisonId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:177](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L177) | Recomputes solely from retained inputs and preceding retained history, with no live source calls. |
+| <code>public static string HashSourcePayload(string payload) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:212](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L212) |  |
+| <code>public static string HashPacketContent(OnboardingPacketContentDto content) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:215](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L215) |  |
+| <code>public static bool VerifyComparisonHash(OnboardingComparisonDto comparison) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:217](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L217) |  |
+| <code>public static string DifferenceKey(OnboardingObservationDto observation) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:220](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L220) |  |
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:11](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L11).
+
+Shadow-mode onboarding (W11-SHADOW-001). The shadow book runs beside the incumbent administrator or GL; every period is reconciled, every difference is either resolved or explained, and only an independent operator decision that attaches a verified parallel-run certificate makes the book authoritative.
+
+```csharp
+public sealed partial class OnboardingWorkspaceService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ParallelRunCertificateStatement = &quot;Meridian ran in parallel with the incumbent books for every required period. Each difference listed is &quot; + &quot;resolved within tolerance or explained with retained evidence, and no unexplained difference remains.&quot;;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:13](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L13) |  |
+| <code>public const string OpeningProviderPrefix = &quot;opening:&quot;;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:17](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L17) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; DesignateShadowAsync(string tenantId, string companyId, string workspaceId, DesignateShadowBookRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:19](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L19) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; ImportOpeningBalancesAsync(string tenantId, string companyId, string workspaceId, ImportOnboardingOpeningBalancesRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:41](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L41) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; ExplainDifferenceAsync(string tenantId, string companyId, string workspaceId, string differenceKey, ExplainOnboardingDifferenceRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:136](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L136) |  |
+| <code>public async Task&lt;OnboardingParallelRunCertificateDto&gt; IssueCertificateAsync(string tenantId, string companyId, string workspaceId, IssueParallelRunCertificateRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:173](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L173) |  |
+| <code>public async Task&lt;OnboardingParallelRunCertificateDto?&gt; GetCertificateAsync(string tenantId, string companyId, string workspaceId, string certificateId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:215](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L215) |  |
+| <code>public async Task&lt;OnboardingOpeningBalanceReportDto?&gt; GetOpeningReportAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:225](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L225) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; PromoteAsync(string tenantId, string companyId, string workspaceId, PromoteShadowBookRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:237](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L237) | The cutover decision. An independent designated reviewer promotes the shadow book only by attaching a certificate that still verifies against unchanged workspace data. |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; WithdrawShadowAsync(string tenantId, string companyId, string workspaceId, WithdrawShadowBookRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:277](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L277) |  |
+| <code>public static string HashCertificateContent(OnboardingParallelRunCertificateContentDto content) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:301](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L301) |  |
+| <code>public static bool VerifyShadowAudit(IReadOnlyList&lt;OnboardingShadowAuditEntryDto&gt;? entries);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:303](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L303) |  |
+
+## AdministratorOpeningPackParser
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.OpeningBalances.AdministratorOpeningPackParser</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs:166](../../../../src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs#L166).
+
+Parses an administrator opening pack. Header (case-insensitive, any order): record_type,account,currency,instrument,quantity,market_value,amount,as_of_date. CASH and NAV rows use amount; POSITION rows use quantity and/or market_value. An empty value is missing, never zero.
+
+```csharp
+public static class AdministratorOpeningPackParser
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;OnboardingOpeningRecord&gt; Parse(ReadOnlySpan&lt;byte&gt; content, DateOnly asOf, StatementIngressLimits limits);</code> | [src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs:171](../../../../src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs#L171) |  |
+
+## IOnboardingOpeningSourceReader
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.OpeningBalances.IOnboardingOpeningSourceReader</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs:26](../../../../src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs#L26).
+
+Reads an incumbent opening-balance source without writing to any ledger or source system.
+
+```csharp
+public interface IOnboardingOpeningSourceReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OnboardingOpeningSourceDocument&gt; ReadAsync(OnboardingWorkspaceDto workspace, ImportOnboardingOpeningBalancesRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs:28](../../../../src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs#L28) |  |
+
+## IOnboardingOpeningStateProvider
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.OpeningBalances.IOnboardingOpeningStateProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs:36](../../../../src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs#L36).
+
+Captures Meridian&#x27;s own opening records for the workspace start date. Observations carry only the Meridian amount; the incumbent amount is joined from the imported opening source.
+
+```csharp
+public interface IOnboardingOpeningStateProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OnboardingSourceCaptureDto&gt; CaptureOpeningAsync(OnboardingWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs:38](../../../../src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs#L38) |  |
+
+## OnboardingOpeningRecord
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.OpeningBalances.OnboardingOpeningRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs:17](../../../../src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs#L17).
+
+One incumbent opening row before account mapping. A null amount means the incumbent row is present but carries no value; it is never read as zero. Position instruments use the same dimension keys as period comparisons (position-quantity:/position-market-value:) so difference lineage lines up.
+
+```csharp
+public sealed record OnboardingOpeningRecord(string Kind, string ExternalAccount, string Currency, string? InstrumentId, decimal? Amount, int? RowNumber = null);
+```
+
+## OnboardingOpeningSourceDocument
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.OpeningBalances.OnboardingOpeningSourceDocument</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs:21](../../../../src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs#L21).
+
+The parsed incumbent opening source with the exact content retained for replay.
+
+```csharp
+public sealed record OnboardingOpeningSourceDocument(string SourceId, string Version, string PayloadJson, IReadOnlyList<string> EvidenceIds, IReadOnlyList<OnboardingOpeningRecord> Records, bool RequireAllRecordsMapped);
+```
+
+## OnboardingOpeningSourceReader
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.OpeningBalances.OnboardingOpeningSourceReader</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs:42](../../../../src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs#L42).
+
+Default reader for camt.053/BAI2 opening balances, administrator opening packs and retained GL trial balances.
+
+```csharp
+public sealed class OnboardingOpeningSourceReader(AccountingSystemIntegrationService? accounting = null, StatementIngressLimits? limits = null) : IOnboardingOpeningSourceReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;OnboardingOpeningSourceDocument&gt; ReadAsync(OnboardingWorkspaceDto workspace, ImportOnboardingOpeningBalancesRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs:49](../../../../src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs#L49) |  |
 
 ## FileOperationsContinuityRepository
 
@@ -1002,164 +1142,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerDto&gt; Build(string fundProfileId, Guid? ledgerBookId, DateTimeOffset projectedAtUtc, IReadOnlyList&lt;PrivateCapitalCapitalAccountActivityDto&gt; capitalAccounts, IReadOnlyList&lt;PrivateCapitalFundEventLedgerRecordDto&gt; fundEventRecords, IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerEntryDto&gt; subledgerEntries, IReadOnlyList&lt;PrivateCapitalLedgerImpactDto&gt; ledgerImpacts, IReadOnlyList&lt;PrivateCapitalReportOutputDto&gt; reportOutputs, IReadOnlyList&lt;AccountingConfigurationValidationIssueDto&gt; projectionValidationIssues) =&gt; …;</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs:10](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs#L10) |  |
-
-## PrivateCapitalCloseCockpitService
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalCloseCockpitService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.AllocationEvidence.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.AllocationEvidence.cs#L5).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ApprovalHistory.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ApprovalHistory.cs#L8).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.CloseRequirements.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.CloseRequirements.cs#L5).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:14](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L14).
-
-Assembles private-capital close readiness, approvals, and evidence for the close cockpit.
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCockpitService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PrivateCapitalCloseCockpitService(IManualJournalEntryWorkbenchService? manualJournalEntryWorkbenchService, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService, IDailyValuationScheduleStatusSource? dailyValuationScheduleStatusSource = null, IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null, IRecurringJournalQueueSource? recurringJournalQueueSource = null, IIntercompanyBalanceScheduleSource? intercompanyBalances = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:52](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L52) |  |
-| <code>public async Task&lt;PrivateCapitalCloseCockpitDto&gt; GetCockpitAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:68](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L68) |  |
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs#L5).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ManagementCompany.cs:7](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ManagementCompany.cs#L7).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.Routes.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.Routes.cs#L8).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-## PrivateCapitalEvidenceCategoryBuilder
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalEvidenceCategoryBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalEvidenceCategoryBuilder.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalEvidenceCategoryBuilder.cs#L8).
-
-Groups fund-event and capital-account evidence into private-capital evidence categories.
-
-```csharp
-public static class PrivateCapitalEvidenceCategoryBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;PrivateCapitalEvidenceCategoryDto&gt; BuildForFundEvent(PrivateCapitalFundEventDto fundEvent, IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerEntryDto&gt; subledgerEntries, IReadOnlyList&lt;PrivateCapitalLedgerImpactDto&gt; ledgerImpacts, IReadOnlyList&lt;PrivateCapitalReportOutputDto&gt; reportOutputs, string? approvalRoute, PrivateCapitalPaymentIntentEvidenceDto? paymentIntentEvidence = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalEvidenceCategoryBuilder.cs:10](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalEvidenceCategoryBuilder.cs#L10) |  |
-| <code>public static IReadOnlyList&lt;PrivateCapitalEvidenceCategoryDto&gt; BuildForCapitalAccountSubledger(IReadOnlyList&lt;PrivateCapitalFundEventLedgerRecordDto&gt; records, IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerEntryDto&gt; subledgerEntries, IReadOnlyList&lt;PrivateCapitalLedgerImpactDto&gt; ledgerImpacts, IReadOnlyList&lt;PrivateCapitalReportOutputDto&gt; reportOutputs, PrivateCapitalPaymentIntentEvidenceDto? paymentIntentEvidence = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalEvidenceCategoryBuilder.cs:82](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalEvidenceCategoryBuilder.cs#L82) |  |
-
-## PrivateCapitalFundEventLedgerReadinessBuilder
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalFundEventLedgerReadinessBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalFundEventLedgerReadinessBuilder.cs:15](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalFundEventLedgerReadinessBuilder.cs#L15).
-
-Derives ledger readiness for a private-capital fund event from its retained evidence.
-
-```csharp
-public static class PrivateCapitalFundEventLedgerReadinessBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static PrivateCapitalFundEventLedgerReadinessProjection Build(ManualJournalEntryStatusDto approvalState, int evidenceLinkCount, bool isPostingReady, bool isReportReady, bool isPublished, int reportOutputCount, bool hasCriticalValidationIssues, string activityRoute, string evidenceRoute, string? approvalRoute, string? primaryReportRoute);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalFundEventLedgerReadinessBuilder.cs:17](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalFundEventLedgerReadinessBuilder.cs#L17) |  |
-
-## PrivateCapitalFundEventLedgerReadinessProjection
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalFundEventLedgerReadinessProjection</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalFundEventLedgerReadinessBuilder.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalFundEventLedgerReadinessBuilder.cs#L5).
-
-```csharp
-public sealed record PrivateCapitalFundEventLedgerReadinessProjection(PrivateCapitalFundEventLedgerReadinessDto Readiness, string Label, string Reason, string NextAction, string? NextActionRoute);
-```
-
-## PrivateCapitalFundEventLedgerRecordBuilder
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalFundEventLedgerRecordBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalFundEventLedgerRecordBuilder.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalFundEventLedgerRecordBuilder.cs#L8).
-
-Builds ledger record views for private-capital fund events.
-
-```csharp
-public static class PrivateCapitalFundEventLedgerRecordBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;PrivateCapitalFundEventLedgerRecordDto&gt; Build(string fundProfileId, IReadOnlyList&lt;PrivateCapitalFundEventDto&gt; fundEvents, IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerEntryDto&gt; capitalAccountSubledgerEntries, IReadOnlyList&lt;PrivateCapitalLedgerImpactDto&gt; ledgerImpacts, IReadOnlyList&lt;PrivateCapitalReportOutputDto&gt; reportOutputs) =&gt; …;</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalFundEventLedgerRecordBuilder.cs:10](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalFundEventLedgerRecordBuilder.cs#L10) |  |
-
-## PrivateCapitalLifecycleService
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalLifecycleService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs:7](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs#L7).
-
-Operator workflow over durable commitment authority and existing fund-economics kernels.
-
-```csharp
-public sealed class PrivateCapitalLifecycleService(IPrivateCapitalStore store, TimeProvider? clock = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;PrivateCapitalWorkbenchDto&gt; GetWorkbenchAsync(PrivateCapitalScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs:11](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs#L11) |  |
-| <code>public Task&lt;PrivateCapitalCommitmentDto&gt; CreateCommitmentAsync(PrivateCapitalScopeDto scope, CreatePrivateCapitalCommitmentRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs:20](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs#L20) |  |
-| <code>public Task&lt;PrivateCapitalCommitmentDto&gt; ApproveCommitmentAsync(PrivateCapitalScopeDto scope, string commitmentId, int revision, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs:43](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs#L43) |  |
-| <code>public async Task&lt;PrivateCapitalCallPreviewDto&gt; PreviewCallAsync(PrivateCapitalScopeDto scope, PreviewPrivateCapitalCallRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs:49](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs#L49) |  |
-| <code>public async Task&lt;PrivateCapitalCallDto&gt; CreateCallAsync(PrivateCapitalScopeDto scope, RetainPrivateCapitalCallRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs:123](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs#L123) |  |
-
-## PrivateCapitalPaymentIntentEvidenceBuilder
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalPaymentIntentEvidenceBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalPaymentIntentEvidenceBuilder.cs:9](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalPaymentIntentEvidenceBuilder.cs#L9).
-
-Builds payment-intent evidence for private-capital fund events and subledger views.
-
-```csharp
-public static class PrivateCapitalPaymentIntentEvidenceBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static PrivateCapitalPaymentIntentEvidenceDto BuildForFundEvent(PrivateCapitalFundEventDto fundEvent, IEnumerable&lt;string&gt; evidenceLinks, string? evidenceRoute);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalPaymentIntentEvidenceBuilder.cs:31](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalPaymentIntentEvidenceBuilder.cs#L31) |  |
-| <code>public static PrivateCapitalPaymentIntentEvidenceDto BuildForSubledger(IReadOnlyList&lt;PrivateCapitalFundEventLedgerRecordDto&gt; records, IEnumerable&lt;string&gt; evidenceLinks, string currency, DateOnly? effectiveDate, decimal netActivity, string? evidenceRoute);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalPaymentIntentEvidenceBuilder.cs:61](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalPaymentIntentEvidenceBuilder.cs#L61) |  |

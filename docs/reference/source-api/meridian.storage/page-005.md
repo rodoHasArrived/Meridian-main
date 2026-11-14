@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AtomicTaxLotMutationKind
+
+Qualified name: <code>Meridian.Storage.Ledger.AtomicTaxLotMutationKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:470](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L470).
+
+```csharp
+public enum AtomicTaxLotMutationKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Acquisition = 0</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:472](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L472) |  |
+| <code>Disposal = 1</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:473](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L473) |  |
+| <code>BasisRedistribution = 2</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:475](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L475) |  |
+| <code>Amortization = 3</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:476](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L476) |  |
+| <code>CorporateAction = 4</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:477](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L477) |  |
+| <code>CapitalReturn = 5</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:478](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L478) |  |
+| <code>FactorPaydown = 6</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:481](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L481) |  |
+
 ## CanonicalDisposalHistoryProjector
 
 Qualified name: <code>Meridian.Storage.Ledger.CanonicalDisposalHistoryProjector</code>. Kind: `class`.
@@ -400,13 +422,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;LedgerAccountingPeriod&gt; SaveHardClosedPeriodAsync(LedgerAccountingPeriod period, long expectedVersion, PeriodCloseEventRecord closeEvent, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:165](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L165) | Hard-closes a retained period only after rechecking revenue and expense balances while holding the same exclusion boundary used by journal appends. The balance guard, period CAS, and close-event insert must commit or roll back together. |
+| <code>Task&lt;LedgerPeriodCloseSnapshot?&gt; GetCloseSnapshotAsync(Guid periodId, long? periodVersion = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:161](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L161) | Returns the immutable latest or selected close version, scoped like period reads. |
+| <code>Task&lt;LedgerAccountingPeriod&gt; SaveHardClosedPeriodAsync(LedgerAccountingPeriod period, long expectedVersion, PeriodCloseEventRecord closeEvent, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:173](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L173) | Hard-closes a retained period only after rechecking revenue and expense balances while holding the same exclusion boundary used by journal appends. The balance guard, period CAS, and close-event insert must commit or roll back together. |
 
 ## IAtomicTaxLotJournalStore
 
 Qualified name: <code>Meridian.Storage.Ledger.IAtomicTaxLotJournalStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:199](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L199).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:207](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L207).
 
 Persists an immutable journal and its governed tax-lot consequences in one serializable database transaction. Implementations must treat an identical batch fingerprint as an exact replay and reject every partial-identity collision.
 
@@ -418,7 +441,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;AtomicTaxLotJournalResult&gt; AppendAssetPostingAsync(AtomicTaxLotJournalCommand command, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:201](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L201) |  |
+| <code>Task&lt;AtomicTaxLotJournalResult&gt; AppendAssetPostingAsync(AtomicTaxLotJournalCommand command, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:209](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L209) |  |
 
 ## IConsolidationFxAuthority
 
@@ -763,7 +786,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Ledger.ILedgerPostingIdentityCollisionLookup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:211](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L211).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:219](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L219).
 
 Optional optimized lookup for every retained journal that collides with a proposed posting identity. Journal-entry and command identifiers are global identities; source-event and idempotency identities are scoped to the accounting aggregate.
 
@@ -775,7 +798,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; FindPostingIdentityCollisionsAsync(LedgerPostingIdentity identity, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:213](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L213) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; FindPostingIdentityCollisionsAsync(LedgerPostingIdentity identity, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:221](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L221) |  |
 
 ## ILedgerReportingSnapshotSource
 
@@ -944,7 +967,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Ledger.ITransactionalLedgerJournalStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:175](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L175).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:183](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L183).
 
 Appends ledger journal entries within a caller-owned PostgreSQL transaction.
 
@@ -956,24 +979,5 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IAsyncDisposable&gt; AcquirePostingAuthorityAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, IReadOnlyList&lt;LedgerJournalEntryWrite&gt; entries, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:180](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L180) | Retain this scope through commit/rollback of the caller-owned transaction. |
-| <code>Task AppendAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:187](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L187) |  |
-
-## IWashSaleDeferralStore
-
-Qualified name: <code>Meridian.Storage.Ledger.IWashSaleDeferralStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/WashSaleDeferralRecord.cs:43](../../../../src/Meridian.Storage/Ledger/WashSaleDeferralRecord.cs#L43).
-
-Durable retention for wash-sale deferrals.
-
-```csharp
-public interface IWashSaleDeferralStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task SaveWashSaleDeferralsAsync(IReadOnlyList&lt;WashSaleDeferralRecord&gt; deferrals, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/WashSaleDeferralRecord.cs:51](../../../../src/Meridian.Storage/Ledger/WashSaleDeferralRecord.cs#L51) | Retains the deferrals produced by one disposal. Idempotent per (WashSaleDeferralRecord.DisposalMutationBatchId, WashSaleDeferralRecord.ReplacementTaxLotRecordId) so a replayed batch cannot capitalize the same loss twice. |
-| <code>Task&lt;IReadOnlyList&lt;WashSaleDeferralRecord&gt;&gt; ListWashSaleDeferralsAsync(Guid ledgerBookId, DateOnly fromSaleDate, DateOnly toSaleDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/WashSaleDeferralRecord.cs:56](../../../../src/Meridian.Storage/Ledger/WashSaleDeferralRecord.cs#L56) | Lists deferrals recorded against disposals in a book, ordered by sale date. |
+| <code>Task&lt;IAsyncDisposable&gt; AcquirePostingAuthorityAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, IReadOnlyList&lt;LedgerJournalEntryWrite&gt; entries, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:188](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L188) | Retain this scope through commit/rollback of the caller-owned transaction. |
+| <code>Task AppendAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:195](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L195) |  |

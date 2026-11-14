@@ -29,10 +29,10 @@ public sealed class StooqHistoricalDataProvider : BaseHistoricalDataProvider
     protected override string HttpClientName => HttpClientNames.StooqHistorical;
 
     // Stooq has no documented rate limits, use conservative defaults
-    public override int Priority => 15;
+    public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.StooqPriority;
 
-    public StooqHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null)
-        : base(httpClient, log)
+    public StooqHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(httpClient, log, runtimeOptions: runtimeOptions)
     {
     }
 

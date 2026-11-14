@@ -108,12 +108,15 @@ export function buildWorkflowContinuityViewModel(
     : routeResolution.mode === "choose-task"
       ? `No continuity step is selected for ${activeWorkspace.label}. Choose a task from the local workspace navigation; the current operating scope will be preserved.`
       : "The requested route is not part of a Meridian workspace. Open the Daily Control Tower to choose a task.";
-  const contextOwnerLabel = isShellHome ? "Daily Control Tower" : activeWorkspace.label;
+  // The home page is named "Today" in the sidebar and the breadcrumb, so the context says so too.
+  const contextOwnerLabel = isShellHome ? "Today" : activeWorkspace.label;
   const contextValue = subjectSymbol
     ? `${contextOwnerLabel} / ${subjectSymbol}`
     : operatingScope.hasScope
       ? `${contextOwnerLabel} / Scoped workflow`
-      : `${contextOwnerLabel} / ${activeStep?.label ?? "Choose a task"}`;
+      : activeStep?.label === contextOwnerLabel
+        ? contextOwnerLabel
+        : `${contextOwnerLabel} / ${activeStep?.label ?? "Choose a task"}`;
   const nextActionLabel = routeResolution.mode === "matched"
     ? activeStep && nextStep && activeStep.id === nextStep.id
       ? `Stay on ${activeStep.label}`
@@ -149,7 +152,7 @@ export function buildWorkflowContinuityViewModel(
     title,
     summary,
     primaryOperatorFlowLabel: "Primary operator workflow",
-    primaryOperatorFlowSummary: "Import -> Validate -> Reconcile -> Investigate -> Approve -> Report",
+    primaryOperatorFlowSummary: "Import → Validate → Reconcile → Investigate → Approve → Report",
     primaryOperatorFlowStepsLabel: "Primary operator workflow steps",
     primaryOperatorFlowSteps,
     contextLabel: "Operating context",
@@ -159,7 +162,6 @@ export function buildWorkflowContinuityViewModel(
     operatingScope,
     routeLabel: currentRoute || "/",
     stepsLabel: trail ? `${trail.title} workflow steps` : `${contextOwnerLabel} task workflow steps`,
-    ariaLabel: trail ? `${trail.title} continuity` : `${contextOwnerLabel} task choice`,
     nextActionLabel,
     nextActionAriaLabel,
     nextActionHref,

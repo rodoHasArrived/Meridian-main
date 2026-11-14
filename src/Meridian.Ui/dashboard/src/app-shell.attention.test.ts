@@ -229,17 +229,10 @@ describe("app shell attention state", () => {
       actionLabel: "Review diagnostics"
     });
 
-    const footer = buildWorkstationStatusItems({
-      workspaceLabel: "Trading",
-      refreshing: false,
-      hasError: Boolean(error),
-      attention
-    });
+    // The footer says the read failed; the issue itself is the masthead's to name (P1).
+    const footer = buildWorkstationStatusItems({ workspaceLabel: "Trading", refreshing: false, hasError: Boolean(error) });
     expect(footer.find((item) => item.key === "sync")).toMatchObject({ status: "err" });
-    expect(footer.find((item) => item.key === "attention")).toMatchObject({
-      status: "err",
-      value: "Workspace data: 1 area did not load"
-    });
+    expect(footer.find((item) => item.key === "attention")).toBeUndefined();
   });
 
   it("blocks when a bootstrap request failed alongside a workflow catalog failure", () => {
@@ -286,22 +279,12 @@ describe("app shell attention state", () => {
     expect(attention.sourceSignals.map((signal) => signal.id)).toContain("host");
   });
 
-  it("feeds the footer the same issue the masthead pill names", () => {
+  it("leaves the masthead as the only shell place that names the worst issue", () => {
     const { attention } = build({
       payload: { ...emptyPayload, trading: tradingWithWorkItems, data: providers("Warning") }
     });
-    const footer = buildWorkstationStatusItems({
-      workspaceLabel: "Trading",
-      refreshing: false,
-      hasError: false,
-      attention
-    });
-
-    expect(footer.find((item) => item.key === "attention")).toEqual({
-      key: "attention",
-      status: "err",
-      label: "Attention",
-      value: "Brokerage sync failed +2 more issues"
-    });
+    expect(attention.title).toBe("Brokerage sync failed");
+    const footer = buildWorkstationStatusItems({ workspaceLabel: "Trading", refreshing: false, hasError: false });
+    expect(footer.map((item) => item.value).join(" ")).not.toContain("Brokerage sync failed");
   });
 });

@@ -229,12 +229,32 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
     }
 
     [Fact]
+    public async Task AddSymbol_WithUnderscore_ReturnsBadRequestAndPreservesConfiguration()
+    {
+        var beforeResponse = await _configClient.GetAsync("/api/config");
+        beforeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var before = await DeserializeAsync(beforeResponse);
+        var payload = new { Symbol = "TEST_NEG_PATH", SubscribeTrades = false };
+        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var response = await _configClient.PostAsync("/api/config/symbols", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var afterResponse = await _configClient.GetAsync("/api/config");
+        afterResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var after = await DeserializeAsync(afterResponse);
+        after["symbols"].GetRawText().Should().Be(before["symbols"].GetRawText(),
+            "a rejected symbol must not change the saved subscription list");
+    }
+
+    [Fact]
     public async Task GetConfig_ReturnsConsistentDataAfterModification()
     {
         // Add a symbol, retrieve config, verify presence
-        var payload = new { Symbol = "TEST_NEG_PATH", SubscribeTrades = false, SubscribeDepth = false, DepthLevels = 5, SecurityType = "STK", Exchange = "SMART", Currency = "USD" };
+        var payload = new { Symbol = "TEST-NEG-PATH", SubscribeTrades = false, SubscribeDepth = false, DepthLevels = 5, SecurityType = "STK", Exchange = "SMART", Currency = "USD" };
         var addContent = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        await _configClient.PostAsync("/api/config/symbols", addContent);
+        var addResponse = await _configClient.PostAsync("/api/config/symbols", addContent);
+        addResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var configResponse = await _configClient.GetAsync("/api/config");
         configResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -242,10 +262,10 @@ public sealed class NegativePathEndpointTests : IDisposable, IClassFixture<Endpo
         var symbols = json["symbols"].EnumerateArray()
             .Select(s => s.GetProperty("symbol").GetString())
             .ToList();
-        symbols.Should().Contain("TEST_NEG_PATH");
+        symbols.Should().Contain("TEST-NEG-PATH");
 
         // Clean up
-        await _configClient.DeleteAsync("/api/config/symbols/TEST_NEG_PATH");
+        await _configClient.DeleteAsync("/api/config/symbols/TEST-NEG-PATH");
     }
 
     [Fact]
