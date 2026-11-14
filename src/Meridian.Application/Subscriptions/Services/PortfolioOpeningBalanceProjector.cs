@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Ledger;
 
@@ -36,7 +37,7 @@ public static class PortfolioOpeningBalanceProjector
         AddSigned(LedgerAccounts.CashFor(accountId), snapshot.CashBalance.Value);
         foreach (var position in snapshot.Positions)
         {
-            if (position.AssetClass?.ToLowerInvariant() is not ("us_equity" or "equity" or "stock" or "stocks" or "stk" or "etf" or "etfs"))
+            if (position.AssetClass?.ToLowerInvariant() is not (AlpacaAssetClassCodes.UsEquity or "equity" or "stock" or "stocks" or "stk" or "etf" or "etfs"))
                 throw new InvalidOperationException($"Opening {position.Symbol} requires retained instrument price-basis and multiplier evidence; only unit-priced equities are supported by this import.");
             if ((position.Quantity < 0m && !string.Equals(position.Side, "short", StringComparison.OrdinalIgnoreCase)) ||
                 (position.Quantity > 0m && !string.Equals(position.Side, "long", StringComparison.OrdinalIgnoreCase)))
