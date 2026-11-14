@@ -649,8 +649,13 @@ figures-strip scope names them. Everywhere else a set fund stays retained (muted
 
 The inline account picker (`components/meridian/inline-fund-account-picker.tsx`, used on Trading's
 brokerage-recovery step) narrows its suggestions exactly as the scope picker narrows its account
-list, prints the same "Showing N accounts under the chosen fund" help, and flags a typed or scoped
-account the graph places outside the chosen fund or entity. The operator can still use it.
+list, prints the same "Showing N accounts under the chosen fund" help, and flags a retained scoped
+account the graph places outside the chosen fund or entity. The operator can still use that explicit
+selection. The shared searchable `Combobox` offers account names and also searches IDs; typing a
+query never applies an account. Confirm a listed choice, then use **Use account**. The current
+account is preselected, or the last-used account is offered as a draft if it fits the chosen scope.
+The shell retains applied scope across routes and reloads. Empty lists keep **All scope options**
+available for recovery; arbitrary references remain an advanced option in that scope dialog.
 
 The picker's Period control sets the window: `All periods`, `Today`, `MTD`, `QTD`, `YTD`,
 `Last month` (computed on the operator's calendar day through `LocalDate`,
@@ -674,8 +679,19 @@ not narrow those figures, so they do not borrow it), then the scope the shell ap
 (`OperatingScopeLabelProvider`). Figures that state their own scope keep it. Screens that need one
 fund account use `InlineFundAccountPicker`, which sets only the fund-account dimension through the
 shell (`FundAccountScopeSelectionProvider`); Trading uses it in place of its "Choose a fund
-account" empty state in a non-live environment, on the overview and in the one-line row on Orders
-and the other Trading routes. Live, unknown and failed brokerage states keep blocking.
+account" empty state on the overview and in the one-line row on Orders and the other Trading
+routes. Live, unknown and failed brokerage states keep blocking while offering the account choice.
+Trading account setup precedes headline results. Orders puts its supporting Trade journal after
+the blotter; with no account it collapses to “Select an account to see its journal”.
+
+Required scope controls precede the results they govern. `FinancialRecordExplorerShell.scopeControls`
+provides that position before summaries and record grids. Run Ledger uses it for the searchable
+strategy run and UTC as-of date; unselected or superseded run evidence stays hidden. The date
+continues to scope trial balance, journal and exports. Trial Balance offers searchable ledger-book
+and period choices in the header, including loading/empty/error recovery, instead of duplicate
+readonly scope fields. Reconciliation run selection uses the same combobox before run details.
+Comboboxes support Arrow keys, Enter, Escape, Tab, linked labels, active-option announcements, and
+optional required, validation and help semantics. Choosing a scope never grants trading authority.
 
 Focused regression coverage includes `app.test.tsx`, `workspace-header.test.tsx`,
 `workspace-views-menu.test.tsx`, `workflow-context-disclosure.test.tsx`, `scope-picker.test.tsx`,

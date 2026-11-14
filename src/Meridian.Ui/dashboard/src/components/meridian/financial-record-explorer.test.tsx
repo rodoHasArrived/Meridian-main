@@ -12,6 +12,13 @@ describe("FinancialRecordExplorerShell", () => {
     window.history.replaceState(null, "", "/");
   });
 
+  it.each([false, true])("places required scope controls above summaries and records (compact=%s)", (compact) => {
+    renderExplorer(undefined, createExplorerDto(), undefined, compact, undefined, <input aria-label="Run scope" />);
+    const scope = screen.getByRole("textbox", { name: "Run scope" });
+    expect(scope.compareDocumentPosition(screen.getByLabelText("Explorer summary")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(scope.compareDocumentPosition(screen.getByRole("grid", { name: "Ledger Explorer records" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it.each([false, true])("formats run names for display while preserving raw filter, share and save identities (compact=%s)", async (compact) => {
     const user = userEvent.setup();
     const rawRunId = "portfolio-retained-run-42";
@@ -654,7 +661,8 @@ function renderExplorer(
   explorer: FinancialRecordExplorerDto = createExplorerDto(),
   onSelectRecord?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSelectRecord"],
   compact = false,
-  formatRunLabel?: Parameters<typeof FinancialRecordExplorerShell>[0]["formatRunLabel"]
+  formatRunLabel?: Parameters<typeof FinancialRecordExplorerShell>[0]["formatRunLabel"],
+  scopeControls?: Parameters<typeof FinancialRecordExplorerShell>[0]["scopeControls"]
 ) {
   return render(
     <FinancialRecordExplorerShell
@@ -669,6 +677,7 @@ function renderExplorer(
       explorer={explorer}
       onSaveView={onSaveView}
       onSelectRecord={onSelectRecord}
+      scopeControls={scopeControls}
       formatRunLabel={formatRunLabel}
     >
       <div>Fallback static content</div>
