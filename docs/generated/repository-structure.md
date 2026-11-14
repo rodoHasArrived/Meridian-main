@@ -14935,6 +14935,7 @@ Meridian-main
 │   │   │   ├── HelpPageSmokeTests.cs
 │   │   │   ├── LifecycleControlPageSmokeTests.cs
 │   │   │   ├── MainPageLaunchNavigationTests.cs
+│   │   │   ├── MainPageNormalNavigationTests.cs
 │   │   │   ├── MainPageSmokeTests.cs
 │   │   │   ├── MainPageUiWorkflowTests.cs
 │   │   │   ├── NavigationPageSmokeTests.cs

@@ -12,6 +12,7 @@ public partial class MainPage
 {
     private SplitPaneHostControl? _splitPaneHost;
     private bool _splitPaneEventsHooked;
+    private int? _pendingNavigationPaneIndex;
 
     private void OnSplitPaneHostLoaded(object sender, RoutedEventArgs e)
     {
@@ -46,12 +47,6 @@ public partial class MainPage
             e.Action);
         SyncSplitPaneContent();
 
-        var activePane = _splitPaneHost?.GetPaneFrame(result.ActivePaneIndex);
-        if (activePane is not null)
-        {
-            _shellNavigationCoordinator.InitializeNavigationFrame(activePane);
-        }
-
         _viewModel.NavigateToPageCommand.Execute(result.PageTag);
     }
 
@@ -82,7 +77,7 @@ public partial class MainPage
 
             AutomationProperties.SetItemType(frame,
                 state.PaneIndex == _viewModel.PaneHost.ActivePaneIndex ? "ActiveWorkspacePane" : "WorkspacePane");
-            if (!string.Equals(
+            if (state.PaneIndex != _pendingNavigationPaneIndex && !string.Equals(
                     WpfNavigationService.GetContentPageTag(frame.Content),
                     state.CanonicalPageTag,
                     StringComparison.OrdinalIgnoreCase))
@@ -91,10 +86,13 @@ public partial class MainPage
             }
         }
 
-        var activePane = _splitPaneHost.GetPaneFrame(_viewModel.PaneHost.ActivePaneIndex);
-        if (activePane is not null)
+        var canonicalPageTag = ShellNavigationCatalog.GetCanonicalPageTag(_viewModel.CurrentPageTag);
+        var targetFrame = IsWorkspaceHomePage(canonicalPageTag)
+            ? _splitPaneHost.GetPaneFrame(_viewModel.PaneHost.ActivePaneIndex)
+            : ContentFrame;
+        if (targetFrame is not null && OwnsNavigationFrame())
         {
-            _shellNavigationCoordinator.InitializeNavigationFrame(activePane);
+            BindNavigationFrame(targetFrame);
         }
     }
 }

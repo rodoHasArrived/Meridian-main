@@ -55,6 +55,11 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     private WorkspaceChromePresentationMode _presentationMode = WorkspaceChromePresentationMode.Standalone;
     private readonly AsyncLocal<IServiceProvider?> _navigationScopeProvider = new();
 
+    internal event EventHandler<NavigationEventArgs>? NavigationStarting;
+
+    internal bool IsNavigationFrame(Frame frame, WorkspaceChromePresentationMode presentationMode)
+        => ReferenceEquals(_frame, frame) && _presentationMode == presentationMode;
+
     /// <summary>
     /// Gets the singleton instance of the NavigationService.
     /// </summary>
@@ -99,6 +104,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         _frame = null;
         _serviceProvider = null;
         _navigationScopeProvider.Value = null;
+        NavigationStarting = null;
         _presentationMode = WorkspaceChromePresentationMode.Standalone;
         ClearHistory();
     }
@@ -183,6 +189,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
         try
         {
+            NavigationStarting?.Invoke(this, new NavigationEventArgs { PageTag = pageTag, Parameter = parameter });
             var content = CreatePageContentCore(
                 pageTag,
                 pageType,

@@ -866,9 +866,14 @@ extra page-registration block.
 Shell coordinator, pane-host, and direct `NavigationService` paths accept compatibility aliases as
 inbound route requests but store and execute canonical page tags in active pane state, restored
 content creation, navigation history, navigation events, and pane-drop results.
-Forwarded `--page` requests and restored operating-context pages render workspace homes, including
+Normal shell commands, forwarded `--page` requests and restored operating-context pages render workspace homes, including
 `HomeWorkspace`, in the active split pane and leaf workflows in the main content frame.
 Updating an existing pane preserves its layout and the other pane instances.
+Frame selection occurs before command or workspace-body navigation creates content, and pane layout
+or selection changes retain the main content frame as the target while a leaf workflow is visible.
+The shell routes only its own docked frames; explicitly initialized detached frames keep their target.
+Preparing a home route updates its pane assignment without preloading the same content, so one
+navigation adds one entry to the native frame journal.
 Direct navigation and split-pane content creation resolve scoped presentation services through the
 registered workspace's retained scope when no caller scope is supplied; explicit scopes take precedence.
 Desktop capture readiness compares the shell tag with the visible active frame's `ItemStatus`,
