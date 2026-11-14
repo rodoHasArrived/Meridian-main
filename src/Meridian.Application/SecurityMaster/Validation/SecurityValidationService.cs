@@ -248,9 +248,10 @@ public sealed class SecurityValidationService : ISecurityValidationService
 
     /// <summary>
     /// Every terms payload must declare its family (<see cref="SecurityTermsEnvelope.FormatKey"/>) so
-    /// readers never classify it by shape (ADR-024). A missing tag is a warning while the stored
-    /// backlog is being backfilled; a declared tag this node does not know is an error, because the
-    /// projection store refuses to persist it.
+    /// readers never classify it by shape (ADR-024). A missing tag is an error: live readers refuse an
+    /// untagged payload, the projection store refuses to persist it, and migration 068's constraint
+    /// refuses it in storage (amendment 2026-11-13 step 5). A declared tag this node does not know is
+    /// an error, because the projection store refuses to persist it.
     /// </summary>
     private static IReadOnlyList<SecurityValidationIssueDto> ValidateTermsFormat(SecurityProjectionRecord record)
     {
@@ -262,16 +263,15 @@ public sealed class SecurityValidationService : ISecurityValidationService
         var declared = SecurityTermsEnvelope.GetDeclaredFormat(record.AssetSpecificTerms);
         if (declared is null)
         {
-            var inferred = SecurityTermsEnvelope.ResolveFormat(record.AssetSpecificTerms);
             return
             [
                 SecurityValidationIssueFactory.Create(
-                    SecurityValidationSeverityDto.Warning,
+                    SecurityValidationSeverityDto.Error,
                     "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING",
                     "Asset-specific terms format is missing",
-                    $"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey} is absent, so the payload family is inferred by shape as '{inferred}'; every stored payload should declare its family explicitly.",
+                    $"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey} is absent; this node no longer infers the payload family by shape, so readers and the projection store refuse the payload.",
                     [$"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}"],
-                    $"Re-persist the payload through a writer that stamps {SecurityTermsEnvelope.FormatKey} = '{inferred}' (SecurityTermsEnvelope.StampFlat for flat terms).")
+                    $"Re-persist the payload through a writer that declares {SecurityTermsEnvelope.FormatKey} as '{SecurityTermsFormats.Flat}' or '{SecurityTermsFormats.CustomProfile}' (SecurityTermsEnvelope.StampDeclaredFormat or StampFlat; '{SecurityTermsFormats.Economic}' is not accepted on writes), or apply migration 068 to stored rows.")
             ];
         }
 
@@ -285,7 +285,7 @@ public sealed class SecurityValidationService : ISecurityValidationService
                     "Asset-specific terms format is unknown",
                     $"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey} '{declared}' is not a terms format this node understands; the projection store refuses to persist it.",
                     [$"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}"],
-                    $"Declare one of {string.Join(", ", SecurityTermsFormats.All)} or upgrade this node before the record is used downstream.")
+                    $"Declare {SecurityTermsEnvelope.FormatKey} as '{SecurityTermsFormats.Flat}' or '{SecurityTermsFormats.CustomProfile}' (SecurityTermsEnvelope.StampDeclaredFormat or StampFlat; '{SecurityTermsFormats.Economic}' is not accepted on writes), or upgrade this node before the record is used downstream.")
             ];
         }
 

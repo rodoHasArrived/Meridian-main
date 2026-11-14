@@ -78,6 +78,47 @@ public static class OpenLotAmortization
         return Sha256Digest.Compute(stream.ToArray());
     }
 
+    /// <summary>
+    /// The <see cref="SecurityHash"/> values that identify these Security Master terms: the hash of the
+    /// projection as read and, when its asset-specific terms carry a declared
+    /// <see cref="SecurityTermsEnvelope.FormatKey"/> that only restates the family the frozen shape rule
+    /// infers (<see cref="SecurityTermsEnvelope.RemoveRedundantDeclaredFormat"/>), the hash of the same
+    /// projection without it. That declaration is the only key a write, a replay or migration 068 adds to
+    /// unchanged terms (ADR-024 amendment 2026-11-13), so evidence retained over the untagged terms keeps
+    /// matching after they are stamped; every other byte stays bound, so changed terms never match.
+    /// </summary>
+    public static IReadOnlyList<string> AcceptedSecurityHashes(SecurityProjectionRecord security)
+    {
+        ArgumentNullException.ThrowIfNull(security);
+        var current = SecurityHash(security);
+        var stripped = SecurityTermsEnvelope.WithoutRedundantDeclaredFormat(security.AssetSpecificTerms);
+        if (stripped.ValueKind == security.AssetSpecificTerms.ValueKind
+            && string.Equals(stripped.GetRawText(), security.AssetSpecificTerms.GetRawText(), StringComparison.Ordinal))
+        {
+            return [current];
+        }
+
+        var legacy = SecurityHash(security with { AssetSpecificTerms = stripped });
+        return string.Equals(legacy, current, StringComparison.Ordinal) ? [current] : [current, legacy];
+    }
+
+    /// <summary>
+    /// Whether two projections hash to the same <see cref="SecurityHash"/> once a declared
+    /// <see cref="SecurityTermsEnvelope.FormatKey"/> that only restates the inferred family is set aside
+    /// (see <see cref="AcceptedSecurityHashes"/>): a retained untagged projection and the same terms read
+    /// back stamped are the same security; any other difference is not.
+    /// </summary>
+    public static bool SameSecurityHash(SecurityProjectionRecord left, SecurityProjectionRecord right)
+    {
+        ArgumentNullException.ThrowIfNull(left);
+        ArgumentNullException.ThrowIfNull(right);
+        return string.Equals(SecurityHash(WithoutRedundantDeclaredFormat(left)), SecurityHash(WithoutRedundantDeclaredFormat(right)),
+            StringComparison.Ordinal);
+    }
+
+    private static SecurityProjectionRecord WithoutRedundantDeclaredFormat(SecurityProjectionRecord security)
+        => security with { AssetSpecificTerms = SecurityTermsEnvelope.WithoutRedundantDeclaredFormat(security.AssetSpecificTerms) };
+
     public static OpenLotAmortizationProjectionDto Project(OpenLotAmortizationInstructionDto instruction)
     {
         try
@@ -131,7 +172,7 @@ public static class OpenLotAmortization
         if (!RetainedEvidenceIdentityValidator.IsComplete(evidence) || evidence.SubjectType != "SecurityMasterProjection"
             || evidence.SubjectId != security.SecurityId.ToString("D") || evidence.EvidenceVersion != security.Version
             || (!retainedReversal && evidence.EffectiveDate > instruction.AsOfDate)
-            || !Sha256Digest.FixedEquals(evidence.ContentHashSha256, SecurityHash(security)))
+            || !AcceptedSecurityHashes(security).Any(hash => Sha256Digest.FixedEquals(evidence.ContentHashSha256, hash)))
             throw new ArgumentException("Amortization requires hash-bound versioned Security Master projection evidence.");
         if (instruction.Reversal is { } reversal)
         {

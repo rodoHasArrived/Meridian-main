@@ -287,7 +287,7 @@ public sealed partial class BondExerciseNoticeJsonContext : JsonSerializerContex
 
 Qualified name: <code>Meridian.Contracts.CashFlows.CalculationBlockerDigest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:26](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L26).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:69](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L69).
 
 A blocked preview&#x27;s identity: its code and reason.
 
@@ -602,7 +602,7 @@ public sealed record ContractualCashFlowEvidence(string EngineVersion, string Ma
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowInputDigest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:7](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L7).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:8](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L8).
 
 Exactly the members the engine hashes as a run&#x27;s input identity, in the retained property order.
 
@@ -614,7 +614,7 @@ public sealed record ContractualCashFlowInputDigest(ContractualCashFlowContract 
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowJsonContext</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:46](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L46).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:89](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L89).
 
 Source-generated serialization for every contractual cash-flow shape that is hashed or retained. Hash bytes are a compatibility contract with retained packets, so the options here reproduce the web defaults the packets were written with (camelCase names, case-insensitive reads).
 
@@ -626,7 +626,7 @@ public sealed partial class ContractualCashFlowJsonContext : JsonSerializerConte
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowOutputDigest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:16](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L16).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:17](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L17).
 
 Exactly the members the engine hashes as a run&#x27;s output identity, in the retained property order.
 

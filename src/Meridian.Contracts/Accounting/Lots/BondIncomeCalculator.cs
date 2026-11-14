@@ -236,7 +236,7 @@ public static class BondIncomeCalculator
             || inputs.SecurityEvidence.SubjectId != security.SecurityId.ToString("D")
             || inputs.SecurityEvidence.EvidenceVersion != security.Version
             || inputs.SecurityEvidence.SubjectType != "SecurityMasterProjection"
-            || !Sha256Digest.FixedEquals(inputs.SecurityEvidence.ContentHashSha256, OpenLotAmortization.SecurityHash(security)))
+            || !OpenLotAmortization.AcceptedSecurityHashes(security).Any(hash => Sha256Digest.FixedEquals(inputs.SecurityEvidence.ContentHashSha256, hash)))
             throw new ArgumentException("Bond income requires hash-bound authoritative Security Master and lot identity.");
         if (inputs.Reversal is { } reversal)
         {

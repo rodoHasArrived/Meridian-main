@@ -1,4 +1,7 @@
+using System.Data;
 using System.Data.Common;
+using System.Globalization;
+using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Npgsql;
 
@@ -26,7 +29,8 @@ internal sealed class PostgresReferenceProjectionReader
 
     /// <summary>
     /// Opens a connection to the Security Master database. Stores that write (the option-chain
-    /// upsert) use this directly; readers go through <see cref="QueryAsync{TRow}"/>.
+    /// upsert) use this directly; readers go through <see cref="QueryAsync{TRow}"/>, or
+    /// <see cref="BeginSnapshotAsync"/> for a read that spans several tables.
     /// </summary>
     public async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)
     {
@@ -72,6 +76,22 @@ internal sealed class PostgresReferenceProjectionReader
     }
 
     /// <summary>
+    /// Builds the select over a registry satellite table (its leading spine, its columns, its
+    /// trailing spine), located by the owning <paramref name="assetClass"/> and the satellite's
+    /// <paramref name="satelliteTableName"/>.
+    /// </summary>
+    public string SelectSatelliteSql(string assetClass, string satelliteTableName, string predicateSql)
+    {
+        var descriptor = SecurityTermsProjectionRegistry.Require(assetClass);
+        var satellite = descriptor.Satellites.FirstOrDefault(table =>
+            string.Equals(table.TableName, satelliteTableName, StringComparison.Ordinal))
+            ?? throw new ArgumentException(
+                $"'{assetClass}' has no satellite projection table '{satelliteTableName}'.",
+                nameof(satelliteTableName));
+        return BuildSelect(SecurityTermsProjectionRegistry.SatelliteColumnNames(satellite), satellite.TableName, predicateSql);
+    }
+
+    /// <summary>
     /// Runs <paramref name="sql"/> with <paramref name="parameters"/> and maps every row through
     /// <paramref name="map"/>, in result order.
     /// </summary>
@@ -82,17 +102,7 @@ internal sealed class PostgresReferenceProjectionReader
         CancellationToken ct)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var command = CreateCommand(connection, sql, parameters);
-
-        var results = new List<TRow>();
-        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        var row = new ProjectionRow(reader);
-        while (await reader.ReadAsync(ct).ConfigureAwait(false))
-        {
-            results.Add(map(row));
-        }
-
-        return results;
+        return await QueryCoreAsync(connection, transaction: null, sql, parameters, map, ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -107,7 +117,74 @@ internal sealed class PostgresReferenceProjectionReader
         where TRow : class
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var command = CreateCommand(connection, sql, parameters);
+        return await QuerySingleCoreAsync(connection, transaction: null, sql, parameters, map, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Opens one connection and begins one read-only <c>REPEATABLE READ</c> transaction on it, so
+    /// every query run through the returned <see cref="ProjectionReadSnapshot"/> sees the same
+    /// committed database state. A composite read (a security's class gate, parent row, child
+    /// tables and satellites) runs through one snapshot so a writer that commits all of a
+    /// security's tables between two of those queries cannot yield a mix of two versions. The
+    /// snapshot is taken by the first query the transaction runs.
+    /// </summary>
+    public async Task<ProjectionReadSnapshot> BeginSnapshotAsync(CancellationToken ct)
+    {
+        var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        NpgsqlTransaction? transaction = null;
+        try
+        {
+            transaction = await connection.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct).ConfigureAwait(false);
+            await using (var command = new NpgsqlCommand("set transaction read only;", connection, transaction))
+            {
+                await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            }
+
+            return new ProjectionReadSnapshot(connection, transaction);
+        }
+        catch
+        {
+            if (transaction is not null)
+            {
+                await transaction.DisposeAsync().ConfigureAwait(false);
+            }
+
+            await connection.DisposeAsync().ConfigureAwait(false);
+            throw;
+        }
+    }
+
+    internal static async Task<IReadOnlyList<TRow>> QueryCoreAsync<TRow>(
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
+        string sql,
+        IReadOnlyList<NpgsqlParameter> parameters,
+        Func<ProjectionRow, TRow> map,
+        CancellationToken ct)
+    {
+        await using var command = CreateCommand(connection, transaction, sql, parameters);
+
+        var results = new List<TRow>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        var row = new ProjectionRow(reader);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            results.Add(map(row));
+        }
+
+        return results;
+    }
+
+    internal static async Task<TRow?> QuerySingleCoreAsync<TRow>(
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
+        string sql,
+        IReadOnlyList<NpgsqlParameter> parameters,
+        Func<ProjectionRow, TRow> map,
+        CancellationToken ct)
+        where TRow : class
+    {
+        await using var command = CreateCommand(connection, transaction, sql, parameters);
 
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
@@ -120,11 +197,13 @@ internal sealed class PostgresReferenceProjectionReader
 
     private static NpgsqlCommand CreateCommand(
         NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
         string sql,
         IReadOnlyList<NpgsqlParameter> parameters)
     {
         var command = connection.CreateCommand();
         command.CommandText = sql;
+        command.Transaction = transaction;
         foreach (var parameter in parameters)
         {
             command.Parameters.Add(parameter);
@@ -135,6 +214,48 @@ internal sealed class PostgresReferenceProjectionReader
 
     private string BuildSelect(IReadOnlyList<string> columns, string table, string predicateSql)
         => $"select {string.Join(", ", columns)} from {Qualified(table)} {predicateSql};";
+}
+
+/// <summary>
+/// One connection holding one read-only <c>REPEATABLE READ</c> transaction, opened by
+/// <see cref="PostgresReferenceProjectionReader.BeginSnapshotAsync"/>. Every query run through it
+/// reads the same committed state, so the queries of one composite read agree with each other.
+/// Disposing it ends the transaction (nothing was written, so it is rolled back) and closes the
+/// connection.
+/// </summary>
+internal sealed class ProjectionReadSnapshot : IAsyncDisposable
+{
+    private readonly NpgsqlConnection _connection;
+    private readonly NpgsqlTransaction _transaction;
+
+    internal ProjectionReadSnapshot(NpgsqlConnection connection, NpgsqlTransaction transaction)
+    {
+        _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+        _transaction = transaction ?? throw new ArgumentNullException(nameof(transaction));
+    }
+
+    /// <summary>Runs <paramref name="sql"/> inside the snapshot and maps every row, in result order.</summary>
+    public Task<IReadOnlyList<TRow>> QueryAsync<TRow>(
+        string sql,
+        IReadOnlyList<NpgsqlParameter> parameters,
+        Func<ProjectionRow, TRow> map,
+        CancellationToken ct)
+        => PostgresReferenceProjectionReader.QueryCoreAsync(_connection, _transaction, sql, parameters, map, ct);
+
+    /// <summary>Runs <paramref name="sql"/> inside the snapshot and maps the first row, or returns <see langword="null"/>.</summary>
+    public Task<TRow?> QuerySingleAsync<TRow>(
+        string sql,
+        IReadOnlyList<NpgsqlParameter> parameters,
+        Func<ProjectionRow, TRow> map,
+        CancellationToken ct)
+        where TRow : class
+        => PostgresReferenceProjectionReader.QuerySingleCoreAsync(_connection, _transaction, sql, parameters, map, ct);
+
+    public async ValueTask DisposeAsync()
+    {
+        await _transaction.DisposeAsync().ConfigureAwait(false);
+        await _connection.DisposeAsync().ConfigureAwait(false);
+    }
 }
 
 /// <summary>
@@ -204,6 +325,27 @@ internal sealed class ProjectionRow
         return _reader.IsDBNull(ordinal) ? null : DateOnly.FromDateTime(_reader.GetDateTime(ordinal));
     }
 
+    /// <summary>
+    /// Every named column as a JSON value, keyed by column name in <paramref name="columns"/>
+    /// order. The generic registry read uses this for classes that have no typed row: the column
+    /// list is the descriptor's, so the result carries exactly what the table holds. The SQL type
+    /// of each column (<see cref="DbDataReader.GetDataTypeName"/>) decides how a value is written,
+    /// so a <c>date</c> column reads as an ISO date rather than a midnight timestamp.
+    /// </summary>
+    public IReadOnlyDictionary<string, JsonElement> ToJsonColumns(IReadOnlyList<string> columns)
+    {
+        ArgumentNullException.ThrowIfNull(columns);
+        var values = new Dictionary<string, JsonElement>(columns.Count, StringComparer.Ordinal);
+        foreach (var column in columns)
+        {
+            var ordinal = Ordinal(column);
+            var value = _reader.IsDBNull(ordinal) ? null : _reader.GetValue(ordinal);
+            values[column] = ProjectionJsonValue.From(value, _reader.GetDataTypeName(ordinal));
+        }
+
+        return values;
+    }
+
     /// <summary>A <c>timestamp</c> column read as UTC, as the option-contract mapper always has.</summary>
     public DateTimeOffset UtcTimestamp(string column)
         => new(_reader.GetDateTime(Ordinal(column)), TimeSpan.Zero);
@@ -222,5 +364,87 @@ internal sealed class ProjectionRow
                 $"The projection select does not carry a column named '{column}'.",
                 exception);
         }
+    }
+}
+
+/// <summary>
+/// Converts one projection column value to a <see cref="JsonElement"/> for the generic registry
+/// read. Numbers keep their exact decimal text, identifiers and text are strings, a SQL
+/// <c>date</c> is <c>yyyy-MM-dd</c>, a timestamp is round-trip ISO-8601 (a
+/// <c>timestamp without time zone</c> read as UTC, as <see cref="ProjectionRow.UtcTimestamp"/>
+/// does), and SQL NULL is JSON null. Anything else is written as its invariant text.
+/// </summary>
+internal static class ProjectionJsonValue
+{
+    private static readonly JsonElement Null = Parse(static writer => writer.WriteNullValue());
+
+    public static JsonElement From(object? value, string? dataTypeName)
+    {
+        if (value is null or DBNull)
+        {
+            return Null;
+        }
+
+        return Parse(writer =>
+        {
+            switch (value)
+            {
+                case string text:
+                    writer.WriteStringValue(text);
+                    break;
+                case Guid guid:
+                    writer.WriteStringValue(guid.ToString("D"));
+                    break;
+                case bool flag:
+                    writer.WriteBooleanValue(flag);
+                    break;
+                case decimal number:
+                    writer.WriteNumberValue(number);
+                    break;
+                case long number:
+                    writer.WriteNumberValue(number);
+                    break;
+                case int number:
+                    writer.WriteNumberValue(number);
+                    break;
+                case short number:
+                    writer.WriteNumberValue(number);
+                    break;
+                case double number:
+                    writer.WriteNumberValue(number);
+                    break;
+                case float number:
+                    writer.WriteNumberValue(number);
+                    break;
+                case DateOnly date:
+                    writer.WriteStringValue(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                    break;
+                case DateTime dateTime when string.Equals(dataTypeName, "date", StringComparison.OrdinalIgnoreCase):
+                    writer.WriteStringValue(DateOnly.FromDateTime(dateTime).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                    break;
+                case DateTime dateTime:
+                    writer.WriteStringValue(new DateTimeOffset(DateTime.SpecifyKind(dateTime, DateTimeKind.Utc), TimeSpan.Zero)
+                        .ToString("O", CultureInfo.InvariantCulture));
+                    break;
+                case DateTimeOffset timestamp:
+                    writer.WriteStringValue(timestamp.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
+                    break;
+                default:
+                    writer.WriteStringValue(Convert.ToString(value, CultureInfo.InvariantCulture));
+                    break;
+            }
+        });
+    }
+
+    private static JsonElement Parse(Action<Utf8JsonWriter> write)
+    {
+        var buffer = new System.Buffers.ArrayBufferWriter<byte>();
+        using (var writer = new Utf8JsonWriter(buffer))
+        {
+            write(writer);
+        }
+
+        using var document = JsonDocument.Parse(buffer.WrittenMemory);
+        return document.RootElement.Clone();
     }
 }

@@ -1778,17 +1778,41 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         }
 
         var projection = SecurityMasterMapping.ToProjection(result.Snapshot, aliases);
+        // The single choke point every create, amend and deactivate passes before its upsert: the
+        // terms the record will carry declare their family (ADR-024 decision 1, amendment
+        // 2026-11-13). That covers the profile-backed override, which persists the submitted or
+        // stored envelope, and the domain codec's verbatim custom-asset document alike; a flat
+        // document the codec already stamped is returned unchanged. The writer declares what it
+        // writes — a profile envelope or flat terms — and never infers the economic family.
         return projection with
         {
             AssetClass = assetClassOverride ?? projection.AssetClass,
-            AssetSpecificTerms = assetSpecificTermsOverride?.Clone() ?? projection.AssetSpecificTerms
+            AssetSpecificTerms = SecurityTermsEnvelope.StampDeclaredFormat(
+                assetSpecificTermsOverride?.Clone() ?? projection.AssetSpecificTerms)
         };
     }
 
+    /// <summary>
+    /// The stored projection's resolution, used when the write carries no profile envelope (a
+    /// no-patch amendment or a deactivation). A stored <c>CustomAsset</c> keeps its class here even
+    /// when its pinned profile is one a class now declares in <c>ReclassifyingProfileIds</c> (ADR-022
+    /// R1): a common-terms-only amend or a deactivation never promotes it. The guard covers only writes
+    /// without a terms patch. Any write that carries the pinned envelope resolves to the target class
+    /// through the patch overload below, including an approved workbench field edit and a term-block
+    /// patch, because both rebuild a full envelope patch from the stored terms. A record already on a
+    /// first-class profile-backed class resolves as before.
+    /// </summary>
     private static string? GetProfileBackedAssetClassOverride(SecurityProjectionRecord projection)
-        => IsProfileBackedCustomAsset(projection.AssetClass, projection.AssetSpecificTerms)
-            ? GetProfileBackedAssetClassOverride(projection.AssetClass, projection.AssetSpecificTerms)
-            : null;
+    {
+        if (!IsProfileBackedCustomAsset(projection.AssetClass, projection.AssetSpecificTerms))
+        {
+            return null;
+        }
+
+        return SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass) is { RequiresProfileReference: true } storedCustomAsset
+            ? storedCustomAsset.AssetClass
+            : GetProfileBackedAssetClassOverride(projection.AssetClass, projection.AssetSpecificTerms);
+    }
 
     /// <summary>
     /// The SUBMITTED envelope decides an amendment's resolved class: repinning a record to a
@@ -1871,7 +1895,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
            && customProfileId.ValueKind == System.Text.Json.JsonValueKind.String
            && !string.IsNullOrWhiteSpace(customProfileId.GetString());
 
-    private static bool TryResolveProfileBackedAlternativeAssetClass(JsonElement assetSpecificTerms, out string assetClass)
+    internal static bool TryResolveProfileBackedAlternativeAssetClass(JsonElement assetSpecificTerms, out string assetClass)
     {
         var profileId = GetString(assetSpecificTerms, "customProfileId");
 

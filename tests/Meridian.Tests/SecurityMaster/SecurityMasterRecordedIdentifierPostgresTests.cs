@@ -238,7 +238,7 @@ public sealed class SecurityMasterRecordedIdentifierPostgresTests(SecurityMaster
         var id = Guid.NewGuid();
         var recordedAt = DateTimeOffset.UtcNow.AddDays(-30);
         var projection = SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Equity",
-            JsonSerializer.SerializeToElement(new { schemaVersion = 1, classification = "Common", shareClass = "A" })) with
+            SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(new { schemaVersion = 1, classification = "Common", shareClass = "A" }))) with
         {
             SecurityId = id,
             PrimaryIdentifierValue = $"PRIMARY-{id:N}",

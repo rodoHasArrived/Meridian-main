@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionTypeDescriptor
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionTypeDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:456](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L456).
+
+Metadata for one canonical corporate-action event type. CanonicalName is the stored wire value; CaevCode is ISO 15022 alignment metadata only (not unique — e.g. regular and special dividends both map to DVCA) and null for internal-only extensions. An empty ValidSecurityMasterAssetClasses list means the event type is valid for every asset class.
+
+```csharp
+public sealed record CorporateActionTypeDescriptor(string CanonicalName, string? CaevCode, string DisplayName, string Description, IReadOnlyList<string> Aliases, IReadOnlyList<string> ValidSecurityMasterAssetClasses, IReadOnlyList<CorporateActionField> RequiredFields, CorporateActionAdjustmentBehavior AdjustmentBehavior, CorporateActionLedgerPostingKind LedgerPostingKind, bool IsPriceAffecting, IReadOnlyList<string> LedgerBehaviorHints)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool AppliesToAssetClass(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:469](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L469) |  |
+
+## CorporateActionTypeDescriptorCatalog
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionTypeDescriptorCatalog</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L10).
+
+Contract-owned metadata for canonical corporate-action event types. The canonical name (see CorporateActionEventTypes) remains the compact wire value; this catalog carries the ISO 15022 alignment, provider aliases, required fields, asset-class validity, and downstream behavior consumers need for validation, price adjustment, ledger posting, and workbench workflows.
+
+```csharp
+public static class CorporateActionTypeDescriptorCatalog
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;CorporateActionTypeDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:370](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L370) |  |
+| <code>public static CorporateActionTypeDescriptor? Find(string? canonicalName) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:372](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L372) |  |
+| <code>public static bool TryGet(string canonicalName, out CorporateActionTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:377](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L377) |  |
+| <code>public static bool TryNormalize(string? rawEventType, out CorporateActionTypeDescriptor descriptor);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:385](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L385) | Alias-tolerant resolution: canonical names, provider aliases, and CAEV codes are all accepted, compared on the letters-and-digits compact token so spacing, casing, and punctuation variants resolve to the same descriptor. |
+| <code>public static IReadOnlyList&lt;CorporateActionTypeDescriptor&gt; FindByAssetClass(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:396](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L396) |  |
+
 ## CorporateActionValidationException
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionValidationException</code>. Kind: `class`.
@@ -397,7 +437,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EconomicTermsSchema</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L74).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L62).
 
 Schema versions for the economic-terms payload family — the structured maturity/coupon/discount/accrual/payment document written by the economic definition adapter. This is a distinct family from AssetSpecificTermsSchema: the two shapes share nothing but the schemaVersion key, so their version numbers must never be compared against each other&#x27;s acceptance sets.
 
@@ -409,7 +449,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const int Current = 2;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L77) | The current structured economic-terms shape. |
+| <code>public const int Current = 2;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:65](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L65) | The current structured economic-terms shape. |
 
 ## EdgarAddress
 
@@ -819,23 +859,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L24) | Returns unchanged values when no applicable action or identity is found. |
 | <code>Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, decimal totalCostBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L35) | Preserves retained total carrying basis when supported. Legacy implementations retain their quantity/quote behavior without claiming exact total-basis evidence. |
-
-## IngestSecurityRatesRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IngestSecurityRatesRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L44).
-
-```csharp
-public sealed record IngestSecurityRatesRequest(Guid CurveId, DateOnly AsOf, SecurityRateConstructionMethod ConstructionMethod, string MethodDescription, IReadOnlyList<SecurityRateIngestionPointDto> Points);
-```
-
-## InstrumentTypeDescriptor
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptor</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:541](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L541).
-
-```csharp
-public sealed record InstrumentTypeDescriptor(InstrumentType InstrumentType, string DisplayName, string SecurityMasterAssetClass, string? SecurityMasterAssetFamily, string? SecurityMasterSubType, string DefaultProviderSecurityType, bool IsTradeable, bool IsReferenceOnly, bool IsDerivative, bool RequiresUnderlying, bool ProducesCashFlows, bool RequiresLotTracking, string SettlementModel, IReadOnlyList<string> CompatibleSecurityMasterAssetClasses, IReadOnlyList<string> PreferredIdentifierKinds, IReadOnlyList<string> RequiredEconomicTerms, IReadOnlyList<string> ProviderCapabilities, IReadOnlyList<string> LifecycleEvents, IReadOnlyList<string> ValidationRules, IReadOnlyList<string> LedgerBehaviorHints, IReadOnlyList<string> RiskModelHints);
-```

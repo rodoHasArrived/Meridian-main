@@ -57,6 +57,7 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         {
             values["MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_WRITERS_STOPPED"] = "true";
             values["MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_LEGACY_WRITERS_RETIRED"] = "true";
+            values["MERIDIAN_SECURITY_MASTER_TERMS_FORMAT_BACKFILL_LEGACY_WRITERS_RETIRED"] = "true";
         }
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(values).Build();
         var services = new ServiceCollection();
@@ -66,6 +67,7 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         var options = provider.GetRequiredService<SecurityMasterOptions>();
         options.IdentifierHistoryMigrationWritersStopped.Should().Be(acknowledged);
         options.IdentifierHistoryMigrationLegacyWritersRetired.Should().Be(acknowledged);
+        options.TermsFormatBackfillLegacyWritersRetired.Should().Be(acknowledged);
     }
 
     private readonly string? _originalSecurityMasterConnectionString;

@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
@@ -138,7 +139,7 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
             || string.IsNullOrWhiteSpace(asset.AssetClass) || !AuthoritativeAssetClasses.Contains(asset.AssetClass) || !asset.HasTradable))
             throw new JsonException("Alpaca asset search requires each asset's symbol, name, class and explicit tradability.");
         return MapSearchResults(assets, query).Select(static result =>
-            result.AssetType?.ToLowerInvariant() is "treasury" or "corporate"
+            result.AssetType?.ToLowerInvariant() is AlpacaAssetClassCodes.Treasury or AlpacaAssetClassCodes.Corporate
                 ? result with { AssetType = "FixedIncome" } : result);
     }
 
@@ -239,7 +240,8 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
     // https://github.com/alpacahq/alpaca-py/blob/master/alpaca/trading/enums.py (AssetClass).
     private static readonly HashSet<string> AuthoritativeAssetClasses = new(StringComparer.OrdinalIgnoreCase)
     {
-        "us_equity", "us_option", "crypto", "crypto_perp", "treasury", "corporate", "global_equity",
+        AlpacaAssetClassCodes.UsEquity, AlpacaAssetClassCodes.UsOption, AlpacaAssetClassCodes.Crypto, "crypto_perp",
+        AlpacaAssetClassCodes.Treasury, AlpacaAssetClassCodes.Corporate, "global_equity",
         "us_index", "us_equity_chain", "ipo", "fixed_income"
     };
 

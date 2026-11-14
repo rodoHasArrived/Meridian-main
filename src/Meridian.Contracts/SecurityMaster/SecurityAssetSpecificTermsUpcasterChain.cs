@@ -100,19 +100,6 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
     public static IReadOnlyList<string> EconomicTermsModules { get; } =
         [.. BridgedModules, .. DroppedModules];
 
-    /// <summary>
-    /// The module keys the historical shape rule consults: exactly the modules the economic
-    /// serializer wrote before <see cref="SecurityTermsEnvelope.FormatKey"/> existed. Untagged
-    /// payloads predate the tag, so only these keys can mark one as economic; modules serialized
-    /// later (ADR-027 stage 1 increment 5) never appear untagged and are deliberately not
-    /// consulted — the rule stays frozen with the population it classifies, as does migration
-    /// 042's SQL mirror of it. This list never grows; it retires with the shape rule itself
-    /// (ADR-024 decision 5).
-    /// </summary>
-    public static IReadOnlyList<string> ShapeRuleModules { get; } =
-        ["maturity", "coupon", "payment", "accrual", "discount",
-         "redemption", "call", "auction", "sweep", "financing", "issuer", "equityBehavior", "fund", "structuredProduct"];
-
     public int FromSchemaVersion => EconomicTermsSchema.Current;
 
     public int ToSchemaVersion => AssetSpecificTermsSchema.Legacy;
@@ -136,43 +123,17 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
     }
 
     /// <summary>
-    /// Whether the payload is an economic-terms document. A payload that declares
-    /// <see cref="SecurityTermsEnvelope.FormatKey"/> is classified by that declaration alone, so a
-    /// tagged document never depends on its <c>schemaVersion</c> integer; an untagged payload falls
-    /// back to <see cref="IsEconomicTermsShape"/>.
+    /// Whether the payload is an economic-terms document, by its declared
+    /// <see cref="SecurityTermsEnvelope.FormatKey"/> alone: a tagged document never depends on its
+    /// <c>schemaVersion</c> integer or its shape. An untagged object is refused with
+    /// <see cref="SecurityTermsFormatUndeclaredException"/> (ADR-024 decision 5, amendment 2026-11-13
+    /// step 5); untagged retained terms from event history are classified by
+    /// <see cref="SecurityTermsLegacyEventClassifier"/> during event decoding instead. A non-object is
+    /// not an economic-terms document.
     /// </summary>
     public static bool IsEconomicTermsDocument(JsonElement payload)
-        => SecurityTermsEnvelope.GetDeclaredFormat(payload) is { } declared
-            ? string.Equals(declared, SecurityTermsFormats.Economic, StringComparison.Ordinal)
-            : IsEconomicTermsShape(payload);
-
-    /// <summary>
-    /// The historical shape rule for untagged payloads: an object stamped
-    /// <see cref="EconomicTermsSchema.Current"/> that carries at least one of the
-    /// <see cref="ShapeRuleModules"/> keys. The two payload families share one
-    /// <c>schemaVersion</c> key, so the integer alone cannot tell a v2 economic-terms document from
-    /// a (reserved, never declared) flat v2; the module keys can, because the economic serializer
-    /// always writes them and a flat document never does. Payloads written after
-    /// <see cref="SecurityTermsEnvelope.FormatKey"/> existed declare their family instead.
-    /// </summary>
-    public static bool IsEconomicTermsShape(JsonElement payload)
-    {
-        if (payload.ValueKind != JsonValueKind.Object
-            || SecurityAssetSpecificTermsV0ToCurrentUpcaster.ResolveSchemaVersion(payload) != EconomicTermsSchema.Current)
-        {
-            return false;
-        }
-
-        foreach (var module in ShapeRuleModules)
-        {
-            if (payload.TryGetProperty(module, out _))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
+        => payload.ValueKind == JsonValueKind.Object
+           && string.Equals(SecurityTermsEnvelope.ResolveFormat(payload), SecurityTermsFormats.Economic, StringComparison.Ordinal);
 
     /// <summary>
     /// Whether a flat asset-specific-terms payload was produced by <see cref="Convert"/> — that is,
@@ -1642,16 +1603,18 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
 /// The composed migrate-on-read chain for asset-specific-terms payloads — the single entry point
 /// that turns "whatever version is stored" into a payload current readers accept:
 /// <list type="bullet">
-/// <item><description>unstamped (version 0) → stamped <see cref="AssetSpecificTermsSchema.Legacy"/>
-/// via <see cref="SecurityAssetSpecificTermsV0ToCurrentUpcaster"/>;</description></item>
-/// <item><description>a cross-family economic-terms document (stamped
-/// <see cref="EconomicTermsSchema.Current"/> and carrying economic-terms module keys) → flattened v1
+/// <item><description>a document that declares <see cref="SecurityTermsFormats.Economic"/> → flattened v1
 /// via the lossy <see cref="SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster"/>;</description></item>
-/// <item><description>accepted versions pass through unchanged; unknown future versions — including a
-/// payload stamped with the reserved <see cref="AssetSpecificTermsSchema.ReservedForEconomicTerms"/>
-/// that does not have the economic-terms shape — pass through with their version preserved, so
-/// acceptance stays the guard's decision and newer or misrouted payloads degrade with a precise
-/// diagnostic instead of being silently emptied in the chain.</description></item>
+/// <item><description>a document that declares a flat or custom-profile family → normalized by
+/// <see cref="SecurityAssetSpecificTermsV0ToCurrentUpcaster"/>: an unstamped (version 0) document is
+/// stamped <see cref="AssetSpecificTermsSchema.Legacy"/>, accepted versions pass through unchanged, and
+/// unknown versions — version 2 included, which a declared flat document reads as flat — pass through
+/// with their version preserved, so acceptance stays the guard's decision and the guard diagnoses
+/// them precisely;</description></item>
+/// <item><description>an untagged object → refused with <see cref="SecurityTermsFormatUndeclaredException"/>
+/// (ADR-024 decision 5, amendment 2026-11-13 steps 5 and 6). The dispatch never consults the
+/// <c>schemaVersion</c> integer or the document's shape; the family-explicit overload serves a caller
+/// that knows the family it holds.</description></item>
 /// </list>
 /// </summary>
 public static class SecurityAssetSpecificTermsUpcasterChain
@@ -1673,7 +1636,38 @@ public static class SecurityAssetSpecificTermsUpcasterChain
             ? SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(payload, assetClass)
             : SecurityAssetSpecificTermsV0ToCurrentUpcaster.Normalize(payload);
 
-    /// <summary>Text-input variant; returns <see langword="null"/> when the text is not JSON.</summary>
+    /// <summary>
+    /// Family-explicit variant for a caller that knows which family it holds: a writer of the
+    /// economic document passes <see cref="SecurityTermsFormats.Economic"/> and the object is
+    /// flattened onto <paramref name="assetClass"/>'s keys without consulting the document's tag
+    /// or shape. For any other family, and a non-object payload, a declared tag normalizes exactly as
+    /// <see cref="Normalize(JsonElement, string?)"/>, and an untagged document is normalized as the
+    /// named flat or custom-profile family instead of being refused.
+    /// </summary>
+    public static SecurityAssetSpecificTerms Normalize(JsonElement payload, string? assetClass, string family)
+    {
+        ArgumentNullException.ThrowIfNull(family);
+        if (!SecurityTermsFormats.IsKnown(family))
+        {
+            throw new ArgumentException($"Unknown terms family '{family}'.", nameof(family));
+        }
+
+        if (family == SecurityTermsFormats.Economic && payload.ValueKind == JsonValueKind.Object)
+        {
+            return SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(payload, assetClass);
+        }
+
+        // A declared tag still decides; an untagged document takes the family the caller named.
+        return SecurityTermsEnvelope.GetDeclaredFormat(payload) is not null
+            ? Normalize(payload, assetClass)
+            : SecurityAssetSpecificTermsV0ToCurrentUpcaster.Normalize(payload);
+    }
+
+    /// <summary>
+    /// Text-input variant; returns <see langword="null"/> when the text is not JSON. An untagged object
+    /// is refused with <see cref="SecurityTermsFormatUndeclaredException"/>, as in
+    /// <see cref="Normalize(JsonElement)"/>.
+    /// </summary>
     public static SecurityAssetSpecificTerms? Normalize(string json)
     {
         if (string.IsNullOrWhiteSpace(json))

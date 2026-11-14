@@ -1,5 +1,29 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose["ScheduleCalendarPurpose"] {
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage["ScheduleCalendarUsage"] {
+        +string CalendarId
+        +string ContentHash
+        +ScheduleCalendarPurpose Purpose
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleDayCount["ScheduleDayCount"] {
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic["ScheduleDiagnostic"] {
+        +string CalendarId
+        +ScheduleDiagnosticCode Code
+        +DateOnly Date
+        +string Message
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnosticCode["ScheduleDiagnosticCode"] {
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleDirection["ScheduleDirection"] {
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure["ScheduleFailure"] {
+        +ScheduleFailureCode Code
+        +DateOnly? Date
+        +string Message
+    }
     class Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailureCode["ScheduleFailureCode"] {
     }
     class Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult["ScheduleGenerationResult"] {
@@ -301,6 +325,7 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind["SecurityAssetTermEditorKind"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermField["SecurityAssetTermField"] {
+        +string? AbsentReadDefault
         +IReadOnlyList~string~ Aliases
         +IReadOnlyList~string~ AllowedValues
         +bool AuthoringEnabled
@@ -312,7 +337,6 @@ classDiagram
         +SecurityAssetTermRole Role
         +int SinceTermsVersion
         +SecurityAssetTermFieldType Type
-        +SecurityUnderlyingRole? UnderlyingRole
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto["SecurityAssetTermFieldDefinitionDto"] {
         +IReadOnlyList~string~ Aliases
@@ -413,53 +437,17 @@ classDiagram
         +Guid SnapshotId
         +string SnapshotSha256
     }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceBlockerDto["SecurityClosePriceBlockerDto"] {
-        +string Code
-        +string Reason
-        +Guid SecurityId
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceEvidence["SecurityClosePriceEvidence"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceInputDto["SecurityClosePriceInputDto"] {
-        +SecurityClosePriceOverrideDto? Override
-        +Guid SecurityId
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto["SecurityClosePriceLineDto"] {
-        +decimal? ClosePrice
-        +IReadOnlyList~SecurityRawPriceDto~ Observations
-        +SecurityClosePriceOverrideDto? Override
-        +Guid SecurityId
-        +SecurityPriceGoldenCopyDto? Selection
-        +SecurityPriceUnit Unit
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto["SecurityClosePriceOverrideDto"] {
-        +string EvidenceReference
-        +decimal Price
-        +string Rationale
-        +SecurityPriceUnit Unit
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto["SecurityClosePriceSetDto"] {
-        +SecurityClosePriceApprovalDto? Approval
-        +SecurityClosePriceSnapshotDto Snapshot
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto["SecurityClosePriceSnapshotDto"] {
-        +string AccountId
-        +IReadOnlyList~SecurityClosePriceBlockerDto~ Blockers
-        +string BookId
-        +string? CorrectionRationale
-        +Guid? CorrectsSnapshotId
-        +DateTimeOffset CreatedAt
-        +string CreatedBy
-        +string? CreationCommandDigest
-        +DateTimeOffset EvaluatedAsOf
-        +DateTimeOffset KnowledgeAsOf
-        +IReadOnlyList~SecurityClosePriceLineDto~ Lines
-        +decimal MaxSourceDispersionPercent
-    }
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnosticCode
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailureCode
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec
     Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod --> Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriodKind
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleRollKind
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDirection
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleStubPolicy
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleTenor
@@ -506,9 +494,3 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto
     Meridian_Contracts_SecurityMaster_SecurityCashFlowTermBinding --> Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRole
     Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRoles --> Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRole
-    Meridian_Contracts_SecurityMaster_SecurityClosePriceInputDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
-    Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
-    Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceApprovalDto
-    Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto
-    Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceBlockerDto
-    Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto

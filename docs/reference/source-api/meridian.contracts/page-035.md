@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ImportPrivateCapitalBankObservationRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.ImportPrivateCapitalBankObservationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/PrivateCapitalBankObservationDtos.cs:19](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalBankObservationDtos.cs#L19).
+
+Select retained source bytes; no caller-supplied amount or cash authority is accepted.
+
+```csharp
+public sealed record ImportPrivateCapitalBankObservationRequest(string EvidenceLink, string DocumentId);
+```
+
 ## IntercompanyAccountBindingDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccountBindingDto</code>. Kind: `record`.
@@ -690,14 +702,4 @@ Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:617](../..
 
 ```csharp
 public sealed record LedgerBookSetupCandidateDto(string FundProfileId, Guid FundStructureNodeId, FundStructureNodeKindDto FundStructureNodeKind, string DisplayName, string BaseCurrency, AccountingBasisKindDto AccountingBasis, string AccountingPolicyId, string AccountingPolicyVersion, string SuggestedAction, string? Description = null, Guid? SourceLedgerBookId = null, Guid? RequestedLedgerBookId = null);
-```
-
-## LedgerControlDecisionDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerControlDecisionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:18](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L18).
-
-```csharp
-public sealed record LedgerControlDecisionDto(string Control, string Code, bool Allowed, string Message, string? EvidenceRevision = null);
 ```

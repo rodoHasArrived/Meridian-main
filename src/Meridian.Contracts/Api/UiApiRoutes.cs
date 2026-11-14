@@ -380,6 +380,7 @@ public static class UiApiRoutes
     public const string SecurityMasterSearch = "/api/security-master/search";
     public const string SecurityMasterAssetClasses = "/api/security-master/asset-classes";
     public const string SecurityMasterAssetClassDefinition = "/api/security-master/asset-classes/{assetClass}";
+    public const string SecurityMasterRegistryProjection = "/api/security-master/projections/{assetClass}/{securityId:guid}";
     public const string SecurityMasterAssetProfiles = "/api/security-master/asset-profiles";
     public const string SecurityMasterAssetProfilePromotionCandidates = "/api/security-master/asset-profiles/promotion-candidates";
     public const string SecurityMasterAssetProfileLineage = "/api/security-master/asset-profiles/{profileId}/lineage";
@@ -496,6 +497,9 @@ public static class UiApiRoutes
 
     // Structured-credit reclassification report (ADR-022, report first)
     public const string SecurityMasterStructuredCreditReclassificationReport = "/api/security-master/structured-credit-reclassification/report";
+
+    // CustomAsset profile promotion report (ADR-022, report first; promotion is an envelope amendment)
+    public const string SecurityMasterProfilePromotionReport = "/api/security-master/profile-promotion/{profileId}/report";
 
     // Exception aging / SLA
     public const string SecurityMasterExceptionsAging = "/api/security-master/exceptions/aging";

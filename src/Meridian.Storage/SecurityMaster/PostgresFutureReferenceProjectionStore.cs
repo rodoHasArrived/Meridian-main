@@ -10,30 +10,27 @@ public sealed class PostgresFutureReferenceProjectionStore : IFutureReferencePro
 {
     internal const string AssetClass = "Future";
 
-    private readonly PostgresReferenceProjectionReader _reader;
+    internal static readonly RegistryProjectionQuery ByRootSymbol = new(nameof(ByRootSymbol),
+        """
+        where root_symbol = @root_symbol
+        order by expiry_date
+        """);
+
+    private readonly RegistryReferenceProjectionStore<FutureProjectionRow> _store;
 
     public PostgresFutureReferenceProjectionStore(SecurityMasterOptions options)
     {
-        _reader = new PostgresReferenceProjectionReader(options);
+        _store = CreateStore(options);
     }
 
+    internal static RegistryReferenceProjectionStore<FutureProjectionRow> CreateStore(SecurityMasterOptions options)
+        => new(options, AssetClass, MapRow, [ByRootSymbol]);
+
     public Task<FutureProjectionRow?> GetFutureAsync(Guid securityId, CancellationToken ct = default)
-        => _reader.QuerySingleAsync(
-            _reader.SelectSql(AssetClass, "where security_id = @security_id"),
-            [new NpgsqlParameter("security_id", securityId)],
-            MapRow,
-            ct);
+        => _store.GetBySecurityIdAsync(securityId, ct);
 
     public Task<IReadOnlyList<FutureProjectionRow>> GetByRootSymbolAsync(string rootSymbol, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where root_symbol = @root_symbol
-                order by expiry_date
-                """),
-            [new NpgsqlParameter("root_symbol", rootSymbol.Trim().ToUpperInvariant())],
-            MapRow,
-            ct);
+        => _store.ListAsync(ByRootSymbol, [new NpgsqlParameter("root_symbol", rootSymbol.Trim().ToUpperInvariant())], ct);
 
     internal static FutureProjectionRow MapRow(ProjectionRow row)
         => new(

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrivateCapitalPostingReceiptDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalPostingReceiptDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs:88](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs#L88).
+
+Immutable economic receipt written atomically with its journal.
+
+```csharp
+public sealed record PrivateCapitalPostingReceiptDto(string PostingId, PrivateCapitalScopeDto Scope, string CommitmentId, string CallId, string InstallmentId, string Kind, decimal Amount, Guid JournalEntryId, DateOnly EffectiveDate, string? FundingReceiptId = null, string? BankLineId = null);
+```
+
 ## PrivateCapitalReportOutputDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalReportOutputDto</code>. Kind: `record`.
@@ -779,30 +791,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static TimeSpan GetStartupBudget(LifecycleSupervisorManifestDto manifest);</code> | [src/Meridian.Contracts/Lifecycle/LifecycleStartupTiming.cs:10](../../../../src/Meridian.Contracts/Lifecycle/LifecycleStartupTiming.cs#L10) | Includes first-use dedicated database initialization, database start (with its tool allowance), and the host readiness deadline. Callers add their own receipt-observation allowance. |
-
-## LifecycleSupervisorManifestDto
-
-Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleSupervisorManifestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:3](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L3).
-
-```csharp
-public sealed record LifecycleSupervisorManifestDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int SchemaVersion { get; init; } = 1;</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:5](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L5) |  |
-| <code>public LifecycleDatabaseManagementMode DatabaseMode { get; init; } = LifecycleDatabaseManagementMode.Dedicated;</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:6](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L6) |  |
-| <code>public string HostRelativePath { get; init; } = Path.Combine(&quot;host&quot;, &quot;Meridian.exe&quot;);</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:7](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L7) |  |
-| <code>public string? ConfigPath { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:8](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L8) |  |
-| <code>public string? DataRoot { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:9](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L9) |  |
-| <code>public int? HttpPort { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:10](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L10) |  |
-| <code>public int DatabasePort { get; init; } = 54329;</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:11](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L11) |  |
-| <code>public string? PostgreSqlBinPath { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:12](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L12) |  |
-| <code>public string? ExternalConnectionStringEnvironmentVariable { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:13](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L13) |  |
-| <code>public int StartupTimeoutSeconds { get; init; } = 60;</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:14](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L14) |  |
-| <code>public int ShutdownTimeoutSeconds { get; init; } = 45;</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:15](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L15) |  |
-| <code>public int DatabaseTimeoutSeconds { get; init; } = 60;</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:16](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L16) |  |

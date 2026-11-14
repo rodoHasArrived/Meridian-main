@@ -318,7 +318,7 @@ public sealed class RegistryMigratedProjectionGoldenTests : IClassFixture<Securi
             SecurityIdentifierKind.InternalCode.ToString(),
             IdentifierValue(securityId),
             JsonSerializer.SerializeToElement(new { displayName = DisplayName, currency = Currency }),
-            terms.RootElement.Clone(),
+            SecurityTermsEnvelope.StampDeclaredFormat(terms.RootElement.Clone()),
             JsonSerializer.SerializeToElement(new { sourceSystem = "integration-test", updatedBy = "registry-golden-fixture" }),
             Version,
             effectiveFrom,

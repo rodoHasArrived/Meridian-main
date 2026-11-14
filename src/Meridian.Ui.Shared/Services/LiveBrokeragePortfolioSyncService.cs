@@ -352,13 +352,15 @@ public sealed partial class LiveBrokeragePortfolioSyncService
             issues.Add("Broker positions contain duplicate symbols.");
         foreach (var position in snapshot.Positions)
         {
-            var multiplier = position.AssetClass == "us_option"
+            var isOption = IsAlpacaOptionCode(position.AssetClass);
+            var multiplier = isOption
                 ? string.IsNullOrWhiteSpace(position.Symbol) ? null : contracts.GetValueOrDefault(position.Symbol)?.Multiplier
                 : 1m;
-            if (position.AssetClass == "us_option" && multiplier is null)
+            if (isOption && multiplier is null)
                 issues.Add($"The Security Master contract multiplier is unresolved for broker option '{position.Symbol}'.");
             if (string.IsNullOrWhiteSpace(position.Symbol) || position.Quantity == 0m || position.MarketPrice <= 0m
-                || position.AssetClass is not ("us_equity" or "us_option")
+                || !(isOption || ProviderAssetClassCodeCatalog.IsExactCode(
+                    ProviderAssetClassCodeProviders.Alpaca, position.AssetClass, SecurityAssetClassNames.Equity))
                 || multiplier is not { } knownMultiplier
                 || Math.Abs(position.MarketValue - position.Quantity * position.MarketPrice * knownMultiplier) > 0.01m)
                 issues.Add("A broker holding has unsupported or inconsistent quantity, valuation, or asset evidence.");

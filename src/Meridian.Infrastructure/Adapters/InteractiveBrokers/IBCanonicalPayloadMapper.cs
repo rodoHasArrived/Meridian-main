@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Sdk;
 using ExecutionOrderSide = Meridian.Execution.Sdk.OrderSide;
 
@@ -53,18 +54,9 @@ internal static class IBCanonicalPayloadMapper
             ["SLD"] = Meridian.Execution.Sdk.OrderSide.Sell
         };
 
+    // secType -> Meridian report code, translated through the provider code table.
     private static readonly IReadOnlyDictionary<string, string> AssetTypeMap =
-        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["STK"] = "equity",
-            ["ETF"] = "equity",
-            ["OPT"] = "option",
-            ["FUT"] = "futures",
-            ["FOP"] = "option",
-            ["CASH"] = "forex",
-            ["BOND"] = "bond",
-            ["GOVT"] = "bond"
-        };
+        ProviderAssetClassCodeCatalog.InteractiveBrokersReportCodes;
 
     public static string MapAssetClass(string? securityType, IReadOnlyDictionary<string, string>? metadata = null)
         => TryMap(AssetTypeMap, securityType, "asset_type", "equity", metadata);

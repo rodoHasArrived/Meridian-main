@@ -434,6 +434,16 @@ path would persist) ahead of blocked ones (the terms carried over plus the block
 stored terms cannot be mapped are counted as unreadable and logged, never guessed. The service
 writes nothing; applying a proposal is a governed amendment.
 
+`SecurityMasterProfilePromotionService` builds the CustomAsset promotion report for one
+reclassifying profile. For each active `CustomAsset` pinned to it, it runs the main checks an
+envelope amendment runs under the target class: the classification-metadata check, the target
+decode, the target kind's invariants, asset-pack admission and, when a profile catalog is
+registered, the profile catalog validation. It is not full write-path parity (it uses the
+read-tolerant decode and skips the round-trip guards), so a Ready record can still be refused when
+amended. It writes nothing. On the write path, a write without a terms patch (a common-terms-only
+amendment, or a deactivation) keeps a stored `CustomAsset` class. Any write that carries the pinned
+envelope promotes the record, including an approved workbench field edit and a term-block patch.
+
 Security Master event replay that lacks retained flat terms flattens the economic-terms document onto
 the record's asset class, so carried values land at that class's declared keys. The Postgres
 composition registers `SecurityMasterProjectionChangeListener` (disable with

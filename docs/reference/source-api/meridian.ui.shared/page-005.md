@@ -759,6 +759,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Rates.cs:13](.
 public static partial class SecurityMasterEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.RegistryProjections.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.RegistryProjections.cs#L14).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.WriteRefusals.cs:7](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.WriteRefusals.cs#L7).
 
 ```csharp

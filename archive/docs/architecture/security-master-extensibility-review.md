@@ -854,6 +854,115 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### Terms storage consolidation slice C — one generic reader for registry tables, and reads for the newer classes — 2026-11-13
+
+**The write side was already done.** `SecurityTermsProjectionRegistry.Descriptors` writes 30
+classes: DirectLoan and StructuredCredit (registry-native), ten of the eleven writers that predate
+the registry (Option's alone stays hand-written, by decision — see the slice 6 disposition), the
+twelve classes migration 044 added and the six from 046 and 047. With Option's specialized writer
+and CustomAsset's profile-keyed table (migration 064), every one of the catalog's 32 classes is
+projected. The registry's header comment said nine of eleven writers had moved; it now says ten
+and carries these counts. What remained was the read side: eleven near-duplicate typed readers
+over registry tables, and no read path at all for the eighteen classes added by 044, 046 and 047.
+
+- `RegistryReferenceProjectionStore<TRow>` (`src/Meridian.Storage/SecurityMaster/`) is the generic
+  read of one registry table, parent or child, built on `PostgresReferenceProjectionReader`. A
+  class supplies only its asset class (and child table), its row mapper and its named
+  `RegistryProjectionQuery` predicates; every query is declared up front and its SQL is built from
+  the descriptor at construction. The eleven stores — CryptoCurrency, Deposit, MoneyMarketFund,
+  CertificateOfDeposit; Equity, FxSpot, Swap, Commodity, Future; DirectLoan and StructuredCredit
+  with their child tables — now delegate to it. Their `I*ReferenceProjectionStore` interfaces,
+  row records, the `*ProjectionService`s and the per-class endpoints are unchanged. Bond (joins to
+  `securities`, keyset paging) and Option (contract-keyed, dual-writer) keep their stores.
+- `IRegistryProjectionReadService.GetAsync(assetClass, securityId)` reads any descriptor as
+  column-to-value data (`SecurityTermsProjectionReadDto`): the parent row, each child table's rows
+  in ordinal order and each satellite's row. It resolves catalog aliases and casing, gates on the
+  security's current class from `ISecurityMasterStore.GetProjectionAsync`, and returns null for a
+  class without a descriptor (Option, CustomAsset, unknown), a missing security, a mismatched class
+  or a gated-out row. SQL `date` columns read as ISO dates and numerics keep their exact text.
+- `GET /api/security-master/projections/{assetClass}/{securityId:guid}`
+  (`SecurityMasterEndpoints.RegistryProjections.cs`, route `UiApiRoutes.SecurityMasterRegistryProjection`)
+  serves it behind the Security Master view permission and answers 404 for each null case. It is
+  registered in `StorageFeatureRegistration` with the other Security Master stores and mapped only
+  when the service is composed. No browser or WPF screen consumes it yet.
+
+`PostgresReferenceProjectionReaderTests.RegistryStores_SendExactlyTheSqlTheHandWrittenStoresSent`
+pins every converted store's queries to literal copies of the predicates the hand-written stores
+appended, so the move changes no SQL; `EveryStoreOnTheRegistry_NamesItsDescriptor` also checks each
+generic store's class and child table. `RegistryProjectionReadServiceTests` and
+`SecurityMasterRegistryProjectionEndpointsTests` run over every descriptor, and
+`RegistryProjectionReadPostgresTests` (Integration) reads CommercialPaper and DirectLoan rows back
+from a migrated database. Typed-reader behavior is unchanged.
+
+### Terms storage consolidation slice B — brokerage asset-class codes come from one table — 2026-11-13
+
+Brokerage asset-class codes were spelled by hand at each execution site: Alpaca's order builder
+normalized `equity`/`option`/`treasury`/`corporate` aliases in its own switch and gated face-value
+sizing on `treasury`/`corporate`; the paper gateway repeated that alias list; the OMS decided which
+fills book from the report alone on `us_equity`/`equity`/`crypto`; the live portfolio sync and
+`BrokeragePortfolioState` compared to `us_option`; Robinhood, the IB gateway and the execution
+endpoints each checked their own option spelling; and the IB mapper carried a private secType map.
+`ProviderAssetClassCodeCatalog` (`src/Meridian.Contracts/SecurityMaster/`) is now the one table:
+
+- One exact-match row per provider code (alpaca, robinhood, ib, meridian) with the catalog class it
+  names, its input aliases, role flags (`OrderPayload`, `PositionReport`, `Search`) and traits
+  (`FaceValueFixedIncome`, `BookableFromReportAlone`). It is checked at type load: every catalog
+  class is a canonical `SecurityAssetClassCatalog` name, every provider is known, and no spelling
+  is declared twice for one provider. `AlpacaAssetClassCodes` holds the Alpaca wire codes.
+- It deliberately does not use `SecurityAssetClassCatalog.ResolveLabel`, which resolves none of
+  `crypto`, `treasury` or `corporate`.
+- Each helper reproduces the comparison its site made — ordinal and untrimmed
+  (`TryResolveExact`, used where the site wrote `== "us_option"`), ordinal-ignore-case
+  (`TryResolveCodeIgnoreCase`), or trimmed lower-invariant input (`TryResolveInput`) — so the move
+  changes no accepted spelling. The execution endpoints' position effect still classifies only the
+  Robinhood/Meridian `option` code; an Alpaca `us_option` position gets none (classifying it would
+  change routing and is deferred).
+- The persisted journal tag `USD_US_EQUITY` is `ExecutionReportingAssetClasses.UsdUsEquity`, value
+  unchanged.
+
+`ProviderAssetClassCodeParityTests` was committed first and run green against the old sites: its
+truth tables are literal copies of the former switches (Alpaca normalization and fixed-income
+gate, paper/live fixed-income parity over an input corpus, `IsBookableFromReportAlone`, Robinhood
+and IB option gates, the IB secType map), and an endpoint test pins that `us_option` carries no
+`position_effect`. `ProviderAssetClassCodeRatchetTests` caps each file's vendor-spelled literals
+(`us_equity`, `us_option`, the Alpaca fixed-income aliases, IB `OPT`/`FOP`, `USD_US_EQUITY`); the
+ceilings may only go down. The Alpaca symbol-search vocabulary, IB `ContractFactory`, subscription
+`SecurityType` defaults and the WPF symbols page still spell codes and are counted, not moved.
+Behavior is unchanged.
+
+### Terms storage consolidation slice A — required-field read order comes from the schema — 2026-11-13
+
+The read path's historical refusal order for required flat fields (which key a reconstruction
+names first when a stored row lacks several) was a hand-written 28-case switch in
+`SecurityMasterMapping.EnsureLegacyRequiredReadOrder`, a second statement of facts the schema
+already held. The schema now states it:
+
+- `SecurityAssetTermField.AbsentReadDefault` (declared with `ReadsAbsentAs(...)`) names what a
+  read takes in place of a required field a stored row omits, and the derived
+  `RefusesAbsenceOnRead` separates the tolerant required fields from the refusing ones. The
+  flagged fields are Option `isAdjusted`, Future `isRollTarget`, Bond `isCallable` and `subclass`
+  (reads as `Corporate`), Deposit `isCallable`, MoneyMarketFund `sweepEligible` and
+  `liquidityFeeEligible`, CommercialPaper `isAssetBacked`, and CustomAsset `customProfileId`
+  (absence salvages the row as OtherSecurity) and `profileVersion` (reads as 1). This replaces
+  the S3-B sweep's `ToleratedAbsenceDefaults` ledger; the sweep now reads the schema flag.
+- `SecurityAssetTermsSchema.ReadRequiredScalarFields(assetClass)` returns the refusing scalar
+  fields in declaration order, and `FieldsByAssetClass` documents that its declaration order is
+  the refusal order. `ReadsProfileResolvedTerms(assetClass)` names the five classes that read
+  from the profile-resolved document (StructuredCredit, PrivateFundInterest,
+  PrivateCompanyEquity, RealEstateHolding, CommitmentGuarantee); it is deliberately not
+  `SupportsProfileBackedTerms`, which would move OtherSecurity to the other document.
+- The mapping switch is replaced by one loop over those fields through the schema-bound
+  `Required*` readers; the call site in `ToSecurityKind` is unchanged.
+
+`SecurityMasterRequiredReadOrderTests` was committed first and run green against the old
+switch: its expected table is a literal copy of that switch, not derived from the schema, so a
+reordered declaration fails there. It also holds the ratchets — a `Req(...).Since(n > 1)` field
+must declare an absence default, every absence default is one a read test shows a read absorbs,
+each declared default is the value the read takes (a row without the field decodes to the same
+kind as one carrying the declared default; an enveloped CustomAsset row without
+`profileVersion` reads as version 1), and `ReadsProfileResolvedTerms` agrees with `SecurityClassCodecBinding.ReadsResolvedTerms`. Behavior
+is unchanged.
+
 ### ADR-027 stage-3 — the flat codec is generated from a binding table (cohort 1) — 2026-11-11
 
 Stage 3 allowed the codec arms to be generated or fully asserted, and until now they were
@@ -1403,7 +1512,8 @@ The sweeps also pinned the decode arm's real contract where it diverges from a n
 the schema, each divergence now a committed ledger instead of folklore: vocabulary enforcement
 is two-sided (a write may only assert declared values whatever the field's flags; the
 verbatim/escape flags govern reads of odd stored values); eight Required booleans and Bond's
-`subclass` absorb absence with written defaults (`ToleratedAbsenceDefaults` — Required remains
+`subclass` absorb absence with written defaults (`ToleratedAbsenceDefaults`, since 2026-11-13
+declared on the schema fields as `AbsentReadDefault` — Required remains
 true of every stored row); and StructuredCredit's legacy `factorSchedule` pointer reads a
 mistyped submission as unset, written null (`ToleratedMistypes`). Tightening any ledgered
 tolerance is an explicit S3-D decision.
@@ -1570,6 +1680,9 @@ consults that frozen list, keeping it aligned with shipped migration 042's SQL m
 the `SecurityTermsVersioningTests` migration test, which also pins the list's frozen count and
 its subset relation to the serializer inventory). The list never grows; it retires with the
 shape rule itself under ADR-024 decision 5.
+*2026-11-13 (ADR-024 amendment steps 5 and 6):* both now live in
+`SecurityTermsLegacyEventClassifier`, used only to decode untagged event and snapshot history;
+live readers dispatch on the declared tag alone and refuse untagged payloads.
 
 ### ADR-027 stage-1 increment 4 — structured-credit factor schedule recovers — 2026-11-09
 
@@ -7009,7 +7122,7 @@ remains the authoritative full run.
 | --- | --- | --- |
 | C4 | Create is the one write path with no asset-class round-trip guard | The `OtherSecurity` fallback arm in `SecurityMasterMapping.ToSecurityKind` is now gated on `SecurityKindMappingMode`: in `Write` mode an unrecognized class throws with the refusal message and the catalog list, so `CreateAsync` with `"ExchangeTradedFund"`, `"Equitiy"` or `"equity"` fails before the command is built and nothing is appended or upserted. Read mode degrades exactly as before. Guarded at the mapping rather than the service so every write-mode mapping is covered, not only `ExecuteCreateAsync`. `SecurityMasterAssetClassSupportTests.CreateAsync_UnrecognizedAssetClass_IsRefusedInsteadOfPersistingAsOtherSecurity` locks it. |
 | C5 | Two numeric JSON readers on the hand-written projection path abort the upsert on an explicit null | `PostgresSecurityMasterStore.GetOptionalDecimal` / `GetOptionalInt` check `ValueKind == Number` before `TryGetDecimal` / `TryGetInt32`, back-porting the registry path's `DecodeTerm` fix to the readers that serve the core `securities` upsert and all eleven hand-written writers. `PostgresSecurityMasterStoreOptionalReadersTests` covers null, string, bool, object, array, absent and non-integral inputs. |
-| D2 | The two payload families share one integer key, and version 2 is reserved by prose alone | `AssetSpecificTermsSchema.ReservedForEconomicTerms = 2` is declared with the reason at the declaration. The chain no longer dispatches on the bare integer: `SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument` requires the economic version *and* at least one economic-terms module key, so a flat payload stamped 2 passes through with its version preserved for the guard's `Unsupported schemaVersion '2'` diagnostic instead of being emptied to `{"schemaVersion":1}`. `SecurityAssetSpecificTermsUpcasterChainTests` asserts the reservation, that no accepted flat version equals `EconomicTermsSchema.Current`, and the pass-through. |
+| D2 | The two payload families share one integer key, and version 2 is reserved by prose alone | `AssetSpecificTermsSchema.ReservedForEconomicTerms = 2` is declared with the reason at the declaration. The chain no longer dispatches on the bare integer: `SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument` requires the economic version *and* at least one economic-terms module key, so a flat payload stamped 2 passes through with its version preserved for the guard's `Unsupported schemaVersion '2'` diagnostic instead of being emptied to `{"schemaVersion":1}`. `SecurityAssetSpecificTermsUpcasterChainTests` asserts the reservation, that no accepted flat version equals `EconomicTermsSchema.Current`, and the pass-through. *2026-11-13 (ADR-024 amendment steps 5 and 6, pending human review):* superseded — `AssetSpecificTermsSchema.ReservedForEconomicTerms` is removed, a declared flat version-2 payload reads as flat and is judged by the acceptance guard, and the reservation survives only as `SecurityTermsLegacyEventClassifier.ReservedForEconomicTerms` for event-payload decoding. |
 | D3 | `securities.schema_version` has two definitions | One definition, stated in both writers: **the version stamped on the stored blob** (unstamped → 1), which is what migration 024 backfills. `UpsertProjectionCoreAsync` now writes `ResolveSchemaVersion(record.AssetSpecificTerms)` instead of the post-upcast version, so a v2 economic-terms document in the slot backfills *and* upserts as 2 and `where schema_version = 2` finds every row that needs the bridge. Chosen over promoting the normalized payload because, per D1, that would persist the lossy flattening into the projection. The store's optional `ISchemaUpcaster` constructor seam, whose only use was this promotion, is removed, and the pipeline's summary no longer claims the column derives from it. Migration 024's text is left untouched: schema-control's `migration-immutable-file-modified` rule rejects any edit to an existing migration, comments included, so the definition is stated in the store's upsert comment and here rather than in the migration — whose backfill already implements exactly this definition. |
 | D1 (partial) | The cross-family v2→v1 bridge drops 9 of the 14 modules and is the rebuild fallback | The cheap half and the durable half both landed; the bridge itself stays lossy (see below). The upcaster and adapter comments no longer claim economics are preserved; they name the five bridged modules and the nine dropped ones. `Convert` stamps `flattenedFromEconomicTermsSchemaVersion: 2` on its output and `WasFlattenedFromEconomicTerms` reads it, so a projection rebuilt through the lossy route is distinguishable from one that always carried flat terms (the flat readers ignore undeclared keys, so the marker is inert on every read path). `BridgedModules` / `DroppedModules` / `EconomicTermsModules` are declared on the upcaster, and `SecurityEconomicTermsV2BridgeCoverageTests` reads the emitted module set off `ToEconomicRecord`, asserts it equals the classified set, asserts the exact flat key set `Convert` writes, and asserts per module and per field what survives and what is lost — so a fifteenth module fails a test until it is classified. |
 
@@ -7394,7 +7507,7 @@ the running status.
 
 | Finding | What landed |
 | --- | --- |
-| One integer `schemaVersion` slot holds two payload formats, so flat version 2 can never be used | Every terms payload now declares its family in `termsFormat` (`flat`, `economic`, `customProfile`; `SecurityTermsFormats`). The domain serializer stamps flat payloads, the economic adapter stamps economic documents, and the bridge stamps its output. `SecurityTermsEnvelope.ResolveFormat` and `SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument` dispatch on the declaration first and fall back to the historical shape rule only for untagged (pre-existing) payloads. A tagged flat payload stamped `schemaVersion: 2` is never routed through the economic bridge. `ReservedForEconomicTerms` still guards untagged legacy payloads. |
+| One integer `schemaVersion` slot holds two payload formats, so flat version 2 can never be used | Every terms payload now declares its family in `termsFormat` (`flat`, `economic`, `customProfile`; `SecurityTermsFormats`). The domain serializer stamps flat payloads, the economic adapter stamps economic documents, and the bridge stamps its output. `SecurityTermsEnvelope.ResolveFormat` and `SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument` dispatch on the declaration first and fall back to the historical shape rule only for untagged (pre-existing) payloads. A tagged flat payload stamped `schemaVersion: 2` is never routed through the economic bridge. `ReservedForEconomicTerms` still guards untagged legacy payloads. *2026-11-13 (ADR-024 amendment steps 5 and 6):* live dispatch reads the tag alone and refuses untagged payloads; the shape rule and the version-2 reservation survive only in `SecurityTermsLegacyEventClassifier` for event and snapshot decoding. |
 | No version per asset class | `SecurityAssetClassDescriptor.TermsVersion` (default 1) is stamped onto every flat payload as `assetClassTermsVersion`. The read mapping refuses a payload stamped newer than the node's contract for that class, and refuses an economic-format document in the asset-specific slot, with a precise message instead of a silent drop. Versions are per class, so evolving one class never reserves another's numbers. |
 | `security_events` has no payload version | Migration `039_security_master_event_payload_version.sql` adds `payload_type` and `payload_version` (NOT NULL, backfilled from metadata, else by the same shape rule replay used). `SecurityMasterEventEnvelope` carries both; the store records them on every append; `SecurityMasterMapping.FromEventEnvelope` refuses unknown families and versions newer than the node supports before decoding (`SecurityMasterEventPayloads`). |
 | Economic → flat conversion drops call, redemption, issuer, fund and structured-credit data | Both bridge conversions keep the complete source document under `retainedEconomicTerms`. `SecurityEconomicDefinitionAdapter.ToEconomicRecord` folds it back (flat values win; retained values fill only absent modules, absent fields and empty schedules), and the amend and deactivate paths carry it across the domain-codec re-serialization. A replay-then-amend cycle therefore writes the original call schedule, redemption and other module data into the next event instead of erasing it. |
@@ -9955,7 +10068,7 @@ databases (10 edge-case rows, 200,000 rows and 2,000,000 rows).
 | F3. One replacement's revisions did not share a recorded time, so a recorded-as-of read could return an identifier set the projection never held | Fixed. Every revision of one replacement now carries one recorded time, after everything the security already holds. A PostgreSQL test reproduces the case and fails against the previous writer |
 | F4. The backfill is one statement with a per-row foreign-key check and the runner sets no command timeout: 2.8 s at 200,000 rows, 37.9 s at 2,000,000 | Recorded as an apply condition above about one million identifier rows |
 | F5. No test ran 062's own backfill on a populated pre-062 schema | Added: `SecurityMasterIdentifierRevisionMigrationTests` covers failure, retry and restart |
-| F6. Ordinals 061 and 063 are skipped and not reserved | Not changed. The reservation register has no way to mark an ordinal retired |
+| F6. Ordinals 061 and 063 are skipped and not reserved | Fixed later (slice F). `database/migration-reservations.json` now records both as retired, schema-control refuses a file or scaffold at a retired ordinal, and the shared migration runner refuses any unapplied ordinal below the highest applied one |
 | F7. A pre-migration security with no identifier rows reports history as available before the migration | Not changed. The domain requires a primary identifier, so such a security should not exist |
 | F8. The waiver text omitted the index, comments and function, and stated no apply condition | Updated in `database/policies/migration-waivers.json`. It still says no owner authorization is recorded |
 

@@ -67,7 +67,7 @@ public sealed partial class AssetAccountingEventSpineService
         var security = await securityStore.GetProjectionAsync(projected.Scope.SecurityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The current factor Security Master projection is unavailable.");
         RequireAssertion(security.SecurityId == projected.Scope.SecurityId && security.Version == projected.Scope.ExpectedSecurityVersion &&
-            Sha256Digest.FixedEquals(OpenLotAmortization.SecurityHash(security), projected.FactorPaydown!.ExpectedSecurityHash),
+            OpenLotAmortization.AcceptedSecurityHashes(security).Any(hash => Sha256Digest.FixedEquals(hash, projected.FactorPaydown!.ExpectedSecurityHash)),
             "The factor preparation revision must bind the current exact Security Master projection.");
         var position = await _positionStore.GetBookPositionAsync(projected.Scope.BookPositionId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The authoritative factor book position is unavailable.");
