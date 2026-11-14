@@ -1,4 +1,3 @@
-import { QuantCorporateActionControl } from "./quant-lab-corporate-actions";
 import {
   AlertCircle,
   CheckCircle2,
@@ -148,7 +147,6 @@ function ScriptLabPanel() {
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground">{vm.resultPanel.runtimeSummary}</span>
           </div>
-          <QuantCorporateActionControl source={vm.source} onChange={vm.setSource} disabled={vm.run.phase === "running"} />
           <label htmlFor={vm.sourceEditor.id} className="sr-only">{vm.sourceEditor.label}</label>
           <TextArea rows={2}
             id={vm.sourceEditor.id}
