@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AnalysisExportWizardPage
+
+Qualified name: <code>Meridian.Wpf.Views.AnalysisExportWizardPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/AnalysisExportWizardPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/AnalysisExportWizardPage.xaml.cs#L10).
+
+Provides the desktop page to configure analysis export steps with guided prompts.
+
+```csharp
+public partial class AnalysisExportWizardPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AnalysisExportWizardPage();</code> | [src/Meridian.Wpf/Views/AnalysisExportWizardPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/AnalysisExportWizardPage.xaml.cs#L14) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:42](../../../../src/Meridian.Wpf/Views/Pages.cs#L42).
+
+```csharp
+public partial class AnalysisExportWizardPage : Page
+```
+
 ## ApiKeyDialog
 
 Qualified name: <code>Meridian.Wpf.Views.ApiKeyDialog</code>. Kind: `class`.
@@ -1072,28 +1096,4 @@ Source: [src/Meridian.Wpf/Views/Pages.cs:114](../../../../src/Meridian.Wpf/Views
 
 ```csharp
 public partial class MeridianDockingManager : UserControl
-```
-
-## MessagingHubPage
-
-Qualified name: <code>Meridian.Wpf.Views.MessagingHubPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/MessagingHubPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/MessagingHubPage.xaml.cs#L13).
-
-Messaging Hub page — thin code-behind. All state, timer management, and statistics live in MessagingHubViewModel.
-
-```csharp
-public partial class MessagingHubPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public MessagingHubPage(WpfServices.MessagingService messagingService);</code> | [src/Meridian.Wpf/Views/MessagingHubPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/MessagingHubPage.xaml.cs#L17) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:62](../../../../src/Meridian.Wpf/Views/Pages.cs#L62).
-
-```csharp
-public partial class MessagingHubPage : Page
 ```

@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IngestionJobSummary
+
+Qualified name: <code>Meridian.Application.Pipeline.IngestionJobSummary</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Pipeline/IngestionJobService.cs:423](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L423).
+
+Summary statistics for all ingestion jobs.
+
+```csharp
+public sealed class IngestionJobSummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int TotalJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:425](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L425) |  |
+| <code>public int DraftJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:426](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L426) |  |
+| <code>public int QueuedJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:427](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L427) |  |
+| <code>public int RunningJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:428](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L428) |  |
+| <code>public int PausedJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:429](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L429) |  |
+| <code>public int CompletedJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:430](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L430) |  |
+| <code>public int FailedJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:431](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L431) |  |
+| <code>public int CancelledJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:432](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L432) |  |
+| <code>public int ResumableJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:433](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L433) |  |
+| <code>public int RealtimeJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:434](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L434) |  |
+| <code>public int HistoricalJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:435](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L435) |  |
+| <code>public int GapFillJobs { get; set; }</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:436](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L436) |  |
+
 ## PersistentDedupLedger
 
 Qualified name: <code>Meridian.Application.Pipeline.PersistentDedupLedger</code>. Kind: `class`.
@@ -1033,29 +1062,3 @@ Enum declarations:
 | <code>Retry</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:158](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L158) | Retry of a failed execution. |
 | <code>CatchUp</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:161](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L161) | System startup catch-up. |
 | <code>AutoRemediation</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:164](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L164) | Triggered automatically by quality/gap remediation policy. |
-
-## ProviderUsageStats
-
-Qualified name: <code>Meridian.Application.Scheduling.ProviderUsageStats</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:230](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L230).
-
-Provider usage statistics for an execution.
-
-```csharp
-public sealed class ProviderUsageStats
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ProviderName { get; set; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:232](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L232) |  |
-| <code>public int RequestCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:233](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L233) |  |
-| <code>public int SuccessCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:234](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L234) |  |
-| <code>public int FailureCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:235](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L235) |  |
-| <code>public int RateLimitHits { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:236](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L236) |  |
-| <code>public long BarsRetrieved { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:237](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L237) |  |
-| <code>public long BytesDownloaded { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:238](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L238) |  |
-| <code>public double AverageLatencyMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:239](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L239) |  |
-| <code>public bool WasPrimary { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:240](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L240) |  |

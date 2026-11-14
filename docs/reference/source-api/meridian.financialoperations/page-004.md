@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowSlaState
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.WorkflowSlaState</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:7](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L7).
+
+Lifecycle state of a WorkflowSlaTimer at a point in time.
+
+```csharp
+public enum WorkflowSlaState
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>OnTrack</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:10](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L10) | Within the on-track window (before the warning threshold). |
+| <code>Warning</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:13](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L13) | Past the warning threshold but not yet due. |
+| <code>Breached</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:16](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L16) | Past the due time without being stopped. |
+| <code>Stopped</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:19](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L19) | Stopped (the tracked work completed) before breaching. |
+
 ## WorkflowSlaTimer
 
 Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.WorkflowSlaTimer</code>. Kind: `record`.
@@ -334,8 +355,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FinancialOperationsCommandCenterReadService(IOperationsContinuityWorkflowService workflowService, IOperationsCloseCalendarService? closeCalendarService = null, IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null, ILedgerBookService? ledgerBookService = null, IAccountingCloseManagementService? closeManagementService = null, ICloseReadinessSubjectSource? closeSubjectSource = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:31](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L31) |  |
-| <code>public async Task&lt;FinancialOperationsCommandCenterDto&gt; GetCommandCenterAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:47](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L47) |  |
+| <code>public FinancialOperationsCommandCenterReadService(IOperationsContinuityWorkflowService workflowService, IOperationsCloseCalendarService? closeCalendarService = null, IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null, ILedgerBookService? ledgerBookService = null, IAccountingCloseManagementService? closeManagementService = null, ICloseReadinessSubjectSource? closeSubjectSource = null, IIntercompanyCloseAdvisorySource? intercompanyAdvisories = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:32](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L32) |  |
+| <code>public async Task&lt;FinancialOperationsCommandCenterDto&gt; GetCommandCenterAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:50](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L50) |  |
 
 Source: [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.OutputEvidence.cs:5](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.OutputEvidence.cs#L5).
 
@@ -1121,58 +1142,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerDto&gt; Build(string fundProfileId, Guid? ledgerBookId, DateTimeOffset projectedAtUtc, IReadOnlyList&lt;PrivateCapitalCapitalAccountActivityDto&gt; capitalAccounts, IReadOnlyList&lt;PrivateCapitalFundEventLedgerRecordDto&gt; fundEventRecords, IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerEntryDto&gt; subledgerEntries, IReadOnlyList&lt;PrivateCapitalLedgerImpactDto&gt; ledgerImpacts, IReadOnlyList&lt;PrivateCapitalReportOutputDto&gt; reportOutputs, IReadOnlyList&lt;AccountingConfigurationValidationIssueDto&gt; projectionValidationIssues) =&gt; …;</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs:10](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs#L10) |  |
-
-## PrivateCapitalCloseCockpitService
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalCloseCockpitService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.AllocationEvidence.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.AllocationEvidence.cs#L5).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ApprovalHistory.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ApprovalHistory.cs#L8).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.CloseRequirements.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.CloseRequirements.cs#L5).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:14](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L14).
-
-Assembles private-capital close readiness, approvals, and evidence for the close cockpit.
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCockpitService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PrivateCapitalCloseCockpitService(IManualJournalEntryWorkbenchService? manualJournalEntryWorkbenchService, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService, IDailyValuationScheduleStatusSource? dailyValuationScheduleStatusSource = null, IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null, IRecurringJournalQueueSource? recurringJournalQueueSource = null, IIntercompanyBalanceScheduleSource? intercompanyBalances = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:52](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L52) |  |
-| <code>public async Task&lt;PrivateCapitalCloseCockpitDto&gt; GetCockpitAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:68](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L68) |  |
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs#L5).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ManagementCompany.cs:7](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ManagementCompany.cs#L7).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.Routes.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.Routes.cs#L8).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```

@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderUsageStats
+
+Qualified name: <code>Meridian.Application.Scheduling.ProviderUsageStats</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:230](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L230).
+
+Provider usage statistics for an execution.
+
+```csharp
+public sealed class ProviderUsageStats
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ProviderName { get; set; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:232](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L232) |  |
+| <code>public int RequestCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:233](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L233) |  |
+| <code>public int SuccessCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:234](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L234) |  |
+| <code>public int FailureCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:235](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L235) |  |
+| <code>public int RateLimitHits { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:236](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L236) |  |
+| <code>public long BarsRetrieved { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:237](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L237) |  |
+| <code>public long BytesDownloaded { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:238](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L238) |  |
+| <code>public double AverageLatencyMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:239](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L239) |  |
+| <code>public bool WasPrimary { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:240](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L240) |  |
+
 ## ScheduledBackfillOptions
 
 Qualified name: <code>Meridian.Application.Scheduling.ScheduledBackfillOptions</code>. Kind: `record`.
@@ -990,22 +1016,3 @@ Declared public members:
 | <code>public Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetExpiringAsync(int withinDays, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:23](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L23) |  |
 | <code>public async Task&lt;DataVendorEntitlementDto&gt; UpsertAsync(UpsertDataVendorEntitlementRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:27](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L27) |  |
 | <code>public async Task DeactivateAsync(Guid entitlementId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:66](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L66) |  |
-
-## EdgarIngestOrchestrator
-
-Qualified name: <code>Meridian.Application.SecurityMaster.EdgarIngestOrchestrator</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs:16](../../../../src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs#L16).
-
-Coordinates EDGAR reference-data persistence and ticker-backed Security Master writes.
-
-```csharp
-public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EdgarIngestOrchestrator(IEdgarReferenceDataProvider provider, IEdgarReferenceDataStore store, ContractSecurityMasterQueryService queryService, ISecurityMasterService securityMasterService, ILogger&lt;EdgarIngestOrchestrator&gt; logger, ISecurityMasterConflictService? conflictService = null, ISecurityMasterAmender? systemAmender = null);</code> | [src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs:32](../../../../src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs#L32) |  |
-| <code>public async Task&lt;EdgarIngestResult&gt; IngestAsync(EdgarIngestRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs:53](../../../../src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs#L53) |  |

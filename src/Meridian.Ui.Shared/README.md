@@ -14,6 +14,26 @@ last_reviewed: 2026-11-14
 Provider quota responses preserve the runtime's explicit credits/request unit and daily usage,
 cap and reset-policy evidence. They do not infer fundamentals entitlement from available credits.
 
+`IntercompanyObligationEndpoints` adds an owned-book advisory monitor at
+`/api/ledger/intercompany/obligations` and dates-only native agreement `/{id}/schedule` reads.
+Authenticated scope, retained evidence and existing legal read authority remain server-owned.
+Both the monitor and close companion require ledger-report permission and reporting grants for
+every observed entity; legal authoring or compliance grants alone cannot authorize accounting reads.
+External-review evidence verifies accepted immutable documents, separately from the attesting
+operator. The close-readiness companion does not become a blocker. See
+[the intercompany procedure](../../docs/operators/intercompany-entity-controls.md).
+
+Account/group close advisories require canonical exact-scope membership and retained evidence;
+the book node ID is not substituted for a legal-entity ID. Missing membership yields unknown.
+
+Ordinary agreement approval and rejection retain `ManageFundStructure` or `AdminMaintenance`
+authority. `ManageCompliance` authorizes the explicit evidence-bound external-review path; it does
+not grant ordinary agreement review.
+
+The obligation endpoint alone formats embedded schedule decimals as exact strings. The canonical
+balance-schedule serializer and its evidence fingerprint are unchanged; this response formatting
+does not create a second schedule authority.
+
 Backfill provider status, fallback-chain and dry-run reads require an available
 `Backfill.Providers` section and return HTTP 503 when it is missing. The separate metadata route
 continues to expose catalog presets without presenting them as configured runtime state.

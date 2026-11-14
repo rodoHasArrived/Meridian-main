@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EdgarIngestOrchestrator
+
+Qualified name: <code>Meridian.Application.SecurityMaster.EdgarIngestOrchestrator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs:16](../../../../src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs#L16).
+
+Coordinates EDGAR reference-data persistence and ticker-backed Security Master writes.
+
+```csharp
+public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public EdgarIngestOrchestrator(IEdgarReferenceDataProvider provider, IEdgarReferenceDataStore store, ContractSecurityMasterQueryService queryService, ISecurityMasterService securityMasterService, ILogger&lt;EdgarIngestOrchestrator&gt; logger, ISecurityMasterConflictService? conflictService = null, ISecurityMasterAmender? systemAmender = null);</code> | [src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs:32](../../../../src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs#L32) |  |
+| <code>public async Task&lt;EdgarIngestResult&gt; IngestAsync(EdgarIngestRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs:53](../../../../src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs#L53) |  |
+
 ## FaceValueLotExtensions
 
 Qualified name: <code>Meridian.Application.SecurityMaster.FaceValueLotExtensions</code>. Kind: `class`.
@@ -987,22 +1006,3 @@ Declared public members:
 | <code>public const string Method = &quot;otc-mtm-observed-price-v1&quot;;</code> | [src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs:18](../../../../src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs#L18) |  |
 | <code>public PricingStoreOtcContractValuationSource(ISecurityMasterPricingService pricing);</code> | [src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs:23](../../../../src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs#L23) |  |
 | <code>public async Task&lt;OtcContractValuationDto&gt; ValueAsync(OtcContractValuationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs:28](../../../../src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs#L28) |  |
-
-## PeriodAwareRestatementResolver
-
-Qualified name: <code>Meridian.Application.SecurityMaster.PeriodAwareRestatementResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:118](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L118).
-
-Default IPeriodAwareRestatementResolver over the authoritative ILedgerPeriodLockReader. Pure routing — it never posts; it only proposes.
-
-```csharp
-public sealed class PeriodAwareRestatementResolver : IPeriodAwareRestatementResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PeriodAwareRestatementResolver(ILedgerPeriodLockReader lockReader, IRestatementCandidateResolver candidateResolver, ILogger&lt;PeriodAwareRestatementResolver&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:124](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L124) |  |
-| <code>public async Task&lt;SecurityMasterRestatementDecision&gt; ResolveAsync(SecurityMasterRevisionPublishedEvent publishedEvent, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:134](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L134) |  |

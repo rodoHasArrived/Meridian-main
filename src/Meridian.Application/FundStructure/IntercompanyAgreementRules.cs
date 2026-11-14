@@ -5,7 +5,7 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Application.FundStructure;
 
-public static class IntercompanyAgreementRules
+public static partial class IntercompanyAgreementRules
 {
     public static IntercompanyAgreementDraftDto Normalize(IntercompanyAgreementDraftDto draft) => draft with
     {
@@ -20,7 +20,8 @@ public static class IntercompanyAgreementRules
             RateDescription = NormalizeOptional(draft.Terms.RateDescription),
             ScheduleDescription = NormalizeOptional(draft.Terms.ScheduleDescription),
             AllocationDescription = NormalizeOptional(draft.Terms.AllocationDescription),
-            Notes = NormalizeOptional(draft.Terms.Notes)
+            Notes = NormalizeOptional(draft.Terms.Notes),
+            StructuredTerms = draft.Terms.StructuredTerms is null ? null : NormalizeStructuredTerms(draft.Terms.StructuredTerms)
         },
         Evidence = draft.Evidence?.Select(e => e is null ? throw new IntercompanyAgreementValidationException("Evidence reference is required.")
             : e with { Reference = e.Reference?.Trim() ?? string.Empty }).ToArray() ?? []
@@ -38,6 +39,8 @@ public static class IntercompanyAgreementRules
             Fail("EffectiveTo must be later than EffectiveFrom.");
         if (draft.Action == IntercompanyAgreementActionDto.Terminate && draft.TerminationEffectiveDate is null)
             Fail("Termination date is required.");
+        if (draft.Terms?.StructuredTerms is { } structured)
+            ValidateStructuredShape(structured);
     }
 
     public static void ValidateComplete(IntercompanyAgreementDraftDto draft)
@@ -64,9 +67,11 @@ public static class IntercompanyAgreementRules
             return;
         var t = draft.Terms;
         if (t is null || (t.FixedAnnualRate is null && t.SettlementDays is null
-            && t.RateDescription is null && t.ScheduleDescription is null && t.AllocationDescription is null && t.Notes is null))
+            && t.RateDescription is null && t.ScheduleDescription is null && t.AllocationDescription is null && t.Notes is null && t.StructuredTerms is null))
             Fail("A terms explanation or populated terms is required.");
-        if (draft.AgreementType == IntercompanyAgreementTypeDto.CostShare && string.IsNullOrWhiteSpace(t?.AllocationDescription))
+        if (t?.StructuredTerms is { } structured)
+            ValidateStructuredComplete(draft, structured);
+        if (draft.AgreementType == IntercompanyAgreementTypeDto.CostShare && t?.StructuredTerms is null && string.IsNullOrWhiteSpace(t?.AllocationDescription))
             Fail("Cost sharing requires an allocation description.");
         if (draft.AgreementType == IntercompanyAgreementTypeDto.Other && string.IsNullOrWhiteSpace(draft.Purpose))
             Fail("Other agreements require a purpose description.");

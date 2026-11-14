@@ -2172,7 +2172,11 @@ items:
         path: tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationTransitionServiceTests.cs
       - type: test
         path: tests/Meridian.Tests/Storage/ConsolidationBookCreationTests.cs
-    last_reviewed: 2026-11-12
+      - type: source
+        path: src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs
+      - type: test
+        path: tests/Meridian.Tests/Integration/IntercompanyAgreementStorePostgresTests.StructuredTerms.cs
+    last_reviewed: 2026-11-13
 
   - id: W10-LOT-002
     title: Security-identified open-lot convergence

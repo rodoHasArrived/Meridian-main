@@ -6,6 +6,90 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SystemHealthService
+
+Qualified name: <code>Meridian.Ui.Services.SystemHealthService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SystemHealthService.cs:13](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L13).
+
+Service for monitoring system health, connection diagnostics, and anomaly detection.
+
+```csharp
+public sealed class SystemHealthService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SystemHealthService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:18](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L18) |  |
+| <code>public async Task&lt;SystemHealthSummary?&gt; GetHealthSummaryAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:33](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L33) | Gets overall system health summary. |
+| <code>public async Task&lt;List&lt;ProviderHealth&gt;?&gt; GetProviderHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:41](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L41) | Gets connection health for all providers. |
+| <code>public async Task&lt;ProviderReadinessSummaryDto?&gt; GetProviderReadinessAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:49](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L49) | Gets the shared provider readiness command-center model. |
+| <code>public async Task&lt;ProviderDiagnosticsSnapshot?&gt; GetProviderDiagnosticsAsync(string provider, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:57](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L57) | Gets detailed diagnostics for a specific provider. |
+| <code>public async Task&lt;StorageHealth?&gt; GetStorageHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:65](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L65) | Gets storage health status. |
+| <code>public async Task&lt;List&lt;SystemEvent&gt;?&gt; GetRecentEventsAsync(int limit = 50, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:73](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L73) | Gets recent system events and errors. |
+| <code>public async Task&lt;SystemMetrics?&gt; GetSystemMetricsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:81](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L81) | Gets system resource metrics. |
+| <code>public async Task&lt;ConnectionTestResult?&gt; TestConnectionAsync(string provider, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:89](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L89) | Runs a connection test for a provider. |
+| <code>public async Task&lt;DiagnosticBundle?&gt; GenerateDiagnosticBundleAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:97](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L97) | Generates a diagnostic bundle. |
+
+## SystemHealthSummary
+
+Qualified name: <code>Meridian.Ui.Services.SystemHealthSummary</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SystemHealthService.cs:164](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L164).
+
+Summarizes system health, connections, latency, processed events, storage usage, alerts, and uptime.
+
+```csharp
+public sealed class SystemHealthSummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string OverallStatus { get; set; } = &quot;Unknown&quot;;</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:166](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L166) |  |
+| <code>public bool IsHealthy { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:167](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L167) |  |
+| <code>public int ActiveConnections { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:168](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L168) |  |
+| <code>public int HealthyConnections { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:169](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L169) |  |
+| <code>public int UnhealthyConnections { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:170](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L170) |  |
+| <code>public double AverageLatencyMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:171](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L171) |  |
+| <code>public long TotalEventsProcessed { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:172](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L172) |  |
+| <code>public long EventsLast24Hours { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:173](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L173) |  |
+| <code>public double StorageUsedPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:174](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L174) |  |
+| <code>public int ActiveAlerts { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:175](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L175) |  |
+| <code>public DateTime LastUpdated { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:176](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L176) |  |
+| <code>public TimeSpan Uptime { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:177](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L177) |  |
+
+## SystemMetrics
+
+Qualified name: <code>Meridian.Ui.Services.SystemMetrics</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SystemHealthService.cs:277](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L277).
+
+Captures timestamped process resources, event and byte rates, connections, and pending operations.
+
+```csharp
+public sealed class SystemMetrics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public double CpuUsagePercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:279](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L279) |  |
+| <code>public long MemoryUsedBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:280](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L280) |  |
+| <code>public long MemoryTotalBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:281](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L281) |  |
+| <code>public double MemoryUsedPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:282](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L282) |  |
+| <code>public int ThreadCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:283](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L283) |  |
+| <code>public int HandleCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:284](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L284) |  |
+| <code>public double EventsPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:285](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L285) |  |
+| <code>public double BytesPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:286](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L286) |  |
+| <code>public int ActiveConnections { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:287](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L287) |  |
+| <code>public int PendingOperations { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:288](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L288) |  |
+| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:289](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L289) |  |
+
 ## TechnicalIndicatorInfo
 
 Qualified name: <code>Meridian.Ui.Services.TechnicalIndicatorInfo</code>. Kind: `class`.
@@ -1024,66 +1108,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:125](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L125) |  |
 | <code>public List&lt;string&gt; Symbols { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:126](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L126) |  |
-
-## WatchlistItem
-
-Qualified name: <code>Meridian.Ui.Services.WatchlistItem</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WatchlistService.cs:113](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L113).
-
-A single item in a watchlist.
-
-```csharp
-public sealed class WatchlistItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:115](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L115) |  |
-| <code>public string? Notes { get; set; }</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:116](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L116) |  |
-| <code>public List&lt;string&gt; Tags { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:117](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L117) |  |
-
-## WatchlistService
-
-Qualified name: <code>Meridian.Ui.Services.WatchlistService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WatchlistService.cs:14](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L14).
-
-Default watchlist service for the shared UI services layer. Platform-specific projects (WPF) override this with their own implementations by setting the Instance property during app startup.
-
-```csharp
-public class WatchlistService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static WatchlistService Instance { get; set; }</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:20](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L20) |  |
-| <code>public virtual async Task&lt;WatchlistData&gt; LoadWatchlistAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:26](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L26) |  |
-| <code>public virtual async Task&lt;bool&gt; CreateOrUpdateWatchlistAsync(string name, IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:48](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L48) | Creates a new watchlist or updates an existing one. Platform-specific implementations should override this method. |
-
-## WidgetPosition
-
-Qualified name: <code>Meridian.Ui.Services.WidgetPosition</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:86](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L86).
-
-Widget position in a workspace layout.
-
-```csharp
-public sealed class WidgetPosition
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int Row { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:88](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L88) |  |
-| <code>public int Column { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:89](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L89) |  |
-| <code>public int RowSpan { get; set; } = 1;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:90](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L90) |  |
-| <code>public int ColumnSpan { get; set; } = 1;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:91](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L91) |  |
-| <code>public bool IsVisible { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:92](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L92) |  |
-| <code>public bool IsExpanded { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:93](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L93) |  |

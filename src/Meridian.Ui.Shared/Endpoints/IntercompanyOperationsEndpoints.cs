@@ -40,8 +40,13 @@ public static class IntercompanyOperationsEndpoints
                 return Results.Problem("Entity timeline authority is unavailable.", statusCode: 503);
             try
             {
-                return Results.Json(await service.GetAsync(scope.TenantId!, organizationId, entityId,
-                    asOf ?? DateTimeOffset.UtcNow, context.RequestAborted, scope.Actor ?? throw new UnauthorizedAccessException("An authenticated actor is required.")).ConfigureAwait(false), options);
+                var timeline = await service.GetAsync(scope.TenantId!, organizationId, entityId,
+                    asOf ?? DateTimeOffset.UtcNow, context.RequestAborted, scope.Actor ?? throw new UnauthorizedAccessException("An authenticated actor is required.")).ConfigureAwait(false);
+                var canAttest = !EndpointAuthorization.IsNonSessionPrincipal(context)
+                    && EndpointAuthorization.HasPermission(context, UserPermission.ManageCompliance)
+                    && await EndpointAuthorization.HasScopedPermissionAsync(context, UserPermission.ManageCompliance,
+                        AccessScopeKindDto.LegalEntity, entityId, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(timeline with { CanAttestExternalLifecycleReview = canAttest }, options);
             }
             catch (UnauthorizedAccessException) { return EndpointHelpers.Forbidden(); }
             catch (InvalidOperationException error) { return Results.Conflict(new { error = error.Message }); }

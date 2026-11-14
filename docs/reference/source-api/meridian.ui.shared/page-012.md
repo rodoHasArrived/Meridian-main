@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HmacReportingProviderReceiptAuthenticator
+
+Qualified name: <code>Meridian.Ui.Shared.Services.HmacReportingProviderReceiptAuthenticator</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:44](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L44).
+
+Verifies relay webhook receipts with an HMAC over every state-bearing field. The key is retained only in process memory and signatures are compared in constant time.
+
+```csharp
+public sealed class HmacReportingProviderReceiptAuthenticator : IReportingProviderReceiptAuthenticator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public HmacReportingProviderReceiptAuthenticator(ReadOnlySpan&lt;byte&gt; secret, TimeProvider? timeProvider = null, TimeSpan? maximumClockSkew = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:51](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L51) |  |
+| <code>public ValueTask&lt;bool&gt; AuthenticateAsync(ReportingProviderReceiptAuthenticationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:70](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L70) |  |
+| <code>public static string CreateSignature(ReadOnlySpan&lt;byte&gt; secret, ReportingProviderReceiptAuthenticationRequest request, long unixSeconds);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:110](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L110) |  |
+
 ## HostStartupEscalation
 
 Qualified name: <code>Meridian.Ui.Shared.Services.HostStartupEscalation</code>. Kind: `class`.
@@ -59,7 +79,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;bool&gt; CanAccessEntitiesAsync(IntercompanyAgreementCallContext context, IReadOnlyList&lt;Guid&gt; entityIds, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:18](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L18) |  |
+| <code>public async Task&lt;bool&gt; CanAccessEntitiesAsync(IntercompanyAgreementCallContext context, IReadOnlyList&lt;Guid&gt; entityIds, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:19](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L19) |  |
 
 ## HttpRelayReportingDeliveryTransport
 
@@ -938,26 +958,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;PrivateCapitalLifecycleRead&gt; ReadAsync(string familyOfficeId, IReadOnlySet&lt;string&gt; entityIds, DateOnly asOf, DateTimeOffset knownAt, CancellationToken ct = default, Func&lt;DateOnly, CancellationToken, Task&lt;IReadOnlySet&lt;string&gt;&gt;&gt;? historicalEntityScope = null);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:17](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L17) |  |
-
-## IProviderModuleSetupService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IProviderModuleSetupService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:6](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L6).
-
-Manages provider module configuration lifecycle: discovery, upsert, enable/disable, remove, and connectivity test.
-
-```csharp
-public interface IProviderModuleSetupService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;ProviderModuleStatusDto&gt;&gt; GetConfiguredModulesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:9](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L9) | Returns status of all currently configured provider modules. |
-| <code>IReadOnlyList&lt;ProviderModuleCatalogueEntry&gt; GetDiscoveredModuleCatalogue();</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:12](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L12) | Returns all discoverable provider module types with capability and credential metadata. |
-| <code>Task&lt;ProviderModuleSetupResult&gt; UpsertModuleAsync(UpsertProviderModuleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:15](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L15) | Creates or updates a provider module configuration and persists credentials to the credential store. |
-| <code>Task&lt;ProviderModuleSetupResult&gt; SetEnabledAsync(string moduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:18](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L18) | Toggles a module&#x27;s enabled state. Applied live via ProviderRegistry; also persisted to config. |
-| <code>Task&lt;ProviderModuleSetupResult&gt; RemoveModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:21](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L21) | Removes a module&#x27;s configuration from config and its credentials from the credential store. |
-| <code>Task&lt;ProviderModuleTestResult&gt; TestModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:27](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L27) | Validates stored credentials and optionally probes the live connection. Always runs ValidateAsync; calls ProbeConnectionAsync if the module implements IProviderModuleConnectionProbe. |

@@ -475,6 +475,7 @@ function buildSharedFinancialOperationsCommandCenterViewState(
   const actionRows = [...dailyValuationScheduleActions, ...dailyValuationLifecycleAction, ...baseActionRows].slice(0, 4);
 
   return {
+    intercompanyAdvisories: projection?.intercompanyAdvisories ?? null,
     title: "CFO / Controller close command center",
     description: "Controller-facing period readiness, close blockers, evidence gaps, report-pack readiness, and sign-off status from Meridian Financial Operations review data.",
     ariaLabel: "CFO and controller close command center",

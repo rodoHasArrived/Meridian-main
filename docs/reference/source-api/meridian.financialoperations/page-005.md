@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrivateCapitalCloseCockpitService
+
+Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalCloseCockpitService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.AllocationEvidence.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.AllocationEvidence.cs#L5).
+
+```csharp
+public sealed partial class PrivateCapitalCloseCockpitService
+```
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ApprovalHistory.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ApprovalHistory.cs#L8).
+
+```csharp
+public sealed partial class PrivateCapitalCloseCockpitService
+```
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.CloseRequirements.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.CloseRequirements.cs#L5).
+
+```csharp
+public sealed partial class PrivateCapitalCloseCockpitService
+```
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:14](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L14).
+
+Assembles private-capital close readiness, approvals, and evidence for the close cockpit.
+
+```csharp
+public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCockpitService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PrivateCapitalCloseCockpitService(IManualJournalEntryWorkbenchService? manualJournalEntryWorkbenchService, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService, IDailyValuationScheduleStatusSource? dailyValuationScheduleStatusSource = null, IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null, IRecurringJournalQueueSource? recurringJournalQueueSource = null, IIntercompanyBalanceScheduleSource? intercompanyBalances = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:52](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L52) |  |
+| <code>public async Task&lt;PrivateCapitalCloseCockpitDto&gt; GetCockpitAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:68](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L68) |  |
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs#L5).
+
+```csharp
+public sealed partial class PrivateCapitalCloseCockpitService
+```
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ManagementCompany.cs:7](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ManagementCompany.cs#L7).
+
+```csharp
+public sealed partial class PrivateCapitalCloseCockpitService
+```
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.Routes.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.Routes.cs#L8).
+
+```csharp
+public sealed partial class PrivateCapitalCloseCockpitService
+```
+
 ## PrivateCapitalEvidenceCategoryBuilder
 
 Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalEvidenceCategoryBuilder</code>. Kind: `class`.
@@ -841,22 +896,3 @@ Declared public members:
 | <code>public StatementConnectorDescriptor Descriptor { get; } = new (ConnectorId, &quot;OFX / QFX statement&quot;, [&quot;.ofx&quot;, &quot;.qfx&quot;], SupportsFileImport : true, SupportsRemoteFetch : false, RequiresMappingProfile : true, DefaultProfileId : StatementBuiltInProfiles.OfxBankV1ProfileId);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L20) |  |
 | <code>public bool CanHandle(StatementSourceDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:29](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L29) |  |
 | <code>public async Task&lt;StatementParseResult&gt; ParseAsync(StatementSourceDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:40](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L40) |  |
-
-## StatementBalanceRole
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementBalanceRole</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:74](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L74).
-
-Which booked balance a statement connector emits as its StatementRecordKind.CashBalance row. Reconciliation runs always use Closing; Opening is an explicit opt-in used only by shadow-mode onboarding to read the incumbent&#x27;s opening booked balance (camt.053 OPBD, BAI2 010 only).
-
-```csharp
-public enum StatementBalanceRole
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Closing</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:76](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L76) |  |
-| <code>Opening</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:77](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L77) |  |

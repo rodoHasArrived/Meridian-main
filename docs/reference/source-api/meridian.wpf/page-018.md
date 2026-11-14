@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MessagingHubPage
+
+Qualified name: <code>Meridian.Wpf.Views.MessagingHubPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/MessagingHubPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/MessagingHubPage.xaml.cs#L13).
+
+Messaging Hub page — thin code-behind. All state, timer management, and statistics live in MessagingHubViewModel.
+
+```csharp
+public partial class MessagingHubPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MessagingHubPage(WpfServices.MessagingService messagingService);</code> | [src/Meridian.Wpf/Views/MessagingHubPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/MessagingHubPage.xaml.cs#L17) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:62](../../../../src/Meridian.Wpf/Views/Pages.cs#L62).
+
+```csharp
+public partial class MessagingHubPage : Page
+```
+
 ## NotificationCenterPage
 
 Qualified name: <code>Meridian.Wpf.Views.NotificationCenterPage</code>. Kind: `class`.
@@ -1064,15 +1088,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public StrategyWorkspaceShellPage(NavigationService navigationService, StrategyWorkspaceShellStateProvider stateProvider, StrategyWorkspaceShellViewModel viewModel) : base(navigationService, stateProvider, viewModel);</code> | [src/Meridian.Wpf/Views/StrategyWorkspaceShellPage.xaml.cs:21](../../../../src/Meridian.Wpf/Views/StrategyWorkspaceShellPage.xaml.cs#L21) |  |
-
-## StrategyWorkspaceShellPageBase
-
-Qualified name: <code>Meridian.Wpf.Views.StrategyWorkspaceShellPageBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:285](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L285).
-
-Binds derived pages to the strategy workspace shell definition.
-
-```csharp
-public class StrategyWorkspaceShellPageBase : WorkspaceShellPageBase<StrategyWorkspaceShellStateProvider, StrategyWorkspaceShellViewModel>
-```

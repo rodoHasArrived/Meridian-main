@@ -8,7 +8,7 @@ using Meridian.Ui.Services.Services.Accounting;
 
 namespace Meridian.Ui.Tests.Services;
 
-public sealed class WorkstationIntercompanyAgreementApiClientTests
+public sealed partial class WorkstationIntercompanyAgreementApiClientTests
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 

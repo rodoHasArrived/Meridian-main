@@ -11,6 +11,17 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Storage.Accounting
 
+The linked native intercompany registry retains optional structured legal declarations in its
+existing PostgreSQL JSONB state, approved revisions, audit snapshots and command receipts. New
+companions omit null/default legacy values, preserving approved immutable prefixes and legal
+hashes. Adding terms requires a new reviewed revision; no replacement registry or schema migration
+rewrites earlier approvals. See
+[the native legal contract](../../docs/domain/intercompany-agreements.md#structured-declarations-and-date-previews).
+
+Legacy attribution revocation appends an explicit reviewed successor with unchanged source,
+legal/profile, account and transaction pins plus a rationale. Active resolution omits the revoked
+assertion while retaining history; no posted source, native legal hash or SQL schema is rewritten.
+
 ## Purpose
 
 Compile business persistence and accounting adapters separately from market-data storage primitives.

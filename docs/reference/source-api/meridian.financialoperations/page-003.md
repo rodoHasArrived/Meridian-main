@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AssetAccountingCandidateAuthorityContext
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AssetAccountingCandidateAuthorityContext</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:45](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L45).
+
+```csharp
+public sealed record AssetAccountingCandidateAuthorityContext(Guid EventId, long EventVersion, long SourceSpineVersion, long DraftSpineVersion, string SourceProjectionFingerprint, AssetAccountingEventKindDto EventKind, Guid SecurityId, Guid BookPositionId, long ExpectedBookPositionVersion, Guid LedgerBookId, Guid PeriodId, long ExpectedPeriodVersion, string RulePackId, string RulePackVersion, long SecurityVersion = 0, string? CanonicalInstrumentSymbol = null);
+```
+
 ## AssetAccountingEventSpineService
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AssetAccountingEventSpineService</code>. Kind: `class`.
@@ -890,24 +900,3 @@ Declared public members:
 | <code>public string PolicyId { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:44](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L44) |  |
 | <code>public TimeSpan Duration { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:46](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L46) |  |
 | <code>public double WarningFraction { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:48](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L48) |  |
-
-## WorkflowSlaState
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.WorkflowSlaState</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:7](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L7).
-
-Lifecycle state of a WorkflowSlaTimer at a point in time.
-
-```csharp
-public enum WorkflowSlaState
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>OnTrack</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:10](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L10) | Within the on-track window (before the warning threshold). |
-| <code>Warning</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:13](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L13) | Past the warning threshold but not yet due. |
-| <code>Breached</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:16](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L16) | Past the due time without being stopped. |
-| <code>Stopped</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:19](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L19) | Stopped (the tracked work completed) before breaching. |

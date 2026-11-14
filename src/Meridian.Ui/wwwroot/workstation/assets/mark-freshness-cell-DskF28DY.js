@@ -1,1 +1,0 @@
-import{Z as e}from"./index-BnafpXv2.js";import{m as t}from"./button-CivEqPI0.js";var n=t();function r({mark:t}){return(0,n.jsxs)(`div`,{title:t.reason,children:[(0,n.jsx)(e,{variant:t.tone,children:t.label}),(0,n.jsx)(`div`,{className:`mt-1 text-xs text-muted-foreground`,children:t.observationSummary})]})}export{r as t};

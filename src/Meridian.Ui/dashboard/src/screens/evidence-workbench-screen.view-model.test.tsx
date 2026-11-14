@@ -1945,15 +1945,15 @@ describe("EvidenceWorkbenchScreen", () => {
     );
   });
 
-  it("retains signed agreement bytes with the saved draft link prefilled from accounting", async () => {
+  it.each(["IntercompanyAgreement", "LegalEntity"] as const)("retains signed legal bytes with the %s link prefilled from accounting", async (linkKind) => {
     const agreementId = "11335577-1133-4455-8899-aabbccddeeff";
     vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
     vi.mocked(getEvidencePacket).mockResolvedValue(packet);
     const user = userEvent.setup();
-    renderEvidenceRoute(`/reporting/evidence?subjectKind=accounting-record&subjectId=current&classification=Agreement&linkKind=IntercompanyAgreement&objectId=${agreementId}`);
+    renderEvidenceRoute(`/reporting/evidence?subjectKind=accounting-record&subjectId=current&classification=Agreement&linkKind=${linkKind}&objectId=${agreementId}`);
     await screen.findByRole("region", { name: "Evidence document intake" });
     expect(screen.getByRole("combobox", { name: /^Document classification$/ })).toHaveValue("Agreement");
-    expect(screen.getByRole("combobox", { name: "Linked object kind" })).toHaveValue("IntercompanyAgreement");
+    expect(screen.getByRole("combobox", { name: "Linked object kind" })).toHaveValue(linkKind);
     expect(screen.getByLabelText("Linked object id")).toHaveValue(agreementId);
     expect(screen.getByLabelText("Linked object id")).toBeRequired();
     await user.upload(screen.getByLabelText("Document file"), new File(["signed"], "signed-agreement.pdf", { type: "application/pdf" }));
@@ -1962,7 +1962,7 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(intakeEvidenceVaultDocument).toHaveBeenCalledWith(expect.objectContaining({
       subjectKind: "accounting-record", subjectId: "current", classification: "Agreement",
       fileName: "signed-agreement.pdf", contentBase64: "c2lnbmVk",
-      objectLinks: [expect.objectContaining({ linkKind: "IntercompanyAgreement", objectId: agreementId, relationship: "supports" })]
+      objectLinks: [expect.objectContaining({ linkKind, objectId: agreementId, relationship: "supports" })]
     }), expect.objectContaining({ signal: expect.any(Object) }));
   });
 

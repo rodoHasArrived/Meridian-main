@@ -21,3 +21,12 @@ Detailed boundaries remain applicable until a later scoped change replaces them.
       preserved and no old overlay deductions from the rebuilt target. Unapproved in-place changes
       remain blocked. Source presence does not establish acceptance.
 ```
+
+## Intercompany extension retained during integration
+
+The separate 2026-11-13 obligation-monitor and structured-terms extension reuses native
+legal/lifecycle and posted balance sources, adds evidence-bound external review and
+operator-reviewed attribution corrections/revocation, and supplies nonblocking advisories.
+It does not change exact v1-v4 behavior or the registry row's planned status. Source presence
+does not establish acceptance. This additional detail is retained from the reviewed
+`c51eb2dd3c` feature integration; it does not alter the original snapshot above.

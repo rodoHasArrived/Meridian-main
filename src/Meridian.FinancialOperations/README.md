@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.FinancialOperations
@@ -17,6 +17,16 @@ whole document before retaining evidence. Valid quoted delimiters and escaped qu
 exact financial meaning. `StatementImportServiceTests.CsvMalformedTail_BlocksWholeImportThenAllowsCorrectedReplay`
 proves a valid prefix cannot make a malformed tail complete and that a corrected retry retains exact
 source bytes and remains idempotent after service restart.
+
+The intercompany obligation monitor enriches the existing posted balance schedule with canonical
+legal expiry, coverage, lifecycle and guarantee observations. Its default expiry horizon is 30
+calendar days; retained source versions distinguish current, stale and unavailable evidence. The
+close companion remains advisory and does not change existing schedule blockers, journal controls
+or exact consolidation rule versions. See
+[monitoring boundaries](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#obligation-monitoring-and-structured-legal-terms).
+
+Expiry warnings follow continuous approved legal coverage across effective-date boundaries, retaining
+gaps and termination instead of reporting superseded raw end dates.
 
 `BondIncomeService` resolves actual account/book/lot and adopted US GAAP policy before previewing or
 preparing `bond-income-us-gaap-v1` instructions. Eligible direct costs, purchased accrued interest,

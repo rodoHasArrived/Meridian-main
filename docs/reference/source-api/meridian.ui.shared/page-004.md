@@ -473,6 +473,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapIntercompanyAgreementEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs#L21) |  |
 
+## IntercompanyObligationEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyObligationEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs#L15).
+
+```csharp
+public static class IntercompanyObligationEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapIntercompanyObligationEndpoints(this WebApplication app, JsonSerializerOptions options);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs#L17) |  |
+
 ## IntercompanyOperationsEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyOperationsEndpoints</code>. Kind: `class`.
@@ -1173,21 +1189,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapPortfolioCashLadderEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L23) |  |
-
-## PortfolioImportEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.PortfolioImportEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs#L24).
-
-Account-scoped imports retain their source before subscription changes and opening-draft intake.
-
-```csharp
-public static class PortfolioImportEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapPortfolioImportEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs#L26) |  |

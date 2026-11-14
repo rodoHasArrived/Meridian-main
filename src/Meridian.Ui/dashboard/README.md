@@ -11,6 +11,11 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui/dashboard
 
+Native intercompany agreement editors capture structured terms without calculating charges.
+Externally reviewed attestations retain the operator and external reviewer separately. The entity
+workspace presents advisory obligation monitoring and reviewed legacy coverage corrections or
+revocations; close advisories stay outside blockers. See [intercompany controls](../../../docs/operators/intercompany-entity-controls.md).
+
 The Providers route also includes on-demand backfill tier/priority controls, a read-only routing
 preview, validation profiles and bounded quota history. Tier defaults and ceilings come from the
 server catalog; choosing a paid tier declares the operator's subscription and does not verify it.

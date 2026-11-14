@@ -14,7 +14,8 @@ public static class LegacyIntercompanyAttributionRules
         { book.LedgerBookId, record.Entry.JournalEntryId, record.GlobalSequence, record.Entry.Metadata.EffectiveDate, Line = line }));
 
     public static IReadOnlyList<LegacyIntercompanyAttributionDto> Resolve(IEnumerable<LegacyIntercompanyAttributionDto> history)
-        => history.GroupBy(x => new { x.JournalEntryId, x.LineId }).Select(x => x.MaxBy(y => y.Revision)!)
+        => history.GroupBy(x => new { x.LedgerBookId, x.JournalEntryId, x.LineId }).Select(x => x.MaxBy(y => y.Revision)!)
+            .Where(x => !x.Revoked)
             .OrderBy(x => x.JournalEntryId).ThenBy(x => x.LineId).ToArray();
 
     public static void ValidateAppend(LegacyIntercompanyAttributionDto fact, Guid? expectedPrevious,
@@ -32,14 +33,42 @@ public static class LegacyIntercompanyAttributionRules
                 throw new InvalidOperationException("Legacy attribution requires trimmed source, scope and review evidence.");
         if (fact.SourceLineDigest.Length != 64 || fact.SourceLineDigest.Any(x => !Uri.IsHexDigit(x)) ||
             fact.TenantId.Equals("all", StringComparison.OrdinalIgnoreCase) ||
-            fact.PreparedBy.Equals(fact.ApprovedBy, StringComparison.OrdinalIgnoreCase))
+            !Enum.IsDefined(fact.ReviewMode) ||
+            fact.ReviewMode == LegacyIntercompanyReviewModeDto.Independent && fact.PreparedBy.Equals(fact.ApprovedBy, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("Legacy attribution requires a source digest, owning tenant and independent approval.");
+        if (fact.ReviewMode == LegacyIntercompanyReviewModeDto.OperatorReviewed
+            && (string.IsNullOrWhiteSpace(fact.ReviewRationale) || fact.ReviewRationale != fact.ReviewRationale.Trim()
+                || !fact.PreparedBy.Equals(fact.ApprovedBy, StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidOperationException("Operator-reviewed attribution requires explicit rationale and the same retained preparing and reviewing operator.");
         if (history.Any(x => x.LedgerBookId != fact.LedgerBookId || x.TenantId != fact.TenantId || x.CompanyId != fact.CompanyId))
             throw new InvalidOperationException("Legacy attribution history must have one authoritative book owner.");
         var current = history.Where(x => x.JournalEntryId == fact.JournalEntryId && x.LineId == fact.LineId).MaxBy(x => x.Revision);
         if (current?.AttributionId != expectedPrevious || fact.PreviousAttributionId != expectedPrevious ||
             fact.Revision != (current?.Revision ?? 0) + 1)
             throw new InvalidOperationException("Legacy attribution changed; reload before appending a reviewed successor.");
+        if (fact.Revoked)
+        {
+            if (current is null || current.Revoked)
+                throw new InvalidOperationException("Only the latest active attribution can be revoked.");
+            if (string.IsNullOrWhiteSpace(fact.ReviewRationale) || fact.ReviewRationale != fact.ReviewRationale.Trim())
+                throw new InvalidOperationException("Attribution revocation requires an explicit reviewed rationale.");
+            // Only decision metadata and successor identity may change. This also protects future source/legal pin fields.
+            var priorPins = fact with
+            {
+                AttributionId = current.AttributionId,
+                Revision = current.Revision,
+                PreviousAttributionId = current.PreviousAttributionId,
+                PreparedBy = current.PreparedBy,
+                ApprovedBy = current.ApprovedBy,
+                ApprovedAt = current.ApprovedAt,
+                EvidenceReference = current.EvidenceReference,
+                ReviewMode = current.ReviewMode,
+                ReviewRationale = current.ReviewRationale,
+                Revoked = current.Revoked
+            };
+            if (priorPins != current)
+                throw new InvalidOperationException("Revocation must retain the exact prior source, legal, configuration and transaction pins.");
+        }
     }
 }
 
@@ -53,14 +82,22 @@ public sealed class LegacyIntercompanyAttributionValidator(ILedgerJournalStore j
         var source = await journals.QueryAsync(new(LedgerBookId: fact.LedgerBookId, JournalEntryId: fact.JournalEntryId), ct).ConfigureAwait(false);
         if (source.Count != 1)
             throw new InvalidOperationException("The exact immutable legacy source is unavailable.");
-        var date = source[0].Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(source[0].Entry.Timestamp.UtcDateTime);
-        var reference = new IntercompanyCanonicalAgreementReferenceDto(fact.IntercompanyAgreementId,
-            fact.IntercompanyAgreementVersion, fact.IntercompanyAgreementPayloadHash);
-        var legal = await legalAuthority.AcquireLeaseAsync(fact.TenantId, [reference], ct: ct).ConfigureAwait(false);
-        var leases = new List<IAsyncDisposable> { legal };
+        var leases = new List<IAsyncDisposable>();
         try
         {
-            _ = legal.ResolveEffective(reference, date);
+            // A retraction must remain possible after its legal revision expires or is superseded.
+            // Its exact predecessor pins are checked atomically by the attribution store.
+            if (!fact.Revoked)
+            {
+                var date = source[0].Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(source[0].Entry.Timestamp.UtcDateTime);
+                var reference = new IntercompanyCanonicalAgreementReferenceDto(fact.IntercompanyAgreementId,
+                    fact.IntercompanyAgreementVersion, fact.IntercompanyAgreementPayloadHash);
+                var legal = await legalAuthority.AcquireLeaseAsync(fact.TenantId, [reference], ct: ct).ConfigureAwait(false);
+                leases.Add(legal);
+                _ = legal.ResolveEffective(reference, date);
+            }
+            // Both decisions require the configuration authority fences. These leases do not
+            // resolve current terms, so they also protect retraction of an obsolete assertion.
             leases.Add(await bindings.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false));
             leases.Add(await agreements.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false));
             return new AuthorityLease(leases);
@@ -88,6 +125,8 @@ public sealed class LegacyIntercompanyAttributionValidator(ILedgerJournalStore j
             ?? throw new InvalidOperationException("The attribution source line is unavailable.");
         if (!Sha256Digest.FixedEquals(fact.SourceLineDigest, LegacyIntercompanyAttributionRules.SourceDigest(book, record, line)))
             throw new InvalidOperationException("Legacy attribution does not match the exact immutable source digest.");
+        if (fact.Revoked)
+            return; // The store still requires exact book ownership, active predecessor and unchanged immutable pins.
         if (line.Dimensions?.AccountingArrangementId is not null || line.Account.Symbol is not null || line.Account.FinancialAccountId is not null)
             throw new InvalidOperationException("Only unscoped legacy lines lacking agreement attribution may receive sidecar evidence.");
         if (line.Dimensions?.IntercompanyAgreementId is { } retainedLegalId
