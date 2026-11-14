@@ -163,6 +163,20 @@ public sealed class IntercompanyAccrualSourceBuilderTests
     }
 
     [Fact]
+    public void ReversingTheReversal_RestoresTheAccrual_SoItsWindowIsBlockedAgain()
+    {
+        var interest = Data.AccountingArrangementId;
+        var accrual = AccrualJournal(interest, "a-int-recv", IntercompanyAccrualEvidenceGuard.TransactionId(From, To), debit: 4166.67m);
+        var reversal = Inverse(accrual);
+        var reversalOfReversal = Inverse(reversal);
+        var thirdReversal = Inverse(reversalOfReversal);
+
+        Assert.Null(IntercompanyAccrualSourceBuilder.FindPostedOverlap([accrual, reversal], interest, From, To));
+        Assert.NotNull(IntercompanyAccrualSourceBuilder.FindPostedOverlap([accrual, reversal, reversalOfReversal], interest, From, To));
+        Assert.Null(IntercompanyAccrualSourceBuilder.FindPostedOverlap([accrual, reversal, reversalOfReversal, thirdReversal], interest, From, To));
+    }
+
+    [Fact]
     public void RecomputationAfterReversal_GetsANewRetryStableIdentity_AndLeavesTheOriginalAlone()
     {
         var interest = Data.AccountingArrangementId;
@@ -180,6 +194,15 @@ public sealed class IntercompanyAccrualSourceBuilderTests
         Assert.Equal(replacement.Draft.JournalEntryId, BuildDraft(generation: generation).Draft!.JournalEntryId);
         Assert.Equal(replacement.Draft.JournalEntryId, replacement.Evidence!.DraftId);
         Assert.Null(IntercompanyAccrualEvidenceGuard.Validate(replacement.Draft));
+        // A distinct transaction identity lets counterpart delivery tell the replacement from the reversed original.
+        var replacementTransaction = replacement.Draft.Lines[0].Dimensions!.IntercompanyTransactionId!;
+        Assert.Equal("loan-interest:20260601-20260701#g2", replacementTransaction);
+        Assert.NotEqual(original.Draft.Lines[0].Dimensions!.IntercompanyTransactionId, replacementTransaction);
+        Assert.True(IntercompanyAccrualEvidenceGuard.TryParseWindow(replacementTransaction, out var parsedFrom, out var parsedTo));
+        Assert.Equal((From, To), (parsedFrom, parsedTo));
+        var replacementPosted = AccrualJournal(interest, "a-int-recv", replacementTransaction, debit: 4166.67m);
+        Assert.Equal(3, IntercompanyAccrualSourceBuilder.PostedGeneration([.. reversed, replacementPosted], interest, From, To));
+        Assert.Equal(replacementTransaction, IntercompanyAccrualSourceBuilder.FindPostedOverlap([.. reversed, replacementPosted], interest, From, To));
     }
 
     [Fact]

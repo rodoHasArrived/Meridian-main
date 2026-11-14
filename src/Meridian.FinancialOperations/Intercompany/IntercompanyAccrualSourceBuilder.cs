@@ -124,9 +124,8 @@ public static class IntercompanyAccrualSourceBuilder
         foreach (var (record, transaction) in PostedAccruals(records, interestArrangementId)
             .OrderBy(item => item.Transaction, StringComparer.Ordinal))
         {
-            if (IsInverse(record, records) || records.Any(candidate => candidate.SourceJournalEntryId == record.Entry.JournalEntryId
-                    && IntercompanyJournalCorrectionEvidence.IsExactInverse(candidate.Entry, record.Entry))
-                || IsReversedCounterpart(record, records))
+            // An inverse is not itself an accrual; it only decides whether the journal it reverses is still live.
+            if (IsInverse(record, records) || IsReversed(record, records, 0) || IsReversedCounterpart(record, records))
                 continue;
             if (IntercompanyAccrualEvidenceGuard.TryParseWindow(transaction, out var postedFrom, out var postedTo)
                 && postedFrom < to && from < postedTo)
@@ -143,8 +142,9 @@ public static class IntercompanyAccrualSourceBuilder
     public static int PostedGeneration(IReadOnlyList<LedgerJournalEntryRecord> records, Guid interestArrangementId,
         DateOnly from, DateOnly to)
     {
-        var transaction = IntercompanyAccrualEvidenceGuard.TransactionId(from, to);
-        return PostedAccruals(records, interestArrangementId).Count(item => item.Transaction == transaction);
+        return PostedAccruals(records, interestArrangementId).Count(item =>
+            IntercompanyAccrualEvidenceGuard.TryParseWindow(item.Transaction, out var postedFrom, out var postedTo)
+            && postedFrom == from && postedTo == to);
     }
 
     /// <summary>
@@ -183,6 +183,15 @@ public static class IntercompanyAccrualSourceBuilder
             && candidate.Entry.JournalEntryId != record.Entry.JournalEntryId
             && IntercompanyJournalCorrectionEvidence.IsExactInverse(candidate.Entry, record.Entry));
     }
+
+    /// <summary>
+    /// A journal is reversed only while one of its source-linked exact inverses is itself still standing.
+    /// Reversing that reversal restores the original, so the correction chain is followed to its end.
+    /// </summary>
+    private static bool IsReversed(LedgerJournalEntryRecord record, IReadOnlyList<LedgerJournalEntryRecord> records, int depth)
+        => depth < 64 && records.Any(candidate => candidate.SourceJournalEntryId == record.Entry.JournalEntryId
+            && IntercompanyJournalCorrectionEvidence.IsExactInverse(candidate.Entry, record.Entry)
+            && !IsReversed(candidate, records, depth + 1));
 
     private static bool IsInverse(LedgerJournalEntryRecord record, IReadOnlyList<LedgerJournalEntryRecord> records)
         => record.SourceJournalEntryId is { } source
@@ -267,7 +276,7 @@ public static class IntercompanyAccrualSourceBuilder
         var contra = Account(contraNode);
         var mainBinding = Binding(mainNode, principal.Role);
         var contraBinding = contra.IntercompanyRole is { } contraRole ? Binding(contra.NodeId, contraRole) : null;
-        var transaction = IntercompanyAccrualEvidenceGuard.TransactionId(request.AccrualFrom, request.AccrualTo);
+        var transaction = IntercompanyAccrualEvidenceGuard.TransactionId(request.AccrualFrom, request.AccrualTo, generation);
         LedgerDimensionSetDto Dimensions(ChartOfAccountsNodeDto account, IntercompanyAccountBindingDto? binding) =>
             new(EntityId: entity.ToString("D"), CounterpartyId: counterparty.ToString("D"),
                 FundId: book.FundProfileId, BookId: book.LedgerBookId.ToString("D"))

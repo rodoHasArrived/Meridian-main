@@ -61,8 +61,13 @@ public static class IntercompanyAccrualEvidenceGuard
     public static string CorrectionKey(Guid postedJournalEntryId, Guid correctionJournalEntryId)
         => $"intercompany-accrual-correction:{postedJournalEntryId:D}:{correctionJournalEntryId:D}";
 
-    public static string TransactionId(DateOnly accrualFrom, DateOnly accrualTo)
-        => $"{TransactionPrefix}{accrualFrom:yyyyMMdd}-{accrualTo:yyyyMMdd}";
+    /// <summary>
+    /// A recomputation after a reversal is a new economic event of the same window: its generation suffix keeps
+    /// counterpart delivery from mistaking the reversed original's counterpart for an existing booking.
+    /// </summary>
+    public static string TransactionId(DateOnly accrualFrom, DateOnly accrualTo, int generation = 0)
+        => $"{TransactionPrefix}{accrualFrom:yyyyMMdd}-{accrualTo:yyyyMMdd}"
+            + (generation == 0 ? string.Empty : FormattableString.Invariant($"#g{generation}"));
 
     /// <summary>Recovers the half-open accrual window a retained transaction identity declares.</summary>
     public static bool TryParseWindow(string? transactionId, out DateOnly accrualFrom, out DateOnly accrualTo)
@@ -70,7 +75,7 @@ public static class IntercompanyAccrualEvidenceGuard
         accrualFrom = accrualTo = default;
         if (transactionId is null || !transactionId.StartsWith(TransactionPrefix, StringComparison.Ordinal))
             return false;
-        var parts = transactionId[TransactionPrefix.Length..].Split('-');
+        var parts = transactionId[TransactionPrefix.Length..].Split('#')[0].Split('-');
         return parts.Length == 2
             && DateOnly.TryParseExact(parts[0], "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out accrualFrom)
             && DateOnly.TryParseExact(parts[1], "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out accrualTo)
