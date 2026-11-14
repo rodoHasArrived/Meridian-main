@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunLineageTimelineEntry
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunLineageTimelineEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:756](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L756).
+
+Lineage timeline event grouped by canonical run identity.
+
+```csharp
+public sealed record StrategyRunLineageTimelineEntry(string? CanonicalRunKey = null, string? ParentCanonicalRunKey = null, string? RunId = null, string? StrategyId = null, string? StrategyName = null, StrategyRunMode? Mode = null, StrategyRunStatus? Status = null, DateTimeOffset? EventTimestamp = null, StrategyRunLineageEventType? EventType = null, string? PromotionDecision = null, StrategyRunCrossModeTransitionMetadata? CrossModeTransition = null);
+```
+
 ## StrategyRunLiveStatus
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunLiveStatus</code>. Kind: `record`.
@@ -638,13 +650,3 @@ Declared public members:
 | <code>public string? CalibrationVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:317](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L317) |  |
 | <code>public DateTimeOffset? CalibrationValidatedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:319](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L319) |  |
 | <code>public string? PromotionPosture { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:321](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L321) |  |
-
-## TradingTrustGateSampleReviewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingTrustGateSampleReviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:263](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L263).
-
-```csharp
-public sealed record TradingTrustGateSampleReviewDto(string SampleId, string Provider, string RequiredStep, string StepStatus, string Status, bool Observed, IReadOnlyList<string> MissingRequirements, IReadOnlyList<string> EvidenceAnchors, string AcceptanceCheck);
-```

@@ -20,6 +20,9 @@ External-review evidence verifies accepted immutable documents, separately from 
 operator. The close-readiness companion does not become a blocker. See
 [the intercompany procedure](../../docs/operators/intercompany-entity-controls.md).
 
+Account/group close advisories require canonical exact-scope membership and retained evidence;
+the book node ID is not substituted for a legal-entity ID. Missing membership yields unknown.
+
 Ordinary agreement approval and rejection retain `ManageFundStructure` or `AdminMaintenance`
 authority. `ManageCompliance` authorizes the explicit evidence-bound external-review path; it does
 not grant ordinary agreement review.
@@ -795,7 +798,8 @@ incumbent opening balances, explain differences, issue the parallel-run certific
 `OnboardingOpeningStateSource` supplies Meridian's own start-date balances, NAV components and
 positions. `IBookOfRecordGuard` is registered over the onboarding store. `ClosePublicationReadinessGuard`
 resolves it lazily and blocks hard-close with `CLOSE_SHADOW_BOOK`, and governed report release refuses
-a shadow book.
+a shadow book. `FileOnboardingWorkspaceStore` enforces one active shadow trial per ledger book inside the
+save's writer lease and returns a concurrency conflict to the losing designation.
 
 `FileOnboardingWorkspaceStore` persists full comparison payloads and frozen readiness packets using
 atomic file replacement, writer leases and expected-version checks. Retained history cannot be

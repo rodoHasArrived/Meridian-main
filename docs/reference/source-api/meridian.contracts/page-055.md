@@ -411,7 +411,7 @@ public sealed record BiasDisclosureItemDto(string Code, string Severity, string 
 
 Qualified name: <code>Meridian.Contracts.Workstation.BookOfRecordStatusDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:128](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L128).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:140](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L140).
 
 Whether a ledger book may act as the book of record (publish, release, hard-close).
 

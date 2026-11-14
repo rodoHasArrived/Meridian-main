@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterLotModelDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterLotModelDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:334](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L334).
+
+```csharp
+public sealed record SecurityMasterLotModelDto(string QuantityModel, decimal? LotSize, decimal? ContractMultiplier, bool UsesFaceValue, bool SupportsFactorAdjustedExposure, bool RequiresResolvedSecurityId, string Summary);
+```
+
 ## SecurityMasterManualChangeApprovalPostureDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterManualChangeApprovalPostureDto</code>. Kind: `record`.
@@ -328,7 +338,7 @@ public sealed record SettlementInstruction(Guid InstructionId, Guid AccountId, s
 
 Qualified name: <code>Meridian.Contracts.Workstation.ShadowBookNotBookOfRecordException</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:142](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L142).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:154](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L154).
 
 Raised when a shadow book is asked to act as the book of record.
 
@@ -340,7 +350,7 @@ public sealed class ShadowBookNotBookOfRecordException(string message) : Invalid
 
 Qualified name: <code>Meridian.Contracts.Workstation.ShadowBookPromotionDecisionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:118](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L118).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:130](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L130).
 
 ```csharp
 public sealed record ShadowBookPromotionDecisionDto(string DecisionId, string CertificateId, string CertificateContentHash, string DecidedBy, DateTimeOffset DecidedAtUtc, string Rationale, IReadOnlyList<string> EvidenceIds, int DataRevision);
@@ -653,15 +663,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;StatementActivityCompletenessDto&gt;? ActivityCompleteness { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:161](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L161) |  |
 | <code>public int? TaxLotCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:162](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L162) |  |
 | <code>public int? BorrowPositionCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:163](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L163) |  |
-
-## StatementImportReconciliationCaseLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementImportReconciliationCaseLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:197](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L197).
-
-Direct reconciliation case handoff returned after statement import so workstation clients can render case actions without relying on parallel route arrays or rebuilding case routes.
-
-```csharp
-public sealed record StatementImportReconciliationCaseLinkDto(string CaseId, string? BreakId, string Route, string Label, string Status, string Priority, string Reason, string SuggestedNextAction);
-```

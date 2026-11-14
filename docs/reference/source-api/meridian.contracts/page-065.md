@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PreparerAttestationRevocationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PreparerAttestationRevocationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L95).
+
+```csharp
+public sealed record PreparerAttestationRevocationDto(Guid CommandId, Guid ReceiptId, long Revision, string Actor, DateTimeOffset RecordedAt, string Reason);
+```
+
 ## PreparerEvidenceAcknowledgmentDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.PreparerEvidenceAcknowledgmentDto</code>. Kind: `record`.
@@ -128,7 +138,7 @@ public sealed record ProductExposureDto(string ProductType, decimal NetExposure,
 
 Qualified name: <code>Meridian.Contracts.Workstation.PromoteShadowBookRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:115](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L115).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:127](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L127).
 
 ```csharp
 public sealed record PromoteShadowBookRequestDto(int ExpectedVersion, string CertificateId, string Rationale, IReadOnlyList<string> EvidenceIds);
@@ -698,15 +708,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string InputHashSha256 { get; init; } = ComputeCompatibilityInputHash(BulkActionId, IdempotencyKey, DryRun, RequestedCount, SucceededCount, FailedCount);</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:782](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L782) | Canonical hash of the complete admitted bulk request. |
 | <code>public VerifiedOperationOutcome Outcome { get; init; } = CreateCompatibilityOutcome(BulkActionId, IdempotencyKey, DryRun, RequestedCount, SucceededCount, FailedCount);</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:794](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L794) | Verified terminal receipt. Queue implementations replace this compatibility receipt with one bound to the full request, persisted receipt, and retained audit evidence. |
-
-## ReconciliationCalibrationProfileSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCalibrationProfileSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:978](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L978).
-
-Per-profile rollup for reconciliation tolerance calibration and exception routing.
-
-```csharp
-public sealed record ReconciliationCalibrationProfileSummaryDto(string ToleranceProfileId, string ExceptionRoute, ReconciliationBreakSeverity HighestSeverity, decimal? MaxToleranceBand, int TotalBreakCount, int OpenBreakCount, int InReviewBreakCount, int ResolvedBreakCount, int DismissedBreakCount, int PendingSignoffCount, int SignedOffCount, DateTimeOffset LastUpdatedAt);
-```

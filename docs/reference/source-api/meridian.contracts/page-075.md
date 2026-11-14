@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationKernelDriftPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelDriftPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:873](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L873).
+
+```csharp
+public sealed record WorkstationKernelDriftPayload(double Score, double Severity, string Methodology);
+```
+
 ## WorkstationKernelLatencyPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelLatencyPayload</code>. Kind: `record`.
@@ -540,16 +550,4 @@ A fund the caller may scope to, with the visible legal entities it holds. Entiti
 
 ```csharp
 public sealed record WorkstationScopeFundOptionDto(Guid FundId, string Name, IReadOnlyList<Guid> EntityIds);
-```
-
-## WorkstationScopeOptionsDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeOptionsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L17).
-
-The entities, funds and fund accounts the calling operator may choose as an operating scope (GET /api/workstation/scope-options), with the account → fund → entity relationships between them. The host fills it only with nodes the caller is authorized to see, and drops any relationship that would name a fund or entity outside that set. Field names deliberately match the entity, fund and account summaries in Meridian.Contracts.FundStructure.OrganizationStructureGraphDto, so a client can read either payload with one parser. Every list may be empty; an empty list means &quot;none visible to this caller&quot;, never &quot;not loaded&quot;.
-
-```csharp
-public sealed record WorkstationScopeOptionsDto(IReadOnlyList<WorkstationScopeEntityOptionDto> Entities, IReadOnlyList<WorkstationScopeFundOptionDto> Funds, IReadOnlyList<WorkstationScopeAccountOptionDto> Accounts);
 ```

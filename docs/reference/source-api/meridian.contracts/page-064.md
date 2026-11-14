@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorScopePreferenceSaveRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs#L30).
+
+Sets (or, with a null or empty scope, clears) the signed-in operator&#x27;s default scope.
+
+```csharp
+public sealed record OperatorScopePreferenceSaveRequest(OperatingScopeValuesDto? DefaultScope);
+```
+
 ## OperatorSurfaceVisitDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorSurfaceVisitDto</code>. Kind: `record`.
@@ -700,14 +712,4 @@ The assertion has its own task identity; source creator/importer is retained sep
 
 ```csharp
 public sealed record PreparerAttestationReceiptDto(Guid ReceiptId, Guid CommandId, Guid AssertionId, int SchemaVersion, string DecisionKind, string Disclosure, SinglePrincipalAttestationScopeDto Scope, string ActionId, string SubjectKind, string SubjectId, string SubjectRevision, string SubjectHash, string SourceArtifactId, string SourceHash, string? SourceActor, string SourceProvenance, string PreparedBy, string AttestedBy, OperationsActionOriginDto Origin, Guid DeclarationId, long DeclarationRevision, string PolicyVersion, string PolicyHash, DateTimeOffset RecordedAt, string Reason, string Confirmation, IReadOnlyList<string> Checks, string? SourceSubjectKind = null, string? SourceSubjectId = null, string? SubjectSnapshotJson = null);
-```
-
-## PreparerAttestationRevocationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PreparerAttestationRevocationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L95).
-
-```csharp
-public sealed record PreparerAttestationRevocationDto(Guid CommandId, Guid ReceiptId, long Revision, string Actor, DateTimeOffset RecordedAt, string Reason);
 ```

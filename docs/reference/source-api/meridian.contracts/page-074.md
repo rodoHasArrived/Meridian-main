@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingTrustGateSampleReviewDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingTrustGateSampleReviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:263](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L263).
+
+```csharp
+public sealed record TradingTrustGateSampleReviewDto(string SampleId, string Provider, string RequiredStep, string StepStatus, string Status, bool Observed, IReadOnlyList<string> MissingRequirements, IReadOnlyList<string> EvidenceAnchors, string AcceptanceCheck);
+```
+
 ## UpdateOnboardingCriteriaRequestDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.UpdateOnboardingCriteriaRequestDto</code>. Kind: `record`.
@@ -64,7 +74,7 @@ public sealed record VersionedReportTemplateIdDto(string Name, int Version);
 
 Qualified name: <code>Meridian.Contracts.Workstation.WithdrawShadowBookRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L42).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L44).
 
 ```csharp
 public sealed record WithdrawShadowBookRequestDto(int ExpectedVersion, string Reason);
@@ -558,14 +568,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:894](../
 
 ```csharp
 public sealed record WorkstationKernelDomainPayload(string Domain, long Evaluations, double ThroughputPerMinute, WorkstationKernelLatencyPayload LatencyMs, double ReasonCoveragePercent, WorkstationKernelDriftPayload Drift, WorkstationKernelCriticalSeverityRatePayload CriticalSeverityRate, long DeterminismMismatches, DateTimeOffset LastUpdatedUtc);
-```
-
-## WorkstationKernelDriftPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelDriftPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:873](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L873).
-
-```csharp
-public sealed record WorkstationKernelDriftPayload(double Score, double Severity, string Methodology);
 ```

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsCloseReadinessBlockerDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessBlockerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1359](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1359).
+
+```csharp
+public sealed record OperationsCloseReadinessBlockerDto(string Code, string Category, string Severity, string Message, OperationsGateKeyDto? Gate, string? RouteHint);
+```
+
 ## OperationsCloseReadinessComponentDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessComponentDto</code>. Kind: `record`.
@@ -705,16 +715,4 @@ The signed-in operator&#x27;s default operating scope (C1): applied when a sessi
 
 ```csharp
 public sealed record OperatorScopePreferenceDto(OperatingScopeValuesDto? DefaultScope, DateTimeOffset? UpdatedAt);
-```
-
-## OperatorScopePreferenceSaveRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs#L30).
-
-Sets (or, with a null or empty scope, clears) the signed-in operator&#x27;s default scope.
-
-```csharp
-public sealed record OperatorScopePreferenceSaveRequest(OperatingScopeValuesDto? DefaultScope);
 ```

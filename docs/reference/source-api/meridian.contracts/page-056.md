@@ -466,7 +466,7 @@ public sealed record DeltaOutlierResult(Guid AccountId, string MetricName, decim
 
 Qualified name: <code>Meridian.Contracts.Workstation.DesignateShadowBookRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L40).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L42).
 
 ```csharp
 public sealed record DesignateShadowBookRequestDto(int ExpectedVersion, string Rationale);

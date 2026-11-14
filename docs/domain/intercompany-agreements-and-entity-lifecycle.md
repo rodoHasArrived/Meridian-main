@@ -4,7 +4,7 @@
 
 **Owner:** Accounting and Ledger
 
-**Reviewed:** 2026-11-13
+**Reviewed:** 2026-11-14
 
 The [canonical intercompany agreement registry](intercompany-agreements.md) owns legal terms,
 parties, effective dates, currency, settlement terms, document evidence and legal review.
@@ -121,6 +121,11 @@ lifecycle and retained exposure involving winding-down, dissolved or merged enti
 returns guarantee disclosure and source-version/fingerprint evidence. Amounts come from journals,
 not legal terms or matching-party guesses.
 
+Approaching-expiry warnings follow the native approved projection through effective-date boundaries
+within the horizon. A continuous approved amendment can extend coverage; an intervening gap or
+termination still ends coverage even if a later revision resumes. Superseded raw expiry dates do
+not create separate warnings.
+
 Only the new obligation-monitor HTTP response writes decimal amounts in its embedded balance
 schedule as exact decimal strings. The canonical balance-schedule serializer, its retained
 numeric representation and its existing fingerprint remain unchanged. Transport formatting does
@@ -131,6 +136,10 @@ unavailable rather than a statement that every balance is uncovered. These obser
 optional advisory companion to close readiness. They do not change required contributors,
 blockers, `IsComplete`, `IsReadyToClose`, posting eligibility or period-close authority. The existing
 blocking schedule requirements retain their own behavior.
+
+Entity-owned books require their exact legal entity. Account, Fund, Sleeve and Vehicle books
+require canonical close-subject membership and retained evidence for the entire requested scope.
+Missing or unavailable membership produces an unknown advisory without changing close eligibility.
 
 This extension reuses the existing legal, lifecycle and attribution stores. Optional typed terms
 round-trip in retained PostgreSQL JSONB payloads without replacing tables or migrating approved

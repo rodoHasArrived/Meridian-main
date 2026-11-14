@@ -6,11 +6,21 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OnboardingParallelRunCertificateContentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:111](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L111).
+
+```csharp
+public sealed record OnboardingParallelRunCertificateContentDto(string WorkspaceId, string Name, OnboardingScopeDto Scope, int DataRevision, OnboardingOpeningBalanceReportDto Opening, IReadOnlyList<OnboardingPeriodSummaryDto> Periods, IReadOnlyList<DateOnly> CleanPeriods, IReadOnlyList<OnboardingDifferenceExplanationDto> Explanations, IReadOnlyList<OnboardingReviewDto> ApprovingReviews, string PacketId, string PacketContentHash, string Statement);
+```
+
 ## OnboardingParallelRunCertificateDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingParallelRunCertificateDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:111](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L111).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:123](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L123).
 
 The parallel-run certificate: every period&#x27;s agreement with the incumbent, every difference explained, hashed and frozen. It is the evidence a promotion decision must attach; it is not itself a promotion.
 
@@ -22,7 +32,7 @@ public sealed record OnboardingParallelRunCertificateDto(string CertificateId, D
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:94](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L94).
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:96](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L96).
 
 ```csharp
 public sealed record OnboardingPeriodDifferenceDto(string ComparisonId, DateOnly AsOfDate, OnboardingDifferenceDto Difference);
@@ -32,7 +42,7 @@ public sealed record OnboardingPeriodDifferenceDto(string ComparisonId, DateOnly
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingPeriodSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:91](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L91).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:103](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L103).
 
 Per-period agreement between Meridian and the incumbent for one required date.
 
@@ -44,7 +54,7 @@ public sealed record OnboardingPeriodSummaryDto(DateOnly AsOfDate, string Compar
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingReadinessDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:97](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L97).
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:99](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L99).
 
 ```csharp
 public sealed record OnboardingReadinessDto(string Status, bool IsReady, int UnresolvedDifferenceCount, IReadOnlyList<DateOnly> MissingDates, IReadOnlyList<OnboardingMissingSourceDto> MissingSources, IReadOnlyList<string> Blockers, int ApprovedReviewers, int RequiredReviewers, IReadOnlyList<OnboardingPeriodDifferenceDto> UnresolvedDifferences, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingPeriodSummaryDto>? Periods = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] OnboardingOpeningBalanceReportDto? Opening = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] int ExplainedDifferenceCount = 0);
@@ -54,7 +64,7 @@ public sealed record OnboardingReadinessDto(string Status, bool IsReady, int Unr
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingReadinessPacketDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:119](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L119).
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:121](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L121).
 
 A frozen support artifact, never an accounting-authority transition.
 
@@ -66,7 +76,7 @@ public sealed record OnboardingReadinessPacketDto(string PacketId, DateTimeOffse
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingReviewDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:90](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L90).
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:92](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L92).
 
 ```csharp
 public sealed record OnboardingReviewDto(string ReviewId, int DataRevision, string ReviewerId, string Decision, string Notes, IReadOnlyList<string> EvidenceIds, DateTimeOffset RecordedAtUtc);
@@ -88,7 +98,7 @@ public sealed record OnboardingScopeDto(string TenantId, string CompanyId, strin
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingShadowAuditEntryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:123](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L123).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:135](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L135).
 
 Append-only, hash-chained record of every shadow-mode authority event on a workspace.
 
@@ -100,7 +110,7 @@ public sealed record OnboardingShadowAuditEntryDto(int Sequence, string Action, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingShadowDesignationDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L44).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L46).
 
 ```csharp
 public sealed record OnboardingShadowDesignationDto(string State, Guid LedgerBookId, string DesignatedBy, DateTimeOffset DesignatedAtUtc, string Rationale, string? ResolvedBy = null, DateTimeOffset? ResolvedAtUtc = null, string? PromotionDecisionId = null, string? WithdrawalReason = null);
@@ -110,7 +120,7 @@ public sealed record OnboardingShadowDesignationDto(string State, Guid LedgerBoo
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingShadowStates</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L8).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L10).
 
 Shadow-mode onboarding (W11-SHADOW-001). A shadow book runs in parallel with the incumbent administrator or GL; it is reconciled every period and cannot publish, release, or close as the book of record until an operator promotes it with a parallel-run certificate attached.
 
@@ -122,9 +132,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string Shadow = &quot;Shadow&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L10) |  |
-| <code>public const string Promoted = &quot;Promoted&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L11) |  |
-| <code>public const string Withdrawn = &quot;Withdrawn&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L12) |  |
+| <code>public const string Shadow = &quot;Shadow&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L12) |  |
+| <code>public const string Promoted = &quot;Promoted&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L13) |  |
+| <code>public const string Withdrawn = &quot;Withdrawn&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L14) |  |
 
 ## OnboardingSourceCaptureDto
 
@@ -164,7 +174,7 @@ public sealed record OnboardingSourceSnapshotDto(string SnapshotId, string Sourc
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingWorkspaceDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:123](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L123).
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:125](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L125).
 
 ```csharp
 public sealed record OnboardingWorkspaceDto(string WorkspaceId, string Name, string OwnerId, OnboardingScopeDto Scope, int Version, int DataRevision, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, OnboardingCriteriaDto Criteria, IReadOnlyList<OnboardingCriteriaRevisionDto> CriteriaHistory, IReadOnlyList<OnboardingComparisonDto> Comparisons, IReadOnlyList<OnboardingDifferenceDto> CurrentDifferences, IReadOnlyList<OnboardingDifferenceAssignmentDto> Assignments, IReadOnlyList<OnboardingReviewDto> Reviews, IReadOnlyList<OnboardingReadinessPacketDto> Packets, OnboardingReadinessDto Readiness, string AuthorityPosture, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] OnboardingShadowDesignationDto? ShadowDesignation = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingDifferenceExplanationDto>? Explanations = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingParallelRunCertificateDto>? Certificates = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ShadowBookPromotionDecisionDto? Promotion = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingShadowAuditEntryDto>? ShadowAudit = null);
@@ -568,13 +578,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;EvidenceDocumentDto&gt; DocumentSnapshots { get; init; } = DocumentSnapshots??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1201](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1201) |  |
-
-## OperationsCloseReadinessBlockerDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1359](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1359).
-
-```csharp
-public sealed record OperationsCloseReadinessBlockerDto(string Code, string Category, string Severity, string Message, OperationsGateKeyDto? Gate, string? RouteHint);
-```

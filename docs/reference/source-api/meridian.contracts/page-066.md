@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationCalibrationProfileSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCalibrationProfileSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:978](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L978).
+
+Per-profile rollup for reconciliation tolerance calibration and exception routing.
+
+```csharp
+public sealed record ReconciliationCalibrationProfileSummaryDto(string ToleranceProfileId, string ExceptionRoute, ReconciliationBreakSeverity HighestSeverity, decimal? MaxToleranceBand, int TotalBreakCount, int OpenBreakCount, int InReviewBreakCount, int ResolvedBreakCount, int DismissedBreakCount, int PendingSignoffCount, int SignedOffCount, DateTimeOffset LastUpdatedAt);
+```
+
 ## ReconciliationCalibrationStatusDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCalibrationStatusDto</code>. Kind: `enum`.
@@ -705,22 +717,3 @@ Enum declarations:
 | <code>Management = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1273](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1273) |  |
 | <code>Cash = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1274](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1274) |  |
 | <code>Statutory = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1275](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1275) |  |
-
-## ReportingConsolidationLevelDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingConsolidationLevelDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1279](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1279).
-
-```csharp
-public enum ReportingConsolidationLevelDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Fund = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1281](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1281) |  |
-| <code>Entity = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1282](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1282) |  |
-| <code>Portfolio = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1283](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1283) |  |
-| <code>Investor = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1284](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1284) |  |

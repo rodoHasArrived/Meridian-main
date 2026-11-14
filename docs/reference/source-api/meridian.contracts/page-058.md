@@ -118,7 +118,7 @@ public sealed record ExpectedJournalPreviewLineDto(string AccountName, string Ac
 
 Qualified name: <code>Meridian.Contracts.Workstation.ExplainOnboardingDifferenceRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L73).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:85](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L85).
 
 ```csharp
 public sealed record ExplainOnboardingDifferenceRequestDto(int ExpectedVersion, string ComparisonId, string Classification, string Notes, IReadOnlyList<string> EvidenceIds, DateOnly? ExpectedReversalDate = null);

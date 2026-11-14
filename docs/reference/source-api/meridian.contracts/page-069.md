@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ResearchWhatChangedItem
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResearchWhatChangedItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:106](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L106).
+
+&quot;What changed&quot; entry summarizing recent run or workflow movement.
+
+```csharp
+public sealed record ResearchWhatChangedItem(string ChangeId, string Title, string Summary, string Category, DateTimeOffset Timestamp, string RelativeTime, string? RunId = null);
+```
+
 ## ResolveBreakCase
 
 Qualified name: <code>Meridian.Contracts.Workstation.ResolveBreakCase</code>. Kind: `record`.
@@ -600,13 +612,3 @@ Enum declarations:
 | <code>Low = 2</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L20) |  |
 | <code>Medium = 3</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L21) |  |
 | <code>High = 4</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L22) |  |
-
-## SecurityMasterLotModelDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterLotModelDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:334](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L334).
-
-```csharp
-public sealed record SecurityMasterLotModelDto(string QuantityModel, decimal? LotSize, decimal? ContractMultiplier, bool UsesFaceValue, bool SupportsFactorAdjustedExposure, bool RequiresResolvedSecurityId, string Summary);
-```
