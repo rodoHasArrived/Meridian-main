@@ -34,21 +34,12 @@
 <!-- generated -->
 <g id="node1" class="node">
 <title>generated</title>
-<<<<<<< HEAD
-<polygon fill="#1d4ed8" stroke="#60a5fa" points="202.85,-456.2 0,-456.2 0,-397.8 208.85,-397.8 208.85,-450.2 202.85,-456.2"/>
-<polyline fill="none" stroke="#60a5fa" points="202.85,-456.2 202.85,-450.2"/>
-<polyline fill="none" stroke="#60a5fa" points="208.85,-450.2 202.85,-450.2"/>
-<text xml:space="preserve" text-anchor="middle" x="104.42" y="-439.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Source fingerprint: 71121c13d357</text>
-<text xml:space="preserve" text-anchor="middle" x="104.42" y="-422.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Reporting screens: 10</text>
-<text xml:space="preserve" text-anchor="middle" x="104.42" y="-406" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Sections: 4</text>
-=======
 <polygon fill="#1d4ed8" stroke="#60a5fa" points="199.7,-456.2 0,-456.2 0,-397.8 205.7,-397.8 205.7,-450.2 199.7,-456.2"/>
 <polyline fill="none" stroke="#60a5fa" points="199.7,-456.2 199.7,-450.2"/>
 <polyline fill="none" stroke="#60a5fa" points="205.7,-450.2 199.7,-450.2"/>
 <text xml:space="preserve" text-anchor="middle" x="102.85" y="-439.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Source fingerprint: 4be08d82ceee</text>
 <text xml:space="preserve" text-anchor="middle" x="102.85" y="-422.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Reporting screens: 10</text>
 <text xml:space="preserve" text-anchor="middle" x="102.85" y="-406" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Sections: 4</text>
->>>>>>> origin/main
 </g>
 <!-- workspace -->
 <g id="node2" class="node">

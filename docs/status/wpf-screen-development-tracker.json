@@ -7,11 +7,7 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-<<<<<<< HEAD
-  "sourceFingerprint": "b416ed87624e",
-=======
   "sourceFingerprint": "937654ec7105",
->>>>>>> origin/main
   "baselineDate": "2026-06-17",
   "summary": {
     "screenCount": 98,
@@ -2620,10 +2616,8 @@
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs",
-        "tests/Meridian.Wpf.Tests/Services/WorkstationScopeOptionsApiClientTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/OptionsViewModelConcurrencyTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/QuantScriptViewModelTests.cs",
-        "tests/Meridian.Wpf.Tests/ViewModels/WorkstationScopeOptionsViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/QuantScriptPageTests.cs"
       ],
       "status": "evidence-current",
@@ -2638,7 +2632,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +6 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +4 more."
         }
       ],
       "openTaskCount": 0
