@@ -565,11 +565,11 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 </Select>
               </label>
               <Button type="button" variant="ghost" onClick={controls.clearQueueFilters}>Clear filters</Button>
-              <Button type="button" variant="ghost" aria-keyshortcuts="?" onClick={() => setShortcutsOpen(true)}>
-                Keyboard shortcuts <Kbd keys="?" />
+              <Button type="button" size="icon" variant="ghost" aria-label="Keyboard shortcuts" title="Keyboard shortcuts" aria-keyshortcuts="?" onClick={() => setShortcutsOpen(true)}>
+                <Kbd keys="?" />
               </Button>
             </div>
-            <ReconciliationBulkTriageBar triage={triage} visibleCount={visibleRows.length} />
+            {triage.selectedIds.length > 0 || triage.draft || triage.message ? <ReconciliationBulkTriageBar triage={triage} visibleCount={visibleRows.length} /> : null}
               <Button
                 ref={toggleRef}
                 type="button"
@@ -584,6 +584,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
             {selectedOutsideFilter ? <p role="status" className="text-sm text-muted-foreground">The selected break is outside these filters. Its evidence remains in the inspector.</p> : null}
             <div ref={queueRef} className="reconciliation-queue-scroll" onScroll={rememberQueueScroll}>
               <TableWorkbench
+                compactToolbar
                 workbenchId="accounting-reconciliation-breaks"
                 sourceKey={reconciliation.sourceRows?.map((item) => `${item.tenantId}:${item.companyId}:${item.fundAccountId}:${item.runId}`).filter((item, index, values) => values.indexOf(item) === index).sort().join("|") ?? "unverified"}
                 sourceDescription="Authorized reconciliation casework queue for the selected scope. Variance units and currency are retained only where supplied by the casework source."
@@ -622,6 +623,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 caption={reconciliation.tableCaption}
               />
             </div>
+            {triage.selectedIds.length === 0 && !triage.draft && !triage.message ? <ReconciliationBulkTriageBar triage={triage} visibleCount={visibleRows.length} /> : null}
             <div className="space-y-0.5">
               <p role="status" className="text-xs text-muted-foreground">{visibleRows.length} of {reconciliation.rows.length} loaded breaks</p>
               {sinceLastVisitLine ? <p className="text-xs text-muted-foreground">{sinceLastVisitLine}</p> : null}

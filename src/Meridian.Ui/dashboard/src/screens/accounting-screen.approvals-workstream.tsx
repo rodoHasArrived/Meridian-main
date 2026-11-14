@@ -178,7 +178,7 @@ export function AccountingApprovalsWorkstream() {
       </div>
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_26rem]">
         <Card className="panel-surface">
-          <CardHeader className="px-3 py-2">
+          <CardHeader className="flex flex-wrap items-center gap-2 px-3 py-1">
             <CardTitle className="flex items-center gap-2 text-base">
               <UserCheck className="h-4 w-4 text-primary" aria-hidden="true" />
               Approval queue
@@ -187,12 +187,12 @@ export function AccountingApprovalsWorkstream() {
               Pending, blocked, approved, and rejected close workflows ready for sign-off review.
             </SectionDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-xs text-muted-foreground">With a queue row focused: j/k or arrow keys move; Enter or r reviews; a opens reviewer assignment when available. Escape returns from detail to the selected row.</p>
+          <CardContent className="space-y-2 px-3 py-1">
             <ApprovalStatusMessage loading={loading} error={error} empty={!loading && workflows.length === 0} />
             {workflows.length > 0 ? (
               <div className="overflow-hidden rounded-md border border-border/70" role="region" aria-label="Accounting approval queue">
                 <TableWorkbench<OperationsContinuityWorkflowSummary>
+                  compactToolbar
                   workbenchId="accounting-approval-workflows" sourceKey={new URLSearchParams(search).get("fundAccountId") ?? "authorized-workflows"}
                   sourceDescription="All authorized operations-continuity workflow summaries in the current approval queue."
                   completePopulation={!loading && !error} rows={workflows} getRowId={(workflow) => workflow.workflowId}
@@ -211,6 +211,9 @@ export function AccountingApprovalsWorkstream() {
                 />
               </div>
             ) : null}
+            <TechnicalDetails label="Approval queue keyboard shortcuts">
+              <p className="text-xs text-muted-foreground">With a queue row focused: j/k or arrow keys move; Enter or r reviews; a opens reviewer assignment when available. Escape returns from detail to the selected row.</p>
+            </TechnicalDetails>
           </CardContent>
         </Card>
 

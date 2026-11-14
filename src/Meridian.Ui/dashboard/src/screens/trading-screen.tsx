@@ -612,7 +612,6 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
   const tradingConfidence = (
       <OperationalTrustSummary
-        disclosure
         label="Trading data confidence"
         source={{
           value: hasRecoveryProjection ? reconciliation?.brokerDisplayName ?? scopedRecovery?.providerId ?? "Broker unavailable" : `${data.brokerage.provider} · ${data.brokerage.environment}`,
@@ -648,7 +647,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   );
 
   return (
-    <div className={showOverview ? "space-y-3" : "space-y-2"}>
+    <div className={showOverview ? "space-y-3" : showOrders ? "space-y-1.5" : "space-y-2"}>
       {/* The route answers "where am I?" first; workspace-wide metrics follow. Sub-route
           navigation is the sidebar's job alone (no in-page tab strip). */}
       <section
@@ -878,9 +877,6 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       ) : null}
 
       {showOrders ? (
-        <ExecutionJournalPanel accountId={fundAccountId} />
-      ) : null}
-      {showOrders ? (
       <section id="trading-actions" className="workspace-section-band" aria-label="Order blotter and selected detail">
       <WorkspaceWorkbenchShell label="Trading orders workbench" switchInspector inspectorRole="region" inspector={(
 <div className="min-w-0">
@@ -963,7 +959,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               riskWarnings={orderTicket.riskWarnings}
             />
           )}
-          <CardContent className="space-y-3 p-3">
+          <CardContent className="space-y-3 px-3 py-2">
             <TableWorkbench
               workbenchId="trading-orders" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
               sourceDescription="All open orders in the current authorized workspace snapshot; filters do not alter the scope of Cancel all."
@@ -1027,6 +1023,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
         </WorkspaceWorkbenchShell>
       </section>
+      ) : null}
+
+      {showOrders ? (
+        <ExecutionJournalPanel accountId={fundAccountId} />
       ) : null}
 
       {showOverview ? (

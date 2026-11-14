@@ -616,8 +616,8 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
         <CardHeader className="sr-only">
           <CardTitle>Ledger Explorer</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-3 px-3 py-2 lg:grid-cols-2">
-          <FormRow label="Ledger book" labelFor="ledger-book-select">
+        <CardContent className="grid gap-3 px-3 py-1 lg:grid-cols-2">
+          <FormRow horizontal label="Ledger book" labelFor="ledger-book-select">
             <Select
               id="ledger-book-select"
               value={postedLedger.view.bookOptions.find((option) => option.isSelected)?.id ?? ""}
@@ -632,6 +632,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
               the selector looking entirely normal. Without this the operator had no sign that
               discovery failed, or that the list may be missing periods closed since. */}
           <FormRow
+            horizontal
             label="Ledger period"
             labelFor="ledger-period-select"
             error={postedLedger.view.periodSelector.errorText}
@@ -649,7 +650,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
             </Select>
           </FormRow>
         </CardContent>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 pb-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 pb-1 text-xs text-muted-foreground">
             <h3 className="sr-only">Ledger search results</h3>
             <p>
               {loading
@@ -666,11 +667,12 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
         <CardContent className="px-3 pb-3 pt-0">
           <div className="overflow-x-auto rounded-md border border-border/70">
             <TableWorkbench<(typeof ledgerRows)[number]>
+              compactToolbar
               workbenchId="accounting-ledger-search" sourceKey={`${selectedBookId}:${postedLedger.selectedPeriodId ?? "unavailable"}`}
               exportContext={{ "Ledger book": selectedBookId, "Ledger period": postedLedger.selectedPeriodId ?? "Unavailable", Basis: postedLedger.selectedBook?.accountingBasis ?? "Unavailable", Currency: baseCurrency ?? "Unavailable" }}
               sourceDescription={`Posted journal · ${postedLedger.view.selectedBookLabel ?? "Book unavailable"} · ${postedLedger.selectedPeriodLabel ?? "Period unavailable"} · ${postedLedger.selectedBook?.accountingBasis ?? "Basis unavailable"} · ${baseCurrency ?? "Currency unavailable"}. Journal summaries and their posting lines are separate rows; do not sum both.`}
               completePopulation={postedLedger.periodsSettled && !loading && !postedLedger.journalErrorText}
-              filters={<FormRow label={<><span aria-hidden="true">Search</span><span className="sr-only">Search by account, amount, journal ID, source, security, entity</span></>} labelFor="ledger-search">
+              filters={<label className="flex items-center gap-2 text-xs" htmlFor="ledger-search"><span>Search</span>
             <Input
               id="ledger-search"
               aria-label="Search by account, amount, journal ID, source, security, entity"
@@ -679,7 +681,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
               onChange={(event) => setSearchText(event.target.value)}
               placeholder="Cash, $120,500, AAPL, cash sweep"
             />
-          </FormRow>}
+          </label>}
               filterState={{ search: searchText }}
               sort={ledgerSort}
               onToggleSort={(columnId) => {

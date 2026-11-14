@@ -762,11 +762,11 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   return (
     <div className="space-y-3">
       {/* Route heading first ("where am I?"); workspace-wide metrics follow. */}
-      <AccountingWorkbenchContext
+      {workstream !== "reconciliation" ? <AccountingWorkbenchContext
         workspace={workspace}
         workstream={workstream}
         taskMode={taskMode}
-      />
+      /> : null}
 
       {taskMode.id === "close-cockpit" ? <StatStrip
         metrics={applyOpenBreakDelta(

@@ -194,7 +194,7 @@ export function AccountingSystemReconciliationPanel({
 
   return (
     <Card id="external-gl-reconciliation" className="panel-surface scroll-mt-6" role="region" aria-label="External GL reconciliation">
-      <CardHeader className="px-3 py-2">
+      <CardHeader className="px-3 py-1">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <CardTitle className="flex items-center gap-2 text-base">

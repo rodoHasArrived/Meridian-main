@@ -254,8 +254,8 @@ export function FinancialRecordExplorerShell({
 
   return (
     <section className={cn("workspace-section-band", compact && "!gap-2", className)} aria-labelledby={titleId}>
-      <div className="workspace-section-subheader">
-        <div className="min-w-0">
+      <div className={cn("workspace-section-subheader", compact && "!flex-nowrap !gap-2 !py-2")}>
+        <div className={cn("min-w-0", compact && "flex-1")}>
           {!compact ? <p className={eyebrowClassName(explorerLabel)}>{explorerLabel}</p> : null}
           <h2 id={titleId} className="workspace-section-title">{headerTitle}</h2>
           {compact ? <SectionDescription descriptionKey={`explorer:${titleId}`} label={`About ${headerTitle}`}>{headerDescription}</SectionDescription> : <p className="workspace-section-summary">{headerDescription}</p>}
@@ -263,8 +263,8 @@ export function FinancialRecordExplorerShell({
             <p className="mt-2 text-xs text-muted-foreground">{dtoMode.sourceState}</p>
           ) : null}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={dtoMode?.isBlocked ? "danger" : "default"} dot>{selectedDtoSavedView?.label ?? activeSavedView?.label ?? "Unsaved view"}</Badge>
+        <div className={cn("flex flex-wrap items-center gap-2", compact && "shrink-0")}>
+          {!compact ? <Badge variant={dtoMode?.isBlocked ? "danger" : "default"} dot>{selectedDtoSavedView?.label ?? activeSavedView?.label ?? "Unsaved view"}</Badge> : null}
           {dtoMode ? (
             <Button asChild size="sm" variant="outline">
               <a href={shareHref} aria-label={`Share state — ${headerTitle} evidence state: ${shareStateSummary}`}>
@@ -314,7 +314,7 @@ export function FinancialRecordExplorerShell({
             <SavedViewSelector compact views={normalizedViews} selectedViewId={selectedViewId} onSelect={handleSelectSavedView} />
             <AppliedFilterStrip compact filters={appliedFilters.map((filter) => ({ filterId: filter.id, label: filter.label, value: filter.value, operator: "equals", tone: "Default" as FinancialRecordExplorerTone }))} />
           </> : null}
-          <TechnicalDetails label="Explorer details" className="ml-auto">
+          <TechnicalDetails label="Explorer details" className={cn("ml-auto", compact && "[&>summary]:min-h-8 [&>summary]:py-1")}>
             {dtoMode ? <p className="mb-2 text-xs text-muted-foreground">{dtoMode.sourceState}</p> : null}
             <ProofSummary title={headerTitle} actions={actions} explorer={dtoMode} />
           </TechnicalDetails>
@@ -332,7 +332,7 @@ export function FinancialRecordExplorerShell({
       {dtoMode ? (
         <div className={compact ? "space-y-2" : "mt-4 space-y-4"}>
           <div className={compact ? "space-y-2" : "space-y-3"}>
-            <div className="flex flex-wrap items-center gap-2 rounded-md border border-border/70 bg-background/60 px-3 py-2">
+            <div className={cn("flex flex-wrap items-center gap-2 rounded-md border border-border/70 bg-background/60 px-3", compact ? "py-1" : "py-2")}>
               {compact ? <SavedViewSelector compact views={normalizedViews} selectedViewId={selectedViewId} onSelect={handleSelectSavedView} /> : null}
               <Search className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
               <input

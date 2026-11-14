@@ -533,6 +533,10 @@ visits. An information disclosure then restores the copy with Enter/Space; Escap
 returns focus. Storage failures leave help usable. These preferences do not change financial data
 or authorization and do not synchronize between browsers.
 
+`TableWorkbench` can opt in to `compactToolbar` on task queues. Search, active filters and match
+counts stay visible; Table options discloses Columns, Density, Export and saved-view controls.
+Escape closes the options and returns focus. Source errors and command outcomes remain visible.
+
 The notification bell counts unread events, separately from unresolved financial work.
 Its operator inbox belongs to the current account scope: changing accounts immediately
 withholds old rows and cancels obsolete reads. Polls do not overlap, and reads time out

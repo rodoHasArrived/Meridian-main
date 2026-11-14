@@ -55,12 +55,15 @@ describe("FinancialRecordExplorerShell", () => {
   it("keeps compact scope, warnings and filters visible with source and proof available on demand", async () => {
     const user = userEvent.setup();
     const dto = createExplorerDto();
-    const { container } = renderExplorer(undefined, dto, undefined, true);
+    const { container } = renderExplorer(vi.fn(), dto, undefined, true);
 
     expect(screen.getByLabelText("Explorer scope")).toBeVisible();
     expect(screen.getByLabelText("Explorer summary")).toBeVisible();
     expect(screen.getByLabelText("Applied explorer filters")).toBeVisible();
     expect(screen.getByLabelText("Saved explorer views")).toBeVisible();
+    expect(screen.getByRole("link", { name: "Inspect record — selected record" })).toBeVisible();
+    expect(screen.getByRole("textbox", { name: "Saved view name" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Save view" })).toBeDisabled();
     expect(screen.getByText(dto.sourceState)).not.toBeVisible();
     await user.click(screen.getByText("Explorer details"));
     expect(screen.getByText(dto.sourceState)).toBeVisible();
