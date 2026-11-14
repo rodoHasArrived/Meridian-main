@@ -1,4 +1,4 @@
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp } from "@/lib/format";
 import type { ExecutionAuditEntry } from "@/types";
 
 export type ExecutionEvidenceTone = "success" | "warning" | "danger";
@@ -38,7 +38,7 @@ function formatExecutionAuditMetadata(entry: ExecutionAuditEntry): string {
     return "Recorded time unavailable";
   }
 
-  return `Recorded ${formatUtcTimestamp(occurredAt)}`;
+  return `Recorded ${formatTimestamp(occurredAt)}`;
 }
 
 function formatExecutionAuditTechnicalMetadata(entry: ExecutionAuditEntry): string | null {

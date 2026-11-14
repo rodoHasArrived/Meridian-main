@@ -1,4 +1,4 @@
-import { formatNumber as formatNumberAmount, formatRatioAsPercent as formatRatioAsPercentAmount, pluralizeCount, formatUtcTimestamp } from "@/lib/format";
+import { formatNumber as formatNumberAmount, formatRatioAsPercent as formatRatioAsPercentAmount, pluralizeCount, formatTimestamp } from "@/lib/format";
 import type { TradingWorkspaceResponse } from "@/types";
 import type {
   PortfolioDetailField,
@@ -84,6 +84,6 @@ export function formatDateTime(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? "—"
-    : formatUtcTimestamp(date);
+    : formatTimestamp(date);
 }
 

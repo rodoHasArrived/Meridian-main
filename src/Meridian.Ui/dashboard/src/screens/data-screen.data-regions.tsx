@@ -14,7 +14,7 @@ import {
 } from "@/screens/data-screen.cell-actions";
 import type { CoverageGapsViewModel } from "@/screens/data-screen.coverage-gaps.view-model";
 import type { DataQualityPanelViewModel } from "@/screens/data-screen.data-quality.view-model";
-import { formatCount, formatNumber, formatUtcTimestamp } from "@/lib/format";
+import { formatCount, formatNumber, formatTimestamp } from "@/lib/format";
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { statusBadgeVariant, statusPanelClass, statusTextClass } from "@/design-system/status-styles";
 
@@ -274,7 +274,7 @@ export function DataQualityRegion({
                                     <li key={provider.provider} className="flex justify-between gap-3">
                                       <span className="font-mono">{provider.provider}</span>
                                       <span className="text-muted-foreground">
-                                        {provider.status} · {provider.lastEventAt ? formatUtcTimestamp(new Date(provider.lastEventAt)) : "unmeasured"}
+                                        {provider.status} · {provider.lastEventAt ? formatTimestamp(new Date(provider.lastEventAt)) : "unmeasured"}
                                       </span>
                                     </li>
                                   ))}
@@ -318,7 +318,7 @@ export function DataQualityRegion({
                                           {" · "}{gap.provider ?? "Default provider"}
                                         </span>
                                         <span className="min-w-0 flex-1 text-muted-foreground">
-                                          {formatUtcTimestamp(new Date(gap.from))} – {formatUtcTimestamp(new Date(gap.to))} ·{" "}
+                                          {formatTimestamp(new Date(gap.from))} – {formatTimestamp(new Date(gap.to))} ·{" "}
                                           {formatCount(gap.estimatedMissingEvents)} estimated missing
                                         </span>
                                         <Button

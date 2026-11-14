@@ -1,4 +1,4 @@
-import { formatNumber, pluralizeCount, formatUtcTimestamp } from "@/lib/format";
+import { formatNumber, pluralizeCount, formatTimestamp } from "@/lib/format";
 
 export function formatCount(count: number, singular: string): string {
   return pluralizeCount(count, singular);
@@ -31,7 +31,7 @@ export function formatDateTimeLabel(value: string | null | undefined): string {
     return value;
   }
 
-  return formatUtcTimestamp(date);
+  return formatTimestamp(date);
 }
 
 export function formatDateOnly(value: string): string {

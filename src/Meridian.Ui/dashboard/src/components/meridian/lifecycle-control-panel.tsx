@@ -1,3 +1,4 @@
+import { formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
 import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Activity, Power, RefreshCcw, RotateCcw } from "lucide-react";
@@ -288,7 +289,7 @@ function formatUptime(seconds?: number) {
 
 function formatTimestamp(value: string) {
   const timestamp = new Date(value);
-  return Number.isNaN(timestamp.valueOf()) ? value : timestamp.toLocaleString();
+  return Number.isNaN(timestamp.valueOf()) ? value : formatDisplayTimestamp(timestamp);
 }
 
 function shortIdentifier(value?: string | null) {

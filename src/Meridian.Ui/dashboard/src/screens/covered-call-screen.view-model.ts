@@ -22,7 +22,7 @@ import {
   formatExitReason,
   formatRatioAsPercent,
   formatPrice,
-  formatUtcDateTime
+  formatCoveredCallDateTime
 } from "@/screens/covered-call-screen.formatters";
 
 export type CoveredCallStage = "configure" | "run" | "results";
@@ -1443,7 +1443,7 @@ function clampIndex(index: number, length: number): number {
 
 export function buildCoveredCallHistoryRows(history: CoveredCallRunSummary[]): CoveredCallHistoryRowViewModel[] {
   return history.map((row) => {
-    const startedAtLabel = formatUtcDateTime(row.startedAt);
+    const startedAtLabel = formatCoveredCallDateTime(row.startedAt);
     const rangeLabel = `${row.from} to ${row.to}`;
     const statusBadgeVariant = statusBadgeVariantForHistory(row.status);
     const cagrLabel = row.cagr === null ? "—" : formatRatioAsPercent(row.cagr);

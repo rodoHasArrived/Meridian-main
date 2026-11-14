@@ -153,11 +153,49 @@ items, which is a follow-up.
   the originating workflow). Today's own "Scope …" line was left as is: it already reads
   "All authorized scopes".
 
+**P3 one money formatter (landed 2026-11-14):** `formatMoney` in `@/lib/format` is the only
+money formatter.
+- It accepts a number or a decimal string. Both are read by the exact-decimal core in
+  `lib/exact-decimal.ts`, which is the only place that rounds (half away from zero), signs and
+  groups money. `parseFloat` is not used.
+- New options: `parens`, `zeroDash` and `convention`. The `screen` convention uses Intl symbols
+  and "-". The `statement` convention uses the statement symbol table and U+2212 "−".
+- `components/accounting/money.ts` is now a thin statement-convention wrapper. It re-exports
+  `parseExactDecimal`, `toNumber`, `sumAmounts` and `currencySymbol`.
+- Output change: on screens, an amount that rounds to zero no longer carries a sign. "-$0.00"
+  and "+$0.00" now read "$0.00", which matches what the accounting helpers already did.
+
+**P3 one date format with a time-zone preference (landed 2026-11-14):**
+- `formatTimestamp` renders "Jun 30, 2026, 18:05 UTC" in the operator's display time zone. It
+  uses a 24-hour clock and the zone's short label, e.g. "14:05 EDT".
+- The zone is UTC until the operator picks an IANA zone under Settings > Preferences >
+  Appearance. The choice is validated with Intl and persisted per browser.
+- `formatRelativeTime` gives "5m ago" or "in 2h". `<TimeText>` shows one form and puts the
+  other in its hover title.
+- `formatUtcTimestamp` stays UTC for labels defined on the UTC clock. Its operator-facing
+  callers (about 30 files) now call `formatTimestamp`, which gives identical output at the UTC
+  default.
+- Screen-local formatters were migrated:
+  - Backfill and deadline times on Data. This fixes a doubled "UTC UTC".
+  - Provider last-verified times. These change from 12-hour to 24-hour and gain the year.
+  - Approval discussion dates.
+  - Host-locale times in lifecycle receipts, historical chart bars and price-alert notifications.
+- Tests cover UTC, a New York spring-forward and fall-back transition, and the relative and
+  absolute forms.
+
 **Remaining in Phase 1:**
-- Merge `lib/format.ts` `formatMoney` and the accounting one behind one API.
-- One date format with a time-zone preference.
-- P4: entity and fund scope dimensions (needs a shared scope seam), and inline account pickers on
-  other single-account screens as they are identified.
+- P4: entity and fund scope dimensions (needs a shared scope seam), a period picker, and inline
+  account pickers on other single-account screens as they are identified.
+- Time formatters kept on purpose, because their precision differs or a test pins their
+  format:
+  - Live-quote times with milliseconds.
+  - Price-alert and journal tax-result times with seconds.
+  - The brokerage-recovery "2026-10-05 15:30:02 UTC" label.
+  - Reporting schedule times, which stay 12-hour ("May 17, 8:15 PM UTC") because the Reporting
+    tests pin that format. Moving them to `formatTimestamp` is a follow-up that needs those
+    tests updated.
+  - The close-checklist "Recorded at UTC" column.
+  - Today queue and triage-queue age labels, which can now move to `formatRelativeTime`.
 
 Acceptance criteria:
 - Only the 5 canonical severities are exported. `shared-tone-mappings.ts`, the

@@ -733,14 +733,26 @@ not been recorded.
   the only status-to-look mapping: `toSeverity` reads any status, tone or badge variant onto the
   five severities, and `statusBadgeVariant`, `statusPanelClass`, `statusTextClass` and
   `statusMetricTone` give each severity one style. Screens do not keep local tone maps.
-- **Formatting.** `@/lib/format` is the only module that calls Intl. It provides `formatCount`,
-  `formatMoney` (`accounting` puts negatives in parentheses at the currency's minor units,
-  `trading` uses a minus sign at instrument precision, `summary` shows whole units),
-  `formatQuantity`, and `formatUtcTimestamp`/`formatUtcDate`/`formatUtcMonthYear`, which always
-  include the year. Screens show times in UTC, not on the operator's local clock;
-  `formatDateTime` covers any other date layout through a pinned-locale `Intl.DateTimeFormat`.
-  ESLint blocks `Intl.*` and `toLocale*String` in every non-test file under `src/screens/`, and
-  the `directIntlFormatting` baseline is empty.
+- **Formatting.** `@/lib/format` is the formatting module screens call instead of Intl. It
+  provides `formatCount`, `formatMoney` (`accounting` puts negatives in parentheses at the
+  currency's minor units, `trading` uses a minus sign at instrument precision, `summary` shows
+  whole units), `formatQuantity`, and the timestamp helpers below. `formatDateTime` covers any
+  other date layout through a pinned-locale `Intl.DateTimeFormat`. ESLint blocks `Intl.*` and
+  `toLocale*String` in every non-test file under `src/screens/`, and the `directIntlFormatting`
+  baseline is empty.
+- **Timestamps.** One format for an instant: `formatTimestamp(value)` renders
+  `Jun 30, 2026, 18:05 UTC` (month, day, year, 24-hour clock, zone label) in the operator's
+  display time zone. The zone is UTC until the operator picks another IANA zone under Settings >
+  Preferences > Appearance (`getDisplayTimeZone`/`setDisplayTimeZone`, persisted per browser in
+  localStorage; an unknown or blocked value falls back to UTC). In a picked zone the label is the
+  runtime's short name, e.g. `Jun 30, 2026, 14:05 EDT` or `Jul 1, 2026, 03:05 GMT+9`.
+  - `formatRelativeTime(value, now)` gives `30s ago`, `5m ago`, `3d ago` or `in 2h`.
+  - `<TimeText value display="absolute|relative">` from `@/components/ui/time-text` renders one
+    form inside `<time dateTime>` with the other in `title`, and re-renders when the zone changes.
+    Plain-string call sites pick up a new zone on their next render.
+  - `formatUtcTimestamp`, `formatUtcDate` and `formatUtcMonthYear` stay fixed to UTC for labels
+    defined on the UTC clock (a column headed "UTC", a UTC cut-off). An operator-facing time
+    uses `formatTimestamp`.
 - **Calendar dates.** A trade, ex-, due, effective, or period date is carried as a `YYYY-MM-DD`
   string through `@/lib/local-date` (`LocalDate`, the native port of the Design System 4.3 carrier)
   and rendered with `LocalDateText` from `@/components/ui/local-date-text`, which emits
@@ -763,9 +775,17 @@ not been recorded.
   - *Decimals*: currency minor units for money, instrument precision for prices and
     quantities (`formatMoney`'s `decimals`, `formatQuantity`), whole units for a headline
     figure. Figures render in tabular numerals.
-  - *Exact amounts*: the accounting helpers in `@/components/accounting/money` read amounts as
-    exact decimals (`parseExactDecimal`); `formatMoney` formats a decimal string from its digits
-    and `sumAmounts` sums exactly, so a server amount is never rounded through a float.
+  - *Exact amounts*: `formatMoney` accepts a number or a decimal string. Both go through the
+    exact-decimal core in `@/lib/exact-decimal` (`parseExactDecimal`, `toNumber`, `sumAmounts`),
+    which rounds half away from zero and groups digits, so a server amount is never rounded
+    through a float: `formatMoney("12345678901234.565")` is `$12,345,678,901,234.57`. An amount
+    that rounds to zero is shown unsigned.
+  - *One money formatter, two conventions*: `convention: "screen"` (the default) uses Intl
+    symbols (`$`, `€`, `CA$`) and `-`. `convention: "statement"` uses the statement symbol
+    table (`currencySymbol`) and U+2212 `−`, for ledgers, statements and journal grids. `parens`,
+    `zeroDash` and `signed` work under either convention. `@/components/accounting/money` is a
+    thin statement-convention wrapper: two decimals, no symbol unless a currency is given, and
+    unparseable text passed through as is.
   - *Enforcement*: two ratchets keep screens on `@/lib/format`, and both baselines are empty,
     so a new occurrence fails the ratchet test. `handRolledNumberFormatting` counts `.toFixed(`
     in screens, which skips separators and the sign convention: a displayed figure with fixed

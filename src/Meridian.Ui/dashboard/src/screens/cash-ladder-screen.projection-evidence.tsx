@@ -6,7 +6,7 @@ import { LocalDateText } from "@/components/ui/local-date-text";
 import { getAssetOperations } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { workstationRouteWithQuery } from "@/lib/workspace";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp } from "@/lib/format";
 import type { CashLadderDrillRow } from "@/screens/cash-ladder-screen.view-model";
 import type { AssetCashFlowProjectionRun, AssetTermsVersion } from "@/types";
 
@@ -69,7 +69,7 @@ export function CashLadderProjectionEvidence({ row, onClose }: { row: CashLadder
             <div><dt className="font-semibold">Run status</dt><dd>{state.evidence.run.status}</dd></div>
             <div><dt className="font-semibold">Engine</dt><dd>{state.evidence.run.engineVersion}</dd></div>
             <div><dt className="font-semibold">Projection as of</dt><dd><LocalDateText value={state.evidence.run.projectionAsOf} /></dd></div>
-            <div><dt className="font-semibold">Generated</dt><dd>{formatUtcTimestamp(new Date(state.evidence.run.generatedAt))}</dd></div>
+            <div><dt className="font-semibold">Generated</dt><dd>{formatTimestamp(new Date(state.evidence.run.generatedAt))}</dd></div>
             <div><dt className="font-semibold">Run source</dt><dd>{state.evidence.run.sourceDomain} · {state.evidence.run.sourceEntityId}</dd></div>
           </dl>
           {state.evidence.run.blocker ? <StatusBanner tone="warning" role="alert" title={state.evidence.run.blocker.code} detail={state.evidence.run.blocker.reason} /> : null}
@@ -77,7 +77,7 @@ export function CashLadderProjectionEvidence({ row, onClose }: { row: CashLadder
             <div className="space-y-1 text-xs">
               <h5 className="font-semibold">Matched terms evidence</h5>
               <p>{state.evidence.terms.summary}</p>
-              <p>Version {state.evidence.terms.versionNumber} · effective <LocalDateText value={state.evidence.terms.effectiveDate} /> · recorded {formatUtcTimestamp(new Date(state.evidence.terms.recordedAt))}</p>
+              <p>Version {state.evidence.terms.versionNumber} · effective <LocalDateText value={state.evidence.terms.effectiveDate} /> · recorded {formatTimestamp(new Date(state.evidence.terms.recordedAt))}</p>
               <p className="break-all">{state.evidence.terms.sourceDomain} · {state.evidence.terms.sourceEntityId}</p>
             </div>
           ) : <StatusBanner tone="warning" title="Exact terms evidence unavailable" detail="The source did not return terms matching this contribution's version and hash. Current terms are not a substitute." />}

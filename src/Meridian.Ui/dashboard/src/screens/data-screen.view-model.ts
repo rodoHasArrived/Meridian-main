@@ -12,7 +12,7 @@ import {
   formatLastGoodProviderResponse,
   formatProviderReasonLabel,
   formatProviderRoutingCapability,
-  formatProviderUtcMinute,
+  formatProviderMinute,
   joinProviderDetailSentences,
   normalizeProviderToken,
   normalizeProviderTrustScore,
@@ -85,7 +85,7 @@ import type {
   ProviderSetupResult
 } from "@/types";
 
-import { formatCount, formatDecimal, formatNumber, formatPercent } from "@/lib/format";
+import { formatCount, formatDecimal, formatNumber, formatPercent, formatTimestamp } from "@/lib/format";
 export {
   DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
   buildDataLoadingState,
@@ -2957,9 +2957,9 @@ function buildProviderOverviewFields(
     },
     { id: "credential-state", label: "Credential state", value: row.credentialText },
     { id: "verification-state", label: "Verification", value: row.verificationText },
-    { id: "last-verified", label: "Last verified", value: formatProviderUtcMinute(connection?.lastVerifiedAt) },
+    { id: "last-verified", label: "Last verified", value: formatProviderMinute(connection?.lastVerifiedAt) },
     { id: "last-response", label: "Last successful call", value: row.lastSuccessfulText },
-    { id: "last-failure", label: "Last failure", value: formatProviderUtcMinute(connection?.lastFailureAt) },
+    { id: "last-failure", label: "Last failure", value: formatProviderMinute(connection?.lastFailureAt) },
     { id: "last-error", label: "Last error", value: connection?.lastError ?? "None reported" },
     {
       id: "fallback",
@@ -3042,7 +3042,7 @@ function buildProviderDiagnostics(record: DataOperationsProviderCenterRecord): D
       statusLabel: providerReadinessStatusLabel(item.status),
       detail: [
         item.detail,
-        item.observedAt ? `Observed ${formatProviderUtcMinute(item.observedAt)}.` : null
+        item.observedAt ? `Observed ${formatProviderMinute(item.observedAt)}.` : null
       ].filter(Boolean).join(" ")
     }));
   }
@@ -3930,7 +3930,7 @@ export function buildBackfillRemediationQueueState(
         tier: sla.tier === "SameBusinessDay" ? "Same business day" : "Standard",
         tierSort: sla.tier === "SameBusinessDay" ? 0 : 1,
         status: formatBackfillRemediationStatus(sla.status),
-        deadline: Number.isNaN(dueAt.getTime()) ? "Deadline unavailable" : `${formatUtcMinute(dueAt)} UTC`,
+        deadline: Number.isNaN(dueAt.getTime()) ? "Deadline unavailable" : formatTimestamp(dueAt),
         deadlineSort,
         workflow: formatBackfillValue(sla.downstreamWorkflow, "Unassigned"),
         owner: sla.requiresOwnerAssignment ? "Assignment required" : "Not required",
@@ -3983,7 +3983,7 @@ function clampBackfillProgress(value: number): number {
 function formatBackfillProgressTimestamp(value: string | null | undefined): string {
   if (!value) return "Time unavailable";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? "Time unavailable" : `${formatUtcMinute(parsed)} UTC`;
+  return Number.isNaN(parsed.getTime()) ? "Time unavailable" : formatTimestamp(parsed);
 }
 
 function waitForBackfillProgressPoll(delayMs: number, signal: AbortSignal): Promise<void> {
@@ -4129,19 +4129,9 @@ function formatBackfillTiming(startedUtc: string, completedUtc: string): string 
   }
 
   const elapsedSeconds = Math.max(0, Math.round((completed.getTime() - started.getTime()) / 1000));
-  return `${formatUtcMinute(started)} · ${elapsedSeconds}s elapsed`;
+  return `${formatTimestamp(started)} · ${elapsedSeconds}s elapsed`;
 }
 
-function formatUtcMinute(date: Date): string {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const month = months[date.getUTCMonth()];
-  const day = String(date.getUTCDate()).padStart(2, "0");
-  const year = date.getUTCFullYear();
-  const hour = String(date.getUTCHours()).padStart(2, "0");
-  const minute = String(date.getUTCMinutes()).padStart(2, "0");
-
-  return `${month} ${day}, ${year} ${hour}:${minute} UTC`;
-}
 
 function dataUploadField(
   name: string,

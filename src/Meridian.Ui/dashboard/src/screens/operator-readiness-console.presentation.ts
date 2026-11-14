@@ -1,4 +1,4 @@
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp } from "@/lib/format";
 
 export function levelFromReadiness(status: string): "ready" | "review" | "blocked" {
   if (status === "Ready") {
@@ -28,7 +28,7 @@ export function levelFromTone(tone: string): "ready" | "review" | "blocked" | "n
   return "neutral";
 }
 
-export function formatReadinessUtcMinute(value: string | null | undefined, fallback: string): string {
+export function formatReadinessMinute(value: string | null | undefined, fallback: string): string {
   if (!value) {
     return fallback;
   }
@@ -38,7 +38,7 @@ export function formatReadinessUtcMinute(value: string | null | undefined, fallb
     return fallback;
   }
 
-  return formatUtcTimestamp(date);
+  return formatTimestamp(date);
 }
 
 /** Ends a message with one period, so a message that already has one does not get a second. */

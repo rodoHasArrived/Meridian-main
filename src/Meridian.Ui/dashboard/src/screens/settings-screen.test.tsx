@@ -822,6 +822,7 @@ describe("SettingsScreen", () => {
     const appearanceRegion = screen.getByRole("region", { name: "Appearance preferences" });
     expect(within(appearanceRegion).getByRole("radiogroup", { name: "Appearance" })).toBeInTheDocument();
     expect(within(appearanceRegion).getByRole("radiogroup", { name: "Display density" })).toBeInTheDocument();
+    expect(within(appearanceRegion).getByRole("combobox", { name: "Time zone" })).toHaveValue("UTC");
   });
 
   it("renders fund operations controls for mappings, roles, approvals, and close calendar", () => {
