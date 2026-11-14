@@ -264,7 +264,11 @@ public sealed partial class OnboardingWorkspaceService(
         var predecessor = lineage.LastOrDefault(item => item.AsOfDate == request.AsOfDate)
             ?? lineage.Where(item => item.AsOfDate < request.AsOfDate)
                 .OrderBy(item => item.AsOfDate).ThenBy(item => item.Sequence).LastOrDefault();
-        var previous = predecessor?.Differences.ToDictionary(row => row.DifferenceKey, StringComparer.Ordinal)
+        // A kind-scoped opening import only inherits (and can only mark disappeared) the kinds it now claims; a
+        // kind the source dropped is owned by another opening source, not missing from this one.
+        var previous = predecessor?.Differences
+                .Where(row => !isOpening || openingKinds is null || openingKinds.Contains(row.Kind, StringComparer.Ordinal))
+                .ToDictionary(row => row.DifferenceKey, StringComparer.Ordinal)
             ?? new Dictionary<string, OnboardingDifferenceDto>(StringComparer.Ordinal);
         var differences = new List<OnboardingDifferenceDto>();
         var seen = new HashSet<string>(StringComparer.Ordinal);

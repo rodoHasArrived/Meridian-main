@@ -485,6 +485,37 @@ public sealed class OnboardingShadowModeTests
     }
 
     [Fact]
+    public async Task OpeningSources_PackDroppingCashToABankStatement_DoesNotCarryItsOldCashBreakForward()
+    {
+        using var fixture = new Fixture();
+        var harness = new Harness(fixture);
+        var service = harness.Service();
+        var workspace = await service.CreateAsync(fixture.Request(), Fixture.Owner);
+        workspace = await service.DesignateShadowAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            new(workspace.Version, "Move cash evidence to the bank."), Fixture.Owner);
+        workspace = await service.ImportOpeningBalancesAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            harness.AdminPackRequest(workspace.Version, Pack("CASH,ADMIN-001,USD,,,,97.00,2026-01-31",
+                "NAV,ADMIN-001,USD,,,,100.00,2026-01-31", "POSITION,ADMIN-001,USD,security-a,10,,,2026-01-31")), Fixture.Owner);
+        workspace.Readiness.Opening!.BreakCount.Should().Be(1);
+
+        // Cash now comes from a matching bank statement; the pack is re-imported without cash.
+        workspace = await service.ImportOpeningBalancesAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            CashStatementRequest(workspace.Version), Fixture.Owner);
+        workspace = await service.ImportOpeningBalancesAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId,
+            harness.AdminPackRequest(workspace.Version, Pack("NAV,ADMIN-001,USD,,,,100.00,2026-01-31",
+                "POSITION,ADMIN-001,USD,security-a,10,,,2026-01-31")), Fixture.Owner);
+
+        workspace.Comparisons.Last().Differences.Should().NotContain(row => row.Kind == "Balance");
+        var opening = workspace.Readiness.Opening!;
+        opening.Lines.Should().HaveCount(3).And.OnlyContain(line => line.Status == "Matched");
+        opening.IsReconciled.Should().BeTrue();
+        var restarted = harness.Service();
+        foreach (var run in workspace.Comparisons)
+            (await restarted.ReplayComparisonAsync(Fixture.Tenant, Fixture.Company, workspace.WorkspaceId, run.ComparisonId))!
+                .ContentHash.Should().Be(run.ContentHash);
+    }
+
+    [Fact]
     public async Task OpeningBreak_IsExplainableThroughItsOpeningComparison()
     {
         using var fixture = new Fixture();
