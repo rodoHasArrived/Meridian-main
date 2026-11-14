@@ -1150,6 +1150,7 @@ Meridian-main
 │       │   ├── check-ledger-book-scope.py
 │       │   ├── check-ledger-dimension-coverage.py
 │       │   ├── check-posture-env-serialization.py
+│       │   ├── check-release-candidate.py
 │       │   ├── check-release-signing.ps1
 │       │   ├── check-sample-config-datasources.py
 │       │   ├── check-store-concurrency-posture.py
@@ -1171,6 +1172,7 @@ Meridian-main
 │       │   ├── local_gate.py
 │       │   ├── maintenance_refresh.py
 │       │   ├── publish-certified-release.py
+│       │   ├── release-envelope.py
 │       │   ├── release-preflight.py
 │       │   ├── release-readiness.py
 │       │   ├── requirements.txt
@@ -15422,6 +15424,7 @@ Meridian-main
 │   │   ├── test_meridian_ci_workflow.py
 │   │   ├── test_meridian_code_review_run_eval.py
 │   │   ├── test_mixed_credit_status_set.py
+│   │   ├── test_msix_predecessor_workflow.py
 │   │   ├── test_nullable_warning_ratchet.py
 │   │   ├── test_postgresql_payload.py
 │   │   ├── test_prepare_dk1_operator_signoff.py
@@ -15431,9 +15434,11 @@ Meridian-main
 │   │   ├── test_project_target_framework_alignment.py
 │   │   ├── test_publish_certified_release.py
 │   │   ├── test_python_package_conda_dependencies.py
+│   │   ├── test_recovery_acceptance_workflow.py
 │   │   ├── test_recovery_evidence.py
 │   │   ├── test_refresh_screenshots_workflow.py
 │   │   ├── test_release_audit_evidence.py
+│   │   ├── test_release_candidate.py
 │   │   ├── test_release_evidence_manifest.py
 │   │   ├── test_release_evidence_workflows.py
 │   │   ├── test_release_promotion.py

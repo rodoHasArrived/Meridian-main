@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "23 8 * * 1"
   workflow_dispatch:
+    inputs:
+      release_version:
+        description: Release version whose reviewed architecture envelope to inspect.
+        type: string
+        default: 0.1.0-rc.2
 
 permissions:
   contents: read
@@ -93,6 +98,7 @@ jobs:
         if: always()
         env:
           CERT_WARNING_DAYS: ${{ vars.MDC_SIGNING_CERT_WARNING_DAYS || '30' }}
+          RELEASE_VERSION: ${{ inputs.release_version || vars.MDC_RELEASE_REHEARSAL_VERSION || '0.1.0-rc.2' }}
         run: python build/scripts/ci/release-readiness.py summary --warning-days "$CERT_WARNING_DAYS" --output artifacts/release-readiness/report.json
       - name: Retain prerequisite report
         if: always()

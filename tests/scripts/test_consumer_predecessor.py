@@ -119,6 +119,18 @@ class ConsumerPredecessorTests(unittest.TestCase):
         self.assertEqual(evidence["priorReleaseTag"], "v2.0.0-rc.1")
         self.assertEqual(evidence["eligibleReleaseCount"], 1)
 
+    def test_initial_stable_selects_signed_rc2_and_never_its_own_current_tag(self):
+        self.args.current_tag = 'v0.1.0'
+        self.release('v0.1.0-rc.1', prerelease=True)
+        self.release('v0.1.0-rc.2', prerelease=True)
+        self.release('v0.1.0')
+        self.release('eval-v0.1.0', prerelease=True)
+        self.release('v0.1.0-rc.3', draft=True, prerelease=True)
+        evidence = self.resolve()
+        self.assertFalse(evidence['firstRelease'])
+        self.assertEqual(evidence['priorReleaseTag'], 'v0.1.0-rc.2')
+        self.assertEqual(evidence['consumerReleaseCount'], 2)
+
     def test_current_and_newer_releases_cannot_be_predecessors(self):
         self.release("v3.0.0")
         self.release("v4.0.0")
