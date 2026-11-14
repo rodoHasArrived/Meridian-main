@@ -23,6 +23,60 @@ from tools.schema_control.cli import (
 
 
 class SchemaControlCliTests(unittest.TestCase):
+    def test_verify_accepts_ci_contract_inventory_and_still_rejects_reviewed_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative, value in (
+                ("database/schema-control.json", {"contract_sets": []}),
+                ("database/policies/schema-control.json", {}),
+                ("database/policies/migration-waivers.json", {}),
+                ("database/manifest/catalog.json", {"schemas": []}),
+                ("candidate/manifest/catalog.json", {"schemas": []}),
+                ("candidate/manifest/contracts.json", {"objects": [{"id": "new"}]}),
+            ):
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps(value))
+            expected_doc = root / "docs/generated/database/contracts.md"
+            expected_doc.parent.mkdir(parents=True)
+            expected_doc.write_text("reviewed contract view\n")
+            candidate_doc = root / "candidate/docs/contracts.md"
+            candidate_doc.parent.mkdir(parents=True)
+            candidate_doc.write_bytes(expected_doc.read_bytes())
+            snapshot = {"revisions": {"baseline_sha": "a" * 40}}
+            args = ["--root", str(root), "verify", "--database-url", "postgresql://fixture",
+                    "--candidate-root", "candidate"]
+            with (
+                patch("tools.schema_control.cli.create_snapshot", return_value=(snapshot, False)),
+                patch("tools.schema_control.contracts.build_contract_manifest_at_revision",
+                      return_value={"objects": []}) as baseline,
+                redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()),
+            ):
+                self.assertEqual(0, main(args))
+                baseline.assert_called_with(root, "a" * 40, "database/schema-control.json")
+                diff = json.loads((root / "candidate/reports/schema-diff.json").read_text())
+                self.assertTrue(any("contracts.json" in item["path"] for item in diff["changes"]))
+                candidate_doc.write_text("unreviewed contract change\n")
+                self.assertEqual(1, main(args))
+                candidate_doc.write_bytes(expected_doc.read_bytes())
+                (root / "candidate/manifest/catalog.json").write_text('{"schemas": ["changed"]}')
+                self.assertEqual(1, main(args))
+
+    def test_promote_retains_raw_inventory_only_in_candidate_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            candidate = root / "candidate"
+            (candidate / "manifest").mkdir(parents=True)
+            (candidate / "docs").mkdir()
+            (candidate / "manifest/contracts.json").write_text('{"objects": []}')
+            (candidate / "manifest/catalog.json").write_text('{"schemas": []}')
+            (candidate / "docs/contracts.md").write_text("reviewed\n")
+            _promote(root, {}, candidate)
+            self.assertTrue((candidate / "manifest/contracts.json").is_file())
+            self.assertFalse((root / "database/manifest/contracts.json").exists())
+            self.assertTrue((root / "database/manifest/catalog.json").is_file())
+            self.assertEqual("reviewed\n", (root / "docs/generated/database/contracts.md").read_text())
+
     def test_inventory_detects_new_collisions_against_exact_git_base(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)

@@ -29,7 +29,7 @@ class CiWorkflowContractTests(unittest.TestCase):
         for check in ("Validate AI contract drift", "Validate provider-validation script tests",
                       "Validate AI navigation freshness", "Validate AI handoff checklist schema",
                       "Enforce mode escalation policy", "Enforce validation-floor guard",
-                      "Workstation bundle freshness gate", "Reject whole-repo generated documentation drift"):
+                      "Validate workstation bundle", "Generate maintained documentation"):
             self.assertIn(check, script)
         catalog = (REPO_ROOT / "build/scripts/run-maintained-generation.py").read_text(encoding="utf-8")
         self.assertIn("build/scripts/run-maintained-generation.py", script)
@@ -54,10 +54,10 @@ class CiWorkflowContractTests(unittest.TestCase):
         self.assertIn('MERIDIAN_CI_ARTIFACT_ROOT="${MERIDIAN_CI_ARTIFACT_ROOT:-artifacts}"', script)
         self.assertIn('exec "$python_cmd" build/scripts/ci/local_gate.py', script)
         self.assertIn('--isolation-key "$MERIDIAN_CI_ISOLATION_KEY"', script)
-        self.assertIn('--wait-for-dotnet "$MERIDIAN_CI_BROWSER_BUILD_BARRIER"', script)
+        self.assertIn("build/scripts/ensure-workstation-assets.py", script)
         browser = script.split("verify_browser() {", 1)[1].split("verify_docs() {", 1)[0]
-        self.assertLess(browser.index("Run dashboard tests"), browser.index("Wait for .NET browser-asset reads"))
-        self.assertLess(browser.index("Wait for .NET browser-asset reads"), browser.index("Build dashboard bundle"))
+        self.assertLess(browser.index("Run dashboard tests"), browser.index("Build dashboard bundle"))
+        self.assertLess(browser.index("Build dashboard bundle"), browser.index("Validate workstation bundle"))
 
 
 if __name__ == "__main__":

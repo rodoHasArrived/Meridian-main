@@ -37,8 +37,10 @@ For the current product framing and capability thesis, use the [Meridian Design 
   for Make recipes, or use the direct PowerShell commands below.
 - Optional: one configured data provider for live or credentialed historical data.
 
-Install only the tools needed for your task: the tracked workstation demo needs .NET but no
-Node.js; fixture-only browser development needs Node.js and npm but no .NET or database.
+Install only the tools needed for your task. A source checkout needs Node.js, npm and Python to
+build the workstation assets once before the .NET demo can display its browser UI; alternatively,
+restore the browser CI artifact produced for the same commit. A published installation carries
+its assets. Fixture-only browser development needs Node.js, npm and Python but no .NET or database.
 Backend-connected browser development needs both .NET and Node.js. The dev container supplies
 PostgreSQL 16; database-backed integration checks use the version specified by their lane.
 The database-less demo does not need PostgreSQL.
@@ -67,7 +69,9 @@ dotnet build Meridian.WebWorkstation.slnf -c Debug --no-restore -p:EnableWindows
 ```
 
 These commands work in PowerShell or Bash from the repository root. They restore the solution
-and build the browser host and its dependencies. Choose a launch path below after the build.
+and build the browser host and its dependencies. Direct .NET builds do not implicitly invoke Node
+or generate browser assets. Prepare the [workstation bundle](#the-workstation-bundle-the-demo-serves)
+before launching its UI. Choose a launch path below after the build.
 For a first evaluation with no provider configuration, use the [seeded demo](#see-it-working-one-command-demo).
 
 For your own configuration, run auto-configuration:
@@ -92,6 +96,10 @@ For browser source development, install both lockfiles, then choose a mode:
 npm ci
 npm --prefix src/Meridian.Ui/dashboard ci
 ```
+
+The dashboard install generates its C# route and workspace catalog mirrors. The dev, lint,
+typecheck, test and build commands regenerate these local outputs before use; Python 3 must be
+available. Set `MERIDIAN_PYTHON` to select an executable explicitly.
 
 Before launching, run `npm run dev:doctor` for backend-connected prerequisites and port checks,
 or `npm run dev:fixtures -- --doctor` for fixture-only prerequisites. These commands report
@@ -146,8 +154,9 @@ npm --prefix src/Meridian.Ui/dashboard run test -- src/components/ui/button.test
 
 ## See It Working: One-Command Demo
 
-To evaluate Meridian end-to-end without wiring up providers or a database, seed a demo workspace and
-open the populated browser workstation with a single command:
+After preparing the [workstation bundle](#the-workstation-bundle-the-demo-serves), evaluate Meridian
+without wiring up providers or a database by seeding a demo workspace and opening the populated
+browser workstation:
 
 ```powershell
 dotnet run --project src/Meridian/Meridian.csproj -- --seed-demo
@@ -196,21 +205,28 @@ choice provisions, so the demo and the guided first-run experience walk through 
 
 ### The workstation bundle the demo serves
 
-The browser workstation is served from one canonical, git-tracked bundle:
-`src/Meridian.Ui/wwwroot/workstation`. A fresh clone already carries it, so the demo reaches a
-populated `/workstation/` screen without Node.js installed, and the host resolves that same tree
-regardless of the directory you launch from. For an eligible PR, the configured
-[repair bot](../engineering/generated-merge-recovery.md#hosted-pr-repair) rebuilds the bundle with
-the maintained documentation in one repair commit. For a local preview or the contributor fallback,
-regenerate with:
+The browser workstation is served from one canonical build directory:
+`src/Meridian.Ui/wwwroot/workstation`. Its contents are ignored outputs produced from dashboard
+source. Before the first source launch, install the dashboard dependencies and build it:
 
 ```powershell
+npm --prefix src/Meridian.Ui/dashboard ci --include=optional
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
 
-CI runs a freshness gate that fails when the tracked bundle lags `src/Meridian.Ui/dashboard`, so
-the served assets always match the same commit's dashboard source. The repaired bundle must be
-committed before that gate passes.
+Repeat the build after changing dashboard source. CI builds and validates the assets for each
+checked-out revision and publishes them with the browser lane artifacts; you may restore that
+revision's artifact at the canonical directory instead of building locally. Published and installed
+layouts already include the bundle. The host resolves the canonical tree independently of launch
+directory. Direct `dotnet run` does not install npm dependencies or build a missing bundle.
+
+For the complete maintained browser/documentation regeneration path, install its dependencies and
+run `python build/python/cli/buildctl.py regen --fix`. See
+[generated output and merge recovery](../engineering/generated-merge-recovery.md) for setup and
+the optional post-merge hook. Commit reviewed generated references when their freshness check
+requires it; workstation assets, trackers, mechanical manifests and operational reports stay out
+of commits. CI exports the declared machine outputs under `artifacts/docs/generated/` with the
+revision and file digests, plus actual source hashes in `artifacts/docs/source-hashes.json`.
 
 When updating a feature branch causes generated bundle, documentation or hash conflicts, use the
 [isolated repair command](../engineering/generated-merge-recovery.md). It prepares pinned merge
@@ -241,7 +257,7 @@ If `where.exe make` finds nothing, skip Make and use the underlying `dotnet`, `n
 | Goal | Command | Notes |
 | --- | --- | --- |
 | Seeded end-to-end demo (fastest evaluation) | `dotnet run --project src/Meridian/Meridian.csproj -- --seed-demo` | Seeds an isolated, durable, `Seeded`-labelled demo workspace and opens the populated workstation. See [See It Working](#see-it-working-one-command-demo). |
-| Local host and browser-served workstation | `dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080` | Requires a persistence decision first — see [Persistence and simulation defaults](#persistence-and-simulation-defaults); bare, it fails closed at startup. Once configured, serves the host and `http://localhost:8080/workstation/` from the tracked canonical bundle (`src/Meridian.Ui/wwwroot/workstation`), independent of launch directory. |
+| Local host and browser-served workstation | `dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080` | Requires a persistence decision first — see [Persistence and simulation defaults](#persistence-and-simulation-defaults); bare, it fails closed at startup. Once configured and the dashboard is built, serves the host and `http://localhost:8080/workstation/` from the canonical build directory (`src/Meridian.Ui/wwwroot/workstation`), independent of launch directory. |
 | Desktop-local host mode | `dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080` | Use when intentionally running the desktop-local host and streaming collector together. |
 | Browser development with seeded backend | `npm run dev` | Coordinates seeding, backend watch/restarts, and Vite hot reload. See [browser development](../engineering/web-development.md) for prerequisites and options. |
 | Browser fixture-only development | `npm run dev:fixtures` | Starts Vite with explicit demo fixtures and no backend requests; .NET is not required. See [browser development](../engineering/web-development.md). |

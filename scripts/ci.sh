@@ -19,8 +19,8 @@ usage() {
   cat <<'EOF'
 Usage: bash scripts/ci.sh [--lane <lane>] [--jobs <auto|1|2>] [--cold]
 
-Local aggregate lanes overlap .NET/browser when resources permit.
---jobs 1 serializes them; --cold uses fresh .NET build outputs (dependency caches remain).
+Local aggregates prepare browser assets before the .NET lane consumes them.
+--jobs controls lane workers; --cold uses fresh .NET build outputs (dependency caches remain).
 
 Lanes:
   quality-gate      Run the full local PR gate (default).
@@ -178,6 +178,11 @@ verify_toolchain_docs() {
 }
 
 verify_dotnet() {
+  # The host includes the generated workstation at MSBuild evaluation time.
+  # Aggregate runs produce it in the browser lane; hosted runs download the
+  # same-run artifact before entering this lane. Standalone runs prepare it.
+  run_step "Prepare workstation assets for .NET" \
+    "$python_cmd" build/scripts/ensure-workstation-assets.py
   verify_toolchain_dotnet
 
   run_step "Restore .NET solution" \
@@ -239,8 +244,8 @@ verify_browser() {
   run_step "Install dashboard dependencies from lockfile" \
     bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard ci --include=optional 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-install.log"'
 
-  run_step "Generated UI contract drift gate" \
-    bash -c 'set -euo pipefail; "$0" build/scripts/generate-ui-api-routes-ts.py --check 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/ui-api-routes-check.log"; "$0" build/scripts/generate-workspace-catalog-ts.py --check 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/workspace-catalog-check.log"' "$python_cmd"
+  run_step "Generate UI contracts" \
+    bash -c 'set -euo pipefail; "$0" build/scripts/generate-ui-api-routes-ts.py 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/ui-api-routes-check.log"; "$0" build/scripts/generate-workspace-catalog-ts.py 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/workspace-catalog-check.log"' "$python_cmd"
 
   run_step "Lint dashboard source" \
     bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run lint 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-lint.log"'
@@ -251,24 +256,14 @@ verify_browser() {
   run_step "Run dashboard tests" \
     bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run test 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-test.log"'
 
-  if [[ -n "${MERIDIAN_CI_BROWSER_BUILD_BARRIER:-}" ]]; then
-    run_step "Wait for .NET browser-asset reads" \
-      "$python_cmd" build/scripts/ci/local_gate.py --wait-for-dotnet "$MERIDIAN_CI_BROWSER_BUILD_BARRIER"
-  fi
   run_step "Build dashboard bundle" \
     bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run build 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-build.log"'
 
-  # PRD-018 freshness gate: the tracked canonical bundle must match what the current dashboard
-  # source builds, so the repo-launch demo can never serve stale assets.
-  run_step "Workstation bundle freshness gate" \
-    bash -c 'set -euo pipefail; \
-      if [ -n "$(git status --porcelain -- src/Meridian.Ui/wwwroot/workstation)" ]; then \
-        echo "The tracked workstation bundle lags src/Meridian.Ui/dashboard." >&2; \
-        echo "Run: npm --prefix src/Meridian.Ui/dashboard run build" >&2; \
-        echo "then commit the regenerated src/Meridian.Ui/wwwroot/workstation tree." >&2; \
-        git status --porcelain -- src/Meridian.Ui/wwwroot/workstation >&2; \
-        exit 1; \
-      fi'
+  # Assets are CI products. Validate the complete built tree instead of
+  # requiring its hashed filenames to have been committed by a contributor.
+  run_step "Validate workstation bundle" \
+    "$python_cmd" build/scripts/ci/check-workstation-assets.py
+
 }
 
 verify_docs() {
@@ -376,7 +371,7 @@ verify_docs() {
   run_step "Install documentation diagram dependencies from lockfile" \
     bash -c 'set -euo pipefail; npm ci --no-fund --no-audit 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/docs-install.log"'
 
-  run_step "Reject whole-repo generated documentation drift" \
+  run_step "Generate maintained documentation" \
     "$python_cmd" build/scripts/run-maintained-generation.py \
       --docs-only --report "${MERIDIAN_CI_ARTIFACT_ROOT}/docs/generation.json"
 
@@ -384,7 +379,7 @@ verify_docs() {
     "$python_cmd" build/scripts/ci/check-doc-health-delta.py \
       --output "${MERIDIAN_CI_ARTIFACT_ROOT}/docs/dashboard-delta.json"
 
-  run_step "Verify whole-repo generated documentation is committed" \
+  run_step "Check reviewed generated documentation freshness" \
     "$python_cmd" build/scripts/ci/check-generated-output.py
 
   run_step "Enforce mode escalation policy" \

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
+import subprocess
 import tempfile
 import textwrap
 import unittest
 
-from tools.schema_control.contracts import build_contract_manifest
+from tools.schema_control.contracts import build_contract_manifest, build_contract_manifest_at_revision
 
 
 class ContractManifestTests(unittest.TestCase):
@@ -44,6 +46,25 @@ class ContractManifestTests(unittest.TestCase):
     @staticmethod
     def members_by_name(contract: dict) -> dict[str, dict]:
         return {member["name"]: member for member in contract["members"]}
+
+    def test_pinned_source_reconstructs_contracts_without_committed_inventory(self) -> None:
+        self.write_contract("Item.cs", "namespace Meridian.Contracts; public record Item(decimal Amount);")
+        config = {"contract_sets": [{"id": "all-contracts", "directories": ["src/Meridian.Contracts"]}]}
+        (self.root / "database").mkdir()
+        (self.root / "database/schema-control.json").write_text(json.dumps(config))
+
+        def git(*args):
+            return subprocess.check_output(["git", *args], cwd=self.root, stderr=subprocess.DEVNULL)
+
+        git("init")
+        git("add", ".")
+        git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-m", "baseline")
+        accepted = build_contract_manifest(self.root, config)
+        revision = git("rev-parse", "HEAD").decode().strip()
+        self.write_contract("Item.cs", "namespace Meridian.Contracts; public record Item(decimal Amount, string Currency);")
+        self.assertNotEqual(accepted, build_contract_manifest(self.root, config))
+        self.assertEqual(accepted, build_contract_manifest_at_revision(self.root, revision, "database/schema-control.json"))
+        self.assertFalse((self.root / "database/manifest/contracts.json").exists())
 
     def test_multiline_positional_record_captures_types_attributes_and_references(
         self,

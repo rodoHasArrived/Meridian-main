@@ -100,11 +100,13 @@ def _tree_hashes(root: Path) -> dict[str, str]:
     }
 
 
-def compare_artifact_trees(expected: Path, candidate: Path) -> dict[str, Any]:
+def compare_artifact_trees(
+    expected: Path, candidate: Path, *, exclude: frozenset[str] = frozenset()
+) -> dict[str, Any]:
     """Compare two artifact roots without depending on Git or platform diff tools."""
 
-    expected_hashes = _tree_hashes(expected)
-    candidate_hashes = _tree_hashes(candidate)
+    expected_hashes = {path: digest for path, digest in _tree_hashes(expected).items() if path not in exclude}
+    candidate_hashes = {path: digest for path, digest in _tree_hashes(candidate).items() if path not in exclude}
     expected_paths = set(expected_hashes)
     candidate_paths = set(candidate_hashes)
     added = sorted(candidate_paths - expected_paths)

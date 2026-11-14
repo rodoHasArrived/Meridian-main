@@ -57,7 +57,7 @@
         "artifacts/test-results/browser/"
       ],
       "timeoutMinutes": 25,
-      "pathTriggerNotes": "Covers lockfile-strict dashboard install, generated UI route/catalog drift checks, lint, strict typecheck, tests, and production bundle build.",
+      "pathTriggerNotes": "Covers lockfile-strict dashboard install, UI route/catalog generation, lint, strict typecheck, tests, production bundle build and asset validation. Supplies the same-revision assets to the .NET lane.",
       "requiredCheckRole": "evidence"
     },
     {
@@ -75,7 +75,7 @@
         "artifacts/maintained-generation/"
       ],
       "timeoutMinutes": 35,
-      "pathTriggerNotes": "Covers docs delivery claims, status staleness, AI contract drift, lane vocabulary, roadmap registry, source READMEs, TODO scans, and the shared bounded documentation/diagram generation and complete freshness check.",
+      "pathTriggerNotes": "Covers docs delivery claims, status staleness, AI contract drift, lane vocabulary, roadmap registry, source READMEs, TODO scans, and the shared bounded documentation/diagram generation, CI-produced output artifacts and reviewed-document freshness check.",
       "requiredCheckRole": "evidence"
     },
     {

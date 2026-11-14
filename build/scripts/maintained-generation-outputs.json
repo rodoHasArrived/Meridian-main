@@ -381,6 +381,16 @@
         "strategy": "regenerate",
         "generator": "scripts/generate_program_state_summary.py",
         "required": true
+      },
+      "docs/status/wpf-screen-development-tracker.json": {
+        "strategy": "regenerate",
+        "generator": "package.json#scripts.generate-diagrams",
+        "required": true
+      },
+      "docs/status/wpf-screen-development-tracker.md": {
+        "strategy": "regenerate",
+        "generator": "package.json#scripts.generate-diagrams",
+        "required": true
       }
     },
     "trees": {
@@ -400,5 +410,49 @@
         "required": true
       }
     }
+  },
+  "delivery": {
+    "ci_files": [
+      "database/manifest/contracts.json",
+      "docs/roadmap/generated/MANIFEST.json",
+      "docs/source/generated/MANIFEST.json",
+      "docs/status/TODO.md",
+      "docs/status/ai-handoff-checklist-report.json",
+      "docs/status/ai-handoff-checklist-report.md",
+      "docs/status/ai-handoff-packet.json",
+      "docs/status/ai-handoff-packet.md",
+      "docs/status/ai-inventory-report.json",
+      "docs/status/ai-inventory-report.md",
+      "docs/status/api-contract-coverage-dashboard.json",
+      "docs/status/api-contract-coverage-dashboard.md",
+      "docs/status/docs-automation-summary.json",
+      "docs/status/docs-automation-summary.md",
+      "docs/status/evidence-continuity-dashboard.json",
+      "docs/status/evidence-continuity-dashboard.md",
+      "docs/status/example-validation.md",
+      "docs/status/governance-readiness-dashboard.json",
+      "docs/status/governance-readiness-dashboard.md",
+      "docs/status/paper-replay-reliability-dashboard.json",
+      "docs/status/paper-replay-reliability-dashboard.md",
+      "docs/status/program-state-summary.json",
+      "docs/status/program-state-summary.md",
+      "docs/status/prompt-route-lint-report.json",
+      "docs/status/todo-scan-results.json",
+      "docs/status/workflow-drift-report.md",
+      "docs/status/workflow-validation-summary.json",
+      "docs/status/wpf-screen-development-tracker.json",
+      "docs/status/wpf-screen-development-tracker.md",
+      "src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts",
+      "src/Meridian.Ui/dashboard/src/lib/workspace-catalog.generated.ts"
+    ],
+    "ci_trees": [
+      "src/Meridian.Ui/wwwroot/workstation"
+    ],
+    "reviewed_baselines": [
+      "docs/source/generated/source-hash-manifest.json",
+      "docs/status/doc-health-dashboard.json",
+      "docs/status/doc-health-dashboard.md"
+    ],
+    "default": "reviewed-commit"
   }
 }
