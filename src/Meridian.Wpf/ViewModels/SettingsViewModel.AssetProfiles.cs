@@ -499,6 +499,7 @@ public sealed partial class SettingsViewModel
             var assetSpecificTerms = JsonSerializer.SerializeToElement(new
             {
                 schemaVersion = SecurityMasterSchemaVersions.CustomAssetProfileTerms,
+                termsFormat = SecurityTermsFormats.CustomProfile,
                 category = selected.Category,
                 subType = selected.SubType,
                 customProfileId = selected.ProfileId,

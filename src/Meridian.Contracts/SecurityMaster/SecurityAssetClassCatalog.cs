@@ -8,6 +8,10 @@ public static class SecurityAssetClassNames
 {
     public const string Equity = "Equity";
     public const string Bond = "Bond";
+    public const string Option = "Option";
+    public const string Future = "Future";
+    public const string FxSpot = "FxSpot";
+    public const string CryptoCurrency = "CryptoCurrency";
 }
 
 /// <summary>

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OwnershipLinkDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.OwnershipLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:327](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L327).
+
+```csharp
+public sealed record OwnershipLinkDto(Guid OwnershipLinkId, Guid ParentNodeId, Guid ChildNodeId, OwnershipRelationshipTypeDto RelationshipType, decimal? OwnershipPercent, bool IsPrimary, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, string? Notes);
+```
+
 ## OwnershipRelationshipTypeDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto</code>. Kind: `enum`.
@@ -709,19 +719,3 @@ Enum declarations:
 | <code>Offset = 5</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:109](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L109) |  |
 | <code>Watermark = 6</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:110](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L110) |  |
 | <code>FullSnapshot = 7</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:111](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L111) |  |
-
-## ProviderIntegrationDryRunResultDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationDryRunResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:758](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L758).
-
-```csharp
-public sealed record ProviderIntegrationDryRunResultDto(string SyncRunId, string RawPayloadId, ProviderCapabilityKindDto Capability, int RecordsReceived, int RecordsAccepted, int RecordsQuarantined, ProviderIntegrationProcessingStatusDto Status, IReadOnlyList<ValidationIssueDto> Issues)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;JsonElement&gt; MappedRecordPreviews { get; init; } = [];</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:769](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L769) | First twenty server-normalized rows, including blocked rows and exact calculation evidence. |

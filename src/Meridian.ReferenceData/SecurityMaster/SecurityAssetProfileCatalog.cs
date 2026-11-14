@@ -202,7 +202,8 @@ internal static class SecurityAssetProfileSeeds
         => SecurityReferenceTaxonomyCatalog.Default.GetValues(taxonomyKey);
 
     // The projected/searchable arguments record promotion intent only (see the parameter docs on
-    // SecurityAssetProfileFieldDefinitionDto): nothing projects or indexes a profile field today.
+    // SecurityAssetProfileFieldDefinitionDto): no writer or index reads them. Migration 064 writes
+    // every CustomAsset profile field to custom_asset_profile_field_projection whatever the flag.
     private static SecurityAssetProfileFieldDefinitionDto RequiredText(string key, string label, bool projected, bool searchable = false)
         => Field(key, label, SecurityAssetProfileFieldTypeDto.Text, true, [], null, null, projected, searchable);
 

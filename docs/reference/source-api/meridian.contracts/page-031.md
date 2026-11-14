@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderMappingConfidenceDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderMappingConfidenceDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:115](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L115).
+
+```csharp
+public enum ProviderMappingConfidenceDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Low = 0</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:117](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L117) |  |
+| <code>Medium = 1</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:118](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L118) |  |
+| <code>High = 2</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:119](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L119) |  |
+| <code>Approved = 3</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:120](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L120) |  |
+
 ## QuarantinedRecordDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.QuarantinedRecordDto</code>. Kind: `record`.
@@ -786,13 +805,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:871](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L871) |  |
-
-## AccountingRuleConditionDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingRuleConditionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:363](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L363).
-
-```csharp
-public sealed record AccountingRuleConditionDto(string ConditionId, string Field, AccountingRuleConditionOperatorDto Operator, string? Value = null, string? SecondValue = null, bool IsRequired = true, string? Description = null);
-```

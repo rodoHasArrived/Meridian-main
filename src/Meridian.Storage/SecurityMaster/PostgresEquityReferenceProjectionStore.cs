@@ -10,41 +10,36 @@ public sealed class PostgresEquityReferenceProjectionStore : IEquityReferencePro
 {
     internal const string AssetClass = "Equity";
 
-    private readonly PostgresReferenceProjectionReader _reader;
+    internal static readonly RegistryProjectionQuery ByExchange = new(nameof(ByExchange),
+        """
+        where exchange_code = @exchange_code
+        order by display_name
+        """);
+
+    internal static readonly RegistryProjectionQuery ByIssuer = new(nameof(ByIssuer),
+        """
+        where lower(issuer_name) = lower(@issuer_name)
+        order by display_name
+        """);
+
+    private readonly RegistryReferenceProjectionStore<EquityProjectionRow> _store;
 
     public PostgresEquityReferenceProjectionStore(SecurityMasterOptions options)
     {
-        _reader = new PostgresReferenceProjectionReader(options);
+        _store = CreateStore(options);
     }
 
+    internal static RegistryReferenceProjectionStore<EquityProjectionRow> CreateStore(SecurityMasterOptions options)
+        => new(options, AssetClass, MapRow, [ByExchange, ByIssuer]);
+
     public Task<EquityProjectionRow?> GetEquityAsync(Guid securityId, CancellationToken ct = default)
-        => _reader.QuerySingleAsync(
-            _reader.SelectSql(AssetClass, "where security_id = @security_id"),
-            [new NpgsqlParameter("security_id", securityId)],
-            MapRow,
-            ct);
+        => _store.GetBySecurityIdAsync(securityId, ct);
 
     public Task<IReadOnlyList<EquityProjectionRow>> GetByExchangeAsync(string exchangeCode, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where exchange_code = @exchange_code
-                order by display_name
-                """),
-            [new NpgsqlParameter("exchange_code", exchangeCode.Trim().ToUpperInvariant())],
-            MapRow,
-            ct);
+        => _store.ListAsync(ByExchange, [new NpgsqlParameter("exchange_code", exchangeCode.Trim().ToUpperInvariant())], ct);
 
     public Task<IReadOnlyList<EquityProjectionRow>> GetByIssuerAsync(string issuerName, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where lower(issuer_name) = lower(@issuer_name)
-                order by display_name
-                """),
-            [new NpgsqlParameter("issuer_name", issuerName.Trim())],
-            MapRow,
-            ct);
+        => _store.ListAsync(ByIssuer, [new NpgsqlParameter("issuer_name", issuerName.Trim())], ct);
 
     internal static EquityProjectionRow MapRow(ProjectionRow row)
         => new(

@@ -100,14 +100,49 @@ public sealed class SecurityTermsVersioningTests
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument(payload).Should().BeTrue();
     }
 
-    [Fact]
-    public void ResolveFormat_UntaggedPayloads_FallBackToTheHistoricalShapeRules()
+    [Theory]
+    [InlineData("""{"schemaVersion":1,"maturity":"2030-01-15"}""")]
+    [InlineData("""{"schemaVersion":2,"coupon":{"couponRate":4.5}}""")]
+    [InlineData("""{"schemaVersion":3,"customProfileId":"p","profileFields":{}}""")]
+    [InlineData("""{"schemaVersion":1,"termsFormat":null}""")]
+    [InlineData("""{"schemaVersion":1,"termsFormat":1}""")]
+    public void ResolveFormat_UntaggedPayloads_AreRefusedPrecisely_NotClassifiedByShape(string json)
     {
-        SecurityTermsEnvelope.ResolveFormat(Json("""{"schemaVersion":1,"maturity":"2030-01-15"}"""))
+        // ADR-024 amendment 2026-11-13 step 5: live code reads the declared tag alone.
+        var resolve = () => SecurityTermsEnvelope.ResolveFormat(Json(json));
+
+        resolve.Should().Throw<SecurityTermsFormatUndeclaredException>()
+            .WithMessage("*declare no termsFormat*no longer infers the payload family by shape*");
+    }
+
+    [Fact]
+    public void FormatUndeclaredException_AdvisesOnlyWritableFamilies()
+    {
+        // A write refuses 'economic' (EnsureWritableAsAssetSpecificTerms), so the remediation must not offer it.
+        var message = new SecurityTermsFormatUndeclaredException(JsonValueKind.Object).Message;
+
+        message.Should().Contain($"as '{SecurityTermsFormats.Flat}' or '{SecurityTermsFormats.CustomProfile}'")
+            .And.Contain($"'{SecurityTermsFormats.Economic}' is not accepted on writes")
+            .And.NotContain(string.Join(", ", SecurityTermsFormats.All));
+    }
+
+    [Fact]
+    public void ResolveFormat_NonObject_IsRefusedPrecisely()
+    {
+        var resolve = () => SecurityTermsEnvelope.ResolveFormat(Json("[]"));
+
+        resolve.Should().Throw<SecurityTermsFormatUndeclaredException>().WithMessage("*not an object*")
+            .Which.PayloadKind.Should().Be(JsonValueKind.Array);
+    }
+
+    [Fact]
+    public void LegacyEventClassifier_KeepsTheHistoricalShapeRulesForUntaggedHistory()
+    {
+        SecurityTermsLegacyEventClassifier.Classify(Json("""{"schemaVersion":1,"maturity":"2030-01-15"}"""))
             .Should().Be(SecurityTermsFormats.Flat);
-        SecurityTermsEnvelope.ResolveFormat(Json("""{"schemaVersion":2,"coupon":{"couponRate":4.5}}"""))
+        SecurityTermsLegacyEventClassifier.Classify(Json("""{"schemaVersion":2,"coupon":{"couponRate":4.5}}"""))
             .Should().Be(SecurityTermsFormats.Economic);
-        SecurityTermsEnvelope.ResolveFormat(Json("""{"schemaVersion":3,"customProfileId":"p","profileFields":{}}"""))
+        SecurityTermsLegacyEventClassifier.Classify(Json("""{"schemaVersion":3,"customProfileId":"p","profileFields":{}}"""))
             .Should().Be(SecurityTermsFormats.CustomProfile);
     }
 
@@ -1033,13 +1068,13 @@ public sealed class SecurityTermsVersioningTests
         // increment 5) never appear untagged, so neither the rule nor this shipped migration
         // consults them.
         SecurityTermsVersioningTests_ShapeRuleIsFrozen();
-        foreach (var module in SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ShapeRuleModules)
+        foreach (var module in SecurityTermsLegacyEventClassifier.ShapeRuleModules)
         {
-            sql.Should().Contain($"'{module}'", $"an untagged v2 document carrying '{module}' is classified economic by ResolveFormat");
+            sql.Should().Contain($"'{module}'", $"an untagged v2 document carrying '{module}' is classified economic by the legacy event classifier");
         }
 
         sql.Should().Contain($"'{SecurityTermsEnvelope.FormatKey}'");
-        sql.Should().Contain($"= {EconomicTermsSchema.Current}", "only the reserved economic codec version routes untagged rows to the economic family");
+        sql.Should().Contain($"= {SecurityTermsLegacyEventClassifier.ReservedForEconomicTerms}", "only the reserved economic codec version routes untagged rows to the economic family");
     }
 
     private static void SecurityTermsVersioningTests_ShapeRuleIsFrozen()
@@ -1047,23 +1082,33 @@ public sealed class SecurityTermsVersioningTests
         // The frozen pre-tag inventory, pinned by count and by membership: a module can never be
         // added to the shape rule (new modules are always tagged), and every shape-rule module is
         // still part of the serializer's inventory.
-        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ShapeRuleModules.Should().HaveCount(14);
-        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ShapeRuleModules.Should().BeSubsetOf(
+        SecurityTermsLegacyEventClassifier.ShapeRuleModules.Should().HaveCount(14);
+        SecurityTermsLegacyEventClassifier.ShapeRuleModules.Should().BeSubsetOf(
             SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.EconomicTermsModules);
     }
 
     [Fact]
-    public void ResolveStorableTermsFormat_UsesTheDeclaredTagAndRefusesAnUnknownOne()
+    public void ResolveStorableTermsFormat_UsesTheDeclaredTag_AndRefusesAnUnknownOrMissingOne()
     {
         var tagged = Projection("Bond", Json("""{"schemaVersion":1,"termsFormat":"flat","maturity":"2030-01-15"}"""));
+        var taggedEconomic = Projection("Bond", Json("""{"schemaVersion":2,"termsFormat":"economic","coupon":{"couponRate":4.5}}"""));
         var untaggedEconomic = Projection("Bond", Json("""{"schemaVersion":2,"coupon":{"couponRate":4.5}}"""));
+        var untaggedFlat = Projection("Bond", Json("""{"schemaVersion":1,"maturity":"2030-01-15"}"""));
         var unknown = Projection("Bond", Json("""{"schemaVersion":1,"termsFormat":"tabular"}"""));
 
         Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore.ResolveStorableTermsFormat(tagged).Should().Be(SecurityTermsFormats.Flat);
-        Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore.ResolveStorableTermsFormat(untaggedEconomic).Should().Be(SecurityTermsFormats.Economic);
+        Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore.ResolveStorableTermsFormat(taggedEconomic).Should().Be(SecurityTermsFormats.Economic);
         var refuse = () => Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore.ResolveStorableTermsFormat(unknown);
-
         refuse.Should().Throw<InvalidOperationException>().WithMessage("*'tabular'*not a storable terms format*");
+
+        // The store never infers a family (ADR-024 amendment 2026-11-13 step 5).
+        foreach (var untagged in new[] { untaggedEconomic, untaggedFlat })
+        {
+            var refuseUntagged = () => Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore.ResolveStorableTermsFormat(untagged);
+            refuseUntagged.Should().Throw<InvalidOperationException>()
+                .WithMessage($"*'{untagged.SecurityId}'*cannot be stored*declare no termsFormat*")
+                .WithInnerException<SecurityTermsFormatUndeclaredException>();
+        }
     }
 
     private static SecurityProjectionRecord Projection(string assetClass, JsonElement assetSpecificTerms)

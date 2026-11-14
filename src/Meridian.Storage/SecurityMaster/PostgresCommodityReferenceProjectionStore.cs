@@ -10,41 +10,36 @@ public sealed class PostgresCommodityReferenceProjectionStore : ICommodityRefere
 {
     internal const string AssetClass = "Commodity";
 
-    private readonly PostgresReferenceProjectionReader _reader;
+    internal static readonly RegistryProjectionQuery ByCommodityType = new(nameof(ByCommodityType),
+        """
+        where lower(commodity_type) = lower(@commodity_type)
+        order by display_name
+        """);
+
+    internal static readonly RegistryProjectionQuery ByExchange = new(nameof(ByExchange),
+        """
+        where exchange_code = @exchange_code
+        order by display_name
+        """);
+
+    private readonly RegistryReferenceProjectionStore<CommodityProjectionRow> _store;
 
     public PostgresCommodityReferenceProjectionStore(SecurityMasterOptions options)
     {
-        _reader = new PostgresReferenceProjectionReader(options);
+        _store = CreateStore(options);
     }
 
+    internal static RegistryReferenceProjectionStore<CommodityProjectionRow> CreateStore(SecurityMasterOptions options)
+        => new(options, AssetClass, MapRow, [ByCommodityType, ByExchange]);
+
     public Task<CommodityProjectionRow?> GetCommodityAsync(Guid securityId, CancellationToken ct = default)
-        => _reader.QuerySingleAsync(
-            _reader.SelectSql(AssetClass, "where security_id = @security_id"),
-            [new NpgsqlParameter("security_id", securityId)],
-            MapRow,
-            ct);
+        => _store.GetBySecurityIdAsync(securityId, ct);
 
     public Task<IReadOnlyList<CommodityProjectionRow>> GetByCommodityTypeAsync(string commodityType, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where lower(commodity_type) = lower(@commodity_type)
-                order by display_name
-                """),
-            [new NpgsqlParameter("commodity_type", commodityType)],
-            MapRow,
-            ct);
+        => _store.ListAsync(ByCommodityType, [new NpgsqlParameter("commodity_type", commodityType)], ct);
 
     public Task<IReadOnlyList<CommodityProjectionRow>> GetByExchangeAsync(string exchangeCode, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where exchange_code = @exchange_code
-                order by display_name
-                """),
-            [new NpgsqlParameter("exchange_code", exchangeCode.Trim().ToUpperInvariant())],
-            MapRow,
-            ct);
+        => _store.ListAsync(ByExchange, [new NpgsqlParameter("exchange_code", exchangeCode.Trim().ToUpperInvariant())], ct);
 
     internal static CommodityProjectionRow MapRow(ProjectionRow row)
         => new(

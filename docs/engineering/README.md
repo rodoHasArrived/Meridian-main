@@ -22,6 +22,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **Dead-code cleanup inventory:** [Dead-Code Inventory](dead-code-inventory.md)
 - **Production readiness and test debt:** [Production Readiness Audit 2026-07-27](production-readiness-audit-2026-07-27.md)
 - **Security Master architecture review:** [Archived review and October dispositions](../../archive/docs/architecture/security-master-extensibility-review.md#consolidated-october-review-and-dispositions--2026-10-28), with the [remediation working plan](plans/security-master-review-remediation-plan.md). The [2026-08-13 audit](security-master-architecture-audit-2026-08-13.md) remains historical evidence.
+- **Adding a Security Master asset class:** [the file-by-file checklist](security-master-adding-an-asset-class.md) for a new first-class kind or a CustomAsset promotion target.
 - **WPF performance and UI/UX audit:** [WPF Performance & UI/UX Refinement Audit 2026-06-14](wpf-perf-uiux-audit-2026-06-14.md) *(dated; its changes were not compiled or run when written)*
 - **Release-evidence working ledger:** [Production-Certification Evidence Chain](production-certification-evidence-chain.md)
 - **CI/CD ownership and rollout:** [CI/CD validation ownership](ci-cd-optimization.md)
@@ -406,7 +407,8 @@ for evidence paths and local working-tree details.
 The [machine-readable migration reservation register](../../database/migration-reservations.json)
 owns pending ordinal claims; the [blueprint table](blueprints/README.md#ledger-migration-ordinals)
 is generated from it and existing SQL filenames. `new-migration` advances past the highest on-disk
-ordinal and skips reservations. An explicit `--ordinal N` also refuses occupied or reserved numbers.
+ordinal and skips reservations and retired ordinals. An explicit `--ordinal N` also refuses occupied,
+reserved, or retired numbers (Security Master `061` and `063` are retired and never reused).
 Release a pending claim before scaffolding its implementation, and run
 `python build/scripts/schema-control.py generate-migration-docs` after editing reservations.
 Preserve applied filenames and ordinals, including the two historical Ledger `008` scripts.

@@ -998,7 +998,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             var security = await _securityMasterStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
                 ?? throw new InvalidOperationException("The reviewed successor Security Master projection is missing.");
             RequireAssertion(security.SecurityId == securityId && security.Version == expectedVersion
-                && string.Equals(OpenLotAmortization.SecurityHash(security), expectedHash, StringComparison.Ordinal),
+                && OpenLotAmortization.AcceptedSecurityHashes(security).Contains(expectedHash, StringComparer.Ordinal),
                 "The reviewed successor Security Master projection or hash is stale; rebuild the projection.");
         }
     }

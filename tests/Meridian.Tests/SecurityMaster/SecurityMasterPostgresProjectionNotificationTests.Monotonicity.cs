@@ -231,7 +231,7 @@ public sealed partial class SecurityMasterPostgresProjectionNotificationTests
         => CreateProjection(securityId, ticker, displayName, version) with
         {
             AssetClass = "Deposit",
-            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            AssetSpecificTerms = SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(new
             {
                 depositType = "Term",
                 institutionName = "Projection Test Bank",
@@ -239,7 +239,7 @@ public sealed partial class SecurityMasterPostgresProjectionNotificationTests
                 interestRate = 0.0425m,
                 dayCount = "Actual365Fixed",
                 isCallable = false
-            })
+            }))
         };
 
     private static void AssertProjectionIdentifiers(

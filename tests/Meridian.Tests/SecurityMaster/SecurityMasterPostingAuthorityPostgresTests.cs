@@ -270,7 +270,7 @@ public sealed class SecurityMasterPostingAuthorityPostgresTests : IClassFixture<
         var security = new SecurityProjectionRecord(
             securityId, "Bond", SecurityStatusDto.Active, "Posting authority bond", "USD", "Ticker", ticker,
             JsonSerializer.SerializeToElement(new { currency = "USD" }),
-            JsonSerializer.SerializeToElement(new { couponRate = 0.05m, maturityDate = "2030-01-01" }),
+            SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(new { couponRate = 0.05m, maturityDate = "2030-01-01" })),
             JsonSerializer.SerializeToElement(new { sourceSystem = "posting-authority-test" }),
             1, EffectiveFrom, null,
             [new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, ticker, true, EffectiveFrom)],

@@ -144,7 +144,7 @@ public sealed class AssetAmortizationPostgresRoundTripTests : IDisposable
                 paymentFrequency = legacy ? "semiannual" : "annual",
                 couponType = "Fixed",
                 isCallable = false
-            }), empty, empty, 1,
+            }), SecurityTermsEnvelope.StampDeclaredFormat(empty), empty, 1,
             new DateTimeOffset(acquired.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero), null, [], []), ct);
         var security = (await securities.GetProjectionAsync(securityId, ct))!;
         RetainedEvidenceIdentityDto Evidence(string id, DateOnly effective, string subjectType, string subjectId, string hash)

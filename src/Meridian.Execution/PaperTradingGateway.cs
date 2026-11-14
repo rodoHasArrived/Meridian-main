@@ -133,9 +133,10 @@ public sealed class PaperTradingGateway :
                 if (string.Equals(metadataKey, key, StringComparison.OrdinalIgnoreCase)
                     && !string.IsNullOrWhiteSpace(assetClass))
                 {
-                    return assetClass.Trim().ToLowerInvariant() is
-                        "treasury" or "us_treasury" or "fixed_income_treasury" or
-                        "corporate" or "bond" or "corporate_bond" or "us_corporate";
+                    // The live gateway's fixed-income codes and aliases, from the shared table.
+                    return ProviderAssetClassCodeCatalog.IsFaceValueFixedIncomeInput(
+                        ProviderAssetClassCodeProviders.Alpaca,
+                        assetClass);
                 }
             }
         }

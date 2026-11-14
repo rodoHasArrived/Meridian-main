@@ -182,10 +182,10 @@ public sealed partial class SecurityMasterPostgresProjectionNotificationTests : 
                 lotSize = 1,
                 tickSize = 0.01m
             }),
-            JsonSerializer.SerializeToElement(new
+            SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(new
             {
                 shareClass = "Common"
-            }),
+            })),
             JsonSerializer.SerializeToElement(new
             {
                 sourceSystem = "test",

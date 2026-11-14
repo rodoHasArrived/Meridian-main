@@ -54,7 +54,7 @@ public sealed class SecurityMasterPostgresSearchPaginationTests(SecurityMasterDa
             select security_id, 'Equity',
                    case when security_id = @inactive_id then 'Inactive' else 'Active' end,
                    'x Shared Securities', 'USD', 'Ticker', security_id::text, upper(security_id::text),
-                   '{}'::jsonb, '{}'::jsonb, '{}'::jsonb, 1, '2026-01-01'::timestamptz
+                   '{}'::jsonb, '{"termsFormat":"flat"}'::jsonb, '{}'::jsonb, 1, '2026-01-01'::timestamptz
             from unnest(@security_ids) as securities(security_id)
             order by securities.security_id desc;
             """;

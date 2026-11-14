@@ -208,6 +208,45 @@ public sealed class SecurityTermsWriteGoldenTests
         }
     }
 
+    [Fact]
+    public void EveryWriterOutput_DeclaresItsFormat()
+    {
+        // ADR-024 decision 1 (amendment 2026-11-13): no write path persists an untagged payload. The
+        // domain writer for every class, the projection it lands as, the economic bridge, and a
+        // re-serialization of every stored row (a deactivation or a patch-less amend) all declare.
+        foreach (var (name, (assetClass, payload)) in AllPayloads())
+        {
+            var snapshot = CreateSnapshot(assetClass, payload);
+            Declared(snapshot.AssetSpecificTermsJson).Should().NotBeNull($"the '{name}' write declares its family");
+            var projection = SecurityMasterMapping.ToProjection(snapshot);
+            SecurityTermsEnvelope.GetDeclaredFormat(projection.AssetSpecificTerms).Should().NotBeNull(name);
+            SecurityTermsEnvelope.GetDeclaredFormat(SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection).EconomicTerms)
+                .Should().Be(SecurityTermsFormats.Economic, name);
+        }
+
+        foreach (var (name, (assetClass, terms)) in StoredOnlyCases())
+        {
+            string rewritten;
+            try
+            {
+                rewritten = Rewrite(StoredProjection(assetClass, terms));
+            }
+            catch (Exception exception) when (exception is InvalidOperationException or ArgumentException)
+            {
+                // A row the Read-mode mapping refuses writes nothing.
+                continue;
+            }
+
+            Declared(rewritten).Should().NotBeNull($"the re-serialization of stored row '{name}' declares its family");
+        }
+
+        static string? Declared(string json)
+        {
+            using var document = JsonDocument.Parse(json);
+            return SecurityTermsEnvelope.GetDeclaredFormat(document.RootElement);
+        }
+    }
+
     public static TheoryData<string, string> UnpopulatedCallAndPutScheduleCases()
     {
         var data = new TheoryData<string, string>();

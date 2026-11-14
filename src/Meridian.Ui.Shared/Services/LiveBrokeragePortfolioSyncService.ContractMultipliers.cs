@@ -7,6 +7,14 @@ public sealed partial class LiveBrokeragePortfolioSyncService
 {
     // An IPosition has a nonnullable multiplier. Refuse that legacy projection when the retained
     // contract is unresolved rather than make up exposure; raw broker evidence remains readable.
+    /// <summary>
+    /// Whether a snapshot position carries Alpaca's option code, compared ordinally like the
+    /// supported Alpaca account lane always has.
+    /// </summary>
+    internal static bool IsAlpacaOptionCode(string? assetClass)
+        => ProviderAssetClassCodeCatalog.IsExactCode(
+            ProviderAssetClassCodeProviders.Alpaca, assetClass, SecurityAssetClassNames.Option);
+
     internal static decimal GetObservedOptionMultiplier(LiveBrokeragePortfolioStatus observation, string symbol)
         => observation.OptionContractMultipliers.TryGetValue(symbol, out var multiplier)
                 ? multiplier
@@ -19,7 +27,7 @@ public sealed partial class LiveBrokeragePortfolioSyncService
         var contracts = new Dictionary<string, ObservedOptionContract>(StringComparer.OrdinalIgnoreCase);
         if (_securityMaster is null)
             return contracts;
-        foreach (var symbol in snapshot.Positions.Where(position => position.AssetClass == "us_option")
+        foreach (var symbol in snapshot.Positions.Where(position => IsAlpacaOptionCode(position.AssetClass))
             .Select(position => position.Symbol).Where(symbol => !string.IsNullOrWhiteSpace(symbol))
             .Distinct(StringComparer.OrdinalIgnoreCase))
         {

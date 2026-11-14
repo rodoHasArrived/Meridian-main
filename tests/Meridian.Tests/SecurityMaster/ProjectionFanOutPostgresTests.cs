@@ -93,7 +93,7 @@ public sealed class ProjectionFanOutPostgresTests : IClassFixture<SecurityMaster
             PrimaryIdentifierKind: "Ticker",
             PrimaryIdentifierValue: ticker,
             CommonTerms: JsonSerializer.SerializeToElement(new { displayName = "Fan-out fixture", currency = "USD" }),
-            AssetSpecificTerms: JsonSerializer.SerializeToElement(assetSpecificTerms),
+            AssetSpecificTerms: SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(assetSpecificTerms)),
             Provenance: JsonSerializer.SerializeToElement(new { sourceSystem = "test" }),
             Version: version,
             EffectiveFrom: effectiveFrom,

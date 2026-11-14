@@ -136,7 +136,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
                 throw new LedgerValidationException("Successor security authority contains inconsistent expected versions or hashes.");
             var expected = group.First();
             var actual = await securities.LockForLotPostingAsync(connection, transaction, group.Key, ct).ConfigureAwait(false);
-            if (actual is null || actual.Version != expected.Version || OpenLotAmortization.SecurityHash(actual) != expected.Hash
+            if (actual is null || actual.Version != expected.Version || !OpenLotAmortization.AcceptedSecurityHashes(actual).Contains(expected.Hash)
                 || actual.Currency != source.Acquisition.AcquisitionCurrency || actual.Status != SecurityStatusDto.Active
                 || DateOnly.FromDateTime(actual.EffectiveFrom.UtcDateTime) > effectiveDate
                 || (actual.EffectiveTo is { } until && DateOnly.FromDateTime(until.UtcDateTime) < effectiveDate))

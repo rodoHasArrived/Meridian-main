@@ -837,7 +837,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PostedLedgerAccountReconciliationSource</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/PostedLedgerAccountReconciliationSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAccountReconciliationSource.cs#L15).
+Source: [src/Meridian.Ui.Shared/Services/PostedLedgerAccountReconciliationSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAccountReconciliationSource.cs#L16).
 
 Compares broker evidence with posted cash and canonical open lots. Carrying-value marks are excluded from cost basis only after validating their retained evidence. Incomplete acquisition coverage or a moved read population is unavailable, never a fabricated zero or a matched custodian-to-provider comparison.
 
@@ -849,7 +849,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderShadowBookComparisonLineDto&gt;&gt; CompareAsync(LedgerBookDto book, Guid accountId, FundAccountBrokerageSyncActivityDto provider, decimal tolerance, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAccountReconciliationSource.cs:17](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAccountReconciliationSource.cs#L17) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderShadowBookComparisonLineDto&gt;&gt; CompareAsync(LedgerBookDto book, Guid accountId, FundAccountBrokerageSyncActivityDto provider, decimal tolerance, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAccountReconciliationSource.cs:18](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAccountReconciliationSource.cs#L18) |  |
 
 ## PostedLedgerAmountProvenanceService
 
