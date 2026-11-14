@@ -272,11 +272,6 @@ __pycache__/
 
 .fakeactionlint
 /Meridian Design System/uploads
-# PRD-018: src/Meridian.Ui/wwwroot/workstation is the canonical TRACKED workstation bundle —
-# the dashboard build writes it, the host serves it, and CI's freshness gate keeps it current.
-# Only Vite's temporary build directories under it stay ignored.
-/src/Meridian.Ui/wwwroot/workstation/assets/.vite-temp/
-/src/Meridian.Ui/wwwroot/workstation/.vite-temp/
 /src/Meridian.Ui/dashboard/tsc-output.txt
 /src/Meridian.Ui/dashboard/artifacts/
 /src/Meridian.Ui/dashboard/artifacts/*.log
@@ -297,3 +292,37 @@ __pycache__/
 
 # Provider credential sidecar — contains plaintext credentials; never commit
 provider-credentials.json
+
+# CI-produced generation: regenerate with buildctl.py regen --fix; never hand-commit.
+/database/manifest/contracts.json
+/docs/roadmap/generated/MANIFEST.json
+/docs/source/generated/MANIFEST.json
+/docs/status/TODO.md
+/docs/status/ai-handoff-checklist-report.json
+/docs/status/ai-handoff-checklist-report.md
+/docs/status/ai-handoff-packet.json
+/docs/status/ai-handoff-packet.md
+/docs/status/ai-inventory-report.json
+/docs/status/ai-inventory-report.md
+/docs/status/api-contract-coverage-dashboard.json
+/docs/status/api-contract-coverage-dashboard.md
+/docs/status/docs-automation-summary.json
+/docs/status/docs-automation-summary.md
+/docs/status/evidence-continuity-dashboard.json
+/docs/status/evidence-continuity-dashboard.md
+/docs/status/example-validation.md
+/docs/status/governance-readiness-dashboard.json
+/docs/status/governance-readiness-dashboard.md
+/docs/status/paper-replay-reliability-dashboard.json
+/docs/status/paper-replay-reliability-dashboard.md
+/docs/status/program-state-summary.json
+/docs/status/program-state-summary.md
+/docs/status/prompt-route-lint-report.json
+/docs/status/todo-scan-results.json
+/docs/status/workflow-drift-report.md
+/docs/status/workflow-validation-summary.json
+/docs/status/wpf-screen-development-tracker.json
+/docs/status/wpf-screen-development-tracker.md
+/src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts
+/src/Meridian.Ui/dashboard/src/lib/workspace-catalog.generated.ts
+/src/Meridian.Ui/wwwroot/workstation

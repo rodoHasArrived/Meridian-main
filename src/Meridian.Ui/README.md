@@ -6,10 +6,16 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.Ui
+
+The workstation bundle under `wwwroot/workstation/` is an ignored build product. Build `dashboard/`
+before starting the host from a fresh source checkout, or restore the CI artifact for the same
+revision. npm commands regenerate contract mirrors first. CI supplies the built bundle to .NET
+before project evaluation; commit authored inputs and reviewed documentation, not bundles or
+mechanical trackers. See [generated output delivery](../../docs/engineering/generated-output-delivery.md).
 
 The Providers workstation includes guarded failover, historical provider limits and routing previews,
 symbol rollout, validation profiles and quota history. Data and Settings share pending activation
@@ -52,7 +58,7 @@ provenance; printing does not fetch unmounted records or change report authority
 Run Ledger Explorer includes an inclusive UTC as-of date and accounting-package downloads in
 CSV, Excel, Parquet, or Arrow. The shared API enforces run visibility and supplies journal,
 trial-balance, cash-flow, and available retained lot schedules; missing lot evidence is explicit
-in the package. Rebuild `dashboard/` to refresh the checked-in workstation bundle.
+in the package. Rebuild `dashboard/` to refresh the CI-produced workstation bundle.
 
 Browser reconciliation queue source observations and retained occurrence age are projected separately from case status. Shared services own lineage, comparison evidence and SLA calendars.
 
@@ -69,7 +75,7 @@ canonical frozen packet downloads. The host exposes no onboarding posting. Shado
 one audited authority transition: promoting a shadow book to book of record, which needs an
 independent reviewer and a verified parallel-run certificate.
 
-The checked-in workstation bundle includes retained manual-journal amount proof and durable
+The CI-produced workstation bundle includes retained manual-journal amount proof and durable
 reconciliation lineage display. Regenerate it from the dashboard after related source changes;
 close and report authority remains in the shared endpoint and service layer.
 
