@@ -26,6 +26,9 @@ import zipfile
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from generated_output_policy import delivery
+
 WORKFLOW = ".github/workflows/generated-repair.yml"
 POLICY = "build/scripts/maintained-generation-outputs.json"
 MAX_RETRIES = 2
@@ -90,6 +93,7 @@ def load_policy(trusted_root: Path) -> dict:
              + list(policy.get("protected_suffixes", {})))
     if not all(safe_path(path) for path in paths):
         raise RepairError("Unsafe path in trusted generation policy")
+    delivery(policy)
     return policy
 
 
@@ -136,7 +140,13 @@ def validate_delta(root: Path, before_tree: str, candidate_tree: str, policy: di
     """Authorize bytes and modes, including deletions, against the pinned baseline."""
     before, after = tree_entries(root, before_tree), tree_entries(root, candidate_tree)
     changed = sorted(path for path in before.keys() | after.keys() if before.get(path) != after.get(path))
-    violations = []
+    # Write authority permits local generation into ignored destinations. It
+    # does not permit the publisher to commit those files, including CI files
+    # inherited unchanged from the contributor's head or deterministic merge.
+    config = delivery(policy)
+    ci_files = set(config.get("ci_files", []))
+    ci_trees = tuple(tree + "/" for tree in config.get("ci_trees", []))
+    violations = [path for path in after if path in ci_files or path.startswith(ci_trees)]
     for path in changed:
         try:
             if not safe_path(path):
@@ -154,7 +164,7 @@ def validate_delta(root: Path, before_tree: str, candidate_tree: str, policy: di
                 raise RepairError("Cannot add or delete a hybrid/protected file")
         except (RepairError, UnicodeError):
             violations.append(path)
-    return violations
+    return sorted(set(violations))
 
 
 def apply_patch_tree(root: Path, head_sha: str, patch: bytes) -> str:

@@ -1,3 +1,4 @@
+import importlib.util
 import json
 import re
 import unittest
@@ -29,6 +30,13 @@ WEB_SCREENSHOT_SCENARIOS = REPO_ROOT / "scripts" / "dev" / "web-screenshot-scena
 class RefreshScreenshotsWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        # Mirrors are build outputs. Render this fixture through the owning generator
+        # so this tooling test also runs before npm has prepared a clean checkout.
+        generator_path = REPO_ROOT / "build" / "scripts" / "generate-ui-api-routes-ts.py"
+        spec = importlib.util.spec_from_file_location("screenshot_fixture_api_routes", generator_path)
+        generator = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(generator)
+        cls.api_routes_source = generator.render(generator.extract_routes(generator.SOURCE_FILE.read_text(encoding="utf-8")))
         cls.web_workflow = WEB_SCREENSHOT_CAPTURE_WORKFLOW.read_text(encoding="utf-8")
         cls.desktop_screenshot_workflow = DESKTOP_SCREENSHOT_CAPTURE_WORKFLOW.read_text(encoding="utf-8")
         cls.desktop_workflow_runner = DESKTOP_WORKFLOW_RUNNER_WORKFLOW.read_text(encoding="utf-8")
@@ -694,7 +702,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         dashboard_source = REPO_ROOT / "src" / "Meridian.Ui" / "dashboard" / "src"
         scenario_source = (dashboard_source / "scenarios" / "accounting.ts").read_text(encoding="utf-8")
         endpoint_source = (dashboard_source / "lib" / "workstation-endpoints.ts").read_text(encoding="utf-8")
-        api_routes_source = (dashboard_source / "lib" / "ui-api-routes.generated.ts").read_text(encoding="utf-8")
+        api_routes_source = self.api_routes_source
         self.assertRegex(scenario_source, r'method:\s*"GET",\s*path:\s*RECONCILIATION_API_ENDPOINTS\.breakQueue')
         self.assertRegex(endpoint_source, r'breakQueue:\s*UI_API_ROUTES\.ReconciliationBreakQueue\b')
         queue_path = re.search(r'ReconciliationBreakQueue:\s*"([^"]+)"', api_routes_source)

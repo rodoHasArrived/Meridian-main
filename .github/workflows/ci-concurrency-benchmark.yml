@@ -43,12 +43,14 @@ jobs:
         with:
           global-json-file: global.json
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        if: matrix.subject == 'browser'
         with:
           node-version: "24"
       - name: Restore browser dependencies
         if: matrix.subject == 'browser'
         run: npm --prefix src/Meridian.Ui/dashboard ci
+      - name: Build workstation assets before .NET evaluation and measurement
+        if: matrix.subject == 'dotnet'
+        run: python build/scripts/ensure-workstation-assets.py
       - name: Restore .NET dependencies before either measured variant
         if: matrix.subject == 'dotnet'
         run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
