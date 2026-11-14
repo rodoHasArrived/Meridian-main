@@ -1112,7 +1112,7 @@ class UnitAggregateCommandTests(unittest.TestCase):
         make = shutil.which("make")
         if make is None or os.name == "nt":
             self.skipTest("Requires GNU Make and a POSIX executable stub")
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
             directory = Path(temporary)
             log = directory / "commands.jsonl"
             stub = directory / "dotnet"

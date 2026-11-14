@@ -34,7 +34,7 @@ class DotnetChangeDetectionTests(unittest.TestCase):
         self.assertTrue(detector.requires_dotnet([]))
 
     def test_complete_git_diff_handles_renames_deletions_and_large_changes(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             def git(*args):
                 return subprocess.check_output(['git', *args], cwd=root, text=True).strip()
@@ -94,7 +94,7 @@ class QualityGateChangeDetectionTests(unittest.TestCase):
     def run_gate(self, **overrides):
         step = self.jobs['quality-gate']['steps'][0]
         self.assertNotIn('${{', step['run'])
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             env = dict(os.environ, GITHUB_STEP_SUMMARY=str(Path(directory) / 'summary'),
                        CHANGES_RESULT='success', DOTNET_REQUIRED='true', DOTNET_RESULT='success',
                        BROWSER_RESULT='success', DOCS_RESULT='success', WORKFLOWS_RESULT='success')
