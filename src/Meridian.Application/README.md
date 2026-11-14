@@ -52,8 +52,10 @@ exact selection and owner still match, including intervening selection changes b
 Production selection changes, operator credential edits/removal and bound connection deletion/disable
 serialize with runtime application and require `StopAndDrainAsync` authority before mutation. The
 default host has no such authority and refuses these changes with a maintenance conflict. A capable
-host must stop new dispatches, drain in-flight work and dispose captured-key instances; failure or
-cancellation leaves application pending. Provider-owned conditional OAuth rotation retains its
+host must stop new dispatches, drain in-flight work and dispose captured-key instances. Refusal
+without a drain preserves prior application status; a completed drain or uncertain failure/cancellation
+leaves application pending. Connection IDs are normalized before maintenance admission and persistence.
+Provider-owned conditional OAuth rotation retains its
 scope/generation CAS path so an in-flight refresh can finish while an operator's change drains.
 
 The final production ownership policy also guards every supported configuration writer. Browser,

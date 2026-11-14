@@ -6,15 +6,20 @@ namespace Meridian.Infrastructure.Adapters.NYSE;
 /// <summary>Refuses NYSE activation where credential ownership is required but not implemented.</summary>
 public sealed record NyseCredentialAccessPolicy(bool RequireExplicitOwnership)
 {
+    internal const string UnavailableMessage =
+        "NYSE activation is unavailable in production, packaged, or customer builds until " +
+        "tenant and account-scoped credential ownership is supported. No provider request was sent.";
+
     internal static void EnsureAccessAllowed(IServiceProvider? services = null, IConfiguration? configuration = null)
     {
-        if (services?.GetService<NyseCredentialAccessPolicy>()?.RequireExplicitOwnership == true ||
-            RequiresOwnership(configuration ?? services?.GetService<IConfiguration>()) ||
-            RequiresOwnership(null))
-            throw new InvalidOperationException(
-                "NYSE activation is unavailable in production, packaged, or customer builds until " +
-                "tenant and account-scoped credential ownership is supported. No provider request was sent.");
+        if (!IsAccessAllowed(services, configuration))
+            throw new InvalidOperationException(UnavailableMessage);
     }
+
+    internal static bool IsAccessAllowed(IServiceProvider? services = null, IConfiguration? configuration = null)
+        => services?.GetService<NyseCredentialAccessPolicy>()?.RequireExplicitOwnership != true &&
+            !RequiresOwnership(configuration ?? services?.GetService<IConfiguration>()) &&
+            !RequiresOwnership(null);
 
     private static bool RequiresOwnership(IConfiguration? configuration)
     {

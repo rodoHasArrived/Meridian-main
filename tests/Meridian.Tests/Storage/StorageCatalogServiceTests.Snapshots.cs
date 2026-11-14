@@ -257,6 +257,97 @@ public sealed partial class StorageCatalogServiceTests
         restarted.GetStatistics().TotalFiles.Should().Be(1);
     }
 
+    [Theory]
+    [InlineData("update")]
+    [InlineData("remove")]
+    [InlineData("directory")]
+    public async Task SingleDirectoryMutation_DoesNotRewriteUnrelatedCompatibilityIndexes(string mutation)
+    {
+        await _service.InitializeAsync();
+        await _service.UpdateFileEntryAsync(new IndexedFileEntry { RelativePath = "A/data.jsonl", Symbol = "A", EventCount = 1 });
+        await _service.UpdateFileEntryAsync(new IndexedFileEntry { RelativePath = "B/data.jsonl", Symbol = "B", EventCount = 2 });
+        var unrelatedIndex = Path.Combine(_testDirectory, "B", "_index.json");
+        var unrelatedContent = await File.ReadAllBytesAsync(unrelatedIndex);
+        File.SetLastWriteTimeUtc(unrelatedIndex, new DateTime(2001, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+        var unrelatedWriteTime = File.GetLastWriteTimeUtc(unrelatedIndex);
+
+        if (mutation == "update")
+            await _service.UpdateFileEntryAsync(new IndexedFileEntry { RelativePath = "A/data.jsonl", Symbol = "A", EventCount = 3 });
+        else if (mutation == "remove")
+            await _service.RemoveFileEntryAsync("A/data.jsonl");
+        else
+            await _service.UpdateDirectoryIndexAsync(new DirectoryIndex
+            {
+                RelativePath = "A",
+                Files = [new IndexedFileEntry { RelativePath = "A/data.jsonl", Symbol = "A", EventCount = 5 }]
+            });
+
+        File.GetLastWriteTimeUtc(unrelatedIndex).Should().Be(unrelatedWriteTime);
+        (await File.ReadAllBytesAsync(unrelatedIndex)).Should().Equal(unrelatedContent);
+        var changedIndex = JsonSerializer.Deserialize<DirectoryIndex>(await File.ReadAllTextAsync(Path.Combine(_testDirectory, "A", "_index.json")))!;
+        var expectedEvents = mutation == "remove" ? Array.Empty<long>() : new[] { mutation == "update" ? 3L : 5L };
+        changedIndex.Files.Select(file => file.EventCount).Should().Equal(expectedEvents);
+        var restarted = NewCatalog();
+        await restarted.InitializeAsync();
+        restarted.GetFilesForSymbol("B").Should().ContainSingle().Which.EventCount.Should().Be(2);
+        restarted.GetCatalog().DirectoryIndexes.Should().BeEquivalentTo(["A", "B"]);
+        restarted.GetStatistics().TotalFiles.Should().Be(mutation == "remove" ? 1 : 2);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task TrailingRootSeparators_SupportUpdateRebuildAndRestartWhileRefusingTraversal(int separatorCount)
+    {
+        var root = _testDirectory + new string(Path.DirectorySeparatorChar, separatorCount);
+        var options = new StorageOptions { RootPath = root, NamingConvention = FileNamingConvention.BySymbol };
+        var service = new StorageCatalogService(root, options);
+        await service.InitializeAsync();
+        var relativePath = Path.Combine("S", "Trade", "2026-11-14.jsonl");
+        var fullPath = Path.Combine(root, relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+        await File.WriteAllTextAsync(fullPath, "{\"Symbol\":\"S\",\"Price\":100}\n");
+        await service.UpdateFileEntryAsync(new IndexedFileEntry { RelativePath = relativePath, Symbol = "S", EventCount = 1 });
+        var restarted = new StorageCatalogService(root, options);
+        await restarted.InitializeAsync();
+        restarted.GetFilesForSymbol("S").Should().ContainSingle();
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => restarted.UpdateFileEntryAsync(
+            new IndexedFileEntry { RelativePath = Path.Combine("..", "outside.jsonl"), Symbol = "OUTSIDE" }));
+        var rebuild = await restarted.RebuildCatalogAsync();
+        rebuild.Success.Should().BeTrue();
+        rebuild.FilesIndexed.Should().Be(1);
+        var afterRebuild = new StorageCatalogService(root, options);
+        await afterRebuild.InitializeAsync();
+        afterRebuild.GetFilesForSymbol("S").Should().ContainSingle().Which.RelativePath.Should().Be(relativePath);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RootDirectoryScan_ReplacesExistingRootIndexWithoutDuplicatingFileIdentity(bool indexedByRebuild)
+    {
+        await _service.InitializeAsync();
+        await File.WriteAllTextAsync(Path.Combine(_testDirectory, "root.jsonl"), "{\"Symbol\":\"S\",\"Price\":100}\n");
+        if (indexedByRebuild)
+            (await _service.RebuildCatalogAsync()).Success.Should().BeTrue();
+        else
+            await _service.UpdateFileEntryAsync(new IndexedFileEntry { RelativePath = "root.jsonl", Symbol = "S", EventCount = 1 });
+
+        var scan = await _service.ScanDirectoryAsync(_testDirectory);
+
+        scan.Success.Should().BeTrue();
+        scan.Index!.RelativePath.Should().BeEmpty();
+        _service.GetCatalog().DirectoryIndexes.Should().Equal(string.Empty);
+        (await _service.GetDirectoryIndexAsync(string.Empty))!.Files.Should().ContainSingle().Which.RelativePath.Should().Be("root.jsonl");
+        (await _service.GetDirectoryIndexAsync(".")).Should().BeNull();
+        var restarted = NewCatalog();
+        await restarted.InitializeAsync();
+        restarted.GetCatalog().DirectoryIndexes.Should().Equal(string.Empty);
+        restarted.GetStatistics().TotalFiles.Should().Be(1);
+        restarted.GetStatistics().TotalEvents.Should().Be(1);
+    }
+
     private sealed class InlineVerificationProgress(Action<CatalogVerificationProgress> report) : IProgress<CatalogVerificationProgress>
     {
         public void Report(CatalogVerificationProgress value) => report(value);

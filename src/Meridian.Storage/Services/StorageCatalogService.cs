@@ -284,17 +284,22 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
             index.Files.Add(owned);
             index.LastUpdatedAt = DateTime.UtcNow;
             FinalizeDirectoryIndex(index);
+            return [directory];
         }, ct);
     }
 
     public Task RemoveFileEntryAsync(string relativePath, CancellationToken ct = default)
         => MutateCatalogAsync(directories =>
         {
-            foreach (var index in directories.Values)
+            var affectedDirectories = new List<string>();
+            foreach (var (directory, index) in directories)
             {
-                index.Files.RemoveAll(file => file.RelativePath == relativePath);
+                if (index.Files.RemoveAll(file => file.RelativePath == relativePath) == 0)
+                    continue;
                 FinalizeDirectoryIndex(index);
+                affectedDirectories.Add(directory);
             }
+            return affectedDirectories;
         }, ct);
 
     public Task<DirectoryIndex?> GetDirectoryIndexAsync(string relativePath, CancellationToken ct = default)
@@ -307,7 +312,11 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
     public Task UpdateDirectoryIndexAsync(DirectoryIndex index, CancellationToken ct = default)
     {
         var owned = CloneCatalogValue(index);
-        return MutateCatalogAsync(directories => directories[owned.RelativePath] = owned, ct);
+        return MutateCatalogAsync(directories =>
+        {
+            directories[owned.RelativePath] = owned;
+            return [owned.RelativePath];
+        }, ct);
     }
 
     public async Task<DirectoryScanResult> ScanDirectoryAsync(
@@ -323,6 +332,8 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
         {
             var fullPath = Path.IsPathRooted(path) ? path : Path.Combine(_rootPath, path);
             var relativePath = Path.GetRelativePath(_rootPath, fullPath);
+            if (relativePath == ".")
+                relativePath = string.Empty;
 
             if (!Directory.Exists(fullPath))
             {

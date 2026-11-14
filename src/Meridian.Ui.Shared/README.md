@@ -98,6 +98,8 @@ secrets; selected-connection status and mutations use the scoped vault. Legacy e
 adapters refuse unowned credentials in these compositions, while unflagged development retains its
 legacy compatibility policy. Bound production operator mutations require proven runtime stop/drain;
 the default host returns an actionable maintenance conflict before changing credentials or ownership.
+Owned disabled connections support credential setup and status reads consistently; execution and
+verification still require an enabled connection. Refused maintenance leaves prior runtime status unchanged.
 Provider-owned conditional refresh remains scope/generation checked and can finish during drain.
 See [credential operations](../../docs/operators/provider-credentials.md).
 

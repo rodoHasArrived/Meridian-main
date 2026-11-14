@@ -400,8 +400,8 @@ Declared public members:
 | <code>public Task&lt;ProviderConnectionDto&gt; UpsertAsync(CreateProviderConnectionRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:54](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L54) |  |
 | <code>public Task&lt;ProviderConnectionDto&gt; UpsertForTenantAsync(CreateProviderConnectionRequest request, string tenantId, string environment, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:58](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L58) | Creates or updates a connection for a server-authorized tenant. Legacy ownership is never inferred. |
 | <code>public Task&lt;ProviderCredentialScope?&gt; GetCredentialScopeForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:66](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L66) | Resolves retained credential ownership only for the authorized tenant. |
-| <code>public Task&lt;bool&gt; DeleteAsync(string connectionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:164](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L164) |  |
-| <code>public Task&lt;bool&gt; DeleteForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:168](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L168) | Deletes configuration only after matching its retained tenant owner. |
+| <code>public Task&lt;bool&gt; DeleteAsync(string connectionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:163](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L163) |  |
+| <code>public Task&lt;bool&gt; DeleteForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:167](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L167) | Deletes configuration only after matching its retained tenant owner. |
 
 ## ProviderCredentialOwnershipPolicy
 
@@ -639,7 +639,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard.MutationLease</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:99](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L99).
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:113](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L113).
 
 ```csharp
 public sealed class MutationLease(IDisposable ownership, IDisposable operation) : IDisposable
@@ -649,14 +649,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public void ReleaseConfigurationLease() =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:105](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L105) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:106](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L106) |  |
+| <code>public void ReleaseConfigurationLease() =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:119](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L119) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:120](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L120) |  |
 
 ## ProviderRuntimeCredentialQuiescenceException
 
 Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialQuiescenceException</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:121](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L121).
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:135](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L135).
 
 A bound secret cannot change until its running instances are proven stopped and drained.
 
@@ -668,7 +668,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderRuntimeCredentialQuiescenceException() : base(&quot;Running provider instances cannot be stopped and drained by this host. Stop the host and perform credential maintenance offline before restarting; the requested change was refused.&quot;);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:123](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L123) |  |
+| <code>public ProviderRuntimeCredentialQuiescenceException() : base(&quot;Running provider instances cannot be stopped and drained by this host. Stop the host and perform credential maintenance offline before restarting; the requested change was refused.&quot;);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:137](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L137) |  |
 
 ## ProviderRuntimeCredentialService
 

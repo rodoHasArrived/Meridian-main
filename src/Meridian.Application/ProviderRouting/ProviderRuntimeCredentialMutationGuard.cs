@@ -74,9 +74,23 @@ public sealed class ProviderRuntimeCredentialMutationGuard(ConfigStore configSto
                 // so provider shutdown can finish its own persistence and credential operations.
                 ownership.Dispose();
                 ownership = null;
-                _tracker.MarkBound(providerId);
-                if (!await _applier.StopAndDrainAsync(binding, ct).ConfigureAwait(false))
+                bool stopped;
+                try
+                {
+                    stopped = await _applier.StopAndDrainAsync(binding, ct).ConfigureAwait(false);
+                }
+                catch
+                {
+                    // A failed or cancelled drain may already have stopped dispatches. Keep
+                    // that uncertainty pending rather than claim the earlier instance is active.
+                    _tracker.MarkBound(providerId);
+                    throw;
+                }
+                // False explicitly means the host has no drain authority and changed nothing.
+                // Refusing maintenance must not invalidate the unchanged running selection.
+                if (!stopped)
                     throw new ProviderRuntimeCredentialQuiescenceException();
+                _tracker.MarkBound(providerId);
                 ownership = await configStore.AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
                 var current = configStore.LoadRequired();
                 if (ProviderRuntimeCredentialService.RequireScope(current, providerId, scope.ConnectionId, scope.TenantId, requireEnabled: false) != scope ||

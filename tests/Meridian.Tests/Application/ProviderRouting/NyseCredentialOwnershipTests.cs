@@ -1,3 +1,5 @@
+using System.Net;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
@@ -9,8 +11,13 @@ using Meridian.DataIntegration.Credentials;
 using Meridian.Domain.Collectors;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.NYSE;
+using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Identity.Auth;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Tests.TestHelpers;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -48,11 +55,18 @@ public sealed class NyseCredentialOwnershipTests : IDisposable
         await using var provider = await CreateHostAsync(posture, configuration.Object, http.Object);
 
         Action options = () => provider.GetRequiredService<NYSEOptions>();
-        Action direct = () => provider.GetServices<IDataSource>().ToArray();
+        var diagnostics = provider.GetServices<IDataSource>().Should().ContainSingle().Which;
+        Func<Task> activate = () => diagnostics.InitializeAsync();
+        Action historical = () => provider.GetRequiredService<IHistoricalDataSource>();
+        Action realtime = () => provider.GetRequiredService<IRealtimeDataSource>();
         Action streaming = () => provider.GetRequiredService<ProviderFactory>().CreateNyseStreamingClient();
 
         options.Should().Throw<InvalidOperationException>().WithMessage("NYSE activation is unavailable*");
-        direct.Should().Throw<InvalidOperationException>().WithMessage("NYSE activation is unavailable*");
+        diagnostics.Status.Should().Be(DataSourceStatus.Unavailable);
+        diagnostics.Capabilities.Should().Be(DataSourceCapabilities.None);
+        await activate.Should().ThrowAsync<InvalidOperationException>().WithMessage("NYSE activation is unavailable*");
+        historical.Should().Throw<InvalidOperationException>().WithMessage("NYSE activation is unavailable*");
+        realtime.Should().Throw<InvalidOperationException>().WithMessage("NYSE activation is unavailable*");
         streaming.Should().Throw<InvalidOperationException>().WithMessage("NYSE activation is unavailable*");
         configuration.Verify(value => value.GetSection(It.IsAny<string>()), Times.Never);
         http.VerifyNoOtherCalls();
@@ -80,13 +94,14 @@ public sealed class NyseCredentialOwnershipTests : IDisposable
         services.AddSingleton(new NYSEOptions { ApiKey = "synthetic-unassigned-key", ApiSecret = "synthetic-unassigned-secret" });
         using var provider = services.BuildServiceProvider();
 
-        Action registered = () => provider.GetServices<IDataSource>().ToArray();
+        var registered = provider.GetServices<IDataSource>().Should().ContainSingle().Which;
         Action constructed = () => new NYSEDataSource(new NYSEOptions(), http.Object);
         var publisher = new TestMarketEventPublisher();
         Action streaming = () => new NyseMarketDataClient(new TradeDataCollector(publisher, null),
             new MarketDepthCollector(publisher, requireExplicitSubscription: false), new QuoteCollector(publisher), http.Object);
 
-        registered.Should().Throw<InvalidOperationException>().WithMessage("NYSE activation is unavailable*");
+        registered.Status.Should().Be(DataSourceStatus.Unavailable);
+        registered.RateLimitState.CanMakeRequest.Should().BeFalse();
         constructed.Should().Throw<InvalidOperationException>().WithMessage("NYSE activation is unavailable*");
         streaming.Should().Throw<InvalidOperationException>().WithMessage("NYSE activation is unavailable*");
         configuration.Verify(item => item.GetSection(It.IsAny<string>()), Times.Never);
@@ -131,7 +146,58 @@ public sealed class NyseCredentialOwnershipTests : IDisposable
         http.VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData("production")]
+    [InlineData("development")]
+    public async Task DefaultNyseRegistration_KeepsOtherProviderRateDiagnosticsAvailable(string posture)
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["NYSE:ApiKey"] = "synthetic-development-key",
+            ["NYSE:ApiSecret"] = "synthetic-development-secret"
+        });
+        var http = new Mock<IHttpClientFactory>(MockBehavior.Strict);
+        foreach (var descriptor in await CreateHostServicesAsync(posture, builder.Configuration, http.Object))
+            builder.Services.Add(descriptor);
+        var registry = new ProviderRegistry();
+        registry.RegisterBackfill("synthetic", new SyntheticHistoricalDataProvider());
+        builder.Services.AddSingleton(registry);
+        builder.Services.AddSingleton(sp => new Meridian.Ui.Shared.Services.ConfigStore(
+            sp.GetRequiredService<ConfigStore>().ConfigPath,
+            sp.GetRequiredService<ProviderCredentialOwnershipPolicy>()));
+        await using var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ViewDiagnostics;
+            await next();
+        });
+        app.MapProviderExtendedEndpoints(new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        await app.StartAsync();
+
+        using var response = await app.GetTestClient().GetAsync("/api/providers/rate-limits");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadAsStringAsync();
+        using var document = JsonDocument.Parse(body);
+        var rows = document.RootElement.GetProperty("providers").EnumerateArray().ToArray();
+        rows.Should().Contain(row => row.GetProperty("provider").GetString() == "synthetic");
+        var nyse = rows.Single(row => row.GetProperty("provider").GetString() == "nyse");
+        nyse.GetProperty("stateAvailable").GetBoolean().Should().Be(posture == "development");
+        if (posture == "production")
+        {
+            nyse.GetProperty("reason").GetString().Should().Be("credential-ownership-unavailable");
+            nyse.GetProperty("requestsInWindow").ValueKind.Should().Be(JsonValueKind.Null);
+        }
+        body.Should().NotContain("synthetic-development-key").And.NotContain("synthetic-development-secret");
+        http.VerifyNoOtherCalls();
+    }
+
     private async Task<ServiceProvider> CreateHostAsync(string posture, IConfiguration providerConfiguration, IHttpClientFactory http)
+        => (await CreateHostServicesAsync(posture, providerConfiguration, http)).BuildServiceProvider();
+
+    private async Task<IServiceCollection> CreateHostServicesAsync(string posture, IConfiguration providerConfiguration, IHttpClientFactory http)
     {
         Directory.CreateDirectory(_root);
         var store = new ConfigStore(Path.Combine(_root, "appsettings.json"), new(false));
@@ -155,7 +221,7 @@ public sealed class NyseCredentialOwnershipTests : IDisposable
         services.AddSingleton(new TradeDataCollector(publisher, null));
         services.AddSingleton(new MarketDepthCollector(publisher, requireExplicitSubscription: false));
         services.AddSingleton(new QuoteCollector(publisher));
-        return services.BuildServiceProvider();
+        return services;
     }
 
     public void Dispose()

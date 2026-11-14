@@ -19,8 +19,11 @@ public sealed partial class ProviderConnectionLifecycleService
         {
             if (_ownershipScope is not null)
             {
+                // Owned setup can save or remove credentials before a connection is enabled.
+                // Its status receipt must remain readable; secret reads and verification still
+                // require an enabled connection, as does runtime credential activation.
                 var current = ProviderRuntimeCredentialService.RequireScope(authority.LoadRequired(), providerId,
-                    _ownershipScope.ConnectionId, _ownershipScope.TenantId);
+                    _ownershipScope.ConnectionId, _ownershipScope.TenantId, requireEnabled: enforceLegacyOwnership);
                 if (current != _ownershipScope)
                     throw new UnauthorizedAccessException("Credential ownership changed. Select the current connection again.");
             }

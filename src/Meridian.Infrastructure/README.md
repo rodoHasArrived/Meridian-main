@@ -16,6 +16,8 @@ customer builds until their provider-wide credential path supports retained tena
 ownership. Final host posture and direct-construction environment flags are checked before
 credential configuration is read or a client is created. Development compatibility is retained;
 this refusal is covered by synthetic fixtures and does not establish live-provider compatibility.
+Protected hosts expose only a credential-free unavailable NYSE diagnostic source, so enumerating
+provider quotas cannot activate NYSE or prevent diagnostics for other providers.
 
 Historical adapter factories apply catalog-backed priorities and request caps when constructing the
 provider and limiter. Twelve Data capabilities share weighted/daily limits and the stricter
@@ -33,6 +35,8 @@ throttling failures for explicit candidate review. Alpaca also rejects malformed
 missing asset identity or filter facts; those failures cannot become successful empty lookups.
 Existing autocomplete keeps its best-effort behavior. Alpaca bond discovery uses the retained `fixed_income` filter; evidence is
 synthetic-verified in tests and live-untested without a configured provider run.
+Disposing a symbol-search provider cancels its queued quota waits and in-flight requests while
+preserving the shared credential budget for replacement instances.
 Authoritative decoding requires asset names because issuer matching depends on them, and refuses
 partial HTTP responses and content ranges. Providers must
 implement the strict decoder explicitly; its default refuses unsupported authoritative lookups.

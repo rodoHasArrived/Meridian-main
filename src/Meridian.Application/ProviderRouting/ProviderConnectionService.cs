@@ -84,17 +84,16 @@ public sealed class ProviderConnectionService
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ProviderFamilyId);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.DisplayName);
 
-        using var mutation = !request.Enabled && request.ConnectionId is not null
-            ? await AcquireRemovalLeaseAsync(request.ConnectionId, tenantId, ct).ConfigureAwait(false) : null;
+        var connectionId = string.IsNullOrWhiteSpace(request.ConnectionId)
+            ? Guid.NewGuid().ToString("N")
+            : request.ConnectionId.Trim();
+        using var mutation = !request.Enabled && !string.IsNullOrWhiteSpace(request.ConnectionId)
+            ? await AcquireRemovalLeaseAsync(connectionId, tenantId, ct).ConfigureAwait(false) : null;
         mutation?.ReleaseConfigurationLease();
         return await _store.UpdateRequiredAsync(cfg =>
         {
             var section = ProviderRoutingConfigExtensions.GetSection(cfg);
             var connections = (section.Connections ?? Array.Empty<ProviderConnectionConfig>()).ToList();
-
-            var connectionId = string.IsNullOrWhiteSpace(request.ConnectionId)
-                ? Guid.NewGuid().ToString("N")
-                : request.ConnectionId.Trim();
 
             if (connections.Count(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)) > 1)
                 throw new InvalidOperationException("Connection ownership is ambiguous.");

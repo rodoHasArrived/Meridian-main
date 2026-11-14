@@ -161,6 +161,8 @@ and ignores loose `_index.json` compatibility exports and unpublished candidates
 retains only the surviving complete catalog; corruption or missing revisions require recovery.
 Mutations commit a complete generation before one in-memory publication, and file/metadata getters
 return detached snapshots. Integrity verification is bound to the generation it inspected.
+Compatibility exports rewrite only directories affected by a mutation. Root scans use the same
+empty directory identity as updates and rebuilds; trailing root separators preserve containment checks.
 
 `DataLineageService` and `MetadataTagService` fence read-modify-replace across instances and processes,
 reload retained state under that lease, and publish only after durable persistence. Corrupt,

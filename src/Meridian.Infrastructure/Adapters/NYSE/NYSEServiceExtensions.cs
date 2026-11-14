@@ -49,7 +49,10 @@ public static class NYSEServiceExtensions
 
         services.AddSingleton<IDataSource>(sp =>
         {
-            NyseCredentialAccessPolicy.EnsureAccessAllowed(sp, resolveConfiguration(sp));
+            // Collection reads are diagnostics, not activation. Keep the unavailable entry
+            // credential-free so unrelated providers remain observable in a protected host.
+            if (!NyseCredentialAccessPolicy.IsAccessAllowed(sp, resolveConfiguration(sp)))
+                return new UnavailableNyseDataSource();
             var dataSourcesConfig = new UnifiedDataSourcesConfig();
             resolveConfiguration(sp).GetSection("DataSources").Bind(dataSourcesConfig);
             var sourceOptions = dataSourcesConfig.GetOptionsForSource("nyse");
@@ -61,12 +64,14 @@ public static class NYSEServiceExtensions
 
         services.AddSingleton<IRealtimeDataSource>(sp =>
         {
+            NyseCredentialAccessPolicy.EnsureAccessAllowed(sp, resolveConfiguration(sp));
             var sources = sp.GetServices<IDataSource>();
             return sources.OfType<NYSEDataSource>().First();
         });
 
         services.AddSingleton<IHistoricalDataSource>(sp =>
         {
+            NyseCredentialAccessPolicy.EnsureAccessAllowed(sp, resolveConfiguration(sp));
             var sources = sp.GetServices<IDataSource>();
             return sources.OfType<NYSEDataSource>().First();
         });

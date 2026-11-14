@@ -30,20 +30,20 @@ public sealed partial class StorageCatalogService
         }
     }
 
-    private async Task MutateCatalogAsync(Action<Dictionary<string, DirectoryIndex>> mutate, CancellationToken ct)
+    private async Task MutateCatalogAsync(Func<Dictionary<string, DirectoryIndex>, IReadOnlyCollection<string>> mutate, CancellationToken ct)
     {
         await _catalogLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             var candidate = CloneCatalogValue(_catalog);
             var directories = _directoryIndexCache.ToDictionary(pair => pair.Key, pair => CloneCatalogValue(pair.Value));
-            mutate(directories);
+            var affectedDirectories = mutate(directories);
             var files = BuildSnapshotFileIndex(directories);
             BuildCatalogFromFileIndex(candidate, files, directories.Keys);
             ValidateCatalogSnapshot(candidate, directories);
             // Loose indexes remain compatibility exports. They never establish current authority.
-            foreach (var (path, index) in directories)
-                await SaveDirectoryIndexAsync(index, Path.Combine(_rootPath, path, DirectoryIndexFileName), ct).ConfigureAwait(false);
+            foreach (var path in affectedDirectories)
+                await SaveDirectoryIndexAsync(directories[path], Path.Combine(_rootPath, path, DirectoryIndexFileName), ct).ConfigureAwait(false);
             await SaveCatalogSnapshotAsync(candidate, ct, directories).ConfigureAwait(false);
             PublishCatalogSnapshot(candidate, directories);
         }
@@ -210,8 +210,9 @@ public sealed partial class StorageCatalogService
         if (path is null || Path.IsPathRooted(path) || (!allowRoot && string.IsNullOrWhiteSpace(path)))
             throw new InvalidDataException("A catalog path must be relative to its storage root.");
         var resolved = Path.GetFullPath(Path.Combine(_rootPath, path));
-        if (resolved != _rootPath && !resolved.StartsWith(_rootPath + Path.DirectorySeparatorChar,
-                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        var rootPrefix = Path.EndsInDirectorySeparator(_rootPath) ? _rootPath : _rootPath + Path.DirectorySeparatorChar;
+        if (!string.Equals(resolved, _rootPath, comparison) && !resolved.StartsWith(rootPrefix, comparison))
             throw new InvalidDataException("A catalog path escapes its storage root.");
     }
 

@@ -7314,7 +7314,8 @@ Meridian-main
 │   │   │   │   ├── NyseMarketDataClient.cs
 │   │   │   │   ├── NyseNationalTradesCsvParser.cs
 │   │   │   │   ├── NYSEOptions.cs
-│   │   │   │   └── NYSEServiceExtensions.cs
+│   │   │   │   ├── NYSEServiceExtensions.cs
+│   │   │   │   └── UnavailableNyseDataSource.cs
 │   │   │   ├── OpenFigi
 │   │   │   │   ├── BondFigiLookupResult.cs
 │   │   │   │   ├── OpenFigiClient.cs
@@ -12765,6 +12766,7 @@ Meridian-main
 │   │   │   │   ├── KernelObservabilityServiceTests.cs
 │   │   │   │   ├── NyseCredentialOwnershipTests.cs
 │   │   │   │   ├── ProviderAccountingRuntimeCredentialTests.cs
+│   │   │   │   ├── ProviderCredentialMaintenanceRefusalTests.cs
 │   │   │   │   ├── ProviderCredentialOwnershipLifecycleTests.cs
 │   │   │   │   ├── ProviderCredentialProductionOwnershipTests.cs
 │   │   │   │   ├── ProviderFamilyCatalogServiceTests.cs
@@ -13491,6 +13493,7 @@ Meridian-main
 │   │   │   │   ├── StooqHistoricalDataProviderTests.cs
 │   │   │   │   ├── StoredProviderCredentialPreparationTests.cs
 │   │   │   │   ├── StreamingFailoverServiceTests.cs
+│   │   │   │   ├── SymbolSearchProviderLifetimeTests.cs
 │   │   │   │   ├── SyntheticHistoricalProviderContractTests.cs
 │   │   │   │   ├── SyntheticMarketDataProviderTests.cs
 │   │   │   │   ├── SyntheticOptionsChainProviderTests.cs
