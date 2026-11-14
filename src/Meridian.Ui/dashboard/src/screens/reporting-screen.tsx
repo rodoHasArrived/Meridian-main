@@ -819,6 +819,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
 
   return (
     <div className={isDailyReportingCockpitLanding ? "space-y-3" : "space-y-5"}>
+      <div className="space-y-1">
       <ReportingWorkbenchContext taskMode={vm.taskMode} actions={vm.workbenchActions} compact={isDailyReportingCockpitLanding} />
       <OperationalTrustSummary
         source={{ value: "Governed Reporting service", tone: "ready" }}
@@ -844,7 +845,9 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
         } : undefined}
         label="Reporting data confidence"
         disclosure={isDailyReportingCockpitLanding}
+        compact={isDailyReportingCockpitLanding}
       />
+      </div>
 
       {isDailyReportingCockpitLanding ? (
         <ReportingHub model={hubModel} />

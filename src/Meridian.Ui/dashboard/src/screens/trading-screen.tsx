@@ -39,6 +39,7 @@ import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-acce
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { SectionHeading } from "@/components/meridian/section-heading";
 import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { cn } from "@/lib/utils";
@@ -562,9 +563,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         : "unknown";
 
   return (
-    <div className="space-y-5">
-      <StatStrip metrics={data.metrics} label="Trading headline metrics" />
+    <div className={showOrders ? "space-y-2" : "space-y-5"}>
+      {showOverview ? <StatStrip metrics={data.metrics} label="Trading headline metrics" /> : null}
 
+      <div className="space-y-1">
       <section
         id="trading-overview"
         role="region"
@@ -572,12 +574,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         className="flex flex-wrap items-end justify-between gap-3"
       >
         <div className="min-w-0">
-          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-            {routeCopy.title}
-          </h2>
-          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
-            {routeCopy.description}
-          </p>
+          <SectionHeading
+            title={routeCopy.title}
+            description={routeCopy.description}
+            helpId={`trading-${routeView}`}
+            as="h2"
+            headingClassName="font-display text-lg font-semibold leading-tight text-foreground"
+          />
         </div>
         <WorkspaceTabStrip
           label="Trading routes"
@@ -596,6 +599,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       <OperationalTrustSummary
         label="Trading data confidence"
         disclosure
+        compact={showOrders}
         source={{
           value: hasRecoveryProjection ? reconciliation?.brokerDisplayName ?? scopedRecovery?.providerId ?? "Broker unavailable" : `${data.brokerage.provider} · ${data.brokerage.environment}`,
           detail: hasRecoveryProjection
@@ -624,8 +628,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           tone: readinessTone
         } : undefined}
       />
+      </div>
 
       <BrokerageRecoveryPanel
+        compact={showOrders}
         readiness={tradingReadiness.readiness}
         fundAccountId={fundAccountId}
         busy={tradingReadiness.refreshing}
@@ -821,7 +827,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
         <div className="min-w-0 space-y-4">
         <Card className="panel-surface">
-          <CardHeader>
+          <CardHeader className="px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <CardTitle className="flex items-center gap-2 text-base">
                 <ClipboardList className="h-4 w-4 text-primary" />
@@ -1019,7 +1025,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               riskWarnings={orderTicket.riskWarnings}
             />
           )}
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3" style={{ padding: 0 }}>
             <DenseDataTable
               ariaLabel={blotterVm.ordersTableLabel}
               caption="Select an order to update the order detail status window."

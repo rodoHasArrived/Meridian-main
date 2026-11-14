@@ -1,6 +1,7 @@
 import { Network } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { SectionHeading } from "@/components/meridian/section-heading";
 import { cn } from "@/lib/utils";
 import type {
   ReportingChipViewModel,
@@ -22,12 +23,9 @@ export function ReportingWorkbenchContext({ taskMode, actions, compact = false }
       className="flex flex-wrap items-end justify-between gap-3"
     >
       <div className={cn("min-w-0", compact && "sr-only")}>
-        <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-          {taskMode.label}
-        </h2>
-        <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
-          {taskMode.description}
-        </p>
+        {compact ? <h2>{taskMode.label}</h2> : (
+          <SectionHeading title={taskMode.label} description={taskMode.description} helpId={`reporting-${taskMode.label}`} as="h2" headingClassName="font-display text-lg font-semibold leading-tight text-foreground" />
+        )}
       </div>
       <div className="flex flex-wrap items-center justify-end gap-2">
         {actions.map((action) => (

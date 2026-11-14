@@ -377,6 +377,17 @@ describe("PortfolioScreen", () => {
     vi.restoreAllMocks();
   });
 
+  it.each([
+    ["/portfolio", true],
+    ["/portfolio/", true],
+    ["/portfolio/attribution", false],
+    ["/portfolio/positions", false]
+  ])("shows headline metrics only on the exact overview route: %s", async (route, visible) => {
+    const withMetrics = { ...trading, metrics: [{ id: "positions", label: "Positions", value: "1", delta: "", tone: "default" as const }] };
+    await renderPortfolioScreen(<PortfolioScreen trading={withMetrics} strategy={strategy} accounting={accounting} />, { initialEntries: [route] });
+    expect(Boolean(screen.queryByLabelText("Portfolio headline metrics"))).toBe(visible);
+  });
+
   it("navigates between portfolio route views from the tab strip", async () => {
     await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
       initialEntries: ["/portfolio"]

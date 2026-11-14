@@ -35,6 +35,7 @@ import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuit
 import { DecisionBriefPill } from "@/components/meridian/decision-brief-pill";
 import { WorkspaceViewsMenu } from "@/components/meridian/workspace-views-menu";
 import { WorkspaceStatus } from "@/components/meridian/workspace-status";
+import { SectionHelpProvider } from "@/components/meridian/section-heading";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { CompanionPaneWindow } from "@/components/meridian/companion-pane-window";
 import { LayoutSwitcher } from "@/components/meridian/layout-switcher";
@@ -696,6 +697,7 @@ function AppShell({
   ]);
 
   return (
+    <SectionHelpProvider userKey={session ? JSON.stringify([session.displayName, session.role, session.environment]) : null}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -720,15 +722,13 @@ function AppShell({
         )}
       />
 
-      {/* Persistent, non-dismissable simulation label (W9-TRUTH-001): whenever the
-          workstation is showing simulated, seeded, or sample data the operator keeps
-          seeing it. Renders nothing for real data. Unresolved provenance renders the
-          `unknown` badge with a retry control instead of a false SIMULATED claim. */}
-      <DataProvenanceBanner
+      {/* Confirmed provenance remains persistently visible in the masthead Trust
+          control. Only an unresolved probe needs a separate recovery banner. */}
+      {dataProvenance === "unknown" ? <DataProvenanceBanner
         provenance={dataProvenance}
         onRetryLiveData={onRetryDemoModeProbe}
         retryBusy={demoModeProbeBusy}
-      />
+      /> : null}
       <DegradedModeBanner degradedMode={overview?.degradedMode} />
 
       <div className="workstation-shell">
@@ -934,6 +934,7 @@ function AppShell({
         </SheetContent>
       </Sheet>
     </div>
+    </SectionHelpProvider>
   );
 }
 

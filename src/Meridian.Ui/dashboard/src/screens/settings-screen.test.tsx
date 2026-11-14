@@ -582,6 +582,10 @@ describe("SettingsScreen", () => {
     );
     expect(screen.queryByRole("tablist", { name: "Settings routes" })).not.toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Settings tasks" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Operator control posture metrics")).not.toBeInTheDocument();
+    expect(screen.queryByText("Active runs")).not.toBeInTheDocument();
+    expect(screen.queryByText("Open positions")).not.toBeInTheDocument();
+    expect(screen.queryByText("Storage health")).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /Open Preferences:/ })[0]).toHaveAttribute("href", "/settings/preferences");
     expect(screen.queryByRole("region", { name: "Profile and authentication posture" })).not.toBeInTheDocument();
   });

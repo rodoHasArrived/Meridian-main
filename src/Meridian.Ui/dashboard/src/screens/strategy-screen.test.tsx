@@ -154,6 +154,16 @@ describe("StrategyScreen", () => {
     restoreApiSpy(api.getRunReviewPacket);
   });
 
+  it.each([
+    ["/strategy", true],
+    ["/strategy/", true],
+    ["/strategy/promotions", false],
+    ["/strategy/history", false]
+  ])("shows headline metrics only on the exact overview route: %s", (route, visible) => {
+    renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: [route] });
+    expect(Boolean(screen.queryByLabelText("Strategy headline metrics"))).toBe(visible);
+  });
+
   it("renders the Strategy loading state with pending semantics", () => {
     renderWithRouter(<StrategyScreen data={null} />);
 

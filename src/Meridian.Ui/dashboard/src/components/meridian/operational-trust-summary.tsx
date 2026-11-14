@@ -22,6 +22,8 @@ export interface OperationalTrustSummaryProps {
   label?: string;
   className?: string;
   disclosure?: boolean;
+  /** One-line provenance and posture with supporting facts behind Details. */
+  compact?: boolean;
 }
 
 const toneClasses: Record<OperationalTrustTone, string> = {
@@ -55,7 +57,8 @@ export function OperationalTrustSummary({
   action,
   label = "Data confidence",
   className,
-  disclosure = false
+  disclosure = false,
+  compact = false
 }: OperationalTrustSummaryProps) {
   const facts: Array<{ id: string; label: string; fact: OperationalTrustFact }> = [
     { id: "source", label: source.label ?? "Source", fact: source },
@@ -67,6 +70,10 @@ export function OperationalTrustSummary({
   if (blocker) {
     facts.push({ id: "blocker", label: blocker.label ?? "Blocker", fact: blocker });
   }
+
+  const statusOrder: OperationalTrustTone[] = ["blocked", "review", "unknown", "ready"];
+  const overallTone = statusOrder.find((tone) => facts.some(({ fact }) => (fact.tone ?? "unknown") === tone)) ?? "unknown";
+  const visibleWarnings = facts.filter(({ id, fact }) => id !== "source" && id !== "freshness" && (fact.tone ?? "unknown") !== "ready");
 
   const detail = (
     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -115,10 +122,31 @@ export function OperationalTrustSummary({
 
   return (
     <section
-      className={cn("rounded-[2px] border border-border bg-card", !disclosure && "px-3.5 py-3", className)}
+      className={cn(compact ? "min-w-0" : "rounded-[2px] border border-border bg-card", !disclosure && !compact && "px-3.5 py-3", className)}
       aria-label={label}
     >
-      {disclosure ? (
+      {compact ? (
+        <details className="group" onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            event.currentTarget.open = false;
+            event.currentTarget.querySelector("summary")?.focus();
+          }
+        }}>
+          <summary className="flex cursor-pointer list-none flex-wrap items-baseline gap-x-2 gap-y-1 text-xs leading-5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
+            <span className="sr-only">{label}. </span>
+            <span className={cn("inline-flex shrink-0 rounded-full border px-1.5 text-[11px]", toneClasses[overallTone])}>{toneLabels[overallTone]}</span>
+            <span className="min-w-0 break-words text-muted-foreground"><span className="sr-only">{source.label ?? "Source"}: </span>{source.value}</span>
+            <span aria-hidden="true" className="text-muted-foreground">·</span>
+            <span className="min-w-0 break-words text-muted-foreground"><span>{freshness.label ?? "As of"}: </span>{freshness.value}</span>
+            {visibleWarnings.map(({ id, label: factLabel, fact }) => (
+              <span key={id} className="min-w-0 break-words font-medium text-foreground"><span aria-hidden="true">· </span>{factLabel}: {fact.value}</span>
+            ))}
+            <span className="ml-auto inline-flex shrink-0 items-center gap-1 font-medium text-muted-foreground">Details<ChevronDown className="h-3.5 w-3.5 transition-transform group-open:rotate-180" aria-hidden="true" /></span>
+          </summary>
+          <div className="mt-2 rounded-[2px] border border-border bg-card px-3 py-3">{detail}</div>
+        </details>
+      ) : disclosure ? (
         <details className="group">
           <summary className="flex cursor-pointer list-none items-start gap-3 px-3 py-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
             <span className="sr-only">{label}. </span>

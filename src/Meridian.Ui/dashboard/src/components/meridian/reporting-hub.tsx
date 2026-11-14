@@ -1,4 +1,5 @@
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
+import { SectionHeading } from "@/components/meridian/section-heading";
 import { AlertTriangle, ArrowUpRight, FileText, PanelRight, TableProperties } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useInRouterContext, useLocation, useNavigate } from "react-router-dom";
@@ -133,15 +134,15 @@ function ReportingHubContent({
     : null);
 
   if (model.isEmpty && !unavailableSelection) return null;
+  const emptyWorkText = model.attentionCount > 0
+    ? `No dedicated daily work items are loaded. ${model.attentionCount} report ${model.attentionCount === 1 ? "family still needs" : "families still need"} review in the organizer below.`
+    : "No due packages, approvals, delivery failures, restatements, or evidence gaps are queued.";
 
   return (
     <section role="region" aria-label="Daily reporting cockpit" className={cn("workspace-section-band", className)}>
       <div className="workspace-section-subheader">
         <div className="min-w-0">
-          <h2 className="workspace-section-title">Daily reporting cockpit</h2>
-          <p className="workspace-section-summary">
-            Select work to review its evidence and next action.
-          </p>
+          <SectionHeading title="Daily reporting cockpit" description="Select work to review its evidence and next action." helpId="reporting-daily-work" as="h2" headingClassName="workspace-section-title" />
         </div>
         <div className="flex flex-wrap gap-2">
           {model.cards.length > 0 ? (
@@ -214,6 +215,7 @@ function ReportingHubContent({
       )}>
 
         <div className="space-y-4">
+          {model.dailyWork.length > 0 || model.cards.length === 0 ? (
           <section className="rounded-md border border-border/70 bg-background/75" aria-label="Daily reporting triage queue">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 px-3 py-2">
               <div className="flex items-center gap-2">
@@ -241,12 +243,11 @@ function ReportingHubContent({
               />
             ) : (
               <div className="px-3 py-4 text-sm text-muted-foreground">
-                {model.attentionCount > 0
-                  ? `No dedicated daily work items are loaded. ${model.attentionCount} report ${model.attentionCount === 1 ? "family still needs" : "families still need"} review in the organizer below.`
-                  : "No due packages, approvals, delivery failures, restatements, or evidence gaps are queued."}
+                {emptyWorkText}
               </div>
             )}
           </section>
+          ) : null}
 
           {model.cards.length > 0 ? (
             <section className="rounded-md border border-border/70 bg-background/75" aria-label="Report family organizer">
@@ -299,6 +300,12 @@ function ReportingHubContent({
                   </tbody>
                 </table>
               </div>
+            </section>
+          ) : null}
+          {model.dailyWork.length === 0 && model.cards.length > 0 ? (
+            <section aria-label="Daily reporting triage queue" className="text-xs text-muted-foreground">
+              <Badge variant={model.attentionCount > 0 ? "warning" : "success"}>{model.dailyWorkSummaryLabel}</Badge>
+              <p className="mt-1">{emptyWorkText.replace("in the organizer below", "in the organizer above")}</p>
             </section>
           ) : null}
         </div>

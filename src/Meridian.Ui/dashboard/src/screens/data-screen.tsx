@@ -240,7 +240,7 @@ export function DataScreen({
 
   return (
     <div className="workspace-screen data-workspace-screen">
-      <StatStrip metrics={data.metrics} label="Data headline metrics" />
+      {pathname.replace(/\/+$/, "") === WORKSTATION_ROUTE_CATALOG.data ? <StatStrip metrics={data.metrics} label="Data headline metrics" /> : null}
 
       <section
         role="region"

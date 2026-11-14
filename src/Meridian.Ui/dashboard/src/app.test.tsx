@@ -444,10 +444,11 @@ describe("App", () => {
     });
     expect(within(trustDetails).getByRole("link", { name: /Data provenance SEEDED/ }))
       .toHaveTextContent("ProvenanceSEEDED");
-    // W9-TRUTH-001: seeded data keeps the persistent, non-dismissable provenance banner
-    // on screen above every workspace, alongside the trust-strip cell.
-    const provenanceBanner = await screen.findByRole("region", { name: "Data provenance" });
-    expect(within(provenanceBanner).getByTestId("data-provenance-seeded")).toBeInTheDocument();
+    // Confirmed provenance stays visible once in the masthead, with its full
+    // explanation in Trust rather than a duplicate banner ahead of every page.
+    expect(within(strip).getByText(/^(Paper|Demo) · SEEDED/)).toBeVisible();
+    expect(trustDetails).toHaveTextContent("It is not real market or account data.");
+    expect(screen.queryByRole("region", { name: "Data provenance" })).not.toBeInTheDocument();
   });
 
   it("opens and closes the command palette with Control+K", async () => {

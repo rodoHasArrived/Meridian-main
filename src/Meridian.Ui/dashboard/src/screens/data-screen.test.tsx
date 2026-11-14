@@ -231,6 +231,16 @@ const providerReadiness: ProviderReadinessSummary = {
 };
 
 describe("DataScreen", () => {
+  it.each([
+    ["/data", true],
+    ["/data/", true],
+    ["/data/providers", false],
+    ["/data/uploads", false]
+  ])("shows headline metrics only on the exact overview route: %s", (route, visible) => {
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: [route] });
+    expect(Boolean(screen.queryByLabelText("Data headline metrics"))).toBe(visible);
+  });
+
   it("renders an accessible route-aware loading panel when bootstrap data is unavailable", () => {
     renderWithRouter(<DataScreen data={null} />, { initialEntries: ["/data/backfills"] });
 

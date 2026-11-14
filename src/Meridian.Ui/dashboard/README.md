@@ -84,6 +84,27 @@ Focused coverage: `portfolio-positions-table.test.ts`, `use-portfolio-positions-
 `portfolio-screen.positions-table.test.tsx`, and existing Portfolio/a11y suites. Brokerage positions
 and Trading blotters retain their existing interaction models.
 
+## Compact page framing
+
+Workspace-wide headline KPI strips belong on overview routes only. Accounting subroutes
+lead with their task context; Settings omits unrelated trading and storage metrics.
+Confirmed seeded/simulated/sample provenance remains visible in the masthead Trust control,
+with the full notice available in its details. Unknown provenance retains a separate retry banner.
+
+`OperationalTrustSummary compact` combines readiness, source and as-of evidence in a single
+wrapping line. Non-ready scope, completeness and blockers stay visible; the disclosure retains
+fact-level details and remediation actions. Do not hide dynamic warnings in introductory help.
+
+`SectionHeading` shows static descriptions on first view, then exposes an accessible About
+button on later visits. `SectionHelpProvider` scopes browser-local preferences to the current
+operator's existing session identity (display name, role and environment). Descriptions are
+remembered only after entering the viewport; changed copy is shown again. Storage failures
+leave the introduction visible. Use `descriptionHelpId` on `ScreenLayout` and `helpId` on
+`WorkspaceSection` for static introductions; omit these for live scope, freshness and status.
+
+Affected routes aim to put the first actionable row within 260px of the scrollable content
+area at 1440 × 900, while retaining visible scope and blocked-state recovery.
+
 ## Shared workstation header
 
 The browser shell combines `WorkspaceHeader` and its persistent operating scope in one compact

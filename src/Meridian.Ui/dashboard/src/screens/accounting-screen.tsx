@@ -7,6 +7,7 @@ import { useAccountingCloseSources, type CloseWorkflowQuery } from "./accounting
 import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { SectionHeading } from "@/components/meridian/section-heading";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { Badge } from "@/components/ui/badge";
@@ -1573,6 +1574,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const operatorIdentity = session?.displayName.trim() || null;
   const workstream = resolveAccountingWorkstream(pathname);
   const taskMode = buildAccountingTaskMode(pathname);
+  const isAccountingOverview = pathname.replace(/\/+$/, "") === WORKSTATION_ROUTE_CATALOG.accounting;
   const sectionVisibility = buildAccountingSectionVisibility(taskMode, hash);
   const workspace = workspaceForPath(pathname);
   const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
@@ -2150,23 +2152,23 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const multiAssetCoveragePanel = buildMultiAssetCoveragePanel(multiAssetCoverage);
 
   return (
-    <div className="space-y-5">
-      <StatStrip metrics={data.metrics} label="Accounting headline metrics" />
+    <div className={sectionVisibility.showCloseCockpitLanding ? "space-y-5" : "space-y-3"}>
+      {isAccountingOverview ? <StatStrip metrics={data.metrics} label="Accounting headline metrics" /> : null}
       {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
 
-      <AccountingWorkbenchContext
+      {workstream !== "reconciliation" && workstream !== "exceptions" ? <AccountingWorkbenchContext
         workspace={workspace}
         workstream={workstream}
         taskMode={taskMode}
-      />
+      /> : null}
 
-      {workstream === "reconciliation" ? (
+      {workstream === "reconciliation" || workstream === "exceptions" ? (
         <>
           <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice}
             runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />}
           />
-          <TechnicalDetails label="Account oversight"><AccountOversightPanel /></TechnicalDetails>
-          <TechnicalDetails id="accounting-history" label="Calibration and history"><CalibrationSummaryPanel view={reconciliation.calibrationView} /></TechnicalDetails>
+          {workstream === "reconciliation" ? <TechnicalDetails label="Account oversight"><AccountOversightPanel /></TechnicalDetails> : null}
+          <TechnicalDetails id="accounting-history" label="Calibration and history"><CalibrationSummaryPanel view={reconciliation.calibrationView} compact={workstream === "exceptions"} /></TechnicalDetails>
         </>
       ) : null}
 
@@ -3360,12 +3362,6 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         </FinancialRecordExplorerShell>
       )}
 
-      {sectionVisibility.showReconciliationActions && workstream !== "reconciliation" ? (
-        <>
-          <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice} runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />} />
-          <TechnicalDetails id="accounting-history" label="Calibration and history"><CalibrationSummaryPanel view={reconciliation.calibrationView} compact={workstream === "exceptions"} /></TechnicalDetails>
-        </>
-      ) : null}
         </>
       )}
     </div>
@@ -4166,9 +4162,8 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
       <section className="workspace-section-band" aria-labelledby="manual-je-heading">
         <div className="workspace-section-subheader">
           <div className="min-w-0">
-            <p className="eyebrow-label">Manual journal entries</p>
-            <h3 id="manual-je-heading" className="workspace-section-title">{view.title}</h3>
-            <p className="workspace-section-summary">{view.description}</p>
+            <SectionHeading as="h3" id="manual-je-heading" title={view.title} description={view.description}
+              helpId="accounting-manual-journal-workbench" headingClassName="workspace-section-title" />
           </div>
         </div>
         <StatusBanner
@@ -4201,9 +4196,8 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
     <section className="workspace-section-band" aria-labelledby="manual-je-heading">
       <div className="workspace-section-subheader">
         <div className="min-w-0">
-          <p className="eyebrow-label">Manual journal entries</p>
-          <h3 id="manual-je-heading" className="workspace-section-title">{view.title}</h3>
-          <p className="workspace-section-summary">{view.description}</p>
+          <SectionHeading as="h3" id="manual-je-heading" title={view.title} description={view.description}
+            helpId="accounting-manual-journal-workbench" headingClassName="workspace-section-title" />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={view.draft.status === "Submitted" ? "success" : view.draft.status === "NeedsFix" ? "warning" : "outline"} dot>

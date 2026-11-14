@@ -146,6 +146,7 @@ describe("DailyControlTowerScreen", () => {
     renderScreen({ onEditOperatingScope, onRefresh, search: "" });
 
     const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
+    await user.click(within(confidence).getByText("Details"));
     expect(within(confidence).getByText("Connectivity")).toBeInTheDocument();
     expect(within(confidence).getByRole("link", { name: "Open provider posture" }))
       .toHaveAttribute("href", "/data/providers");
@@ -236,11 +237,24 @@ describe("DailyControlTowerScreen", () => {
   it("shows the leading action once outside the ranked queue", () => {
     renderScreen();
 
-    const priorityPanel = screen.getByText("Report pack approval waiting", {
-      selector: ".mds-rpanel__title"
-    }).closest(".mds-rpanel");
+    const priorityPanel = screen.getByRole("region", { name: "Leading decision" });
     expect(priorityPanel).not.toBeNull();
     expect(within(priorityPanel as HTMLElement).getAllByRole("link")).toHaveLength(1);
+  });
+
+  it("keeps decision evidence behind a keyboard-accessible disclosure", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+    const decision = screen.getByRole("region", { name: "Leading decision" });
+    const why = within(decision).getByText("Why now", { selector: "summary" });
+    expect(why.closest("details")).not.toHaveAttribute("open");
+    why.focus();
+    await user.click(why);
+    expect(why.closest("details")).toHaveAttribute("open");
+    expect(within(decision).getByText("Owner")).toBeVisible();
+    await user.keyboard("{Escape}");
+    expect(why.closest("details")).not.toHaveAttribute("open");
+    expect(why).toHaveFocus();
   });
 
   it("has no accessibility violations", async () => {

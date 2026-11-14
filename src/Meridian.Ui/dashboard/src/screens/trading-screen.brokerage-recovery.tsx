@@ -28,12 +28,13 @@ function timestamp(value: string | null | undefined) {
   return `${new Date(value).toISOString().replace("T", " ").replace(/\.\d{3}Z$/, " UTC")}`;
 }
 
-export function BrokerageRecoveryPanel({ readiness, fundAccountId, busy, error, onRecover }: {
+export function BrokerageRecoveryPanel({ readiness, fundAccountId, busy, error, onRecover, compact = false }: {
   readiness: TradingOperatorReadiness | null;
   fundAccountId?: string;
   busy: boolean;
   error: string | null;
   onRecover: () => Promise<void>;
+  compact?: boolean;
 }) {
   const suppliedRecovery = readiness?.brokerageRecovery;
   const scopeMatches = Boolean(fundAccountId && suppliedRecovery?.fundAccountId?.toLowerCase() === fundAccountId.toLowerCase());
@@ -49,31 +50,15 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, busy, error, 
   const money = (value: number | null | undefined) => portfolio?.currency
     ? `${formatCurrency(value, { currency: portfolio.currency, fallback: "Unavailable" })} (${portfolio.currency})`
     : "Unavailable — currency unverified";
+  const statusTitle = blocked ? "Live trading blocked — recovery required" : "Brokerage evidence reconciled";
+  const statusDetail = error ? `Synchronization unavailable: ${error}` : busy
+    ? "Checking portfolio and broker orders. Trading remains blocked until reconciliation completes."
+    : !fundAccountId ? "Select a fund account to load its brokerage recovery evidence."
+      : !recovery ? "Current account recovery evidence is unavailable. Synchronize and reconcile before trading."
+        : recovery.detail;
 
-  return (
-    <Card id="brokerage-recovery" role="region" aria-label="Brokerage recovery" aria-busy={busy}>
-      <CardHeader>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <CardTitle>Brokerage recovery</CardTitle>
-            <CardDescription className="mt-1">Account portfolio and retained execution evidence from shared reconciliation.</CardDescription>
-          </div>
-          <Button size="sm" variant="outline" disabled={busy || !fundAccountId} onClick={() => void onRecover()}>
-            <RotateCcw aria-hidden="true" className="mr-2 h-3.5 w-3.5" />
-            {busy ? "Reconciling…" : "Synchronize and reconcile"}
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <StatusBanner tone={blocked ? "danger" : "success"} role="status" aria-live="polite"
-          title={blocked ? "Live trading blocked — recovery required" : "Brokerage evidence reconciled"}
-          detail={error ? `Synchronization unavailable: ${error}` : busy
-            ? "Checking portfolio and broker orders. Trading remains blocked until reconciliation completes."
-            : !fundAccountId ? "Select a fund account to load its brokerage recovery evidence."
-              : !recovery ? "Current account recovery evidence is unavailable. Synchronize and reconcile before trading."
-                : recovery.detail} />
-        {reasons.length > 0 ? <ul aria-label="Recovery blockers" className="list-disc space-y-1 pl-5 text-xs text-danger">{reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul> : null}
-        <TechnicalDetails label="Brokerage recovery evidence">
+  const evidence = (
+    <div className="space-y-4">
         <dl className="grid gap-x-5 gap-y-3 text-xs sm:grid-cols-2 xl:grid-cols-4">
           <RecoveryFact label="Fund account" value={fundAccountId ?? "Not selected"} />
           <RecoveryFact label="Broker account" value={recovery ? `${recovery.providerId ?? "Unknown provider"} · ${recovery.externalAccountId ?? "Unlinked"}` : "Unavailable"} />
@@ -101,6 +86,55 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, busy, error, 
             ariaLabel="Affected strategy runs" emptyText={recovery ? "No retained strategy runs reported for this account." : "Affected runs unavailable until account evidence is loaded."} />
         </div>
         <p className="text-xs text-muted-foreground">Synchronization checks broker truth and retained orders. It does not resubmit orders or resume strategy runs. Live operation also requires all trading readiness gates.</p>
+    </div>
+  );
+  const synchronizeButton = (
+    <Button size="sm" variant="outline" disabled={busy || !fundAccountId} onClick={() => void onRecover()}>
+      <RotateCcw aria-hidden="true" className="mr-2 h-3.5 w-3.5" />
+      {busy ? "Reconciling…" : "Synchronize and reconcile"}
+    </Button>
+  );
+
+  if (compact) {
+    return (
+      <Card id="brokerage-recovery" role="region" aria-label="Brokerage recovery" aria-busy={busy} className="px-3 py-2">
+        <div className="flex items-start justify-between gap-3">
+          <details className="group min-w-0 flex-1">
+            <summary className="flex min-h-8 cursor-pointer list-none flex-wrap items-center gap-x-3 text-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
+              <span role="status" aria-live="polite" className={blocked ? "font-semibold text-danger" : "font-semibold text-success"}>{statusTitle}</span>
+              <span className="font-medium text-muted-foreground">Brokerage recovery evidence</span>
+            </summary>
+            <div className="mt-2 border-t border-border pt-3">
+              <p className="mb-3 text-xs text-muted-foreground">{statusDetail}</p>
+              {evidence}
+            </div>
+          </details>
+          {synchronizeButton}
+        </div>
+        {error || busy || !fundAccountId ? <p className="text-xs leading-5 text-muted-foreground">{statusDetail}</p> : null}
+        {reasons.length > 0 ? <ul aria-label="Recovery blockers" className="list-disc space-y-1 pl-5 text-xs text-danger">{reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul> : null}
+      </Card>
+    );
+  }
+
+  return (
+    <Card id="brokerage-recovery" role="region" aria-label="Brokerage recovery" aria-busy={busy}>
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle>Brokerage recovery</CardTitle>
+            <CardDescription className="mt-1">Account portfolio and retained execution evidence from shared reconciliation.</CardDescription>
+          </div>
+          {synchronizeButton}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <StatusBanner tone={blocked ? "danger" : "success"} role="status" aria-live="polite"
+          title={statusTitle}
+          detail={statusDetail} />
+        {reasons.length > 0 ? <ul aria-label="Recovery blockers" className="list-disc space-y-1 pl-5 text-xs text-danger">{reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul> : null}
+        <TechnicalDetails label="Brokerage recovery evidence">
+        {evidence}
         </TechnicalDetails>
       </CardContent>
     </Card>

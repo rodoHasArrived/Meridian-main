@@ -11,6 +11,7 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
+import { SectionHeading } from "@/components/meridian/section-heading";
 import { cn } from "@/lib/utils";
 import { sourceObservationLabel, sourceObservationAge } from "./reconciliation-source-observation";
 import { StatementRunDetailTabs } from "./accounting-screen.statement-run-detail";
@@ -374,11 +375,13 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
         )}
       >
         <Card id="reconciliation-break-queue" role="region" aria-label="Reconciliation break checklist" className="panel-surface">
-          <CardHeader>
-            <CardTitle>Reconciliation break queue</CardTitle>
-            <CardDescription>Review discrepancies, evidence, and permitted actions without leaving the queue.</CardDescription>
+          <CardHeader className="reconciliation-queue-heading">
+            <SectionHeading as="h2" title="Reconciliation break queue"
+              description="Review discrepancies, evidence, and permitted actions without leaving the queue."
+              helpId="accounting-reconciliation-break-queue" headingClassName="text-base" />
+            <p role="status" className="reconciliation-queue-count">{visibleRows.length} of {reconciliation.rows.length} loaded breaks</p>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="reconciliation-queue-content space-y-3">
             <span className="sr-only" aria-live="polite">{reconciliation.statusAnnouncement}</span>
             {reconciliation.loadingText && (
               <p role="status" className="text-sm text-muted-foreground">{reconciliation.loadingText}</p>
@@ -438,9 +441,6 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 </select>
               </label>
               <Button type="button" variant="ghost" onClick={controls.clearQueueFilters}>Clear filters</Button>
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p role="status" className="text-xs text-muted-foreground">{visibleRows.length} of {reconciliation.rows.length} loaded breaks</p>
               <Button
                 ref={toggleRef}
                 type="button"

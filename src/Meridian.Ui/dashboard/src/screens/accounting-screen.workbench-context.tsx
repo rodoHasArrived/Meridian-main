@@ -1,3 +1,4 @@
+import { SectionHeading } from "@/components/meridian/section-heading";
 import type {
   AccountingTaskModeViewModel,
   AccountingWorkstream
@@ -29,10 +30,13 @@ export function AccountingWorkbenchContext({
       data-task-mode={taskMode.id}
       className="min-w-0"
     >
-      <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-        {taskMode.label}
-      </h2>
-      <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">{taskMode.description}</p>
+      <SectionHeading
+        as="h2"
+        title={taskMode.label}
+        description={taskMode.description}
+        helpId={`accounting-${taskMode.id}`}
+        headingClassName="text-base"
+      />
     </section>
   );
 }

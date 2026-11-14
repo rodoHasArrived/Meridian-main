@@ -5,6 +5,48 @@ import { axe } from "jest-axe";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 
 describe("OperationalTrustSummary", () => {
+  it("combines provenance, as-of and warning posture in a compact line with accessible detail", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <OperationalTrustSummary compact
+        source={{ value: "Retained Reporting", detail: "Immutable source receipt", tone: "ready" }}
+        scope={{ value: "Book A", tone: "ready" }}
+        freshness={{ value: "2026-11-14", tone: "review" }}
+        completeness={{ value: "2 positions", tone: "ready" }}
+        blocker={{ value: "Missing mark evidence", tone: "blocked", action: <a href="/data/providers">Review marks</a> }}
+      />
+    );
+    const details = container.querySelector("details")!;
+    const summary = container.querySelector("summary")!;
+    expect(details).not.toHaveAttribute("open");
+    expect(summary).toHaveTextContent("Blocked");
+    expect(summary).toHaveTextContent("Retained Reporting");
+    expect(summary).toHaveTextContent("As of: 2026-11-14");
+    expect(summary).toHaveTextContent("Missing mark evidence");
+    expect(summary).not.toHaveTextContent("Book A");
+    expect((await axe(container)).violations).toEqual([]);
+    await user.click(summary);
+    expect(details).toHaveAttribute("open");
+    expect(screen.getByRole("link", { name: "Review marks" })).toBeVisible();
+    await user.keyboard("{Escape}");
+    expect(details).not.toHaveAttribute("open");
+    expect(summary).toHaveFocus();
+  });
+
+  it("keeps unverified scope and incomplete evidence visible in compact posture", () => {
+    const { container } = render(
+      <OperationalTrustSummary compact
+        source={{ value: "Brokerage", tone: "ready" }}
+        scope={{ value: "No account selected", tone: "review" }}
+        freshness={{ value: "Unavailable", tone: "unknown" }}
+        completeness={{ value: "Missing retained positions", tone: "blocked" }}
+      />
+    );
+    const summary = container.querySelector("summary")!;
+    expect(summary).toHaveTextContent("Scope: No account selected");
+    expect(summary).toHaveTextContent("Completeness: Missing retained positions");
+  });
+
   it("keeps scope and warnings visible while supporting facts can be expanded", async () => {
     const user = userEvent.setup();
     const { container } = render(

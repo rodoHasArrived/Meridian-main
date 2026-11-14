@@ -446,7 +446,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
 
   return (
     <div className="space-y-5">
-      <StatStrip metrics={data.metrics} label="Strategy headline metrics" />
+      {pathname.replace(/\/+$/, "") === "/strategy" ? <StatStrip metrics={data.metrics} label="Strategy headline metrics" /> : null}
 
       <section
         role="region"

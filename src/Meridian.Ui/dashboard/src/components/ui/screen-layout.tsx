@@ -7,6 +7,7 @@ import {
   type ReactNode
 } from "react";
 import { cn } from "@/lib/utils";
+import { SectionHeading } from "@/components/meridian/section-heading";
 
 /**
  * `ScreenLayout` — the canonical skeleton for secondary and detail routes.
@@ -92,6 +93,8 @@ export interface ScreenLayoutProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   scope?: ReactNode;
   /** Optional secondary description under the title. */
   description?: ReactNode;
+  /** Remember static introductory copy per operator and reveal it from an info button on return. */
+  descriptionHelpId?: string;
   /**
    * The 1–3 primary actions for this screen. Always rendered top-right. Keep this
    * to the screen's primary verbs — secondary controls belong in the work zone.
@@ -183,6 +186,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
     title,
     scope,
     description,
+    descriptionHelpId,
     actions,
     focus,
     focusLabel = "Focus",
@@ -235,11 +239,17 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
           keeps the document heading order valid (h1 → h2 → h3). */}
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 id={titleId} className="truncate text-base font-semibold leading-snug tracking-normal text-foreground">
-            {title}
-          </h2>
+          {descriptionHelpId && typeof description === "string" ? (
+            <SectionHeading id={titleId} title={title} description={description} helpId={descriptionHelpId}
+              headingClassName="truncate text-base font-semibold leading-snug tracking-normal text-foreground"
+              descriptionClassName="mt-1 max-w-prose text-xs leading-5 text-muted-foreground" />
+          ) : (
+            <h2 id={titleId} className="truncate text-base font-semibold leading-snug tracking-normal text-foreground">
+              {title}
+            </h2>
+          )}
           {scope ? <div className="mt-0.5 text-xs text-muted-foreground">{scope}</div> : null}
-          {description ? <p className="mt-1 max-w-prose text-xs leading-5 text-muted-foreground">{description}</p> : null}
+          {description && !(descriptionHelpId && typeof description === "string") ? <p className="mt-1 max-w-prose text-xs leading-5 text-muted-foreground">{description}</p> : null}
         </div>
         {actions ? (
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">{actions}</div>

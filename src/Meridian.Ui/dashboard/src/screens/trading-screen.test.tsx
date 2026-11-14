@@ -357,6 +357,7 @@ describe("TradingScreen", () => {
 
   it("renders the overview posture with the workflow strip and no blotters", async () => {
     await renderTradingScreen();
+    expect(screen.getByLabelText("Trading headline metrics")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Execution cockpit context" })).toBeInTheDocument();
     const workflowStrip = screen.getByRole("region", { name: "Workflow control strip" });
     expect(within(workflowStrip).getByRole("button", { name: /strategy controls/i })).toBeInTheDocument();
@@ -1035,6 +1036,10 @@ describe("TradingScreen", () => {
   it("marks financially destructive blotter actions before confirmation", async () => {
     await renderTradingScreen(data, "/trading/orders");
 
+    expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
+    const confidenceSummary = screen.getByLabelText("Trading data confidence").querySelector("summary")!;
+    expect(confidenceSummary).toHaveTextContent("As of:");
+    expect(screen.getByRole("region", { name: "Brokerage recovery" })).toHaveTextContent("Live trading blocked");
     expect(screen.getByRole("button", { name: /cancel order po-1/i })).toHaveClass("text-danger");
     expect(screen.getByRole("button", { name: /cancel all .* open orders/i })).toHaveClass("text-danger");
     expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent("positions");

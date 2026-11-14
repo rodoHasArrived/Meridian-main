@@ -694,11 +694,11 @@ export function PortfolioScreen({
 
   return (
     <div className={showOverview ? "space-y-3" : "space-y-5"}>
-      <StatStrip
+      {location.pathname.replace(/\/+$/, "") === WORKSTATION_ROUTE_CATALOG.portfolio ? <StatStrip
         metrics={vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats}
         label="Portfolio headline metrics"
         compact={showOverview}
-      />
+      /> : null}
 
       <section
         role="region"

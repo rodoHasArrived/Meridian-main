@@ -10,7 +10,7 @@ import { KeyValueGrid } from "@/components/data/concrete";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
-import { ReadinessPanel, SeverityBadge, WorkspaceSection } from "@/components/operations";
+import { SeverityBadge, WorkspaceSection } from "@/components/operations";
 import { buildDailyControlTowerModel } from "@/lib/daily-control-tower";
 import { appendOperatingScopeToRoute } from "@/app-shell.operating-scope";
 import {
@@ -103,36 +103,14 @@ export function DailyControlTowerScreen({
 
   return (
     <ScreenLayout
+      style={{ rowGap: 12 }}
+      workClassName="space-y-2"
       title="What needs an operator decision now"
-      scope="Daily control tower"
+      descriptionHelpId="today-overview"
       description="One priority, followed by a ranked finance queue with evidence available in place."
     >
-      <ReadinessPanel
-        state={readinessToneToSeverityStatus(model.statusTone)}
-        statusLabel={model.statusLabel}
-        title={model.decision.title}
-        detail={model.decision.summary}
-        actions={
-          <Button asChild variant="outline" size="sm">
-            <Link to={model.nextActionHref} aria-label={model.nextActionAriaLabel}>
-              <span>{model.nextActionLabel}</span>
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Link>
-          </Button>
-        }
-      >
-        <KeyValueGrid
-          columns={2}
-          items={[
-            { label: model.decision.reasonLabel, value: model.decision.reason },
-            { label: "Owner", value: model.ownerLabel },
-            { label: "Output", value: model.outputLabel },
-            { label: "Evidence", value: model.evidenceLabel }
-          ]}
-        />
-      </ReadinessPanel>
-
       <OperationalTrustSummary
+        compact
         label="Daily control tower confidence"
         source={{
           label: "Connectivity",
@@ -188,8 +166,40 @@ export function DailyControlTowerScreen({
         } : undefined}
       />
 
+      <section aria-label="Leading decision" className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-l-2 border-primary bg-card px-3 py-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <SeverityBadge status={readinessToneToSeverityStatus(model.statusTone)} label={model.statusLabel} />
+          <span className="text-sm font-semibold text-foreground">{model.decision.title}</span>
+          <details className="group relative" onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              event.currentTarget.open = false;
+              event.currentTarget.querySelector("summary")?.focus();
+            }
+          }}>
+            <summary className="cursor-pointer text-xs text-muted-foreground underline decoration-dotted underline-offset-4 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">Why now</summary>
+            <div className="absolute left-0 top-full z-20 mt-2 w-96 max-w-[70vw] space-y-3 rounded border border-border bg-card p-3 shadow-lg">
+              <p className="text-xs leading-5 text-muted-foreground">{model.decision.summary}</p>
+              <KeyValueGrid columns={2} items={[
+                { label: model.decision.reasonLabel, value: model.decision.reason },
+                { label: "Owner", value: model.ownerLabel },
+                { label: "Output", value: model.outputLabel },
+                { label: "Evidence", value: model.evidenceLabel }
+              ]} />
+            </div>
+          </details>
+        </div>
+        <Button asChild variant="outline" size="sm">
+          <Link to={model.nextActionHref} aria-label={model.nextActionAriaLabel}>
+            <span>{model.nextActionLabel}</span>
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
+        </Button>
+      </section>
+
       <WorkspaceSection
         title="Finance queue"
+        helpId="today-finance-queue"
         summary="Each row carries the evidence needed to move from source issue to downstream output."
       >
         {!queueVisible ? (

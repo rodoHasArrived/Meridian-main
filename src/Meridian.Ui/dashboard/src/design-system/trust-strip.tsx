@@ -17,7 +17,8 @@ const trustToneRank = {
  */
 export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrustStripState }) {
   const mode = viewModel.items.find((item) => item.id === "mode")?.value ?? "Unknown mode";
-  const source = viewModel.items.find((item) => item.id === "source")?.value ?? "Unknown source";
+  const sourceItem = viewModel.items.find((item) => item.id === "source");
+  const source = sourceItem?.value ?? "Unknown source";
   const provider = viewModel.items.find((item) => item.id === "providers");
   const summaryTone = viewModel.items.reduce<(typeof viewModel.items)[number]["tone"]>(
     (current, item) => trustToneRank[item.tone] > trustToneRank[current] ? item.tone : current,
@@ -44,6 +45,7 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
             `mds-status--${summaryTone}`
           )}
           aria-label={summaryAriaLabel}
+          title={sourceItem?.detail}
         >
           <span className="workstation-trust-label">Trust</span>
           <span className="workstation-trust-value">{summaryValue}</span>

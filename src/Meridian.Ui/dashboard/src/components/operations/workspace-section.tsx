@@ -4,6 +4,7 @@
 // right) over a content body. Used to band an operator workspace into labelled,
 // jump-to-able regions that keep their heading pinned while the region scrolls.
 import type { ReactNode } from "react";
+import { SectionHeading } from "@/components/meridian/section-heading";
 import { injectStyle } from "./inject-style";
 
 const CSS = `
@@ -32,6 +33,8 @@ export interface WorkspaceSectionProps {
   title?: ReactNode;
   /** Muted one-line summary under the title. */
   summary?: ReactNode;
+  /** Opt static introductory copy into remembered help. Keep live status summaries visible. */
+  helpId?: string;
   /** Jump affordance label (omit to hide). */
   jump?: ReactNode;
   /** Jump click handler (button mode). */
@@ -60,6 +63,7 @@ export function WorkspaceSection({
   id,
   title,
   summary,
+  helpId,
   jump,
   onJump,
   jumpHref,
@@ -71,8 +75,12 @@ export function WorkspaceSection({
     <section id={id} className={`mds-wsection${className ? " " + className : ""}`}>
       <div className="mds-wsection__head">
         <div className="mds-wsection__heading">
-          {title && <h3 className="mds-wsection__title">{title}</h3>}
-          {summary && <p className="mds-wsection__summary">{summary}</p>}
+          {helpId && typeof summary === "string" ? (
+            <SectionHeading title={title} description={summary} helpId={helpId} as="h3" headingClassName="mds-wsection__title" descriptionClassName="mds-wsection__summary" />
+          ) : <>
+            {title && <h3 className="mds-wsection__title">{title}</h3>}
+            {summary && <p className="mds-wsection__summary">{summary}</p>}
+          </>}
         </div>
         {jump &&
           (jumpHref ? (
