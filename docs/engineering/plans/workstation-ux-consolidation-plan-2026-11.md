@@ -267,11 +267,17 @@ money formatter.
 - P4: fund narrowing on more screens with fund-account rows. Candidates: the Operations Continuity
   workflow list, the reporting delivery history and the statement fetch schedules. Each route is
   added to `FUND_SCOPE_NARROWED_ROUTES` as its screen adopts the shared rule. Also open: rebuilding
-  the host bundle for the scope-option read, a WPF consumer of the same seam, inline account pickers
+  the host bundle for the scope-option read, inline account pickers
   on other single-account screens as they are identified, and (if wanted) letting a trading,
   direct-lending or accounting grant at fund level disclose that fund's name, which no existing read
   does today (until then such accounts are counted as "not visible to you", not placed). A fund's
   `entityIds` carries no withheld marker yet; add one only if a consumer needs it.
+- P4 WPF consumer (landed 2026-11-14, source): the desktop operating-context page reads
+  `GET /api/workstation/scope-options` through `WorkstationScopeOptionsApiClient` and narrows entity,
+  fund and account pickers by the same rule as the browser picker, reporting failures and accounts
+  left out. Remaining for WPF: a persistent scope bar with period, saved defaults and screen-level
+  fund narrowing; the desktop's 404 fallback uses its in-process fund-structure graph. Tracked in
+  the [WPF alignment plan](wpf-web-ui-alignment-plan.md) parity matrix.
 - The triage "Due · UTC" and "Observed · UTC" labels (`triageDateLabel`) still use a fixed-UTC
   `Intl.DateTimeFormat` without a zone label. They are honest as headed; moving them to the
   display zone needs the headers renamed.
