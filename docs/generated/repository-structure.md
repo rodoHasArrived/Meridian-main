@@ -12477,6 +12477,7 @@ Meridian-main
 │   │   ├── InMemoryFundStructureServiceTests.cs
 │   │   ├── InMemoryFundStructureServiceTests.ScheduleCharacterization.cs
 │   │   ├── IntercompanyAccountingArrangementTests.cs
+│   │   ├── IntercompanyAccountingArrangementTests.LegalNovation.cs
 │   │   ├── IntercompanyAgreementRulesTests.cs
 │   │   ├── IntercompanyAgreementServiceTests.cs
 │   │   ├── IntercompanyAgreementServiceTests.ExternalReview.cs
@@ -14305,6 +14306,7 @@ Meridian-main
 │   │   │   ├── LedgerBalanceCheckpointPostgresTests.PrefixTailGuard.cs
 │   │   │   ├── LedgerBalanceCheckpointPostgresTests.ScopeAndGuards.cs
 │   │   │   ├── LedgerBalanceSnapshotExtensionsTests.cs
+│   │   │   ├── LedgerBookControlsPostgresTests.Activation.cs
 │   │   │   ├── LedgerBookControlsPostgresTests.cs
 │   │   │   ├── LedgerBookServiceTests.cs
 │   │   │   ├── LedgerCurrencyBackfillTests.cs
@@ -14319,6 +14321,8 @@ Meridian-main
 │   │   │   ├── LedgerPostgresTestDatabase.cs
 │   │   │   ├── LedgerPostgresTestDatabase.LotReferences.cs
 │   │   │   ├── LedgerReplayAfterControlsPostgresTests.cs
+│   │   │   ├── LegacyIntercompanyAttributionPostgresTests.cs
+│   │   │   ├── LegacyIntercompanyControlsFixture.cs
 │   │   │   ├── LegalEntityReadAuthorityPostgresTests.cs
 │   │   │   ├── LifecyclePolicyEngineTests.cs
 │   │   │   ├── MaintenanceFileLockTests.cs
@@ -14638,6 +14642,7 @@ Meridian-main
 │   │   │   ├── IntercompanyObligationEndpointTests.cs
 │   │   │   ├── IntercompanyProposalBreakAgingTests.cs
 │   │   │   ├── IntercompanyProposalDeliveryRetryTests.cs
+│   │   │   ├── IntercompanyProposalDestinationAuthorityTests.cs
 │   │   │   ├── IntercompanyProposalMissingArrangementTests.cs
 │   │   │   ├── IntercompanyProposalResolutionTests.cs
 │   │   │   ├── IntercompanyProposalReversalDeliveryTests.cs
