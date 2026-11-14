@@ -50,7 +50,7 @@ export interface OnboardingComparison {
   differences: OnboardingDifference[]; coveragePercent: number; contentHash: string;
   previousContentHash: string | null; algorithmVersion: string;
   /** Shadow-mode opening-balance comparison; omitted (false) for period comparisons. */
-  isOpening?: boolean; openingSourceKind?: string | null;
+  isOpening?: boolean; openingSourceKind?: string | null; openingKinds?: string[] | null;
 }
 export interface OnboardingReview {
   reviewId: string; dataRevision: number; reviewerId: string; decision: string;
@@ -103,11 +103,16 @@ export interface OnboardingOpeningBalanceLine {
   differenceKey: string; kind: string; accountId: string; currency: string; instrumentId: string | null;
   meridianAmount: number | null; incumbentAmount: number | null; difference: number | null; tolerance: number;
   status: "Matched" | "Explained" | "Break" | "Missing"; classification: string | null; missingReason: string | null;
+  comparisonId?: string | null; sourceKind?: string | null;
+}
+export interface OnboardingOpeningSourceSummary {
+  sourceKind: string; comparisonId: string; sourceContentHash: string; kinds: string[]; capturedAtUtc: string;
 }
 export interface OnboardingOpeningBalanceReport {
   comparisonId: string; sourceKind: string; asOfDate: string; sourceContentHash: string;
   matchedCount: number; explainedCount: number; breakCount: number; missingCount: number; isReconciled: boolean;
   lines: OnboardingOpeningBalanceLine[]; evidenceIds: string[];
+  sources?: OnboardingOpeningSourceSummary[] | null; uncoveredKinds?: string[] | null;
 }
 export interface OnboardingDifferenceExplanation {
   explanationId: string; comparisonId: string; differenceKey: string; classification: string; notes: string;

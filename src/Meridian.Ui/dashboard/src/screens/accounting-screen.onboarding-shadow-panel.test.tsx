@@ -129,4 +129,37 @@ describe("shadow-mode onboarding", () => {
     expect(screen.getByText("Promoted to book of record")).toBeInTheDocument();
     expect(screen.queryByRole("form", { name: "Promote shadow book" })).not.toBeInTheDocument();
   });
+
+  it("explains an opening break through its own opening comparison and never offers a form for a missing line", async () => {
+    const opening = { comparisonId: "opening-pack", sourceKind: "StatementOpening+AdministratorPack", asOfDate: "2026-01-31", sourceContentHash: "f".repeat(64),
+      matchedCount: 1, explainedCount: 0, breakCount: 1, missingCount: 1, isReconciled: false, evidenceIds: [],
+      uncoveredKinds: ["Position"],
+      sources: [
+        { sourceKind: "StatementOpening", comparisonId: "opening-bank", sourceContentHash: "b".repeat(64), kinds: ["Balance"], capturedAtUtc: "2026-02-01T00:00:00Z" },
+        { sourceKind: "AdministratorPack", comparisonId: "opening-pack", sourceContentHash: "a".repeat(64), kinds: ["Nav"], capturedAtUtc: "2026-02-01T00:00:00Z" }
+      ],
+      lines: [
+        { differenceKey: "cash", kind: "Balance", accountId: "account-1", currency: "USD", instrumentId: null, meridianAmount: 100, incumbentAmount: 97, difference: 3, tolerance: 0, status: "Break" as const, classification: null, missingReason: null, comparisonId: "opening-bank", sourceKind: "StatementOpening" },
+        { differenceKey: "nav", kind: "Nav", accountId: "account-1", currency: "USD", instrumentId: null, meridianAmount: 100, incumbentAmount: null, difference: null, tolerance: 0, status: "Missing" as const, classification: null, missingReason: "No amount.", comparisonId: "opening-pack", sourceKind: "AdministratorPack" }
+      ] };
+    const current = workspace({ shadowDesignation: shadow, readiness: { ...workspace().readiness, opening } });
+    api.explainOnboardingDifference.mockResolvedValue(current);
+    const { container } = render(<OnboardingShadowPanel workspace={current} onChanged={vi.fn()} />);
+
+    expect(screen.getByText("Opening kinds not yet covered")).toBeInTheDocument();
+    expect(within(screen.getByRole("list", { name: "Opening sources" })).getAllByRole("listitem")).toHaveLength(2);
+    expect(within(screen.getByRole("table", { name: "Opening balance lines" })).getAllByText("Bank statement").length).toBeGreaterThan(0);
+    expect((await axe(container)).violations).toEqual([]);
+
+    await userEvent.click(screen.getByText("Explain parallel-run differences"));
+    expect(screen.queryByRole("form", { name: /Explain opening Nav difference/ })).not.toBeInTheDocument();
+    const form = within(screen.getByRole("form", { name: "Explain opening Balance difference (Bank statement)" }));
+    await userEvent.selectOptions(form.getByLabelText("Classification"), "Treatment");
+    await userEvent.type(form.getByLabelText("Explanation"), "Bank nets an unsettled fee.");
+    await userEvent.type(form.getByLabelText("Evidence IDs"), "evidence:fee");
+    await userEvent.click(form.getByRole("button", { name: "Retain explanation" }));
+    await waitFor(() => expect(api.explainOnboardingDifference).toHaveBeenCalledWith("workspace-1", "cash", {
+      expectedVersion: 4, comparisonId: "opening-bank", classification: "Treatment", notes: "Bank nets an unsettled fee.",
+      evidenceIds: ["evidence:fee"], expectedReversalDate: null }, expect.anything()));
+  });
 });
