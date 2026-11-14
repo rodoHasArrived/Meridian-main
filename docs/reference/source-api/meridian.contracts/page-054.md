@@ -581,7 +581,7 @@ public sealed record ApproveWorkflow(Guid WorkflowId, FundWorkflowCommandMetadat
 
 Qualified name: <code>Meridian.Contracts.Workstation.AssignOnboardingDifferenceRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L32).
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L34).
 
 ```csharp
 public sealed record AssignOnboardingDifferenceRequestDto(int ExpectedVersion, string OwnerId, string Notes, IReadOnlyList<string> EvidenceIds);

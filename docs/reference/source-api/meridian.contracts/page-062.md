@@ -6,6 +6,230 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsApprovalReassignRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalReassignRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs#L22).
+
+```csharp
+public sealed record OperationsApprovalReassignRequestDto(long ExpectedVersion, string ApprovalId, string CommandId, string Actor, string Reviewer, string Rationale);
+```
+
+## OperationsApprovalStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:102](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L102).
+
+```csharp
+public enum OperationsApprovalStateDto : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Pending = 0</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:104](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L104) |  |
+| <code>Submitted = 1</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:105](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L105) |  |
+| <code>ReviewerAssigned = 2</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:106](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L106) |  |
+| <code>Approved = 3</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:107](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L107) |  |
+| <code>Rejected = 4</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:108](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L108) |  |
+
+## OperationsAssignBreakCaseRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsAssignBreakCaseRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:663](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L663).
+
+```csharp
+public sealed record OperationsAssignBreakCaseRequestDto(long ExpectedVersion, string Actor, string Owner, string Rationale, string? EscalationLevel = null, string? EscalationReason = null, DateOnly? DueDate = null, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
+## OperationsBreakCaseDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsBreakCaseDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1272](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1272).
+
+```csharp
+public sealed record OperationsBreakCaseDto(string BreakId, string CheckId, string Category, string Severity, string Status, string? Owner, DateOnly? DueDate, string? ExpectedSource, string? ActualSource, decimal? ExpectedAmount, decimal? ActualAmount, decimal? Variance, string? SecurityId, string? Symbol, string? SuggestedAction, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, OperationsContinuityCorrelationKeysDto? CorrelationKeys = null, string? EscalationLevel = null, string? EscalationReason = null, DateTimeOffset? EscalatedAtUtc = null, string? SlaState = null, DateTimeOffset? SlaDueAtUtc = null, decimal? Materiality = null, string? RootCauseCode = null, string? ApprovalState = null, IReadOnlyList<string>? BlockedOutputs = null, IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null, ReconciliationBreakDispositionDto? Disposition = null, string? DispositionReason = null, string? SupersedingBreakId = null, string? DispositionApprovedBy = null, string? DispositionApprovalReference = null, string? DispositionEvidenceHash = null, DateTimeOffset? DisposedAtUtc = null);
+```
+
+## OperationsBrokerIntakeStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsBrokerIntakeStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L52).
+
+```csharp
+public enum OperationsBrokerIntakeStateDto : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Pending = 0</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L54) |  |
+| <code>Imported = 1</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L55) |  |
+| <code>Normalized = 2</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L56) |  |
+| <code>MatchedToInternalRun = 3</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L57) |  |
+| <code>Complete = 4</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L58) |  |
+
+## OperationsChecklistAcknowledgeRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsChecklistAcknowledgeRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1205](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1205).
+
+```csharp
+public sealed record OperationsChecklistAcknowledgeRequestDto(long ExpectedVersion, string Actor, string Rationale, string? CorrelationId = null);
+```
+
+## OperationsChecklistControlApprovalDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsChecklistControlApprovalDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:741](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L741).
+
+```csharp
+public sealed record OperationsChecklistControlApprovalDto(string TaskId, string ApprovedBy, DateTimeOffset ApprovedAtUtc);
+```
+
+## OperationsCloseCalendarDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseCalendarDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:811](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L811).
+
+```csharp
+public sealed record OperationsCloseCalendarDto(DateTimeOffset GeneratedAtUtc, IReadOnlyList<OperationsCloseCalendarItemDto> Items);
+```
+
+## OperationsCloseCalendarItemAuditEventDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseCalendarItemAuditEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:851](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L851).
+
+```csharp
+public sealed record OperationsCloseCalendarItemAuditEventDto(string AuditId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Rationale, string CorrelationId, Guid WorkflowId, Guid FundAccountId, string PeriodId, string TaskId, DateOnly DueDate, string Owner);
+```
+
+## OperationsCloseCalendarItemDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseCalendarItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:815](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L815).
+
+```csharp
+public sealed record OperationsCloseCalendarItemDto(Guid WorkflowId, Guid FundAccountId, string PeriodId, OperationsWorkflowStatusDto Status, long Version, DateOnly? NextDueDate, string? NextDueTaskId, string? NextDueLabel, string? NextDueOwner, string? ReadinessSeverity, int? ReadinessScore, bool IsReadyToClose, int BlockerCount, int OpenChecklistCount, int RequiredApprovalCount, int CompletedApprovalCount, string Route, IReadOnlyList<OperationsCloseReadinessComponentDto>? ReadinessComponents = null, IReadOnlyList<OperationsCloseReadinessBlockerDto>? ReadinessBlockers = null, IReadOnlyList<OperationsNextActionDto>? ReadinessNextActions = null);
+```
+
+## OperationsCloseCalendarItemUpsertRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseCalendarItemUpsertRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:837](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L837).
+
+```csharp
+public sealed record OperationsCloseCalendarItemUpsertRequestDto(Guid WorkflowId, string TaskId, DateOnly DueDate, string Owner, string RequestedBy, string Rationale, string? CorrelationId = null);
+```
+
+## OperationsCloseCalendarItemUpsertResultDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseCalendarItemUpsertResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:846](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L846).
+
+```csharp
+public sealed record OperationsCloseCalendarItemUpsertResultDto(OperationsCloseCalendarItemDto Item, OperationsCloseCalendarDto Calendar, OperationsCloseCalendarItemAuditEventDto AuditEvent);
+```
+
+## OperationsCloseChecklistGateSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseChecklistGateSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs#L6).
+
+```csharp
+public sealed record OperationsCloseChecklistGateSnapshotDto(string TaskId, OperationsGateKeyDto Gate, OperationsGateStatusDto Status);
+```
+
+## OperationsCloseChecklistHistoryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseChecklistHistoryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs#L11).
+
+```csharp
+public sealed record OperationsCloseChecklistHistoryDto(Guid WorkflowId, DateTimeOffset AsOf, string Status, string? Reason, DateTimeOffset? CoverageStart, DateTimeOffset? CoverageEnd, bool IsPartial, IReadOnlyList<Guid> MissingAuditIds, IReadOnlyList<OperationsCloseChecklistObservationDto> Observations)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;OperationsCloseChecklistVersionGapDto&gt; VersionGaps { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs#L16) |  |
+
+## OperationsCloseChecklistObservationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseChecklistObservationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs#L8).
+
+```csharp
+public sealed record OperationsCloseChecklistObservationDto(Guid AuditId, DateTimeOffset RecordedAtUtc, long WorkflowVersion, int TotalTasks, int RemainingTasks, int BlockedTasks, int Segment);
+```
+
+## OperationsCloseChecklistSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseChecklistSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs#L4).
+
+Versioned observation captured with an actual canonical workflow commit.
+
+```csharp
+public sealed record OperationsCloseChecklistSnapshotDto(int SchemaVersion, long WorkflowVersion, IReadOnlyList<OperationsCloseChecklistGateSnapshotDto> Gates);
+```
+
+## OperationsCloseChecklistTaskDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseChecklistTaskDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1170](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1170).
+
+```csharp
+public sealed record OperationsCloseChecklistTaskDto(string TaskId, OperationsGateKeyDto Gate, string Label, string Owner, string RequiredEvidence, int RequiredApprovalCount, DateOnly? ExpiresOn, DateOnly? DueDate, string Status, string? BlockingReason, string? EvidencePointer, string? RemediationRoute, bool CanAcknowledge, DateTimeOffset? AcknowledgedAtUtc, string? AcknowledgedBy);
+```
+
+## OperationsCloseChecklistVersionGapDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseChecklistVersionGapDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs#L18).
+
+```csharp
+public sealed record OperationsCloseChecklistVersionGapDto(long AfterVersion, long BeforeVersion, Guid BeforeAuditId);
+```
+
+## OperationsClosePackagePublicationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsClosePackagePublicationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1187](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1187).
+
+```csharp
+public sealed record OperationsClosePackagePublicationDto(string ClosePackageId, string ReportPackId, string RetainedManifestId, string RetainedManifestRoute, string EvidenceHash, DateTimeOffset PublishedAtUtc, string PublishedBy, string SignOffRationale, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<OperationsChecklistControlApprovalDto> ChecklistControlApprovals, IReadOnlyList<EvidenceDocumentDto>? DocumentSnapshots = null, EvidenceManifestDto? ManifestSnapshot = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;EvidenceDocumentDto&gt; DocumentSnapshots { get; init; } = DocumentSnapshots??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1201](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1201) |  |
+
 ## OperationsCloseReadinessBlockerDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessBlockerDto</code>. Kind: `record`.
@@ -432,287 +656,4 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:728](../
 
 ```csharp
 public sealed record OperationsReopenWorkflowRequestDto(long ExpectedVersion, string Actor, string Rationale, string IncidentId, bool IsGovernedAdmin, string? Justification = null, string? ApprovalReference = null, string? ImpactSummary = null, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## OperationsReportPackReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsReportPackReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1333](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1333).
-
-```csharp
-public sealed record OperationsReportPackReadinessDto(bool IsReady, string? ReportPackId, string? BlockingReason, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
-```
-
-## OperationsResolveBreakCaseRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsResolveBreakCaseRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:651](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L651).
-
-```csharp
-public sealed record OperationsResolveBreakCaseRequestDto(long ExpectedVersion, string Actor, string ResolutionStatus, string Rationale, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, string? ApprovalActor = null, string? ApprovalReference = null, string? SupersedingBreakId = null);
-```
-
-## OperationsReviewedAutomationArtifactDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsReviewedAutomationArtifactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1037](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1037).
-
-```csharp
-public sealed record OperationsReviewedAutomationArtifactDto(string ArtifactId, string ArtifactKind, string Title, EvidenceStatusDto Status, bool RequiresHumanReview, decimal? ConfidencePercent, string SourceSummary, string SuggestedOperatorAction, string BlockedMaterialAction, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? ReviewChecklist = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; ReviewChecklist { get; init; } = ReviewChecklist??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1050](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1050) |  |
-
-## OperationsReviewedAutomationSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsReviewedAutomationSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1018](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1018).
-
-```csharp
-public sealed record OperationsReviewedAutomationSummaryDto(string SummaryId, string Stage, EvidenceStatusDto Status, bool RequiresHumanReview, string Summary, IReadOnlyList<string> AllowedUseCases, IReadOnlyList<string> ProhibitedActions, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null, IReadOnlyList<OperationsReviewedAutomationArtifactDto>? Artifacts = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1030](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1030) |  |
-| <code>public IReadOnlyList&lt;OperationsReviewedAutomationArtifactDto&gt; Artifacts { get; init; } = Artifacts??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1033](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1033) |  |
-
-## OperationsSecurityMasterOverrideApprovalRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsSecurityMasterOverrideApprovalRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:494](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L494).
-
-```csharp
-public sealed record OperationsSecurityMasterOverrideApprovalRequestDto(long ExpectedVersion, string Actor, string OverrideId, string Rationale, string PolicyReference, DateOnly? ExpiresOn, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## OperationsSecurityMasterResolveRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsSecurityMasterResolveRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:525](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L525).
-
-```csharp
-public sealed record OperationsSecurityMasterResolveRequestDto(long ExpectedVersion, string Actor, string? Rationale = null, string? CorrelationId = null, int UnresolvedInstrumentCount = 0, int OverrideRequestCount = 0, bool OverridesApproved = false, int MissingAccountingTermCount = 0, IReadOnlyList<Guid>? OverrideSecurityIds = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
-```
-
-## OperationsSecurityMasterStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsSecurityMasterStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L62).
-
-```csharp
-public enum OperationsSecurityMasterStateDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending = 0</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L64) |  |
-| <code>ResolvedAllInstruments = 1</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L65) |  |
-| <code>OverridesRequested = 2</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L66) |  |
-| <code>OverridesApproved = 3</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:67](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L67) |  |
-| <code>Complete = 4</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L68) |  |
-
-## OperationsStartWorkflowRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsStartWorkflowRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:475](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L475).
-
-```csharp
-public sealed record OperationsStartWorkflowRequestDto(Guid FundAccountId, string PeriodId, Guid? SecurityMasterSnapshotId, string? BrokerSource, string Actor, string? Rationale = null, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, Guid? LedgerBookId = null);
-```
-
-## OperationsSubmitApprovalRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsSubmitApprovalRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:675](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L675).
-
-```csharp
-public sealed record OperationsSubmitApprovalRequestDto(long ExpectedVersion, string Actor, string Reviewer, string Rationale, string ReportPackId, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## OperationsTimelineEntryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsTimelineEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1222](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1222).
-
-```csharp
-public sealed record OperationsTimelineEntryDto(Guid AuditId, DateTimeOffset OccurredAtUtc, Guid WorkflowId, Guid FundAccountId, string PeriodId, string EventType, OperationsWorkflowStatusDto FromState, OperationsWorkflowStatusDto ToState, OperationsGateKeyDto? Gate, OperationsGateStatusDto? FromGateStatus, OperationsGateStatusDto? ToGateStatus, string Actor, string? Rationale, string? CorrelationId, OperationsContinuityCorrelationKeysDto? CorrelationKeys, IReadOnlyList<OperationsEvidenceLinkDto> References, string? PreviousHash, string CurrentHash, VerifiedOperationOutcome? Outcome = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public OperationsCloseChecklistSnapshotDto? CloseChecklistSnapshot { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1244](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1244) |  |
-
-## OperationsTransitionRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsTransitionRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:486](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L486).
-
-```csharp
-public sealed record OperationsTransitionRequestDto(long ExpectedVersion, string Actor, string? Rationale = null, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<string>? EvidenceReferenceIds = null);
-```
-
-## OperationsTransitionResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsTransitionResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:865](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L865).
-
-```csharp
-public sealed record OperationsTransitionResultDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonConstructor] public OperationsTransitionResultDto(bool Success, string? ErrorCode, string? ErrorMessage, OperationsContinuityWorkflowDto? Workflow, IReadOnlyList&lt;OperationsWorkflowBlockerDto&gt; Blockers, IReadOnlyList&lt;OperationsNextActionDto&gt; NextActions, long? NewVersion = null, OperationsCloseReadinessDto? CloseReadiness = null, VerifiedOperationOutcome? Outcome = null);</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:875](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L875) | JSON-compatible constructor. Success is accepted only to deserialize legacy payloads that predate Outcome; whenever an outcome is present the compatibility boolean is derived exclusively from its terminal state. |
-| <code>public OperationsTransitionResultDto(VerifiedOperationOutcome outcome, string? errorCode, string? errorMessage, OperationsContinuityWorkflowDto? workflow, IReadOnlyList&lt;OperationsWorkflowBlockerDto&gt; blockers, IReadOnlyList&lt;OperationsNextActionDto&gt; nextActions, long? newVersion = null, OperationsCloseReadinessDto? closeReadiness = null) : this(outcome?.IsSuccessful?? false, errorCode, errorMessage, workflow, blockers, nextActions, newVersion, closeReadiness, outcome);</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:896](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L896) |  |
-| <code>public VerifiedOperationOutcome Outcome { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:918](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L918) |  |
-| <code>public bool Success =&gt; …;</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:920](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L920) |  |
-| <code>public string? ErrorCode { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:922](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L922) |  |
-| <code>public string? ErrorMessage { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:924](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L924) |  |
-| <code>public OperationsContinuityWorkflowDto? Workflow { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:926](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L926) |  |
-| <code>public IReadOnlyList&lt;OperationsWorkflowBlockerDto&gt; Blockers { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:928](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L928) |  |
-| <code>public IReadOnlyList&lt;OperationsNextActionDto&gt; NextActions { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:930](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L930) |  |
-| <code>public long? NewVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:932](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L932) |  |
-| <code>public OperationsCloseReadinessDto? CloseReadiness { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:934](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L934) |  |
-
-## OperationsWorkflowAuditDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsWorkflowAuditDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1247](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1247).
-
-```csharp
-public sealed record OperationsWorkflowAuditDto(Guid AuditId, DateTimeOffset OccurredAtUtc, Guid WorkflowId, Guid FundAccountId, string PeriodId, string EventType, OperationsWorkflowStatusDto FromState, OperationsWorkflowStatusDto ToState, OperationsGateKeyDto? Gate, OperationsGateStatusDto? FromGateStatus, OperationsGateStatusDto? ToGateStatus, string Actor, string? Rationale, string? CorrelationId, OperationsContinuityCorrelationKeysDto? CorrelationKeys, IReadOnlyList<OperationsEvidenceLinkDto> References, string? PreviousHash, string CurrentHash, VerifiedOperationOutcome? Outcome = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public OperationsCloseChecklistSnapshotDto? CloseChecklistSnapshot { get; init; }</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1269](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1269) |  |
-
-## OperationsWorkflowBlockerDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsWorkflowBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1367](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1367).
-
-```csharp
-public sealed record OperationsWorkflowBlockerDto(string Code, string Message, OperationsGateKeyDto? Gate, string Severity, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, OperationsIssueCodeDto? IssueCode = null);
-```
-
-## OperationsWorkflowContractMatrix
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsWorkflowContractMatrix</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:114](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L114).
-
-Single source-of-truth contract matrix for Operations Continuity workflow status/state/code surfaces.
-
-```csharp
-public static class OperationsWorkflowContractMatrix
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;OperationsWorkflowStatusDto&gt; OverallStatuses { get; } = [OperationsWorkflowStatusDto.NotStarted, OperationsWorkflowStatusDto.CollectingBrokerData, OperationsWorkflowStatusDto.SecurityMasterValidation, OperationsWorkflowStatusDto.LedgerPostingDraft, OperationsWorkflowStatusDto.ReconciliationActive, OperationsWorkflowStatusDto.ApprovalPending, OperationsWorkflowStatusDto.ReadyForClose, OperationsWorkflowStatusDto.Closed, OperationsWorkflowStatusDto.Blocked];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:116](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L116) |  |
-| <code>public static IReadOnlyList&lt;OperationsGateStatusDto&gt; GateStatuses { get; } = [OperationsGateStatusDto.NotStarted, OperationsGateStatusDto.InProgress, OperationsGateStatusDto.Passed, OperationsGateStatusDto.ReviewRequired, OperationsGateStatusDto.Blocked];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:129](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L129) |  |
-| <code>public static IReadOnlyList&lt;OperationsBrokerIntakeStateDto&gt; BrokerSubStates { get; } = [OperationsBrokerIntakeStateDto.Pending, OperationsBrokerIntakeStateDto.Imported, OperationsBrokerIntakeStateDto.Normalized, OperationsBrokerIntakeStateDto.MatchedToInternalRun, OperationsBrokerIntakeStateDto.Complete];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:138](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L138) |  |
-| <code>public static IReadOnlyList&lt;OperationsSecurityMasterStateDto&gt; SecurityMasterSubStates { get; } = [OperationsSecurityMasterStateDto.Pending, OperationsSecurityMasterStateDto.ResolvedAllInstruments, OperationsSecurityMasterStateDto.OverridesRequested, OperationsSecurityMasterStateDto.OverridesApproved, OperationsSecurityMasterStateDto.Complete];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:147](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L147) |  |
-| <code>public static IReadOnlyList&lt;OperationsLedgerPostingStateDto&gt; LedgerSubStates { get; } = [OperationsLedgerPostingStateDto.Pending, OperationsLedgerPostingStateDto.Drafted, OperationsLedgerPostingStateDto.Validated, OperationsLedgerPostingStateDto.Posted, OperationsLedgerPostingStateDto.Complete];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:156](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L156) |  |
-| <code>public static IReadOnlyList&lt;OperationsReconciliationStateDto&gt; ReconciliationSubStates { get; } = [OperationsReconciliationStateDto.Pending, OperationsReconciliationStateDto.AutoMatched, OperationsReconciliationStateDto.ExceptionsOpen, OperationsReconciliationStateDto.InReview, OperationsReconciliationStateDto.Cleared, OperationsReconciliationStateDto.Complete];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:165](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L165) |  |
-| <code>public static IReadOnlyList&lt;OperationsReconciliationLaneStatusDto&gt; ReconciliationLaneStatuses { get; } = [OperationsReconciliationLaneStatusDto.Missing, OperationsReconciliationLaneStatusDto.Ready, OperationsReconciliationLaneStatusDto.ReviewRequired, OperationsReconciliationLaneStatusDto.Blocked];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:175](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L175) |  |
-| <code>public static IReadOnlyList&lt;OperationsApprovalStateDto&gt; ApprovalSubStates { get; } = [OperationsApprovalStateDto.Pending, OperationsApprovalStateDto.Submitted, OperationsApprovalStateDto.ReviewerAssigned, OperationsApprovalStateDto.Approved, OperationsApprovalStateDto.Rejected];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:183](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L183) |  |
-| <code>public static IReadOnlySet&lt;string&gt; BlockerCodes { get; } = new HashSet&lt;string&gt;(StringComparer.Ordinal) { &quot;ACTOR_REQUIRED&quot;, &quot;APPROVAL_DECISION_REQUIRED&quot;, &quot;APPROVAL_METADATA_REQUIRED&quot;, &quot;APPROVAL_REQUIRED&quot;, &quot;APPROVAL_REVIEWER_MISMATCH&quot;, &quot;APPROVAL_SUBMISSION_METADATA_REQUIRED&quot;, &quot;APPROVAL_SUBMISSION_REQUIRED&quot;, &quot;AUDIT_CHAIN_INVALID&quot;, &quot;AUDIT_CHAIN_MISSING&quot;, &quot;BROKER_CASH_COVERAGE_INCOMPLETE&quot;, &quot;BROKER_IMPORT_ALREADY_RECORDED&quot;, &quot;BROKER_IMPORT_GATE_NOT_READY&quot;, &quot;BROKER_IMPORT_REQUIRED&quot;, &quot;BROKER_INTAKE_REQUIRED&quot;, &quot;BROKER_NORMALIZATION_REQUIRED&quot;, &quot;BROKER_DUPLICATE_TRANSACTION&quot;, &quot;BROKER_OUT_OF_PERIOD_ROWS&quot;, &quot;BROKER_PARSE_FAILED&quot;, &quot;BROKER_PROVIDER_ACCOUNT_UNLINKED&quot;, &quot;BROKER_PROVIDER_CAPABILITY_DEGRADED&quot;, &quot;BROKER_PROVIDER_REQUIRED_CAPABILITY_UNROUTABLE&quot;, &quot;BROKER_SCHEMA_INCOMPATIBLE&quot;, &quot;BROKER_SECURITY_UNRESOLVED&quot;, &quot;BROKER_STATEMENT_MISSING&quot;, &quot;BROKER_SYNC_STALE&quot;, &quot;BROKER_TRANSACTION_TYPE_UNKNOWN&quot;, &quot;CLOSE_CHECKLIST_CONTROL_APPROVALS_INCOMPLETE&quot;, &quot;CLOSE_CHECKLIST_CONTROL_APPROVALS_REQUIRED&quot;, &quot;FUND_ACCOUNT_REQUIRED&quot;, &quot;LEDGER_ACCOUNT_MAPPING_MISSING&quot;, &quot;LEDGER_BATCH_ID_REQUIRED&quot;, &quot;LEDGER_DRAFT_IMBALANCED&quot;, &quot;LEDGER_DRAFT_REQUIRED&quot;, &quot;LEDGER_DUPLICATE_POSTING_CANDIDATE&quot;, &quot;LEDGER_IDEMPOTENCY_KEY_MISSING&quot;, &quot;LEDGER_JOURNAL_ACCOUNT_NAME_REQUIRED&quot;, &quot;LEDGER_JOURNAL_ACCOUNT_TYPE_INVALID&quot;, &quot;LEDGER_JOURNAL_AGGREGATE_ID_REQUIRED&quot;, &quot;LEDGER_JOURNAL_APPEND_REJECTED&quot;, &quot;LEDGER_JOURNAL_CANDIDATE_INVALID&quot;, &quot;LEDGER_JOURNAL_CANDIDATE_REQUIRED&quot;, &quot;LEDGER_JOURNAL_DESCRIPTION_REQUIRED&quot;, &quot;LEDGER_JOURNAL_LINES_REQUIRED&quot;, &quot;LEDGER_JOURNAL_PERIOD_ID_REQUIRED&quot;, &quot;LEDGER_JOURNAL_PERIOD_ID_MISMATCH&quot;, &quot;LEDGER_JOURNAL_AGGREGATE_ID_MISMATCH&quot;, &quot;LEDGER_JOURNAL_STORE_UNAVAILABLE&quot;, &quot;LEDGER_JOURNAL_TIMESTAMP_REQUIRED&quot;, &quot;LEDGER_PERIOD_CLOSED&quot;, &quot;LEDGER_POSTING_KIND_REQUIRED&quot;, &quot;LEDGER_POSTING_REQUIRED&quot;, &quot;LEDGER_PREVIEW_ID_REQUIRED&quot;, &quot;LEDGER_SECURITY_MASTER_APPROVAL_MISSING&quot;, &quot;LEDGER_SECURITY_MASTER_MAPPING_MISSING&quot;, &quot;LEDGER_SECURITY_MASTER_ACCOUNTING_RULE_MISSING&quot;, &quot;LEDGER_SECURITY_MASTER_PROVENANCE_MISSING&quot;, &quot;LEDGER_JOURNAL_PROVENANCE_MISSING&quot;, &quot;LEDGER_JOURNAL_SECURITY_MASTER_PROVENANCE_MISMATCH&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_APPROVAL_EVIDENCE_MISSING&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_APPROVAL_REQUIRED&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_ACTIVE_STATUS_REQUIRED&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_ID_MISMATCH&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_ID_MISSING&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISSING&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISMATCH&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_MAPPING_MISMATCH&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_MAPPING_MISSING&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_PROVENANCE_MISMATCH&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_PROVENANCE_MISSING&quot;, &quot;LEDGER_SOURCE_ACTIVITY_DUPLICATE&quot;, &quot;LEDGER_VALIDATED_JOURNAL_REQUIRED&quot;, &quot;LEDGER_VALIDATION_REQUIRED&quot;, &quot;OPERATIONS_CONTINUITY_WORKFLOW_ALREADY_EXISTS&quot;, &quot;OPERATIONS_ATOMIC_COMMIT_UNAVAILABLE&quot;, &quot;OPERATIONS_GATES_NOT_PASSED&quot;, &quot;OPERATIONS_PREREQUISITE_GATES_NOT_PASSED&quot;, &quot;OPERATIONS_TRANSITION_COMMIT_FAILED&quot;, &quot;PERIOD_REQUIRED&quot;, &quot;POSITION_COVERAGE_INCOMPLETE&quot;, &quot;PRICING_COVERAGE_INCOMPLETE&quot;, &quot;RECONCILIATION_ACTUAL_FEED_ACTIVITY_MISSING_EXPECTED_EVENT&quot;, &quot;RECONCILIATION_BREAK_ALREADY_CLOSED&quot;, &quot;RECONCILIATION_BREAK_ASSIGNMENT_RATIONALE_REQUIRED&quot;, &quot;RECONCILIATION_BREAK_NOT_FOUND&quot;, &quot;RECONCILIATION_BREAK_OWNER_REQUIRED&quot;, &quot;RECONCILIATION_BREAK_RATIONALE_REQUIRED&quot;, &quot;RECONCILIATION_CRITICAL_BREAKS_OPEN&quot;, &quot;RECONCILIATION_EVIDENCE_MISSING&quot;, &quot;RECONCILIATION_EXPECTED_ACCRUAL_MISSING_ACTUAL&quot;, &quot;RECONCILIATION_EXTERNAL_EVIDENCE_MISSING_LEDGER_POSTING&quot;, &quot;RECONCILIATION_FACTOR_PAYDOWN_MISMATCH&quot;, &quot;RECONCILIATION_LEDGER_POSTING_MISSING_EXTERNAL_EVIDENCE&quot;, &quot;RECONCILIATION_PRINCIPAL_INCOME_CLASSIFICATION_MISMATCH&quot;, &quot;RECONCILIATION_RUN_NOT_FOUND&quot;, &quot;RECONCILIATION_RUN_REQUIRED&quot;, &quot;RECONCILIATION_SUCCESSOR_REQUIRED&quot;, &quot;RECONCILIATION_UNASSIGNED_OWNER&quot;, &quot;REJECTION_METADATA_REQUIRED&quot;, &quot;REOPEN_GOVERNANCE_METADATA_REQUIRED&quot;, &quot;REPORT_PACK_ID_MISMATCH&quot;, &quot;REPORT_PACK_NOT_READY&quot;, &quot;REPORT_PACK_REQUIRED&quot;, &quot;REVIEWED_AUTOMATION_MATERIAL_ACTION_REJECTED&quot;, &quot;SECURITY_MASTER_RESOLUTION_REQUIRED&quot;, &quot;ACCRUAL_ACTUAL_EVENT_MISSING&quot;, &quot;ACCRUAL_AMOUNT_MISMATCH&quot;, &quot;ACCRUAL_CLASSIFICATION_MISMATCH&quot;, &quot;ACCRUAL_DAY_COUNT_MISSING&quot;, &quot;ACCRUAL_DUPLICATE_RECOGNITION&quot;, &quot;ACCRUAL_EXPECTED_EVENT_MISSING&quot;, &quot;ACCRUAL_EXTERNAL_EVIDENCE_MISSING&quot;, &quot;ACCRUAL_FACTOR_PAYDOWN_MISMATCH&quot;, &quot;ACCRUAL_FACTOR_STALE&quot;, &quot;ACCRUAL_LEDGER_POSTING_MISSING&quot;, &quot;ACCRUAL_RATE_RESET_MISSING&quot;, &quot;ACCRUAL_TIMING_MISMATCH&quot;, &quot;FACTOR_PAYDOWN_AMOUNT_MISMATCH&quot;, &quot;FACTOR_PAYDOWN_CLASSIFICATION_MISMATCH&quot;, &quot;FACTOR_PAYDOWN_EXTERNAL_CASH_MISSING&quot;, &quot;FACTOR_PAYDOWN_LEDGER_MISSING&quot;, &quot;FACTOR_REDUCTION_UNRECONCILED&quot;, &quot;FACTOR_SCHEDULE_MISSING&quot;, &quot;FACTOR_STALE&quot;, &quot;SECURITY_ACCOUNTING_RULE_MISSING&quot;, &quot;SECURITY_SCHEDULE_MISSING&quot;, &quot;SM_ACCOUNTING_CLASSIFICATION_MISSING&quot;, &quot;SM_ACCOUNTING_TERMS_INCOMPLETE&quot;, &quot;SM_ACCRUAL_CASH_FLOW_TERMS_MISSING&quot;, &quot;SM_COUPON_TERMS_MISSING&quot;, &quot;SM_DAY_COUNT_MISSING&quot;, &quot;SM_DIVIDEND_TERMS_MISSING&quot;, &quot;SM_FACTOR_SCHEDULE_MISSING&quot;, &quot;SM_IDENTIFIER_CONFLICT&quot;, &quot;SM_PROVENANCE_INCOMPLETE&quot;, &quot;SM_PAYMENT_FREQUENCY_MISSING&quot;, &quot;SM_RATE_RESET_TERMS_MISSING&quot;, &quot;SM_RATE_RESET_SCHEDULE_MISSING&quot;, &quot;SM_INSTRUMENT_UNRESOLVED&quot;, &quot;SM_OVERRIDE_APPROVAL_EXPIRED&quot;, &quot;SM_OVERRIDE_APPROVAL_METADATA_REQUIRED&quot;, &quot;SM_OVERRIDE_APPROVAL_REQUIRED&quot;, &quot;SM_OVERRIDE_ID_MISMATCH&quot;, &quot;SM_OVERRIDE_REQUEST_REQUIRED&quot;, &quot;SM_RECON_SECURITY_UNRESOLVED&quot;, &quot;SM_UNAPPROVED_OVERRIDE&quot;, &quot;SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT&quot;, &quot;SM_VALUATION_SOURCE_MISSING&quot;, &quot;WORKFLOW_CLOSED&quot;, &quot;WORKFLOW_ID_REQUIRED&quot;, &quot;WORKFLOW_NOT_CLOSED&quot;, &quot;WORKFLOW_VERSION_MISMATCH&quot; };</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:192](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L192) |  |
-| <code>public static IReadOnlySet&lt;string&gt; IssueCodes { get; } = new HashSet&lt;string&gt;(StringComparer.Ordinal) { &quot;BROKER_PROVIDER_ACCOUNT_UNLINKED&quot;, &quot;BROKER_PROVIDER_CAPABILITY_DEGRADED&quot;, &quot;BROKER_PROVIDER_REQUIRED_CAPABILITY_UNROUTABLE&quot;, &quot;BROKER_SECURITY_UNRESOLVED&quot;, &quot;BROKER_STATEMENT_MISSING&quot;, &quot;BROKER_SYNC_STALE&quot;, &quot;BROKER_TRANSACTION_TYPE_UNKNOWN&quot;, &quot;SM_INSTRUMENT_UNRESOLVED&quot;, &quot;SM_ACCOUNTING_TERMS_INCOMPLETE&quot;, &quot;SM_ACCOUNTING_CLASSIFICATION_MISSING&quot;, &quot;SM_ACCRUAL_CASH_FLOW_TERMS_MISSING&quot;, &quot;SM_COUPON_TERMS_MISSING&quot;, &quot;SM_DAY_COUNT_MISSING&quot;, &quot;SM_DIVIDEND_TERMS_MISSING&quot;, &quot;SM_FACTOR_SCHEDULE_MISSING&quot;, &quot;SM_IDENTIFIER_CONFLICT&quot;, &quot;SM_PROVENANCE_INCOMPLETE&quot;, &quot;SM_PAYMENT_FREQUENCY_MISSING&quot;, &quot;SM_RATE_RESET_TERMS_MISSING&quot;, &quot;SM_RATE_RESET_SCHEDULE_MISSING&quot;, &quot;SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT&quot;, &quot;SM_VALUATION_SOURCE_MISSING&quot;, &quot;SM_RECON_SECURITY_UNRESOLVED&quot;, &quot;SECURITY_ACCOUNTING_RULE_MISSING&quot;, &quot;SECURITY_SCHEDULE_MISSING&quot;, &quot;ACCRUAL_ACTUAL_EVENT_MISSING&quot;, &quot;ACCRUAL_AMOUNT_MISMATCH&quot;, &quot;ACCRUAL_CLASSIFICATION_MISMATCH&quot;, &quot;ACCRUAL_DAY_COUNT_MISSING&quot;, &quot;ACCRUAL_DUPLICATE_RECOGNITION&quot;, &quot;ACCRUAL_EXPECTED_EVENT_MISSING&quot;, &quot;ACCRUAL_EXTERNAL_EVIDENCE_MISSING&quot;, &quot;ACCRUAL_FACTOR_PAYDOWN_MISMATCH&quot;, &quot;ACCRUAL_FACTOR_STALE&quot;, &quot;ACCRUAL_LEDGER_POSTING_MISSING&quot;, &quot;ACCRUAL_RATE_RESET_MISSING&quot;, &quot;ACCRUAL_TIMING_MISMATCH&quot;, &quot;FACTOR_PAYDOWN_AMOUNT_MISMATCH&quot;, &quot;FACTOR_PAYDOWN_CLASSIFICATION_MISMATCH&quot;, &quot;FACTOR_PAYDOWN_EXTERNAL_CASH_MISSING&quot;, &quot;FACTOR_PAYDOWN_LEDGER_MISSING&quot;, &quot;FACTOR_REDUCTION_UNRECONCILED&quot;, &quot;FACTOR_SCHEDULE_MISSING&quot;, &quot;FACTOR_STALE&quot;, &quot;LEDGER_SECURITY_MASTER_PROVENANCE_MISSING&quot;, &quot;LEDGER_SECURITY_MASTER_APPROVAL_MISSING&quot;, &quot;LEDGER_SECURITY_MASTER_MAPPING_MISSING&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_APPROVAL_EVIDENCE_MISSING&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_APPROVAL_REQUIRED&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_ACTIVE_STATUS_REQUIRED&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_ID_MISMATCH&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_ID_MISSING&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISSING&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISMATCH&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_MAPPING_MISMATCH&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_MAPPING_MISSING&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_PROVENANCE_MISMATCH&quot;, &quot;LEDGER_LINE_SECURITY_MASTER_PROVENANCE_MISSING&quot;, &quot;LEDGER_JOURNAL_SECURITY_MASTER_PROVENANCE_MISMATCH&quot;, &quot;LEDGER_SECURITY_MASTER_ACCOUNTING_RULE_MISSING&quot;, &quot;LEDGER_DRAFT_IMBALANCED&quot;, &quot;LEDGER_PERIOD_CLOSED&quot;, &quot;LEDGER_DUPLICATE_POSTING_CANDIDATE&quot;, &quot;RECONCILIATION_CRITICAL_BREAKS_OPEN&quot;, &quot;REPORT_PACK_NOT_READY&quot;, &quot;APPROVAL_REQUIRED&quot; };</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:347](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L347) |  |
-| <code>public static IReadOnlySet&lt;string&gt; AuditEventTypes { get; } = new HashSet&lt;string&gt;(StringComparer.Ordinal) { &quot;workflow-started&quot;, &quot;broker-imported&quot;, &quot;broker-transactions-normalized&quot;, &quot;gate-posture-refreshed&quot;, &quot;security-master-resolved&quot;, &quot;security-master-override-approved&quot;, &quot;security-master-field-edit-approved&quot;, &quot;ledger-draft-built&quot;, &quot;ledger-draft-validated&quot;, &quot;ledger-posted&quot;, &quot;ledger-posting-blocked&quot;, &quot;reconciliation-run&quot;, &quot;reconciliation-break-assigned&quot;, &quot;reconciliation-break-escalated&quot;, &quot;reconciliation-break-resolved&quot;, &quot;approval-submitted&quot;, &quot;approval-approved&quot;, &quot;approval-rejected&quot;, &quot;workflow-closed&quot;, &quot;workflow-transition-blocked&quot;, &quot;workflow-transition-failed&quot;, &quot;workflow-reopened&quot; };</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:417](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L417) |  |
-
-## OperationsWorkflowStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsWorkflowStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L12).
-
-Server-derived lifecycle status for the fund-account and period operations continuity workflow.
-
-```csharp
-public enum OperationsWorkflowStatusDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotStarted = 0</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L14) |  |
-| <code>CollectingBrokerData = 1</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L15) |  |
-| <code>SecurityMasterValidation = 2</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L16) |  |
-| <code>LedgerPostingDraft = 3</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L17) |  |
-| <code>ReconciliationActive = 4</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L18) |  |
-| <code>ApprovalPending = 5</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L19) |  |
-| <code>ReadyForClose = 6</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L20) |  |
-| <code>Closed = 7</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L21) |  |
-| <code>Blocked = 8</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L22) |  |
-
-## OperatorInboxDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorInboxDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L95).
-
-```csharp
-public sealed record OperatorInboxDto(DateTimeOffset AsOf, IReadOnlyList<OperatorWorkItemDto> Items, int CriticalCount, int WarningCount, int ReviewCount, string Summary)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;OperatorWorkItemDto&gt; WorkItems =&gt; …;</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:104](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L104) | Compatibility alias for workstation readiness callers that still use the readiness work-item name. |
-
-## OperatorInboxTriageDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorInboxTriageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L35).
-
-```csharp
-public sealed record OperatorInboxTriageDto(DateTimeOffset AsOf, string ActorId, IReadOnlyList<OperatorTriageItemDto> Items, bool PersistenceAvailable, string? UnavailableReason);
-```
-
-## OperatorScopePreferenceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorScopePreferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs#L25).
-
-The signed-in operator&#x27;s default operating scope (C1): applied when a session opens with no scope in its link or browser, so the operator does not set it up again on every machine.
-
-```csharp
-public sealed record OperatorScopePreferenceDto(OperatingScopeValuesDto? DefaultScope, DateTimeOffset? UpdatedAt);
 ```

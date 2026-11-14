@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ThresholdBreach
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThresholdBreach</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:33](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L33).
+
+```csharp
+public sealed record ThresholdBreach(string Counterparty, ThresholdSeverity Severity, decimal CoverageRatio, decimal EarlyWarningLevel, decimal HardBreachLevel, string Message);
+```
+
 ## ThresholdSeverity
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ThresholdSeverity</code>. Kind: `enum`.
@@ -157,7 +167,7 @@ public sealed record WorkstationPersonalTableViewRecord(string TenantId, string 
 
 Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationServiceCollectionExtensions</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:86](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L86).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:87](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L87).
 
 Registers the shared web-workstation service graph consumed by endpoint and host surfaces.
 
@@ -169,8 +179,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:88](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L88) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1495](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1495) |  |
+| <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:89](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L89) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1509](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1509) |  |
 
 ## WorkstationWorkflowReadScope
 

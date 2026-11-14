@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceRequestListKindDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceRequestListKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:453](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L453).
+
+```csharp
+public enum EvidenceRequestListKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:455](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L455) |  |
+| <code>Evidence = 1</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:456](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L456) |  |
+| <code>Close = 2</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:457](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L457) |  |
+| <code>Audit = 3</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:458](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L458) |  |
+| <code>Tax = 4</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:459](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L459) |  |
+| <code>ReportPackage = 5</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:460](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L460) |  |
+| <code>OperationalEvent = 6</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:461](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L461) |  |
+
+## EvidenceSlaAssessmentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceSlaAssessmentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:334](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L334).
+
+```csharp
+public sealed record EvidenceSlaAssessmentDto(string PolicyId, string EvidenceId, string EvidenceKind, string SourceSystem, int? AgeMinutes, int FreshnessMinutes, bool IsBreached, EvidenceValidationSeverityDto Severity, string Message);
+```
+
 ## EvidenceSlaPolicyDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.EvidenceSlaPolicyDto</code>. Kind: `record`.
@@ -392,6 +424,16 @@ Preview line for a balanced journal candidate generated from an expected event.
 public sealed record ExpectedJournalPreviewLineDto(string AccountName, string AccountType, string? Symbol, decimal Debit, decimal Credit);
 ```
 
+## ExplainOnboardingDifferenceRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ExplainOnboardingDifferenceRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L73).
+
+```csharp
+public sealed record ExplainOnboardingDifferenceRequestDto(int ExpectedVersion, string ComparisonId, string Classification, string Notes, IReadOnlyList<string> EvidenceIds, DateOnly? ExpectedReversalDate = null);
+```
+
 ## ExposureSnapshotDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ExposureSnapshotDto</code>. Kind: `record`.
@@ -624,34 +666,4 @@ Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:42](.
 
 ```csharp
 public sealed record FinancialRecordExplorerSavedViewDto(string ViewId, string Label, string Description, bool IsSystem, bool IsActive, IReadOnlyList<FinancialRecordExplorerFilterDto> Filters, string SearchText = "", IReadOnlyList<string>? ColumnIds = null, bool? IsReadOnly = false, string? Origin = null);
-```
-
-## FinancialRecordExplorerSavedViewSaveRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerSavedViewSaveRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:146](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L146).
-
-```csharp
-public sealed record FinancialRecordExplorerSavedViewSaveRequestDto(string Label, string Description, string SearchText, IReadOnlyList<FinancialRecordExplorerFilterDto> Filters, IReadOnlyList<string>? ColumnIds = null);
-```
-
-## FinancialRecordExplorerScopeItemDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerScopeItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L37).
-
-```csharp
-public sealed record FinancialRecordExplorerScopeItemDto(string Label, string Value, FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default);
-```
-
-## FinancialRecordExplorerSelectedRecordDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerSelectedRecordDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:100](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L100).
-
-```csharp
-public sealed record FinancialRecordExplorerSelectedRecordDto(string RecordId, string RecordType, string Title, string Subtitle, string Description, FinancialRecordExplorerTone Tone, IReadOnlyList<FinancialRecordExplorerSummaryItemDto> Fields, IReadOnlyList<FinancialRecordExplorerProofActionDto> ProofActions, IReadOnlyList<FinancialRecordExplorerRelationshipDto> UsedIn, IReadOnlyList<FinancialRecordExplorerRelationshipDto> Impacts, string FullRecordHref = "");
 ```
