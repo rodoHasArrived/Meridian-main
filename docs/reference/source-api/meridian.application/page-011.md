@@ -869,7 +869,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.PortfolioOpeningBalanceProjector</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs:7](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs#L7).
+Source: [src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs:8](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs#L8).
 
 Projects a complete account at cost; subscription filters never remove opening assets.
 
@@ -881,7 +881,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static AutomatedJournalDraft Build(PortfolioImportRun run);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs:9](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs#L9) |  |
+| <code>public static AutomatedJournalDraft Build(PortfolioImportRun run);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs:10](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs#L10) |  |
 
 ## ProviderStatus
 
