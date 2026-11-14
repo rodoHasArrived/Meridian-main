@@ -63,7 +63,7 @@ jobs:
           # global.json permits SDK roll-forward; isolate this lane from preinstalled SDKs.
           DOTNET_INSTALL_DIR: ${{ runner.temp }}/pipeline-dotnet
         with:
-          dotnet-version: '10.0.100'
+          global-json-file: global.json
       - name: Install validator test dependency
         run: python -m pip install pytest==8.4.2
       - name: Prove harness and validator failure propagation

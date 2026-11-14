@@ -27,7 +27,7 @@
         "artifacts/ci-summary/"
       ],
       "timeoutMinutes": 75,
-      "pathTriggerNotes": "Runs for pull requests to main, pushes to main, merge queue groups, and manual dispatch.",
+      "pathTriggerNotes": "Runs for all pull requests, pushes to main, merge queue groups, and manual dispatch. Requires change detection and permits only an explicitly classified docs-only PR to skip .NET.",
       "requiredCheckRole": "aggregator"
     },
     {
@@ -42,7 +42,7 @@
         "artifacts/ci-summary/"
       ],
       "timeoutMinutes": 45,
-      "pathTriggerNotes": "Covers solution restore, formatting, warning-suppression inventory, file-size ratchet, web-workstation .NET build, and non-integration .NET tests.",
+      "pathTriggerNotes": "Covers solution restore, formatting, warning-suppression inventory, file-size ratchet, web-workstation .NET build, and non-integration .NET tests. Only recognized narrative/asset-only PRs skip this lane; metadata and unknown paths require it.",
       "requiredCheckRole": "evidence"
     },
     {

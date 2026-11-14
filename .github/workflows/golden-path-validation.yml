@@ -60,7 +60,6 @@ env:
   DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
   DOTNET_NOLOGO: "true"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
-  DOTNET_VERSION: '10.0.x'
   NODE_VERSION: 24
   MERIDIAN_DISABLE_DOCKER_TESTS: "true"
 
@@ -105,7 +104,7 @@ jobs:
       - name: Set up .NET SDK
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: global.json
 
       - name: Restore WPF test project
         run: dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
@@ -137,7 +136,7 @@ jobs:
       - name: Set up .NET SDK
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: global.json
 
       - name: Set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0

@@ -39,7 +39,7 @@ migration, deployment and operator acceptance remain pending under a separate pr
 ### Identifier-history migration 062
 
 The owner authorized migration 062's waiver on 2026-11-11 with three
-[apply conditions](../architecture/security-master-extensibility-review.md#owner-decisions--2026-11-11).
+[apply conditions](../../archive/docs/architecture/security-master-extensibility-review.md#owner-decisions--2026-11-11).
 Before upgrading an existing schema with 062 pending:
 
 1. Stop every Security Master writer, including import/background workers and WPF desktops.
