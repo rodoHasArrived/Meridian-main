@@ -1,5 +1,5 @@
 import type { EvidenceVaultDocumentEntry } from "@/types";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp } from "@/lib/format";
 
 export function formatEvidenceNodeLabel(nodeId: string) {
   const parts = nodeId.split(":").filter(Boolean);
@@ -79,5 +79,5 @@ export function formatDate(value: string) {
     return value;
   }
 
-  return formatUtcTimestamp(date);
+  return formatTimestamp(date);
 }

@@ -654,7 +654,7 @@ describe("strategy-screen view model", () => {
     expect(panel.hasParameterChanges).toBe(true);
     expect(panel.parameterChanges[0]).toMatchObject({
       key: "lookback",
-      valueText: "20 -> 30",
+      valueText: "20 → 30",
       ariaLabel: "lookback changed from 20 to 30.",
       rowSelectAriaLabel: "Inspect lookback parameter diff",
       detailPanelId: "strategy-run-diff-selected-parameter-detail",
@@ -690,7 +690,7 @@ describe("strategy-screen view model", () => {
     expect(selectedSecond.selectedParameterKey).toBe("threshold");
     expect(selectedSecond.parameterChanges[1]).toMatchObject({
       detailExpanded: true,
-      valueText: "1.5 -> 2.0"
+      valueText: "1.5 → 2.0"
     });
   });
 

@@ -10,9 +10,11 @@ import {
   worstMetricFreshness
 } from "@/lib/metric-trust";
 import { resolveFigureEvidence, useWorkspaceFigureContext, type FigureSourceKey } from "@/lib/workspace-figure-context";
+import { useOperatingScopeLabel } from "@/lib/operating-scope/scope-label-context";
+import { resolveStatStripScope } from "@/lib/operating-scope/figure-scope";
 import type { MetricFreshness, MetricSnapshot } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
-import { metricBasisLabel, metricBasisValue, presentMetricChange } from "@/lib/metric-context";
+import { hasMetricBasisDetail, metricBasisLabel, metricBasisValue, presentMetricChange } from "@/lib/metric-context";
 import { useId } from "react";
 import { MetricPassport } from "@/components/meridian/metric-passport";
 
@@ -45,6 +47,10 @@ const degradedStripLabel: Record<Exclude<MetricFreshness, "fresh">, string> = {
  * figure in the strip that another payload supplies carries its own provenance and freshness,
  * which win over the strip's. A screen with its own freshness evidence stamps its metrics with
  * `withMetricContext` instead and leaves `source` off.
+ *
+ * Every strip in the shell prints the scope its figures were counted over (see
+ * `resolveStatStripScope`): figures that state their own scope keep it, and the rest inherit one
+ * from the shell, so no screen has to wire it.
  */
 export function StatStrip({
   metrics: suppliedMetrics,
@@ -63,10 +69,11 @@ export function StatStrip({
   source?: string;
   /** The payload that supplies the strip's figures, so its own load decides as-of and freshness. */
   figureSource?: FigureSourceKey;
-  /** The accounts, fund or run the strip covers. */
+  /** The accounts, fund or run the strip covers; overrides the scope inherited from the shell. */
   scope?: string | null;
 }) {
   const workspace = useWorkspaceFigureContext();
+  const shellScopeLabel = useOperatingScopeLabel();
   const basisTermId = useId();
   const basisId = useId();
   if (suppliedMetrics.length === 0) {
@@ -74,9 +81,10 @@ export function StatStrip({
   }
 
   const loaded = resolveFigureEvidence(workspace, figureSource);
+  const stripScope = resolveStatStripScope({ scope, figureSource, workspace, shellScopeLabel });
   const stamped = source
     ? withMetricContext(suppliedMetrics, {
-        provenance: { source, asOf: loaded.asOf, scope: scope ?? null },
+        provenance: { source, asOf: loaded.asOf, scope: stripScope },
         freshness: loaded.freshness
       })
     : suppliedMetrics;
@@ -87,19 +95,27 @@ export function StatStrip({
         ? { ...metric, provenance: { ...metric.provenance, source: `${metric.provenance.source} (${dataLabel})` } }
         : metric)
     : stamped;
-  // The basis the figures share is stated once, beside a "Basis" term; an undeclared one reads
-  // "Not declared by source" there. Mixed bases fall back to a standalone line per figure.
+  // The basis the figures share is stated once, beside a "Basis" term. A basis nobody declared is
+  // not repeated on the strip (it said "Not declared by source" on every strip); each figure's
+  // passport still states it. Mixed bases fall back to a line per figure that declares one.
+  const anyBasisDetail = metrics.some(hasMetricBasisDetail);
   const firstBasis = metricBasisValue(metrics[0]!);
-  const sharedBasis = metrics.every(metric => metricBasisValue(metric) === firstBasis) ? firstBasis : null;
+  const basesAgree = metrics.every(metric => metricBasisValue(metric) === firstBasis);
+  const sharedBasis = anyBasisDetail && basesAgree ? firstBasis : null;
   // Each figure is described by the term and its value ("Basis Not declared by source"), since the
   // value alone does not say what it is.
   const sharedBasisDescription = sharedBasis ? `${basisTermId} ${basisId}` : undefined;
   // Figures from different sources: state each source once with the figures it supplies.
   const provenanceLine = describeMetricProvenance(sharedMetricProvenance(metrics)) ?? describeGroupedMetricProvenance(metrics);
   const stripFreshness = worstMetricFreshness(metrics);
+  // The provenance line already names the scope when the figures state one (per source when they
+  // differ); otherwise the strip's own scope is printed once, so no strip leaves the operator
+  // guessing what it counts.
+  const provenanceStatesScope = Boolean(provenanceLine) && metrics.some((metric) => Boolean(metric.provenance?.scope?.trim()));
   const footnote = [
     stripFreshness === "fresh" ? null : degradedStripLabel[stripFreshness],
-    provenanceLine
+    provenanceLine,
+    !provenanceStatesScope && stripScope ? `Scope: ${stripScope}` : null
   ].filter(Boolean).join(" · ");
 
   return (
@@ -134,7 +150,7 @@ export function StatStrip({
                   {metric.value}
                 </span>
                 <MetricPassport metric={metric} />
-                {!sharedBasis ? <span className="text-xs text-muted-foreground">{metricBasisLabel(metric)}</span> : null}
+                {!basesAgree && hasMetricBasisDetail(metric) ? <span className="text-xs text-muted-foreground">{metricBasisLabel(metric)}</span> : null}
                 {trust.freshnessDetail ? <span className="sr-only">{trust.freshnessDetail}</span> : null}
                 {delta ? (
                   <span className="whitespace-nowrap text-xs text-muted-foreground">{delta}</span>

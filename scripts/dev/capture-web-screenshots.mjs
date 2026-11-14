@@ -606,7 +606,8 @@ export const CAPTURE_CONTENT_ISSUE_KINDS = [
   "latency-not-duration",
   "unavailable-placeholder",
   "disabled-primary-without-reason",
-  "status-contradiction"
+  "status-contradiction",
+  "truncated-badge"
 ];
 
 /**
@@ -644,15 +645,17 @@ export function isSlugIdentifier(token) {
  *     ("Jul 13, 06:55 PM UTC") or "Never". Latency is a duration; a last-response time belongs
  *     under its own label. Recorded as "Latency: <value>".
  *   - unavailable-placeholder: "Basis unavailable" or "Saved views unavailable". An undeclared
- *     basis is stated as "Not declared by source"; the saved-views notice in a capture means the
- *     harness is missing a fixture.
+ *     basis is left off the figures strip (the figure's passport states it); the saved-views
+ *     notice in a capture means the harness is missing a fixture.
  *   - disabled-primary-without-reason: a disabled primary button with no title or description
  *     saying why. Passed in by the caller, which reads it from the DOM.
  *   - status-contradiction: the status bar says "up to date" while the page's posture strip says
  *     its freshness needs review or is blocked. Also read from the DOM by the caller.
+ *   - truncated-badge: a visible status badge whose text is clipped ("OPE" for "Open"). Badges
+ *     never truncate; a long one wraps. Read from the DOM by the caller.
  * Returns one entry per distinct offending excerpt.
  */
-export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [] } = {}) {
+export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [], truncatedBadges = [] } = {}) {
   const issues = [];
   const seen = new Set();
   const record = (kind, excerpt) => {
@@ -696,6 +699,9 @@ export function findCaptureContentIssues(text, { unexplainedDisabledActions = []
   for (const contradiction of statusContradictions) {
     record("status-contradiction", String(contradiction));
   }
+  for (const badge of truncatedBadges) {
+    record("truncated-badge", String(badge || "(unlabelled badge)"));
+  }
 
   return issues;
 }
@@ -736,8 +742,8 @@ export function describeCaptureContentIssues(captureName, issues) {
   return `Capture ${captureName} renders ${issues.length} operator-copy issue(s) in its main content: ${shown}${more}. `
     + "Name records by display name and keep identifiers and request paths in technical details; use pluralizeCount "
     + "for counts; write for operators, not about the system; give a disabled primary button a disabledReason; "
-    + "show latency only as a duration; state an undeclared basis as 'Not declared by source'; a 'Saved views "
-    + "unavailable' notice in a capture means a missing fixture. "
+    + "show latency only as a duration; leave an undeclared basis off the strip; never clip a status badge; "
+    + "a 'Saved views unavailable' notice in a capture means a missing fixture. "
     + "A route that cannot comply yet lists the kind with a reason under allowedContentIssues in the route catalog.";
 }
 
@@ -1026,11 +1032,20 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
   const statusContradictions = statusProbe?.pageFreshness && /up to date/i.test(statusProbe.statusBar ?? "")
     ? [`status bar "${statusProbe.statusBar}" vs page "${statusProbe.pageFreshness}"`]
     : [];
+  // A clipped status badge ("OPE") reads as a different status. Badges are measured, not read:
+  // the text is all there in innerText even when the box cuts it off.
+  const truncatedBadgeProbe = await page.evaluate(() =>
+    Array.from(document.querySelectorAll(".mds-sev, .mds-badge"))
+      .filter((badge) => badge.getClientRects().length > 0)
+      .filter((badge) => badge.scrollWidth > badge.clientWidth + 1)
+      .map((badge) => (badge.textContent ?? "").replace(/\s+/g, " ").trim())
+  );
+  const truncatedBadges = Array.isArray(truncatedBadgeProbe) ? truncatedBadgeProbe : [];
   if (textDir) {
     await fs.mkdir(textDir, { recursive: true });
     await fs.writeFile(path.join(textDir, `${capture.name}.txt`), `${mainText}\n`);
   }
-  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions });
+  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions, truncatedBadges });
   if (contentIssues.blocking.length > 0) {
     throw new Error(describeCaptureContentIssues(capture.name, contentIssues.blocking));
   }

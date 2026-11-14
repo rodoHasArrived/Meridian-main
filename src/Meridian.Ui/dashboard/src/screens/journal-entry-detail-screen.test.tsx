@@ -133,7 +133,7 @@ describe("JournalEntryDetailScreen", () => {
     expect(screen.getByText("Approved")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Lines for journal entry manual-je-1" })).toHaveTextContent("Cash");
     expect(screen.getByRole("region", { name: "Lines for journal entry manual-je-1" })).toHaveTextContent("Suspense");
-    expect(screen.getByText("Draft -> Approved (Approve)")).toBeInTheDocument();
+    expect(screen.getByText("Draft → Approved (Approve)")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Bank statement.pdf" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Approval" })).toBeInTheDocument();
     expect(screen.getAllByText("browser-user").length).toBeGreaterThan(0);

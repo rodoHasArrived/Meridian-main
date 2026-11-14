@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DesignSystemStatus } from "@/design-system/status";
 import { applyApprovalCollaboration, getApprovalCollaboration, type ApprovalCollaboration, type ApprovalCollaborationCommand } from "@/lib/approval-collaboration";
+import { formatTimestamp } from "@/lib/format";
 
 export function ApprovalCollaborationPanel({ workflowId, onChanged }: { workflowId: string; onChanged?: () => void }) {
   const [data, setData] = useState<ApprovalCollaboration | null>(null);
@@ -96,5 +97,5 @@ export function ApprovalCollaborationPanel({ workflowId, onChanged }: { workflow
 
 function approvalDiscussionDate(value: string | null) {
   const timestamp = Date.parse(value ?? "");
-  return Number.isFinite(timestamp) ? new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }).format(timestamp) + " UTC" : "Unavailable";
+  return Number.isFinite(timestamp) ? formatTimestamp(timestamp) : "Unavailable";
 }

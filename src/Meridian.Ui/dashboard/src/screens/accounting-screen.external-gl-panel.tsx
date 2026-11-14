@@ -1,6 +1,6 @@
 // External GL / accounting-system reconciliation panel, extracted from accounting-screen.tsx.
 import { BookCheck, RefreshCcw } from "lucide-react";
-import { formatCurrency as formatCurrencyAmount, formatUtcDate, formatUtcTimestamp } from "@/lib/format";
+import { formatCurrency as formatCurrencyAmount, formatUtcDate, formatTimestamp } from "@/lib/format";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { DesignSystemStatus } from "@/design-system/status";
 import { Badge } from "@/components/ui/badge";
@@ -106,7 +106,7 @@ function formatExternalGlTimestamp(value: string | null | undefined): string {
     return value;
   }
 
-  return formatUtcTimestamp(date);
+  return formatTimestamp(date);
 }
 
 export function AccountingSystemReconciliationPanel({

@@ -10,6 +10,7 @@
  * recognize from memory.
  */
 
+import { formatDecimal } from "@/lib/format";
 import type {
   ReconciliationCaseSummary,
   ReconciliationQueueAccountStatus,
@@ -245,7 +246,7 @@ function slaTone(state: string): ReadinessTone {
 
 function describeAge(summary: ReconciliationCaseSummary): string {
   const band = summary.ageBand?.trim();
-  const hours = `${summary.businessAgeHours.toFixed(1)}h business`;
+  const hours = `${formatDecimal(summary.businessAgeHours, 1)}h business`;
   return band ? `${band} (${hours})` : hours;
 }
 

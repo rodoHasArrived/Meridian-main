@@ -27,7 +27,8 @@ describe("WorkflowContinuityDock route modes", () => {
     );
 
     expect(screen.getByRole("region", { name: "Settings task choice" })).toBeTruthy();
-    expect(screen.getByText("No scope selected")).toBeVisible();
+    expect(screen.getByText("All authorized scopes")).toBeVisible();
+    expect(screen.queryByText("No scope selected")).toBeNull();
     expect(screen.queryByRole("navigation", { name: "Settings task workflow steps" })).toBeNull();
 
     await user.click(screen.getByText("Context"));

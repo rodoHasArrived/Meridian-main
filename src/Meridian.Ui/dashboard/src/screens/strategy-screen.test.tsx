@@ -654,7 +654,7 @@ describe("StrategyScreen", () => {
     await user.click(thresholdRow);
     expect(thresholdRow).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: "Selected parameter diff detail for threshold" }))
-      .toHaveTextContent("1.5 -> 2.0");
+      .toHaveTextContent("1.5 → 2.0");
     expect(api.diffRuns).toHaveBeenCalledOnce();
   });
 

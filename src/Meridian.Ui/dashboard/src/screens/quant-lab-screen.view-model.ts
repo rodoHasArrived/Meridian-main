@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as api from "@/lib/api";
-import { formatCurrency as formatCurrencyAmount, formatNumber as formatNumberAmount } from "@/lib/format";
+import { formatCurrency as formatCurrencyAmount, formatMoney as formatMoneyAmount, formatNumber as formatNumberAmount } from "@/lib/format";
 import type {
   QuantDiagnostic,
   QuantParameter,
@@ -865,18 +865,18 @@ function buildQuantTradeDetail(
     eyebrow: "Selected trade",
     title: `${trade.symbol} ${row.side}`,
     subtitle: `${row.timestamp} - ${row.quantity} @ ${row.price}`,
-    description: `Net cash impact ${formatSignedQuantMoney(netCashImpact)} after ${row.commission} commission.`,
+    description: `Net cash impact ${formatMoneyAmount(netCashImpact, { decimals: 2, signed: true, fallback: "$0.00" })} after ${row.commission} commission.`,
     statusLabel: row.side.toLowerCase().includes("buy") ? "BUY" : row.side.toLowerCase().includes("sell") ? "SELL" : "TRADE",
     statusTone: row.side.toLowerCase().includes("buy") ? "success" : row.side.toLowerCase().includes("sell") ? "warning" : "default",
     fields: [
       { label: "Symbol", value: trade.symbol },
       { label: "Side", value: row.side },
       { label: "Timestamp", value: row.timestamp },
-      { label: "Quantity", value: formatSignedQuantQuantity(signedQuantity) },
+      { label: "Quantity", value: formatNumberAmount(signedQuantity, { signed: true, maximumFractionDigits: 4, fallback: "0" }) },
       { label: "Price", value: row.price },
       { label: "Gross notional", value: row.notional },
       { label: "Commission", value: row.commission },
-      { label: "Net cash", value: formatSignedQuantMoney(netCashImpact) }
+      { label: "Net cash", value: formatMoneyAmount(netCashImpact, { decimals: 2, signed: true, fallback: "$0.00" }) }
     ]
   };
 }
@@ -1177,7 +1177,7 @@ export function buildToolbarItems(
 }
 
 function formatWholeNumber(value: number): string {
-  return Number.isFinite(value) ? value.toFixed(0) : "0";
+  return formatNumberAmount(value, { maximumFractionDigits: 0, fallback: "0" });
 }
 
 function formatQuantTradeTimestamp(value: string): string {
@@ -1199,18 +1199,6 @@ function formatQuantMoney(value: number): string {
   return formatCurrencyAmount(value, { minimumFractionDigits: 2, fallback: "$0.00" });
 }
 
-function formatSignedQuantMoney(value: number): string {
-  if (!Number.isFinite(value)) return "$0.00";
-  const prefix = value > 0 ? "+" : value < 0 ? "-" : "";
-  return `${prefix}${formatQuantMoney(Math.abs(value))}`;
-}
-
 function formatQuantQuantity(value: number): string {
   return formatNumberAmount(Math.abs(value), { maximumFractionDigits: 4, fallback: "0" });
-}
-
-function formatSignedQuantQuantity(value: number): string {
-  if (!Number.isFinite(value)) return "0";
-  const prefix = value > 0 ? "+" : value < 0 ? "-" : "";
-  return `${prefix}${formatQuantQuantity(value)}`;
 }

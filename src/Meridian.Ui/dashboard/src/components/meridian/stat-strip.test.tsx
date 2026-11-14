@@ -2,6 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
+import { OperatingScopeLabelProvider } from "@/lib/operating-scope/scope-label-context";
 import type { MetricSnapshot } from "@/types";
 
 const provenance = { source: "Portfolio workspace", asOf: "2026-06-30T18:05:00Z", scope: "All accounts" };
@@ -146,7 +147,7 @@ describe("StatStrip", () => {
     );
 
     expect(screen.getByTestId("stat-strip-provenance")).toHaveTextContent(
-      "Stale figures · Active runs, Open positions from System overview · As of Jun 30, 2026, 18:10 UTC; Providers healthy from Cross-screen counts · As of Jun 30, 2026, 17:40 UTC"
+      "Stale figures · Active runs, Open positions from System overview · As of Jun 30, 2026, 18:10 UTC · Scope: All authorized scopes; Providers healthy from Cross-screen counts · As of Jun 30, 2026, 17:40 UTC"
     );
     expect(screen.getByText("3 / 4")).toHaveClass("text-muted-foreground");
     expect(screen.getByText("7")).toHaveClass("text-foreground");
@@ -160,7 +161,7 @@ describe("StatStrip", () => {
     );
 
     expect(screen.getByTestId("stat-strip-provenance")).toHaveTextContent(
-      "Stale figures · Source: Strategy workspace (seeded demo data) · As of Jun 30, 2026, 18:05 UTC"
+      "Stale figures · Source: Strategy workspace (seeded demo data) · As of Jun 30, 2026, 18:05 UTC · Scope: All authorized scopes"
     );
     expect(screen.getByText("24")).toHaveClass("text-muted-foreground");
   });
@@ -180,9 +181,9 @@ describe("StatStrip", () => {
     );
 
     const [accounting, strategy] = screen.getAllByTestId("stat-strip-provenance");
-    expect(accounting).toHaveTextContent("Stale figures · Source: Accounting workspace · As of Jun 30, 2026, 18:05 UTC");
+    expect(accounting).toHaveTextContent("Stale figures · Source: Accounting workspace · As of Jun 30, 2026, 18:05 UTC · Scope: All authorized scopes");
     expect(screen.getByText("5")).toHaveClass("text-muted-foreground");
-    expect(strategy).toHaveTextContent(/^Source: Strategy workspace · As of Jun 30, 2026, 18:10 UTC$/);
+    expect(strategy).toHaveTextContent(/^Source: Strategy workspace · As of Jun 30, 2026, 18:10 UTC · Scope: All authorized scopes$/);
     expect(screen.getByText("24")).toHaveClass("text-foreground");
   });
 
@@ -202,8 +203,8 @@ describe("StatStrip", () => {
     );
 
     const [accounting, strategy] = screen.getAllByTestId("stat-strip-provenance");
-    expect(accounting).toHaveTextContent(/^Source: Accounting workspace · As of Jun 30, 2026, 17:40 UTC$/);
-    expect(strategy).toHaveTextContent(/^Source: Strategy workspace · As of Jun 30, 2026, 18:10 UTC$/);
+    expect(accounting).toHaveTextContent(/^Source: Accounting workspace · As of Jun 30, 2026, 17:40 UTC · Scope: All authorized scopes$/);
+    expect(strategy).toHaveTextContent(/^Source: Strategy workspace · As of Jun 30, 2026, 18:10 UTC · Scope: All authorized scopes$/);
   });
 
   it("states no as-of time when the workspace's load was never recorded", () => {
@@ -213,10 +214,10 @@ describe("StatStrip", () => {
       </WorkspaceFigureContextProvider>
     );
 
-    expect(screen.getByTestId("stat-strip-provenance")).toHaveTextContent(/^Source: Data workspace$/);
+    expect(screen.getByTestId("stat-strip-provenance")).toHaveTextContent(/^Source: Data workspace · Scope: All authorized scopes$/);
   });
 
-  it("states an undeclared basis once for the strip, in non-failure words", () => {
+  it("does not print a basis line when no figure declares one", () => {
     render(
       <StatStrip
         label="Undeclared basis metrics"
@@ -228,15 +229,11 @@ describe("StatStrip", () => {
     );
 
     const strip = screen.getByLabelText("Undeclared basis metrics");
-    const basisTerms = within(strip).getAllByText("Basis", { selector: "dt" });
-    expect(basisTerms).toHaveLength(1);
-    expect(basisTerms[0]!.nextElementSibling).toHaveTextContent(/^Not declared by source$/);
-    expect(within(strip).getAllByText("Not declared by source")).toHaveLength(1);
+    expect(within(strip).queryByText("Basis", { selector: "dt" })).not.toBeInTheDocument();
+    expect(strip).not.toHaveTextContent(/not declared by source/i);
     expect(strip).not.toHaveTextContent(/unavailable/i);
-    expect(within(strip).queryByText(/^Basis not declared by source/)).not.toBeInTheDocument();
-    // The shared value is not self-describing, so each figure is described by term and value.
     for (const value of ["$1", "2"]) {
-      expect(within(strip).getByText(value).closest("dd")).toHaveAccessibleDescription("Basis Not declared by source");
+      expect(within(strip).getByText(value).closest("dd")).not.toHaveAttribute("aria-describedby");
     }
   });
 
@@ -267,7 +264,7 @@ describe("StatStrip", () => {
     }
   });
 
-  it("states each figure's own basis when the bases differ, naming an undeclared one", () => {
+  it("states each declared basis when the bases differ, without repeating an undeclared one", () => {
     render(
       <StatStrip
         label="Mixed basis metrics"
@@ -281,7 +278,7 @@ describe("StatStrip", () => {
     const strip = screen.getByLabelText("Mixed basis metrics");
     expect(within(strip).queryByText("Basis", { selector: "dt" })).not.toBeInTheDocument();
     expect(within(strip).getByText("Posted GAAP book")).toBeInTheDocument();
-    expect(within(strip).getByText("Basis not declared by source")).toBeInTheDocument();
+    expect(within(strip).queryByText("Basis not declared by source")).not.toBeInTheDocument();
     expect(within(strip).getByText("2").closest("dd")).not.toHaveAttribute("aria-describedby");
     expect(strip).not.toHaveTextContent(/unavailable/i);
   });
@@ -291,5 +288,71 @@ describe("StatStrip", () => {
 
     expect(screen.getByTestId("stat-strip-provenance")).toHaveTextContent(/^Source: Data workspace$/);
     expect(screen.getByText("24")).toHaveClass("text-foreground");
+  });
+
+  describe("scope", () => {
+    const shell = { freshness: "fresh" as const, dataLabel: null, staleSources: [], sourceLoadedAt: {} };
+
+    it("prints the shell's route scope for a strip whose figures state none", () => {
+      render(
+        <OperatingScopeLabelProvider value="Account fund-1">
+          <StatStrip label="Headline metrics" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
+        </OperatingScopeLabelProvider>
+      );
+
+      expect(screen.getByTestId("stat-strip-provenance")).toHaveTextContent(/^Scope: Account fund-1$/);
+    });
+
+    it("prints All authorized scopes, never an absent scope, when nothing is narrowed", () => {
+      render(
+        <OperatingScopeLabelProvider value="All authorized scopes">
+          <StatStrip label="Headline metrics" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
+        </OperatingScopeLabelProvider>
+      );
+
+      const footnote = screen.getByTestId("stat-strip-provenance");
+      expect(footnote).toHaveTextContent(/^Scope: All authorized scopes$/);
+      expect(footnote).not.toHaveTextContent(/none|no scope selected/i);
+    });
+
+    it("states the account the payload was loaded for, not the operator's selection", () => {
+      render(
+        <OperatingScopeLabelProvider value="Account fund-2">
+          <WorkspaceFigureContextProvider value={{ ...shell, sourceScope: { trading: "fund-1", crossScreenCounts: null } }}>
+            <StatStrip label="Trading metrics" source="Trading workspace" figureSource="trading" metrics={[metric({ id: "cash", label: "Cash", value: "$1" })]} />
+            <StatStrip label="Counts" source="Cross-screen counts" figureSource="crossScreenCounts" metrics={[metric({ id: "orders", label: "Orders", value: "3" })]} />
+          </WorkspaceFigureContextProvider>
+        </OperatingScopeLabelProvider>
+      );
+
+      const [trading, counts] = screen.getAllByTestId("stat-strip-provenance");
+      expect(trading).toHaveTextContent(/^Source: Trading workspace · Scope: Account fund-1$/);
+      expect(counts).toHaveTextContent(/^Source: Cross-screen counts · Scope: All authorized accounts$/);
+    });
+
+    it("does not borrow the selection for a payload the shell loads without a scope filter", () => {
+      render(
+        <OperatingScopeLabelProvider value="Account fund-1">
+          <WorkspaceFigureContextProvider value={shell}>
+            <StatStrip label="Accounting headline metrics" source="Accounting workspace" figureSource="accounting" metrics={[metric({ id: "breaks", label: "Open breaks", value: "5" })]} />
+          </WorkspaceFigureContextProvider>
+        </OperatingScopeLabelProvider>
+      );
+
+      expect(screen.getByTestId("stat-strip-provenance")).toHaveTextContent(/^Source: Accounting workspace · Scope: All authorized scopes$/);
+    });
+
+    it("lets a screen override the inherited scope, and keeps a figure's own scope", () => {
+      render(
+        <OperatingScopeLabelProvider value="All authorized scopes">
+          <StatStrip label="Override" scope="Fund Alpha" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />
+          <StatStrip label="Own" metrics={[metric({ id: "cash", label: "Cash", value: "$1", provenance })]} />
+        </OperatingScopeLabelProvider>
+      );
+
+      const [override, own] = screen.getAllByTestId("stat-strip-provenance");
+      expect(override).toHaveTextContent(/^Scope: Fund Alpha$/);
+      expect(own).toHaveTextContent(/^Source: Portfolio workspace · As of Jun 30, 2026, 18:05 UTC · Scope: All accounts$/);
+    });
   });
 });

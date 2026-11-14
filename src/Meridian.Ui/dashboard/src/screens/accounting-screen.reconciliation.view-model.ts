@@ -8,11 +8,8 @@ import {
   workflowTargetPath,
 } from "@/lib/workspace";
 import {
-  formatCurrency,
-  formatCurrencyForCode,
   formatDateOnly,
   formatDateTimeLabel,
-  formatSignedCurrency,
 } from "./accounting-screen.formatting";
 import { normalizeApiErrorDisplay } from "./accounting-screen.view-model.shared";
 import type {
@@ -44,7 +41,7 @@ import type {
   ReconciliationBreakQueueItem,
   StatementRunSummary,
 } from "@/types";
-import { formatCount, pluralizeCount } from "@/lib/format";
+import { formatCount, pluralizeCount, formatCurrency, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
 import {
   TIE_OUT_EPSILON,
   usableAmount,
@@ -240,7 +237,7 @@ function buildSystemReconciliationLine(
       .map((part) => part?.trim())
       .filter(Boolean)
       .join(" · "),
-    amountLabel: formatCurrencyForCode(amount, row.currency),
+    amountLabel: formatCurrency(amount, { currency: row.currency, minimumFractionDigits: 0 }),
     statusLabel: describeSystemReconciliationStatus(row.status),
     statusTone: SYSTEM_RECONCILIATION_TONE[row.status]
   };
@@ -455,10 +452,10 @@ export function buildReconciliationComparisonViewState({
       id: run.runId,
       statementTitle: brokerCustodian,
       statementMeta: `${period} · ${account}`,
-      statementValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalCash) : `${formatCount(matchCount)} matched`,
+      statementValue: index === 0 && cashFlow ? formatPrefixedCurrency(cashFlow.totalCash) : `${formatCount(matchCount)} matched`,
       ledgerTitle,
       ledgerMeta,
-      ledgerValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : (openCount > 0 ? `${formatCount(openCount)} open` : "Matched"),
+      ledgerValue: index === 0 && cashFlow ? formatPrefixedCurrency(cashFlow.totalLedgerCash) : (openCount > 0 ? `${formatCount(openCount)} open` : "Matched"),
       statusLabel,
       statusTone: rawStatus === "SecurityCoverageOpen"
         ? "danger"
@@ -526,13 +523,13 @@ export function buildReconciliationComparisonViewState({
     const balanced = systemReconciliation.breakCount === 0 && Math.abs(netVariance) < 0.005;
     matchedCount = systemReconciliation.matchedCount;
     openCount = systemReconciliation.breakCount;
-    statementBalanceLabel = formatCurrencyForCode(statementBalance, summaryCurrency);
-    ledgerBalanceLabel = formatCurrencyForCode(ledgerBalance, summaryCurrency);
+    statementBalanceLabel = formatCurrency(statementBalance, { currency: summaryCurrency, minimumFractionDigits: 0 });
+    ledgerBalanceLabel = formatCurrency(ledgerBalance, { currency: summaryCurrency, minimumFractionDigits: 0 });
     varianceTone = balanced ? "success" : "warning";
     varianceLabel = balanced
       ? "Balanced"
       : Math.abs(netVariance) >= 0.005
-        ? `Out by ${formatCurrencyForCode(Math.abs(netVariance), summaryCurrency)}`
+        ? `Out by ${formatCurrency(Math.abs(netVariance), { currency: summaryCurrency, minimumFractionDigits: 0 })}`
         : `${formatCount(openCount)} open break${openCount === 1 ? "" : "s"}`;
     statementBalanceValue = usableAmount(statementBalance);
     ledgerBalanceValue = usableAmount(ledgerBalance);
@@ -552,11 +549,11 @@ export function buildReconciliationComparisonViewState({
   } else {
     matchedCount = sourceRows.reduce((total, run) => total + (run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches), 0);
     openCount = sourceRows.reduce((total, run) => total + run.openExceptionCount, 0);
-    statementBalanceLabel = cashFlow ? formatCurrency(cashFlow.totalCash) : "Not loaded";
-    ledgerBalanceLabel = cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : "Not loaded";
+    statementBalanceLabel = cashFlow ? formatPrefixedCurrency(cashFlow.totalCash) : "Not loaded";
+    ledgerBalanceLabel = cashFlow ? formatPrefixedCurrency(cashFlow.totalLedgerCash) : "Not loaded";
     const variance = cashFlow?.netVariance ?? 0;
     varianceTone = Math.abs(variance) < 0.005 ? "success" : "warning";
-    varianceLabel = Math.abs(variance) < 0.005 ? "Balanced" : `Out by ${formatCurrency(Math.abs(variance))}`;
+    varianceLabel = Math.abs(variance) < 0.005 ? "Balanced" : `Out by ${formatPrefixedCurrency(Math.abs(variance))}`;
     // Not loaded is null, never zero: the labels above read "Not loaded" for the same case.
     statementBalanceValue = cashFlow ? usableAmount(cashFlow.totalCash) : null;
     ledgerBalanceValue = cashFlow ? usableAmount(cashFlow.totalLedgerCash) : null;
@@ -920,13 +917,13 @@ export function buildReconciliationBreakRows(
       ...item,
       actionBusy,
       financeLabel,
-      varianceLabel: formatSignedCurrency(item.variance),
+      varianceLabel: formatSignedCurrency(item.variance, { minimumFractionDigits: 2, zeroLabel: "$0" }),
       varianceTone: item.variance > 0 ? "success" : item.variance < 0 ? "danger" : "default",
       statusBadgeVariant: reconciliationBreakStatusBadgeVariant(item.status),
       detectedAtLabel: formatDateTimeLabel(item.detectedAt),
       lastUpdatedAtLabel: formatDateTimeLabel(item.lastUpdatedAt),
       ownerLabel: item.assignedTo ?? "Unassigned",
-      rowAriaLabel: `${financeLabel} ${item.breakId}. ${item.status}. Variance ${formatSignedCurrency(item.variance)}. ${item.reason}`,
+      rowAriaLabel: `${financeLabel} ${item.breakId}. ${item.status}. Variance ${formatSignedCurrency(item.variance, { minimumFractionDigits: 2, zeroLabel: "$0" })}. ${item.reason}`,
       rowSelectAriaLabel: `Inspect reconciliation break ${item.breakId}`,
       detailPanelId: "reconciliation-break-detail-panel",
       isSelected,
@@ -990,7 +987,7 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Updated", value: row.lastUpdatedAtLabel },
       { label: "Exception route", value: formatReconciliationMetadata(row.exceptionRoute, "Unrouted") },
       { label: "Tolerance profile", value: formatReconciliationMetadata(row.toleranceProfileId, "Unassigned") },
-      { label: "Tolerance band", value: row.toleranceBand == null ? "Policy default" : formatCurrency(row.toleranceBand) },
+      { label: "Tolerance band", value: row.toleranceBand == null ? "Policy default" : formatPrefixedCurrency(row.toleranceBand) },
       { label: "Priority", value: formatReconciliationMetadata(row.priority, "Normal") },
       { label: "Urgency", value: buildReconciliationExceptionUrgency(row) },
       { label: "SLA tone", value: formatReconciliationMetadata(row.slaBadgeTone, "info") },

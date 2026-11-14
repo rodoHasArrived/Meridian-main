@@ -303,12 +303,12 @@ describe("app shell view model", () => {
     });
 
     expect(state.routeFocus).toMatchObject({
-      announcement: "Daily Control Tower loaded.",
-      documentTitle: "Daily Control Tower - Meridian",
+      announcement: "Today loaded.",
+      documentTitle: "Today - Meridian",
       fallbackElementId: "workbench-content"
     });
     expect(state.location).toEqual({ kind: "home" });
-    expect(state.workflowContinuity.contextValue).toBe("Daily Control Tower / Today");
+    expect(state.workflowContinuity.contextValue).toBe("Today");
     expect(state.workflowContinuity.title).toBe("Daily Control Tower");
     expect(state.workflowContinuity.steps.map((step) => step.label)).toEqual([
       "Today",
@@ -692,7 +692,7 @@ describe("app shell view model", () => {
     expect(state.workflowContinuity).toMatchObject({
       title: "Market Data To Paper",
       primaryOperatorFlowLabel: "Primary operator workflow",
-      primaryOperatorFlowSummary: "Import -> Validate -> Reconcile -> Investigate -> Approve -> Report",
+      primaryOperatorFlowSummary: "Import → Validate → Reconcile → Investigate → Approve → Report",
       contextLabel: "Operating context",
       contextValue: "Data / AAPL",
       routeLabel: "/data/quotes?symbol=AAPL",

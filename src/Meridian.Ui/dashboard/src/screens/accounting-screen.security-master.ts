@@ -1439,8 +1439,8 @@ export function buildSecurityConflictRows(
     const actionDisabledReason = isResolving
       ? `Resolution is already in progress for identifier conflict ${conflict.conflictId}.`
       : null;
-    const providerASummary = `${conflict.providerA} -> security ${formatSecurityReferenceValue(conflict.valueA)}`;
-    const providerBSummary = `${conflict.providerB} -> security ${formatSecurityReferenceValue(conflict.valueB)}`;
+    const providerASummary = `${conflict.providerA} → security ${formatSecurityReferenceValue(conflict.valueA)}`;
+    const providerBSummary = `${conflict.providerB} → security ${formatSecurityReferenceValue(conflict.valueB)}`;
 
     return {
       ...conflict,

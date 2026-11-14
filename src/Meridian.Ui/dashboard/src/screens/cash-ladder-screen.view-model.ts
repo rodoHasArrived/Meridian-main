@@ -1,4 +1,4 @@
-import { formatCurrency, formatUtcDate } from "@/lib/format";
+import { formatCurrency, formatFixed, formatUtcDate } from "@/lib/format";
 import type {
   PortfolioCashLadder,
   PortfolioCashLadderBucket,
@@ -204,7 +204,7 @@ export function buildCashLadderChart(ladder: PortfolioCashLadder | null): CashLa
     y: scaleY(bucket.cumulativeCash),
     breaches: bucket.breachesMinimumBalance
   }));
-  const cumulativePoints = cumulativeMarkers.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
+  const cumulativePoints = cumulativeMarkers.map((point) => `${formatFixed(point.x, 1)},${formatFixed(point.y, 1)}`).join(" ");
 
   const thresholdY = ladder.minimumCashThreshold > paddedMin && ladder.minimumCashThreshold < paddedMax
     ? scaleY(ladder.minimumCashThreshold)

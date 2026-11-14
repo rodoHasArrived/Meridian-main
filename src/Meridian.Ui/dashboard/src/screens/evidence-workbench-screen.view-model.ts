@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { formatCount as formatCountValue, pluralizeCount } from "@/lib/format";
+import { formatCount as formatCountValue, formatDecimal, pluralizeCount } from "@/lib/format";
 import {
   exportEvidenceManifest,
   getEvidencePacket,
@@ -2205,11 +2205,11 @@ function formatBytes(value: number) {
 
   const kib = value / 1024;
   if (kib < 1024) {
-    return `${kib.toFixed(kib >= 10 ? 0 : 1)} KiB`;
+    return `${formatDecimal(kib, kib >= 10 ? 0 : 1)} KiB`;
   }
 
   const mib = kib / 1024;
-  return `${mib.toFixed(mib >= 10 ? 0 : 1)} MiB`;
+  return `${formatDecimal(mib, mib >= 10 ? 0 : 1)} MiB`;
 }
 
 function normalizeManifestRoute(value: string): string | null {

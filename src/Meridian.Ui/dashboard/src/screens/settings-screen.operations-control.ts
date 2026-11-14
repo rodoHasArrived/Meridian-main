@@ -5,7 +5,7 @@ import {
 } from "@/lib/workstation-endpoints";
 import {
   formatSettingsDateOnly,
-  formatSettingsUtcMinute
+  formatSettingsMinute
 } from "@/screens/settings-screen.date-format";
 import type { SettingsScreenPayload } from "@/screens/settings-screen.view-model";
 import type {
@@ -242,7 +242,7 @@ function buildLedgerMappingControlCard(
     ],
     detail: firstUnmapped
       ? `${firstUnmapped.accountCode} needs mapping. ${firstUnmapped.recommendedAction}`
-      : `Mapping view generated ${formatSettingsUtcMinute(workbench.asOf)}.`
+      : `Mapping view generated ${formatSettingsMinute(workbench.asOf)}.`
   };
 }
 
@@ -325,7 +325,7 @@ function buildApprovalPolicyControlCard(
     ],
     detail: checklistRules > 0
       ? `${checklistRules} rule${checklistRules === 1 ? "" : "s"} require checklist-control approvals before close.`
-      : `Policy generated ${formatSettingsUtcMinute(matrix.generatedAtUtc)}.`
+      : `Policy generated ${formatSettingsMinute(matrix.generatedAtUtc)}.`
   };
 }
 
@@ -374,7 +374,7 @@ function buildCloseCalendarControlCard(
     ],
     detail: nextDue
       ? `${nextDue.periodId}: ${nextDue.nextDueLabel ?? "Next close task"} due ${formatSettingsDateOnly(nextDue.nextDueDate)} for ${nextDue.nextDueOwner ?? "unassigned"}.`
-      : `Close calendar generated ${formatSettingsUtcMinute(calendar.generatedAtUtc)}.`
+      : `Close calendar generated ${formatSettingsMinute(calendar.generatedAtUtc)}.`
   };
 }
 
