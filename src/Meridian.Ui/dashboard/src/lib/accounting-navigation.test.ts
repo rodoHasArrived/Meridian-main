@@ -18,7 +18,7 @@ describe("Accounting navigation", () => {
     expect(ACCOUNTING_NAVIGATION_GROUPS.map((group) => (
       [group.label, group.items.map((item) => item.label)]
     ))).toEqual([
-      ["Close", ["Today", "Operations continuity", "Close calendar"]],
+      ["Close", ["Close cockpit", "Operations continuity", "Close calendar"]],
       ["Records", ["Ledger explorer", "Factor paydown", "Consolidation", "Adjustments", "Capital accounts", "Capital calls", "Security Master"]],
       ["Reconciliation", ["Import statement", "Casework", "External GL"]],
       ["Review", ["Exceptions", "Approvals"]],

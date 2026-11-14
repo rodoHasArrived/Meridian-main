@@ -163,17 +163,17 @@ describe("workspace nav view model", () => {
       group.label,
       group.items.map((item) => item.label)
     ])).toEqual([
-      ["Close", ["Today", "Operations continuity", "Close calendar"]],
+      ["Close", ["Close cockpit", "Operations continuity", "Close calendar"]],
       ["Records", ["Ledger explorer", "Factor paydown", "Consolidation", "Adjustments", "Capital accounts", "Capital calls", "Security Master"]],
       ["Reconciliation", ["Import statement", "Casework", "External GL"]],
       ["Review", ["Exceptions", "Approvals"]],
       ["Administration", ["Entity setup", "Configure"]]
     ]);
     expect(accounting?.subItems[0]).toMatchObject({
-      label: "Today",
+      label: "Close cockpit",
       active: false,
       ariaCurrent: undefined,
-      ariaLabel: "Open Today"
+      ariaLabel: "Open Close cockpit"
     });
     expect(accounting?.subItems[1]).toMatchObject({
       label: "Operations continuity",

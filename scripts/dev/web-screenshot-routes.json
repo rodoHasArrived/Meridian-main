@@ -25,8 +25,8 @@
         "Daily Control Tower"
       ],
       "waitForSelectors": [
-        "[aria-label=\"Finance queue\"] table",
-        "[aria-label=\"Operator inbox\"] :is(table, [role=\"alert\"])"
+        "table[aria-label=\"Today queue\"]",
+        "[data-today-inbox-state=\"ready\"], [data-today-inbox-state=\"unavailable\"]"
       ]
     },
     {

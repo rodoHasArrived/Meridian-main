@@ -189,6 +189,18 @@ describe("Reconciliation workbench", () => {
     expect(within(bulkBar()).getByText("No breaks selected")).toBeInTheDocument();
   });
 
+  it("shows bulk actions only once breaks are selected, instead of rendering them disabled", async () => {
+    const user = userEvent.setup();
+    renderWorkbench(undefined, fakeBulkServices());
+    expect(within(bulkBar()).getByText("No breaks selected")).toBeInTheDocument();
+    for (const name of ["Clear selection", /assign/i, /resolve/i]) {
+      expect(within(bulkBar()).queryByRole("button", { name })).not.toBeInTheDocument();
+    }
+    await user.click(within(bulkBar()).getByRole("button", { name: "Select all 2" }));
+    expect(within(bulkBar()).getByRole("button", { name: "Clear selection" })).toBeEnabled();
+    expect(within(bulkBar()).getByRole("button", { name: "Resolve with reason" })).toBeEnabled();
+  });
+
   it("resolves with a reason only the breaks the dry run passed and lists the rest (C2)", async () => {
     const user = userEvent.setup();
     const services = fakeBulkServices((breakId) => breakId === "fees-2");

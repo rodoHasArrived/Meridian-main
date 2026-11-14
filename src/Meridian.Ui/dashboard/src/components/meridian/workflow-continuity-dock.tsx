@@ -3,9 +3,14 @@ import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";
 import "@/styles/workflow-continuity-dock.css";
 import type { AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
-import type { AppShellOperatingScopeQueryKey } from "@/app-shell.operating-scope";
+import { OPERATING_SCOPE_EMPTY_SUMMARY, type AppShellOperatingScopeQueryKey } from "@/app-shell.operating-scope";
 import { cn } from "@/lib/utils";
 
+/**
+ * The combined scope-and-workflow disclosure. The shell header no longer mounts it: the scope is
+ * the permanent `OperatingScopeBar`, and the workflow detail is `WorkflowContextDisclosure` inside
+ * the scope picker. Kept for hosts that want both in one collapsible control.
+ */
 export function WorkflowContinuityDock({
   viewModel,
   onEditOperatingContext,
@@ -68,7 +73,7 @@ export function WorkflowContinuityDock({
             <span className="workflow-continuity-scope-preview">
               {viewModel.operatingScope.hasScope
                 ? appliedScope.length > 0 ? describeScope(appliedScope) : "Scope retained; not applied here"
-                : "No scope selected"}
+                : OPERATING_SCOPE_EMPTY_SUMMARY}
             </span>
             <span className="sr-only">
               {viewModel.primaryOperatorFlowLabel}: {viewModel.primaryOperatorFlowSummary}
@@ -92,7 +97,7 @@ export function WorkflowContinuityDock({
               {viewModel.operatingScope.hasScope ? "Change scope" : "Set scope"}
             </button>
           ) : null}
-          {!viewModel.operatingScope.hasScope ? <span className="text-xs text-muted-foreground">No scope selected</span> : null}
+          {!viewModel.operatingScope.hasScope ? <span className="text-xs text-muted-foreground">{OPERATING_SCOPE_EMPTY_SUMMARY}</span> : null}
         </div>
         {viewModel.operatingScope.hasScope ? (
           <p className="sr-only">
@@ -183,88 +188,9 @@ export function WorkflowContinuityDock({
   );
 }
 
-/** Shown in the scope chip when no scope dimension is set: nothing is narrowed. */
-export const NO_SCOPE_LABEL = "All funds";
-
 /**
- * The operating scope as one header chip: it shows the scope values and opens the scope picker.
- * Dimensions the current screen does not filter by stay in the chip, muted, so a carried scope is
- * never invisible; the picker states per dimension whether it is applied here or retained.
- */
-export function OperatingScopeChip({
-  viewModel,
-  onEditOperatingContext,
-  scopeDimensionsInEffect
-}: {
-  viewModel: AppShellWorkflowContinuityViewModel;
-  onEditOperatingContext?: () => void;
-  scopeDimensionsInEffect?: AppShellOperatingScopeQueryKey[];
-}) {
-  const routePathLabel = viewModel.routeLabel.split(/[?#]/, 1)[0] || "/";
-  const isDimensionInEffect = (id: string) =>
-    !scopeDimensionsInEffect || scopeDimensionsInEffect.includes(id as AppShellOperatingScopeQueryKey);
-  const items = viewModel.operatingScope.items;
-  const appliedScope = items.filter((item) => isDimensionInEffect(item.id));
-  const retainedScope = items.filter((item) => !isDimensionInEffect(item.id));
-  const describeScope = (scopeItems: typeof items) => scopeItems.map((item) => `${item.label} ${item.value}`).join(", ");
-  const hasScope = viewModel.operatingScope.hasScope && items.length > 0;
-  const valueLabel = hasScope ? items.map((item) => item.value).join(" · ") : NO_SCOPE_LABEL;
-
-  if (viewModel.mode === "hidden") return null;
-
-  const value = hasScope
-    ? items.map((item, index) => (
-        <span
-          key={item.id}
-          className={cn("operating-scope-chip-item", !isDimensionInEffect(item.id) && "operating-scope-chip-item-retained")}
-          title={isDimensionInEffect(item.id) ? `${item.label}: applied here` : `${item.label}: carried, but not applied on this screen`}
-        >
-          {index > 0 ? <span aria-hidden="true" className="operating-scope-chip-sep">·</span> : null}
-          {item.value}
-        </span>
-      ))
-    : NO_SCOPE_LABEL;
-
-  return (
-    <section
-      className="operating-scope"
-      aria-label={viewModel.ariaLabel}
-      aria-describedby="workflow-continuity-screenreader-summary"
-    >
-      <p id="workflow-continuity-screenreader-summary" className="sr-only">
-        {viewModel.title}. {viewModel.summary} Current route {routePathLabel}. Next action: {viewModel.nextActionLabel}.
-      </p>
-      {hasScope ? (
-        <p id="operating-scope-applicability" className="sr-only">
-          {appliedScope.length > 0 ? `Applied on this screen: ${describeScope(appliedScope)}.` : "No selected scope dimensions apply on this screen."}
-          {retainedScope.length > 0 ? ` Retained for other screens: ${describeScope(retainedScope)}.` : ""}
-        </p>
-      ) : null}
-      {onEditOperatingContext ? (
-        <button
-          type="button"
-          className="operating-scope-chip"
-          onClick={onEditOperatingContext}
-          aria-label={`Operating scope: ${valueLabel}`}
-          aria-describedby={hasScope ? "operating-scope-applicability" : undefined}
-          aria-haspopup="dialog"
-          title="Change operating scope and view workflow context"
-        >
-          <span className="operating-scope-chip-value">{value}</span>
-          <ChevronDown className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-        </button>
-      ) : (
-        <span className="operating-scope-chip operating-scope-chip-static" aria-label={`Operating scope: ${valueLabel}`}>
-          <span className="operating-scope-chip-value">{value}</span>
-        </span>
-      )}
-    </section>
-  );
-}
-
-/**
- * On-demand workflow detail (current workflow, decision, steps). It lives in the scope chip's
- * popover, the scope picker, so the header keeps a single row. The worst cross-workspace issue
+ * On-demand workflow detail (current workflow, decision, steps). It lives in the scope picker,
+ * which the top-bar scope bar opens, so the header keeps a single row. The worst cross-workspace issue
  * itself renders as the masthead attention pill (AttentionPill).
  */
 export function WorkflowContextDisclosure({ viewModel }: { viewModel: AppShellWorkflowContinuityViewModel }) {

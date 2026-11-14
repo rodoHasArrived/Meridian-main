@@ -2,10 +2,15 @@
 
 **Status:** supporting-generated
 **Owner:** core-team
-**Reviewed:** 2026-11-12
+**Reviewed:** 2026-11-13
 
 This folder stores maintained screenshot references used by documentation and
 workflow evidence.
+
+The maintained capture plan covers **207 PNGs**: 82 browser routes, 98 native WPF catalog
+screens, and 27 native desktop manual frames. [Capture provenance](capture-manifest.json) records
+the retained file hashes, source commits, browser paths, native page observations, actual capture
+intervals, and Windows Actions artifact identities. The images use synthetic fixtures.
 
 Generated local screenshot runs should stay under ignored artifact locations
 unless a reviewer explicitly chooses a new screenshot as durable documentation
@@ -28,6 +33,16 @@ navigation and fail validation when it differs from the expected route path. A s
 matching route/page manifest entry fails validation instead of being accepted as a fresh-looking but
 unproven capture. Manifest capture paths must also resolve to the requested output PNG, so an older
 or different run cannot satisfy the evidence gate by reusing the expected filename.
+
+Native readiness also requires the selected visible frame's content-derived page tag to match
+the canonical shell tag. A compatibility fallback created after a page-construction failure does
+not satisfy that check. Native capture times in the provenance manifest are the original
+workflow-step intervals; an exact screenshot instant is not separately recorded.
+
+Native evidence covers registered page identity and the captured viewport. Original frames retain
+current offline, unselected, loading, and unavailable states. The default Windows viewport clips
+some lower content and includes bottom capture bands; the provenance manifest records the
+reviewed limitations.
 
 The maintained browser catalog in `scripts/dev/web-screenshot-routes.json` is expected to cover the
 active workstation page surface: every non-legacy path in `WORKSTATION_ROUTE_CATALOG`, the

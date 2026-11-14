@@ -10,13 +10,13 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
-import { accountingToolingBadgeVariant, accountingToolingBorderClass } from "@/screens/accounting-screen.styles";
 import { AccountingChip } from "@/screens/accounting-screen.workbench-context";
 import type { CapitalAccountWorkbenchProofViewModel } from "@/screens/accounting-screen.capital-accounts.view-model";
 import { pluralizeCount } from "@/lib/format";
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { StatusBadge, type DesignSystemSeverity } from "@/design-system/status";
 import type { RollforwardVerdict } from "@/components/accounting/proof-arithmetic";
+import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
 
 // Only a real proof is green. Figures that agree by construction ("Not itemised") ask for review.
 const ROLLFORWARD_VERDICT_SEVERITY: Record<RollforwardVerdict, DesignSystemSeverity> = {
@@ -60,7 +60,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
             <CardDescription>{view.description}</CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={accountingToolingBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
+            <Badge variant={statusBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
             <Button size="sm" variant="outline" disabled={view.loading} busy={view.loading} onClick={() => void view.refresh()}>
               <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
               Refresh
@@ -183,7 +183,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                         <div className="mt-1 text-xs text-muted-foreground">{row.subtitle}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.eventLabel}</div>
 </> },{ id: "field-1", label: "Readiness", exportValue: row => row.statusLabel, render: row => <>
-<Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+<Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
 </> },{ id: "field-2", label: "Net", exportValue: row => `${row.netActivityLabel} | ${row.rollForwardLabel} | ${row.activityMixLabel}`, render: row => <>
 <div className="text-foreground">{row.netActivityLabel}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.rollForwardLabel}</div>
@@ -242,13 +242,13 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
             </div>
             <div className="grid gap-2">
               {view.allocationRules.map((row) => (
-                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
+                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", statusPanelClass(row.statusTone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-semibold text-foreground">{row.label}</div>
                       <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.accountLabel}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.reason}</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">{row.basis}</p>
@@ -282,13 +282,13 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
             </div>
             <div className="grid gap-2">
               {view.statementLineage.map((row) => (
-                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
+                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", statusPanelClass(row.statusTone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-semibold text-foreground">{row.title}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{row.subtitle}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                   </div>
                   <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                     <span>{row.publicationLabel}</span>
@@ -322,13 +322,13 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
             </div>
             <div className="grid gap-2">
               {view.auditDrillThroughs.map((row) => (
-                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
+                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", statusPanelClass(row.statusTone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-semibold text-foreground">{row.title}</div>
                       <div className={cn("mt-1 text-xs text-muted-foreground", usesTrackedCaps(row.kind) && "uppercase")}>{row.kind}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.summary}</p>
                   <div className="mt-2 flex flex-wrap gap-2 text-xs">

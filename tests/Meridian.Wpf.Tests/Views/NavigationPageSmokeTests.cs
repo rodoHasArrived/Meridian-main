@@ -32,7 +32,8 @@ public sealed class NavigationPageSmokeTests
             configureServices.Should().NotBeNull();
             InvokeConfigureServices(configureServices!, services);
 
-            using var serviceProvider = services.BuildServiceProvider();
+            using var navigationHost = new DesktopNavigationTestHost(services);
+            var serviceProvider = navigationHost.Services;
 
             var orderBookException = Record.Exception(() => serviceProvider.GetRequiredService<OrderBookPage>());
             orderBookException.Should().BeNull();
@@ -97,15 +98,13 @@ public sealed class NavigationPageSmokeTests
             configureServices.Should().NotBeNull();
             InvokeConfigureServices(configureServices!, services);
 
-            using var serviceProvider = services.BuildServiceProvider();
+            using var navigationHost = new DesktopNavigationTestHost(services);
+            var serviceProvider = navigationHost.Services;
             var navigationService = NavigationService.Instance;
             Window? hostWindow = null;
 
             try
             {
-                navigationService.ResetForTests();
-                navigationService.SetServiceProvider(serviceProvider);
-
                 var frame = new Frame
                 {
                     NavigationUIVisibility = System.Windows.Navigation.NavigationUIVisibility.Hidden
@@ -131,7 +130,6 @@ public sealed class NavigationPageSmokeTests
             finally
             {
                 hostWindow?.Close();
-                navigationService.ResetForTests();
                 RunMatUiAutomationFacade.DrainDispatcher();
             }
         });

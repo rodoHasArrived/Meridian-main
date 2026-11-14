@@ -3,7 +3,7 @@
 // what is its change measured against. This module is the one place those rules live; the shared
 // StatStrip and MetricCard render whatever it resolves, so a screen cannot show a baseline-less
 // delta or a stale figure dressed as a fresh one by accident.
-import { formatUtcTimestamp, normalizeFinancialLabel } from "@/lib/format";
+import { formatTimestamp, normalizeFinancialLabel } from "@/lib/format";
 import type { MetricFreshness, MetricProvenance, MetricSnapshot } from "@/types";
 
 export type MetricDeltaKind = "change" | "caption";
@@ -43,7 +43,7 @@ export function resolveMetricDelta(delta: string | null | undefined, baseline?: 
 
 const ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2})?/;
 
-/** An ISO timestamp as a UTC label with the year; any other text is shown as given. */
+/** An ISO timestamp as a display-time-zone label with the year (UTC by default); any other text is shown as given. */
 export function formatMetricAsOf(asOf: string | null | undefined): string | null {
   const text = asOf?.trim();
   if (!text) {
@@ -53,7 +53,7 @@ export function formatMetricAsOf(asOf: string | null | undefined): string | null
   if (ISO_TIMESTAMP.test(text)) {
     const date = new Date(text);
     if (!Number.isNaN(date.getTime())) {
-      return formatUtcTimestamp(date);
+      return formatTimestamp(date);
     }
   }
 

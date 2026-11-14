@@ -1,3 +1,4 @@
+import { formatDecimal } from "@/lib/format";
 import type { ReconciliationBreakLineage } from "@/types";
 
 export function sourceObservationLabel(lineage?: ReconciliationBreakLineage | null): string {
@@ -11,5 +12,5 @@ export function sourceObservationAge(lineage?: ReconciliationBreakLineage | null
   const end = Date.parse(lineage.clearedAt ?? lineage.lastObservedAt);
   if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return "Age unavailable";
   const hours = (end - start) / 3_600_000;
-  return `${hours.toFixed(1)}h observed`;
+  return `${formatDecimal(hours, 1)}h observed`;
 }

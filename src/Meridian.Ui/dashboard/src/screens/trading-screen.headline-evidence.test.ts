@@ -46,7 +46,7 @@ describe("withTradingHeadlineEvidence", () => {
   });
 
   it("falls back to the payload's brokerage account when it was loaded for every account", () => {
-    expect(evidence(shell({ sourceScope: { trading: null } }), null).provenance?.scope).toBe("DU1009034");
+    expect(evidence(shell({ sourceScope: { trading: null } }), null).provenance?.scope).toBe("Brokerage account DU1009034");
   });
 
   it("takes the weakest of the payload's verdict and the broker evidence", () => {

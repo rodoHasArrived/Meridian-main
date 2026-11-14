@@ -67,7 +67,6 @@ import { ProviderValidationPanel } from "@/screens/data-screen.provider-validati
 import { RateLimitHistoryPanel } from "@/screens/data-screen.rate-limit-history";
 import { SettingsChangeImpactBanner } from "@/screens/settings-change-impact";
 import { DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
-import { resultToneClass } from "@/screens/data-screen.tone-styles";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
 import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
 import {
@@ -101,6 +100,7 @@ import type {
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
+import { statusPanelClass, statusTextClass } from "@/design-system/status-styles";
 
 interface DataScreenProps {
   data: DataWorkspaceResponse | null;
@@ -1912,7 +1912,7 @@ function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
     <div
       role="status"
       aria-label={state.ariaLabel}
-      className={cn("mt-4 rounded-md border p-3 text-sm", resultToneClass[state.tone])}
+      className={cn("mt-4 rounded-md border p-3 text-sm", cn(statusPanelClass(state.tone), statusTextClass(state.tone)))}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="font-semibold">{state.title}</div>

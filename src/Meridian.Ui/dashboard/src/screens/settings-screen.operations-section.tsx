@@ -10,7 +10,6 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { assignLedgerMapping, createRolePermissionProfile, upsertOperationsApprovalPolicyRule, upsertOperationsCloseCalendarItem } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
-import { badgeVariantToOperatorSeverity } from "@/lib/shared-tone-mappings";
 import { cn } from "@/lib/utils";
 import { buildApprovalPolicyPermissionOptions } from "@/screens/settings-screen.operations-form-options";
 import { type SettingsScreenViewModel } from "@/screens/settings-screen.view-model";
@@ -21,6 +20,7 @@ import { Link } from "react-router-dom";
 import { diagnosticToneClass, FilterSelect, SettingsFieldRow } from "./settings-provider-integration";
 import { SettingsChip, capabilityTone, settingsBannerTone } from "@/screens/settings-screen.section-primitives";
 import { type ApprovalPolicyRuleState, type CloseCalendarItemState, type LedgerMappingAssignmentState, type RolePermissionProfileState } from "@/screens/settings-screen.section-state";
+import { toSeverity } from "@/design-system/status-styles";
 
 interface UseSettingsOperationsSectionStateParams {
   approvalPolicyDraft: { canSave: boolean; statusLabel: string; disabledReason: string | null; rows: OperationsApprovalPolicyMatrixRow[]; policyOptions: Array<{ value: string; label: string; }>; };
@@ -373,7 +373,7 @@ export function SettingsOperationsSection({ vm, submitLedgerMappingAssignment, l
             <SettingsChip label="Loaded" value={vm.operationsControlCenter.loadedCountLabel} />
             <SettingsChip label="Review" value={vm.operationsControlCenter.reviewCountLabel} />
             <SeverityBadge
-              status={badgeVariantToOperatorSeverity(vm.operationsControlCenter.statusVariant)}
+              status={toSeverity(vm.operationsControlCenter.statusVariant)}
               label={vm.operationsControlCenter.statusLabel}
             />
           </div>
@@ -396,7 +396,7 @@ export function SettingsOperationsSection({ vm, submitLedgerMappingAssignment, l
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{card.description}</p>
                 </div>
                 <SeverityBadge
-                  status={badgeVariantToOperatorSeverity(card.statusVariant)}
+                  status={toSeverity(card.statusVariant)}
                   label={card.statusLabel}
                   className="shrink-0"
                 />

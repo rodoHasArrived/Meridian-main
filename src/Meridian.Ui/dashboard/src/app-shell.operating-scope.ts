@@ -27,6 +27,27 @@ export interface AppShellOperatingScopeQueryParam {
 
 export type AppShellOperatingScopeQueryKey = "symbol" | "fundAccountId" | "runId" | "provider" | "window";
 
+/**
+ * What an unset scope dimension means: nothing is narrowed, so the view covers everything the
+ * operator is authorized to see. The empty value never reads "None" or claims nothing is selected,
+ * because an unscoped view is not an empty one.
+ */
+export const OPERATING_SCOPE_ALL_AUTHORIZED = "All authorized";
+
+/** The whole operating scope with no dimension set; the same words Today prints. */
+export const OPERATING_SCOPE_EMPTY_SUMMARY = "All authorized scopes";
+
+/** One labelled dimension of the top-bar scope bar (`Account › … › Period`). */
+export interface OperatingScopeBarSegment {
+  id: AppShellOperatingScopeQueryKey;
+  label: string;
+  /** The value, or {@link OPERATING_SCOPE_ALL_AUTHORIZED} when the dimension is not set. */
+  value: string;
+  isSet: boolean;
+  /** False when the dimension is set but the current screen does not filter by it. */
+  applied: boolean;
+}
+
 export interface AppShellOperatingScopeState {
   label: string;
   summary: string;
@@ -107,7 +128,7 @@ export function buildOperatingScopeFromSearch(
 
   const summary = items.length > 0
     ? items.map((item) => `${item.label}: ${item.value}`).join(" / ")
-    : "No operating scope selected";
+    : OPERATING_SCOPE_EMPTY_SUMMARY;
 
   return {
     label: "Operating scope",
@@ -183,6 +204,55 @@ export function summarizeOperatingScopeForRoute(
     : null;
 }
 
+/**
+ * The scope bar's labelled dimensions, in the order the bar prints them: Account and Period are
+ * always present (reading "All authorized" when unset); Subject, Run and Provider appear only when
+ * set. The scope model has no entity or fund dimension of its own, so the bar does not invent one.
+ * `dimensionsInEffect` marks set dimensions the current screen does not filter by.
+ */
+export function buildOperatingScopeBarSegments(
+  operatingScope: AppShellOperatingScopeState,
+  dimensionsInEffect?: readonly AppShellOperatingScopeQueryKey[]
+): OperatingScopeBarSegment[] {
+  const valueFor = (key: AppShellOperatingScopeQueryKey) =>
+    operatingScope.items.find((item) => scopeKeyForOperatingScopeItem(item) === key)?.value ?? null;
+  const segment = (id: AppShellOperatingScopeQueryKey, label: string): OperatingScopeBarSegment => {
+    const value = valueFor(id);
+    return {
+      id,
+      label,
+      value: value ?? OPERATING_SCOPE_ALL_AUTHORIZED,
+      isSet: value !== null,
+      applied: value === null || !dimensionsInEffect || dimensionsInEffect.includes(id)
+    };
+  };
+
+  return [
+    segment("fundAccountId", "Account"),
+    segment("symbol", "Subject"),
+    segment("runId", "Run"),
+    segment("provider", "Provider"),
+    segment("window", "Period")
+  ].filter((item) => item.isSet || item.id === "fundAccountId" || item.id === "window");
+}
+
+/**
+ * The scope a screen's figures are counted over, as one short label: the dimensions the route
+ * applies ("Account fund-1 · Subject MSFT"), or {@link OPERATING_SCOPE_EMPTY_SUMMARY} when none
+ * is set or none applies on this route.
+ */
+export function describeOperatingScopeForRoute(route: string, operatingScope: AppShellOperatingScopeState): string {
+  if (!operatingScope.hasScope) {
+    return OPERATING_SCOPE_EMPTY_SUMMARY;
+  }
+
+  const allowedScopeKeys = operatingScopeKeysForRoute(route);
+  const items = operatingScope.items.filter((item) => allowedScopeKeys.has(scopeKeyForOperatingScopeItem(item)));
+  return items.length > 0
+    ? items.map((item) => `${item.label} ${item.value}`).join(" · ")
+    : OPERATING_SCOPE_EMPTY_SUMMARY;
+}
+
 export function removeOperatingScopeFromSearch(search: string): string {
   const params = new URLSearchParams(search);
   operatingScopeQueryParamKeys.forEach((key) => params.delete(key));
@@ -217,6 +287,7 @@ function buildOperatingScopeClearAriaLabel(
 function scopeKeyForOperatingScopeItem(item: AppShellOperatingScopeItem): AppShellOperatingScopeQueryKey {
   switch (item.id) {
     case "symbol":
+    case "subject":
       return "symbol";
     case "fundAccountId":
       return "fundAccountId";

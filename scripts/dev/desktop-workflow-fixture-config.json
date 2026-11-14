@@ -1,0 +1,15 @@
+{
+  "DataRoot": "data",
+  "DataSource": "Synthetic",
+  "Symbols": [],
+  "Synthetic": {
+    "Enabled": true,
+    "Seed": 1729,
+    "UniverseSymbols": []
+  },
+  "Backfill": {
+    "Enabled": false,
+    "Provider": "synthetic",
+    "Symbols": []
+  }
+}

@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Toggle } from "@/components/ui/checkbox";
 import { usesTrackedCaps } from "@/design-system/label-case";
-import { badgeVariantToOperatorSeverity } from "@/lib/shared-tone-mappings";
 import { cn } from "@/lib/utils";
 import { type SettingsMutationConfirmation } from "@/screens/settings-mutation-confirm-dialog";
 import { ExternalLink, MonitorCheck } from "lucide-react";
@@ -12,6 +11,7 @@ import { diagnosticToneClass } from "./settings-provider-integration";
 import type { SettingsScreenViewModel } from "@/screens/settings-screen.view-model";
 import type { Dispatch, SetStateAction } from "react";
 import { SettingsChip, capabilityTone } from "@/screens/settings-screen.section-primitives";
+import { toSeverity } from "@/design-system/status-styles";
 
 interface SettingsRuntimeCapabilitiesSectionProps {
   vm: SettingsScreenViewModel;
@@ -34,7 +34,7 @@ export function SettingsRuntimeCapabilitiesSection({ vm, onFeatureCapabilityTogg
             <CardDescription className="mt-2">{vm.runtimeCapabilitySection.summary}</CardDescription>
           </div>
           <SeverityBadge
-            status={badgeVariantToOperatorSeverity(vm.runtimeCapabilitySection.statusVariant)}
+            status={toSeverity(vm.runtimeCapabilitySection.statusVariant)}
             label={vm.runtimeCapabilitySection.statusLabel}
           />
         </div>
@@ -57,7 +57,7 @@ export function SettingsRuntimeCapabilitiesSection({ vm, onFeatureCapabilityTogg
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{capability.description}</p>
                   </div>
                   <SeverityBadge
-                    status={badgeVariantToOperatorSeverity(capability.statusVariant)}
+                    status={toSeverity(capability.statusVariant)}
                     label={capability.statusLabel}
                     className="shrink-0"
                   />
@@ -116,7 +116,7 @@ export function SettingsBackendCapabilitySection({ vm }: SettingsBackendCapabili
             <CardDescription className="mt-2">{vm.backendCapabilitySummary}</CardDescription>
           </div>
           <SeverityBadge
-            status={badgeVariantToOperatorSeverity(vm.backendCapabilityStatusVariant)}
+            status={toSeverity(vm.backendCapabilityStatusVariant)}
             label={vm.backendCapabilityStatusLabel}
           />
         </div>
@@ -136,7 +136,7 @@ export function SettingsBackendCapabilitySection({ vm }: SettingsBackendCapabili
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{group.description}</p>
                 </div>
                 <SeverityBadge
-                  status={badgeVariantToOperatorSeverity(group.statusVariant)}
+                  status={toSeverity(group.statusVariant)}
                   label={group.statusLabel}
                   className="shrink-0"
                 />
