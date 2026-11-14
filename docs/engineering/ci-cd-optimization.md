@@ -24,15 +24,21 @@ authority. Consolidation removes duplicate execution, never a validation purpose
 | Design-system package freshness, export integrity, dashboard asset projection and Chromium regressions (previously run by hand) | Design System Package `package-integrity`, path-filtered; not a required check |
 | Design-system whole-release validator and retained Python suite | Design System Package `release-governance`, path-filtered; exits with the gates' real status; not a required check |
 
-The October 15 follow-up keeps the four lanes and both gate identities. Documentation Automation
-now covers PRs, main pushes and merge groups without path filters: any tracked file can affect
-repository-structure output. Its existing rules and memory checks and the dashboard regression
-gate run on every event. The docs-only maintained-generation pass and freshness validation run
-once per event: Meridian CI `verify-docs` owns them for pull requests to `main`, `main` pushes and
-merge groups, and Documentation Automation runs the same catalog only for the events Meridian CI
-does not receive (pull requests to other branches and manual runs). New generated files and
-deletions are included in the drift check, with `artifacts/docs/generated-repair.patch` and
-`drift.json` retained alongside generation evidence by whichever workflow ran it.
+Meridian CI retains the four verification lanes and both gate identities. `verify-docs` owns
+all automatic docs rules, memory validation, maintained generation, dashboard regression and
+freshness checks on PRs to any branch, main pushes and merge groups. Documentation Automation
+is now an explicit manual refresh using the same catalog and checker. The dashboard baseline
+uses the preceding commit; a `health_score` drop of more than 10 points still fails when the
+baseline exists. New generated files and deletions remain part of the drift check, with repair
+patches and generation evidence uploaded by the docs lane.
+
+For PRs, a complete local git diff classifies only root Markdown and recognized narrative,
+diagram and image assets under `docs/` and `archive/docs/` as documentation-only. Source,
+build inputs, workflows, metadata and unknown paths still run .NET, as do empty diffs.
+Main pushes, merge groups, manual and reusable release gates always run the full .NET lane.
+Change detection is a required dependency of the always-reporting quality gate: detection
+failure, a missing decision, failed/cancelled lanes or unexpected skips cannot turn green.
+Only a successful docs-only classification permits the .NET lane's skipped result.
 
 Maintenance PR/push runs delegate workflow hygiene, AI contract drift and navigation validation to
 the canonical lanes. Scheduled/manual Maintenance still repeats those checks; tooling metadata
@@ -102,14 +108,27 @@ The local aggregate `scripts/ci.sh` schedules .NET and browser verification with
 concurrent lanes and a resource-aware serial fallback; `--jobs 1` selects serial execution.
 Docs generation and workflow/script tests run after both lanes, preserving their shared-file
 ordering. Each aggregate invocation owns separate artifact roots and records every required lane
-result. Hosted leaf lanes and the four canonical check identities retain their existing behavior.
+result. The four canonical check identities remain stable; hosted .NET execution follows the PR
+change classification above.
 
 `--cold` measures a full gate with independent .NET build outputs while keeping dependency caches.
 Warm-profile recommendations and explicit edit-start timing are documented in
 [build observability](../development/build-observability.md#local-feedback-latency-and-observed-retries).
+`make verify-fast` delegates to the same full .NET/browser aggregate as `scripts/ci.sh`.
+`make test` and `make pre-pr` restore and invoke the default CI test runner roster; use
+`test-unit` for focused C# iteration.
 The canonical .NET roster includes `Meridian.Contracts.UnitTests` and `Meridian.Core.UnitTests`;
 the moved cases retain their namespaces and assertions, and host-dependent tests remain in
 `Meridian.Tests`. These execution changes require human governance review before merge.
+
+## Desktop workflow reuse
+
+SDK/cache setup already lives in `.github/actions/setup-dotnet-nuget`, and the automatic
+Windows build shares test slices through `run-windows-ci-tests.py`. A further reusable
+read-only validation workflow could expose full, dev-loop and routes modes. Keep signing,
+evaluation releases and screenshot PR publication separate: their permissions, protected
+environments and artifact/evidence contracts differ. This incremental change keeps those
+boundaries and does not combine release workflows.
 
 ## Measurement and promotion
 

@@ -584,6 +584,7 @@ describe("SettingsScreen", () => {
     );
     expect(screen.queryByRole("tablist", { name: "Settings routes" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Workstation setup checklist" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Operator control posture metrics")).not.toBeInTheDocument();
     expect(screen.getByText("Defaults or saved preferences active")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Preferences" })).toHaveAttribute("href", "/settings/preferences");
     expect(screen.queryByRole("region", { name: "Profile and authentication posture" })).not.toBeInTheDocument();
@@ -624,9 +625,9 @@ describe("SettingsScreen", () => {
     expect(screen.queryByText("Focused provider: polygon")).not.toBeInTheDocument();
   });
 
-  it("states the cross-screen counts as the source of provider health, with their own evidence", () => {
-    // The overview reloaded at 18:10. The cross-screen counts reload failed, so provider health
-    // is still the 17:40 figure: it must not borrow the overview's source, time or freshness.
+  it("keeps workspace KPIs out of the settings chooser when source freshness differs", () => {
+    // The overview and retained counts have different freshness. Settings still leads with
+    // setup work; operational figures belong to the workspaces that own them.
     renderWithRouter(
       <WorkspaceFigureContextProvider
         value={{
@@ -645,11 +646,10 @@ describe("SettingsScreen", () => {
       { initialEntries: ["/settings"] }
     );
 
-    const strip = screen.getByLabelText("Operator control posture metrics");
-    expect(within(strip).getByText("3 / 4")).toHaveClass("text-muted-foreground");
-    expect(strip.parentElement).toHaveTextContent(
-      "Stale figures · Active runs, Open positions, Storage health from System overview · As of Jun 30, 2026, 18:10 UTC · Scope: All authorized scopes; Providers healthy from Cross-screen counts · As of Jun 30, 2026, 17:40 UTC"
-    );
+    expect(screen.queryByLabelText("Operator control posture metrics")).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Workstation setup checklist" })).toBeInTheDocument();
+    expect(screen.queryByText("Open positions")).not.toBeInTheDocument();
+    expect(screen.queryByText("Storage health")).not.toBeInTheDocument();
   });
 
   it("renders recent events as accessible status evidence rows", () => {

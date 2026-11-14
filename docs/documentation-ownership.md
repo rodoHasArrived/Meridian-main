@@ -79,6 +79,19 @@ Before adding or moving docs:
   supporting lane, or archive historical material under `archive/docs/`.
 - The validator still warns on missing lifecycle fields so legacy files can be cleaned up in batches instead of blocking unrelated slices.
 
+### Historical reviews and evidence placement
+
+Keep large dated review records and loose run/audit JSON snapshots under `archive/docs/`,
+with a brief pointer from the active owner when needed. Current design, remediation plans and
+registry status stay in their canonical lanes. The [archive index](../archive/docs/README.md)
+records retained review and measurement history; archival does not resolve a finding.
+
+Move related snapshot inputs, diagnostic policies and compressed reports together, preserve
+JSON bytes and evidence dates, and update reproduction commands. Keep current generator-owned
+reports at their tooling paths. Integrity-bound evidence packets require a separate coordinated
+migration of registered paths and navigation; do not split a packet or rewrite checksums merely
+to reduce the active documentation tree.
+
 ### Immutable evidence documents
 
 The structure validator expands only the exact Markdown entries listed by the registered

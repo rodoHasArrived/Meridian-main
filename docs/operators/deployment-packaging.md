@@ -56,6 +56,8 @@ ownership `PRD-002`, remain requirements for a supported release.
    in the protected `desktop-release-signing` environment. Use the publisher's valid code-signing
    certificate with a private key and matching password. Keep both values out of the repository,
    logs, workflow inputs and release packet. A generated test certificate is rehearsal evidence.
+   Before dispatching the train, configure a required-reviewer protection rule on this environment
+   and verify that recovery acceptance waits for approval after the drill.
 3. Run `Release Readiness` to verify the certificate without retaining its private key, then a
    signed manual `Desktop Installer Release` rehearsal at that SHA with
    `rehearsal_version=0.1.0-rc.2`. A manual run does not publish. Resolve each failed gate and

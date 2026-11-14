@@ -207,6 +207,7 @@ describe("TrialBalanceScreen", () => {
     const confidence = screen.getByRole("region", { name: "Data confidence" });
     expect(within(confidence.querySelector("summary") as HTMLElement).queryByText("Posted journal")).toBeNull();
     expect(within(confidence.querySelector("dl") as HTMLElement).getByText("Posted journal")).toBeInTheDocument();
+    expect(confidence.querySelector("details")).not.toHaveAttribute("open");
     expect(screen.getByRole("heading", { name: "Trial balance scope" })).toBeInTheDocument();
     // The structure node the book is scoped to. This asserted the hard-coded "All entities" — an
     // affirmative claim about a book scoped to exactly one node — and then, briefly, the book's

@@ -218,7 +218,9 @@ Earlier schema-2 receipts without authenticated-manifest evidence cannot be upgr
 those fields in completion JSON; run a new authenticated drill.
 
 For the one-commit `Desktop Installer Release` train, the recovery-acceptance job waits behind
-the protected `desktop-release-signing` environment after the archive drill. Download the exact
+the protected `desktop-release-signing` environment after the archive drill. Configure and verify
+a required-reviewer protection rule on that environment before dispatching the train, so fresh
+completion evidence can be entered after the drill and before approval. Download the exact
 `production-recovery-drill-<run id>-<attempt>` artifact and complete the reconciliation and
 acceptance procedure above. Set the environment variable `MDC_RECOVERY_COMPLETION_JSON` to the
 resulting completion JSON before approving that waiting job. Its bytes are retained in the
