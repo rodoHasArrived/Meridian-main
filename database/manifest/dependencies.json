@@ -1090,6 +1090,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.BackfillRoutingProviderChange"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.BackfillStatistics"
     },
     {
@@ -1301,6 +1307,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.FailoverConfigResponse"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.FailoverRuleDeleteRequest"
     },
     {
       "kind": "contract-set-member",
@@ -1835,6 +1847,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.ProviderRouteScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.ProviderRoutingBindingChange"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.ProviderRoutingProposedConfig"
     },
     {
       "kind": "contract-set-member",
@@ -3947,6 +3971,30 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Configuration.BackfillSymbolPlanDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.BackfillVendorTierDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationChangeImpact"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationFieldChange"
     },
     {
       "kind": "contract-set-member",
@@ -33375,6 +33423,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Api.ProviderRoutingProposedConfig",
+      "target": "contract:Meridian.Contracts.Api.BackfillRoutingProviderChange"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.ProviderRoutingProposedConfig",
+      "target": "contract:Meridian.Contracts.Api.ProviderRoutingBindingChange"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Api.ProviderSetupResult",
       "target": "contract:Meridian.Contracts.Configuration.ProviderCredentialSourceDto"
     },
@@ -33557,6 +33617,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Api.QuotesSnapshotResponse",
       "target": "contract:Meridian.Contracts.Api.QuotesSnapshotItem"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.RoutePreviewRequest",
+      "target": "contract:Meridian.Contracts.Api.ProviderRoutingProposedConfig"
     },
     {
       "kind": "contract-reference",
@@ -35625,6 +35691,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.BackfillProviderMetadataDto",
+      "target": "contract:Meridian.Contracts.Configuration.BackfillVendorTierDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Configuration.BackfillProviderStatusDto",
       "target": "contract:Meridian.Contracts.Configuration.BackfillProviderMetadataDto"
     },
@@ -35639,6 +35711,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Configuration.BackfillProvidersConfigDto",
       "target": "contract:Meridian.Contracts.Configuration.BackfillProviderOptionsDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationChangeImpact"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationFieldChange"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationFieldChange",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationChangeImpact"
     },
     {
       "kind": "contract-reference",
@@ -66136,7 +66226,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "d098c3f3d20a0aaf6eb1824c978a84b03d70651d6a7b6eed602e985af39cf57c",
+  "fingerprint": "d3e5b4f6d1b2f6568a9e0645d48a0eacdacab19f515cf9ff7b5f2075a3c45933",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -67276,6 +67366,12 @@
       "label": "Meridian.Contracts.Api.BackfillResultDto"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Api.BackfillRoutingProviderChange",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.BackfillRoutingProviderChange"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.Api.BackfillStatistics",
       "kind": "contract-type",
@@ -67490,6 +67586,12 @@
       "id": "contract:Meridian.Contracts.Api.FailoverConfigResponse",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.FailoverConfigResponse"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Api.FailoverRuleDeleteRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.FailoverRuleDeleteRequest"
     },
     {
       "classification": "request",
@@ -68024,6 +68126,18 @@
       "id": "contract:Meridian.Contracts.Api.ProviderRouteScopeDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.ProviderRouteScopeDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Api.ProviderRoutingBindingChange",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.ProviderRoutingBindingChange"
+    },
+    {
+      "classification": "configuration",
+      "id": "contract:Meridian.Contracts.Api.ProviderRoutingProposedConfig",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.ProviderRoutingProposedConfig"
     },
     {
       "classification": "record",
@@ -70136,6 +70250,30 @@
       "id": "contract:Meridian.Contracts.Configuration.BackfillSymbolPlanDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Configuration.BackfillSymbolPlanDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Configuration.BackfillVendorTierDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.BackfillVendorTierDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Configuration.ConfigurationChangeImpact",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.ConfigurationChangeImpact"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.ConfigurationChangeStatus"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Configuration.ConfigurationFieldChange",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.ConfigurationFieldChange"
     },
     {
       "classification": "configuration",
@@ -97097,11 +97235,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4113,
-    "contract_set_memberships": 5262,
-    "edges": 10986,
+    "contract_references": 4120,
+    "contract_set_memberships": 5270,
+    "edges": 11001,
     "foreign_keys": 203,
     "logical_references": 6,
-    "nodes": 5384
+    "nodes": 5392
   }
 }

@@ -40,10 +40,12 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
     public override string Description => "US equities with unique intraday historical data support. Limited free tier (25 req/day).";
     protected override string HttpClientName => HttpClientNames.AlphaVantageHistorical;
 
-    public override int Priority => 25; // Lower priority due to very limited free tier
-    public override TimeSpan RateLimitDelay => TimeSpan.FromSeconds(12); // 5 requests/minute = 12 seconds between requests
-    public override int MaxRequestsPerWindow => 5;
-    public override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
+    public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.AlphaVantagePriority; // Lower priority due to very limited free tier
+    public override TimeSpan RateLimitDelay => RuntimeOptions?.Requests is { } requests
+        ? TimeSpan.FromTicks((RuntimeOptions.Window ?? RateLimitWindow).Ticks / requests)
+        : TimeSpan.FromSeconds(12); // 5 requests/minute = 12 seconds between requests
+    public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? Meridian.Core.Config.BackfillProviderCatalog.AlphaVantagePerMinute;
+    public override TimeSpan RateLimitWindow => RuntimeOptions?.Window ?? TimeSpan.FromMinutes(1);
 
     /// <summary>
     /// Alpha Vantage supports adjusted bars with intraday historical data (key differentiator).
@@ -58,8 +60,8 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
     /// </summary>
     public static IReadOnlyList<string> SupportedIntervals => new[] { "1min", "5min", "15min", "30min", "60min" };
 
-    public AlphaVantageHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
-        : base(httpClient, log)
+    public AlphaVantageHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(httpClient, log, runtimeOptions: runtimeOptions)
     {
         _apiKey = apiKey ?? Environment.GetEnvironmentVariable("ALPHA_VANTAGE_API_KEY");
 

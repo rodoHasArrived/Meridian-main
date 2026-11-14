@@ -6,6 +6,100 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StpStateTransition
+
+Qualified name: <code>Meridian.Contracts.Workstation.StpStateTransition</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:38](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L38).
+
+```csharp
+public sealed record StpStateTransition(Guid InstructionId, StpProcessingState State, DateTimeOffset AtUtc, string Detail, string? BreakQueueReason = null);
+```
+
+## StrategyBriefingAlert
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyBriefingAlert</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:59](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L59).
+
+Actionable alert shown on the strategy briefing surface.
+
+```csharp
+public sealed record StrategyBriefingAlert(string AlertId, string Title, string Summary, string Tone, string? RunId = null, string? ActionLabel = null);
+```
+
+## StrategyBriefingDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyBriefingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:96](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L96).
+
+Typed Strategy briefing payload shared by workstation surfaces.
+
+```csharp
+public sealed record StrategyBriefingDto(StrategyBriefingWorkspaceSummary Workspace, InsightFeed InsightFeed, IReadOnlyList<WorkstationWatchlist> Watchlists, IReadOnlyList<StrategyBriefingRun> RecentRuns, IReadOnlyList<StrategySavedComparison> SavedComparisons, IReadOnlyList<StrategyBriefingAlert> Alerts, IReadOnlyList<StrategyWhatChangedItem> WhatChanged);
+```
+
+## StrategyBriefingRun
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyBriefingRun</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L17).
+
+Strategy run card shown in the briefing and recent-run rail.
+
+```csharp
+public sealed record StrategyBriefingRun(string RunId, string StrategyName, StrategyRunMode Mode, StrategyRunStatus Status, string Dataset, string WindowLabel, string ReturnLabel, string SharpeLabel, string LastUpdatedLabel, string Notes, StrategyRunPromotionState? PromotionState, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, StrategyRunDrillInLinks DrillIn);
+```
+
+## StrategyBriefingWorkspaceSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyBriefingWorkspaceSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:82](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L82).
+
+Workspace-level summary used to drive the Strategy shell header.
+
+```csharp
+public sealed record StrategyBriefingWorkspaceSummary(int TotalRuns, int ActiveRuns, int PromotionCandidates, int PositivePnlRuns, string? LatestRunId, string? LatestStrategyName, bool HasLedgerCoverage, bool HasPortfolioCoverage, string Summary);
+```
+
+## StrategyDesignCell
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignCell</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L22).
+
+A visual, formula, code, governance, or template cell inside a strategy design.
+
+```csharp
+public sealed record StrategyDesignCell(string CellId, string Label, string Kind, string Purpose, string Source, IReadOnlyList<string> FieldRefs, IReadOnlyDictionary<string, string>? Parameters = null, string? DisabledReason = null);
+```
+
+## StrategyDesignCompiledScript
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignCompiledScript</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:102](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L102).
+
+Generated QuantScript source and metadata.
+
+```csharp
+public sealed record StrategyDesignCompiledScript(string Source, string DatasetFingerprint, IReadOnlyList<string> FieldRefs, IReadOnlyList<string> DisabledFieldRefs);
+```
+
+## StrategyDesignDocument
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignDocument</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L6).
+
+Workstation-facing strategy design document persisted by the Strategy Builder.
+
+```csharp
+public sealed record StrategyDesignDocument(string DocumentId, string Name, string Description, string Version, string DatasetReference, IReadOnlyList<string> Universe, IReadOnlyList<StrategyDesignCell> Cells, IReadOnlyList<StrategyDesignTransition> Transitions, IReadOnlyDictionary<string, string>? Metadata, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt);
+```
+
 ## StrategyDesignDraftSaveRequest
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignDraftSaveRequest</code>. Kind: `record`.
@@ -587,132 +681,3 @@ Enum declarations:
 | <code>Backtest</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:13](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L13) |  |
 | <code>Paper</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:14](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L14) |  |
 | <code>Live</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:15](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L15) |  |
-
-## StrategyRunPaperStatus
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPaperStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:93](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L93).
-
-Paper-execution status fields attached to a running or recently completed paper run. Surfaced on StrategyRunSummary and StrategyRunDetail when StrategyRunMode is Paper.
-
-```csharp
-public sealed record StrategyRunPaperStatus(string SimulationFeedId, bool IsActive, int FillCount, int OpenOrderCount, decimal? RealizedPnl, decimal? UnrealizedPnl, DateTimeOffset? LastMarketEventAt, bool HasLedgerCoverage = false);
-```
-
-## StrategyRunPromotionState
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPromotionState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:50](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L50).
-
-Promotion-oriented readiness signal derived from the current run state.
-
-```csharp
-public enum StrategyRunPromotionState : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:52](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L52) |  |
-| <code>RequiresCompletion</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:53](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L53) |  |
-| <code>CandidateForPaper</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:54](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L54) |  |
-| <code>CandidateForLive</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:55](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L55) |  |
-| <code>LiveManaged</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:56](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L56) |  |
-
-## StrategyRunPromotionSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPromotionSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:151](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L151).
-
-Shared promotion summary used by Strategy, Trading, and Accounting workflows.
-
-```csharp
-public sealed record StrategyRunPromotionSummary(StrategyRunPromotionState State, StrategyRunMode? SuggestedNextMode, bool RequiresReview, string Reason, string? SourceRunId = null, string? TargetRunId = null, string? AuditReference = null, StrategyRunIdentity? Identity = null, string? ApprovalStatus = null, string? ManualOverrideId = null, string? ApprovedBy = null, IReadOnlyList<string>? ApprovalChecklist = null, IReadOnlyList<string>? EvidenceReferences = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateTimeOffset? PromotedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:170](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L170) | Timestamp from the durable promotion decision, when one exists. This remains outside the primary constructor so established constructor and deconstruction signatures stay stable. |
-
-## StrategyRunReviewPacketDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunReviewPacketDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:388](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L388).
-
-```csharp
-public sealed record StrategyRunReviewPacketDto(string RunId, DateTimeOffset GeneratedAt, StrategyRunDetail Run, StrategyRunContinuityDetail? Continuity, RunFillSummary? Fills, RunAttributionSummary? Attribution, WorkstationBrokerageSyncStatusDto? BrokerageSync, IReadOnlyList<OperatorWorkItemDto> WorkItems, IReadOnlyList<string> Warnings);
-```
-
-## StrategyRunStatus
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:35](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L35).
-
-Normalized status used by workstation surfaces across backtest, paper, and live runs.
-
-```csharp
-public enum StrategyRunStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:37](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L37) |  |
-| <code>Running</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:38](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L38) |  |
-| <code>Paused</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:39](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L39) |  |
-| <code>Completed</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:40](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L40) |  |
-| <code>Failed</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:41](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L41) |  |
-| <code>Cancelled</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:42](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L42) |  |
-| <code>Stopped</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:43](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L43) |  |
-
-## StrategyRunSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:205](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L205).
-
-Summary row shown in a run browser or recent-run list.
-
-```csharp
-public sealed record StrategyRunSummary(string RunId, string StrategyId, string StrategyName, StrategyRunMode Mode, StrategyRunEngine Engine, StrategyRunStatus Status, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, string? DatasetReference, string? FeedReference, string? PortfolioId, string? LedgerReference, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, int FillCount, DateTimeOffset LastUpdatedAt, string? AuditReference = null, StrategyRunIdentity? Identity = null, StrategyRunExecutionSummary? Execution = null, StrategyRunPromotionSummary? Promotion = null, StrategyRunGovernanceSummary? Governance = null, string? FundProfileId = null, string? FundDisplayName = null, string? ParentRunId = null, string? SweepId = null, string? SweepDefinitionHash = null, string? SweepObjective = null, StrategyRunLiveStatus? LiveStatus = null, StrategyRunPaperStatus? PaperStatus = null, IReadOnlyDictionary<string, string>? Parameters = null);
-```
-
-## StrategyRunTimelineEntry
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunTimelineEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:715](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L715).
-
-Merged run timeline entry used by research and trading surfaces.
-
-```csharp
-public sealed record StrategyRunTimelineEntry(string RunId, string StrategyId, string StrategyName, StrategyRunMode Mode, StrategyRunStatus Status, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, DateTimeOffset LastUpdatedAt, decimal? NetPnl, decimal? TotalReturn, int FillCount);
-```
-
-## StrategyRunTimelineProjection
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunTimelineProjection</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:690](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L690).
-
-Projection mode for workstation run timeline queries.
-
-```csharp
-public enum StrategyRunTimelineProjection : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Flat</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:692](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L692) |  |
-| <code>Lineage</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:693](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L693) |  |

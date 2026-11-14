@@ -62,9 +62,9 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
 
 
-    public override int Priority => _priority;
-    public override TimeSpan RateLimitDelay => TimeSpan.FromMilliseconds(300);
-    public override int MaxRequestsPerWindow => _maxRequestsPerWindow;
+    public override int Priority => RuntimeOptions?.Priority ?? _priority;
+    public override TimeSpan RateLimitDelay => TimeSpan.FromMinutes(1) / (RuntimeOptions?.Requests ?? _maxRequestsPerWindow);
+    public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? _maxRequestsPerWindow;
     public override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
 
     /// <summary>
@@ -93,7 +93,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         int rateLimitPerMinute = 200,
         HttpClient? httpClient = null,
         ILogger? log = null)
-        : base(httpClient, log)
+        : base(httpClient, log, runtimeOptions: new BackfillProviderRuntimeOptions(priority, rateLimitPerMinute, TimeSpan.FromMinutes(1)))
     {
         _keyId = keyId ?? Environment.GetEnvironmentVariable(EnvKeyId);
         _secretKey = secretKey ?? Environment.GetEnvironmentVariable(EnvSecretKey);

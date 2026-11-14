@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ShellNavigationItem
+
+Qualified name: <code>Meridian.Wpf.Models.ShellNavigationItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/ShellNavigationModels.cs:70](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L70).
+
+```csharp
+public sealed record ShellNavigationItem(string PageTag, string Title, string Subtitle, string WorkspaceTitle, string SectionLabel, string Glyph, string VisibilityLabel)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string MetaLine { get; }</code> | [src/Meridian.Wpf/Models/ShellNavigationModels.cs:79](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L79) |  |
+
 ## ShellNavigationTextStyleGuide
 
 Qualified name: <code>Meridian.Wpf.Models.ShellNavigationTextStyleGuide</code>. Kind: `class`.
@@ -943,13 +959,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>ContextStrip</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:5](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L5) |  |
 | <code>ActionBar</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:6](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L6) |  |
-
-## WorkspaceShellSlotContributionRequest
-
-Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellSlotContributionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:35](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L35).
-
-```csharp
-public sealed record WorkspaceShellSlotContributionRequest(string WorkspaceId, string PageTag, string? FundAccountId = null, string? ActiveWorkItemId = null);
-```

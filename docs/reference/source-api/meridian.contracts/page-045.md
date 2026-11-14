@@ -6,6 +6,106 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EdgarIngestRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarIngestRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L6).
+
+Request for EDGAR reference-data ingest.
+
+```csharp
+public sealed record EdgarIngestRequest(string Scope = "all-filers", bool IncludeXbrl = false, string? Cik = null, int? MaxFilers = null, bool DryRun = false, bool IncludeFilingDocuments = false);
+```
+
+## EdgarIngestResult
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarIngestResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L17).
+
+Summary returned after an EDGAR ingest run.
+
+```csharp
+public sealed record EdgarIngestResult(int FilersProcessed, int TickerAssociationsStored, int FactsStored, int SecurityDataStored, int SecuritiesCreated, int SecuritiesAmended, int SecuritiesSkipped, int ConflictsDetected, bool DryRun, IReadOnlyList<string> Errors);
+```
+
+## EdgarReferenceDataManifest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarReferenceDataManifest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:218](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L218).
+
+```csharp
+public sealed record EdgarReferenceDataManifest(DateTimeOffset UpdatedAtUtc, int TickerAssociationCount, int FilerPartitionCount, int FactPartitionCount, int SecurityDataPartitionCount);
+```
+
+## EdgarSecurityDataRecord
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarSecurityDataRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L103).
+
+Security-specific data parsed from EDGAR filing documents and retained outside Security Master.
+
+```csharp
+public sealed record EdgarSecurityDataRecord(string Cik, IReadOnlyList<EdgarDebtOfferingTerms> DebtOfferings, IReadOnlyList<EdgarFundHolding> FundHoldings, DateTimeOffset RetrievedAtUtc);
+```
+
+## EdgarTickerAssociation
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarTickerAssociation</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L74).
+
+Association between an EDGAR filer and a listed ticker or mutual-fund series/class identifier.
+
+```csharp
+public sealed record EdgarTickerAssociation(string Cik, string Ticker, string? Name, string? Exchange, string? SeriesId, string? ClassId, string? SecurityType, string Source);
+```
+
+## EdgarXbrlFact
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarXbrlFact</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:170](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L170).
+
+Normalized XBRL fact retained in the local EDGAR facts store.
+
+```csharp
+public sealed record EdgarXbrlFact(string Cik, string Taxonomy, string Concept, string Unit, decimal? NumericValue, string? RawValue, DateOnly? StartDate, DateOnly? EndDate, int? FiscalYear, string? FiscalPeriod, string? Form, string? AccessionNumber, DateOnly? FiledDate, string? Frame);
+```
+
+## ExchangeCorporateActionTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ExchangeCorporateActionTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:169](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L169).
+
+Held units exchanged for a successor security, optionally with cash (merger, conversion, exchange).
+
+```csharp
+public sealed record ExchangeCorporateActionTerms(string EventType, Guid? SuccessorSecurityId, decimal? ExchangeRatio, decimal? CashPerUnit, bool? IsVoluntary) : CorporateActionTerms(EventType);
+```
+
+## FaceValueAccrualHolding
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs#L10).
+
+A retained lot&#x27;s entitlement for one accounting date. OpenShare reflects closing disposals, while AccrualFactor is the factor before that date&#x27;s principal paydown: interest accrues through the paydown date before principal is reduced. Lot retains the acquisition facts and the factor held at that day&#x27;s close. This read projection must never be persisted as a replacement lot of record.
+
+```csharp
+public sealed record FaceValueAccrualHolding(DateOnly Date, FaceValueLot Lot, decimal OpenShare, decimal AccrualFactor, Guid? TaxLotRecordId = null, long? Version = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal AccrualFace =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs#L19) | Face entitled to the date&#x27;s interest, with the factor and open share applied once. |
+
 ## FaceValueLot
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueLot</code>. Kind: `record`.
@@ -856,144 +956,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;SecurityValuationResult?&gt; ValueAsync(SecurityValuationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:139](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L139) | Null when the security is unknown; a blocked result otherwise, never an exception for missing inputs. |
-
-## IssueOtcMarginCallRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IssueOtcMarginCallRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:131](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L131).
-
-Issues the call for one movement of a snapshot.
-
-```csharp
-public sealed record IssueOtcMarginCallRequest(Guid SnapshotId, OtcMovementKind Kind, OtcMovementParty Mover, DateOnly IssuedOn, DateOnly? DueOn = null, string? Notes = null, string? UpdatedBy = null);
-```
-
-## IssuerFactSnapshot
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IssuerFactSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:189](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L189).
-
-Common issuer-level facts selected from the full XBRL fact history for fast lookup.
-
-```csharp
-public sealed record IssuerFactSnapshot(string Cik, DateTimeOffset AsOfUtc, EdgarXbrlFact? TradingSymbol, EdgarXbrlFact? Security12bTitle, EdgarXbrlFact? SecurityExchangeName, EdgarXbrlFact? EntityFileNumber, EdgarXbrlFact? Assets, EdgarXbrlFact? Liabilities, EdgarXbrlFact? StockholdersEquity, EdgarXbrlFact? Revenue, EdgarXbrlFact? NetIncomeLoss, EdgarXbrlFact? EarningsPerShareDiluted, EdgarXbrlFact? OperatingCashFlow, EdgarXbrlFact? SharesOutstanding, EdgarXbrlFact? CommonStockSharesIssued, EdgarXbrlFact? WeightedAverageBasicSharesOutstanding, EdgarXbrlFact? WeightedAverageDilutedSharesOutstanding, EdgarXbrlFact? PublicFloat);
-```
-
-## IStructuredCashFlowProvider
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IStructuredCashFlowProvider</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs#L7).
-
-Port for a structured cash flow provider such as MIAC (agency MBS) or Moody&#x27;s Analytics (other prepaying/structured products).
-
-```csharp
-public interface IStructuredCashFlowProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string ProviderId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs#L9) |  |
-| <code>Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectedCashFlowsAsync(Guid securityId, string? isin, DateTimeOffset factorDate, StructuredCashFlowScenario scenario, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs#L11) |  |
-| <code>Task&lt;decimal?&gt; GetCurrentFactorAsync(Guid securityId, string? isin, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs#L18) |  |
-
-## IUnitizedLot
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IUnitizedLot</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L12).
-
-The one lot shape shared by execution, backtesting, the ledger and face-value accounting: a decimal quantity, what one unit of it measures, and the contract multiplier that scales it to economic exposure. A face-value lot is the SecurityLotUnitKind.FaceValue case with a multiplier of one; a listed-option lot is the SecurityLotUnitKind.Contracts case carrying the option&#x27;s multiplier.
-
-```csharp
-public interface IUnitizedLot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>decimal Quantity { get; }</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L15) | Lot quantity in UnitKind units. Never fractional-unsafe: always decimal. |
-| <code>SecurityLotUnitKind UnitKind { get; }</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L18) | What one unit of Quantity measures. |
-| <code>decimal Multiplier { get; }</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L21) | The factor that scales one unit to economic exposure (1 unless the unit is a contract). |
-
-## LotQuantity
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.LotQuantity</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L25).
-
-A unitized lot quantity value.
-
-```csharp
-public readonly record struct LotQuantity(decimal Amount, SecurityLotUnitKind UnitKind, decimal Multiplier)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal EconomicUnits =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L28) | The quantity scaled by its multiplier: shares, face, notional or contract exposure units. |
-| <code>public decimal ValueAtPrice(decimal price) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L43) | Value at a raw unit quote, scaling by the unit kind&#x27;s default quote convention: face-value lots read the quote as a percentage of par, everything else per unit, and listed contracts scale by their contract multiplier. Exact retained monetary basis must not pass through this conversion a second time. The unit-kind default and the catalog&#x27;s declared SecurityAssetClassDescriptor.QuoteConvention agree for every catalogued class today (pinned by SecurityQuoteConventionCoverageTests). A class-aware caller pricing a class that declares a different convention uses ValueAtPrice(decimal, SecurityQuoteConvention) with QuoteConventionFor(string?) instead of this overload. |
-| <code>public decimal ValueAtPrice(decimal price, SecurityQuoteConvention quoteConvention);</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L49) | Value at a raw unit quote under a declared quote convention. |
-| <code>public static SecurityQuoteConvention QuoteConventionFor(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L60) | The quote convention an asset class declares in the catalog, for class-aware pricing paths. Unknown classes are rejected rather than guessed. |
-| <code>public static LotQuantity Of(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L66) | The unitized quantity of any lot. |
-| <code>public static (SecurityLotUnitKind UnitKind, decimal Multiplier) UnitFor(string? assetClass, JsonElement? assetSpecificTerms = null);</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L78) | The lot unit and multiplier an asset class&#x27;s lots carry, read from the asset-class registry: the class&#x27;s SecurityAssetClassDescriptor.LotUnit and, when it declares a SecurityAssetClassDescriptor.LotMultiplierTermKey, that term&#x27;s positive value from assetSpecificTerms. Unknown classes and missing or invalid contract multipliers are rejected. |
-| <code>public static LotQuantity For(string? assetClass, decimal amount, JsonElement? assetSpecificTerms = null);</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L86) | A quantity of amount for an asset class, unitized from the registry. |
-| <code>public static bool TryFor(string? assetClass, decimal amount, JsonElement? assetSpecificTerms, out LotQuantity quantity, [System.Diagnostics.CodeAnalysis.NotNullWhen(false)] out string? error);</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:97](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L97) | For without the exception: false, with the reason, when the class is not registered or its contract multiplier term is missing or not positive. Callers that report a skipped posting rather than fail (journal producers, ledger bridges) use this form. |
-
-## MultiAssetCoverageSpecification
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.MultiAssetCoverageSpecification</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:346](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L346).
-
-```csharp
-public sealed record MultiAssetCoverageSpecification(string AssetClass, string DisplayName, string Summary, IReadOnlyList<string> RequiredIdentifiers, IReadOnlyList<string> EconomicTerms, IReadOnlyList<string> ProviderFeeds, string LedgerClassification, IReadOnlyList<string> ReconciliationSignals, bool HardBlocker, bool RequiresOperationalProfileReview = false);
-```
-
-## NotionalLot
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.NotionalLot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L11).
-
-Canonical open lot for notional-denominated OTC derivatives (interest rate swaps, credit default swaps, swaptions, caps and floors), whose SecurityAssetClassDescriptor.LotUnit is SecurityLotUnitKind.Notional. The lot&#x27;s size is the notional the contract&#x27;s payments are computed on, not a count of anything owned, so it has no shares, face or units and amortizes by replacing the notional rather than by relieving quantity. Any upfront payment exchanged at inception is the only cost the lot carries.
-
-```csharp
-public sealed record NotionalLot : IUnitizedLot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public NotionalLot(string lotId, Guid securityId, DateOnly effectiveDate, decimal originalNotional, decimal? currentNotional = null, decimal upfrontPayment = 0m);</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L13) |  |
-| <code>public string LotId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L42) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L52) | Security Master identity the contract&#x27;s terms (legs, index, fixed rate, maturity) resolve from. |
-| <code>public DateOnly EffectiveDate { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L55) | Date the contract became effective and the notional started accruing. |
-| <code>public decimal OriginalNotional { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L58) | Notional at inception, in the contract currency. |
-| <code>public decimal CurrentNotional { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L61) | Notional outstanding after any amortization, in the contract currency. |
-| <code>public decimal UpfrontPayment { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L64) | Upfront payment made at inception, in the contract currency; zero for a par swap. |
-| <code>public decimal AmortizationFactor =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L67) | The share of the original notional still outstanding, the notional analogue of a pool factor. |
-| <code>public decimal AmortizedNotional =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L70) | Notional the lot has amortized away since inception. |
-| <code>public decimal CostBasis =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L73) | The lot&#x27;s cost basis: a notional lot&#x27;s only cost is the upfront payment. |
-| <code>public bool IsFullyAmortized =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L76) | True once the notional has fully amortized and the contract no longer accrues. |
-| <code>public NotionalLot WithNotional(decimal currentNotional) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L79) | The same lot with its notional replaced by currentNotional, the way an amortization schedule steps it. |
-| <code>public NotionalLot Amortize(decimal amount);</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L86) | Reduces the notional outstanding by amount. A reduction larger than the notional outstanding is refused rather than silently floored. |
-
-## OfferCorporateActionTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OfferCorporateActionTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:201](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L201).
-
-An offer the holder may accept (tender offer).
-
-```csharp
-public sealed record OfferCorporateActionTerms(string EventType, decimal? OfferPricePerUnit, DateOnly? ExpiryDate, bool? IsPartial, bool? IsVoluntary) : CorporateActionTerms(EventType);
-```

@@ -6,6 +6,56 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingReconciliationEvidenceSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:67](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L67).
+
+Production fail-closed adapter over the durable reconciliation/close evidence store.
+
+```csharp
+public sealed class ReportingReconciliationEvidenceSource : IReportingReconciliationEvidenceSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingReconciliationEvidenceSource(IReportingReconciliationEvidenceStore store, IReconciliationBreakQueueRepository? breakQueue = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:72](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L72) |  |
+| <code>public async ValueTask&lt;ReportingReconciliationEvidenceReceipt&gt; ResolveAsync(ReportingRunParametersDto parameters, ReportingAuthoritativeSourceCheckpoint source, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:82](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L82) |  |
+
+## ReportingReconciliationReadinessException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationReadinessException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:25](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L25).
+
+A healthy evidence store had no receipt for the exact certified source cut. This is a logical readiness blocker, not a dependency outage or integrity failure.
+
+```csharp
+public class ReportingReconciliationReadinessException : ReportingAuthoritativeSourceUnavailableException
+```
+
+## ReportingReleasedArtifactIntegrityGate
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReleasedArtifactIntegrityGate</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L239).
+
+Re-reads every immutable artifact immediately before queueing and again immediately before a claimed delivery is sent. A governance receipt alone is therefore insufficient when retained bytes or catalog metadata are missing, corrupt, or no longer match the released manifest.
+
+```csharp
+public sealed class ReportingReleasedArtifactIntegrityGate
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingReleasedArtifactIntegrityGate(IReportingArtifactCatalog catalog, IReportingArtifactStore artifactStore);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:244](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L244) |  |
+| <code>public async Task&lt;ReportingReleaseAuthorizationResult&gt; VerifyAsync(ReportingDeliveryReleaseAuthorization authorization, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:252](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L252) |  |
+
 ## ReportingRenderedArtifact
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRenderedArtifact</code>. Kind: `record`.
@@ -904,56 +954,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static RiskRuleRuntimeOptions Default { get; } = new (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), &quot;Meridian&quot;, &quot;workstation&quot;, &quot;risk-rules.json&quot;));</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:22](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L22) |  |
-
-## RiskRuleRuntimeService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleRuntimeService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:115](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L115).
-
-Single source of truth for operator-managed risk guardrail thresholds: it powers the read-only risk dashboard (GetAllStatusesAsync, config get/update) and supplies the live thresholds and drawdown evaluation that the enforced pre-trade validator — Meridian.Risk&#x27;s CompositeRiskValidator, registered as the IRiskValidator the OMS invokes — reads on every order. Position limits are additionally enforced by the operator-controls gate (ExecutionOperatorControlService) that the OMS runs earlier in the pipeline with its manual-override/bypass semantics.
-
-```csharp
-public sealed class RiskRuleRuntimeService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RiskRuleRuntimeService(IServiceProvider services, ILogger&lt;RiskRuleRuntimeService&gt; logger, RiskRuleRuntimeOptions? options = null);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:146](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L146) |  |
-| <code>public int MaxOrdersPerMinute =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:222](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L222) | Operator-tuned order-rate ceiling, read per evaluation by the enforced order-rate throttle rule so hot updates take effect immediately. |
-| <code>public Func&lt;int&gt;? OrderRateUsageProbe { get; set; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:234](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L234) | Reads live consumed rate capacity from the throttle instance that actually enforces the ceiling. Set by the composition root; null when no reserving throttle is composed, in which case the status falls back to counting audit entries. The fallback cannot see reservations taken for orders still in flight, so it under-reports exactly when the desk is closest to the ceiling — the dashboard would show room the gate will refuse to give. The probe reports the number the gate itself compares. |
-| <code>public decimal? MaxGrossExposure { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:240](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L240) | Operator-tuned portfolio-wide gross exposure ceiling, read per evaluation by the enforced gross-exposure rule. Null when unconfigured (the rule approves). |
-| <code>public decimal? MaxSymbolConcentrationPercent { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:246](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L246) | Operator-tuned single-symbol concentration cap as a percentage of portfolio value, read per evaluation by the enforced concentration rule. Null when unconfigured. |
-| <code>public decimal? MaxOrderNotional { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:252](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L252) | Operator-tuned hard per-order notional ceiling, read per evaluation by the enforced order-notional rule. Null when unconfigured. |
-| <code>public decimal? EscalateOrderNotional { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:258](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L258) | Operator-tuned notional band at or above which an order parks for governed approval, read per evaluation by the enforced order-notional rule. Null when unconfigured. |
-| <code>public decimal? MaxOrderQuantity { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:264](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L264) | Operator-tuned absolute per-order quantity ceiling, read per evaluation by the enforced fat-finger rule. Null when unconfigured (the quantity limb approves). |
-| <code>public decimal? MaxPriceDeviationPercent { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:271](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L271) | Operator-tuned maximum aggressive price deviation from the market reference, in percent, read per evaluation by the enforced fat-finger rule. Null when unconfigured (the price limb approves, and a priced order with no reference price is no longer refused). |
-| <code>public FatFingerThresholds FatFingerThresholds { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:280](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L280) | Both fat-finger limbs read under one lock, which is what the enforced rule consumes. Reading the two properties above separately would let an evaluation straddle an update and observe a pair that was never configured — a two-field change from (null quantity, 50% band) to (100 quantity, null band) can otherwise be seen as (null, null), which the rule treats as entirely unconfigured and approves through. |
-| <code>public PriceCollarThresholds PriceCollarThresholds { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:291](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L291) | The collar band the escalating price rule consumes, read under the same lock. A single value needs no atomic pairing of its own, but it is exposed as a record so the rule takes a threshold type rather than a bare decimal and cannot be handed the fat-finger band by mistake. |
-| <code>public RiskValidationResult EvaluateDrawdownGuardrail();</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:302](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L302) | Evaluates the drawdown circuit breaker against the same live portfolio state and operator-tuned threshold this service reports on the dashboard, so the guardrail can never show &quot;Healthy&quot; while it silently fails to gate an order. Invoked by the enforced pre-trade validator on every order. |
-| <code>public async Task&lt;IReadOnlyList&lt;RiskRuleStatusDto&gt;&gt; GetAllStatusesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:345](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L345) |  |
-| <code>public async Task&lt;RiskRuleStatusDto?&gt; GetStatusAsync(string ruleName, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:421](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L421) |  |
-| <code>public RiskRuleConfigDto? GetConfig(string ruleName);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:436](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L436) |  |
-| <code>public async Task&lt;RiskRuleConfigDto?&gt; UpdateConfigAsync(string ruleName, RiskRuleConfigUpdateRequest request, string? actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:509](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L509) |  |
-
-## RiskRuleRuntimeSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleRuntimeSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:1842](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L1842).
-
-```csharp
-public sealed record RiskRuleRuntimeSnapshot(decimal MaxDrawdownPercent, int MaxOrdersPerMinute, DateTimeOffset UpdatedAt, string UpdatedBy, string? Reason, decimal? MaxGrossExposure = null, decimal? MaxSymbolConcentrationPercent = null, decimal? MaxOrderNotional = null, decimal? EscalateOrderNotional = null, decimal? MaxOrderQuantity = null, decimal? MaxPriceDeviationPercent = null, decimal? PriceCollarPercent = null);
-```
-
-## RiskRuleStatusDto
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:64](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L64).
-
-```csharp
-public sealed record RiskRuleStatusDto(string RuleName, string State, string Summary, bool IsBreached, string Threshold, string CurrentValue, DateTimeOffset AsOf, IReadOnlyList<string> RecentViolations, decimal? UtilizationPercent = null, string? Severity = null);
-```

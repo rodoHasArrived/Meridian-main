@@ -6,6 +6,137 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FigiLookupRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.FigiLookupRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:212](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L212).
+
+Bulk OpenFIGI lookup request item.
+
+```csharp
+public sealed record FigiLookupRequest(string IdType, string IdValue, string? ExchCode = null, string? MarketSecDes = null);
+```
+
+## FigiMapping
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.FigiMapping</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:180](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L180).
+
+OpenFIGI mapping result.
+
+```csharp
+public sealed record FigiMapping(string Figi, string? CompositeFigi = null, string? SecurityType = null, string? MarketSector = null, string? Ticker = null, string? Name = null, string? ExchangeCode = null, string? ShareClassFigi = null, string? SecurityDescription = null);
+```
+
+## ImportDefaults
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.ImportDefaults</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:49](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L49).
+
+Default values for imported symbols.
+
+```csharp
+public sealed record ImportDefaults(bool SubscribeTrades = true, bool SubscribeDepth = true, int DepthLevels = 10, string SecurityType = "STK", string Exchange = "SMART", string Currency = "USD");
+```
+
+## ImportError
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.ImportError</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:23](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L23).
+
+Error encountered during import.
+
+```csharp
+public sealed record ImportError(int LineNumber, string? Symbol, string Message);
+```
+
+## IndexComponent
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexComponent</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:21](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L21).
+
+Individual component of an index.
+
+```csharp
+public sealed record IndexComponent(string Symbol, string Name, decimal? Weight = null, string? Sector = null);
+```
+
+## IndexComponents
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexComponents</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:6](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L6).
+
+Components of a market index.
+
+```csharp
+public sealed record IndexComponents(string IndexId, string Name, IndexComponent[] Components, DateTimeOffset LastUpdated, string Source);
+```
+
+## IndexDefinition
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexDefinition</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:51](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L51).
+
+Definition of an available index.
+
+```csharp
+public sealed record IndexDefinition(string Id, string Name, string Description);
+```
+
+## IndexSubscribeRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexSubscribeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:60](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L60).
+
+Request to auto-subscribe to index components.
+
+```csharp
+public sealed record IndexSubscribeRequest(string IndexId, int? MaxComponents = null, TemplateSubscriptionDefaults? Defaults = null, bool ReplaceExisting = false, string[]? FilterSectors = null);
+```
+
+## IndexSubscribeResult
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexSubscribeResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:75](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L75).
+
+Result of an index subscription operation.
+
+```csharp
+public sealed record IndexSubscribeResult(string IndexId, int ComponentsSubscribed, int ComponentsSkipped, string[] SubscribedSymbols, string[] SkippedSymbols, string? Message = null);
+```
+
+## KnownIndices
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.KnownIndices</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:34](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L34).
+
+Available indices for auto-subscription.
+
+```csharp
+public static class KnownIndices
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly IndexDefinition SP500 = new (&quot;SPX&quot;, &quot;S&amp;P 500&quot;, &quot;Large-cap US equities&quot;);</code> | [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:36](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L36) |  |
+| <code>public static readonly IndexDefinition Nasdaq100 = new (&quot;NDX&quot;, &quot;NASDAQ 100&quot;, &quot;Top 100 NASDAQ non-financial stocks&quot;);</code> | [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:37](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L37) |  |
+| <code>public static readonly IndexDefinition DowJones = new (&quot;DJI&quot;, &quot;Dow Jones Industrial Average&quot;, &quot;30 blue-chip US stocks&quot;);</code> | [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:38](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L38) |  |
+| <code>public static readonly IndexDefinition Russell2000 = new (&quot;RUT&quot;, &quot;Russell 2000&quot;, &quot;Small-cap US equities&quot;);</code> | [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:39](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L39) |  |
+| <code>public static readonly IndexDefinition SP400 = new (&quot;MID&quot;, &quot;S&amp;P 400 MidCap&quot;, &quot;Mid-cap US equities&quot;);</code> | [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:40](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L40) |  |
+| <code>public static IReadOnlyList&lt;IndexDefinition&gt; All =&gt; …;</code> | [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:42](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L42) |  |
+
 ## ManualPortfolioEntry
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.ManualPortfolioEntry</code>. Kind: `record`.

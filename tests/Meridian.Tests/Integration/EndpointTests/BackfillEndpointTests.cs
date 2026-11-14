@@ -6,8 +6,10 @@ using Meridian.Application.Backfill;
 using Meridian.Application.Scheduling;
 using Meridian.Core.Config;
 using Meridian.Identity.Auth;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -300,6 +302,49 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
         options.Enabled.Should().BeTrue();
         options.Priority.Should().Be(new AlphaVantageConfig().Priority);
         options.RateLimitPerMinute.Should().Be(new AlphaVantageConfig().RateLimitPerMinute);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ProviderPlanning_ExplicitAlphaVantageOptionsRemainAuthoritative(bool enabled)
+    {
+        var configured = new AlphaVantageConfig(Enabled: enabled, Priority: 4, RateLimitPerMinute: 2);
+        var options = BackfillEndpoints.GetProviderOptionsFromConfig(
+            new BackfillProvidersConfig(AlphaVantage: configured), "alphavantage");
+
+        options.Enabled.Should().Be(enabled);
+        options.Priority.Should().Be(configured.Priority);
+        options.RateLimitPerMinute.Should().Be(configured.RateLimitPerMinute);
+    }
+
+    [Fact]
+    public void ProviderPlanning_AlphaVantagePresetDoesNotOptAnAbsentRuntimeProviderIn()
+    {
+        var credentials = new Mock<IProviderCredentialResolver>(MockBehavior.Strict);
+        var config = new AppConfig(Backfill: new BackfillConfig(Providers: new BackfillProvidersConfig(
+            Alpaca: new(Enabled: false), Yahoo: new(Enabled: false), Nasdaq: new(Enabled: false),
+            Stooq: new(Enabled: false), Tiingo: new(Enabled: false), Polygon: new(Enabled: false),
+            Finnhub: new(Enabled: false), TwelveData: new(Enabled: false))));
+        var factory = new ProviderFactory(config, credentials.Object);
+
+        var providers = factory.CreateBackfillProviders();
+
+        providers.Should().BeEmpty();
+        credentials.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ProviderMetadata_WhenProviderConfigurationIsMissing_StillExposesPresets()
+    {
+        var response = await _client.GetAsync("/api/backfill/providers/metadata");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var preset = document.RootElement.EnumerateArray()
+            .Single(provider => provider.GetProperty("providerId").GetString() == "alphavantage");
+        preset.GetProperty("defaultRateLimitPerMinute").GetInt32()
+            .Should().Be(new AlphaVantageConfig().RateLimitPerMinute);
     }
 
     [Theory]

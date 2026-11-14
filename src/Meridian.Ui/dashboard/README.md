@@ -11,6 +11,36 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui/dashboard
 
+The Providers route also includes on-demand backfill tier/priority controls, a read-only routing
+preview, validation profiles and bounded quota history. Tier defaults and ceilings come from the
+server catalog; choosing a paid tier declares the operator's subscription and does not verify it.
+Numeric priority and Move up provide keyboard alternatives to dragging. Preview accepts symbol,
+daily date range and proposed priority/availability without saving or fetching prices; unavailable
+vendors, fabricated selections and unverified coverage remain explicit. Validation relaxation
+requires a reason and exposes retained change history. Quota history distinguishes an observed
+throttle from the next provider attempted and discloses process-lifetime retention.
+
+Settings and Providers share the setting-activation banner. Save receipts distinguish `Live`,
+`ReconnectProvider` and `RestartHost`; pending field names remain inspectable until host activation.
+No control in these panels edits credentials, deployment tenancy, storage paths, provenance stamps,
+IB pacing or live execution. Focused tests use the corresponding `data-screen.*` panel suites and
+`settings-change-impact.test.tsx`; browser acceptance uses synthetic responses, never live credentials.
+
+Canonical symbol registry includes an on-demand mapping editor over the shared CRUD and CSV
+import routes. Operators can correct provider aliases, inspect retained Compare mismatches and
+stage Compare → Canonical independently for IB, Alpaca, Polygon and Yahoo. Promotion requires
+review, a recorded reason and explicit acknowledgements that existing archives are not rewritten
+and raw/adjusted series remain separate. Active and saved mode are displayed separately; mode
+changes require host restart. Authoritative failures disable writes while preserving the draft.
+Focused coverage: `data-screen.symbol-mapping-editor.test.tsx` and existing canonical registry tests.
+
+The Data provider workspace includes an on-demand streaming failover editor. It reads authoritative
+saved settings, distinguishes unavailable runtime state, and refreshes the active provider after a
+committed switch/reset. Settings and rule create/edit/delete use shared guarded API saves and show
+pending host restart; relaxed rule thresholds require an audited reason. Focused coverage lives in
+`data-screen.failover.test.tsx` and the shared `FailoverEndpointTests`.
+Deleting a rule also requires an explicit operator reason and retains the removed protection snapshot.
+
 ## Fixed-income workflow access
 
 Asset detail and selected bond holdings link to the existing Security Master analytics and

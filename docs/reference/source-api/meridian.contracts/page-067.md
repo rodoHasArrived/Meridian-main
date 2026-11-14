@@ -6,6 +6,112 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackPublishRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackPublishRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1790](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1790).
+
+Request payload for publishing an approved report pack into retained evidence storage.
+
+```csharp
+public sealed record ReportPackPublishRequestDto(string SignedOffBy, string EvidenceHash, string ManifestId, string RetainedManifestPath, IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks, string? Note = null, ReportBrandingThemeDto? BrandingTheme = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
+## ReportPackRejectionMetadataDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackRejectionMetadataDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1823](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1823).
+
+Durable rejection decision retained on a report pack after review-state rejection.
+
+```csharp
+public sealed record ReportPackRejectionMetadataDto(string Reason, string Actor, string ActorRole, DateTimeOffset RejectedAt, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+```
+
+## ReportPackRejectRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackRejectRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1803](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1803).
+
+Request payload for rejecting an in-review report pack with reviewer metadata and supporting evidence.
+
+```csharp
+public sealed record ReportPackRejectRequestDto(string Reason, string Actor = "", string ActorRole = "", IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+```
+
+## ReportPackRestatementMetadataDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackRestatementMetadataDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1816](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1816).
+
+Durable metadata captured when a published report pack is restated.
+
+```csharp
+public sealed record ReportPackRestatementMetadataDto(string ReasonCode, string Approver, Guid PriorVersionReportId, IReadOnlyList<ReportPackChangedLineDto> ChangedLines, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+```
+
+## ReportPackRestateRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackRestateRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1829](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1829).
+
+```csharp
+public sealed record ReportPackRestateRequestDto(string ReasonCode, Guid PriorVersionReportId, IReadOnlyList<ReportPackChangedLineDto> ChangedLines, string? Approver = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
+## ReportPackWorkflowActionRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackWorkflowActionRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1800](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1800).
+
+Optional action-origin metadata for report-pack workflow commands that historically used an empty body.
+
+```csharp
+public sealed record ReportPackWorkflowActionRequestDto(OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
+## ReportPackWorkflowRecordDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackWorkflowRecordDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1835](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1835).
+
+```csharp
+public sealed record ReportPackWorkflowRecordDto(Guid ReportId, string FundProfileId, string FundAccountId, string Period, VersionedReportTemplateIdDto TemplateId, ReportPackWorkflowStateDto State, int Version, DateTimeOffset CreatedAt, string CreatedBy, DateTimeOffset UpdatedAt, IReadOnlyList<ReportPackAuditEventDto> AuditTrail, ReportPackRestatementMetadataDto? Restatement, IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null, ReportPackPublicationManifestDto? Publication = null, ReportPackRejectionMetadataDto? Rejection = null, ReportAccessPolicyDto? AccessPolicy = null, string? TenantId = null, string? CompanyId = null, string? AccessPolicySnapshotHash = null);
+```
+
+## ReportPackWorkflowStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackWorkflowStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1414](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1414).
+
+Shared governed report-pack workflow states. The W4 happy-path lifecycle is Draft to InReview to Approved to Published; additional states are retained for rejection, restatement, archival, and compatibility with older validation-oriented clients.
+
+```csharp
+public enum ReportPackWorkflowStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Draft = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1416](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1416) |  |
+| <code>Validated = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1417](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1417) |  |
+| <code>InReview = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1418](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1418) |  |
+| <code>Approved = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1419](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1419) |  |
+| <code>Published = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1420](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1420) |  |
+| <code>Restated = 5</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1421](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1421) |  |
+| <code>Archived = 6</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1422](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1422) |  |
+| <code>Rejected = 7</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1424](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1424) | Reviewer-returned report pack that must be resubmitted before approval and publication. |
+| <code>PendingApproval = 8</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1425](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1425) |  |
+
 ## ReportTemplateAuditEventDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportTemplateAuditEventDto</code>. Kind: `record`.
@@ -522,92 +628,4 @@ Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:106](../../.
 
 ```csharp
 public sealed record ResearchWhatChangedItem(string ChangeId, string Title, string Summary, string Category, DateTimeOffset Timestamp, string RelativeTime, string? RunId = null);
-```
-
-## ResolveBreakCase
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResolveBreakCase</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:27](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L27).
-
-```csharp
-public sealed record ResolveBreakCase(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
-## ResolveReconciliationBreakRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResolveReconciliationBreakRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1035](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1035).
-
-Request to resolve or dismiss a break with audit metadata.
-
-```csharp
-public sealed record ResolveReconciliationBreakRequest(string BreakId, ReconciliationBreakQueueStatus Status, string ResolvedBy, string ResolutionNote, string OperatorRationale, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## ResolveSecurityMasterMappings
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResolveSecurityMasterMappings</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:21](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L21).
-
-```csharp
-public sealed record ResolveSecurityMasterMappings(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
-## ResolveSourceConflictRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResolveSourceConflictRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L58).
-
-Records an operator&#x27;s resolution of a Security Master source conflict. When ChosenWinnerSource diverges from the policy winner, AcknowledgePolicyDeviation must be set and the deviation is retained as the audited artifact.
-
-```csharp
-public sealed record ResolveSourceConflictRequest(Guid SecurityId, Guid ConflictId, long ExpectedVersion, string ChosenWinnerSource, string Actor, string Reason, bool AcknowledgePolicyDeviation = false, string? CorrelationId = null);
-```
-
-## RestatementCandidateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.RestatementCandidateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:184](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L184).
-
-A report pack proposed for restatement because an upstream reference-data edit affected a closed period it consumed. The operator approves the restatement via the existing report-pack path.
-
-```csharp
-public sealed record RestatementCandidateDto(Guid ReportId, Guid PriorVersionReportId, string PeriodLabel, string Summary, IReadOnlyList<ReportPackChangedLineDto> ChangedLines);
-```
-
-## RetainedLedgerAmountDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.RetainedLedgerAmountDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:581](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L581).
-
-```csharp
-public sealed record RetainedLedgerAmountDto(Guid AmountId, LedgerAmountScopeDto Scope, string AccountName, string? Symbol, decimal Amount, string SourceSnapshotHash);
-```
-
-## ReviewOnboardingWorkspaceRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReviewOnboardingWorkspaceRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L35).
-
-```csharp
-public sealed record ReviewOnboardingWorkspaceRequestDto(int ExpectedVersion, int DataRevision, string Decision, string Notes, IReadOnlyList<string> EvidenceIds);
-```
-
-## ReviewReconciliationBreakRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReviewReconciliationBreakRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1025](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1025).
-
-Request to move a break into active review and assign an operator.
-
-```csharp
-public sealed record ReviewReconciliationBreakRequest(string BreakId, string AssignedTo, string ReviewedBy, string? ReviewNote = null, string? Team = null);
 ```

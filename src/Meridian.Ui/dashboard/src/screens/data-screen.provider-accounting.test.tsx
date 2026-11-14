@@ -9,7 +9,7 @@ import {
 } from "@/screens/data-screen.provider-accounting.test-fixtures";
 
 describe("ProviderAccountingRegion", () => {
-  it("renders server-owned failures, current request state, and unavailable history", async () => {
+  it("renders server-owned failures, current request state, and bounded history guidance", async () => {
     const rateLimits = buildProviderRateLimitsFixture();
     rateLimits.providers[0].resetAt = null;
     const services: ProviderAccountingServices = {
@@ -25,6 +25,6 @@ describe("ProviderAccountingRegion", () => {
     expect(screen.getByText("8 / 10")).toBeInTheDocument();
     expect(screen.getByText("Current rate-limit reason: provider response.")).toBeInTheDocument();
     expect(screen.getByText("Unknown — reachability unavailable; no runtime diagnostics.")).toBeInTheDocument();
-    expect(screen.getByLabelText("Provider rate-limit history posture")).toHaveTextContent("not retained");
+    expect(screen.getByLabelText("Provider rate-limit history posture")).toHaveTextContent("cleared on host restart");
   });
 });

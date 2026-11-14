@@ -52,6 +52,12 @@ public sealed class ConfigService : ConfigServiceBase
     private bool _initialized;
     private string? _configuredDataRoot;
     private Exception? _lastLoadError;
+    private bool _hasUnverifiedLocalChanges;
+
+    public event EventHandler? ConfigurationSaved;
+
+    /// <summary>Local file writes have no authoritative host activation receipt.</summary>
+    public bool HasUnverifiedLocalChanges => Volatile.Read(ref _hasUnverifiedLocalChanges);
 
     public static ConfigService Instance => _instance.Value;
 
@@ -77,6 +83,7 @@ public sealed class ConfigService : ConfigServiceBase
 
     public async Task InitializeAsync()
     {
+        await FirstRunService.Instance.EnsureConfigurationExistsAsync().ConfigureAwait(false);
         await LoadConfigCoreAsync(CancellationToken.None).ConfigureAwait(false);
         _initialized = true;
     }
@@ -317,7 +324,6 @@ public sealed class ConfigService : ConfigServiceBase
     {
         try
         {
-            await FirstRunService.Instance.EnsureConfigurationExistsAsync().ConfigureAwait(false);
             if (!File.Exists(ConfigPath))
             {
                 return RememberDataRoot(new AppConfigDto());
@@ -361,8 +367,15 @@ public sealed class ConfigService : ConfigServiceBase
                 : config.DataRoot;
 
             var json = JsonSerializer.Serialize(config, SharedJsonOptions);
+            // ConfigServiceBase holds the shared cross-process write lease here. Ordinary
+            // saves must never replace malformed source with LoadConfigCoreAsync defaults.
+            var existingJson = await File.ReadAllTextAsync(ConfigPath, ct).ConfigureAwait(false);
+            Meridian.Ui.Shared.Services.UiConfigurationSaveGuard.ValidateWholeDocumentJson(existingJson, json);
             await FirstRunService.Instance.PersistConfigurationAsync(json, ct).ConfigureAwait(false);
             RememberDataRoot(config);
+            Volatile.Write(ref _hasUnverifiedLocalChanges, true);
+            try { ConfigurationSaved?.Invoke(this, EventArgs.Empty); }
+            catch (Exception observerError) { LogError("Configuration status refresh failed after a successful save", observerError); }
         }
         catch (Exception ex)
         {

@@ -60,6 +60,12 @@ import { CoverageGapsRegion, DataQualityRegion } from "@/screens/data-screen.dat
 import { DataOverviewHub, RouteFocusCard } from "@/screens/data-screen-navigation-panels";
 import { CanonicalSymbolRegistryRegion } from "@/screens/data-screen.canonical-symbols";
 import { ProviderAccountingRegion } from "@/screens/data-screen.provider-accounting";
+import { FailoverRegion } from "@/screens/data-screen.failover";
+import { BackfillProviderEditorRegion } from "@/screens/data-screen.backfill-provider-editor";
+import { DataRoutingPreviewPanel } from "@/screens/data-screen.routing-preview";
+import { ProviderValidationPanel } from "@/screens/data-screen.provider-validation";
+import { RateLimitHistoryPanel } from "@/screens/data-screen.rate-limit-history";
+import { SettingsChangeImpactBanner } from "@/screens/settings-change-impact";
 import { DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
 import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
@@ -288,6 +294,7 @@ export function DataScreen({
       </section>
 
       <StatStrip metrics={applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, providers: data.providers }))} label="Data headline metrics" source="Data workspace" figureSource="data" />
+      {showProviderWorkstream ? <SettingsChangeImpactBanner /> : null}
 
       {showHealthMonitoring ? (
         <div className="space-y-4">
@@ -458,6 +465,16 @@ export function DataScreen({
             )}
           </CardContent>
         </section>
+        ) : null}
+
+        {showProviderWorkstream ? (
+          <>
+            <FailoverRegion />
+            <BackfillProviderEditorRegion />
+            <DataRoutingPreviewPanel />
+            <ProviderValidationPanel />
+            <RateLimitHistoryPanel />
+          </>
         ) : null}
 
         {showBackfillWorkstream ? <DataBackfillWorkstream vm={vm} /> : null}

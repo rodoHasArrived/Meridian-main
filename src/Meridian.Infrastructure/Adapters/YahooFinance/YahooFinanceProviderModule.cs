@@ -38,5 +38,6 @@ public sealed class YahooFinanceProviderModule : ConfigurableProviderModuleBase,
         => factory.IsFamilyEnabled("yahoo") && factory.Config.Backfill?.Providers?.Yahoo?.Enabled != false;
 
     private static YahooFinanceHistoricalDataProvider? CreateHistorical(ProviderFactory factory)
-        => IsEnabled(factory) ? new YahooFinanceHistoricalDataProvider(log: factory.Log) : null;
+        => IsEnabled(factory) ? new YahooFinanceHistoricalDataProvider(log: factory.Log,
+            runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(factory.Config.Backfill?.Providers, "yahoo")) : null;
 }

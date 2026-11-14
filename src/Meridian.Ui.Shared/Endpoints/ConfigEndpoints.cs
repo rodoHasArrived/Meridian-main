@@ -31,6 +31,20 @@ public static class ConfigEndpoints
         // this group requires at least a configuration-read permission. Mutation routes additionally
         // require ModifyConfig below. Either ViewConfig or ModifyConfig satisfies the read gate.
         group.RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ModifyConfig);
+        group.AddEndpointFilter(async (context, next) =>
+        {
+            try
+            { return await next(context); }
+            catch (UiConfigurationValidationException failure)
+            {
+                return Results.ValidationProblem(failure.Errors.ToDictionary(entry => entry.Key, entry => entry.Value));
+            }
+        });
+
+        group.MapGet("/api/config/changes", (ConfigStore store) => Results.Json(store.GetChangeStatus(), jsonOptions))
+            .WithName("GetConfigurationChangeStatus")
+            .WithDescription("Saved setting impacts and changes awaiting provider reconnect or host restart; no setting values are returned.")
+            .Produces<ConfigurationChangeStatus>(200);
 
         // Get full configuration
         group.MapGet(UiApiRoutes.Config, (ConfigStore store) =>
@@ -96,7 +110,7 @@ public static class ConfigEndpoints
             entries.Add(BuildEntry("backfill.provider", backfill?.Provider ?? "composite", envVars, "MDC_BACKFILL_PROVIDER", "composite"));
 
             // Symbols summary
-            entries.Add(new { key = "symbols.count", value = (cfg.Symbols?.Length ?? 0).ToString(), source = "config" });
+            entries.Add(new { key = "symbols.count", value = (cfg.Symbols?.Length ?? 0).ToString(), source = "config", impact = ConfigurationChangeImpact.Live });
 
             // Environment overrides summary
             var activeOverrides = envVars.Where(v => v.IsSet).Select(v => new
@@ -117,14 +131,14 @@ public static class ConfigEndpoints
         .Produces(200);
 
         // Update data source
-        group.MapPost(UiApiRoutes.ConfigDataSource, async (ConfigStore store, DataSourceRequest req) =>
+        group.MapPost(UiApiRoutes.ConfigDataSource, async (ConfigStore store, DataSourceRequest req, CancellationToken ct) =>
         {
-            if (!Enum.TryParse<DataSourceKind>(req.DataSource, ignoreCase: true, out var ds))
+            if (!Enum.TryParse<DataSourceKind>(req.DataSource, ignoreCase: true, out var ds) || !Enum.IsDefined(ds))
                 return Results.BadRequest("Invalid DataSource. Use 'IB' or 'Alpaca'.");
 
-            await store.UpdateAsync(cfg => cfg with { DataSource = ds });
+            await store.UpdateAsync(cfg => cfg with { DataSource = ds }, ct);
 
-            return Results.Ok();
+            return Results.Ok(store.GetChangeStatus());
         }).WithName("UpdateDataSource")
         .WithDescription("Updates the active streaming data source (e.g., IB, Alpaca, Polygon).")
         .Produces(200).Produces(400).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -132,11 +146,11 @@ public static class ConfigEndpoints
         .RequirePermission(UserPermission.ModifyConfig);
 
         // Update Alpaca settings
-        group.MapPost(UiApiRoutes.ConfigAlpaca, async (ConfigStore store, AlpacaOptionsDto alpaca) =>
+        group.MapPost(UiApiRoutes.ConfigAlpaca, async (ConfigStore store, AlpacaOptionsDto alpaca, CancellationToken ct) =>
         {
             var alpacaDomain = alpaca.ToDomain();
-            await store.UpdateAsync(cfg => cfg with { Alpaca = alpacaDomain });
-            return Results.Ok();
+            await store.UpdateAsync(cfg => cfg with { Alpaca = alpacaDomain }, ct);
+            return Results.Ok(store.GetChangeStatus());
         }).WithName("UpdateAlpaca")
         .WithDescription("Updates Alpaca provider connection settings.")
         .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -144,7 +158,7 @@ public static class ConfigEndpoints
         .RequirePermission(UserPermission.ModifyConfig);
 
         // Update storage settings
-        group.MapPost(UiApiRoutes.ConfigStorage, async (ConfigStore store, StorageSettingsRequest req) =>
+        group.MapPost(UiApiRoutes.ConfigStorage, async (ConfigStore store, StorageSettingsRequest req, CancellationToken ct) =>
         {
             var storage = new StorageConfig(
                 NamingConvention: req.NamingConvention ?? "BySymbol",
@@ -162,8 +176,8 @@ public static class ConfigEndpoints
                 DataRoot = sanitizedRoot,
                 Compress = req.Compress,
                 Storage = storage
-            });
-            return Results.Ok();
+            }, ct);
+            return Results.Ok(store.GetChangeStatus());
         }).WithName("UpdateStorage")
         .WithDescription("Updates storage settings including root path, naming convention, and compression.")
         .Produces(200).Produces(400).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -171,7 +185,7 @@ public static class ConfigEndpoints
         .RequirePermission(UserPermission.ModifyConfig);
 
         // Add or update symbol
-        group.MapPost(UiApiRoutes.ConfigSymbols, async (ConfigStore store, SymbolConfig symbol) =>
+        group.MapPost(UiApiRoutes.ConfigSymbols, async (ConfigStore store, SymbolConfig symbol, CancellationToken ct) =>
         {
             if (string.IsNullOrWhiteSpace(symbol.Symbol))
                 return Results.BadRequest("Symbol is required.");
@@ -186,9 +200,9 @@ public static class ConfigEndpoints
                     list.Add(symbol);
 
                 return cfg with { Symbols = list.ToArray() };
-            });
+            }, ct);
 
-            return Results.Ok();
+            return Results.Ok(store.GetChangeStatus());
         }).WithName("UpsertSymbol")
         .WithDescription("Adds or updates a symbol in the monitoring configuration.")
         .Produces(200).Produces(400).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -196,15 +210,15 @@ public static class ConfigEndpoints
         .RequirePermission(UserPermission.ModifyConfig);
 
         // Delete symbol
-        group.MapDelete(UiApiRoutes.ConfigSymbols + "/{symbol}", async (ConfigStore store, string symbol) =>
+        group.MapDelete(UiApiRoutes.ConfigSymbols + "/{symbol}", async (ConfigStore store, string symbol, CancellationToken ct) =>
         {
             await store.UpdateAsync(cfg =>
             {
                 var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
                 list.RemoveAll(s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
                 return cfg with { Symbols = list.ToArray() };
-            });
-            return Results.Ok();
+            }, ct);
+            return Results.Ok(store.GetChangeStatus());
         }).WithName("DeleteConfigSymbol")
         .WithDescription("Removes a symbol from the monitoring configuration.")
         .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -221,11 +235,11 @@ public static class ConfigEndpoints
         .Produces(200);
 
         // Update derivatives configuration
-        group.MapPost(UiApiRoutes.ConfigDerivatives, async (ConfigStore store, DerivativesConfigDto derivatives) =>
+        group.MapPost(UiApiRoutes.ConfigDerivatives, async (ConfigStore store, DerivativesConfigDto derivatives, CancellationToken ct) =>
         {
             var derivativesDomain = derivatives.ToDomain();
-            await store.UpdateAsync(cfg => cfg with { Derivatives = derivativesDomain });
-            return Results.Ok();
+            await store.UpdateAsync(cfg => cfg with { Derivatives = derivativesDomain }, ct);
+            return Results.Ok(store.GetChangeStatus());
         }).WithName("UpdateDerivatives")
         .WithDescription("Updates the derivatives trading configuration.")
         .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -258,7 +272,7 @@ public static class ConfigEndpoints
             source = value == defaultValue ? "default" : "config";
         }
 
-        return new { key, value, source };
+        return new { key, value, source, impact = Meridian.Application.UI.ConfigStore.GetSettingImpact(key) };
     }
     // Clone the response projection: masking must never alter the persisted credentials.
     private static BackfillConfig? MaskBackfill(BackfillConfig? config)
