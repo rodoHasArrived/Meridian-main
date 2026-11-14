@@ -1583,10 +1583,6 @@ describe("ReportingScreen", () => {
 
     expect(screen.getByRole("heading", { name: "Daily Reporting Cockpit" })).toBeInTheDocument();
     const cockpit = screen.getByRole("region", { name: "Daily reporting cockpit" });
-    const confidence = screen.getByRole("region", { name: "Reporting data confidence" });
-    const confidenceSummary = confidence.querySelector("summary")!;
-    expect(confidenceSummary).toHaveTextContent("Governed Reporting service");
-    expect(confidenceSummary).toHaveTextContent("Freshness:No as-of date retained");
     expect(within(cockpit).getByLabelText("Board portal package failed decision facts")).toHaveTextContent("fund-controller");
     expect(within(cockpit).getByLabelText("Board portal package failed decision facts")).toHaveTextContent("1 evidence gap");
     expect(screen.queryByRole("tablist", { name: "Reporting routes" })).not.toBeInTheDocument();

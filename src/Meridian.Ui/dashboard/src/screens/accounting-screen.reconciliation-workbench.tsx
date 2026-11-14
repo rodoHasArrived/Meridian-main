@@ -11,12 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { SectionDescription } from "@/components/ui/section-description";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { DetailRail } from "@/components/meridian/detail-rail";
 import { DesignSystemStatus } from "@/design-system/status";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
-import { SectionHeading } from "@/components/meridian/section-heading";
 import { BREAK_QUEUE_KEYBOARD_MAP, resolveQueueShortcut } from "@/lib/queue-keyboard-map";
 import {
   BREAK_QUEUE_VISIT_SURFACE,
@@ -141,16 +141,6 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
     services: bulkServices
   });
   const { isSelected: isBulkSelected, toggle: toggleBulkSelected } = triage;
-  const bulkActionsRef = useRef<HTMLDivElement>(null);
-  const focusedBulkControlRef = useRef<HTMLElement | null>(null);
-  useLayoutEffect(() => {
-    // Clearing or completing a selection removes its command buttons. Keep keyboard users
-    // in the stable command region, on the always-available Select all control.
-    const previousControl = focusedBulkControlRef.current;
-    if (previousControl && !previousControl.isConnected && document.activeElement === document.body) {
-      bulkActionsRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
-    }
-  }, [triage.selectedIds.length, triage.draft]);
   // Since your last visit (C3): rows detected or updated after the operator's previous visit.
   const sinceLastVisit = useSinceLastVisit(BREAK_QUEUE_VISIT_SURFACE, visitServices);
   const visitBaseline = sinceLastVisit.baseline;
@@ -509,15 +499,13 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
         )}
       >
         <Card id="reconciliation-break-queue" role="region" aria-label="Reconciliation break checklist" className="panel-surface">
-          <CardHeader className="reconciliation-queue-heading">
-            <SectionHeading as="h2" title="Reconciliation break queue"
-              description="Review discrepancies, evidence, and permitted actions without leaving the queue."
-              helpId="accounting-reconciliation-break-queue" headingClassName="text-base" />
-            <p role="status" className="reconciliation-queue-count">{visibleRows.length} of {reconciliation.rows.length} loaded breaks</p>
-            <Button type="button" size="sm" variant="ghost" className="reconciliation-shortcuts" aria-label="Keyboard shortcuts" aria-keyshortcuts="?" onClick={() => setShortcutsOpen(true)}><Kbd keys="?" /></Button>
-            {sinceLastVisitLine ? <p className="reconciliation-queue-visit text-xs text-muted-foreground">{sinceLastVisitLine}</p> : null}
+          <CardHeader className="flex flex-wrap items-center gap-2 px-3 py-1">
+            <CardTitle>Reconciliation break queue</CardTitle>
+            <SectionDescription descriptionKey="accounting:reconciliation-break-queue" label="About the reconciliation break queue">
+              Review discrepancies, evidence, and permitted actions without leaving the queue.
+            </SectionDescription>
           </CardHeader>
-          <CardContent className="reconciliation-queue-content">
+          <CardContent className="space-y-2 px-3 py-1">
             <span className="sr-only" aria-live="polite">{reconciliation.statusAnnouncement}</span>
             {reconciliation.loadingText && (
               <p role="status" className="text-sm text-muted-foreground">{reconciliation.loadingText}</p>
@@ -552,49 +540,51 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
             )}
 
             {selectionNotice ? <p role="status" className="text-sm text-muted-foreground">{selectionNotice}</p> : null}
+            <div className="reconciliation-queue-toolbar" role="group" aria-label="Break queue controls">
+              <label>
+                Search breaks
+                <Input value={controls.queueSearch} onChange={(e) => controls.setQueueSearch(e.target.value)} placeholder="Break, account, owner…" />
+              </label>
+              <label>
+                Case status
+                <Select value={controls.queueStatus} onChange={(e) => controls.setQueueStatus(e.target.value as ReconciliationQueueStatus)}>
+                  {["all", "Open", "InReview", "Resolved", "Dismissed", "SignedOff"].map((status) => (
+                    <option key={status} value={status}>
+                      {status === "all" ? "All statuses" : status === "InReview" ? "In review" : status === "SignedOff" ? "Signed off" : status}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <label>
+                Sort breaks
+                <Select value={controls.queueSort} onChange={(e) => controls.setQueueSort(e.target.value as ReconciliationQueueSort)}>
+                  <option value="default">Service order</option>
+                  <option value="oldest">Oldest detected</option>
+                  <option value="newest">Newest detected</option>
+                  <option value="severity">Highest urgency</option>
+                </Select>
+              </label>
+              <Button type="button" variant="ghost" onClick={controls.clearQueueFilters}>Clear filters</Button>
+              <Button type="button" size="icon" variant="ghost" aria-label="Keyboard shortcuts" title="Keyboard shortcuts" aria-keyshortcuts="?" onClick={() => setShortcutsOpen(true)}>
+                <Kbd keys="?" />
+              </Button>
+            </div>
+            {triage.selectedIds.length > 0 || triage.draft || triage.message ? <ReconciliationBulkTriageBar triage={triage} visibleCount={visibleRows.length} /> : null}
+              <Button
+                ref={toggleRef}
+                type="button"
+                variant="outline"
+                aria-controls={reconciliation.detailPanelId}
+                aria-expanded={detailOpen}
+                className="reconciliation-detail-toggle"
+                onClick={openInspector}
+              >
+                Inspect selected break
+              </Button>
             {selectedOutsideFilter ? <p role="status" className="text-sm text-muted-foreground">The selected break is outside these filters. Its evidence remains in the inspector.</p> : null}
             <div ref={queueRef} className="reconciliation-queue-scroll" onScroll={rememberQueueScroll}>
               <TableWorkbench
                 compactToolbar
-                filters={(
-                  <div className="reconciliation-queue-toolbar" role="group" aria-label="Break queue controls">
-                    <label>
-                      Search breaks
-                      <Input value={controls.queueSearch} onChange={(e) => controls.setQueueSearch(e.target.value)} placeholder="Break, account, owner…" />
-                    </label>
-                    <label>
-                      Case status
-                      <Select value={controls.queueStatus} onChange={(e) => controls.setQueueStatus(e.target.value as ReconciliationQueueStatus)}>
-                        {["all", "Open", "InReview", "Resolved", "Dismissed", "SignedOff"].map((status) => (
-                          <option key={status} value={status}>
-                            {status === "all" ? "All statuses" : status === "InReview" ? "In review" : status === "SignedOff" ? "Signed off" : status}
-                          </option>
-                        ))}
-                      </Select>
-                    </label>
-                    <label>
-                      Sort breaks
-                      <Select value={controls.queueSort} onChange={(e) => controls.setQueueSort(e.target.value as ReconciliationQueueSort)}>
-                        <option value="default">Service order</option>
-                        <option value="oldest">Oldest detected</option>
-                        <option value="newest">Newest detected</option>
-                        <option value="severity">Highest urgency</option>
-                      </Select>
-                    </label>
-                    <Button type="button" variant="ghost" onClick={controls.clearQueueFilters}>Clear filters</Button>
-                    <Button
-                      ref={toggleRef}
-                      type="button"
-                      variant="outline"
-                      aria-controls={reconciliation.detailPanelId}
-                      aria-expanded={detailOpen}
-                      className="reconciliation-detail-toggle"
-                      onClick={openInspector}
-                    >
-                      Inspect selected break
-                    </Button>
-                  </div>
-                )}
                 workbenchId="accounting-reconciliation-breaks"
                 sourceKey={reconciliation.sourceRows?.map((item) => `${item.tenantId}:${item.companyId}:${item.fundAccountId}:${item.runId}`).filter((item, index, values) => values.indexOf(item) === index).sort().join("|") ?? "unverified"}
                 sourceDescription="Authorized reconciliation casework queue for the selected scope. Variance units and currency are retained only where supplied by the casework source."
@@ -633,13 +623,10 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 caption={reconciliation.tableCaption}
               />
             </div>
-            <div ref={bulkActionsRef}
-              className={cn("reconciliation-bulk-commands", (triage.selectedIds.length > 0 || triage.draft) && "reconciliation-bulk-commands--active")}
-              onFocusCapture={(event) => { focusedBulkControlRef.current = event.target; }}
-              onBlurCapture={(event) => {
-                if (!event.currentTarget.contains(event.relatedTarget)) focusedBulkControlRef.current = null;
-              }}>
-              <ReconciliationBulkTriageBar triage={triage} visibleCount={visibleRows.length} />
+            {triage.selectedIds.length === 0 && !triage.draft && !triage.message ? <ReconciliationBulkTriageBar triage={triage} visibleCount={visibleRows.length} /> : null}
+            <div className="space-y-0.5">
+              <p role="status" className="text-xs text-muted-foreground">{visibleRows.length} of {reconciliation.rows.length} loaded breaks</p>
+              {sinceLastVisitLine ? <p className="text-xs text-muted-foreground">{sinceLastVisitLine}</p> : null}
             </div>
           </CardContent>
         </Card>

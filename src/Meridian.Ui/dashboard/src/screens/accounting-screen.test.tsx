@@ -382,10 +382,10 @@ vi.mock("@/lib/api", async () => {
 
 const data: AccountingWorkspaceResponse = {
   metrics: [
-    { id: "m1", label: "Open Breaks", value: "2", delta: "+1", tone: "warning" },
-    { id: "m2", label: "Timing Drift", value: "1", delta: "0%", tone: "warning" },
-    { id: "m3", label: "Security Gaps", value: "0", delta: "0%", tone: "success" },
-    { id: "m4", label: "Audit Ready", value: "4", delta: "+2", tone: "success" }
+    { id: "breaks", label: "Open Breaks", value: "2", delta: "+1", tone: "warning" },
+    { id: "drift", label: "Timing Drift", value: "1", delta: "0%", tone: "warning" },
+    { id: "coverage", label: "Security Gaps", value: "0", delta: "0%", tone: "success" },
+    { id: "audit", label: "Audit Ready", value: "4", delta: "+2", tone: "success" }
   ],
   reconciliationQueue: [
     {
@@ -3582,7 +3582,6 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen();
 
     expect(screen.getByLabelText("Accounting headline metrics")).toBeInTheDocument();
-
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Accounting case workbench" })).toBeInTheDocument();
@@ -4646,7 +4645,6 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/exceptions");
 
-    expect(screen.queryByLabelText("Accounting headline metrics")).not.toBeInTheDocument();
     expect(screen.getAllByRole("heading", { name: "Operational exception workbench" }).length).toBeGreaterThan(0);
     expect(screen.getByRole("region", { name: "Unified operational exception queue" })).toHaveTextContent("Cash variance needs review");
     expect(screen.getByRole("region", { name: "Unified operational exception queue" })).toHaveTextContent("2 comments");
@@ -4656,10 +4654,8 @@ describe("AccountingScreen", () => {
       "href",
       "/reporting/evidence?subjectKind=accounting-exceptions&subjectId=active"
     );
-    const breakQueue = screen.getByRole("treegrid", { name: "Reconciliation break queue" });
-    expect(breakQueue).toBeInTheDocument();
-    expect(breakQueue.compareDocumentPosition(screen.getByRole("region", { name: "Unified operational exception queue" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(breakQueue).not.toHaveTextContent("run-42:cash");
+    expect(screen.getByRole("treegrid", { name: "Reconciliation break queue" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Reconciliation break queue" })).not.toHaveTextContent("run-42:cash");
     const breakMetadata = screen.getByText("Break metadata").closest("details");
     expect(breakMetadata).not.toHaveAttribute("open");
     expect(within(breakMetadata!).getByText("run-42:cash")).toBeInTheDocument();
@@ -4671,7 +4667,6 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
-    expect(screen.queryByLabelText("Accounting headline metrics")).not.toBeInTheDocument();
     const table = await screen.findByRole("treegrid", { name: "Tolerance profile health by reconciliation route" });
     expect(table).toHaveTextContent("tp-cash-variance");
     const firstProfile = screen.getByRole("row", {

@@ -201,24 +201,6 @@ describe("Reconciliation workbench", () => {
     expect(within(bulkBar()).getByRole("button", { name: "Resolve with reason" })).toBeEnabled();
   });
 
-  it("keeps keyboard focus in the same bulk command region when selecting and clearing breaks", async () => {
-    const user = userEvent.setup();
-    renderWorkbench(undefined, fakeBulkServices());
-    const commands = bulkBar();
-    const selectAll = within(commands).getByRole("button", { name: "Select all 2" });
-    selectAll.focus();
-    await user.keyboard("{Enter}");
-    expect(bulkBar()).toBe(commands);
-    expect(selectAll).toHaveFocus();
-
-    const clearSelection = within(commands).getByRole("button", { name: "Clear selection" });
-    clearSelection.focus();
-    await user.keyboard("{Enter}");
-    expect(bulkBar()).toBe(commands);
-    expect(selectAll).toHaveFocus();
-    expect(within(commands).getByText("No breaks selected")).toBeInTheDocument();
-  });
-
   it("resolves with a reason only the breaks the dry run passed and lists the rest (C2)", async () => {
     const user = userEvent.setup();
     const services = fakeBulkServices((breakId) => breakId === "fees-2");

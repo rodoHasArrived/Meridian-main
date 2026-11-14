@@ -2,7 +2,6 @@
 import { AssetAccountingWorkflowPanel } from "./accounting-screen.asset-workflow-panel";
 import { Copy, Paperclip, RefreshCcw, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { SectionHeading } from "@/components/meridian/section-heading";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { SectionDescription } from "@/components/ui/section-description";
 import { cn } from "@/lib/utils";
 import { focusManualJournalCell, handleManualJournalCellKeyDown, ManualJournalDimensionsInspector, ManualJournalHealthBar, ManualJournalValidationNavigator } from "@/screens/accounting-screen.journal-entry-enhancements";
 import type { ManualJournalEntryWorkbenchViewModel } from "@/screens/accounting-screen.view-model";
@@ -696,9 +696,11 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
     return (
       <section className="workspace-section-band" aria-labelledby="manual-je-heading">
         <div className="workspace-section-subheader">
-          <div className="min-w-0">
-            <SectionHeading as="h3" id="manual-je-heading" title={view.title} description={view.description}
-              helpId="accounting-manual-journal-workbench" headingClassName="workspace-section-title" />
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <h3 id="manual-je-heading" className="workspace-section-title">{view.title}</h3>
+            <SectionDescription descriptionKey="accounting:manual-journal-workbench" label={`About ${view.title}`}>
+              {view.description}
+            </SectionDescription>
           </div>
         </div>
         <StatusBanner
@@ -730,9 +732,11 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
   return (
     <section className="workspace-section-band" aria-labelledby="manual-je-heading">
       <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <SectionHeading as="h3" id="manual-je-heading" title={view.title} description={view.description}
-            helpId="accounting-manual-journal-workbench" headingClassName="workspace-section-title" />
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <h3 id="manual-je-heading" className="workspace-section-title">{view.title}</h3>
+          <SectionDescription descriptionKey="accounting:manual-journal-workbench" label={`About ${view.title}`}>
+            {view.description}
+          </SectionDescription>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={view.draft.status === "Submitted" ? "success" : view.draft.status === "NeedsFix" ? "warning" : "outline"} dot>

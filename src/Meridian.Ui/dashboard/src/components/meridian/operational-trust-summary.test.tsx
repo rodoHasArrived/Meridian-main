@@ -31,37 +31,6 @@ function shellSignal(overrides: Partial<AppShellAttentionSignal>): AppShellAtten
 }
 
 describe("OperationalTrustSummary", () => {
-  it("merges ready source and as-of context into the status line and preserves keyboard detail access", async () => {
-    const { container } = render(<OperationalTrustSummary {...readyFacts} compact />);
-    const summary = container.querySelector("summary")!;
-    expect(summary).toHaveTextContent("All sources current");
-    expect(summary).toHaveTextContent("Interactive Brokers · paper");
-    expect(summary).toHaveTextContent("As of: 2s ago");
-    const user = userEvent.setup();
-    await user.click(summary);
-    expect(container.querySelector("details")).toHaveAttribute("open");
-    expect(within(container.querySelector("dl")!).getByText("Paper Index Mean Reversion")).toBeInTheDocument();
-    await user.keyboard("{Escape}");
-    expect(container.querySelector("details")).not.toHaveAttribute("open");
-    expect(summary).toHaveFocus();
-    expect((await axe(container)).violations).toEqual([]);
-  });
-
-  it("keeps scope, freshness and completeness issues visible without duplicating issue values in compact context", () => {
-    const { container } = render(<OperationalTrustSummary compact
-      source={{ value: "Brokerage", tone: "ready" }}
-      scope={{ value: "No account selected", tone: "review" }}
-      freshness={{ value: "Unavailable", tone: "unknown" }}
-      completeness={{ value: "Missing retained positions", tone: "blocked" }}
-    />);
-    const summary = container.querySelector("summary")!;
-    expect(summary).toHaveTextContent("Scope:No account selected");
-    expect(summary).toHaveTextContent("Completeness:Missing retained positions");
-    expect(within(summary).getAllByText("Unavailable")).toHaveLength(1);
-    expect(within(summary).getByTestId("status-row-context")).toHaveTextContent("Brokerage");
-    expect(within(summary).getByTestId("status-row-context")).not.toHaveTextContent("Unavailable");
-  });
-
   it("says all sources are current in one line when every fact is ready", async () => {
     const { container } = render(<OperationalTrustSummary {...readyFacts} />);
 

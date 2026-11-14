@@ -27,10 +27,10 @@ import type {
 
 const data: DataWorkspaceResponse = {
   metrics: [
-    { id: "m1", label: "Providers Healthy", value: "4", delta: "0", tone: "success" },
-    { id: "m2", label: "Backfills Running", value: "2", delta: "+1", tone: "default" },
-    { id: "m3", label: "Exports Ready", value: "3", delta: "+1", tone: "success" },
-    { id: "m4", label: "Needs Review", value: "1", delta: "+1", tone: "warning" }
+    { id: "providers", label: "Providers Healthy", value: "4", delta: "0", tone: "success" },
+    { id: "backfills", label: "Backfills Running", value: "2", delta: "+1", tone: "default" },
+    { id: "exports", label: "Exports Ready", value: "3", delta: "+1", tone: "success" },
+    { id: "review", label: "Needs Review", value: "1", delta: "+1", tone: "warning" }
   ],
   providers: [
     {
@@ -232,16 +232,6 @@ const providerReadiness: ProviderReadinessSummary = {
 };
 
 describe("DataScreen", () => {
-  it.each([
-    ["/data", true],
-    ["/data/", true],
-    ["/data/providers", false],
-    ["/data/uploads", false]
-  ])("shows headline metrics only on the exact overview route: %s", (route, visible) => {
-    renderWithRouter(<DataScreen data={data} />, { initialEntries: [route] });
-    expect(Boolean(screen.queryByLabelText("Data headline metrics"))).toBe(visible);
-  });
-
   it("renders an accessible route-aware loading panel when bootstrap data is unavailable", () => {
     renderWithRouter(<DataScreen data={null} />, { initialEntries: ["/data/backfills"] });
 

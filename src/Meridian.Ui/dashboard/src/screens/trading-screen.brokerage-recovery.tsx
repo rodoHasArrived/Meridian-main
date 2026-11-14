@@ -32,7 +32,7 @@ const runColumns: DenseDataTableColumn<TradingBrokerageRecoveryRun>[] = [
 const ACCOUNT_SETUP_TITLE = "Choose a fund account";
 const ACCOUNT_SETUP_DETAIL = "Recovery evidence is per account: its broker portfolio, retained orders and affected strategy runs load once a fund account is in scope. Live trading stays off until then.";
 const ACCOUNT_SETUP_ROW_TITLE = "No fund account in scope";
-const ACCOUNT_SETUP_ROW_DETAIL = "Live trading stays off.";
+const ACCOUNT_SETUP_ROW_DETAIL = "brokerage recovery is checked per account; live trading stays off until one is chosen.";
 const FUND_ACCOUNT_GUID_MESSAGE = "Not a fund account id. Trading accepts a fund account GUID, for example 11111111-2222-3333-4444-555555555555.";
 
 function timestamp(value: string | null | undefined) {

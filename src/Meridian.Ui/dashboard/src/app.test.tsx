@@ -673,7 +673,7 @@ describe("App", () => {
       // The badge lets the pointer through to the link, so the link's tooltip names the unit.
       expect(link).toHaveAttribute("title", "Today: Daily Control Tower · 4 items in Today's finance queue");
     }
-    expect(confidence).toHaveTextContent("1 of 1 shared inbox item");
+    expect(await screen.findByText("1 of 1 inbox item · All authorized accounts")).toBeInTheDocument();
     const inboxRow = within(todayQueue).getByRole("row", { name: "Promotion checklist incomplete" });
     expect(inboxRow).toHaveTextContent("Shared inbox");
     expect(todayQueue.querySelectorAll('tbody tr[data-dense-row-id^="inbox:"]')).toHaveLength(1);
@@ -1061,7 +1061,7 @@ describe("App", () => {
       loading: false
     });
 
-    renderWithRouter(<App />, { initialEntries: ["/data?fundAccountId=fund-1"] });
+    renderWithRouter(<App />, { initialEntries: ["/data/providers?fundAccountId=fund-1"] });
 
     const footnote = (await screen.findAllByTestId("stat-strip-provenance", {}, { timeout: 10_000 }))[0]!;
     // The Data payload is not filtered by fund account, so its figures say they cover everything

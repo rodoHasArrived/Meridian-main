@@ -21,8 +21,6 @@ export function tableColumnsWithExport<T>(columns: DenseDataTableColumn<T>[], ac
 
 export interface TableWorkbenchProps<T> extends Omit<DenseDataTableProps<T>, "columns"> {
   workbenchId: string;
-  /** Keep search and filters on one compact row; disclose secondary tools without changing their behavior. */
-  compactToolbar?: boolean;
   /** Include tenant/account/book identity when the same table remains mounted across scope changes. */
   sourceKey?: string;
   columns: TableWorkbenchColumn<T>[];
@@ -30,6 +28,8 @@ export interface TableWorkbenchProps<T> extends Omit<DenseDataTableProps<T>, "co
   onSearchTextChange?: (value: string) => void;
   getSearchText?: (row: T) => string;
   filters?: ReactNode;
+  /** Keep query controls visible; disclose column, density, export and saved-view tools. */
+  compactToolbar?: boolean;
   filterState?: Record<string, string>;
   onRestoreFilters?: (filters: Record<string, string>) => void;
   onRestoreView?: (view: TableView) => void;
@@ -44,21 +44,11 @@ export interface TableWorkbenchProps<T> extends Omit<DenseDataTableProps<T>, "co
   onExportAll?: (columns: string[], search: string, sort?: DenseDataTableSortState | null, signal?: AbortSignal) => Promise<void>;
 }
 
-export function TableWorkbench<T>({ workbenchId, compactToolbar = false, sourceKey = "", columns, rows, searchText: controlledSearch,
-  onSearchTextChange, getSearchText, filters, filterState, onRestoreFilters, onRestoreView, completePopulation = false,
+export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, searchText: controlledSearch,
+  onSearchTextChange, getSearchText, filters, compactToolbar = false, filterState, onRestoreFilters, onRestoreView, completePopulation = false,
   sourceDescription, exportContext, exportLabel = "Export CSV", onExportAll, sort, onToggleSort, defaultSort = null,
   hiddenColumnIds: controlledHiddenColumnIds, onHiddenColumnIdsChange, ...tableProps }: TableWorkbenchProps<T>) {
   const id = useId();
-  const toolsRef = useRef<HTMLDetailsElement>(null);
-  useEffect(() => {
-    if (!compactToolbar) return;
-    if (toolsRef.current) toolsRef.current.open = false;
-    const dismiss = (event: PointerEvent) => {
-      if (event.target instanceof Node && toolsRef.current && !toolsRef.current.contains(event.target)) toolsRef.current.open = false;
-    };
-    document.addEventListener("pointerdown", dismiss);
-    return () => document.removeEventListener("pointerdown", dismiss);
-  }, [compactToolbar, sourceKey, workbenchId]);
   const [localSearch, setLocalSearch] = useState("");
   const search = controlledSearch ?? localSearch;
   const [visibleIds, setVisibleIds] = useState<string[]>(columns.filter(column => !column.defaultHidden).map(column => column.id));
@@ -211,22 +201,19 @@ export function TableWorkbench<T>({ workbenchId, compactToolbar = false, sourceK
     } catch (cause) { if (current === session.current && !signal?.aborted) setError(cause instanceof Error ? cause.message : "Export failed. No complete export was produced."); }
     finally { if (current === session.current) setExporting(false); }
   }
-  const unavailableViews = compactToolbar && notice === "Saved views unavailable. You can continue reviewing this table.";
-  const secondaryControls = <>
-        <details className="table-workbench-disclosure"><summary>Columns</summary><div className="table-workbench-menu">
-          {hideableColumns.map(column => <label key={column.id}><input type="checkbox" checked={effectiveVisibleIds.includes(column.id)}
-            disabled={visibleColumns.length === 1 && effectiveVisibleIds.includes(column.id)}
-            onChange={event => changeVisibleIds(event.target.checked ? columns.filter(item => effectiveVisibleIds.includes(item.id) || item.id === column.id).map(item => item.id) : effectiveVisibleIds.filter(value => value !== column.id))} />{column.label || column.srLabel || column.id}</label>)}
-        </div></details>
-        <label>Density<select aria-label={`${tableProps.ariaLabel} density`} value={density} onChange={event => setDensity(event.target.value as typeof density)}><option value="compact">Compact</option><option value="comfortable">Comfortable</option></select></label>
-        <Button size="sm" variant="outline" onClick={() => void exportAll()} disabled={exporting || !exportColumns.length || (!completePopulation && !onExportAll)}
-          title={!completePopulation && !onExportAll ? "A complete authorized source is required before export." : `Export all ${pluralizeCount(filteredRows.length, "filtered match", { plural: "filtered matches" })}. ${sourceDescription}`}>{exporting ? "Exporting…" : exportLabel}</Button>
-        <details className="table-workbench-disclosure"><summary>Save view</summary><div className="table-workbench-menu">
-          <label>Saved views<select value={selectedView} onChange={event => restoreView(event.target.value)}><option value="">Current view</option>{views.map(view => <option key={view.viewId} value={view.viewId}>{view.label}{view.isReadOnly ? " · Legacy tenant view" : ""}</option>)}</select></label>
-          <label>View name<input value={viewName} maxLength={100} onChange={event => setViewName(event.target.value)} /></label>
-          <Button size="sm" onClick={() => void saveView()} disabled={saving}>{saving ? "Saving…" : "Save to my account"}</Button>
-        </div></details>
+  const columnControls = hideableColumns.map(column => <label key={column.id}><input type="checkbox" checked={effectiveVisibleIds.includes(column.id)}
+    disabled={visibleColumns.length === 1 && effectiveVisibleIds.includes(column.id)}
+    onChange={event => changeVisibleIds(event.target.checked ? columns.filter(item => effectiveVisibleIds.includes(item.id) || item.id === column.id).map(item => item.id) : effectiveVisibleIds.filter(value => value !== column.id))} />{column.label || column.srLabel || column.id}</label>);
+  const densityControl = <label>Density<select aria-label={`${tableProps.ariaLabel} density`} value={density} onChange={event => setDensity(event.target.value as typeof density)}><option value="compact">Compact</option><option value="comfortable">Comfortable</option></select></label>;
+  const exportControl = <Button size="sm" variant="outline" onClick={() => void exportAll()} disabled={exporting || !exportColumns.length || (!completePopulation && !onExportAll)}
+    title={!completePopulation && !onExportAll ? "A complete authorized source is required before export." : `Export all ${pluralizeCount(filteredRows.length, "filtered match", { plural: "filtered matches" })}. ${sourceDescription}`}>{exporting ? "Exporting…" : exportLabel}</Button>;
+  const viewControls = <>
+    <label>Saved views<select value={selectedView} onChange={event => restoreView(event.target.value)}><option value="">Current view</option>{views.map(view => <option key={view.viewId} value={view.viewId}>{view.label}{view.isReadOnly ? " · Legacy tenant view" : ""}</option>)}</select></label>
+    <label>View name<input value={viewName} maxLength={100} onChange={event => setViewName(event.target.value)} /></label>
+    <Button size="sm" onClick={() => void saveView()} disabled={saving}>{saving ? "Saving…" : "Save to my account"}</Button>
   </>;
+  const unavailableViews = compactToolbar && notice === "Saved views unavailable. You can continue reviewing this table.";
+
   return (
     <section className={cn("table-workbench", `table-workbench--${density}`)} aria-label={`${tableProps.ariaLabel} controls and results`}>
       <div className={cn("table-workbench-toolbar", compactToolbar && "table-workbench-toolbar--compact")} role="group" aria-label={`${tableProps.ariaLabel} table controls`}>
@@ -234,20 +221,26 @@ export function TableWorkbench<T>({ workbenchId, compactToolbar = false, sourceK
           <input id={`${id}-search`} type="search" value={search} onChange={event => setSearch(event.target.value)} />
         </label> : null}
         {filters}
-        {compactToolbar ? (
-          <details ref={toolsRef} className="table-workbench-disclosure table-workbench-tools" onKeyDown={(event) => {
-            if (event.key !== "Escape" || !event.currentTarget.open) return;
-            const nested = event.target instanceof Element ? event.target.closest("details") : null;
-            const disclosure = nested?.open ? nested : event.currentTarget;
-            disclosure.open = false;
-            disclosure.querySelector("summary")?.focus();
+        {compactToolbar ? <details className="table-workbench-disclosure" onKeyDown={event => {
+          if (event.key === "Escape") {
             event.preventDefault();
-            event.stopPropagation();
-          }}>
-            <summary>Table tools</summary>
-            <div className="table-workbench-menu table-workbench-tools-menu" role="group" aria-label={`${tableProps.ariaLabel} secondary table controls`}>{secondaryControls}</div>
-          </details>
-        ) : secondaryControls}
+            event.currentTarget.open = false;
+            event.currentTarget.querySelector("summary")?.focus();
+          }
+        }}>
+          <summary aria-label={`${tableProps.ariaLabel} table options`}>Table options</summary>
+          <div className="table-workbench-menu table-workbench-options">
+            <fieldset><legend>Columns</legend>{columnControls}</fieldset>
+            {densityControl}
+            {exportControl}
+            <fieldset><legend>Save view</legend>{viewControls}</fieldset>
+          </div>
+        </details> : <>
+          <details className="table-workbench-disclosure"><summary>Columns</summary><div className="table-workbench-menu">{columnControls}</div></details>
+          {densityControl}
+          {exportControl}
+          <details className="table-workbench-disclosure"><summary>Save view</summary><div className="table-workbench-menu">{viewControls}</div></details>
+        </>}
         <span className="table-workbench-count">{pluralizeCount(filteredRows.length, "match", { plural: "matches" })}</span>
         {unavailableViews ? <span role="status" title={notice} className="table-workbench-view-notice">Views unavailable</span> : null}
       </div>

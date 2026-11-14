@@ -24,10 +24,6 @@ export interface OperationalTrustSummaryProps {
   action?: ReactNode;
   label?: string;
   className?: string;
-  /** Legacy callers already receive a one-line row with an expandable breakdown. */
-  disclosure?: boolean;
-  /** Include ready source/as-of context inline; issues already carry their own values. */
-  compact?: boolean;
 }
 
 /**
@@ -49,8 +45,7 @@ export function OperationalTrustSummary({
   blocker,
   action,
   label = "Data confidence",
-  className,
-  compact = false
+  className
 }: OperationalTrustSummaryProps) {
   const shell = useShellStatusSignals();
   // The footer status bar repeats this exact fact, so it never says "up to date" over a page
@@ -73,13 +68,7 @@ export function OperationalTrustSummary({
     .filter((signal) => isStatusIssue(signal.tone))
     .map((signal) => buildAttentionSignalFact(signal, shell.operatingScope));
 
-  const contextDataLine = compact && (source.tone === "ready" || freshness.tone === "ready") ? <>
-    {source.tone === "ready" ? <span><span className="sr-only">{source.label ?? "Source"}: </span>{source.value}</span> : null}
-    {source.tone === "ready" && freshness.tone === "ready" ? <span aria-hidden="true">·</span> : null}
-    {freshness.tone === "ready" ? <span>{freshness.label ?? "As of"}: {freshness.value}</span> : null}
-  </> : undefined;
-
-  return <StatusRow label={label} facts={facts} contextFacts={contextFacts} contextDataLine={contextDataLine} action={action} className={className} />;
+  return <StatusRow label={label} facts={facts} contextFacts={contextFacts} action={action} className={className} />;
 }
 
 function toFact(id: string, defaultLabel: string, fact: OperationalTrustFact): StatusRowFact {

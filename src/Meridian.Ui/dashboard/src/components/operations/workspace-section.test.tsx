@@ -4,15 +4,6 @@ import { describe, expect, it, vi } from "vitest";
 import { WorkspaceSection } from "./workspace-section";
 
 describe("WorkspaceSection", () => {
-  it("supports standalone description preferences without duplicating opt-in heading help", () => {
-    const { rerender } = render(<WorkspaceSection title="Review queue" summary="Inspect evidence." descriptionKey="main-section" />);
-    expect(screen.getByRole("button", { name: "Hide description: About Review queue" })).toBeVisible();
-    rerender(<WorkspaceSection title="Review queue" summary="Inspect evidence." descriptionKey="main-section" helpId="section-heading" />);
-    expect(screen.getAllByText("Inspect evidence.")).toHaveLength(1);
-    expect(screen.queryByRole("button", { name: "Hide description: About Review queue" })).not.toBeInTheDocument();
-    expect(screen.getAllByRole("heading", { name: "Review queue" })).toHaveLength(1);
-  });
-
   it("renders title, summary, and body content", () => {
     render(
       <WorkspaceSection id="recon" title="Reconciliation" summary="3 open exceptions">

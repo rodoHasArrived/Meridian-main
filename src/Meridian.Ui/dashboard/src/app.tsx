@@ -41,9 +41,9 @@ import { WorkflowContextDisclosure } from "@/components/meridian/workflow-contex
 import { OperatingScopeBar } from "@/components/meridian/operating-scope-bar";
 import { WorkspaceViewsMenu } from "@/components/meridian/workspace-views-menu";
 import { WorkspaceStatus } from "@/components/meridian/workspace-status";
+import { SectionDescriptionPreferences } from "@/components/ui/section-description";
 import { EntityInspectorProvider } from "@/components/meridian/entity-inspector";
 import { MetricPassportSessionProvider } from "@/components/meridian/metric-passport";
-import { SectionHelpProvider } from "@/components/meridian/section-heading";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { CompanionPaneWindow } from "@/components/meridian/companion-pane-window";
 import { LayoutSwitcher } from "@/components/meridian/layout-switcher";
@@ -79,6 +79,7 @@ import {
 } from "@/components/ui/sheet";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { ToastProvider } from "@/components/ui/toast";
+import { KpiProvider } from "@/lib/kpi-context";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { markWorkflowPresetUsed, pinWorkflowPreset } from "@/lib/api";
 import { getOperatorScopePreference, saveOperatorScopePreference } from "@/lib/api/operator-workstation.api";
@@ -897,7 +898,7 @@ function AppShell({
   ]);
 
   return (
-    <SectionHelpProvider userKey={session ? JSON.stringify([session.displayName, session.role, session.environment]) : null}>
+    <SectionDescriptionPreferences operatorKey={session ? `${session.environment}:${session.displayName}:${session.role}` : null}>
     <MetricPassportSessionProvider scopeKey={JSON.stringify([operatingScopeInput, refreshStatus.inFlight])} sessionIdentity={session}>
     <EntityInspectorProvider scopeKey={JSON.stringify(operatingScopeInput)} sessionIdentity={session} refreshSequence={refreshStatus.inFlight ? 1 : 0}>
     <ScopePickerOpenerProvider open={openScopePicker}>
@@ -908,6 +909,7 @@ function AppShell({
     <ShellStatusSignalsProvider value={shellStatusSignals}>
     <WorkspaceFigureContextProvider value={workspaceFigureContext}>
     <PageTrustProvider registry={pageTrustRegistry}>
+    <KpiProvider models={{ portfolio, trading, overview, strategy, data, accounting, crossScreenCounts }}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -1157,6 +1159,7 @@ function AppShell({
         </SheetContent>
       </Sheet>
     </div>
+    </KpiProvider>
     </PageTrustProvider>
     </WorkspaceFigureContextProvider>
     </ShellStatusSignalsProvider>
@@ -1167,7 +1170,7 @@ function AppShell({
     </ScopePickerOpenerProvider>
     </EntityInspectorProvider>
     </MetricPassportSessionProvider>
-    </SectionHelpProvider>
+    </SectionDescriptionPreferences>
   );
 }
 

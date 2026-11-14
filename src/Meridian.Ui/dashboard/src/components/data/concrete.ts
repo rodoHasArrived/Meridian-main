@@ -27,3 +27,4 @@ export {
   type EntitySummaryItem,
 } from "./entity-summary";
 export { MetricCard, type MetricCardProps, type MetricCardTone } from "./metric-card";
+export { MetricTile, type MetricTileProps, type MetricTileTone } from "./metric-tile";

@@ -170,7 +170,7 @@ describe("BrokerageRecoveryPanel", () => {
     );
     const row = screen.getByRole("region", { name: "Brokerage recovery" });
     expect(within(row).getByRole("status", { name: "Brokerage recovery readiness" }))
-      .toHaveTextContent("No fund account in scope · Live trading stays off.");
+      .toHaveTextContent("No fund account in scope · brokerage recovery is checked per account; live trading stays off until one is chosen.");
     expect(row).not.toHaveTextContent("Live trading blocked");
     expect(within(row).queryByRole("button")).not.toBeInTheDocument();
     expect(within(row).getByRole("link", { name: "Review brokerage recovery" })).toHaveAttribute("href", "/trading#brokerage-recovery");
@@ -260,7 +260,7 @@ describe("BrokerageRecoveryPanel", () => {
 
       const row = screen.getByRole("region", { name: "Brokerage recovery" });
       expect(within(row).getByRole("status", { name: "Brokerage recovery readiness" }))
-        .toHaveTextContent("No fund account in scope · Live trading stays off.");
+        .toHaveTextContent("No fund account in scope · brokerage recovery is checked per account; live trading stays off until one is chosen.");
       expect(row).not.toHaveTextContent("Live trading blocked");
       await user.type(within(row).getByLabelText("Fund account"), accountId);
       await user.click(within(row).getByRole("button", { name: "Use account" }));

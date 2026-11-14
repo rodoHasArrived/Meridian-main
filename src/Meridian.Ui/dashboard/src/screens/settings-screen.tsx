@@ -1,7 +1,8 @@
+import { SectionDescription } from "@/components/ui/section-description";
+import { KpiProvider, useKpiModels } from "@/lib/kpi-context";
 import { ExecutionAlertSettingsPanel } from "./settings-screen.execution-alerts";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
-import { SectionHeading } from "@/components/meridian/section-heading";
 import { SettingsChangeImpactBanner } from "@/screens/settings-change-impact";
 import { listScopedAccessAssignments } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
@@ -136,7 +137,19 @@ function inferSettingsTaskView({
   return "access";
 }
 
-export function SettingsScreen({
+export function SettingsScreen(props: SettingsScreenProps) {
+  const crossScreenCounts = useSharedCrossScreenCounts();
+  return (
+    <KpiProvider models={{
+      overview: props.overview, portfolio: props.portfolio, trading: props.trading,
+      strategy: props.strategy, data: props.data, accounting: props.accounting, crossScreenCounts
+    }}>
+      <SettingsScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function SettingsScreenContent({
   fundAccountId,
   session,
   overview,
@@ -169,13 +182,14 @@ export function SettingsScreen({
   const location = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
   const providerHealth = selectSharedProviderHealth(sharedCounts, data?.providers);
+  const kpiModels = useKpiModels();
   const vm = buildSettingsScreenViewModel({
     session,
     overview,
     crossScreenCounts: sharedCounts,
     strategy,
     trading,
-    portfolio,
+    portfolio: kpiModels.portfolio ?? portfolio,
     data,
     accounting,
     reporting,
@@ -669,8 +683,12 @@ export function SettingsScreen({
         className="flex flex-wrap items-end justify-between gap-3"
       >
         <div className="min-w-0">
-          <SectionHeading as="h2" title={routeCopy.title} description={routeCopy.description}
-            helpId={`settings-${activeTaskView}`} headingClassName="text-base" />
+          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
+            {routeCopy.title}
+          </h2>
+          <SectionDescription descriptionKey={`settings:${activeTaskView}`} label={`About ${routeCopy.title}`}>
+            {routeCopy.description}
+          </SectionDescription>
         </div>
       </section>
 

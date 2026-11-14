@@ -106,6 +106,20 @@ class GeneratedConflictPolicyTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertEqual(resolver.conflict_strategy(path, self.policy), "manual")
 
+    def test_source_contract_recovery_preserves_physical_and_reviewed_baselines(self):
+        for path in ("database/manifest/contracts.json", "database/manifest/dependencies.json",
+                     "docs/generated/database/contracts/ledger-contracts-page-99.md"):
+            with self.subTest(path=path):
+                self.assertEqual("regenerate", resolver.conflict_strategy(path, self.policy))
+        for path in ("database/manifest/catalog.json", "database/manifest/migrations.json",
+                     "database/manifest/policies.json"):
+            with self.subTest(path=path):
+                self.assertEqual("manual", resolver.conflict_strategy(path, self.policy))
+                self.assertIsNotNone(runner.protected_content(path, b"reviewed", self.policy))
+        path = "docs/source/generated/source-hash-manifest.json"
+        self.assertEqual("reviewed-hashes", resolver.conflict_strategy(path, self.policy))
+        self.assertIsNotNone(runner.protected_content(path, b"reviewed", self.policy))
+
     def test_missing_strategy_catalog_fails_closed(self):
         policy = copy.deepcopy(self.policy)
         del policy["conflict_recovery"]

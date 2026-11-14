@@ -16,6 +16,8 @@ import type { LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { KpiProvider } from "@/lib/kpi-context";
+import { workspaceKpiIds } from "@/lib/kpi-registry";
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
@@ -182,7 +184,16 @@ const providerHealthColumns: TableWorkbenchColumn<DataOperationsProviderRow>[] =
   }
 ];
 
-export function DataScreen({
+export function DataScreen(props: DataScreenProps) {
+  const crossScreenCounts = useSharedCrossScreenCounts();
+  return (
+    <KpiProvider models={{ data: props.data, crossScreenCounts }}>
+      <DataScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function DataScreenContent({
   data,
   session = null,
   providerConnections = null,
@@ -293,7 +304,9 @@ export function DataScreen({
         </div>
       </section>
 
-      {pathname.replace(/\/+$/, "") === WORKSTATION_ROUTE_CATALOG.data ? <StatStrip metrics={applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, providers: data.providers }))} label="Data headline metrics" source="Data workspace" figureSource="data" /> : null}
+      <KpiProvider models={{ data: { ...data, metrics: applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, providers: data.providers })) } }}>
+        <StatStrip ids={workspaceKpiIds("data", data.metrics)} label="Data headline metrics" source="Data workspace" figureSource="data" />
+      </KpiProvider>
       {showProviderWorkstream ? <SettingsChangeImpactBanner /> : null}
 
       {showHealthMonitoring ? (

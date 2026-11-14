@@ -27,8 +27,6 @@ export interface StatusRowProps {
   contextFacts?: StatusRowFact[];
   /** What the row says when every fact is ready. */
   clearText?: string;
-  /** Ready provenance/freshness context on the same line as status, without another header band. */
-  contextDataLine?: ReactNode;
   /** A card-level control that stays beside the row, outside "Details". */
   action?: ReactNode;
   className?: string;
@@ -65,7 +63,6 @@ export function StatusRow({
   facts,
   contextFacts = [],
   clearText = "All sources current",
-  contextDataLine,
   action,
   className
 }: StatusRowProps) {
@@ -82,13 +79,7 @@ export function StatusRow({
       aria-label={label}
       data-status-tone={summary.tone}
     >
-      <details className="group min-w-0 flex-1" onKeyDown={(event) => {
-        if (event.key === "Escape" && event.currentTarget.open) {
-          event.preventDefault();
-          event.currentTarget.open = false;
-          event.currentTarget.querySelector("summary")?.focus();
-        }
-      }}>
+      <details className="group min-w-0 flex-1">
         <summary className="flex cursor-pointer list-none items-center gap-3 px-3 py-1.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
           <span className="sr-only">{label}. </span>
           {summary.clear ? (
@@ -121,7 +112,6 @@ export function StatusRow({
               ))}
             </span>
           )}
-          {contextDataLine ? <span className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs leading-5 text-muted-foreground" data-testid="status-row-context">{contextDataLine}</span> : null}
           <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-muted-foreground">
             Details
             <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />

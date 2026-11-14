@@ -46,8 +46,7 @@ export function DesignSystemTrustStrip({
   const summaryDescriptionId = useId();
   const attentionDescriptionId = useId();
   const mode = viewModel.items.find((item) => item.id === "mode")?.value ?? "Unknown mode";
-  const sourceItem = viewModel.items.find((item) => item.id === "source");
-  const source = sourceItem?.value ?? "Unknown source";
+  const source = viewModel.items.find((item) => item.id === "source")?.value ?? "Unknown source";
   const provider = viewModel.items.find((item) => item.id === "providers");
   const childTone = viewModel.items.reduce<(typeof viewModel.items)[number]["tone"]>(
     (current, item) => trustToneRank[item.tone] > trustToneRank[current] ? item.tone : current,
@@ -91,7 +90,6 @@ export function DesignSystemTrustStrip({
             `mds-status--${summaryTone}`
           )}
           aria-describedby={summaryDescriptionId}
-          title={sourceItem?.detail}
         >
           {showEnvironment ? <DesignSystemBadge className="workstation-trust-environment" variant={viewModel.environment.variant} dot data-environment={viewModel.environment.variant}>{viewModel.environment.label}</DesignSystemBadge> : null}
           <DataProvenanceBanner provenance={provenance} compact />

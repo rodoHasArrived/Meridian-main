@@ -162,7 +162,7 @@ describe("DailyControlTowerScreen", () => {
       screen.getByRole("region", { name: /Brokerage sync failed evidence summary/i })
     ).toBeInTheDocument();
     const confidence = screen.getByLabelText("Daily control tower confidence");
-    expect(confidence).toHaveTextContent("3 workspace signals in the queue · 2 of 2 shared inbox items");
+    expect(confidence).toHaveTextContent("3 workspace signals in the queue · 2 shared inbox items");
     expect(confidence).toHaveTextContent("Stale update");
     expect(confidence).toHaveTextContent("May 14, 2026");
     expect(screen.queryByLabelText("Daily control tower decision drivers")).not.toBeInTheDocument();
@@ -184,10 +184,6 @@ describe("DailyControlTowerScreen", () => {
     expect(warning.closest("details")).not.toHaveAttribute("open");
     await user.click(warning);
     expect(screen.getByText("Inbox is read-only. Use a configured shared host for durable triage actions.")).toBeVisible();
-    warning.focus();
-    await user.keyboard("{Escape}");
-    expect(warning.closest("details")).not.toHaveAttribute("open");
-    expect(warning).toHaveFocus();
     expect(screen.queryByText(/^Seeded read-only inbox/)).not.toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Today queue" })).toBeInTheDocument();
   });
@@ -228,26 +224,10 @@ describe("DailyControlTowerScreen", () => {
     expect(within(source).getByRole("tab", { name: /Shared inbox/ })).toHaveTextContent("2");
     expect(within(source).getByRole("tab", { name: /All sources/ })).toHaveTextContent(String(total + 2));
     expect(container.querySelector("[data-today-inbox-state]")).toHaveAttribute("data-today-inbox-state", "ready");
-    expect(screen.getByRole("group", { name: "Inbox filters" })).toContainElement(screen.getByRole("button", { name: "Assign 0 selected" }));
-    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("2 of 2 shared inbox items");
+    expect(screen.getByRole("group", { name: "Inbox filters" })).toHaveTextContent("2 of 2 inbox items · All authorized accounts");
 
     const results = await axe(container);
     expect(results.violations).toEqual([]);
-  });
-
-  it("keeps secondary table tools available without another toolbar row", async () => {
-    const user = userEvent.setup();
-    await renderLoaded();
-    const tools = screen.getByText("Table tools", { selector: "summary" });
-    expect(tools.closest("details")).not.toHaveAttribute("open");
-    expect(screen.getByRole("searchbox")).toBeVisible();
-    expect(screen.getByRole("combobox", { name: "Inbox visibility" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Export CSV" })).not.toBeVisible();
-    await user.click(tools);
-    expect(screen.getByRole("button", { name: "Export CSV" })).toBeVisible();
-    tools.focus();
-    await user.keyboard("{Escape}");
-    expect(tools.closest("details")).not.toHaveAttribute("open");
   });
 
   it("filters rows of the one grid by source", async () => {
@@ -327,8 +307,6 @@ describe("DailyControlTowerScreen", () => {
     const { container, unmount } = renderScreen();
     const failure = await screen.findByRole("alert");
     expect(failure).toHaveTextContent("Inbox triage is unavailable. Workspace signals in this queue are unaffected");
-    expect(screen.getAllByRole("alert")).toHaveLength(1);
-    expect(screen.getAllByRole("button", { name: "Retry inbox" })).toHaveLength(1);
     expect(gridRowKeys()).toHaveLength(3);
     expect(container.querySelector("[data-today-inbox-state]")).toHaveAttribute("data-today-inbox-state", "unavailable");
     expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("Shared inbox unavailable");

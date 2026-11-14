@@ -46,11 +46,13 @@ function portfolioExplorerFigureKey(label: string): PortfolioFigureKey | null {
 export function buildPortfolioFigureDifferenceNote({
   headerMetrics,
   headerProvenance,
-  explorer
+  explorer,
+  retainedRunLabel
 }: {
   headerMetrics: readonly MetricSnapshot[];
   headerProvenance: MetricProvenance;
   explorer: FinancialRecordExplorerDto | null;
+  retainedRunLabel?: string;
 }): FigureDifferenceNote | null {
   if (!explorer || explorer.isBlocked) {
     return null;
@@ -68,17 +70,16 @@ export function buildPortfolioFigureDifferenceNote({
   });
 
   return buildFigureDifferenceNote(
-    { name: "Header strip", provenance: headerProvenance, figures: headerFigures },
+    { name: "Live holdings", provenance: headerProvenance, figures: headerFigures },
     {
-      name: "Portfolio Explorer",
+      name: "Retained run records",
       provenance: {
-        // The presented explorer relabels its source with the page's own source label, which
-        // would make the two panels look like one feed; name the record set instead.
+        // Identify the retained record set independently of the current source selection.
         source: /^demo\b/i.test(scopeValue("source") ?? "")
           ? "Retained run records (demo portfolio data)"
           : "Retained run records",
         asOf: scopeValue("as of"),
-        scope: scopeValue("run") ?? scopeValue("run id")
+        scope: retainedRunLabel ?? scopeValue("run") ?? scopeValue("run id")
       },
       figures: explorerFigures
     }

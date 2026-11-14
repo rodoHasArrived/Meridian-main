@@ -5,7 +5,6 @@
 // jump-to-able regions that keep their heading pinned while the region scrolls.
 import { SectionDescription } from "@/components/ui/section-description";
 import type { ReactNode } from "react";
-import { SectionHeading } from "@/components/meridian/section-heading";
 import { injectStyle } from "./inject-style";
 
 const CSS = `
@@ -34,9 +33,7 @@ export interface WorkspaceSectionProps {
   title?: ReactNode;
   /** Muted one-line summary under the title. */
   summary?: ReactNode;
-  /** Opt static introductory copy into remembered help. Keep live status summaries visible. */
-  helpId?: string;
-  /** Remember standalone introductory copy; omit for changing operational summaries. */
+  /** Opt in only for instructional summaries; financial status stays visible by default. */
   descriptionKey?: string;
   /** Jump affordance label (omit to hide). */
   jump?: ReactNode;
@@ -66,7 +63,6 @@ export function WorkspaceSection({
   id,
   title,
   summary,
-  helpId,
   descriptionKey,
   jump,
   onJump,
@@ -79,12 +75,8 @@ export function WorkspaceSection({
     <section id={id} className={`mds-wsection${className ? " " + className : ""}`}>
       <div className="mds-wsection__head">
         <div className="mds-wsection__heading flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-          {helpId && typeof summary === "string" ? (
-            <SectionHeading title={title} description={summary} helpId={helpId} as="h3" headingClassName="mds-wsection__title" descriptionClassName="mds-wsection__summary" />
-          ) : <>
-            {title && <h3 className="mds-wsection__title">{title}</h3>}
-            {summary && (descriptionKey ? <SectionDescription descriptionKey={descriptionKey} label={`About ${typeof title === "string" ? title : "this section"}`}>{summary}</SectionDescription> : <p className="mds-wsection__summary basis-full">{summary}</p>)}
-          </>}
+          {title && <h3 className="mds-wsection__title">{title}</h3>}
+          {summary && (descriptionKey ? <SectionDescription descriptionKey={descriptionKey} label={`About ${typeof title === "string" ? title : "this section"}`}>{summary}</SectionDescription> : <p className="mds-wsection__summary basis-full">{summary}</p>)}
         </div>
         {jump &&
           (jumpHref ? (

@@ -30,28 +30,3 @@
 @media (max-width: 1199px) { .reconciliation-run-context { grid-template-columns: minmax(0, 1fr); } }
 /* The queue owns both axes so one history offset restores the working position. */
 .reconciliation-queue-scroll .dense-data-table-wrap { max-height: none; overflow: visible; }
-
-/* Keep context, queue controls and the first case within the working viewport. */
-.reconciliation-queue-heading { position: relative; padding: .5rem .75rem; }
-.reconciliation-queue-heading .section-heading-title-row { padding-inline-end: 11rem; }
-.reconciliation-queue-count { position: absolute; top: .625rem; right: .75rem; margin: 0; color: var(--ws-text-muted); font-size: .75rem; }
-.reconciliation-queue-content { display: flex; flex-direction: column; gap: .75rem; padding: .75rem; }
-.reconciliation-queue-scroll { order: 1; }
-.reconciliation-bulk-commands { order: 2; }
-.reconciliation-bulk-commands--active { order: 0; }
-.reconciliation-run-picker { display: flex; align-items: center; gap: .5rem; }
-.reconciliation-run-picker > span { flex: none; }
-.reconciliation-run-picker select { flex: 1; width: 0; }
-
-.reconciliation-queue-heading > :not(:last-child) { margin-block-end: 0; }
-.reconciliation-queue-heading .section-heading-title-row { padding-inline-end: 13rem; }
-.reconciliation-queue-count { right: 3rem; }
-.reconciliation-shortcuts { position: absolute; top: .375rem; right: .375rem; width: 2rem; padding-inline: 0; }
-.reconciliation-queue-scroll .table-workbench-toolbar--compact { align-items: end; }
-.reconciliation-queue-scroll .table-workbench-toolbar--compact .reconciliation-queue-toolbar { flex: 1; min-width: 0; }
-.reconciliation-queue-scroll .table-workbench-count { display: none; }
-.reconciliation-queue-toolbar label { min-width: 0; }
-.reconciliation-queue-toolbar label:first-child { flex-basis: 10rem; }
-.reconciliation-queue-toolbar label:not(:first-child) { flex-basis: 6rem; }
-.reconciliation-queue-toolbar select { width: 100%; }
-.table-workbench-toolbar .reconciliation-queue-toolbar label { display: grid; }

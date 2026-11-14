@@ -4,7 +4,6 @@ import { Search } from "lucide-react";
 import { DetailPane } from "@/components/meridian/detail-pane";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
-import { SectionHeading } from "@/components/meridian/section-heading";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import "@/styles/workspace-task-workbench.css";
@@ -94,7 +93,7 @@ export function WorkspaceTaskWorkbench({
       )}
     >
       <section className="workspace-task-list" aria-label={`${title} list`}>
-        <header className="workspace-task-heading"><SectionHeading title={title} description={description} helpId={`task-workbench:${stateKey}`} as="h3" /></header>
+        <header className="workspace-task-heading"><h3>{title}</h3><p>{description}</p></header>
         <div className="workspace-task-toolbar">
           <label htmlFor={searchId}>Search {title.toLowerCase()}<Input id={searchId} type="search" value={search} onChange={(event) => update(`${stateKey}Search`, event.target.value, true)} leadingIcon={<Search className="size-4" />} placeholder="Find work…" /></label>
           <p role="status">{rows.length} of {items.length} loaded</p>

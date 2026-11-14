@@ -462,6 +462,38 @@ the same reviewed request for retry. Focused tests are in
 `accounting-screen.factor-paydown-panel.test.tsx`, `factor-paydown.api.test.ts`,
 `accounting-screen.asset-workflow.test.ts` and `asset-accounting-workflow.api.test.ts`.
 
+## Registry-owned headline figures
+
+Workspace `StatStrip` and `MetricCard` accept typed IDs from `lib/kpi-registry.ts`,
+not caller-supplied labels or values. Each definition records its owning read model,
+computation, applied scope dimensions, and currency rule. `KpiProvider` supplies shared
+read models; unavailable owners stay unavailable rather than borrowing a different
+workspace's summary. Feature-local, non-headline presentation uses `MetricTile` or
+`SnapshotMetricTile`; these are not substitutes for registry-owned workspace KPIs.
+
+`portfolio.open-positions` counts the Portfolio projection's positions on Portfolio,
+Settings and Today. Live total exposure sums the same holdings' supplied exposure
+amounts. Missing or mixed denominations withhold the aggregate; no FX rate, market
+value, or missing component is invented. The current Portfolio read model is an
+all-holdings projection: retained account/run/symbol URL scope is not claimed as an
+applied financial filter. Trading metrics remain owned by the Trading read model.
+
+Portfolio defaults to Live holdings. The source selector reveals retained run records
+with their own market-value and record-count definitions; exposure and market value
+are distinct measures. Compare position sources is a collapsed disclosure. Holding
+table and inspector values retain their source's supplied meaning.
+
+The screenshot harness independently reads `[data-kpi-rendered-value]`, checks it
+against the registry display annotation, then compares KPI ID + applied scope across
+routes within each scenario (and explicit source revision, when supplied). Both raw
+and formatted discrepancies fail the run and remain in `manifest.kpiConsistency`.
+Fixtures must be consistent within the same scenario; differing sources need distinct
+registry IDs/scopes, not cosmetic labels that hide discrepancies.
+
+Focused verification: `kpi-registry.test.ts`, `stat-strip.test.tsx`, registry card tests,
+Portfolio/Settings suites, and `node --test scripts/dev/capture-web-screenshots.test.mjs
+scripts/dev/web-screenshot-scenarios.test.mjs` from the repository root.
+
 ## Financial visual evidence
 
 Report-writer chart previews are explicitly labeled **Signed value summary** beside the configured
@@ -516,31 +548,6 @@ dialog open; it cannot claim success with an empty route or an unrestorable pers
 Focused coverage: `portfolio-positions-table.test.ts`, `use-portfolio-positions-table.test.tsx`,
 `portfolio-screen.positions-table.test.tsx`, and existing Portfolio/a11y suites. Brokerage positions
 and Trading blotters retain their existing interaction models.
-
-## Compact page framing
-
-Workspace-wide headline KPI strips belong on overview routes only. Accounting subroutes
-lead with their task context; Settings omits unrelated trading and storage metrics.
-Confirmed seeded/simulated/sample provenance remains visible in the masthead Trust control,
-with the full notice available in its details. Unknown provenance retains a retry control in the masthead.
-
-`OperationalTrustSummary compact` combines readiness, ready source and as-of evidence in a
-single wrapping line using the shared `StatusRow`. Non-ready scope, completeness and blockers
-stay visible under the shared shell/page deduplication rules; details retain remediation actions. Do not hide dynamic warnings in introductory help.
-
-`SectionHeading` shows static descriptions on first view, then exposes an accessible About
-button on later visits. `SectionHelpProvider` scopes browser-local preferences to the current
-operator's existing session identity (display name, role and environment). Descriptions are
-remembered only after entering the viewport; changed copy is shown again. Storage failures
-leave the introduction visible. Use `descriptionHelpId` on `ScreenLayout` and `helpId` on
-`WorkspaceSection` for static introductions; omit these for live scope, freshness and status.
-
-`TableWorkbench compactToolbar` keeps search and task filters visible and puts Columns,
-Density, Export and saved-view controls in the keyboard-accessible Table tools disclosure.
-Use it on queue-first screens where repeated table setup would push working rows down.
-
-Affected routes aim to put the first actionable row within 260px of the scrollable content
-area at 1440 × 900, while retaining visible scope and blocked-state recovery.
 
 ## Shared workstation header
 

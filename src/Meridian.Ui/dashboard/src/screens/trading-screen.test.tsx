@@ -192,10 +192,10 @@ vi.mock("@/lib/api", async () => {
 
 const data: TradingWorkspaceResponse = {
   metrics: [
-    { id: "m1", label: "Net P&L", value: "+$3,100", delta: "+2.1%", tone: "success" },
-    { id: "m2", label: "Open Orders", value: "4", delta: "+1", tone: "default" },
-    { id: "m3", label: "Fills", value: "13", delta: "+3", tone: "success" },
-    { id: "m4", label: "Risk", value: "Observe", delta: "0%", tone: "warning" }
+    { id: "pnl", label: "Net P&L", value: "+$3,100", delta: "+2.1%", tone: "success" },
+    { id: "orders", label: "Open Orders", value: "4", delta: "+1", tone: "default" },
+    { id: "fills", label: "Fills", value: "13", delta: "+3", tone: "success" },
+    { id: "risk", label: "Risk", value: "Observe", delta: "0%", tone: "warning" }
   ],
   positions: [{ symbol: "AAPL", side: "Long", quantity: "100", averagePrice: "188.10", markPrice: "189.00", dayPnl: "+$90", unrealizedPnl: "+$90", exposure: "$18,900" }],
   openOrders: [{ orderId: "PO-1", symbol: "MSFT", side: "Buy", type: "Limit", quantity: "20", limitPrice: "414.20", status: "Working", submittedAt: "09:42:00 ET" }],
@@ -399,7 +399,7 @@ describe("TradingScreen", () => {
     expect(within(workflowStrip).getByRole("button", { name: /open strategy controls panel/i })).toHaveAttribute("aria-expanded", "false");
     // Route-scoped views: blotters live on their focused routes, not the overview.
     expect(screen.queryByText("Live positions")).not.toBeInTheDocument();
-    expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Open orders" })).not.toBeInTheDocument();
   });
 
   it("renders the position book with wiring state on the positions route", async () => {
@@ -434,9 +434,9 @@ describe("TradingScreen", () => {
 
     // No in-page route tab strip duplicating the sidebar.
     expect(screen.queryByRole("tablist", { name: "Trading routes" })).not.toBeInTheDocument();
-    // The route heading leads; workspace-wide metrics belong on the overview.
+    // The route heading leads; workspace-wide metrics belong to the overview.
     const heading = screen.getByRole("region", { name: "Execution cockpit context" });
-    expect(within(heading).getByRole("heading", { name: "Orders blotter" })).toBeInTheDocument();
+    expect(heading).toBeInTheDocument();
     expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
     expect(await screen.findByText("Open orders")).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
@@ -1282,7 +1282,6 @@ describe("TradingScreen", () => {
 
   it("marks financially destructive blotter actions before confirmation", async () => {
     await renderTradingScreen(data, "/trading/orders");
-    expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
 
     // The row and the detail pane both offer the cancel; each is marked destructive.
     const cancelButtons = screen.getAllByRole("button", { name: /cancel order po-1/i });

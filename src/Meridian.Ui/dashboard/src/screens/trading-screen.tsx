@@ -1,3 +1,4 @@
+import { SectionDescription } from "@/components/ui/section-description";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React, { type ReactNode } from "react";
@@ -46,7 +47,8 @@ import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian
 import type { CsvCell } from "@/lib/csv";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { StatStrip } from "@/components/meridian/stat-strip";
-import { SectionHeading } from "@/components/meridian/section-heading";
+import { KpiProvider } from "@/lib/kpi-context";
+import { workspaceKpiIds } from "@/lib/kpi-registry";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
@@ -447,7 +449,16 @@ function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
   );
 }
 
-export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
+export function TradingScreen(props: TradingScreenProps) {
+  const crossScreenCounts = useSharedCrossScreenCounts();
+  return (
+    <KpiProvider models={{ trading: props.data, crossScreenCounts }}>
+      <TradingScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
   const { pathname, search } = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
   const figureContext = useWorkspaceFigureContext();
@@ -656,16 +667,15 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         aria-label="Execution cockpit context"
         className="min-w-0"
       >
-        <SectionHeading
-          title={routeCopy.title}
-          description={routeCopy.description}
-          helpId={`trading-${routeView}`}
-          as="h2"
-          headingClassName="font-display text-lg font-semibold leading-tight text-foreground"
-        />
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">{routeCopy.title}</h2>
+          <SectionDescription descriptionKey={`trading:${routeView}`} label={`About ${routeCopy.title}`}>
+            {routeCopy.description}
+          </SectionDescription>
+        </div>
       </section>
 
-      {showOverview ? <StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" /> : null}
+      {showOverview ? <KpiProvider models={{ trading: { ...data, metrics: trustedHeadlineMetrics } }}><StatStrip ids={workspaceKpiIds("trading", trustedHeadlineMetrics)} label="Trading headline metrics" /></KpiProvider> : null}
 
       {showOverview ? tradingConfidence : null}
 
@@ -905,7 +915,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
         <div className="min-w-0 space-y-4">
         <Card className="panel-surface">
-          <CardHeader style={{ padding: "0.375rem 0.75rem" }}>
+          <CardHeader className="px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <CardTitle className="flex items-center gap-2 text-base">
                 <ClipboardList className="h-4 w-4 text-primary" />
@@ -960,9 +970,9 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               riskWarnings={orderTicket.riskWarnings}
             />
           )}
-          <CardContent className="space-y-3" style={{ padding: 0 }}>
+          <CardContent className="space-y-3 px-3 py-2">
             <TableWorkbench
-              compactToolbar workbenchId="trading-orders" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
+              workbenchId="trading-orders" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
               sourceDescription="All open orders in the current authorized workspace snapshot; filters do not alter the scope of Cancel all."
               exportContext={{ "Price basis": TRADING_QUOTE_PRICE_BASIS }}
               completePopulation getSearchText={(row) => `${row.orderId} ${row.symbol} ${row.side} ${row.type} ${row.status}`}
@@ -1000,7 +1010,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           </CardHeader>
           <CardContent className="space-y-3">
             <TableWorkbench
-              compactToolbar workbenchId="trading-fills" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
+              workbenchId="trading-fills" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
               sourceDescription="All recent fills in the authorized workspace snapshot, not a complete historical execution ledger."
               exportContext={{ "Price basis": TRADING_QUOTE_PRICE_BASIS }}
               completePopulation getSearchText={(row) => `${row.fillId} ${row.orderId} ${row.symbol} ${row.side} ${row.venue}`}
@@ -1026,7 +1036,9 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       </section>
       ) : null}
 
-      {showOrders ? <ExecutionJournalPanel accountId={fundAccountId} /> : null}
+      {showOrders ? (
+        <ExecutionJournalPanel accountId={fundAccountId} />
+      ) : null}
 
       {showOverview ? (
       <section id="trading-history" className="workspace-section-band" aria-labelledby="trading-history-heading">

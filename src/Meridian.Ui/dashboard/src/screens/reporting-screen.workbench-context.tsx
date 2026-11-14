@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Network } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { SectionHeading } from "@/components/meridian/section-heading";
+import { SectionDescription } from "@/components/ui/section-description";
 import { cn } from "@/lib/utils";
 import type {
   ReportingChipViewModel,
@@ -24,11 +24,16 @@ export function ReportingWorkbenchContext({ taskMode, actions, compact = false, 
       aria-label="Reporting workbench context"
       className="flex flex-wrap items-end justify-between gap-3"
     >
-      <div className="min-w-0">
-        <div className={cn("min-w-0", compact && "sr-only")}>
-        {compact ? <h2>{taskMode.title}</h2> : (
-          <SectionHeading title={taskMode.title} description={taskMode.description} helpId={`reporting-${taskMode.label}`} as="h2" headingClassName="font-display text-lg font-semibold leading-tight text-foreground" />
-        )}
+      <div className="min-w-0 flex-1">
+        <div className={cn("flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1", compact && "sr-only")}>
+          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
+            {taskMode.title}
+          </h2>
+          {!compact ? (
+            <SectionDescription descriptionKey={`reporting-${taskMode.id}`} label={`About ${taskMode.title}`}>
+              {taskMode.description}
+            </SectionDescription>
+          ) : null}
         </div>
         {context}
       </div>

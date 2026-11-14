@@ -1,7 +1,7 @@
 import { DetailFields, DetailPane } from "@/components/meridian/detail-pane";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import type { KeyboardEvent } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BriefcaseBusiness, FileCheck2, LineChart, Network, Settings, ShieldCheck, Wallet } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -13,11 +13,7 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import { buildFreshnessChipViewModel, freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view-model";
 import type { RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import {
-  FinancialRecordExplorerShell,
-  type FinancialRecordExplorerAction,
-  type FinancialRecordExplorerSavedView,
-  type FinancialRecordExplorerScopeItem,
-  type FinancialRecordExplorerSummaryItem
+  FinancialRecordExplorerShell
 } from "@/components/meridian/financial-record-explorer";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -27,6 +23,9 @@ import { formatNumber, formatPercent, formatRatioAsPercent } from "@/lib/format"
 import { EntityLink } from "@/components/meridian/entity-inspector";
 import { AccountBalanceHistoryChart } from "@/components/meridian/account-balance-history-chart";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { KpiProvider } from "@/lib/kpi-context";
+import type { KpiId } from "@/lib/kpi-registry";
+import { formatDateTime } from "@/screens/portfolio-screen.presentation";
 import { EmptyState } from "@/components/data/concrete";
 import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
 import {
@@ -56,6 +55,7 @@ import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/work
 import { bondWorkflowRoute, holdingBondWorkflowRoute } from "@/lib/fixed-income-navigation";
 import {
   buildPortfolioExplorerPresentation,
+  resolveRetainedPortfolioRunLabel,
   resolveBrokerageAccountFilterKeyCommand,
   type PortfolioBrokerageAccountRow,
   type PortfolioBrokeragePositionRow,
@@ -73,6 +73,7 @@ import type {
   EquityCurveSummary,
   FinancialRecordExplorerSavedViewSaveRequestDto,
   MetricFreshness,
+  MetricSnapshot,
   MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   StrategyWorkspaceResponse,
@@ -360,7 +361,15 @@ const portfolioRouteViewCopy: Record<PortfolioRouteViewId, { title: string; desc
   }
 };
 
-export function PortfolioScreen({
+export function PortfolioScreen(props: PortfolioScreenProps) {
+  return (
+    <KpiProvider models={{ portfolio: props.portfolio, trading: props.trading }}>
+      <PortfolioScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function PortfolioScreenContent({
   portfolio,
   trading,
   strategy,
@@ -383,6 +392,14 @@ export function PortfolioScreen({
   const drillInRequestId = useRef(0);
   const [selectedRunDrillIn, setSelectedRunDrillIn] = useState<PortfolioRunDrillInData | null>(null);
   const [portfolioExplorer, setPortfolioExplorer] = useState<FinancialRecordExplorerDto | null>(null);
+  const [positionSource, setPositionSource] = useState<"live" | "retained">("live");
+  const retainedSource = showAttribution || positionSource === "retained";
+  // The retained run belongs to the explorer read model, not the selected live strategy.
+  const retainedRunId = portfolioExplorer?.scopeItems.find((item) => /^(run|run id)$/i.test(item.label.trim()))?.value;
+  const formatRetainedRunLabel = useCallback((runId: string) => resolveRetainedPortfolioRunLabel(runId, portfolio, strategy), [portfolio, strategy]);
+  const retainedRunLabel = retainedRunId ? formatRetainedRunLabel(retainedRunId) : "Retained run";
+  const retainedSourceLabel = retainedRunLabel === "Retained run" ? "Retained run records" : `${retainedRunLabel} records`;
+  const retainedAsOf = portfolioExplorer?.scopeItems.find((item) => item.label.trim().toLowerCase() === "as of")?.value;
   const [brokerageInspector, setBrokerageInspector] = useState<"account" | "position">("account");
   // On the brokerage route the household is narrowed to the scope's fund (or entity) when the
   // organization graph places its accounts; accounts it does not place are counted, never hidden
@@ -419,11 +436,8 @@ export function PortfolioScreen({
   const selectedVisiblePositionIndex = visiblePositionRows.findIndex((row) => row.id === vm.selectedPosition?.id);
   const selectedPositionOutsideResults = Boolean(vm.selectedPosition && selectedVisiblePositionIndex < 0);
   const portfolioExplorerPresentation = useMemo(
-    () => buildPortfolioExplorerPresentation(portfolioExplorer, {
-      sourceLabel: vm.positionSourceLabel,
-      runLabel: vm.selectedRun?.title ?? "Linked strategy run"
-    }),
-    [portfolioExplorer, vm.positionSourceLabel, vm.selectedRun?.title]
+    () => buildPortfolioExplorerPresentation(portfolioExplorer, formatRetainedRunLabel),
+    [portfolioExplorer, formatRetainedRunLabel]
   );
 
   useEffect(() => {
@@ -516,101 +530,6 @@ export function PortfolioScreen({
     vm.selectAdjacentBrokerageAccount(command);
   }
 
-  const financialRecordExplorerScopeItems: FinancialRecordExplorerScopeItem[] = [
-    { id: "portfolio-workspace", label: "Workspace", value: "Portfolio" },
-    { id: "portfolio-source", label: "Source", value: vm.positionSourceLabel },
-    { id: "portfolio-positions", label: "Positions", value: vm.positionCountLabel },
-    { id: "portfolio-runs", label: "Runs", value: vm.runCountLabel }
-  ];
-
-  const financialRecordExplorerSavedViews: FinancialRecordExplorerSavedView[] = [
-    {
-      id: "portfolio-open-positions-run-evidence",
-      label: "Open positions + run evidence",
-      detail: `${vm.positionCountLabel}; ${vm.runCountLabel}; ${vm.runEvidenceChip.value}`,
-      active: true
-    },
-    {
-      id: "portfolio-selected-holding",
-      label: "Selected holding",
-      detail: `${vm.selectedPositionChip.label}: ${vm.selectedPositionChip.value}`
-    },
-    {
-      id: "portfolio-selected-run",
-      label: "Selected run proof",
-      detail: `${vm.selectedRunChip.label}: ${vm.selectedRunChip.value}`
-    }
-  ];
-
-  const financialRecordExplorerSummaryItems: FinancialRecordExplorerSummaryItem[] = [
-    {
-      id: "portfolio-open-position-count",
-      label: "Open positions",
-      value: vm.positionCountLabel,
-      tone: vm.hasPositions ? "success" : "warning"
-    },
-    {
-      id: "portfolio-selected-position",
-      label: "Selected holding",
-      value: vm.selectedPositionChip.value,
-      tone: vm.selectedPosition?.statusTone ?? "warning"
-    },
-    {
-      id: "portfolio-run-count",
-      label: "Run evidence",
-      value: vm.runEvidenceChip.value,
-      tone: vm.hasRuns ? "success" : "warning"
-    },
-    {
-      id: "portfolio-selected-run",
-      label: "Selected run",
-      value: vm.selectedRunChip.value,
-      tone: vm.selectedRun?.statusTone ?? "warning"
-    }
-  ];
-
-  const financialRecordExplorerAppliedFilters: FinancialRecordExplorerScopeItem[] = [
-    { id: "portfolio-filter-source", label: "Position source", value: vm.positionSourceLabel },
-    { id: "portfolio-filter-holding", label: vm.selectedPositionChip.label, value: vm.selectedPositionChip.value },
-    { id: "portfolio-filter-run", label: vm.selectedRunChip.label, value: vm.selectedRunChip.value },
-    { id: "portfolio-filter-brokerage-account", label: "Brokerage account", value: vm.selectedBrokerageAccount.title }
-  ];
-
-  const financialRecordExplorerActions: FinancialRecordExplorerAction[] = [
-    vm.selectedPosition
-      ? {
-          id: "portfolio-position-proof",
-          label: `Holding proof: ${vm.selectedPosition.title}`,
-          href: `#${vm.positionDetailId}`,
-          ariaLabel: vm.selectedPosition.ariaLabel
-        }
-      : {
-          id: "portfolio-position-proof-empty",
-          label: vm.positionDetailEmptyTitle
-        },
-    vm.selectedRun
-      ? {
-          id: "portfolio-run-evidence",
-          label: vm.selectedRun.evidenceAction.label,
-          href: vm.selectedRun.evidenceAction.href,
-          ariaLabel: vm.selectedRun.evidenceAction.ariaLabel
-        }
-      : {
-          id: "portfolio-run-proof-empty",
-          label: vm.runDetailEmptyTitle
-        },
-    vm.multiAssetCoveragePanel
-      ? {
-          id: "portfolio-coverage-evidence",
-          label: "Coverage proof",
-          href: vm.multiAssetCoveragePanel.evidenceRoute,
-          ariaLabel: "Open portfolio coverage proof"
-        }
-      : {
-          id: "portfolio-coverage-evidence-empty",
-          label: "Coverage proof unavailable"
-        }
-  ];
   const hasRefreshEvidence = Boolean(
     refreshStatus && (refreshStatus.lastSucceededAt || refreshStatus.inFlight || refreshStatus.phase === "failed")
   );
@@ -681,12 +600,32 @@ export function PortfolioScreen({
     vm.metricsFromTrading ? vm.metricCards : withPortfolioMarkEvidence(vm.fallbackStats, vm.positionRows, headlineFreshness),
     { provenance: headlineProvenance, freshness: headlineFreshness }
   );
+  const registryIdsByLegacyId: Record<string, KpiId> = {
+    "portfolio-total-exposure": "portfolio.total-exposure",
+    "portfolio-unrealized-pnl": "portfolio.unrealized-pnl",
+    "portfolio-cash": "portfolio.cash",
+    "portfolio-open-positions": "portfolio.open-positions"
+  };
+  // Presentation evidence can lower trust, but never supply a second value for a KPI.
+  const liveKpiContexts = Object.fromEntries(headlineMetrics.map((metric) => [
+    registryIdsByLegacyId[metric.id],
+    { freshness: metric.freshness, provenance: metric.provenance, delta: metric.delta, baseline: metric.baseline, basis: metric.basis }
+  ])) as Partial<Record<KpiId, Pick<MetricSnapshot, "freshness" | "provenance" | "delta" | "baseline" | "basis">>>;
+  const retainedKpiContext = {
+    freshness: portfolioExplorer && !portfolioExplorer.isBlocked ? "fresh" as const : "unverified" as const,
+    provenance: { source: retainedSourceLabel, asOf: retainedAsOf, scope: retainedRunLabel === "Retained run" ? "Retained source scope" : retainedRunLabel }
+  };
+  const retainedKpiContexts = {
+    "portfolio.retained-market-value": retainedKpiContext,
+    "portfolio.retained-records": retainedKpiContext
+  };
   const figureDifferenceNote = showBrokerageSync
     ? null
     : buildPortfolioFigureDifferenceNote({
         headerMetrics: headlineMetrics,
         headerProvenance: headlineProvenance,
-        explorer: portfolioExplorerPresentation
+        explorer: portfolioExplorerPresentation,
+        retainedRunLabel
       });
   const completenessTone: OperationalTrustTone = vm.hasPositions && vm.hasRuns
     ? "ready"
@@ -772,9 +711,8 @@ export function PortfolioScreen({
   ) : null;
 
   return (
+    <KpiProvider models={{ portfolioExplorer }}>
     <div className={showOverview ? "space-y-3" : "space-y-5"}>
-      {/* Route heading first; workspace-wide metrics follow. The sidebar is the only
-          sub-route navigation (no in-page tab strip). */}
       <section
         role="region"
         aria-label="Portfolio workbench context"
@@ -801,27 +739,56 @@ export function PortfolioScreen({
         </div>
       </section>
 
-      {location.pathname.replace(/\/+$/, "") === WORKSTATION_ROUTE_CATALOG.portfolio ? <StatStrip
-        metrics={headlineMetrics}
+      {showOverview ? (
+        <div className="flex flex-wrap items-center gap-3">
+          <label htmlFor="portfolio-position-source" className="text-xs font-medium text-muted-foreground">Position source</label>
+          <select
+            id="portfolio-position-source"
+            className="min-h-9 max-w-full rounded-sm border border-border bg-background px-3 py-1.5 text-sm text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+            value={positionSource}
+            onChange={(event) => setPositionSource(event.target.value as "live" | "retained")}
+          >
+            <option value="live">Live holdings</option>
+            <option value="retained">{retainedSourceLabel}</option>
+          </select>
+        </div>
+      ) : null}
+      <StatStrip
+        ids={retainedSource
+          ? ["portfolio.retained-market-value", "portfolio.retained-records"]
+          : ["portfolio.total-exposure", "portfolio.unrealized-pnl", "portfolio.cash", "portfolio.open-positions"]}
         label="Portfolio headline metrics"
+        contexts={retainedSource ? retainedKpiContexts : liveKpiContexts}
         compact={showOverview}
-      /> : null}
-
-      {figureDifferenceNote ? <FigureDifferenceNote note={figureDifferenceNote} /> : null}
+      />
+      {showOverview || showAttribution ? (
+        <TechnicalDetails label="Compare position sources">
+          <p className="text-xs leading-5 text-muted-foreground">Live holdings are the current portfolio projection. Retained records belong to {retainedRunLabel === "Retained run" ? "the run supplied by the record source" : retainedRunLabel}. Market value and exposure have different financial meanings; neither substitutes for the other.</p>
+          {figureDifferenceNote ? <FigureDifferenceNote note={figureDifferenceNote} /> : null}
+          {retainedRunId ? (
+            <TechnicalDetails label="Retained source identity" className="mt-3">
+              <dl><dt className="text-xs text-muted-foreground">Retained run ID</dt><dd className="font-mono text-xs">{retainedRunId}</dd></dl>
+            </TechnicalDetails>
+          ) : null}
+          <div className="mt-3 space-y-2">
+            <StatStrip ids={["portfolio.total-exposure", "portfolio.open-positions"]} contexts={liveKpiContexts} label="Live holdings comparison" />
+            <StatStrip ids={["portfolio.retained-market-value", "portfolio.retained-records"]} contexts={retainedKpiContexts} label="Retained records comparison" />
+          </div>
+        </TechnicalDetails>
+      ) : null}
 
       <OperationalTrustSummary
         label="Portfolio data confidence"
         source={{
-          value: vm.positionSourceLabel,
-          detail: "Holdings source used by this route",
-          tone: vm.positionSourceLabel === "Unavailable" ? "blocked" : "ready"
+          value: retainedSource ? retainedSourceLabel : vm.positionSourceLabel,
+          detail: retainedSource ? "Retained record source used by this route" : "Holdings source used by this route",
+          tone: retainedSource ? portfolioExplorer && !portfolioExplorer.isBlocked ? "ready" : "blocked" : vm.positionSourceLabel === "Unavailable" ? "blocked" : "ready"
         }}
         scope={{
-          // A brokerage account, not the operating scope chosen in the header.
-          label: "Account",
-          value: vm.selectedBrokerageAccount.title,
-          detail: routeView === "brokerage-sync" ? "Selected brokerage account" : "Current portfolio account scope",
-          tone: vm.selectedBrokerageAccount.statusTone === "danger"
+          label: retainedSource ? "Scope" : "Account",
+          value: retainedSource ? "Retained run scope" : vm.selectedBrokerageAccount.title,
+          detail: retainedSource ? "Exact scope is retained with the record source" : routeView === "brokerage-sync" ? "Selected brokerage account" : "Current portfolio account scope",
+          tone: retainedSource ? "unknown" : vm.selectedBrokerageAccount.statusTone === "danger"
             ? "blocked"
             : vm.selectedBrokerageAccount.statusTone === "warning"
               ? "review"
@@ -830,18 +797,20 @@ export function PortfolioScreen({
                 : "unknown"
         }}
         freshness={{
-          value: freshnessVm?.text ?? heartbeat ?? "Unavailable",
-          detail: headlineRefreshFailed
-            ? "The latest refresh did not complete; the last loaded figures are shown."
-            : freshnessVm?.title ?? (heartbeat ? "Latest brokerage heartbeat" : "Latest loaded portfolio evidence"),
-          tone: freshnessTone
+          value: retainedSource ? retainedAsOf ? formatDateTime(retainedAsOf) : "Unavailable" : freshnessVm?.text ?? heartbeat ?? "Unavailable",
+          detail: retainedSource ? "Retained source observation" : headlineRefreshFailed ? "The latest refresh did not complete; the last loaded figures are shown." : freshnessVm?.title ?? (heartbeat ? "Latest brokerage heartbeat" : "Latest loaded portfolio evidence"),
+          tone: retainedSource ? "unknown" : freshnessTone
         }}
         completeness={{
-          value: `${vm.positionCountLabel} · ${vm.runCountLabel}`,
-          detail: "Holdings and run evidence loaded",
-          tone: completenessTone
+          value: retainedSource ? portfolioExplorer ? `${portfolioExplorer.rows.length} retained rows loaded` : "Unavailable" : `${vm.positionCountLabel} · ${vm.runCountLabel}`,
+          detail: retainedSource ? "Loaded record rows; retained totals may cover a broader population" : "Holdings and run evidence loaded",
+          tone: retainedSource ? portfolioExplorer ? "ready" : "blocked" : completenessTone
         }}
-        blocker={workflowBlocker}
+        blocker={retainedSource
+          ? portfolioExplorer?.isBlocked
+            ? { value: portfolioExplorer.blockedReason || "Retained record source blocked", tone: "blocked" }
+            : undefined
+          : workflowBlocker}
       />
 
       {showOverview ? null : readinessHandoff}
@@ -1176,7 +1145,7 @@ export function PortfolioScreen({
       </Card>
       ) : null}
 
-        {showOverview ? (
+        {showOverview && !retainedSource ? (
         <WorkspaceWorkbenchShell label="Portfolio holdings workbench" switchInspector inspectorRole="region" inspectorLabel="Holding inspection" inspector={(
           <DetailPane
             id={vm.positionDetailId}
@@ -1313,24 +1282,23 @@ export function PortfolioScreen({
         </WorkspaceWorkbenchShell>
         ) : null}
 
-      {showOverview ? <AccountBalanceHistoryChart accountId={new URLSearchParams(location.search).get("fundAccountId") ?? new URLSearchParams(location.search).get("accountId")} /> : null}
+      {showOverview && !retainedSource ? <AccountBalanceHistoryChart accountId={new URLSearchParams(location.search).get("fundAccountId") ?? new URLSearchParams(location.search).get("accountId")} /> : null}
 
-      {showOverview ? readinessHandoff : null}
+      {showOverview && !retainedSource ? readinessHandoff : null}
 
-      {showOverview || showAttribution ? (
-      <details className="workspace-task-disclosure" open={showAttribution ? true : undefined}>
-      <summary>Retained run records and evidence · separate from current holdings</summary>
+      {(showOverview && retainedSource) || showAttribution ? (
       <FinancialRecordExplorerShell
         explorerLabel="Financial Record Explorer"
         title="Portfolio Explorer"
         titleId="portfolio-financial-record-explorer-title"
-        description="Open holdings, run evidence, brokerage posture, and retained proof links stay anchored to the existing portfolio read model."
-        scopeItems={financialRecordExplorerScopeItems}
-        savedViews={financialRecordExplorerSavedViews}
-        summaryItems={financialRecordExplorerSummaryItems}
-        appliedFilters={financialRecordExplorerAppliedFilters}
-        actions={financialRecordExplorerActions}
+        description="Retained run records and their proof links. These records use the selected run source and do not replace live holdings."
+        scopeItems={[{ id: "retained-source", label: "Source", value: retainedSourceLabel }]}
+        savedViews={[]}
+        summaryItems={[]}
+        appliedFilters={[]}
+        actions={[]}
         explorer={portfolioExplorerPresentation}
+        formatRunLabel={formatRetainedRunLabel}
         onSaveView={savePortfolioExplorerView}
       >
 
@@ -1511,10 +1479,9 @@ export function PortfolioScreen({
         </Card>
         ) : null}
       </FinancialRecordExplorerShell>
-      </details>
       ) : null}
 
-      {showOverview && vm.cashFlowSummary ? (
+      {showOverview && !retainedSource && vm.cashFlowSummary ? (
         <Card className={cn("panel-surface border", cashFlowBorderClass[vm.cashFlowTone])}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1539,6 +1506,7 @@ export function PortfolioScreen({
         </Card>
       ) : null}
     </div>
+    </KpiProvider>
   );
 }
 

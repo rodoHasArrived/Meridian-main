@@ -8,7 +8,6 @@ import {
 } from "react";
 import { SectionDescription } from "@/components/ui/section-description";
 import { cn } from "@/lib/utils";
-import { SectionHeading } from "@/components/meridian/section-heading";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 /**
@@ -95,9 +94,7 @@ export interface ScreenLayoutProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   scope?: ReactNode;
   /** Optional secondary description under the title. */
   description?: ReactNode;
-  /** Remember static introductory copy per operator and reveal it from an info button on return. */
-  descriptionHelpId?: string;
-  /** Remember standalone instructional copy using the shared description preference. */
+  /** Stable key for instructional copy that can collapse once read. Omit for state or evidence. */
   descriptionKey?: string;
   /**
    * The 1–3 primary actions for this screen. Always rendered top-right. Keep this
@@ -190,7 +187,6 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
     title,
     scope,
     description,
-    descriptionHelpId,
     descriptionKey,
     actions,
     focus,
@@ -244,20 +240,16 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
           keeps the document heading order valid (h1 → h2 → h3). */}
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          {descriptionHelpId && typeof description === "string" ? (
-            <SectionHeading id={titleId} title={title} description={description} helpId={descriptionHelpId}
-              headingClassName="truncate text-base font-semibold leading-snug tracking-normal text-foreground"
-              descriptionClassName="mt-1 max-w-prose text-xs leading-5 text-muted-foreground" />
-          ) : <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-              <h2 id={titleId} className="truncate text-base font-semibold leading-snug tracking-normal text-foreground">
-                {title}
-              </h2>
-              {description ? descriptionKey ? (
-                <SectionDescription descriptionKey={descriptionKey} label={`About ${typeof title === "string" ? title : "this screen"}`}>
-                  {description}
-                </SectionDescription>
-              ) : <p className="basis-full max-w-prose text-xs leading-5 text-muted-foreground">{description}</p> : null}
-            </div>}
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <h2 id={titleId} className="truncate text-base font-semibold leading-snug tracking-normal text-foreground">
+              {title}
+            </h2>
+            {description ? descriptionKey ? (
+              <SectionDescription descriptionKey={descriptionKey} label={`About ${typeof title === "string" ? title : "this screen"}`}>
+                {description}
+              </SectionDescription>
+            ) : <p className="basis-full max-w-prose text-xs leading-5 text-muted-foreground">{description}</p> : null}
+          </div>
           {scope ? <div className="mt-0.5 text-xs text-muted-foreground">{scope}</div> : null}
         </div>
         {actions ? (
