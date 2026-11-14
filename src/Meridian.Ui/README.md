@@ -139,9 +139,12 @@ with reasons in `scripts/dev/web-screenshot-routes.json`.
 It also carries the Phase 3 trust fixes from the same plan:
 - Data overview shows a provider's "Latency" only as a reported duration or "Latency not
   reported"; the "Trust / last good" column keeps the last response time.
-- Today has one Queue with a Source filter (All sources, Workspace signals, Shared inbox): the
-  finance queue that the sidebar badges count, above the operator inbox, and each
-  count names its unit (for example "+5 more issues" in the masthead trust strip).
+- Today has one queue grid. Workspace signals (the items the sidebar badges count) and shared
+  inbox items are interleaved by severity, then age, and a Source column names each row's source.
+  The Source filter (All sources, Workspace signals, Shared inbox) filters rows of that grid and
+  shows a count per source. Inbox rows keep assign, snooze, acknowledge, bulk assign and
+  unconfirmed-command retry. Each count names its unit (for example "+5 more issues" in the
+  masthead trust strip).
 - The bottom status bar holds connectivity and freshness only; the masthead trust strip is the one
   shell place that names the worst open issue.
 - Trading shows a neutral "Choose a fund account" state instead of a red recovery block when no

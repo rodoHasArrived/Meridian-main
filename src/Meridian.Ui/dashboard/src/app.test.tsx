@@ -617,7 +617,7 @@ describe("App", () => {
   it("renders the daily control tower on the root route", async () => {
     const user = userEvent.setup();
     mockDailyControlTowerData();
-    // Load the shared operator inbox too, so both of Today's tables render together.
+    // Load the shared operator inbox too, so both sources render in Today's one queue grid.
     const defaultApiGetJson = vi.mocked(apiGetJson).getMockImplementation()!;
     vi.mocked(apiGetJson).mockImplementation((path, ...rest) => path === OPERATOR_TRIAGE_ENDPOINT
       ? Promise.resolve(loadedOperatorInbox) as ReturnType<typeof apiGetJson>
@@ -638,7 +638,7 @@ describe("App", () => {
     expect(within(confidence).getByText("Scope")).toBeInTheDocument();
     expect(within(confidence).getByText("Selected evidence")).toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "Priority decision" })).getByRole("region", { name: "Workstation status" })).toHaveAttribute("data-status-tone", "blocked");
-    expect(confidence).toHaveTextContent("4 items in the finance queue");
+    expect(confidence).toHaveTextContent("4 workspace signals in the queue");
     const trust = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
     await user.click(trust.querySelector("summary") as HTMLElement);
     expect(within(trust).getByRole("link", { name: "Blocked Brokerage sync failed" }))
@@ -658,13 +658,14 @@ describe("App", () => {
     expect(screen.queryByRole("region", { name: "Daily control tower decision drivers" })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Choose Control Tower scope" })).not.toBeInTheDocument();
     expect(confidence).toHaveTextContent("All authorized scopes");
-    const financeQueue = await screen.findByRole("treegrid", { name: "Daily control tower finance queue" });
-    expect(financeQueue).toBeInTheDocument();
-    // The sidebar Today badge counts exactly the rows listed on Today, and the loaded shared inbox
-    // sits in its own section after the queue.
-    expect(within(screen.getByRole("region", { name: "Finance queue" })).getByRole("treegrid", { name: "Daily control tower finance queue" }))
-      .toBe(financeQueue);
-    expect(financeQueue.querySelectorAll("tbody tr[data-dense-row-id]")).toHaveLength(4);
+    const todayQueue = await screen.findByRole("treegrid", { name: "Today queue" });
+    expect(todayQueue).toBeInTheDocument();
+    // One grid holds both sources. The sidebar Today badge counts exactly its workspace-signal
+    // rows; the loaded shared-inbox rows are interleaved and labelled by Source.
+    expect(within(screen.getByRole("region", { name: "Queue" })).getByRole("treegrid", { name: "Today queue" }))
+      .toBe(todayQueue);
+    expect(screen.getAllByRole("treegrid")).toHaveLength(1);
+    expect(todayQueue.querySelectorAll('tbody tr[data-dense-row-id^="workspace:"]')).toHaveLength(4);
     const todayLinks = screen.getAllByRole("link", { name: /^Today, Daily Control Tower, current route, 4 items need attention/ });
     expect(todayLinks.length).toBeGreaterThan(0);
     for (const link of todayLinks) {
@@ -672,11 +673,11 @@ describe("App", () => {
       // The badge lets the pointer through to the link, so the link's tooltip names the unit.
       expect(link).toHaveAttribute("title", "Today: Daily Control Tower · 4 items in Today's finance queue");
     }
-    const operatorInbox = screen.getByRole("region", { name: "Operator inbox" });
-    expect(await within(operatorInbox).findByText("1 of 1 inbox item · All authorized accounts")).toBeInTheDocument();
-    expect(within(operatorInbox).getByRole("treegrid", { name: "Authorized ranked operator queue" })).toBeInTheDocument();
-    expect(within(operatorInbox).getByRole("row", { name: "Promotion checklist incomplete" })).toBeInTheDocument();
-    // With both tables rendered, the finance-queue row names stay unique on the page.
+    expect(await screen.findByText("1 of 1 inbox item · All authorized accounts")).toBeInTheDocument();
+    const inboxRow = within(todayQueue).getByRole("row", { name: "Promotion checklist incomplete" });
+    expect(inboxRow).toHaveTextContent("Shared inbox");
+    expect(todayQueue.querySelectorAll('tbody tr[data-dense-row-id^="inbox:"]')).toHaveLength(1);
+    // With both sources in one grid, each row name stays unique on the page.
     expect(screen.getAllByRole("row", { name: "Brokerage sync failed" })).toHaveLength(1);
     expect(screen.getAllByRole("link", {
       name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Open report packs."

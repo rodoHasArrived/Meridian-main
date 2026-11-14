@@ -8,6 +8,7 @@ import type {
   AppShellWorkflowContinuityStatusTone,
   AppShellWorkflowContinuityViewModel
 } from "@/app-shell.view-model";
+import type { OperatorTriageItem } from "@/lib/operator-inbox-triage";
 import { summarizeStatusSignals } from "@/lib/status-signals";
 import { normalizeWorkspacePath, WORKSPACES } from "@/lib/workspace";
 import type { WorkspaceKey } from "@/types";
@@ -228,6 +229,91 @@ function buildDriverItems({
       badgeVariant: evidenceTimelineItems.length > 0 ? "success" : "warning"
     }
   ];
+}
+
+/** Where a Today queue row comes from (UX consolidation P1). */
+export type TodayQueueRowSource = "workspace" | "inbox";
+
+export const TODAY_QUEUE_SOURCE_LABELS: Record<TodayQueueRowSource, string> = {
+  workspace: "Workspace signal",
+  inbox: "Shared inbox"
+};
+
+interface TodayQueueRowBase {
+  /** Unique across both sources; also the dense-row id. */
+  key: string;
+  /** The source's own id: the focus item id or the inbox work item id. */
+  id: string;
+  sourceLabel: string;
+  label: string;
+  detail: string;
+  workspaceLabel: string;
+  /** 0 blocked, 1 review/action, 2 pending/info, 3 ready/success. */
+  severityRank: number;
+  /** ISO time the row was observed: the inbox item's creation, or the signal's correlated evidence. */
+  observedAt: string | null;
+}
+
+/**
+ * One row of Today's single queue grid. Workspace signals keep their evidence passport and next
+ * action; shared-inbox rows keep the full triage item so assignment and snooze stay available.
+ */
+export type TodayQueueRow =
+  | (TodayQueueRowBase & { source: "workspace"; focus: DailyControlTowerFocusRow })
+  | (TodayQueueRowBase & { source: "inbox"; item: OperatorTriageItem });
+
+export function todayQueueRowKey(source: TodayQueueRowSource, id: string): string {
+  return `${source}:${id}`;
+}
+
+const WORKSPACE_SEVERITY_RANK: Record<AppShellWorkflowContinuityStatusTone, number> = { blocked: 0, review: 1, pending: 2, ready: 3 };
+const INBOX_SEVERITY_RANK: Record<OperatorTriageItem["tone"], number> = { Critical: 0, Warning: 1, Info: 2, Success: 3 };
+
+/**
+ * Interleaves workspace signals and shared-inbox items into one queue. Order: severity
+ * (blocked first), then age (oldest first; rows without an observed time after those with one),
+ * then each source's own ranking, workspace signals before inbox items on a tie.
+ */
+export function buildTodayQueueRows(
+  focusRows: readonly DailyControlTowerFocusRow[],
+  inboxItems: readonly OperatorTriageItem[]
+): TodayQueueRow[] {
+  const rows: TodayQueueRow[] = [
+    ...focusRows.map((focus): TodayQueueRow => ({
+      key: todayQueueRowKey("workspace", focus.item.id),
+      id: focus.item.id,
+      source: "workspace",
+      sourceLabel: TODAY_QUEUE_SOURCE_LABELS.workspace,
+      label: focus.item.label,
+      detail: focus.item.detail,
+      workspaceLabel: focus.item.workspaceLabel,
+      severityRank: WORKSPACE_SEVERITY_RANK[focus.item.tone],
+      observedAt: focus.proof?.timestampIso ?? null,
+      focus
+    })),
+    ...inboxItems.map((item): TodayQueueRow => ({
+      key: todayQueueRowKey("inbox", item.workItemId),
+      id: item.workItemId,
+      source: "inbox",
+      sourceLabel: TODAY_QUEUE_SOURCE_LABELS.inbox,
+      label: item.label,
+      detail: item.detail,
+      workspaceLabel: item.workspace ?? "Unspecified",
+      severityRank: INBOX_SEVERITY_RANK[item.tone],
+      observedAt: item.createdAt,
+      item
+    }))
+  ];
+  const observedMs = (row: TodayQueueRow) => {
+    const value = Date.parse(row.observedAt ?? "");
+    return Number.isFinite(value) ? value : Number.POSITIVE_INFINITY;
+  };
+  return rows
+    .map((row, index) => ({ row, index, observed: observedMs(row) }))
+    .sort((left, right) => left.row.severityRank - right.row.severityRank
+      || (left.observed === right.observed ? 0 : left.observed < right.observed ? -1 : 1)
+      || left.index - right.index)
+    .map(({ row }) => row);
 }
 
 export function dailyControlTowerProofPassportLabels(): string[] {

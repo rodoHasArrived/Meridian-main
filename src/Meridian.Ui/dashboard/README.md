@@ -1131,8 +1131,8 @@ and nothing once evidence reconciles. With no fund account in scope and a broker
 is known and not live, the panel and row are a neutral setup state with a "Choose account" action;
 a live, unknown or failed state keeps the blocked row. The sidebar pins `Today` (the Daily Control
 Tower) above the seven workspaces and shows per-workspace attention counts from
-`selectDailyControlTowerQueueItems`, the same selection the Control Tower lists as its Finance queue
-(above the Operator inbox, both under one Queue heading with a Source filter); each count is part of its link's accessible name, the badge sits beside
+`selectDailyControlTowerQueueItems`, the same selection the Control Tower lists as the workspace-signal
+rows of its one Today queue grid (shared inbox rows in that grid are not counted); each count is part of its link's accessible name, the badge sits beside
 the link so the visible label stays in the name, and the link's tooltip names the unit
 (`3 items from Accounting in Today's finance queue`).
 
@@ -1231,8 +1231,9 @@ The contract standardizes:
 
 Current dense-row detail consumers covered by regression tests include Portfolio positions,
 Portfolio run evidence, Trading recent fills, Data backfill queue rows, Data export rows, and
-Security Master lots. The Daily Control Tower finance queue uses the same table/inspector contract,
-including row selection, focus handoff, and Escape return behavior.
+Security Master lots. The Daily Control Tower's Today queue uses the same table/inspector contract,
+including row selection, focus handoff, and Escape return behavior: a workspace-signal row opens its
+evidence rail and a shared-inbox row opens its triage rail.
 
 The Data backfill workstream reads `/api/backfill/executions` as the durable remediation evidence
 source. Its remediation SLA queue keeps server-owned tier, deadline, status, provider, workflow,
@@ -2402,8 +2403,13 @@ of workflow continuity, trust posture, linked context, and timestamped evidence.
 is a shell-level Home location rather than an eighth workspace: none of the seven root workspace
 items is marked current (the pinned sidebar `Today` entry is), the breadcrumb heading reads
 `Today`, and the operating-context copy identifies the Daily Control Tower instead
-of falling back to Trading. It lists the combined finance queue (the items the sidebar badges
-count) and, below it, the operator triage inbox from the shared host; each states what it counts.
+of falling back to Trading. It lists one queue grid (`buildTodayQueueRows`) that interleaves the
+workspace signals (the items the sidebar badges count) with the operator triage inbox from the
+shared host. Rows sort by severity, then oldest first (rows with no observed time go after dated
+rows), then each source's own rank, with workspace signals first on a tie. A Source column and a
+Source filter with per-source counts keep the two populations distinct. The inbox's read, filters,
+bulk selection and in-flight or unconfirmed command live in `useOperatorTriageInbox`, above the
+filter, so filtering inbox rows out never drops a pending command or its "Retry same command".
 The landing model
 now prioritizes the finance sequence Today, Exceptions, Close, Reconciliation, Ledger, Reports,
 Evidence, and Data Health before non-finance surfaces. Decision drivers emphasize the finance

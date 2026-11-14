@@ -94,6 +94,29 @@ inbox keeps its assignment, snooze and acknowledge controls. The two sources sti
 tables: interleaving them into one grid needs a shared row model for workspace signals and inbox
 items, which is a follow-up.
 
+**P1 fourth step (landed 2026-11-13):** Today shows one interleaved queue grid ("Today queue").
+- Row model: `TodayQueueRow` in `lib/daily-control-tower.ts`, built by `buildTodayQueueRows`. Each
+  row has a source (`workspace` or `inbox`), label, detail, workspace, severity rank and observed
+  time. A workspace row also carries its evidence passport and next action. An inbox row carries
+  the full triage item.
+- Order: severity, then oldest first (rows with no observed time go after dated rows), then each
+  source's own rank, with workspace signals first on a tie. Workspace signals have no creation time,
+  so their age is the time of their correlated evidence.
+- The grid has a Source column (Workspace signal / Shared inbox). The Source filter filters rows of
+  this one grid and shows a count per source. The workspace count is the sidebar Today badge's
+  count, which still counts workspace signals only.
+- The inbox read, filters, bulk selection and in-flight or unconfirmed command moved into
+  `useOperatorTriageInbox`, above the filter. Filtering inbox rows out keeps a pending command,
+  and "Retry same command" stays visible under every filter. `OperatorTriageQueue` uses the same
+  hook and keeps its own table.
+- A selected inbox row opens the triage rail: assign, acknowledge, snooze, route and activity. A
+  selected workspace row opens the evidence rail. Keyboard j/k moves across both sources, and "a"
+  opens assignment on an inbox row.
+- "Affected output" and "Evidence" are now optional columns, hidden by default. The evidence rail
+  still shows both.
+- The screenshot catalog now waits on `table[aria-label="Today queue"]` and on
+  `data-today-inbox-state` reaching `ready` or `unavailable`.
+
 **P3 `.toFixed()` burn-down (landed 2026-11-13):** `handRolledNumberFormatting` is at 0 (was
 72), so both formatter ratchets in the Phase 1 criteria are met.
 - `@/lib/format` gained `formatDecimal(value, digits)` for displayed figures (grouped, signed
@@ -133,7 +156,6 @@ items, which is a follow-up.
 **Remaining in Phase 1:**
 - Merge `lib/format.ts` `formatMoney` and the accounting one behind one API.
 - One date format with a time-zone preference.
-- A single interleaved Today grid (shared row model).
 - P4: entity and fund scope dimensions (needs a shared scope seam), and inline account pickers on
   other single-account screens as they are identified.
 
