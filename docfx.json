@@ -53,6 +53,10 @@
         ],
         "exclude": [ "docs/docfx/**", "docs/_site/**" ],
         "src": "."
+      },
+      {
+        "files": [ "archive/docs/**/*.json", "archive/docs/**/*.json.gz" ],
+        "src": "."
       }
     ],
     "output": "docs/_site",
