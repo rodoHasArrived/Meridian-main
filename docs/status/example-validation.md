@@ -8,18 +8,18 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 12617 |
-| Valid | 12133 |
+| Total code blocks | 12602 |
+| Valid | 12126 |
 | Invalid | 0 |
-| Skipped | 484 |
+| Skipped | 476 |
 
 ## Summary by Language
 
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
-| `(none)` | 109 | 0 | 0 | 109 |
+| `(none)` | 107 | 0 | 0 | 107 |
 | `bash` | 265 | 265 | 0 | 0 |
-| `csharp` | 11763 | 11763 | 0 | 0 |
+| `csharp` | 11758 | 11758 | 0 | 0 |
 | `csv` | 3 | 0 | 0 | 3 |
 | `fsharp` | 50 | 0 | 0 | 50 |
 | `json` | 72 | 72 | 0 | 0 |
@@ -31,12 +31,12 @@
 | `mermaid` | 48 | 0 | 0 | 48 |
 | `powershell` | 115 | 0 | 0 | 115 |
 | `python` | 4 | 4 | 0 | 0 |
-| `sql` | 22 | 0 | 0 | 22 |
+| `sql` | 18 | 0 | 0 | 18 |
 | `text` | 80 | 0 | 0 | 80 |
 | `toml` | 31 | 0 | 0 | 31 |
-| `ts` | 9 | 0 | 0 | 9 |
-| `xml` | 9 | 9 | 0 | 0 |
-| `yaml` | 18 | 18 | 0 | 0 |
+| `ts` | 7 | 0 | 0 | 7 |
+| `xml` | 8 | 8 | 0 | 0 |
+| `yaml` | 17 | 17 | 0 | 0 |
 
 ## Invalid Code Examples
 
@@ -87,7 +87,6 @@ No invalid code examples found.
 | `docs/architecture/ledger-architecture.md` | 4 |
 | `docs/architecture/provider-integration-manifest-runtime.md` | 1 |
 | `docs/architecture/provider-management.md` | 7 |
-| `docs/architecture/security-master-extensibility-review.md` | 4 |
 | `docs/architecture/storage-design.md` | 77 |
 | `docs/development/adding-custom-rules.md` | 6 |
 | `docs/development/browser-scenarios.md` | 4 |
@@ -149,7 +148,6 @@ No invalid code examples found.
 | `docs/operators/reconciliation-operations.md` | 1 |
 | `docs/operators/security-master-terms-contract-rollout.md` | 1 |
 | `docs/operators/statement-reconciliation-report-operations.md` | 1 |
-| `docs/product/adversarial-program-review-2026-08-25.md` | 3 |
 | `docs/product/functionality-deepening-brainstorm-2026-07.md` | 1 |
 | `docs/product/plans/certification-unblock-verification-2026-10-12.md` | 1 |
 | `docs/product/plans/product-roadmap-priorities-2026-07.md` | 1 |

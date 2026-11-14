@@ -7,15 +7,6 @@ on:
         description: "Force a full documentation and diagram refresh"
         required: false
         default: "false"
-  pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
-  push:
-    branches:
-      - main
-  merge_group:
 
 permissions:
   contents: read
@@ -28,10 +19,8 @@ env:
   PYTHONUNBUFFERED: "1"
 
 jobs:
-  # Keep the existing check identity, but do not start a second checkout/toolchain.
-  # The same-run producer below owns this workflow's validation purposes. No cross-run
-  # cache, privileged event or polling runner is involved. Generation and freshness run
-  # here only for events Meridian CI `verify-docs` does not receive (see the job env).
+  # Manual refresh only. Meridian CI verify-docs owns automatic documentation
+  # validation, generation, dashboard regression checks and freshness.
   validate-docs:
     needs: regenerate-docs
     if: always()
@@ -53,12 +42,6 @@ jobs:
   regenerate-docs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
-    env:
-      # Meridian CI `verify-docs` runs the same maintained-generation pass and freshness
-      # check for pull requests to main, main pushes and merge groups. Generate here only
-      # for the events that lane does not receive, so each event is validated exactly once.
-      # The unique validators and the dashboard regression gate below run on every event.
-      MERIDIAN_CI_OWNS_GENERATION: ${{ github.event_name == 'merge_group' || github.event_name == 'push' || (github.event_name == 'pull_request' && github.base_ref == 'main') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -91,7 +74,6 @@ jobs:
           python -m unittest build.scripts.docs.tests.test_check_codex_memory
 
       - name: Set up Node.js
-        if: env.MERIDIAN_CI_OWNS_GENERATION != 'true'
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
@@ -99,91 +81,21 @@ jobs:
           cache-dependency-path: "package-lock.json"
 
       - name: Install diagram dependencies
-        if: env.MERIDIAN_CI_OWNS_GENERATION != 'true'
         run: npm ci --no-fund --no-audit
 
       # One catalog owns required producers and advisory UML rendering for this
       # workflow, scripts/ci.sh, and isolated repair. Its bounded passes account for
       # generated markdown consumed by health/structure reports.
       - name: Converge maintained documentation
-        if: env.MERIDIAN_CI_OWNS_GENERATION != 'true'
         run: python3 build/scripts/run-maintained-generation.py --docs-only --report artifacts/docs/generation.json
 
       - name: Compare dashboard readiness deltas vs previous commit
-        shell: python
-        run: |
-          import json
-          import subprocess
-          from pathlib import Path
-
-          current_path = Path("docs/status/doc-health-dashboard.json")
-          current = json.loads(current_path.read_text(encoding="utf-8")) if current_path.exists() else {}
-
-          previous = ""
-          try:
-              previous = subprocess.run(
-                  ["git", "show", "HEAD~1:docs/status/doc-health-dashboard.json"],
-                  check=True,
-                  capture_output=True,
-                  text=True,
-              ).stdout
-          except subprocess.CalledProcessError:
-              previous = ""
-
-          # generate-health-dashboard.py writes a top-level snake_case "health_score".
-          # Reading any other key makes every score 0.0 and silently disables this gate.
-          def extract_score(payload):
-              score = payload.get("health_score")
-              if isinstance(score, (int, float)) and not isinstance(score, bool):
-                  return float(score)
-              return None
-
-          current_score = extract_score(current)
-          if current_score is None:
-              raise SystemExit(f"{current_path} has no numeric health_score; the dashboard regression gate cannot run.")
-
-          baseline_available = bool(previous.strip())
-          previous_dashboard = json.loads(previous) if baseline_available else {}
-          previous_score = extract_score(previous_dashboard)
-          missing_previous = []
-          if previous_score is None:
-              # First commit, or a baseline without a readable score: record the gap.
-              baseline_available = False
-              missing_previous.append("docs/status/doc-health-dashboard.json")
-              previous_score = current_score
-
-          delta = current_score - previous_score
-          severe = baseline_available and (delta < -10.0)
-
-          payload = {
-              'baseline_available': baseline_available,
-              'current_score': current_score,
-              'previous_score': previous_score,
-              'delta': delta,
-              'missing_previous_files': missing_previous,
-              'severe': severe,
-          }
-
-          artifact_dir = Path("artifacts/docs")
-          artifact_dir.mkdir(parents=True, exist_ok=True)
-          (artifact_dir / "dashboard-delta.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
-
-          if severe:
-              raise SystemExit(
-                  f"Severe dashboard readiness regression detected ({previous_score:.1f} -> {current_score:.1f})."
-              )
-
-          if not baseline_available:
-              print("Baseline dashboard source was unavailable; severe regression gating was skipped")
-
-          print(json.dumps(payload, indent=2))
+        run: python3 build/scripts/ci/check-doc-health-delta.py
 
       - name: Check generated docs are current
-        if: env.MERIDIAN_CI_OWNS_GENERATION != 'true'
         run: python3 build/scripts/ci/check-generated-output.py
 
       - name: Check whitespace
-        if: env.MERIDIAN_CI_OWNS_GENERATION != 'true'
         run: git diff --check
 
       - name: Upload documentation repair evidence

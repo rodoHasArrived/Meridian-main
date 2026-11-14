@@ -1084,7 +1084,7 @@ distribution income and a dated factor history are projected from effective corp
 Governance writes (override decisions, alias revisions, projection rebuilds) append to an
 append-only log in the same transaction as the change. Browser and WPF passport editors build
 their term forms from the same registry. These are engineering foundations recorded in
-[`docs/architecture/security-master-extensibility-review.md`](../architecture/security-master-extensibility-review.md);
+[`docs/architecture/security-master-extensibility-review.md`](../../archive/docs/architecture/security-master-extensibility-review.md);
 no registry row yet accepts them as a product capability.
 
 ### 6.7 Entity & Relationship Management

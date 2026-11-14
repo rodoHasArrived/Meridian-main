@@ -67,7 +67,12 @@ class MeridianCiCacheContractTests(unittest.TestCase):
             with self.subTest(lane=lane):
                 job = self._job_block(lane)
                 step = self._step_block(job, step_name)
-                self.assertNotRegex(job, r"(?m)^    (?:if|needs):")
+                if lane == "verify-dotnet":
+                    self.assertIn("    needs: changes", job)
+                    self.assertIn("    if: needs.changes.outputs.dotnet == 'true'", job)
+                else:
+                    self.assertNotRegex(job, r"(?m)^    (?:if|needs):")
+                self.assertNotRegex(job, r"(?m)^    if:.*cache")
                 self.assertNotRegex(step, r"(?m)^        if:")
                 self.assertRegex(
                     step,
@@ -107,18 +112,19 @@ class MeridianCiCacheContractTests(unittest.TestCase):
         self.assertIn("        if: always()", upload)
         self.assertNotIn("src/Meridian.Ui/dashboard/dist/", upload)
 
-    def test_quality_gate_requires_every_lane_to_succeed(self) -> None:
+    def test_quality_gate_requires_lanes_or_explicit_docs_only_skip(self) -> None:
         gate = self._job_block("quality-gate")
         dependencies = re.search(r"(?m)^    needs:\n((?:      - [\w-]+\n)+)", gate)
         self.assertIsNotNone(dependencies)
-        self.assertEqual(set(re.findall(r"- ([\w-]+)", dependencies.group(1))), set(LANES))
+        self.assertEqual(set(re.findall(r"- ([\w-]+)", dependencies.group(1))), set(LANES) | {"changes"})
         self.assertRegex(gate, r"(?m)^    name: quality-gate$")
         self.assertRegex(gate, r"(?m)^    if: always\(\)$")
         for lane in LANES:
             with self.subTest(lane=lane):
-                self.assertIn(f'["{lane}"]="${{{{ needs.{lane}.result }}}}"', gate)
-        self.assertIn(f"for lane in {' '.join(LANES)}; do", gate)
-        self.assertIn('if [[ "$result" != "success" ]]; then\n                failed=1', gate)
+                self.assertIn("${{ needs." + lane + ".result }}", gate)
+        self.assertIn(f"for lane in changes {' '.join(LANES)}; do", gate)
+        self.assertIn('"$CHANGES_RESULT" == "success" && "$DOTNET_REQUIRED" == "false"', gate)
+        self.assertIn('elif [[ "$result" != "success" ]]; then\n                failed=1', gate)
         self.assertIn('if [[ "$failed" -ne 0 ]]; then', gate)
         self.assertIn("            exit 1", gate)
         self.assertNotRegex(self.workflow, r"(?m)^\s*(?:paths|paths-ignore|continue-on-error):")
