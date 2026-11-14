@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
-import { OperatorTriageQueue, triageAgeLabel } from "@/components/meridian/operator-triage-queue";
+import { OperatorTriageQueue, TriageAge, triageAgeLabel } from "@/components/meridian/operator-triage-queue";
 import { renderWithRouter, TestMemoryRouter } from "@/test/render";
 import { bulkAssignOperatorTriage, commandOperatorTriage, getOperatorTriageInbox, type OperatorTriageInbox, type OperatorTriageItem } from "@/lib/operator-inbox-triage";
 
@@ -226,5 +226,18 @@ describe("authorized operator triage", () => {
     expect(result.violations).toEqual([]);
     expect(triageAgeLabel(null)).toBe("Age unavailable");
     expect(triageAgeLabel("2030-01-01", Date.parse("2026-01-01"))).toBe("Age unavailable");
+  });
+
+  it("labels ages with the shared relative form and the absolute display-zone time on hover", () => {
+    const now = Date.parse("2026-06-30T18:10:00Z");
+    expect(triageAgeLabel("2026-06-30T18:09:40Z", now)).toBe("20s ago");
+    expect(triageAgeLabel("2026-06-30T18:05:00Z", now)).toBe("5m ago");
+    expect(triageAgeLabel("2026-06-30T15:10:00Z", now)).toBe("3h ago");
+    expect(triageAgeLabel("2026-06-27T18:10:00Z", now)).toBe("3d ago");
+
+    const { rerender } = renderWithRouter(<TriageAge value="2026-06-30T18:05:00Z" now={now} />);
+    expect(screen.getByText("5m ago")).toHaveAttribute("title", "Jun 30, 2026, 18:05 UTC");
+    rerender(<TriageAge value="2026-07-01T00:00:00Z" now={now} />);
+    expect(screen.getByText("Age unavailable").tagName).toBe("SPAN");
   });
 });

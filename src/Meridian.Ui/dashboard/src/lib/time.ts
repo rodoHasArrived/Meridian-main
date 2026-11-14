@@ -1,15 +1,8 @@
 // Meridian shared time formatting. Relative-age text for freshness indicators and
 // "last updated" labels; promoted from the watchlist view model so chips, screens,
-// and view models share one age vocabulary. Both helpers are thin layers over the
-// timestamp formatters in `@/lib/format`.
-import { formatRelativeTime, formatTimestamp, formatUtcTimestamp } from "@/lib/format";
-
-/** A UTC-clock timestamp from ISO text, e.g. "Nov 11, 2026, 00:30 UTC"; "Timestamp unavailable" when absent. */
-export function formatDateTimeUtc(value: string | null | undefined): string {
-  const timestamp = Date.parse(value ?? "");
-  if (!Number.isFinite(timestamp)) return "Timestamp unavailable";
-  return formatUtcTimestamp(new Date(timestamp));
-}
+// and view models share one age vocabulary. A thin layer over the timestamp formatters
+// in `@/lib/format`.
+import { formatRelativeTime, formatTimestamp } from "@/lib/format";
 
 /**
  * Age of a past instant, e.g. "30s ago", "5h ago"; "Never" when absent or invalid. A future

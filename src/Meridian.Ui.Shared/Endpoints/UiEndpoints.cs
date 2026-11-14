@@ -107,6 +107,7 @@ public static class UiEndpoints
                 IntercompanyBalanceScheduleJsonContext.Default,
                 ConsolidationFxJsonContext.Default,
                 ConsolidationTransitionJsonContext.Default,
+                Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext.Default,
                 new DefaultJsonTypeInfoResolver())
         };
 

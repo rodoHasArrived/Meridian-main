@@ -35,6 +35,18 @@ def _registry_root(temp_dir: str, sequence_line: str | None) -> Path:
     """Clone the real registries into a temp root, optionally injecting a sequence on one item."""
     root = Path(temp_dir)
     shutil.copytree(ROOT / "docs" / "roadmap" / "data", root / "docs" / "roadmap" / "data")
+    shutil.copytree(ROOT / "docs/roadmap/snapshots", root / "docs/roadmap/snapshots")
+    shutil.copytree(ROOT / "docs/product/history", root / "docs/product/history")
+    readiness = common.load_data(ROOT / "docs/roadmap/data/production-readiness.yml")
+    for item in readiness["items"]:
+        for link in item["evidence_links"]:
+            if "://" in link:
+                continue
+            source = ROOT / link.split("#", 1)[0]
+            target = root / link.split("#", 1)[0]
+            if source.is_file() and not target.exists():
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(source, target)
     (root / "docs" / "source" / "data").mkdir(parents=True)
     shutil.copy(
         ROOT / "docs" / "source" / "data" / "source-modules.yml",

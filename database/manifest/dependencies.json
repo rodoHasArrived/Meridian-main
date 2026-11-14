@@ -22402,6 +22402,36 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationScopeEntityOptionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationScopeFundOptionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationScopeOptionsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationSecurityCoverageGapPayload"
     },
     {
@@ -56523,6 +56553,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationScopeOptionsDto",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationScopeOptionsDto",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationScopeEntityOptionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationScopeOptionsDto",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationScopeFundOptionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationSecurityCoveragePayload",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationSecurityCoverageGapPayload"
     },
@@ -66865,7 +66913,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "f75765e6c69989b84c153b3254fa1b0f6d86248c111f84a0af81e530a607999e",
+  "fingerprint": "366b9d34f76f56ed8691038e34c71a0f2a1b30cfd6345f83f7d41bd92bd959f5",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -89317,6 +89365,36 @@
       "label": "Meridian.Contracts.Workstation.WorkstationRunDrillInLinks"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationScopeEntityOptionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationScopeEntityOptionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationScopeFundOptionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationScopeFundOptionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationScopeOptionsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationScopeOptionsDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext"
+    },
+    {
       "classification": "payload",
       "id": "contract:Meridian.Contracts.Workstation.WorkstationSecurityCoverageGapPayload",
       "kind": "contract-type",
@@ -98193,11 +98271,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4149,
-    "contract_set_memberships": 5332,
-    "edges": 11107,
+    "contract_references": 4152,
+    "contract_set_memberships": 5337,
+    "edges": 11115,
     "foreign_keys": 206,
     "logical_references": 6,
-    "nodes": 5447
+    "nodes": 5452
   }
 }

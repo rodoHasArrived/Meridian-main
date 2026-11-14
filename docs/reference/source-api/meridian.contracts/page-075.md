@@ -402,6 +402,66 @@ Shared drill-in links attached to strategy, trading, and accounting run records.
 public sealed record WorkstationRunDrillInLinks(string EquityCurve, string Fills, string Attribution, string? Ledger, string CashFlows, string Continuity, string Comparison);
 ```
 
+## WorkstationScopeAccountOptionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L41).
+
+A fund account the caller may scope to. FundId and EntityId are null when the account has no such relationship or when it points at a fund or entity the caller may not see.
+
+```csharp
+public sealed record WorkstationScopeAccountOptionDto(Guid AccountId, string DisplayName, Guid? FundId, Guid? EntityId);
+```
+
+## WorkstationScopeEntityOptionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeEntityOptionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L23).
+
+A legal entity the caller may scope to.
+
+```csharp
+public sealed record WorkstationScopeEntityOptionDto(Guid EntityId, string Name);
+```
+
+## WorkstationScopeFundOptionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeFundOptionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L31).
+
+A fund the caller may scope to, with the visible legal entities it holds. Entities the caller may not see are left out of EntityIds.
+
+```csharp
+public sealed record WorkstationScopeFundOptionDto(Guid FundId, string Name, IReadOnlyList<Guid> EntityIds);
+```
+
+## WorkstationScopeOptionsDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeOptionsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L17).
+
+The entities, funds and fund accounts the calling operator may choose as an operating scope (GET /api/workstation/scope-options), with the account → fund → entity relationships between them. The host fills it only with nodes the caller is authorized to see, and drops any relationship that would name a fund or entity outside that set. Field names deliberately match the entity, fund and account summaries in Meridian.Contracts.FundStructure.OrganizationStructureGraphDto, so a client can read either payload with one parser. Every list may be empty; an empty list means &quot;none visible to this caller&quot;, never &quot;not loaded&quot;.
+
+```csharp
+public sealed record WorkstationScopeOptionsDto(IReadOnlyList<WorkstationScopeEntityOptionDto> Entities, IReadOnlyList<WorkstationScopeFundOptionDto> Funds, IReadOnlyList<WorkstationScopeAccountOptionDto> Accounts);
+```
+
+## WorkstationScopeOptionsJsonContext
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L58).
+
+Provides source-generated JSON metadata for the workstation scope-option contracts. Null relationships are written explicitly so clients can tell &quot;no fund&quot; from a missing field.
+
+```csharp
+public sealed partial class WorkstationScopeOptionsJsonContext : JsonSerializerContext;
+```
+
 ## WorkstationSecurityCoverageGapPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageGapPayload</code>. Kind: `record`.
@@ -510,71 +570,3 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:77](../.
 ```csharp
 public sealed record WorkstationStrategyRunCard(string Id, string StrategyName, string Engine, string Mode, string Status, string Dataset, string Window, string Pnl, string Sharpe, string LastUpdated, string Notes, string? PromotionState, string? LedgerReference, string? PortfolioId, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, WorkstationSecurityCoveragePayload SecurityCoverage, WorkstationRunDrillInLinks DrillIn, BiasDisclosureDto? BiasDisclosure = null, decimal? MaxDrawdown = null, IReadOnlyList<decimal>? TrendValues = null, IReadOnlyList<string>? TrendDates = null, string? SearchText = null);
 ```
-
-## WorkstationStrategyWorkspaceSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationStrategyWorkspaceSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:181](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L181).
-
-Workspace-level summary embedded inside WorkstationStrategyPayload.
-
-```csharp
-public sealed record WorkstationStrategyWorkspaceSummary(int TotalRuns, string? LatestRunId, string? LatestStrategyName, bool HasLedgerCoverage, bool HasPortfolioCoverage, int PromotionCandidates);
-```
-
-## WorkstationTableExportDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTableExportDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs#L37).
-
-```csharp
-public sealed record WorkstationTableExportDto(string Filename, string Csv, int RowCount, DateTimeOffset AsOf);
-```
-
-## WorkstationTableExportRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTableExportRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs#L33).
-
-```csharp
-public sealed record WorkstationTableExportRequest(IReadOnlyList<string> ColumnIds, string SearchText = "", string? SortColumnId = null, string? SortDirection = null, IReadOnlyDictionary<string, string>? Filters = null);
-```
-
-## WorkstationTableViewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTableViewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs#L4).
-
-Personal table presentation. Contains no financial records or authority.
-
-```csharp
-public sealed record WorkstationTableViewDto(string ViewId, string Label, string SearchText, IReadOnlyList<string> ColumnIds, string Density, string? SortColumnId = null, string? SortDirection = null, IReadOnlyDictionary<string, string>? Filters = null, bool IsReadOnly = false, string? Origin = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? Description { get; init; }</code> | [src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs#L16) |  |
-| <code>public IReadOnlyList&lt;FinancialRecordExplorerFilterDto&gt;? ExplorerFilters { get; init; }</code> | [src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs#L17) |  |
-
-## WorkstationTableViewSaveRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTableViewSaveRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs#L20).
-
-```csharp
-public sealed record WorkstationTableViewSaveRequest(string Label, string SearchText, IReadOnlyList<string> ColumnIds, string Density, string? SortColumnId = null, string? SortDirection = null, IReadOnlyDictionary<string, string>? Filters = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? Description { get; init; }</code> | [src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs#L29) |  |
-| <code>public IReadOnlyList&lt;FinancialRecordExplorerFilterDto&gt;? ExplorerFilters { get; init; }</code> | [src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs#L30) |  |

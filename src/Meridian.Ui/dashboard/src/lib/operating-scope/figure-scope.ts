@@ -17,6 +17,12 @@ export const ALL_AUTHORIZED_ACCOUNTS_SCOPE = "All authorized accounts";
  * 4. otherwise the scope the shell applies on this route;
  *
  * and null outside the shell, where nothing is known.
+ *
+ * Entity and fund follow the same rule as every other dimension: the route label (4) names only
+ * what the route applies. Entity is applied on Accounting, which reads `entityId` from its URL, so
+ * a figure there can read "Entity … · Account …"; Fund is applied nowhere yet, so no figure label
+ * claims a fund narrowing that its payload was not loaded with. Rules 2 and 3 are keyed to the
+ * fund account a payload was loaded for and never borrow a selected entity or fund.
  */
 export function resolveStatStripScope({
   scope,

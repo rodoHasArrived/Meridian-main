@@ -441,8 +441,16 @@ provider health and open breaks) with the definition each was counted with. A co
 not read, or whose source is not registered, is null, so clients show "—" rather than a substitute.
 
 `Workstation/OperatorScopePreferenceDtos.cs` carries the signed-in operator's default operating
-scope (symbol, fund account, run, provider and date dimensions), which browser and WPF apply when a
-session opens with no scope in its link or local storage.
+scope (symbol, fund account, run, provider and date dimensions, plus the optional legal entity and
+fund dimensions `EntityId`/`FundId`, appended last), which browser and WPF apply when a session opens
+with no scope in its link or local storage.
+
+`Workstation/WorkstationScopeOptionsDtos.cs` carries the entities, funds and fund accounts the
+calling operator may scope to (`GET /api/workstation/scope-options`), with each fund's visible
+entities and each account's fund and entity. Field names match the summaries in
+`OrganizationStructureGraphDto`, so one client parser reads both. A relationship that would name a
+fund or entity the caller may not see is null, and every list may be empty. Its source-generated
+`WorkstationScopeOptionsJsonContext` is registered in the Ui.Shared endpoint JSON options.
 
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser
 and WPF Accounting queues. It carries retained schedule/template versions, source evidence

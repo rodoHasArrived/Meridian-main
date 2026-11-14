@@ -54,8 +54,9 @@ in `release-governance`, which exits with their real status. Neither job is a
 required check and the canonical lanes are unchanged. Its workflow changes require **human
 governance review**. See [ownership](../../docs/engineering/ci-cd-optimization.md#design-system-package).
 
-Documentation Automation and canonical `verify-docs` share the maintained generation catalog and
-comprehensive freshness checker. Generated conflict recovery has a separate explicit policy;
+Canonical `verify-docs` owns automatic documentation checks, generation and freshness on all PRs,
+main pushes and merge groups. Documentation Automation uses the same catalog and checker only
+for manual refreshes. Generated conflict recovery has a separate explicit policy;
 protected prose and reviewed hashes retain their own merge and review rules. See the
 [recovery guide](../../docs/engineering/generated-merge-recovery.md).
 
@@ -97,8 +98,12 @@ collector and desktop publication still run their publish and release-evidence s
 Lane artifacts use compression level 1 to reduce compression CPU time, with a possible increase
 in archive size. Browser evidence includes the actual Vite output in
 `src/Meridian.Ui/wwwroot/workstation/` plus build logs; workflow evidence also retains its hygiene
-log. Every lane still runs on every applicable trigger, uploads evidence on success or failure,
-and must succeed before the stable `quality-gate` can pass. Cache savings depend on cache warmth
+log. The .NET lane skips PRs only when the complete git diff contains recognized narrative docs
+or diagram/image assets. Root Markdown and those assets under `docs/` and `archive/docs/`
+qualify; source, build/workflow changes, metadata and unknown paths require .NET. Empty diffs
+also require .NET. Main, merge queues and manual runs always run it. The stable `quality-gate`
+always reports, requires successful change detection, and accepts only that explicit .NET skip;
+failed, cancelled or unexpectedly skipped lanes fail the gate. Cache savings depend on cache warmth
 and network conditions; compare lane durations in `artifacts/ci-summary/` and Actions step timings
 before claiming an end-to-end speedup.
 
@@ -110,9 +115,9 @@ before claiming an end-to-end speedup.
 | `quality-gate` | `Meridian CI` (`meridian-ci.yml`) fans out parallel evidence lanes and finishes with one stable `quality-gate` aggregator. `quality-gate` is one of four GitHub Actions contexts the administrator rollout in [CI/CD ownership and rollout](../../docs/engineering/ci-cd-optimization.md#administrator-rollout) asks to be required for `main` (`quality-gate`, `Secret Scan`, `Analyze csharp`, `Analyze javascript-typescript`); `integration-gate` is an optional companion. Required contexts are set in repository settings, not by these files; the owner confirms them, and path-filtered specialist checks are not required. Which tier of local verification applies to a change is defined in [solo-developer workflow](../../docs/ai/solo-developer-workflow.md#verification-tiers). |
 | `verify-dotnet` | `Meridian CI` .NET lane plus local `bash scripts/ci.sh --lane verify-dotnet`. |
 | `verify-browser` | `Meridian CI` browser lane plus local `bash scripts/ci.sh --lane verify-browser`. |
-| `verify-docs` | `Meridian CI` docs/source/AI lane and shared maintained generation; Documentation Automation retains diagram/rules validation, and Roadmap Source Docs retains phase scope/schema checks plus standalone manual generation. |
+| `verify-docs` | `Meridian CI` owns automatic docs/source/AI, rules/memory, diagram generation, dashboard regression and freshness checks. Documentation Automation is manual-only; Roadmap Source Docs retains phase scope/schema checks and standalone manual generation. |
 | `verify-workflows` | `Meridian CI` workflow hygiene lane plus lane manifest validation. |
-| `verify-fast` | Local aggregate of `verify-dotnet` and `verify-browser`. |
+| `verify-fast` | `make verify-fast` and `bash scripts/ci.sh --lane verify-fast` both run the complete `verify-dotnet` and `verify-browser` lanes, including their static ratchets. |
 | `targeted-test` | `Targeted Test` (`targeted-test.yml`) for manually dispatched GitHub-hosted curated lanes. |
 | `schema-control` | `PostgreSQL Schema Control` (`schema-control.yml`) for migration execution, catalog/policy validation, and generated schema/data-object drift checks. |
 | `verify-full` | Nightly/manual CI coverage lane and local `make verify-full`. |
@@ -140,6 +145,9 @@ The JSON/Markdown summaries retain every result in roster order and include elap
 All shards are attempted after a test failure, and the lane fails if any shard fails. The
 test filters, complete project roster, catch-all shard, and hang timeout are unchanged.
 
+`make test` and `make pre-pr` restore the solution and use the same default test-project/shard
+roster as `run-dotnet-ci-tests.py`. `test-unit` remains the focused C# iteration command.
+
 Demo Smoke builds the focused `Meridian.Demo.Tests` project instead of compiling all of
 `Meridian.Tests` and filtering execution. Its 26 cases retain their existing assertions and
 namespaces. The CLI seed keeps normal `dotnet run` restore/build behavior; serve and reset
@@ -165,9 +173,9 @@ hosted job and shard timings separately from runner queue delays before claiming
 | Windows Desktop Build | `windows-desktop-build.yml` | WPF or WPF dependency changes, pushes to `main`, manual | Restores and builds one isolated Windows graph, then runs full WPF, dev-loop, both routes, supervisor and setup slices with separate TRX files and aggregate failure reporting. Desktop smoke publish runs on `main`, manual request, or PR changes to the WPF/publish graph. | WPF validation bundle and optional desktop smoke publish output |
 | WPF Dev Loop Validation | `wpf-dev-validation.yml` | Manual only | Calls the shared Windows runner for the dev-loop slice, with optional filter/build-only input. | WPF dev-loop evidence |
 | WPF Route Validation | `wpf-route-validation.yml` | Manual only | Calls the shared Windows runner for both retained route filters, reusing one build. | Route validation evidence |
-| Documentation Automation | `documentation.yml` | All pull requests, pushes to `main`, merge groups, manual | Retains the docs rules and memory checks on every event. Meridian CI `verify-docs` owns the shared docs-only catalog convergence and freshness validation for pull requests to `main`, `main` pushes and merge groups; this workflow runs that same catalog (core docs, Mermaid/UI diagrams, advisory UML, workflow outputs) only for the events Meridian CI does not receive (pull requests to other branches and manual runs), so each event is validated once. Unrestricted triggers cover every tracked-file input. UML binaries remain outside the required freshness delta; a documentation `health_score` drop of more than 10 points still fails when a baseline exists. | Dashboard delta, generated-repair patch/drift report, maintained-generation report and logs |
+| Documentation Automation | `documentation.yml` | Manual only | Explicit documentation refresh using the shared catalog, rules/memory checks, dashboard regression check and freshness validation. All automatic documentation validation belongs to Meridian CI `verify-docs`. UML binaries remain outside the required freshness delta. | Dashboard delta, generated-repair patch/drift report, maintained-generation report and logs |
 | PostgreSQL Schema Control | `schema-control.yml` | PostgreSQL migrations, public contracts, schema-control registry/policies/tooling, generated database docs, or manual | Applies all registered SQL migrations to disposable PostgreSQL 16, extracts `pg_catalog`, inventories public C# data objects, evaluates policy and migration safety rules, and rejects stale deterministic manifests or diagrams. PRs compare against the event's base SHA; manual runs require `baseline_ref`. Manual `snapshot` mode uploads refresh candidates without writing to the repository. | Candidate manifests, generated docs/diagrams, policy report, schema diff, resolved baseline/candidate SHAs, and run summary |
-| Roadmap Source Docs | `roadmap-source-docs.yml` | Roadmap/source/status/architecture/source-README changes, PR description/label corrections, or manual | Enforces PR phase scope and validates roadmap/source registries. Metadata edits receive a fresh scope check. Automatic rendering belongs to Documentation Automation; manual runs use the shared catalog and freshness checker. | Manual generation evidence |
+| Roadmap Source Docs | `roadmap-source-docs.yml` | Roadmap/source/status/architecture/source-README changes, PR description/label corrections, or manual | Enforces PR phase scope and validates roadmap/source registries. Metadata edits receive a fresh scope check. Automatic rendering belongs to Meridian CI `verify-docs`; manual runs use the shared catalog and freshness checker. | Manual generation evidence |
 | Roadmap Tools (Manual) | `roadmap-tools-manual.yml` | Manual only | Runs individual roadmap tooling operations on demand — fixture-enum validation, roadmap evidence-file validation, normalized render, or phase-scope enforcement — selected through the `script` dispatch input. | Normalized roadmap render output when `render`/`all` is selected |
 | Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly schedule, manual | Validates tooling metadata and its distinct actionlint configuration. Canonical lanes own duplicate hygiene/AI contract/navigation checks on PR/push; weekly/manual Maintenance repeats those checks. Schedule/manual runs cannot be cancelled by ordinary pushes. | None |
 | Dependency Lock Candidates | `dependency-locks.yml` | Restore-input PRs, manual | Generates and verifies isolated Linux portable and Windows portable/x64/ARM64 NuGet lock profiles. Adoption remains explicit after native proof and review; ordinary restores retain their defaults. | Candidate lockfiles, input fingerprints, inventory and restore logs |
@@ -352,7 +360,7 @@ Documentation automation and generated repair:
 ```powershell
 # Complete browser/documentation generation in the current checkout.
 python build/scripts/run-maintained-generation.py
-# Documentation-only convergence used by Documentation Automation.
+# Documentation-only convergence used by verify-docs and manual Documentation Automation.
 python build/scripts/run-maintained-generation.py --docs-only
 # Pinned merge and full generation in a disposable checkout; leaves this branch unchanged.
 git fetch origin main

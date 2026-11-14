@@ -23,7 +23,8 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         cls.steps = cls.job["steps"]
 
     def test_same_implementation_runs_for_pr_merge_group_and_certification(self):
-        self.assertEqual(self.ci["on"]["pull_request"]["branches"], ["main"])
+        self.assertIn("pull_request", self.ci["on"])
+        self.assertFalse(self.ci["on"]["pull_request"], "Integration coverage applies to PRs targeting any branch")
         self.assertIn("merge_group", self.ci["on"])
         for event in ("pull_request", "merge_group"):
             config = self.ci["on"][event] or {}
@@ -119,7 +120,7 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         self.assertIn("exit 1", step["run"])
         self.assertNotIn("continue-on-error", gate)
         self.assertEqual(self.ci["jobs"]["quality-gate"]["needs"],
-                         ["verify-dotnet", "verify-browser", "verify-docs", "verify-workflows"])
+                         ["changes", "verify-dotnet", "verify-browser", "verify-docs", "verify-workflows"])
 
     def test_reuse_requires_explicit_producer_outputs_and_validated_bytes(self):
         inputs = self.shared["on"]["workflow_call"]["inputs"]

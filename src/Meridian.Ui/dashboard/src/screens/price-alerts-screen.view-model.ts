@@ -5,7 +5,7 @@ import { describeCondition } from "@/lib/price-alerts/evaluator";
 import type { PriceAlert, PriceAlertCondition, PriceAlertDraft, PriceAlertField, PriceAlertTrigger } from "@/lib/price-alerts";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type { MetricSnapshot } from "@/types";
-import { formatDateTime, formatNumber } from "@/lib/format";
+import { formatNumber, formatTimestamp } from "@/lib/format";
 
 export interface PriceAlertFormState {
   symbol: string;
@@ -683,15 +683,7 @@ export function formatPriceAlertTimestamp(value: string | null | undefined): str
   if (Number.isNaN(date.getTime())) {
     return "—";
   }
-  return `${formatDateTime(date, {
-    timeZone: "UTC",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false
-  })} UTC`;
+  return formatTimestamp(date, { precision: "second" });
 }
 
 const SNOOZE_MINUTES = 30;

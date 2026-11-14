@@ -44,7 +44,7 @@ describe("BrokerageRecoveryPanel", () => {
     expect(screen.getByText("Connected · healthy")).toBeInTheDocument();
     expect(screen.getByText("$1,250.00 (USD)")).toBeInTheDocument();
     expect(screen.getByText("$2,500.00 (USD)")).toBeInTheDocument();
-    expect(screen.getByText("2026-10-05 15:30:02 UTC")).toBeInTheDocument();
+    expect(screen.getByText("Oct 5, 2026, 15:30:02 UTC")).toBeInTheDocument();
     expect(screen.getByText(/Live operation also requires all trading readiness gates/)).toBeInTheDocument();
     expect((await axe(container)).violations).toEqual([]);
   });

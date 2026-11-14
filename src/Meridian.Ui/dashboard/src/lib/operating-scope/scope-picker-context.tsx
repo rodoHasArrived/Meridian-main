@@ -3,7 +3,9 @@
 // opener; outside the shell (isolated screen tests, pop-out panes) there is none and callers fall
 // back to explanatory text.
 import { createContext, useContext, type ReactNode } from "react";
+import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
 import type { ScopeFundAccountOption } from "@/lib/operating-scope/fund-accounts";
+import type { ScopeStructureOptions } from "@/lib/operating-scope/structure-options";
 
 const ScopePickerOpenerContext = createContext<(() => void) | null>(null);
 
@@ -24,6 +26,15 @@ export function useOpenScopePicker(): (() => void) | null {
 export interface FundAccountScopeSelection {
   options: ScopeFundAccountOption[];
   select: (fundAccountId: string) => void;
+  /**
+   * The organization graph, so the inline picker narrows `options` by the chosen entity and fund
+   * exactly as the scope picker does. Omitted or unavailable: nothing is narrowed.
+   */
+  structure?: ScopeStructureOptions;
+  /** True while the organization graph is loading. */
+  structureLoading?: boolean;
+  /** The current scope's entity, fund and fund account. */
+  scope?: Pick<AppShellOperatingScopeInput, "entityId" | "fundId" | "fundAccountId">;
 }
 
 const FundAccountScopeSelectionContext = createContext<FundAccountScopeSelection | null>(null);

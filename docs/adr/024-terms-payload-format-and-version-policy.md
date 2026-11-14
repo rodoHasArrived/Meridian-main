@@ -18,7 +18,7 @@ presence of module keys, which is why flat version `2` was reserved
 2026-11-13 step 6 and kept only as `SecurityTermsLegacyEventClassifier.ReservedForEconomicTerms`):
 declaring a genuine flat v2 would have routed every such payload through the economic → flat
 bridge and silently emptied it. The
-[extensibility review](../architecture/security-master-extensibility-review.md) (D1–D3) records the
+[extensibility review](../../archive/docs/architecture/security-master-extensibility-review.md) (D1–D3) records the
 failure modes, including the `securities.schema_version` column having had two definitions.
 
 `SecurityTermsEnvelope` already defines the fix: every payload declares its family in `termsFormat`
@@ -308,7 +308,7 @@ This command verifies referenced files and directories exist; it does not valida
 ## References
 
 - [ADR-022: Canonical Asset-Class Homes](022-canonical-asset-class-homes.md)
-- [Security Master extensibility review](../architecture/security-master-extensibility-review.md)
+- [Security Master extensibility review](../../archive/docs/architecture/security-master-extensibility-review.md)
 - Migration `024_security_master_schema_version_column.sql` (the `schema_version` precedent)
 
 ---
@@ -517,7 +517,7 @@ This command verifies referenced files and directories exist; it does not valida
     at the top level, and notify the owners of any client that sends them. 4a dropped those keys
     silently; this build refuses them with the not-yet-writable reason. From the 2026-10-27 change
     that answers refused creates and amends with 400 (its resolution pass is in the
-    [extensibility review](../architecture/security-master-extensibility-review.md)), the create,
+    [extensibility review](../../archive/docs/architecture/security-master-extensibility-review.md)), the create,
     amend and term-block endpoints answer 400 with that reason as the Problem Details `detail`. On a
     node without that change, including one rolled back below it, only the term-block endpoint's
     pre-check of a `callSchedule` or `putSchedule` block answers 400; a create or amend request
@@ -572,7 +572,7 @@ This command verifies referenced files and directories exist; it does not valida
     every source the cash-flow resolver reads and under every casing. Every build that contains 5a
     therefore contains that refusal, and 5b-2's precondition that every node runs 5a covers it.
     5a-0's deploy gate (AQ1 and AQ2, expect 0) is in the
-    [extensibility review](../architecture/security-master-extensibility-review.md).
+    [extensibility review](../../archive/docs/architecture/security-master-extensibility-review.md).
   - **Deploy and rollback floor.** 5a writes nothing differently, so it rolls forward and back
     freely until increment 5b-2's first declaring write. From that write on, no node, desktops
     included, may run below 5a: a 4b node would ignore the block in projections, let them post and

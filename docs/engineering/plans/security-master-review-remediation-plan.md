@@ -7,7 +7,7 @@
 **Source evidence:** `6bcc7a0262ab0870cee32cb2cb344851e9da7e89` (slices 1–6);
 `fc848789e637f3e241698c84b5415a1a9e0ed32d` (slices 7–9 and the consolidation decision, 2026-11-09)
 
-This plan consumes the [October review consolidation](../../architecture/security-master-extensibility-review.md#consolidated-october-review-and-dispositions--2026-10-28),
+This plan consumes the [October review consolidation](../../../archive/docs/architecture/security-master-extensibility-review.md#consolidated-october-review-and-dispositions--2026-10-28),
 including the dated observations and corrected prescriptions from #3111, #3188, #3196, #3220,
 #3234, #3240, #3247 and #3263. It replaces #3240's unaccepted October 20 design as a current
 working input. The immutable original plan is linked in the review's coverage ledger.
@@ -72,7 +72,7 @@ review. The October 20 blanket `[0,1]` rule and all-fraction design are not acce
 
 **Implementation note (2026-11-04):** a local implementation adds `RateUnitNormalizer`,
 `SecurityRateFieldUnits` and explicit catalog accounting dispositions. See the
-[slice-4 disposition](../../architecture/security-master-extensibility-review.md#slice-4-disposition--2026-11-04-d10).
+[slice-4 disposition](../../../archive/docs/architecture/security-master-extensibility-review.md#slice-4-disposition--2026-11-04-d10).
 D3 decided 2026-11-05: undeclared non-zero rates block. Legacy fixed-income rows stop projecting
 until they declare a unit, Security Master engine swaps cannot declare per-leg units yet, and readers
 still treat negative rates differently. Canonical units and ranges, the repair path, the negative-rate
@@ -102,7 +102,7 @@ schema/storage review remains a gate for migrations and destructive-operation wa
 
 **Progress (2026-11-04):** identifier recorded history (migration 062) and versioned governance
 payloads with captured version-1 fixtures are implemented; see the
-[D7 slice-5 disposition](../../architecture/security-master-extensibility-review.md#d7--audit-history-and-serialization-distinguish-current-state-from-retained-evidence).
+[D7 slice-5 disposition](../../../archive/docs/architecture/security-master-extensibility-review.md#d7--audit-history-and-serialization-distinguish-current-state-from-retained-evidence).
 Row classification, the WPF provenance composition and migration 062's independent review remain open.
 
 ## Slice 6 — Remaining catalog, identifier and consumer convergence
@@ -137,7 +137,7 @@ scheduled-review PR.
 
 ## Slice 7 — Term-form parity contract between the shared model and the browser mirror (2026-11-09)
 
-**Evidence:** D9; the [2026-11-09 verification pass](../../architecture/security-master-extensibility-review.md#verification-pass--2026-11-09--dual-model-audit-reconciliation).
+**Evidence:** D9; the [2026-11-09 verification pass](../../../archive/docs/architecture/security-master-extensibility-review.md#verification-pass--2026-11-09--dual-model-audit-reconciliation).
 The registry schema is already served (`/api/security-master/asset-classes[/{assetClass}]`) and
 the dashboard passport editor already builds its term fields from it; the original "serve the
 schema to the browser" scope was stale. What D9 still named open: the browser mirrors
@@ -183,7 +183,7 @@ domain-owner review; magnitude or class-name inference is not an accepted fallba
 exact-token routes over the produced evidence vocabulary, unresolved outside it; the catalog
 descriptor declares `QuoteConvention` (defaulting from the lot unit so no price changes), and
 `LotQuantity` gains the convention-aware overload plus `QuoteConventionFor`. See the
-[slice-8 disposition](../../architecture/security-master-extensibility-review.md#slice-8-disposition--descriptor-owned-consumer-rules--2026-11-09).
+[slice-8 disposition](../../../archive/docs/architecture/security-master-extensibility-review.md#slice-8-disposition--descriptor-owned-consumer-rules--2026-11-09).
 Open from this slice: moving class-aware pricing callers onto the convention overload when a
 class first declares a non-default convention, and the quote-convention vocabulary decision
 above.
@@ -509,7 +509,7 @@ and S2-B4 (codec single-purpose) land. Planned increments:
 ## Close-out pass — 2026-11-10
 
 Recorded in the review's
-[close-out section](../../architecture/security-master-extensibility-review.md#close-out-pass--2026-11-10).
+[close-out section](../../../archive/docs/architecture/security-master-extensibility-review.md#close-out-pass--2026-11-10).
 It implements the typed blocked outcome and ADR-025 increment 8f, completes S3-D, decides the
 governance defaults (D5), closes the code-level parts of D6 and D8, moves conflict and profile
 routing onto class-owned keys (D9), and acts on an agent-run review of migration 062 (D7). Open
@@ -520,7 +520,7 @@ model, StructuredNote's accounting treatment).
 *2026-11-11 (owner decisions):* the owner authorized the migration 062 waiver, accepted the three
 D10 recommendations as the decisions, and sequenced the remaining code as follow-up pull requests
 after the close-out pull request merges. Recorded in the review's
-[owner decisions](../../architecture/security-master-extensibility-review.md#owner-decisions--2026-11-11).
+[owner decisions](../../../archive/docs/architecture/security-master-extensibility-review.md#owner-decisions--2026-11-11).
 At the time of the owner decision, the follow-up items were:
 
 - **S3-E record contraction**, one field group at a time, each with its own replay-compatibility

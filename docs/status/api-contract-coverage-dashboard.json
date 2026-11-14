@@ -9,8 +9,8 @@
     "endpoint_count": 830,
     "documented_endpoint_count": 830,
     "undocumented_endpoint_count": 0,
-    "workstation_contract_count": 1045,
-    "documented_workstation_contract_count": 1045,
+    "workstation_contract_count": 1050,
+    "documented_workstation_contract_count": 1050,
     "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
@@ -4985,13 +4985,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:974",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:975",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:1115",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:1116",
       "documented": true
     }
   ],
@@ -7898,17 +7898,17 @@
     },
     {
       "name": "OperatingScopeValuesDto",
-      "source": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:7",
+      "source": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:9",
       "documented": true
     },
     {
       "name": "OperatorScopePreferenceDto",
-      "source": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:21",
+      "source": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:25",
       "documented": true
     },
     {
       "name": "OperatorScopePreferenceSaveRequest",
-      "source": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:26",
+      "source": "src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:30",
       "documented": true
     },
     {
@@ -10194,6 +10194,31 @@
     {
       "name": "WorkstationDataPayload",
       "source": "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1151",
+      "documented": true
+    },
+    {
+      "name": "WorkstationScopeOptionsDto",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:17",
+      "documented": true
+    },
+    {
+      "name": "WorkstationScopeEntityOptionDto",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:23",
+      "documented": true
+    },
+    {
+      "name": "WorkstationScopeFundOptionDto",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:31",
+      "documented": true
+    },
+    {
+      "name": "WorkstationScopeAccountOptionDto",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:41",
+      "documented": true
+    },
+    {
+      "name": "WorkstationScopeOptionsJsonContext",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:58",
       "documented": true
     },
     {

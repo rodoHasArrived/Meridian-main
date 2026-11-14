@@ -192,10 +192,10 @@ vi.mock("@/lib/api", async () => {
 
 const data: TradingWorkspaceResponse = {
   metrics: [
-    { id: "m1", label: "Net P&L", value: "+$3,100", delta: "+2.1%", tone: "success" },
-    { id: "m2", label: "Open Orders", value: "4", delta: "+1", tone: "default" },
-    { id: "m3", label: "Fills", value: "13", delta: "+3", tone: "success" },
-    { id: "m4", label: "Risk", value: "Observe", delta: "0%", tone: "warning" }
+    { id: "pnl", label: "Net P&L", value: "+$3,100", delta: "+2.1%", tone: "success" },
+    { id: "orders", label: "Open Orders", value: "4", delta: "+1", tone: "default" },
+    { id: "fills", label: "Fills", value: "13", delta: "+3", tone: "success" },
+    { id: "risk", label: "Risk", value: "Observe", delta: "0%", tone: "warning" }
   ],
   positions: [{ symbol: "AAPL", side: "Long", quantity: "100", averagePrice: "188.10", markPrice: "189.00", dayPnl: "+$90", unrealizedPnl: "+$90", exposure: "$18,900" }],
   openOrders: [{ orderId: "PO-1", symbol: "MSFT", side: "Buy", type: "Limit", quantity: "20", limitPrice: "414.20", status: "Working", submittedAt: "09:42:00 ET" }],
@@ -389,6 +389,7 @@ describe("TradingScreen", () => {
   it("renders the overview posture with the workflow strip and no blotters", async () => {
     await renderTradingScreen();
     expect(screen.getByRole("region", { name: "Execution cockpit context" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Trading headline metrics")).toBeInTheDocument();
     const workflowStrip = screen.getByRole("region", { name: "Workflow control strip" });
     expect(within(workflowStrip).getByRole("button", { name: /strategy controls/i })).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /session replay/i })).toBeInTheDocument();
@@ -398,14 +399,24 @@ describe("TradingScreen", () => {
     expect(within(workflowStrip).getByRole("button", { name: /open strategy controls panel/i })).toHaveAttribute("aria-expanded", "false");
     // Route-scoped views: blotters live on their focused routes, not the overview.
     expect(screen.queryByText("Live positions")).not.toBeInTheDocument();
-    expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Open orders" })).not.toBeInTheDocument();
   });
 
   it("renders the position book with wiring state on the positions route", async () => {
     await renderTradingScreen(data, "/trading/positions");
     expect(screen.getByText("Live positions")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
     expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
+  });
+
+  it("keeps account setup visible on orders and links to the full recovery workspace", async () => {
+    await renderTradingScreen(data, "/trading/orders");
+    expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
+    const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
+    expect(within(recovery).getByRole("status", { name: "Brokerage recovery readiness" })).toHaveTextContent("No fund account in scope");
+    expect(within(recovery).getByRole("link", { name: "Review brokerage recovery" })).toHaveAttribute("href", "/trading#brokerage-recovery");
+    expect(within(recovery).queryByRole("button", { name: "Synchronize and reconcile" })).not.toBeInTheDocument();
   });
 
   it("resolves route views by exact path segment, not substring", () => {
@@ -423,10 +434,10 @@ describe("TradingScreen", () => {
 
     // No in-page route tab strip duplicating the sidebar.
     expect(screen.queryByRole("tablist", { name: "Trading routes" })).not.toBeInTheDocument();
-    // The route heading leads, ahead of the workspace-wide metrics.
+    // The route heading leads; workspace-wide metrics belong to the overview.
     const heading = screen.getByRole("region", { name: "Execution cockpit context" });
-    const metrics = screen.getByLabelText("Trading headline metrics");
-    expect(heading.compareDocumentPosition(metrics) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(heading).toBeInTheDocument();
+    expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
     expect(await screen.findByText("Open orders")).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
   });

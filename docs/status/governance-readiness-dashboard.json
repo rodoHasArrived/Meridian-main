@@ -197,6 +197,7 @@
         "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.ReportAuthority.cs",
         "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.RunComparison.cs",
         "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.RunLedgerQueries.cs",
+        "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.ScopeOptions.cs",
         "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.SecurityMaster.cs",
         "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.StrategyTenantScope.cs",
         "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.TermsCapabilityRefusal.cs",
