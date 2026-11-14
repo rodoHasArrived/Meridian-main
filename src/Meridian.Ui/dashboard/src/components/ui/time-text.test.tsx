@@ -27,6 +27,14 @@ describe("TimeText", () => {
     expect(time).toHaveAttribute("datetime", "2026-06-30T18:05:00Z");
   });
 
+  it("carries the precision into both the text and the hover title", () => {
+    const { rerender } = render(<TimeText value="2026-06-30T18:05:07.042Z" now={NOW} precision="millisecond" />);
+    expect(screen.getByText("Jun 30, 2026, 18:05:07.042 UTC")).toHaveAttribute("title", "5m ago");
+
+    rerender(<TimeText value="2026-06-30T18:05:07.042Z" now={NOW} display="relative" precision="second" />);
+    expect(screen.getByText("5m ago")).toHaveAttribute("title", "Jun 30, 2026, 18:05:07 UTC");
+  });
+
   it("re-renders when the operator changes the display zone", () => {
     render(<TimeText value="2026-06-30T18:05:00Z" now={NOW} />);
     act(() => {

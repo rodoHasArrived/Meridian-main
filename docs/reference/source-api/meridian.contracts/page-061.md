@@ -466,12 +466,12 @@ public sealed record OpenLotSummary(Guid LotId, string Symbol, long Quantity, de
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatingScopeValuesDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:7](../../../../src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs#L7).
+Source: [src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs#L9).
 
-The operating-scope dimensions the workstation carries across workspaces, as the browser&#x27;s operating-scope URL parameters and the WPF scope selector name them. Every value is optional.
+The operating-scope dimensions the workstation carries across workspaces, as the browser&#x27;s operating-scope URL parameters and the WPF scope selector name them. Every value is optional. EntityId and FundId (the fund-structure legal entity and fund ids) were added after the original eight and sit last, so positional construction is unchanged.
 
 ```csharp
-public sealed record OperatingScopeValuesDto(string? Symbol = null, string? FundAccountId = null, string? RunId = null, string? Provider = null, string? From = null, string? To = null, string? Date = null, string? AsOf = null);
+public sealed record OperatingScopeValuesDto(string? Symbol = null, string? FundAccountId = null, string? RunId = null, string? Provider = null, string? From = null, string? To = null, string? Date = null, string? AsOf = null, string? EntityId = null, string? FundId = null);
 ```
 
 ## OperationsAccountingRecordEvidenceCategoryDto

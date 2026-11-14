@@ -36,6 +36,24 @@ describe("formatTimestamp", () => {
     expect(formatTimestamp("2026-06-30T18:05:00Z", { timeZone: "UTC" })).toBe("Jun 30, 2026, 18:05 UTC");
   });
 
+  it("adds seconds or milliseconds to the same layout with the precision option", () => {
+    const instant = "2026-06-30T18:05:07.042Z";
+    expect(formatTimestamp(instant)).toBe("Jun 30, 2026, 18:05 UTC");
+    expect(formatTimestamp(instant, { precision: "minute" })).toBe("Jun 30, 2026, 18:05 UTC");
+    expect(formatTimestamp(instant, { precision: "second" })).toBe("Jun 30, 2026, 18:05:07 UTC");
+    expect(formatTimestamp(instant, { precision: "millisecond" })).toBe("Jun 30, 2026, 18:05:07.042 UTC");
+    expect(formatTimestamp("2026-06-30T00:00:00.000Z", { precision: "millisecond" })).toBe("Jun 30, 2026, 00:00:00.000 UTC");
+    expect(formatTimestamp("not a time", { precision: "second" })).toBe("Invalid Date");
+    expect(formatUtcTimestamp(new Date(instant), { precision: "second" })).toBe("Jun 30, 2026, 18:05:07 UTC");
+
+    setDisplayTimeZone("America/New_York");
+    expect(formatTimestamp(instant, { precision: "second" })).toBe("Jun 30, 2026, 14:05:07 EDT");
+    expect(formatTimestamp(instant, { precision: "millisecond" })).toBe("Jun 30, 2026, 14:05:07.042 EDT");
+    expect(formatUtcTimestamp(new Date(instant), { precision: "millisecond" })).toBe("Jun 30, 2026, 18:05:07.042 UTC");
+    setDisplayTimeZone("Asia/Kolkata");
+    expect(formatTimestamp(instant, { precision: "second" })).toBe("Jun 30, 2026, 23:35:07 GMT+5:30");
+  });
+
   it("follows a daylight-saving transition without a 24:00 or 12-hour reading", () => {
     setDisplayTimeZone("America/New_York");
     // US spring forward, 2026-03-08: 01:59 EST is followed by 03:00 EDT.

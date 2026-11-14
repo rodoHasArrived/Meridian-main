@@ -183,7 +183,23 @@ Dashboard source carries the first P4 step of the
   environment; live, unknown and failed states still block. Applying an account sets it in the
   operating scope and the URL, so links carry it.
 
-No shared contract changed.
+No shared contract changed in that step.
+
+Dashboard source also carries the P4 entity, fund and period step (host bundle not yet rebuilt):
+- The scope bar reads `Scope  Entity … › Fund … › Account … › Period …`. An unset Entity, Fund
+  or Account reads "All authorized"; an unset Period reads "All periods". Entity and fund are the
+  `entityId` and `fundId` URL parameters, carried on every route and in storage, recent scopes,
+  saved layouts, Copy link and the server-side default scope. Accounting applies `entityId`; no
+  screen filters by fund yet, so a set fund shows as retained (muted).
+- The scope picker lists entities, funds and accounts from the existing organization read model
+  (`GET /api/fund-structure/graph?activeOnly=true`). An entity narrows the funds and accounts; a
+  fund narrows the accounts. Without fund-structure access the picker takes typed ids and narrows
+  nothing.
+- A Period control sets the window: All periods, Today, MTD, QTD, YTD, Last month, Custom range
+  (shared date-range picker) or As of a date, on the operator's calendar day.
+
+Shared contract change (additive): `OperatingScopeValuesDto` gained optional `EntityId` and
+`FundId`, appended last; WPF is unaffected.
 
 The host-served bundle carries the browser presentation correctness fixes: font stacks that end
 in a generic family (no serif fallback for data text), Ledger Explorer amounts at currency

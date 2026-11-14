@@ -1199,7 +1199,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `OnboardingSourceSnapshotDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:43` |
 | `OnboardingWorkspaceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:122` |
 | `OpenLotSummary` | Documented | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1139` |
-| `OperatingScopeValuesDto` | Documented | `src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:7` |
+| `OperatingScopeValuesDto` | Documented | `src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:9` |
 | `OperationsAccountingRecordEvidenceCategoryDto` | Documented | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1160` |
 | `OperationsAccountingRecordSummaryDto` | Documented | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1150` |
 | `OperationsActionOriginDto` | Documented | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:467` |
@@ -1281,8 +1281,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `OperationsWorkflowStatusDto` | Documented | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:12` |
 | `OperatorInboxDto` | Documented | `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:94` |
 | `OperatorInboxTriageDto` | Documented | `src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:35` |
-| `OperatorScopePreferenceDto` | Documented | `src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:21` |
-| `OperatorScopePreferenceSaveRequest` | Documented | `src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:26` |
+| `OperatorScopePreferenceDto` | Documented | `src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:25` |
+| `OperatorScopePreferenceSaveRequest` | Documented | `src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:30` |
 | `OperatorSurfaceVisitDto` | Documented | `src/Meridian.Contracts/Workstation/OperatorSurfaceVisitDtos.cs:10` |
 | `OperatorTriageAction` | Documented | `src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:6` |
 | `OperatorTriageActivity` | Documented | `src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:22` |

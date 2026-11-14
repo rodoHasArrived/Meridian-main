@@ -26,6 +26,8 @@ import { KeyboardShortcutsSheet } from "@/components/meridian/keyboard-shortcuts
 import { getGlobalKeyBinding, matchesKeyCombo } from "@/lib/keymap";
 import { ScopePicker } from "@/components/meridian/scope-picker";
 import { collectScopeFundAccounts, type ScopeFundAccountOption } from "@/lib/operating-scope/fund-accounts";
+import { scopeValueLabels } from "@/lib/operating-scope/structure-options";
+import { useScopeStructure } from "@/lib/operating-scope/use-scope-structure";
 import {
   compactOperatingScope,
   hasOperatingScopeValues,
@@ -34,7 +36,7 @@ import {
   readStoredOperatingScope,
   writeStoredOperatingScope
 } from "@/lib/operating-scope/persistence";
-import { WorkflowContextDisclosure } from "@/components/meridian/workflow-continuity-dock";
+import { WorkflowContextDisclosure } from "@/components/meridian/workflow-context-disclosure";
 import { OperatingScopeBar } from "@/components/meridian/operating-scope-bar";
 import { WorkspaceViewsMenu } from "@/components/meridian/workspace-views-menu";
 import { WorkspaceStatus } from "@/components/meridian/workspace-status";
@@ -630,6 +632,15 @@ function AppShell({
     };
   }, [scopeFundAccountOptions, recentScopes, defaultScope]);
   const scopeDimensionsInEffect = useMemo(() => operatingScopeDimensionsForRoute(pathname), [pathname]);
+  // Entities, funds and their accounts for the scope picker, and names for the bar's entity and
+  // fund ids. Loaded only once the picker opens or the scope names an entity or fund.
+  const scopeStructure = useScopeStructure(
+    scopePickerOpen || Boolean(operatingScopeInput.entityId || operatingScopeInput.fundId)
+  );
+  const scopeBarValueLabels = useMemo(
+    () => scopeValueLabels(operatingScopeInput, scopeStructure.structure, scopeStructure.structure.accounts),
+    [operatingScopeInput, scopeStructure.structure]
+  );
 
   useEffect(() => {
     const handleGlobalShortcut = (event: KeyboardEvent) => {
@@ -924,6 +935,7 @@ function AppShell({
                 operatingScope={shell.workflowContinuity.operatingScope}
                 onEditOperatingScope={openScopePicker}
                 scopeDimensionsInEffect={scopeDimensionsInEffect}
+                valueLabels={scopeBarValueLabels}
               />
             )}
             breadcrumbItems={breadcrumbItems}
@@ -1067,6 +1079,8 @@ function AppShell({
         onOpenChange={setScopePickerOpen}
         scope={operatingScopeInput}
         fundAccounts={scopeFundAccountOptions}
+        structure={scopeStructure.structure}
+        structureLoading={scopeStructure.loading}
         onApply={handleSetOperatingScope}
         recentScopes={recentScopes}
         defaultScope={defaultScope}
