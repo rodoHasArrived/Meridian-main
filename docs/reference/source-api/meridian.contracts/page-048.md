@@ -750,6 +750,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IReadOnlyDictionary&lt;string, string&gt; ProfileAssetClasses { get; } = BuildProfileAssetClasses();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Profiles.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Profiles.cs#L11) | Only a registered profile identity may reclassify a profile-backed security. Caller-supplied category metadata may corroborate this mapping, but never decides the class. Each class owns its ids (SecurityAssetClassDescriptor.ReclassifyingProfileIds); this is the lookup over them, and an id two classes claim fails at type initialization. |
+| <code>public static bool TryGetCanonicalProfileId(string? profileId, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out string? canonicalProfileId);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Profiles.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Profiles.cs#L17) | Resolves a caller-supplied reclassifying profile id (matched case-insensitively) to the catalog&#x27;s own spelling, so logs and reports carry the catalog value rather than request text. |
 
 Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:3](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L3).
 
