@@ -20,7 +20,7 @@ describe("FinancialRecordExplorerShell", () => {
     explorer.scopeItems = [{ label: "Run", value: rawRunId, tone: "Info" }];
     explorer.filters = [filter];
     explorer.savedViews[0]!.filters = [filter];
-    explorer.rows = explorer.rows.map((row) => ({ ...row, cells: [...row.cells, { columnId: "run", displayValue: rawRunId, rawValue: rawRunId, tone: "Info", linkHref: "" }] }));
+    explorer.rows = explorer.rows.map((row) => ({ ...row, cells: [...row.cells, { columnId: "run", displayValue: rawRunId, rawValue: rawRunId, tone: "Info" as const, linkHref: "" }] }));
     explorer.recordGraph.nodes = [{ nodeId: rawRunId, nodeType: "run", label: rawRunId, tone: "Info", href: "/portfolio" }];
     const onSaveView = vi.fn().mockResolvedValue(undefined);
     renderExplorer(onSaveView, explorer, undefined, () => "Retained strategy");
