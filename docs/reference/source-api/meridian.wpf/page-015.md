@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityConflictLaneEntry
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SecurityConflictLaneEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs:20](../../../../src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs#L20).
+
+```csharp
+public sealed record SecurityConflictLaneEntry(SecurityMasterConflict Conflict, string SecurityLabel, string SecurityIdentifier, string FieldLabel, string SeverityLabel, string SeverityTone, int SeverityRank, string ConfidenceLabel, string AutoResolveHint, string ImpactSummary, string ImpactDetail, string NextStepSummary, bool RoutesToFundReview, bool RoutesToReconciliation, bool RoutesToCashFlow, bool RoutesToReportPack, bool RequiresTradingBackfill, bool IsAutoResolveSafe);
+```
+
 ## SecurityConflictLaneGroup
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SecurityConflictLaneGroup</code>. Kind: `record`.
@@ -1847,27 +1857,3 @@ Declared public members:
 | <code>public void CancelRemoveMapping();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:394](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L394) |  |
 | <code>public async Task&lt;int&gt; ImportCsvContentAsync(string csvContent, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:401](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L401) |  |
 | <code>public string ExportCsv();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:426](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L426) |  |
-
-## SymbolQualityDisplayItem
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SymbolQualityDisplayItem</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:774](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L774).
-
-Presents a symbol&#x27;s quality grade, completeness, integrity, and issue count.
-
-```csharp
-public sealed class SymbolQualityDisplayItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:776](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L776) |  |
-| <code>public string Grade { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:777](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L777) |  |
-| <code>public SolidColorBrush? GradeBackground { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:778](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L778) |  |
-| <code>public double OverallScore { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:779](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L779) |  |
-| <code>public string CompletenessText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:780](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L780) |  |
-| <code>public string IntegrityText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:781](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L781) |  |
-| <code>public string IssueCount { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:782](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L782) |  |

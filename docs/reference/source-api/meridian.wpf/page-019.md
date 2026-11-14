@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyWorkspaceShellPageBase
+
+Qualified name: <code>Meridian.Wpf.Views.StrategyWorkspaceShellPageBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:285](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L285).
+
+Binds derived pages to the strategy workspace shell definition.
+
+```csharp
+public class StrategyWorkspaceShellPageBase : WorkspaceShellPageBase<StrategyWorkspaceShellStateProvider, StrategyWorkspaceShellViewModel>
+```
+
 ## SymbolMappingPage
 
 Qualified name: <code>Meridian.Wpf.Views.SymbolMappingPage</code>. Kind: `class`.
@@ -1132,16 +1144,4 @@ Provides a content surface for data-quality detail.
 
 ```csharp
 public sealed class DataQualityPanelControl : ContentControl
-```
-
-## DiagnosticsChecklistControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Diagnostics.DiagnosticsChecklistControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs:13](../../../../src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs#L13).
-
-Provides an items-control surface for diagnostic checklist entries.
-
-```csharp
-public sealed class DiagnosticsChecklistControl : ItemsControl
 ```

@@ -14,6 +14,7 @@ public sealed class HttpContextIntercompanyAgreementAccessAuthority(
     IHttpContextAccessor accessor, IFundStructureStore structure) : IIntercompanyAgreementAccessAuthority
 {
     private static readonly object TenantMapKey = new();
+    internal static readonly object RequiredPermissionKey = new();
 
     public async Task<bool> CanAccessEntitiesAsync(IntercompanyAgreementCallContext context,
         IReadOnlyList<Guid> entityIds, CancellationToken ct = default)
@@ -37,10 +38,36 @@ public sealed class HttpContextIntercompanyAgreementAccessAuthority(
             || !string.Equals(owner, context.TenantId, StringComparison.Ordinal)))
             return false;
 
+        if (http.Items.TryGetValue(RequiredPermissionKey, out var required) && required is UserPermission explicitPermission)
+        {
+            if (!EndpointAuthorization.HasPermission(http, explicitPermission))
+                return false;
+            var reviewedEntities = await EndpointAuthorization.AuthorizeScopedManyAsync(http, explicitPermission,
+                AccessScopeKindDto.LegalEntity, ids, ct).ConfigureAwait(false);
+            return ids.IsSubsetOf(reviewedEntities);
+        }
+        if (http.Items.TryGetValue(RequiredPermissionKey, out required)
+            && required is IReadOnlyCollection<UserPermission> alternativePermissions)
+        {
+            if (EndpointAuthorization.HasPermission(http, UserPermission.AdminMaintenance))
+                return true;
+            var allowedEntities = new HashSet<Guid>();
+            foreach (var alternative in alternativePermissions.Distinct())
+            {
+                if (!EndpointAuthorization.HasPermission(http, alternative))
+                    continue;
+                allowedEntities.UnionWith(await EndpointAuthorization.AuthorizeScopedManyAsync(http, alternative,
+                    AccessScopeKindDto.LegalEntity, ids, ct).ConfigureAwait(false));
+            }
+            return ids.IsSubsetOf(allowedEntities);
+        }
         if (EndpointAuthorization.HasPermission(http, UserPermission.AdminMaintenance))
             return true;
-        var permission = EndpointAuthorization.HasPermission(http, UserPermission.ManageFundStructure)
-            ? UserPermission.ManageFundStructure : UserPermission.ManageDirectLending;
+        var permission = new[] { UserPermission.ManageFundStructure, UserPermission.ManageDirectLending,
+            UserPermission.ManageCompliance, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports }
+            .FirstOrDefault(candidate => EndpointAuthorization.HasPermission(http, candidate));
+        if (permission == UserPermission.None)
+            return false;
         var allowed = await EndpointAuthorization.AuthorizeScopedManyAsync(http, permission,
             AccessScopeKindDto.LegalEntity, ids, ct).ConfigureAwait(false);
         return ids.IsSubsetOf(allowed);

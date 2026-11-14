@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BacktestLedgerExportMapper
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BacktestLedgerExportMapper</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs:13](../../../../src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs#L13).
+
+Builds lot schedules from retained simulated portfolio evidence. No current market quote is substituted for a missing historical snapshot.
+
+```csharp
+public static class BacktestLedgerExportMapper
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerExportRequest Build(BacktestResult result, DateTimeOffset periodStart, DateTimeOffset asOf, string outputDirectory, ExportFormat format, string? financialAccountId = null);</code> | [src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs:15](../../../../src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs#L15) |  |
+
 ## BankFeedScheduleDefinition
 
 Qualified name: <code>Meridian.Ui.Shared.Services.BankFeedScheduleDefinition</code>. Kind: `record`.
@@ -915,25 +933,3 @@ Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.
 ```csharp
 public sealed record Start(string RunId) : CoveredCallCommand(RunId);
 ```
-
-## CoveredCallChainPreviewResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallChainPreviewResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:36](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L36).
-
-Result returned by ICoveredCallChainProviderFactory.PreviewAsync.
-
-```csharp
-public sealed record CoveredCallChainPreviewResult(decimal UnderlyingPrice, IReadOnlyList<OptionCandidateInfo> Candidates)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool CoverageKnown { get; init; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:40](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L40) |  |
-| <code>public IReadOnlyList&lt;DateOnly&gt; RequestedExpirations { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:41](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L41) |  |
-| <code>public IReadOnlyList&lt;DateOnly&gt; LoadedExpirations { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:42](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L42) |  |
-| <code>public IReadOnlyList&lt;DateTimeOffset&gt; SnapshotTimes { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:43](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L43) |  |
-| <code>public int? MaxStrikesPerExpiration { get; init; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:44](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L44) |  |

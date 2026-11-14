@@ -11,6 +11,17 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Contracts
 
+Native intercompany agreement terms add an optional null-omitted `StructuredTerms` companion for
+declared rates, schedules, allocations and guarantee disclosure. New decimals serialize as exact
+strings; omitted companions preserve retained legal command/review hashes. Separate external-review
+attestations retain reviewer and operator identities, while obligation-monitor DTOs carry advisory
+source/freshness evidence outside blocking close contributors. See
+[the native legal contract](../../docs/domain/intercompany-agreements.md).
+
+Optional legacy-attribution revocation records a reviewed exact-pin successor, preserving native
+legal hashes. Exact decimal strings are a transport convention of the new obligation-monitor
+endpoint; canonical balance-schedule serialization and evidence hashes remain unchanged.
+
 Backfill provider metadata includes vendor-tier presets and the selected tier ID without credentials.
 Shared settings responses expose saved-change impacts independently of active runtime confirmation.
 Nested backfill, provider, source and symbol-mapping DTO extension data retains host-owned validation

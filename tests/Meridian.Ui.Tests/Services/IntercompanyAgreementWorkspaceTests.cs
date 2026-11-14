@@ -4,7 +4,7 @@ using Meridian.Ui.Services.Services.Accounting;
 
 namespace Meridian.Ui.Tests.Services;
 
-public sealed class IntercompanyAgreementWorkspaceTests
+public sealed partial class IntercompanyAgreementWorkspaceTests
 {
     [Fact]
     public async Task MissingAuthorityIsVisibleAndDoesNotPermitCreate()
@@ -228,6 +228,12 @@ public sealed class IntercompanyAgreementWorkspaceTests
         public ApiResponse<IntercompanyAgreementDetailDto> DetailResponse { get; set; } = ApiResponse<IntercompanyAgreementDetailDto>.Fail("unavailable", 404);
         public List<IntercompanyAgreementCommandDto> Commands { get; } = [];
         public List<string> Actions { get; } = [];
+        public List<Meridian.Contracts.Ledger.AppendLegacyIntercompanyAttributionRequest> LegacyCommands { get; } = [];
+        public List<(Guid Book, DateOnly Date)> CoverageProfileReads { get; } = [];
+        public Task<ApiResponse<ResolvedIntercompanyAccountingArrangementDto[]>> GetCoverageProfilesAsync(Guid bookId, DateOnly asOf, CancellationToken ct = default)
+        { CoverageProfileReads.Add((bookId, asOf)); return Task.FromResult(ApiResponse<ResolvedIntercompanyAccountingArrangementDto[]>.Ok([])); }
+        public Task<ApiResponse<Meridian.Contracts.Ledger.LegacyIntercompanyAttributionDto>> AppendLegacyCoverageAsync(Meridian.Contracts.Ledger.AppendLegacyIntercompanyAttributionRequest request, CancellationToken ct = default)
+        { LegacyCommands.Add(request); return Task.FromResult(ApiResponse<Meridian.Contracts.Ledger.LegacyIntercompanyAttributionDto>.Fail("Authority unavailable", 503)); }
         public Func<Task<ApiResponse<IntercompanyAgreementListDto>>>? ListHandler { get; init; }
         public Task<ApiResponse<IntercompanyAgreementListDto>> ListAsync(IntercompanyAgreementQueryDto query, CancellationToken ct = default) => ListHandler?.Invoke() ?? Task.FromResult(ListResponse);
         public Task<ApiResponse<IntercompanyAgreementDetailDto>> GetAsync(Guid agreementId, DateOnly asOf, CancellationToken ct = default) => Task.FromResult(DetailResponse);

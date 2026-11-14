@@ -483,6 +483,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         AuditChainIntegrity = new AuditChainIntegrityViewModel(auditIntegrityClient);
         FactorPaydown = new FactorPaydownViewModel(factorPaydownClient);
         EntityConsolidation = new EntityConsolidationViewModel(entityConsolidationClient);
+        AttachEntityConsolidationSessionReset();
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _manualJournalEntryWorkbenchService = manualJournalApiClient ?? manualJournalEntryWorkbenchService ?? throw new ArgumentNullException(nameof(manualJournalEntryWorkbenchService));
         _capitalAccountWorkbenchService = capitalAccountWorkbenchService;

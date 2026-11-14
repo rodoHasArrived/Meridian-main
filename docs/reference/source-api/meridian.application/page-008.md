@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IGovernedPublicationAmender
+
+Qualified name: <code>Meridian.Application.SecurityMaster.IGovernedPublicationAmender</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs:26](../../../../src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs#L26).
+
+The publication write path of the governed workbench lifecycle. Only the published-revision merge (ApprovedFieldEditCanonicalMergeHandler) uses it.
+
+```csharp
+public interface IGovernedPublicationAmender
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityDetailDto&gt; AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs:29](../../../../src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs#L29) | Applies the merged amendment of an approved revision named by request.SourceRecordId. |
+
 ## IGovernedTermAmendmentPolicy
 
 Qualified name: <code>Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy</code>. Kind: `interface`.
@@ -996,22 +1014,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public NullSecurityMasterSnapshotRegenerationService(ILogger&lt;NullSecurityMasterSnapshotRegenerationService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterSnapshotRegenerationService.cs:102](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterSnapshotRegenerationService.cs#L102) |  |
 | <code>public Task&lt;SecurityMasterSnapshotRegenerationResult&gt; RegenerateAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterSnapshotRegenerationService.cs:107](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterSnapshotRegenerationService.cs#L107) |  |
-
-## NullUflProjectionRebuilder
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Rebuild.NullUflProjectionRebuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs:44](../../../../src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs#L44).
-
-No-op projection rebuilder used when Security Master backing storage is not configured.
-
-```csharp
-public sealed class NullUflProjectionRebuilder : IUflProjectionRebuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public NullUflProjectionRebuilder(ILogger&lt;NullUflProjectionRebuilder&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs:48](../../../../src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs#L48) |  |
-| <code>public Task RebuildAsync(string assetClass, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs:53](../../../../src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs#L53) |  |

@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SystemExecutionSummary
+
+Qualified name: <code>Meridian.Application.Scheduling.SystemExecutionSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:543](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L543).
+
+System-wide execution summary.
+
+```csharp
+public sealed record SystemExecutionSummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TimeSpan Period { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:545](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L545) |  |
+| <code>public int TotalExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:546](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L546) |  |
+| <code>public int CompletedExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:547](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L547) |  |
+| <code>public int FailedExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:548](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L548) |  |
+| <code>public double SuccessRate { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:549](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L549) |  |
+| <code>public long TotalBarsRetrieved { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:550](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L550) |  |
+| <code>public int TotalGapsFilled { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:551](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L551) |  |
+| <code>public double AverageDurationMinutes { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:552](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L552) |  |
+| <code>public Dictionary&lt;string, int&gt; ProviderUsage { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:553](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L553) |  |
+
 ## AlternativeAssetLotExtensions
 
 Qualified name: <code>Meridian.Application.SecurityMaster.AlternativeAssetLotExtensions</code>. Kind: `class`.
@@ -945,21 +971,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;EdgarIngestResult&gt; IngestAsync(EdgarIngestRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IEdgarIngestOrchestrator.cs:10](../../../../src/Meridian.Application/SecurityMaster/IEdgarIngestOrchestrator.cs#L10) |  |
-
-## IGovernedPublicationAmender
-
-Qualified name: <code>Meridian.Application.SecurityMaster.IGovernedPublicationAmender</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs:26](../../../../src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs#L26).
-
-The publication write path of the governed workbench lifecycle. Only the published-revision merge (ApprovedFieldEditCanonicalMergeHandler) uses it.
-
-```csharp
-public interface IGovernedPublicationAmender
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityDetailDto&gt; AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs:29](../../../../src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs#L29) | Applies the merged amendment of an approved revision named by request.SourceRecordId. |

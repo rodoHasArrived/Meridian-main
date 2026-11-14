@@ -22,7 +22,10 @@ public sealed class IntercompanyAccountingArrangementLegalAuthority(IIntercompan
             var selected = IntercompanyAgreementTimeline.Resolve(state.Revisions, economicDate);
             if (selected.Status == IntercompanyAgreementStatusDto.Active && selected.Revision is { } revision
                 && (revision.Terms.PartyOneId == entityId || revision.Terms.PartyTwoId == entityId))
+            {
+                IntercompanyAgreementReviewIntegrity.Validate(revision);
                 results.Add(revision);
+            }
         }
         return results.OrderBy(item => item.Terms.Code, StringComparer.Ordinal).ThenBy(item => item.AgreementId).ToArray();
     }
@@ -59,6 +62,7 @@ public sealed class IntercompanyAccountingArrangementLegalAuthority(IIntercompan
         if (reference.AgreementId != state.AgreementId || reference.AgreementVersion < 1 || revision is null
             || revision.Action == IntercompanyAgreementActionDto.Terminate || revision.PayloadHash != reference.PayloadHash)
             throw new InvalidOperationException("Accounting configuration must pin the exact approved canonical legal agreement version and payload hash.");
+        IntercompanyAgreementReviewIntegrity.Validate(revision);
         return revision;
     }
     private static IntercompanyAgreementRevisionDto Effective(IntercompanyAgreementStoreState state,

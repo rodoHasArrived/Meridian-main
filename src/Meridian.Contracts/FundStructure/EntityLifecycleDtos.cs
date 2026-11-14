@@ -39,7 +39,11 @@ public sealed record EntityLifecycleRevisionDto(
     string PreviousHash,
     string ContentHash,
     IReadOnlyList<EntityLifecycleStateDto> Timeline,
-    bool LegacySnapshot = false);
+    bool LegacySnapshot = false)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IntercompanyExternalReviewAttestationDto? ExternalReview { get; init; }
+}
 
 public sealed record EntityLifecycleEligibilityDto(
     bool Allowed,
@@ -54,4 +58,8 @@ public sealed record AppendEntityLifecycleRevisionRequestDto(
     long ExpectedRevision,
     IReadOnlyList<EntityLifecycleStateDto> Timeline,
     string Reason,
-    string EvidenceReference);
+    string EvidenceReference)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IntercompanyExternalReviewDto? ExternalReview { get; init; }
+}

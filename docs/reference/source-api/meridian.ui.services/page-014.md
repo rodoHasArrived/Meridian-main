@@ -6,6 +6,91 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageOptimizationAdvisorService
+
+Qualified name: <code>Meridian.Ui.Services.StorageOptimizationAdvisorService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:24](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L24).
+
+Service for analyzing storage and providing optimization recommendations. Implements Feature Refinement #63 - Archive Storage Optimization Advisor. This service provides storage analysis and delegates operations to the core service via HTTP API endpoints when available: - /api/storage/catalog - Storage catalog for file discovery - /api/storage/tiers/statistics - Tier statistics - /api/storage/tiers/plan - Migration planning - /api/storage/tiers/migrate - Tier migration execution - /api/storage/maintenance/defrag - Defragmentation execution
+
+```csharp
+public sealed class StorageOptimizationAdvisorService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StorageOptimizationAdvisorService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:36](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L36) |  |
+| <code>public async Task&lt;StorageOptimizationReport&gt; AnalyzeStorageAsync(string dataRoot, StorageAnalysisOptions options, IProgress&lt;StorageAnalysisProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:46](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L46) | Analyzes storage and generates optimization recommendations. |
+| <code>public async Task&lt;OptimizationExecutionResult&gt; ExecuteOptimizationAsync(OptimizationRecommendation recommendation, IProgress&lt;OptimizationProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:495](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L495) | Executes a specific optimization recommendation. |
+| <code>public async Task&lt;TierStatisticsApiResult?&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1238](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1238) | Gets tier statistics from the core API. |
+| <code>public async Task&lt;MigrationPlanApiResult?&gt; GetMigrationPlanAsync(string targetTier = &quot;cold&quot;, int ageDaysThreshold = 90, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1256](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1256) | Gets a migration plan from the core API for files to move between tiers. |
+| <code>public async Task&lt;DefragmentationApiResult?&gt; RunDefragmentationAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1284](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1284) | Runs defragmentation via the core API. |
+| <code>public async Task&lt;StorageCatalogApiResult?&gt; GetStorageCatalogAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1302](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1302) | Gets the storage catalog from the core API for comprehensive file analysis. |
+
+## StorageOptimizationReport
+
+Qualified name: <code>Meridian.Ui.Services.StorageOptimizationReport</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1344](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1344).
+
+Storage optimization report.
+
+```csharp
+public sealed class StorageOptimizationReport
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTime AnalyzedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1346](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1346) |  |
+| <code>public TimeSpan AnalysisDuration { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1347](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1347) |  |
+| <code>public string DataRoot { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1348](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1348) |  |
+| <code>public bool WasCancelled { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1349](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1349) |  |
+| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1352](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1352) |  |
+| <code>public long TotalBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1353](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1353) |  |
+| <code>public List&lt;AnalyzedFile&gt; AnalyzedFiles { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1354](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1354) |  |
+| <code>public List&lt;OptimizationRecommendation&gt; Recommendations { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1357](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1357) |  |
+| <code>public int DuplicateFilesCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1360](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1360) |  |
+| <code>public long DuplicateBytesTotal { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1361](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1361) |  |
+| <code>public int UncompressedFilesCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1364](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1364) |  |
+| <code>public long CompressionSavingsEstimate { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1365](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1365) |  |
+| <code>public int SmallFilesCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1368](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1368) |  |
+| <code>public int TieringCandidatesCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1371](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1371) |  |
+| <code>public long TieringCandidatesBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1372](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1372) |  |
+| <code>public long TotalPotentialSavings { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1375](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1375) |  |
+| <code>public long ProjectedUsageAfterOptimization { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1376](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1376) |  |
+| <code>public TimeSpan EstimatedOptimizationTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1377](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1377) |  |
+| <code>public List&lt;string&gt; Errors { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1380](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1380) |  |
+| <code>public string GetSummary();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1385](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1385) | Gets a formatted report summary. |
+
+## StorageRetentionPolicy
+
+Qualified name: <code>Meridian.Ui.Services.StorageRetentionPolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:269](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L269).
+
+A storage retention policy definition for administrative operations. Note: Renamed from RetentionPolicy to avoid conflict with Meridian.Ui.Services.RetentionPolicy in RetentionAssuranceModels.cs which handles data retention periods.
+
+```csharp
+public sealed class StorageRetentionPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:271](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L271) |  |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:272](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L272) |  |
+| <code>public int RetentionDays { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:273](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L273) |  |
+| <code>public string? SymbolPattern { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:274](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L274) |  |
+| <code>public List&lt;string&gt;? EventTypes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:275](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L275) |  |
+| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:276](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L276) |  |
+| <code>public bool IsDefault { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:277](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L277) |  |
+
 ## StorageServiceBase
 
 Qualified name: <code>Meridian.Ui.Services.StorageServiceBase</code>. Kind: `class`.
@@ -1140,87 +1225,3 @@ Declared public members:
 | <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:269](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L269) |  |
 | <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:270](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L270) |  |
 | <code>public Dictionary&lt;string, object&gt;? Details { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:271](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L271) |  |
-
-## SystemHealthService
-
-Qualified name: <code>Meridian.Ui.Services.SystemHealthService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SystemHealthService.cs:13](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L13).
-
-Service for monitoring system health, connection diagnostics, and anomaly detection.
-
-```csharp
-public sealed class SystemHealthService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SystemHealthService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:18](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L18) |  |
-| <code>public async Task&lt;SystemHealthSummary?&gt; GetHealthSummaryAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:33](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L33) | Gets overall system health summary. |
-| <code>public async Task&lt;List&lt;ProviderHealth&gt;?&gt; GetProviderHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:41](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L41) | Gets connection health for all providers. |
-| <code>public async Task&lt;ProviderReadinessSummaryDto?&gt; GetProviderReadinessAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:49](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L49) | Gets the shared provider readiness command-center model. |
-| <code>public async Task&lt;ProviderDiagnosticsSnapshot?&gt; GetProviderDiagnosticsAsync(string provider, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:57](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L57) | Gets detailed diagnostics for a specific provider. |
-| <code>public async Task&lt;StorageHealth?&gt; GetStorageHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:65](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L65) | Gets storage health status. |
-| <code>public async Task&lt;List&lt;SystemEvent&gt;?&gt; GetRecentEventsAsync(int limit = 50, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:73](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L73) | Gets recent system events and errors. |
-| <code>public async Task&lt;SystemMetrics?&gt; GetSystemMetricsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:81](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L81) | Gets system resource metrics. |
-| <code>public async Task&lt;ConnectionTestResult?&gt; TestConnectionAsync(string provider, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:89](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L89) | Runs a connection test for a provider. |
-| <code>public async Task&lt;DiagnosticBundle?&gt; GenerateDiagnosticBundleAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:97](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L97) | Generates a diagnostic bundle. |
-
-## SystemHealthSummary
-
-Qualified name: <code>Meridian.Ui.Services.SystemHealthSummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SystemHealthService.cs:164](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L164).
-
-Summarizes system health, connections, latency, processed events, storage usage, alerts, and uptime.
-
-```csharp
-public sealed class SystemHealthSummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string OverallStatus { get; set; } = &quot;Unknown&quot;;</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:166](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L166) |  |
-| <code>public bool IsHealthy { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:167](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L167) |  |
-| <code>public int ActiveConnections { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:168](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L168) |  |
-| <code>public int HealthyConnections { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:169](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L169) |  |
-| <code>public int UnhealthyConnections { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:170](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L170) |  |
-| <code>public double AverageLatencyMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:171](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L171) |  |
-| <code>public long TotalEventsProcessed { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:172](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L172) |  |
-| <code>public long EventsLast24Hours { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:173](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L173) |  |
-| <code>public double StorageUsedPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:174](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L174) |  |
-| <code>public int ActiveAlerts { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:175](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L175) |  |
-| <code>public DateTime LastUpdated { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:176](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L176) |  |
-| <code>public TimeSpan Uptime { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:177](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L177) |  |
-
-## SystemMetrics
-
-Qualified name: <code>Meridian.Ui.Services.SystemMetrics</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SystemHealthService.cs:277](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L277).
-
-Captures timestamped process resources, event and byte rates, connections, and pending operations.
-
-```csharp
-public sealed class SystemMetrics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public double CpuUsagePercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:279](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L279) |  |
-| <code>public long MemoryUsedBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:280](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L280) |  |
-| <code>public long MemoryTotalBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:281](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L281) |  |
-| <code>public double MemoryUsedPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:282](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L282) |  |
-| <code>public int ThreadCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:283](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L283) |  |
-| <code>public int HandleCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:284](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L284) |  |
-| <code>public double EventsPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:285](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L285) |  |
-| <code>public double BytesPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:286](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L286) |  |
-| <code>public int ActiveConnections { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:287](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L287) |  |
-| <code>public int PendingOperations { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:288](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L288) |  |
-| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:289](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L289) |  |

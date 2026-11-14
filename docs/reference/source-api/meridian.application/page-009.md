@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NullUflProjectionRebuilder
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Rebuild.NullUflProjectionRebuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs:44](../../../../src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs#L44).
+
+No-op projection rebuilder used when Security Master backing storage is not configured.
+
+```csharp
+public sealed class NullUflProjectionRebuilder : IUflProjectionRebuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public NullUflProjectionRebuilder(ILogger&lt;NullUflProjectionRebuilder&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs:48](../../../../src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs#L48) |  |
+| <code>public Task RebuildAsync(string assetClass, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs:53](../../../../src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs#L53) |  |
+
 ## SecurityMasterAggregateRebuilder
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Rebuild.SecurityMasterAggregateRebuilder</code>. Kind: `class`.
@@ -962,16 +981,4 @@ The canonical state a field-edit proposal was drafted against: the security vers
 
 ```csharp
 public sealed record SecurityMasterRevisionFieldBase(long BaseVersion, string FieldSnapshot);
-```
-
-## SecurityMasterRevisionFieldValue
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionFieldValue</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:83](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L83).
-
-The exact overlay VALUE a field-edit revision governs — null models a staged CLEAR. Wrapping the nullable value distinguishes &quot;the edit recorded a clear&quot; from &quot;no value was recorded at all&quot; (legacy revisions predating value persistence), which discard-time restoration must tell apart: a recorded clear restores by removing the key, while an unrecorded value is unrecoverable and falls back to the fail-closed sibling handling.
-
-```csharp
-public sealed record SecurityMasterRevisionFieldValue(string? Value);
 ```

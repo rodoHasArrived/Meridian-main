@@ -6,6 +6,25 @@ public sealed partial class AccountingConfigureViewModel
 {
     public EntityConsolidationViewModel EntityConsolidation { get; }
 
+    private void AttachEntityConsolidationSessionReset()
+    {
+        if (_authenticationSession is null)
+            return;
+        System.Windows.WeakEventManager<Meridian.Wpf.Services.DesktopAuthenticationSession, EventArgs>.AddHandler(
+            _authenticationSession, nameof(Meridian.Wpf.Services.DesktopAuthenticationSession.SignedOut), OnEntityConsolidationSessionChanged);
+        System.Windows.WeakEventManager<Meridian.Wpf.Services.DesktopAuthenticationSession, EventArgs>.AddHandler(
+            _authenticationSession, nameof(Meridian.Wpf.Services.DesktopAuthenticationSession.SignedIn), OnEntityConsolidationSessionChanged);
+    }
+
+    private void OnEntityConsolidationSessionChanged(object? sender, EventArgs args)
+    {
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is not null && !dispatcher.CheckAccess())
+            dispatcher.Invoke(EntityConsolidation.ResetSession);
+        else
+            EntityConsolidation.ResetSession();
+    }
+
     private void ApplyEntityConsolidationBooks(IReadOnlyList<LedgerBookDto> books)
     {
         var dispatcher = System.Windows.Application.Current?.Dispatcher;
