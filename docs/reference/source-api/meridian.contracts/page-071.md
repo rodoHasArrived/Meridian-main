@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementRunReconcileRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunReconcileRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:317](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L317).
+
+Request to trigger reconciliation matching for an existing statement run.
+
+```csharp
+public sealed record StatementRunReconcileRequestDto(string? Actor = null, string? Reason = null, bool Force = false);
+```
+
 ## StatementRunStatus
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementRunStatus</code>. Kind: `enum`.
@@ -634,22 +646,3 @@ Compact cash-flow digest attached to a continuity drill-in.
 ```csharp
 public sealed record StrategyRunCashFlowDigest(DateTimeOffset AsOf, string Currency, int TotalEntries, decimal TotalInflows, decimal TotalOutflows, decimal NetCashFlow, decimal ProjectedNetPosition, int BucketCount, DateTimeOffset? NextBucketStart = null, DateTimeOffset? NextBucketEnd = null, decimal? NextBucketNetFlow = null);
 ```
-
-## StrategyRunComparison
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunComparison</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:667](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L667).
-
-Comparison row used when reviewing multiple runs side by side.
-
-```csharp
-public sealed record StrategyRunComparison(string RunId, string StrategyName, StrategyRunMode Mode, StrategyRunEngine Engine, StrategyRunStatus Status, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, decimal? MaxDrawdown, double? SharpeRatio, int FillCount, DateTimeOffset LastUpdatedAt, StrategyRunPromotionState PromotionState = StrategyRunPromotionState.None, bool HasLedger = false, bool HasAuditTrail = false, IReadOnlyList<string>? CompatibilityWarnings = null, StrategyRunArtifactCompleteness? ArtifactCompleteness = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:686](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L686) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:688](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L688) |  |

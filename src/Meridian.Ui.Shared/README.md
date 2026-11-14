@@ -795,7 +795,8 @@ incumbent opening balances, explain differences, issue the parallel-run certific
 `OnboardingOpeningStateSource` supplies Meridian's own start-date balances, NAV components and
 positions. `IBookOfRecordGuard` is registered over the onboarding store. `ClosePublicationReadinessGuard`
 resolves it lazily and blocks hard-close with `CLOSE_SHADOW_BOOK`, and governed report release refuses
-a shadow book.
+a shadow book. `FileOnboardingWorkspaceStore` enforces one active shadow trial per ledger book inside the
+save's writer lease and returns a concurrency conflict to the losing designation.
 
 `FileOnboardingWorkspaceStore` persists full comparison payloads and frozen readiness packets using
 atomic file replacement, writer leases and expected-version checks. Retained history cannot be

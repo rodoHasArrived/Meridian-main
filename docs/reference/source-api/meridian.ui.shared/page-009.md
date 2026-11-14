@@ -702,18 +702,18 @@ Declared public members:
 | <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:39](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L39) |  |
 | <code>public System.Threading.Tasks.Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:52](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L52) | Read-modify-write under the configuration lock; see the core store for the contract. |
 | <code>public System.Threading.Tasks.Task&lt;T&gt; UpdateWithConfirmationAsync&lt;T&gt;(Func&lt;Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)&gt; update, bool confirmDataSemantics, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:58](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L58) | Explicit confirmation is required for edits changing the meaning of newly stored data. |
-| <code>public System.Threading.Tasks.Task UpdateAsync(Func&lt;Meridian.Core.Config.AppConfig, Meridian.Core.Config.AppConfig&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:70](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L70) | Read-modify-write under the configuration lock; see the core store for the contract. |
-| <code>public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:75](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L75) |  |
-| <code>public string? TryLoadStatusJson() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:78](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L78) |  |
-| <code>public string GetDataRoot(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:80](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L80) |  |
-| <code>public string GetStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:83](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L83) |  |
-| <code>public string GetBackfillStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:86](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L86) |  |
+| <code>public System.Threading.Tasks.Task UpdateAsync(Func&lt;Meridian.Core.Config.AppConfig, Meridian.Core.Config.AppConfig&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:72](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L72) | Read-modify-write under the configuration lock; see the core store for the contract. |
+| <code>public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:77](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L77) |  |
+| <code>public string? TryLoadStatusJson() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:80](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L80) |  |
+| <code>public string GetDataRoot(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:82](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L82) |  |
+| <code>public string GetStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:85](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L85) |  |
+| <code>public string GetBackfillStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:88](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L88) |  |
 
 ## ConfigStoreExtensions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ConfigStoreExtensions</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ConfigStore.cs:96](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L96).
+Source: [src/Meridian.Ui.Shared/Services/ConfigStore.cs:98](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L98).
 
 Configures the core ConfigStore default path resolver for web dashboard hosting.
 
@@ -725,7 +725,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void UseWebDefaultPath();</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:98](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L98) |  |
+| <code>public static void UseWebDefaultPath();</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:100](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L100) |  |
 
 ## ConfiguredReportingHttpRelayClient
 

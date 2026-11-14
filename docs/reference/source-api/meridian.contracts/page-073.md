@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SyncValidationResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.SyncValidationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L16).
+
+```csharp
+public sealed record SyncValidationResult(bool Passed, IReadOnlyList<SyncCompletenessResult> CompletenessChecks, IReadOnlyList<DeltaOutlierResult> OutlierChecks, IReadOnlyList<string> Warnings);
+```
+
 ## ThresholdBreachDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ThresholdBreachDto</code>. Kind: `record`.
@@ -346,7 +356,7 @@ public sealed record VersionedReportTemplateIdDto(string Name, int Version);
 
 Qualified name: <code>Meridian.Contracts.Workstation.WithdrawShadowBookRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L42).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L44).
 
 ```csharp
 public sealed record WithdrawShadowBookRequestDto(int ExpectedVersion, string Reason);
@@ -586,14 +596,4 @@ Accounting run-card governance details linked to strategy evidence.
 
 ```csharp
 public sealed record WorkstationAccountingRunGovernancePayload(bool HasAuditTrail, bool HasPortfolio, bool HasLedger, string? DatasetReference, string? FeedReference);
-```
-
-## WorkstationAccountingRunReconciliationPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunReconciliationPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:781](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L781).
-
-```csharp
-public sealed record WorkstationAccountingRunReconciliationPayload(string? ReconciliationRunId, int BreakCount, int OpenBreakCount, int MatchCount, bool HasTimingDrift, int SecurityIssueCount, bool HasSecurityCoverageIssues, string? LastUpdated, string Tone);
 ```

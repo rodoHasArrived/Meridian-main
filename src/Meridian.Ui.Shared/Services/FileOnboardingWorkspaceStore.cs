@@ -124,6 +124,18 @@ public sealed class FileOnboardingWorkspaceStore(string snapshotPath)
                     throw new OnboardingValidationException("A promoted or withdrawn shadow designation is final.");
             }
 
+            // Book-level exclusivity is checked inside the same writer lease as the save, so two concurrent
+            // designations of one ledger book cannot both pass a pre-save read.
+            if (retained.ShadowDesignation?.State == OnboardingShadowStates.Shadow && current?.ShadowDesignation is null
+                && snapshot.Workspaces.Any(item => item.WorkspaceId != retained.WorkspaceId
+                    && item.Scope.TenantId == retained.Scope.TenantId
+                    && item.Scope.LedgerBookId == retained.Scope.LedgerBookId
+                    && item.ShadowDesignation?.State is OnboardingShadowStates.Shadow or OnboardingShadowStates.Promoted))
+            {
+                throw new OnboardingConcurrencyException(
+                    "Another onboarding workspace already holds this ledger book in shadow mode or promoted it. Refresh before retrying.");
+            }
+
             return new Snapshot(snapshot.Workspaces.Where(item => item.WorkspaceId != retained.WorkspaceId).Append(retained).ToArray());
         }, ct).ConfigureAwait(false);
     }

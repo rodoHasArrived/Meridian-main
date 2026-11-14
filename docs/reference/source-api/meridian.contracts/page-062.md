@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsApprovalPolicyRuleAuditEventDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalPolicyRuleAuditEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:796](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L796).
+
+```csharp
+public sealed record OperationsApprovalPolicyRuleAuditEventDto(string AuditId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Rationale, string CorrelationId, string PolicyKey, string Action, OperationsGateKeyDto Gate, int RequiredDistinctApprovals, bool RequiresIndependentReviewer, bool RequiresReportPack, bool RequiresChecklistControlApprovals);
+```
+
 ## OperationsApprovalPolicyRuleUpsertRequestDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalPolicyRuleUpsertRequestDto</code>. Kind: `record`.
@@ -636,24 +646,3 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:633](../
 ```csharp
 public sealed record OperationsReconciliationRunRequestDto(long ExpectedVersion, string Actor, string? Rationale = null, string? CorrelationId = null, IReadOnlyList<OperationsBreakCaseDto>? BreakCases = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, int? SecurityCoverageIssueCount = null, int? SecurityAccountingIssueCount = null, int? ExpectedAccountingEventCount = null, int? ExpectedJournalPreviewCount = null, string? SourceRunId = null, string? ReconciliationRunId = null, Guid? BankEntityId = null, decimal? AmountTolerance = null, int? MaxAsOfDriftMinutes = null, IReadOnlyList<OperationsReconciliationLaneSummaryDto>? ReconciliationLanes = null);
 ```
-
-## OperationsReconciliationStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsReconciliationStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:82](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L82).
-
-```csharp
-public enum OperationsReconciliationStateDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending = 0</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L84) |  |
-| <code>AutoMatched = 1</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:85](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L85) |  |
-| <code>ExceptionsOpen = 2</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:86](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L86) |  |
-| <code>InReview = 3</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L87) |  |
-| <code>Cleared = 4</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L88) |  |
-| <code>Complete = 5</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:89](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L89) |  |
