@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PortfolioLedgerDriftDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PortfolioLedgerDriftDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L49).
+
+```csharp
+public sealed record PortfolioLedgerDriftDto(string DriftType, string Detail, string RemediationHint);
+```
+
+## PortfolioLedgerWorkflowStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PortfolioLedgerWorkflowStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L40).
+
+```csharp
+public enum PortfolioLedgerWorkflowStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Ready = 0</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L42) |  |
+| <code>Partial = 1</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L43) |  |
+| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L44) |  |
+| <code>DriftDetected = 3</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:45](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L45) |  |
+| <code>AwaitingReconciliation = 4</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L46) |  |
+
+## PortfolioLedgerWorkflowStatusSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PortfolioLedgerWorkflowStatusSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L54).
+
+```csharp
+public sealed record PortfolioLedgerWorkflowStatusSnapshotDto(PortfolioLedgerWorkflowStatusDto PortfolioLedgerReview, PortfolioLedgerWorkflowStatusDto Reconciliation, IReadOnlyList<PortfolioLedgerDriftDto> Drifts, string Summary);
+```
+
 ## PortfolioPositionSummary
 
 Qualified name: <code>Meridian.Contracts.Workstation.PortfolioPositionSummary</code>. Kind: `record`.
@@ -612,70 +652,3 @@ Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:85](../../../../src/
 ```csharp
 public sealed record RecommendedActionDto(string Label, string Route, string Description);
 ```
-
-## ReconciliationBreakCategory
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakCategory</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L54).
-
-Canonical classification for reconciliation outcomes.
-
-```csharp
-public enum ReconciliationBreakCategory : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>AmountMismatch = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L56) |  |
-| <code>MissingLedgerCoverage = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L57) |  |
-| <code>MissingPortfolioCoverage = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L58) |  |
-| <code>ClassificationGap = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:59](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L59) |  |
-| <code>TimingMismatch = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L60) |  |
-| <code>MissingBankCoverage = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:61](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L61) |  |
-| <code>CashMismatch = 6</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L62) |  |
-| <code>MissingCashCoverage = 7</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L63) |  |
-| <code>MissingExternalStatementCoverage = 8</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L64) |  |
-| <code>ExternalStatementMismatch = 9</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L65) |  |
-| <code>PartialMatch = 10</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L66) |  |
-
-## ReconciliationBreakDispositionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakDispositionDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:459](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L459).
-
-```csharp
-public enum ReconciliationBreakDispositionDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Resolved = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:461](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L461) |  |
-| <code>Waived = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:462](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L462) |  |
-| <code>Superseded = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:463](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L463) |  |
-
-## ReconciliationBreakDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:141](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L141).
-
-Break row emitted by the reconciliation engine.
-
-```csharp
-public sealed record ReconciliationBreakDto(string CheckId, string Label, ReconciliationBreakCategory Category, ReconciliationBreakStatus Status, string MissingSource, decimal? ExpectedAmount, decimal? ActualAmount, decimal Variance, ReconciliationBreakSeverity Severity, string Reason, DateTimeOffset? ExpectedAsOf, DateTimeOffset? ActualAsOf, OperationsContinuityCorrelationKeysDto? CorrelationKeys = null, IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateTimeOffset? FirstObservedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:161](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L161) | When this logical break was first observed. Reconciliation retries retain this value even when the current variance, category, or reason changes. Legacy records may omit it. |
-| <code>public string? LogicalBreakIdentity { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:168](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L168) | Canonical identity used to carry first-observation continuity across retries. The identity excludes variance, category, reason, and status so those attributes may evolve without creating a new logical break. |
-| <code>public Guid? BankEntityId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:170](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L170) |  |
-| <code>public string? SourceScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:172](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L172) |  |

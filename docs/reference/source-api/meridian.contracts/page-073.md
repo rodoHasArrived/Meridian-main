@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingBrokerageRecoveryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs#L4).
+
+Account-scoped broker evidence used by execution risk and recovery.
+
+```csharp
+public sealed record TradingBrokerageRecoveryDto(Guid? FundAccountId, string? ProviderId, string? ExternalAccountId, string Status, string Detail, TradingBrokerageRecoveryPortfolioDto? Portfolio, IReadOnlyList<string> BlockingReasons, IReadOnlyList<TradingBrokerageAffectedRunDto> AffectedRuns);
+```
+
+## TradingBrokerageRecoveryPortfolioDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs#L14).
+
+```csharp
+public sealed record TradingBrokerageRecoveryPortfolioDto(decimal? Cash, decimal? BuyingPower, decimal? PortfolioValue, string? Currency, int PositionCount, DateTimeOffset? ObservedAt, DateTimeOffset? LastAttemptedAt, DateTimeOffset? LastSuccessfulAt, bool IsComplete, bool IsFresh, bool IsConsistent, IReadOnlyList<string> Warnings, DateTimeOffset? ExpiresAt = null);
+```
+
+## TradingBrokerageRecoveryRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingBrokerageRecoveryRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs#L36).
+
+The external account is resolved from the retained account link, never client input.
+
+```csharp
+public sealed record TradingBrokerageRecoveryRequestDto(Guid FundAccountId);
+```
+
 ## TradingControlEvidenceDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.TradingControlEvidenceDto</code>. Kind: `record`.
@@ -555,44 +589,4 @@ Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:44](../../../..
 
 ```csharp
 public sealed record WorkstationBrokerageAccountDto(string ProviderId, string AccountId, string DisplayName, string Status, string Currency, DateTimeOffset RetrievedAt, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
-```
-
-## WorkstationBrokerageAccountLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationBrokerageAccountLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L53).
-
-```csharp
-public sealed record WorkstationBrokerageAccountLinkDto(Guid FundAccountId, string ProviderId, string ExternalAccountId, string DisplayName, DateTimeOffset LinkedAt, string? LinkedBy = null, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
-```
-
-## WorkstationBrokerageSyncHealth
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationBrokerageSyncHealth</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L8).
-
-```csharp
-public enum WorkstationBrokerageSyncHealth
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unlinked = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L10) |  |
-| <code>Healthy = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L11) |  |
-| <code>Stale = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L12) |  |
-| <code>Degraded = 3</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L13) |  |
-| <code>Failed = 4</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L14) |  |
-
-## WorkstationBrokerageSyncRunRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationBrokerageSyncRunRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L37).
-
-```csharp
-public sealed record WorkstationBrokerageSyncRunRequestDto(string? ProviderId = null, string? ExternalAccountId = null, string? RequestedBy = null, DateTimeOffset? Since = null, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
 ```

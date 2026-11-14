@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportWriterGridDataDictionaryFieldDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDataDictionaryFieldDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1570](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1570).
+
+```csharp
+public sealed record ReportWriterGridDataDictionaryFieldDto(string Key, string Label, string Role, string SourceField, string DataType, bool IsGenerated, string Description);
+```
+
+## ReportWriterGridDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1483](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1483).
+
+```csharp
+public sealed record ReportWriterGridDefinitionDto(string GridId, string Title, ReportWriterGridKindDto Kind, IReadOnlyList<string>? RowFields = null, IReadOnlyList<string>? ColumnFields = null, IReadOnlyList<ReportWriterMetricDefinitionDto>? Metrics = null, IReadOnlyList<ReportWriterFormulaDefinitionDto>? Formulas = null, int? TopN = null, string? SortBy = null, bool SortDescending = true, IReadOnlyList<ReportWriterFilterDefinitionDto>? Filters = null, IReadOnlyList<ReportWriterFormatRuleDto>? FormatRules = null, ReportWriterChartDefinitionDto? Chart = null);
+```
+
+## ReportWriterGridDiffCellDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDiffCellDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1622](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1622).
+
+```csharp
+public sealed record ReportWriterGridDiffCellDto(string Column, string? PriorValue, string? CurrentValue, string? Delta, ReportWriterDiffDirectionDto Direction);
+```
+
 ## ReportWriterGridDiffDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDiffDto</code>. Kind: `record`.
@@ -537,47 +567,4 @@ Structured posture or reconciliation issue from Security Master-driven accountin
 
 ```csharp
 public sealed record SecurityMasterAccountingIssueDto(string Code, string Source, string Symbol, string? AccountId, string Reason, ReconciliationBreakSeverity Severity, string? EvidenceLink = null, decimal? ExpectedAmount = null, decimal? ActualAmount = null);
-```
-
-## SecurityMasterCanonicalMergeOutcomeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:175](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L175).
-
-The canonical-merge outcome of a publish, with an operator-facing explanation and, when the canonical record was read or amended, its version.
-
-```csharp
-public sealed record SecurityMasterCanonicalMergeOutcomeDto(SecurityMasterCanonicalMergeOutcomeKind Outcome, string Detail, long? CanonicalVersion);
-```
-
-## SecurityMasterCanonicalMergeOutcomeKind
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:156](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L156).
-
-What publishing an approved revision did to the canonical (golden) record.
-
-```csharp
-public enum SecurityMasterCanonicalMergeOutcomeKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotApplicable</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:159](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L159) | The revision changes no asset-specific term (an annotation path, or a clear). |
-| <code>OverlayOnly</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:162](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L162) | The approved value stays an overlay annotation; the canonical terms are unchanged. |
-| <code>AlreadyCanonical</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:165](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L165) | The canonical terms already held the approved value; no amendment was appended. |
-| <code>Merged</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:168](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L168) | The approved value was merged into the canonical terms. |
-
-## SecurityMasterChangeHistoryItemDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterChangeHistoryItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:209](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L209).
-
-```csharp
-public sealed record SecurityMasterChangeHistoryItemDto(string ChangeId, long StreamVersion, string EventType, DateTimeOffset ChangedAtUtc, DateTimeOffset? EffectiveAtUtc, string Actor, string Origin, string SourceSystem, string? SourceRecordId, string? Reason, string Summary, IReadOnlyList<string> ChangedFields, string ChangedFieldsSummary);
 ```

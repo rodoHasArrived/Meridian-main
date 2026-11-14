@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SinglePrincipalAttestationWorkspaceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationWorkspaceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:126](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L126).
+
+```csharp
+public sealed record SinglePrincipalAttestationWorkspaceDto(SinglePrincipalAttestationStateDto State, string Actor, bool CanAdministerDeclaration, bool CanAttest, bool CanRevoke, bool CanAttestDrafts = false, bool CanRevokeDrafts = false);
+```
+
+## SinglePrincipalDeclarationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalDeclarationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:50](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L50).
+
+```csharp
+public sealed record SinglePrincipalDeclarationDto(Guid DeclarationId, long Revision, SinglePrincipalAttestationScopeDto Scope, bool Enabled, string PrincipalId, string PolicyVersion, string PolicyHash, string ChangedBy, DateTimeOffset RecordedAt, string Reason);
+```
+
+## StarterWorkspaceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StarterWorkspaceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L70).
+
+```csharp
+public sealed record StarterWorkspaceDto(string Id, string Name, string Goal, string Description, string DefaultRoute);
+```
+
 ## StartWorkflow
 
 Qualified name: <code>Meridian.Contracts.Workstation.StartWorkflow</code>. Kind: `record`.
@@ -641,50 +671,3 @@ Source metadata for a broker, custodian, or administrator statement payload.
 ```csharp
 public sealed record StatementSourceDto(string? SourceId, string? SourceKind, string? SourceSystem, string? AccountId, string? AccountName, string? Currency, DateOnly? PeriodStart, DateOnly? PeriodEnd, DateTimeOffset? StatementAsOfUtc = null, string? CustodianId = null, string? ExternalAccountId = null);
 ```
-
-## StatementToReportArtifactDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementToReportArtifactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:328](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L328).
-
-Source-compatibility artifact contract for pre-rename clients.
-
-```csharp
-public sealed record StatementToReportArtifactDto(string ArtifactId, string ArtifactKind, string FileName, string ContentType, long ByteLength, string ContentHashSha256, string DownloadRoute, DateTimeOffset RetainedAtUtc);
-```
-
-## StatementToReportWorkflowDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementToReportWorkflowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:343](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L343).
-
-Source-compatibility workflow contract for pre-rename clients. Legacy HTTP routes project this wire shape directly over the canonical statement reconciliation report operation.
-
-```csharp
-public sealed record StatementToReportWorkflowDto(string WorkflowId, StatementToReportWorkflowStatusDto Status, long Version, string TenantId, string? CompanyId, string SourceInstitution, string FundAccountId, string ExternalAccountId, DateOnly PeriodStart, DateOnly PeriodEnd, string? StatementRunId, EvidenceVaultIdentityDto? EvidenceVaultIdentity, IReadOnlyList<StatementToReportArtifactDto> RetainedArtifacts, IReadOnlyList<string> EvidenceReferences, int BreakCount, int CaseCount, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, DateTimeOffset? CompletedAtUtc, string? FailureReason, string? RecoveryAction, string StatusRoute, string ResumeRoute);
-```
-
-## StatementToReportWorkflowStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementToReportWorkflowStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:316](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L316).
-
-Source-compatibility status contract for clients compiled before the operation was renamed. Newly persisted and returned workflows use StatementReconciliationReportWorkflowStatusDto.
-
-```csharp
-public enum StatementToReportWorkflowStatusDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>InputRetained = 0</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:318](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L318) |  |
-| <code>Importing = 1</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:319](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L319) |  |
-| <code>AwaitingReconciliation = 2</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:320](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L320) |  |
-| <code>RenderingReport = 3</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:321](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L321) |  |
-| <code>Completed = 4</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:322](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L322) |  |
-| <code>Failed = 5</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:323](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L323) |  |

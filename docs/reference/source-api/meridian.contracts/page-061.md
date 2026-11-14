@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MarginControlAlertDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.MarginControlAlertDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs#L57).
+
+```csharp
+public sealed record MarginControlAlertDto(string Severity = default !, string ProviderId = default !, string AccountId = default !, string Code = default !, string Message = default !, string SuggestedAction = default !);
+```
+
+## MarginControlCenterDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.MarginControlCenterDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs#L65).
+
+```csharp
+public sealed record MarginControlCenterDto(DateTimeOffset GeneratedAtUtc = default, IReadOnlyList<MarginControlAccountDto> Accounts = default !, IReadOnlyList<MarginControlPrimeSummaryDto> PrimeSummaries = default !, IReadOnlyList<MarginControlAlertDto> Alerts = default !, int ProviderCount = default, int AccountCount = default, int ProvisionalAccountCount = default, int EndOfDayCertificationCandidateCount = default, string AuthorityNote = default !, string NextAction = default !);
+```
+
+## MarginControlPrimeSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs#L49).
+
+```csharp
+public sealed record MarginControlPrimeSummaryDto(string ProviderId = default !, int AccountCount = default, decimal TotalEquity = default, decimal? ProviderMaintenanceMargin = null, decimal? ProviderExcessLiquidity = null, int CriticalAccountCount = default);
+```
+
 ## MarginPositionContributionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.MarginPositionContributionDto</code>. Kind: `record`.
@@ -546,43 +576,3 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:770](../
 ```csharp
 public sealed record OperationsApprovalPolicyRuleUpsertRequestDto(string PolicyKey, string WorkflowArea, string Action, OperationsGateKeyDto Gate, string Trigger, string RequiredPermission, string SubmitterRole, string ReviewerRole, int RequiredDistinctApprovals, bool RequiresIndependentReviewer, bool RequiresReportPack, bool RequiresChecklistControlApprovals, string EvidenceRequirement, string AuditEventType, string Route, string Severity, string RequestedBy, string Rationale, string? CorrelationId = null);
 ```
-
-## OperationsApprovalPolicyRuleUpsertResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalPolicyRuleUpsertResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:791](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L791).
-
-```csharp
-public sealed record OperationsApprovalPolicyRuleUpsertResultDto(OperationsApprovalPolicyMatrixRowDto Rule, OperationsApprovalPolicyMatrixDto Matrix, OperationsApprovalPolicyRuleAuditEventDto AuditEvent);
-```
-
-## OperationsApprovalReassignRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalReassignRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs#L22).
-
-```csharp
-public sealed record OperationsApprovalReassignRequestDto(long ExpectedVersion, string ApprovalId, string CommandId, string Actor, string Reviewer, string Rationale);
-```
-
-## OperationsApprovalStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:102](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L102).
-
-```csharp
-public enum OperationsApprovalStateDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending = 0</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:104](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L104) |  |
-| <code>Submitted = 1</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:105](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L105) |  |
-| <code>ReviewerAssigned = 2</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:106](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L106) |  |
-| <code>Approved = 3</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:107](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L107) |  |
-| <code>Rejected = 4</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:108](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L108) |  |

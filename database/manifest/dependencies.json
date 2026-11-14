@@ -14584,6 +14584,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermBinding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRole"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRoles"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding"
     },
     {
@@ -30754,6 +30772,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermBinding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRole"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRoles"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding"
     },
     {
@@ -46594,6 +46630,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermBinding"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind"
     },
     {
@@ -46931,6 +46973,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowSourceKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermBinding",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRole"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRoles",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRole"
     },
     {
       "kind": "contract-reference",
@@ -66562,7 +66616,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "43ac73b8558efa1cca938e386bda24bbc991f2b93861259737b2323dfc743dc6",
+  "fingerprint": "99b2bd04f8408e1f31e9d1a458741526e80c0114213a855f948151c8f7999779",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -81194,6 +81248,24 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermBinding",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityCashFlowTermBinding"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRole",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRole"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRoles",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRoles"
     },
     {
       "classification": "record",
@@ -97673,11 +97745,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4135,
-    "contract_set_memberships": 5311,
-    "edges": 11057,
+    "contract_references": 4138,
+    "contract_set_memberships": 5317,
+    "edges": 11066,
     "foreign_keys": 203,
     "logical_references": 6,
-    "nodes": 5409
+    "nodes": 5412
   }
 }

@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MarketDataQuery
+
+Qualified name: <code>Meridian.Contracts.Store.MarketDataQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Store/MarketDataQuery.cs:23](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L23).
+
+Immutable query specification for IMarketDataStore. All parameters are optional — an empty query returns all stored events up to Limit.
+
+```csharp
+public sealed record MarketDataQuery(SymbolId? Symbol = null, DateTimeOffset? From = null, DateTimeOffset? To = null, MarketEventType? EventType = null, string? Source = null, int? Limit = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MarketDataQuery WithSymbol(SymbolId symbol) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:32](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L32) | Returns a new query that adds a symbol filter. |
+| <code>public MarketDataQuery WithTimeRange(DateTimeOffset from, DateTimeOffset to) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:35](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L35) | Returns a new query restricted to a time window. |
+| <code>public MarketDataQuery WithEventType(MarketEventType type) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:39](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L39) | Returns a new query restricted to a specific event type. |
+| <code>public MarketDataQuery WithSource(string source) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:42](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L42) | Returns a new query restricted to a specific data source. |
+| <code>public MarketDataQuery WithLimit(int limit) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:45](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L45) | Returns a new query with a maximum result count. |
+
+## StrategyEngineDataAvailability
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataAvailability</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:171](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L171).
+
+```csharp
+public sealed record StrategyEngineDataAvailability(string DependencyId, bool IsAvailable, DateTimeOffset? AvailableFrom = null, DateTimeOffset? AvailableTo = null, DateTimeOffset? LastUpdatedAt = null, string? SourceReference = null, IReadOnlyList<string>? MissingFields = null, string? DegradationReason = null);
+```
+
+## StrategyEngineDataDependency
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataDependency</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:129](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L129).
+
+```csharp
+public sealed record StrategyEngineDataDependency(string DependencyId, StrategyEngineDataDependencyKind Kind, string Description, string? AssetClass = null, string? Granularity = null, DateTimeOffset? RequiredFrom = null, DateTimeOffset? RequiredTo = null, TimeSpan? FreshnessWindow = null, StrategyEngineMissingDataPolicy MissingDataPolicy = StrategyEngineMissingDataPolicy.Block, IReadOnlyList<string>? RequiredFields = null);
+```
+
 ## StrategyEngineDataDependencyKind
 
 Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataDependencyKind</code>. Kind: `enum`.
@@ -785,34 +827,4 @@ Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:104](../../../.
 
 ```csharp
 public sealed record AlpacaBrokerageConnectionRequestDto(string? KeyId, string? SecretKey, string? Environment = "paper");
-```
-
-## ApprovalDecision
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApprovalDecision</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L31).
-
-```csharp
-public sealed record ApprovalDecision(string Queue, bool DualControlRequired, IReadOnlyList<string> Reasons);
-```
-
-## ApprovalPolicy
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApprovalPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L23).
-
-```csharp
-public sealed record ApprovalPolicy(decimal? MinimumAmount, decimal? HighValueThreshold, IReadOnlySet<string>? AllowedCurrencies, IReadOnlySet<Guid>? RoutedAccountIds, IReadOnlySet<string>? RoutedRiskBuckets, bool RequireDualControl);
-```
-
-## ApprovalStep
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApprovalStep</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L21).
-
-```csharp
-public sealed record ApprovalStep(int Sequence, string RoleOrQueue, bool DualControlRequired, decimal? AmountThreshold, string? Currency, Guid? AccountId, string? RiskBucket);
 ```

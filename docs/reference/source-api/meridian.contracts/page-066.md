@@ -6,6 +6,51 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationSlaPolicy
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSlaPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:642](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L642).
+
+```csharp
+public sealed record ReconciliationSlaPolicy(string PolicyId, string? FundId, string? AccountId, string? BreakType, ReconciliationBreakSeverity Severity, ReconciliationCasePriority Priority, string TimeZoneId, TimeOnly BusinessDayStart, TimeOnly BusinessDayEnd, int DueBusinessHours, int WarningBusinessHours, bool StopOnResolved = true, bool StopOnSignedOff = false, bool PauseAwaitingEvidence = true, string? BusinessCalendarId = null, IReadOnlyList<string>? HolidayCalendarIds = null, IReadOnlyList<string>? PauseRules = null, IReadOnlyList<string>? StopRules = null, IReadOnlyList<string>? EscalationRules = null);
+```
+
+## ReconciliationSourceKind
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSourceKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L14).
+
+Source type participating in a reconciliation comparison.
+
+```csharp
+public enum ReconciliationSourceKind : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L16) |  |
+| <code>Portfolio = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L17) |  |
+| <code>Ledger = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L18) |  |
+| <code>Bank = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L19) |  |
+| <code>ExternalStatement = Bank</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L20) |  |
+| <code>Cash = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L21) |  |
+
+## ReconciliationSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:188](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L188).
+
+Summary of recent reconciliation posture for a fund.
+
+```csharp
+public sealed record ReconciliationSummary(int RunCount, int OpenBreakCount, decimal BreakAmountTotal, IReadOnlyList<FundReconciliationItem> RecentRuns, int SecurityCoverageIssueCount = 0, ReconciliationBreakQueueProjectionDto? BreakQueue = null, LedgerImpactPreviewDto? LedgerImpactPreview = null, bool HasCriticalBreakOpen = false);
+```
+
 ## ReconciliationTaxonomySnapshot
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationTaxonomySnapshot</code>. Kind: `record`.
@@ -594,44 +639,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1130]
 
 ```csharp
 public sealed record ReportingStarterSeedScheduleDto(string ScheduleId, string TemplateId, string CronExpression, string Cadence, string Description, ReportingScheduleStateDto State = ReportingScheduleStateDto.Draft, string? DefaultPeriod = null, IReadOnlyList<ReportingScheduleDeliveryTargetDto>? DeliveryTargets = null);
-```
-
-## ReportLedgerAmountBindingDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs#L6).
-
-An exact account balance and its retained journal-line population in a generated report.
-
-```csharp
-public sealed record ReportLedgerAmountBindingDto(string AmountId, string Label, decimal Amount, string Currency, LedgerAmountScopeDto Scope, IReadOnlyList<Guid> JournalEntryIds, IReadOnlyList<Guid> LedgerEntryIds)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SubjectId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs#L16) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceSnapshotHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs#L19) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public bool? ProofAvailable { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs#L26) | Server-owned answer to whether the current caller may open this amount&#x27;s proof. Set only on API responses; retained bindings leave it null, and clients treat an absent value as denied. |
-
-## ReportPackAuditEventDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackAuditEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1756](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1756).
-
-```csharp
-public sealed record ReportPackAuditEventDto(DateTimeOffset At, string Actor, string Action, ReportPackWorkflowStateDto FromState, ReportPackWorkflowStateDto ToState, string? Note = null);
-```
-
-## ReportPackChangedLineDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackChangedLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1758](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1758).
-
-```csharp
-public sealed record ReportPackChangedLineDto(string LineKey, string PreviousValue, string CurrentValue, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
 ```

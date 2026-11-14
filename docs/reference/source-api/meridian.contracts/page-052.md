@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecuritySettlementMethod
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySettlementMethod</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L11).
+
+How a derivative settles at expiry or exercise.
+
+```csharp
+public enum SecuritySettlementMethod
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Cash</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L14) | Settled by a cash payment of the intrinsic value or final variation. |
+| <code>Physical</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L17) | Settled by delivery of the underlying. |
+| <code>Elective</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L20) | The holder elects cash or physical settlement. |
+
+## SecuritySnapshotRecord
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:121](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L121).
+
+```csharp
+public sealed record SecuritySnapshotRecord(Guid SecurityId, long Version, DateTimeOffset SnapshotTimestamp, JsonElement Payload);
+```
+
+## SecurityStatusDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L7).
+
+```csharp
+public enum SecurityStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Active</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L9) |  |
+| <code>Inactive</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L10) |  |
+| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L16) | Read-tolerance member: a status written by a newer node that this node does not recognize. Treated as not-Active by filters, so unrecognized states degrade to conservative visibility instead of failing every read of the row. |
+
 ## SecuritySummaryDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySummaryDto</code>. Kind: `record`.
@@ -455,7 +503,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1406](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1406).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1507](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1507).
 
 The declared mark-based accounting treatment for an asset class.
 
@@ -467,8 +515,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1408](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1408) |  |
-| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1409](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1409) |  |
+| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1509](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1509) |  |
+| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1510](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1510) |  |
 
 ## SecurityValuationBlockerDto
 
@@ -865,63 +913,3 @@ Enum declarations:
 | <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L52) | The source has no last-updated timestamp, so freshness cannot be evaluated and must not drive ledger postings. |
 | <code>Fresh</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L55) | The source was refreshed within the staleness threshold. |
 | <code>Stale</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L58) | The source is older than the staleness threshold and must not drive ledger postings. |
-
-## StructuredCashFlowTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L17).
-
-Strongly typed economic terms resolved once from a security&#x27;s raw term JSON, replacing the scattered fuzzy key-probing that previously lived inline in the projection math. All alias resolution and JSON traversal is centralized in StructuredCashFlowTermsResolver; downstream projection and ledger code consumes this typed shape only.
-
-```csharp
-public sealed record StructuredCashFlowTerms(DateOnly? MaturityDate, DateOnly? IssueDate, decimal? PrincipalFace, decimal? CurrentFactor, decimal? CouponRate, string? PaymentFrequency, string? DayCountConvention, IReadOnlyList<StructuredFactorScheduleEntry> FactorSchedule, IReadOnlyList<StructuredCashFlowLeg>? Legs = null, IReadOnlyList<StructuredPrincipalScheduleEntry>? PrincipalSchedule = null, IReadOnlyList<StructuredStepCouponEntry>? StepCouponSchedule = null, string? InflationIndex = null, decimal? InflationBaseIndexValue = null, decimal? InflationIndexRatio = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore] public SecurityCouponKind CouponKind { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L35) |  |
-| <code>[JsonIgnore] public SecurityCouponRateUnit CouponRateUnit { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L38) |  |
-| <code>[JsonIgnore] public RateUnit? RecordRateUnit { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L42) | Explicit scalar rate-unit declaration, independent of schedule conventions. |
-| <code>[JsonIgnore] public decimal? CapRate { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L45) |  |
-| <code>[JsonIgnore] public decimal? FloorRate { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L48) |  |
-| <code>public static StructuredCashFlowTerms Empty { get; } = new (MaturityDate : null, IssueDate : null, PrincipalFace : null, CurrentFactor : null, CouponRate : null, PaymentFrequency : null, DayCountConvention : null, FactorSchedule : Array.Empty&lt;StructuredFactorScheduleEntry&gt;());</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L51) | An empty term set used when a security carries no readable structured terms. |
-| <code>public bool HasFactorSchedule =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L62) | True when a typed, multi-point factor schedule was resolved from the terms. |
-| <code>public bool HasLegs =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:65](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L65) | True when typed cash-flow legs were resolved (multi-leg or floating-rate structure). |
-| <code>public bool HasPrincipalSchedule =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L68) | True when contractual principal payment dates and amounts were resolved. |
-| <code>public decimal? FactorAsOf(DateOnly asOf);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L76) | Returns the pool factor in effect on asOf — the latest scheduled factor dated on or before that day — falling back to the scalar CurrentFactor when no schedule point applies. This is how the typed factor schedule seeds amortization instead of a single free-text scalar. |
-| <code>public bool HasStepCouponSchedule =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:91](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L91) | True when a dated step-coupon schedule was resolved from the terms. |
-| <code>public decimal? CouponRateAsOf(DateOnly asOf);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L99) | Returns the coupon rate payable on asOf — for step coupons the latest scheduled step effective on or before that day, otherwise the scalar CouponRate. This is what makes a step-rate bond computable instead of a classified-but-inert label: accrual and projection math can ask for the rate per period. |
-
-## StructuredCashFlowTermsResolver
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L12).
-
-Resolves a security&#x27;s raw term JSON into StructuredCashFlowTerms. This is the single place that knows the vendor key aliases for each economic term and how to walk the three term blobs (asset-specific terms, their nested profileFields, then common terms). Value coercion is delegated to SecurityTermReader so the cash-flow and obligation projections share one probing implementation instead of re-deriving fuzzy key lookups at each call site.
-
-```csharp
-public static class StructuredCashFlowTermsResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StructuredCashFlowTerms Resolve(SecurityDetailDto security);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L46) | Resolves the typed cash flow terms for security. |
-| <code>public static IEnumerable&lt;JsonElement&gt; EnumerateTermSources(SecurityDetailDto security);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:322](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L322) | Enumerates governed profile fields, outer asset terms, and common terms in authority order. The asset terms are read at the class&#x27;s current terms version (SecurityAssetClassTermsUpgrader, ADR-024). |
-
-## StructuredCreditReclassificationBlockerDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs#L19).
-
-One reason a reclassification proposal needs operator input before it can be applied.
-
-```csharp
-public sealed record StructuredCreditReclassificationBlockerDto(string Code, string Message);
-```

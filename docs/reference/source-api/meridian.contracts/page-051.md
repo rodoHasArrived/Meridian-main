@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterConflictRouting
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterConflictRouting</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L28).
+
+Routes a SecurityMasterConflict to the review surface that owns it, by declared facts rather than by substrings of its field path. A path is split on dots and each segment is compared whole (case-insensitive, underscores ignored), so ProfileFields.providerName is not an identifier conflict because it contains &quot;provider&quot;, and EconomicTerms.issueDate is a terms conflict although no fixed word list names it.
+
+```csharp
+public static class SecurityMasterConflictRouting
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlySet&lt;string&gt; TermContainers { get; } = new[] { &quot;EconomicTerms&quot;, &quot;CommonTerms&quot;, &quot;ProfileFields&quot;, &quot;AssetSpecificTerms&quot;, &quot;EconomicDefinition&quot;, &quot;Terms&quot; }.Select(Normalize).ToFrozenSet(StringComparer.Ordinal);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L37) | The path containers that hold a record&#x27;s terms: the three conflict detection writes (EconomicTerms, CommonTerms, ProfileFields), the stored terms document and the economic definition read model. |
+| <code>public static IReadOnlySet&lt;string&gt; ProviderEvidenceSegments { get; } = new[] { &quot;Provider&quot;, &quot;Providers&quot;, &quot;ProviderMapping&quot;, &quot;ProviderMappings&quot;, &quot;ProviderSymbol&quot;, &quot;ProviderSymbols&quot;, &quot;Mapping&quot;, &quot;Mappings&quot;, &quot;Alias&quot;, &quot;Aliases&quot; }.Select(Normalize).ToFrozenSet(StringComparer.Ordinal);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L48) | The path segments that name provider evidence rather than a declared identifier kind: provider mappings and aliases, which the identity panel reviews beside identifiers. |
+| <code>public static IReadOnlySet&lt;string&gt; TermRoutingKeys(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L60) | The term keys assetClass owns for routing: each field key and alias its terms schema declares, normalized. Empty for a class the schema does not declare. |
+| <code>public static bool IsIdentityConflict(SecurityMasterConflict conflict);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L78) | Whether the conflict belongs to identity and provider evidence: an identifier ambiguity, a declared identifier name or kind in its path, or a provider-mapping or alias segment. |
+| <code>public static bool IsTermsConflict(SecurityMasterConflict conflict, string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:89](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L89) | Whether the conflict is about the record&#x27;s terms: a declared term-mismatch kind, a path under a terms container, a classification or currency name, or a term key the record&#x27;s asset class owns. |
+| <code>public static bool HasSegment(string? fieldPath, string? name) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:110](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L110) | Whether any whole segment of fieldPath equals name. |
+| <code>public static bool EndsWithValue(string? fieldPath, string? value);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:117](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L117) | Whether fieldPath is, or ends with, the whole value value (which may itself contain dots, as a provider symbol such as AAPL.O does). |
+
+## SecurityMasterCorporateActionAppendRequestDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L21).
+
+FundProfileId optionally scopes downstream restatement-impact resolution when the append supersedes a prior event; a null scope yields an unscoped impact and no restatement proposal, mirroring the revision-publish path&#x27;s deliberate scoping rule.
+
+```csharp
+public sealed record SecurityMasterCorporateActionAppendRequestDto(Guid SecurityId, CorporateActionDto CorporateAction, string SourceSystem, string Actor, string? SourceRecordId = null, string? Reason = null, string? CorrelationId = null, string? FundProfileId = null);
+```
+
+## SecurityMasterCorporateActionAppendResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L31).
+
+```csharp
+public sealed record SecurityMasterCorporateActionAppendResultDto(CorporateActionDto CorporateAction, SecurityMasterCorporateActionAuditDto Audit, SecurityMasterCorporateActionRestatementDto? Restatement = null);
+```
+
 ## SecurityMasterCorporateActionAuditDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAuditDto</code>. Kind: `record`.
@@ -813,51 +859,3 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:10](../../../.
 ```csharp
 public sealed record SecuritySearchRequest(string Query, int Take = 50, int Skip = 0, bool ActiveOnly = false, string? CustomProfileId = null, int? ProfileVersion = null, string? ProfileFieldKey = null, string? ProfileFieldValue = null);
 ```
-
-## SecuritySettlementMethod
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySettlementMethod</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L11).
-
-How a derivative settles at expiry or exercise.
-
-```csharp
-public enum SecuritySettlementMethod
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Cash</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L14) | Settled by a cash payment of the intrinsic value or final variation. |
-| <code>Physical</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L17) | Settled by delivery of the underlying. |
-| <code>Elective</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L20) | The holder elects cash or physical settlement. |
-
-## SecuritySnapshotRecord
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:121](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L121).
-
-```csharp
-public sealed record SecuritySnapshotRecord(Guid SecurityId, long Version, DateTimeOffset SnapshotTimestamp, JsonElement Payload);
-```
-
-## SecurityStatusDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L7).
-
-```csharp
-public enum SecurityStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Active</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L9) |  |
-| <code>Inactive</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L10) |  |
-| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L16) | Read-tolerance member: a status written by a newer node that this node does not recognize. Treated as not-Active by filters, so unrecognized states degrade to conservative visibility instead of failing every read of the row. |

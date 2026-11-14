@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ApprovalDecision
+
+Qualified name: <code>Meridian.Contracts.Workstation.ApprovalDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L31).
+
+```csharp
+public sealed record ApprovalDecision(string Queue, bool DualControlRequired, IReadOnlyList<string> Reasons);
+```
+
+## ApprovalPolicy
+
+Qualified name: <code>Meridian.Contracts.Workstation.ApprovalPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L23).
+
+```csharp
+public sealed record ApprovalPolicy(decimal? MinimumAmount, decimal? HighValueThreshold, IReadOnlySet<string>? AllowedCurrencies, IReadOnlySet<Guid>? RoutedAccountIds, IReadOnlySet<string>? RoutedRiskBuckets, bool RequireDualControl);
+```
+
+## ApprovalStep
+
+Qualified name: <code>Meridian.Contracts.Workstation.ApprovalStep</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L21).
+
+```csharp
+public sealed record ApprovalStep(int Sequence, string RoleOrQueue, bool DualControlRequired, decimal? AmountThreshold, string? Currency, Guid? AccountId, string? RiskBucket);
+```
+
 ## ApproveSecurityMasterOverrides
 
 Qualified name: <code>Meridian.Contracts.Workstation.ApproveSecurityMasterOverrides</code>. Kind: `record`.
@@ -600,37 +630,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.Ledger.IntercompanyObligationMonitorDto? IntercompanyAdvisories { get; init; }</code> | [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L56) |  |
-
-## CloseReadinessScopeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CloseReadinessScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L4).
-
-The explicitly selected subject of a close decision. No dimension is inferred from a workflow.
-
-```csharp
-public sealed record CloseReadinessScopeDto(string? FundProfileId, Guid? LedgerBookId, Guid? FundAccountId, string? EntityId, string? PeriodId);
-```
-
-## CloseReadinessSubjectDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CloseReadinessSubjectDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L12).
-
-Authoritative book/account/entity membership, including a token for the retained source snapshot.
-
-```csharp
-public sealed record CloseReadinessSubjectDto(CloseReadinessScopeDto Scope, string Status, DateTimeOffset EvaluatedAtUtc, string EvidenceVersion, IReadOnlyList<string> RecordIds);
-```
-
-## CloseWorkflow
-
-Qualified name: <code>Meridian.Contracts.Workstation.CloseWorkflow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:31](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L31).
-
-```csharp
-public sealed record CloseWorkflow(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```

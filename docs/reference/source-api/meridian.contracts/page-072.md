@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunContinuitySeamHealthStatus
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuitySeamHealthStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1062](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1062).
+
+```csharp
+public enum StrategyRunContinuitySeamHealthStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Healthy</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1064](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1064) |  |
+| <code>Missing</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1065](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1065) |  |
+| <code>Stale</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1066](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1066) |  |
+
+## StrategyRunContinuityStatus
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1072](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1072).
+
+Continuity posture across run, portfolio, ledger, cash-flow, and reconciliation seams.
+
+```csharp
+public sealed record StrategyRunContinuityStatus(bool HasRun, StrategyRunContinuitySeamHealthStatus RunHealth, bool HasFills, StrategyRunContinuitySeamHealthStatus FillsHealth, bool HasPortfolio, StrategyRunContinuitySeamHealthStatus PortfolioHealth, bool HasLedger, StrategyRunContinuitySeamHealthStatus LedgerHealth, bool HasCashFlow, StrategyRunContinuitySeamHealthStatus CashFlowHealth, bool HasReconciliation, StrategyRunContinuitySeamHealthStatus ReconciliationHealth, int AsOfDriftMinutes, int OpenReconciliationBreaks, int SecurityCoverageIssueCount, bool HasWarnings, IReadOnlyList<StrategyRunContinuityWarning> Warnings);
+```
+
+## StrategyRunContinuityWarning
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityWarning</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1047](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1047).
+
+Machine-readable continuity warning for shared run-centered workflows. Known warning codes include: missing-portfolio, missing-ledger, missing-cash-flow, missing-reconciliation, as-of-drift, open-reconciliation-breaks, security-coverage, lineage-parent-source-mismatch, lineage-missing-parent-with-source, promotion-target-run-missing, and promotion-lineage-shape-inconsistent.
+
+```csharp
+public sealed record StrategyRunContinuityWarning(string Code, StrategyRunContinuityWarningSeverity Severity, string Message, string SourceSeam);
+```
+
 ## StrategyRunContinuityWarningSeverity
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityWarningSeverity</code>. Kind: `enum`.
@@ -639,38 +681,4 @@ Source: [src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs:29](
 
 ```csharp
 public sealed record TradingBrokerageAffectedRunDto(string RunId, string StrategyId, string Status, string Detail);
-```
-
-## TradingBrokerageRecoveryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs#L4).
-
-Account-scoped broker evidence used by execution risk and recovery.
-
-```csharp
-public sealed record TradingBrokerageRecoveryDto(Guid? FundAccountId, string? ProviderId, string? ExternalAccountId, string Status, string Detail, TradingBrokerageRecoveryPortfolioDto? Portfolio, IReadOnlyList<string> BlockingReasons, IReadOnlyList<TradingBrokerageAffectedRunDto> AffectedRuns);
-```
-
-## TradingBrokerageRecoveryPortfolioDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingBrokerageRecoveryPortfolioDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs#L14).
-
-```csharp
-public sealed record TradingBrokerageRecoveryPortfolioDto(decimal? Cash, decimal? BuyingPower, decimal? PortfolioValue, string? Currency, int PositionCount, DateTimeOffset? ObservedAt, DateTimeOffset? LastAttemptedAt, DateTimeOffset? LastSuccessfulAt, bool IsComplete, bool IsFresh, bool IsConsistent, IReadOnlyList<string> Warnings, DateTimeOffset? ExpiresAt = null);
-```
-
-## TradingBrokerageRecoveryRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingBrokerageRecoveryRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs#L36).
-
-The external account is resolved from the retained account link, never client input.
-
-```csharp
-public sealed record TradingBrokerageRecoveryRequestDto(Guid FundAccountId);
 ```

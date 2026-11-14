@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CloseReadinessScopeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.CloseReadinessScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L4).
+
+The explicitly selected subject of a close decision. No dimension is inferred from a workflow.
+
+```csharp
+public sealed record CloseReadinessScopeDto(string? FundProfileId, Guid? LedgerBookId, Guid? FundAccountId, string? EntityId, string? PeriodId);
+```
+
+## CloseReadinessSubjectDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.CloseReadinessSubjectDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L12).
+
+Authoritative book/account/entity membership, including a token for the retained source snapshot.
+
+```csharp
+public sealed record CloseReadinessSubjectDto(CloseReadinessScopeDto Scope, string Status, DateTimeOffset EvaluatedAtUtc, string EvidenceVersion, IReadOnlyList<string> RecordIds);
+```
+
+## CloseWorkflow
+
+Qualified name: <code>Meridian.Contracts.Workstation.CloseWorkflow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:31](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L31).
+
+```csharp
+public sealed record CloseWorkflow(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
+```
+
 ## CollateralCallDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.CollateralCallDto</code>. Kind: `record`.
@@ -674,44 +708,3 @@ Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:173](../../.
 ```csharp
 public sealed record EvidenceDocumentSourceRecordDto(string SourceHashSha256, DateTimeOffset ReceivedAt, string SourceChannel, EvidenceDocumentIntakeChannelDto? ChannelKind, string? Actor, string? TenantId, string? Scope, string? SourceSystem = null, string? SourceReference = null, string? ReceiptHash = null);
 ```
-
-## EvidenceEdgeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceEdgeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:303](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L303).
-
-```csharp
-public sealed record EvidenceEdgeDto(string FromId, string ToId, string Relationship, string Reason);
-```
-
-## EvidenceEndpointErrorDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceEndpointErrorDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:630](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L630).
-
-```csharp
-public sealed record EvidenceEndpointErrorDto(string Code, string Message, string? SubjectKind = null, string? SubjectId = null, string? FileName = null, string? VaultId = null);
-```
-
-## EvidenceExtractionStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceExtractionStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:93](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L93).
-
-```csharp
-public enum EvidenceExtractionStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotExtracted = 0</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L95) |  |
-| <code>Extracted = 1</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:96](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L96) |  |
-| <code>NeedsReview = 2</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:97](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L97) |  |
-| <code>Accepted = 3</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:98](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L98) |  |
-| <code>Rejected = 4</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:99](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L99) |  |
-| <code>Pending = 5</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:100](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L100) |  |
