@@ -396,8 +396,21 @@ function formatOperatingScopeWindow({
   return asOf ? `as of ${asOf}` : null;
 }
 
+// Accounting routes whose screens read `entityId` from the URL: the close cockpit (close sources),
+// configuration (intercompany agreements), manual journal entries, approvals (banking payments) and
+// operations continuity. Elsewhere in Accounting (ledger, trial balance, ...) the entity is retained,
+// not applied, so the scope bar does not claim a filter the screen does not use.
+const ACCOUNTING_ENTITY_ROUTES = new Set([
+  "/accounting",
+  "/accounting/configure",
+  "/accounting/journal-entries",
+  "/accounting/approvals",
+  "/accounting/operations-continuity"
+]);
+
 function operatingScopeKeysForRoute(route: string): Set<AppShellOperatingScopeQueryKey> {
-  const workspaceKey = workspaceForPath(splitContinuityRoute(route).pathname).key;
+  const pathname = splitContinuityRoute(route).pathname;
+  const workspaceKey = workspaceForPath(pathname).key;
   switch (workspaceKey) {
     case "data":
       return new Set(["symbol", "provider", "window"]);
@@ -406,9 +419,13 @@ function operatingScopeKeysForRoute(route: string): Set<AppShellOperatingScopeQu
     case "trading":
     case "portfolio":
       return new Set(["symbol", "fundAccountId", "runId", "provider", "window"]);
-    case "accounting":
-      // Accounting reads `entityId` from its URL (close scope, intercompany and payment panels).
-      return new Set(["entityId", "symbol", "fundAccountId", "runId", "provider", "window"]);
+    case "accounting": {
+      const keys = new Set<AppShellOperatingScopeQueryKey>(["symbol", "fundAccountId", "runId", "provider", "window"]);
+      if (ACCOUNTING_ENTITY_ROUTES.has(pathname.replace(/\/+$/, "") || "/")) {
+        keys.add("entityId");
+      }
+      return keys;
+    }
     case "reporting":
       return new Set(["symbol", "fundAccountId", "runId", "provider", "window"]);
     case "settings":

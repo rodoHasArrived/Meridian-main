@@ -17,8 +17,8 @@ import {
 describe("operatingScopeDimensionsForRoute", () => {
   it("returns the dimensions each workspace actually filters on", () => {
     expect(operatingScopeDimensionsForRoute("/data/quotes")).toEqual(["symbol", "provider", "window"]);
+    // The ledger does not read the entity, so it is not a dimension the route applies.
     expect(operatingScopeDimensionsForRoute("/accounting/ledger")).toEqual([
-      "entityId",
       "symbol",
       "fundAccountId",
       "runId",
@@ -26,6 +26,15 @@ describe("operatingScopeDimensionsForRoute", () => {
       "window"
     ]);
     expect(operatingScopeDimensionsForRoute("/settings")).toEqual(["fundAccountId", "provider"]);
+  });
+
+  it("applies the entity only on the Accounting routes whose screens read it", () => {
+    for (const route of ["/accounting", "/accounting/configure", "/accounting/journal-entries", "/accounting/approvals", "/accounting/operations-continuity"]) {
+      expect(operatingScopeDimensionsForRoute(route)).toContain("entityId");
+    }
+    for (const route of ["/accounting/ledger", "/accounting/trial-balance", "/accounting/close-calendar"]) {
+      expect(operatingScopeDimensionsForRoute(route)).not.toContain("entityId");
+    }
   });
 
   it("keeps report-run identity in deep-link state without exposing the raw run ID in visible scope", () => {
@@ -176,11 +185,14 @@ describe("entity and fund dimensions", () => {
     const onData = buildOperatingScopeBarSegments(scope, operatingScopeDimensionsForRoute("/data/quotes"));
     expect(onData.find((segment) => segment.id === "entityId")).toMatchObject({ isSet: true, applied: false });
     expect(onData.find((segment) => segment.id === "fundId")).toMatchObject({ isSet: true, applied: false });
-    const onAccounting = buildOperatingScopeBarSegments(scope, operatingScopeDimensionsForRoute("/accounting/ledger"));
+    const onLedger = buildOperatingScopeBarSegments(scope, operatingScopeDimensionsForRoute("/accounting/ledger"));
+    expect(onLedger.find((segment) => segment.id === "entityId")).toMatchObject({ isSet: true, applied: false });
+    const onAccounting = buildOperatingScopeBarSegments(scope, operatingScopeDimensionsForRoute("/accounting"));
     expect(onAccounting.find((segment) => segment.id === "entityId")).toMatchObject({ isSet: true, applied: true });
     expect(onAccounting.find((segment) => segment.id === "fundId")).toMatchObject({ isSet: true, applied: false });
 
-    expect(describeOperatingScopeForRoute("/accounting/ledger", scope)).toBe("Entity entity-1 · Subject MSFT");
+    expect(describeOperatingScopeForRoute("/accounting", scope)).toBe("Entity entity-1 · Subject MSFT");
+    expect(describeOperatingScopeForRoute("/accounting/ledger", scope)).toBe("Subject MSFT");
     expect(describeOperatingScopeForRoute("/trading", scope)).toBe("Subject MSFT");
   });
 

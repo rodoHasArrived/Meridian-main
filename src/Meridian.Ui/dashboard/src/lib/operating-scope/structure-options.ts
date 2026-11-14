@@ -233,7 +233,9 @@ export function accountConflictsWithScope(
   if (!account || (!normalizeOptional(account.fundId) && !normalizeOptional(account.entityId))) {
     return false;
   }
-  return !constrainScopeOptions(structure, [account], selection).accounts.length;
+  // Constrain against every account: a fund's link to an entity can come from another account, and
+  // the picker builds its options the same way, so an account it offers is never treated as a conflict.
+  return !constrainScopeOptions(structure, accounts, selection).accounts.some((candidate) => normalizeId(candidate.id) === id);
 }
 
 /** Display names for the scope's entity, fund and account ids, where a loaded payload gave one. */

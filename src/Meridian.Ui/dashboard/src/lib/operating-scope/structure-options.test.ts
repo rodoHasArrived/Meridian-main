@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import type { ScopeStructureOptions } from "@/lib/operating-scope/structure-options";
 import {
   accountConflictsWithScope,
   collectScopeStructureOptions,
@@ -100,6 +101,24 @@ describe("constrainScopeOptions", () => {
     expect(result.funds).toHaveLength(3);
     expect(result.accounts.map((account) => account.id)).toEqual(["A-1"]);
     expect(result.accountsWithoutKnownRelationship).toBe(2);
+  });
+
+  it("keeps an account the picker offers when its fund's entity comes from another account", () => {
+    // A-1 links fund F-1 to entity E-A; A-2 is in F-1 with no entity of its own.
+    const linked: ScopeStructureOptions = {
+      status: "ready",
+      entities: [{ id: "E-A", label: "Entity A" }],
+      funds: [{ id: "F-1", label: "Fund 1", entityIds: [] }],
+      reason: null
+    } as unknown as ScopeStructureOptions;
+    const linkedAccounts = [
+      { id: "A-1", label: "Account 1", fundId: "F-1", entityId: "E-A" },
+      { id: "A-2", label: "Account 2", fundId: "F-1", entityId: null }
+    ] as unknown as Parameters<typeof constrainScopeOptions>[1];
+    const offered = constrainScopeOptions(linked, linkedAccounts, { entityId: "E-A" }).accounts.map((account) => account.id);
+    for (const id of offered) {
+      expect(accountConflictsWithScope(linked, linkedAccounts, id, { entityId: "E-A" })).toBe(false);
+    }
   });
 
   it("detects a fund or account known to sit outside the selection, and never guesses", () => {
