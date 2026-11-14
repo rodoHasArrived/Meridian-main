@@ -59,7 +59,7 @@ internal sealed partial class LedgerPostgresTestDatabase
         var at = DateTimeOffset.Parse("2020-01-01T00:00:00Z");
         var date = new DateOnly(2020, 1, 1);
         var security = new SecurityProjectionRecord(securityId, "Equity", SecurityStatusDto.Active,
-            "Reference fixture", currency, "ISIN", securityId.ToString("N"), json, json, json, 1, at, null, [], []);
+            "Reference fixture", currency, "ISIN", securityId.ToString("N"), json, SecurityTermsEnvelope.StampDeclaredFormat(json), json, 1, at, null, [], []);
         await _lotSecurities.UpsertProjectionAsync(security);
         var eventId = Guid.NewGuid();
         var evidence = new RetainedEvidenceIdentityDto("lot-position", "evidence://lot/position", new string('a', 64),

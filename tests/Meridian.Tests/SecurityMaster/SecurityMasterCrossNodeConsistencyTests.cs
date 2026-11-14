@@ -23,7 +23,7 @@ public sealed class SecurityMasterCrossNodeConsistencyTests(SecurityMasterDataba
         var id = Guid.NewGuid();
         var clock = new NotificationClock();
         var storeA = new PostgresSecurityMasterStore(fixture.Options);
-        var before = SecurityMasterProjectionChangeNotificationTests.CreateProjection(id, "Before", 1);
+        var before = SecurityMasterProjectionChangeNotificationTests.CreateProjection(id, "Before", 1).WithDeclaredTermsFormat();
         await storeA.UpsertProjectionAsync(before);
         var failRead = 0;
         var failResync = 0;
@@ -90,7 +90,7 @@ public sealed class SecurityMasterCrossNodeConsistencyTests(SecurityMasterDataba
         var generic = new SecurityAliasDto(Guid.NewGuid(), id, "Ticker", oldGeneric, null,
             SecurityAliasScope.Operations, null, "creator", effective, effective, null, true);
         var provider = generic with { AliasId = Guid.NewGuid(), AliasValue = oldProvider, Provider = "reuters" };
-        var projection = SecurityMasterProjectionChangeNotificationTests.CreateProjection(id, "Aliased", 1) with
+        var projection = SecurityMasterProjectionChangeNotificationTests.CreateProjection(id, "Aliased", 1).WithDeclaredTermsFormat() with
         {
             PrimaryIdentifierValue = ticker,
             Identifiers = [new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, ticker, true, effective, null, null)],

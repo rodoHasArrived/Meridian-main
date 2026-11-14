@@ -226,6 +226,37 @@ public sealed record SecurityAssetTermField(
     }
 
     /// <summary>
+    /// The <see cref="AbsentReadDefault"/> of the CustomAsset <c>customProfileId</c>: a stored row
+    /// without it is not given a value, it is salvaged whole as <c>OtherSecurity</c>.
+    /// </summary>
+    public const string EnvelopeLessSalvage = "envelope-less row salvaged as OtherSecurity";
+
+    /// <summary>
+    /// What the codec reads in place of this <see cref="Required"/> field when a stored row omits
+    /// it (<c>"false"</c> for the required booleans, <c>"Corporate"</c> for a bond's
+    /// <c>subclass</c>, <see cref="EnvelopeLessSalvage"/> for a profile id), or
+    /// <see langword="null"/> when its absence refuses the read. <see cref="Required"/> describes
+    /// the WRITTEN form — the writer always emits the key, filling this default when a submission
+    /// omits it — so this flag is what separates a required field a read may tolerate from one a
+    /// read refuses (<see cref="RefusesAbsenceOnRead"/>). A field introduced above version 1 must
+    /// declare one, because rows stamped before that version never carry it.
+    /// </summary>
+    public string? AbsentReadDefault { get; init; }
+
+    /// <summary>Declares the value the codec reads when a stored row omits this field.</summary>
+    public SecurityAssetTermField ReadsAbsentAs(string defaultValue)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(defaultValue);
+        return this with { AbsentReadDefault = defaultValue };
+    }
+
+    /// <summary>
+    /// True when reconstructing a stored row without this field refuses the read: the field is
+    /// <see cref="Required"/> and declares no <see cref="AbsentReadDefault"/>.
+    /// </summary>
+    public bool RefusesAbsenceOnRead => Required && AbsentReadDefault is null;
+
+    /// <summary>
     /// True when <paramref name="value"/> satisfies this field's convention (or it declares none).
     /// Blank values are left to the required/optional rules.
     /// </summary>
@@ -280,6 +311,15 @@ public static class SecurityAssetTermsSchema
     private static SecurityAssetTermField OptOneOf(string key, params string[] allowedValues)
         => SecurityAssetTermField.OptOneOf(key, allowedValues);
 
+    /// <summary>
+    /// The per-class field tables. Declaration order is load-bearing for one rule: the
+    /// <see cref="SecurityAssetTermField.RefusesAbsenceOnRead"/> scalar fields are read, and so
+    /// refused, in the order they are declared here (<see cref="ReadRequiredScalarFields"/>). That
+    /// order is the historical read refusal order replay depends on — when a stored row lacks
+    /// several required keys, the first declared one is the key the refusal names — so reordering
+    /// a class's required fields changes an observable replay outcome and is pinned by
+    /// <c>SecurityMasterRequiredReadOrderTests</c>.
+    /// </summary>
     private static readonly IReadOnlyDictionary<string, IReadOnlyList<SecurityAssetTermField>> FieldsByAssetClass =
         new Dictionary<string, IReadOnlyList<SecurityAssetTermField>>(StringComparer.OrdinalIgnoreCase)
         {
@@ -311,7 +351,7 @@ public static class SecurityAssetTermsSchema
                 // value would be silently dropped rather than preserved.
                 OptOneOf("exerciseStyle", "American", "European", "Bermudan"),
                 Opt("settlementType", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.SettlementMethod),
-                Req("isAdjusted", SecurityAssetTermFieldType.Boolean),
+                Req("isAdjusted", SecurityAssetTermFieldType.Boolean).ReadsAbsentAs("false"),
                 Opt("lastTradingDt", SecurityAssetTermFieldType.Date)
             ],
             ["Future"] =
@@ -325,7 +365,7 @@ public static class SecurityAssetTermsSchema
                 Opt("deliveryMonthDt", SecurityAssetTermFieldType.Date),
                 Opt("settlementType", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.SettlementMethod),
                 Opt("deliveryLocationCode", SecurityAssetTermFieldType.String),
-                Req("isRollTarget", SecurityAssetTermFieldType.Boolean),
+                Req("isRollTarget", SecurityAssetTermFieldType.Boolean).ReadsAbsentAs("false"),
                 Opt("rollWindowDays", SecurityAssetTermFieldType.Integer)
             ],
             ["Bond"] =
@@ -352,11 +392,11 @@ public static class SecurityAssetTermsSchema
                 Opt("inflationBaseIndexValue", SecurityAssetTermFieldType.Decimal),
                 Opt("inflationIndexRatio", SecurityAssetTermFieldType.Decimal),
                 Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention").WithConvention(SecurityTermConventionKind.DayCount),
-                Req("isCallable", SecurityAssetTermFieldType.Boolean),
+                Req("isCallable", SecurityAssetTermFieldType.Boolean).ReadsAbsentAs("false"),
                 Opt("callDate", SecurityAssetTermFieldType.Date),
                 Opt("issuerName", SecurityAssetTermFieldType.String),
                 Opt("seniority", SecurityAssetTermFieldType.String),
-                Req("subclass", SecurityAssetTermFieldType.String),
+                Req("subclass", SecurityAssetTermFieldType.String).ReadsAbsentAs("Corporate"),
                 Opt("par", SecurityAssetTermFieldType.Decimal),
                 Opt("paymentFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.CouponFrequency),
                 Opt("legalFinalMaturity", SecurityAssetTermFieldType.Date),
@@ -388,14 +428,14 @@ public static class SecurityAssetTermsSchema
                 Opt("maturity", SecurityAssetTermFieldType.Date),
                 Opt("interestRate", SecurityAssetTermFieldType.Decimal),
                 Opt("dayCount", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.DayCount),
-                Req("isCallable", SecurityAssetTermFieldType.Boolean)
+                Req("isCallable", SecurityAssetTermFieldType.Boolean).ReadsAbsentAs("false")
             ],
             ["MoneyMarketFund"] =
             [
                 Opt("fundFamily", SecurityAssetTermFieldType.String),
-                Req("sweepEligible", SecurityAssetTermFieldType.Boolean),
+                Req("sweepEligible", SecurityAssetTermFieldType.Boolean).ReadsAbsentAs("false"),
                 Opt("weightedAverageMaturityDays", SecurityAssetTermFieldType.Integer),
-                Req("liquidityFeeEligible", SecurityAssetTermFieldType.Boolean)
+                Req("liquidityFeeEligible", SecurityAssetTermFieldType.Boolean).ReadsAbsentAs("false")
             ],
             ["CertificateOfDeposit"] =
             [
@@ -420,7 +460,7 @@ public static class SecurityAssetTermsSchema
                 Req("maturity", SecurityAssetTermFieldType.Date),
                 Opt("discountRate", SecurityAssetTermFieldType.Decimal),
                 Opt("dayCount", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.DayCount),
-                Req("isAssetBacked", SecurityAssetTermFieldType.Boolean)
+                Req("isAssetBacked", SecurityAssetTermFieldType.Boolean).ReadsAbsentAs("false")
             ],
             ["TreasuryBill"] =
             [
@@ -461,8 +501,8 @@ public static class SecurityAssetTermsSchema
             [
                 // Profile-backed custom assets carry the profile envelope; the class-specific fields
                 // are dynamic and live under profileFields, governed by the approved profile version.
-                Req("customProfileId", SecurityAssetTermFieldType.String),
-                Req("profileVersion", SecurityAssetTermFieldType.Integer),
+                Req("customProfileId", SecurityAssetTermFieldType.String).ReadsAbsentAs(SecurityAssetTermField.EnvelopeLessSalvage),
+                Req("profileVersion", SecurityAssetTermFieldType.Integer).ReadsAbsentAs("1"),
                 Req("profileFields", SecurityAssetTermFieldType.Object),
                 Opt("profileApproval", SecurityAssetTermFieldType.Object),
                 // The workstation create path also stamps a display category/sub-type and evidence
@@ -897,6 +937,41 @@ public static class SecurityAssetTermsSchema
     /// </summary>
     public static IReadOnlyList<SecurityAssetTermField> ElementFields(string assetClass, string key)
         => ElementFieldsByPath.TryGetValue($"{assetClass}.{key}", out var fields) ? fields : [];
+
+    private static readonly IReadOnlySet<string> ProfileResolvedTermClasses = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "StructuredCredit", "PrivateFundInterest", "PrivateCompanyEquity", "RealEstateHolding", "CommitmentGuarantee"
+    };
+
+    /// <summary>
+    /// True when the flat decode of <paramref name="assetClass"/> reads its declared keys from the
+    /// profile-resolved terms document (the <c>profileFields</c> bag when the row carries one, else
+    /// the root) instead of the root. This is the decode's view, not the catalog's
+    /// <c>SupportsProfileBackedTerms</c>: OtherSecurity accepts profile-backed terms yet reads its
+    /// flat keys from the root.
+    /// </summary>
+    public static bool ReadsProfileResolvedTerms(string assetClass)
+        => ProfileResolvedTermClasses.Contains(assetClass);
+
+    /// <summary>
+    /// The scalar fields of <paramref name="assetClass"/> whose absence refuses a read
+    /// (<see cref="SecurityAssetTermField.RefusesAbsenceOnRead"/>), in declaration order — which is
+    /// the order a read checks them, and so decides which key a refusal names when several are
+    /// absent. Container fields (arrays and objects) are read by their own decoders and are not
+    /// included.
+    /// </summary>
+    public static IReadOnlyList<SecurityAssetTermField> ReadRequiredScalarFields(string assetClass)
+        => ReadRequiredScalarFieldsByAssetClass.TryGetValue(assetClass, out var fields) ? fields : [];
+
+    // Computed once: the read path consults it for every reconstructed row.
+    private static readonly IReadOnlyDictionary<string, IReadOnlyList<SecurityAssetTermField>> ReadRequiredScalarFieldsByAssetClass =
+        FieldsByAssetClass.ToDictionary(
+            static entry => entry.Key,
+            static entry => (IReadOnlyList<SecurityAssetTermField>)entry.Value
+                .Where(static field => field.RefusesAbsenceOnRead
+                    && field.Type is not (SecurityAssetTermFieldType.Array or SecurityAssetTermFieldType.Object))
+                .ToArray(),
+            StringComparer.OrdinalIgnoreCase);
 
     /// <summary>The asset classes with a declared terms schema.</summary>
     public static IReadOnlyCollection<string> AssetClasses { get; } = FieldsByAssetClass.Keys.ToArray();

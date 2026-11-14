@@ -45,7 +45,7 @@ public sealed partial class OpenLotBackfillPostgresTests
             var positions = new PostgresAssetOperationsProjectionStore(positionOptions);
             var json = JsonSerializer.SerializeToElement(new { });
             var security = new SecurityProjectionRecord(facts.SecurityId, "Equity", SecurityStatusDto.Active,
-                "Issuer", "EUR", "ISIN", "TEST", json, json, json, facts.SecurityMasterVersion,
+                "Issuer", "EUR", "ISIN", "TEST", json, SecurityTermsEnvelope.StampDeclaredFormat(json), json, facts.SecurityMasterVersion,
                 DateTimeOffset.Parse("2020-01-01T00:00:00Z"), null, [], []);
             await securities.UpsertProjectionAsync(security);
             var at = new DateTimeOffset(facts.AcquiredDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConsolidationFxValidation
+
+Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationFxValidation</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs:7](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs#L7).
+
+Shared invariants for approved FX evidence at every persistence boundary.
+
+```csharp
+public static class ConsolidationFxValidation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void Validate(ConsolidationFxRateSetDto value);</code> | [src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs:9](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs#L9) |  |
+| <code>public static void Validate(ConsolidationFxPolicyDto value);</code> | [src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs:39](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs#L39) |  |
+| <code>public static void Validate(ConsolidationFxBookConfigurationDto value);</code> | [src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs:60](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs#L60) |  |
+| <code>public static string Hash(ConsolidationFxRateSetDto value) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs:79](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs#L79) |  |
+| <code>public static string Hash(ConsolidationFxBookConfigurationDto value) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs:81](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs#L81) |  |
+
 ## ConsolidationMatchDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationMatchDto</code>. Kind: `record`.
@@ -809,15 +831,3 @@ Declared public members:
 | <code>Task&lt;ManualJournalEntryDraftDto&gt; ValidateDraftAsync(ValidateManualJournalEntryDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1098](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1098) |  |
 | <code>Task&lt;ManualJournalEntryDraftDto&gt; SubmitApprovalAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1102](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1102) |  |
 | <code>Task&lt;ManualJournalEntryDraftDto&gt; AttachEvidenceAsync(AttachManualJournalEntryEvidenceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1106](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1106) |  |
-
-## ImportPrivateCapitalBankObservationRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.ImportPrivateCapitalBankObservationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PrivateCapitalBankObservationDtos.cs:19](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalBankObservationDtos.cs#L19).
-
-Select retained source bytes; no caller-supplied amount or cash authority is accepted.
-
-```csharp
-public sealed record ImportPrivateCapitalBankObservationRequest(string EvidenceLink, string DocumentId);
-```

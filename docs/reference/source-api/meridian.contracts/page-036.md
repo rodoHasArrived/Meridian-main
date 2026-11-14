@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerControlDecisionDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.LedgerControlDecisionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:18](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L18).
+
+```csharp
+public sealed record LedgerControlDecisionDto(string Control, string Code, bool Allowed, string Message, string? EvidenceRevision = null);
+```
+
 ## LedgerCrossPeriodPnlReportDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerCrossPeriodPnlReportDto</code>. Kind: `record`.
@@ -746,19 +756,3 @@ Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos
 ```csharp
 public sealed record PaymentIntentApprovalStepDto(int Sequence, string Role, string Actor, string Status, DateTimeOffset? DecidedAtUtc = null, string? EvidenceRoute = null);
 ```
-
-## PaymentIntentAuditEventDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PaymentIntentAuditEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:216](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L216).
-
-```csharp
-public sealed record PaymentIntentAuditEventDto(string AuditEventId, DateTimeOffset RecordedAtUtc, string Actor, string Action, string Summary, IReadOnlyList<string>? EvidenceLinks = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:224](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L224) |  |

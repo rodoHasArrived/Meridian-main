@@ -10,41 +10,36 @@ public sealed class PostgresCertificateOfDepositReferenceProjectionStore : ICert
 {
     internal const string AssetClass = "CertificateOfDeposit";
 
-    private readonly PostgresReferenceProjectionReader _reader;
+    internal static readonly RegistryProjectionQuery ByIssuer = new(nameof(ByIssuer),
+        """
+        where lower(issuer_name) = lower(@issuer_name)
+        order by maturity_date
+        """);
+
+    internal static readonly RegistryProjectionQuery MaturingBefore = new(nameof(MaturingBefore),
+        """
+        where maturity_date < @before_date
+        order by maturity_date
+        """);
+
+    private readonly RegistryReferenceProjectionStore<CertificateOfDepositProjectionRow> _store;
 
     public PostgresCertificateOfDepositReferenceProjectionStore(SecurityMasterOptions options)
     {
-        _reader = new PostgresReferenceProjectionReader(options);
+        _store = CreateStore(options);
     }
 
+    internal static RegistryReferenceProjectionStore<CertificateOfDepositProjectionRow> CreateStore(SecurityMasterOptions options)
+        => new(options, AssetClass, MapRow, [ByIssuer, MaturingBefore]);
+
     public Task<CertificateOfDepositProjectionRow?> GetCertificateOfDepositAsync(Guid securityId, CancellationToken ct = default)
-        => _reader.QuerySingleAsync(
-            _reader.SelectSql(AssetClass, "where security_id = @security_id"),
-            [new NpgsqlParameter("security_id", securityId)],
-            MapRow,
-            ct);
+        => _store.GetBySecurityIdAsync(securityId, ct);
 
     public Task<IReadOnlyList<CertificateOfDepositProjectionRow>> GetByIssuerAsync(string issuerName, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where lower(issuer_name) = lower(@issuer_name)
-                order by maturity_date
-                """),
-            [new NpgsqlParameter("issuer_name", issuerName)],
-            MapRow,
-            ct);
+        => _store.ListAsync(ByIssuer, [new NpgsqlParameter("issuer_name", issuerName)], ct);
 
     public Task<IReadOnlyList<CertificateOfDepositProjectionRow>> GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where maturity_date < @before_date
-                order by maturity_date
-                """),
-            [new NpgsqlParameter("before_date", beforeDate.ToDateTime(TimeOnly.MinValue))],
-            MapRow,
-            ct);
+        => _store.ListAsync(MaturingBefore, [new NpgsqlParameter("before_date", beforeDate.ToDateTime(TimeOnly.MinValue))], ct);
 
     internal static CertificateOfDepositProjectionRow MapRow(ProjectionRow row)
         => new(

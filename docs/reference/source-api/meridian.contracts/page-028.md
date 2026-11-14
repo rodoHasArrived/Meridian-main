@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAgreementStatusDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L12).
+
+```csharp
+public enum IntercompanyAgreementStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unapproved</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L12) |  |
+| <code>Scheduled</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L12) |  |
+| <code>Active</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L12) |  |
+| <code>Expired</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L12) |  |
+| <code>Terminated</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L12) |  |
+
 ## IntercompanyAgreementTermsDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementTermsDto</code>. Kind: `record`.
@@ -698,14 +718,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:344](../../..
 
 ```csharp
 public sealed record OwnershipGraphValidationResultDto(bool IsValid, DateTimeOffset AsOf, IReadOnlyList<OwnershipGraphValidationIssueDto> Issues);
-```
-
-## OwnershipLinkDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.OwnershipLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:327](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L327).
-
-```csharp
-public sealed record OwnershipLinkDto(Guid OwnershipLinkId, Guid ParentNodeId, Guid ChildNodeId, OwnershipRelationshipTypeDto RelationshipType, decimal? OwnershipPercent, bool IsPrimary, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, string? Notes);
 ```

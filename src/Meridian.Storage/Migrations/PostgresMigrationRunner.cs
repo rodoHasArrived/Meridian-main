@@ -48,6 +48,19 @@ public sealed class PostgresMigrationRunner
         var isUpgrade = _options.BeforeScriptAsync is not null
                         && await HasAppliedMigrationsAsync(connection, transaction, ct).ConfigureAwait(false);
 
+        if (_options.TrackOrdinals)
+        {
+            var appliedOrdinals = await GetAppliedOrdinalsAsync(connection, transaction, ct).ConfigureAwait(false);
+            var refusal = FindUnappliedScriptBelowHighestApplied(
+                scripts.Select(static script => (script.FileName, script.Ordinal)).ToList(),
+                appliedOrdinals,
+                _options.DisplayName);
+            if (refusal is not null)
+            {
+                throw new InvalidOperationException(refusal);
+            }
+        }
+
         foreach (var script in scripts)
         {
             var sql = await File.ReadAllTextAsync(script.Path, ct).ConfigureAwait(false);
@@ -124,6 +137,67 @@ public sealed class PostgresMigrationRunner
         command.Transaction = transaction;
         command.CommandText = $"select exists(select 1 from {LedgerTable});";
         return (bool)(await command.ExecuteScalarAsync(ct).ConfigureAwait(false))!;
+    }
+
+    private async Task<IReadOnlyDictionary<string, int>> GetAppliedOrdinalsAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"select {_options.LedgerKeyColumn}, ordinal from {LedgerTable};";
+
+        var applied = new Dictionary<string, int>(StringComparer.Ordinal);
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            applied[reader.GetString(0)] = reader.GetInt32(1);
+        }
+
+        return applied;
+    }
+
+    /// <summary>
+    /// Ordinal-tracked migration sets are append-only: a script that has not been applied must sort
+    /// after every applied one. An unapplied script whose ordinal is below the highest applied
+    /// ordinal (a reused retired ordinal, a back-filled gap, or a branch that merged an older
+    /// number) would run out of order against a schema that already moved past it, so the run is
+    /// refused before any script executes. Returns the refusal message, or <see langword="null"/>
+    /// when the run may proceed.
+    /// </summary>
+    internal static string? FindUnappliedScriptBelowHighestApplied(
+        IReadOnlyList<(string FileName, int Ordinal)> scripts,
+        IReadOnlyDictionary<string, int> appliedOrdinalsByFileName,
+        string displayName)
+    {
+        if (appliedOrdinalsByFileName.Count == 0)
+        {
+            return null;
+        }
+
+        var highest = appliedOrdinalsByFileName
+            .OrderByDescending(static entry => entry.Value)
+            .ThenByDescending(static entry => entry.Key, StringComparer.Ordinal)
+            .First();
+
+        var offenders = scripts
+            .Where(script => script.Ordinal < highest.Value
+                             && !appliedOrdinalsByFileName.ContainsKey(script.FileName))
+            .Select(static script => script.FileName)
+            .ToList();
+
+        if (offenders.Count == 0)
+        {
+            return null;
+        }
+
+        return $"{displayName} migration ordinals are append-only: unapplied " +
+               $"{(offenders.Count == 1 ? "migration" : "migrations")} " +
+               string.Join(", ", offenders.Select(static name => $"'{name}'")) +
+               $" sort below the highest applied migration '{highest.Key}' (ordinal {highest.Value:D3}). " +
+               "Renumber the new migration above the highest applied ordinal; never reuse a retired " +
+               "ordinal (see database/migration-reservations.json).";
     }
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)

@@ -82,6 +82,12 @@
       "object_type": "column"
     },
     {
+      "comment": "Every asset_specific_terms document declares termsFormat, equal to terms_format (ADR-024 amendment 2026-11-13, migration 068).",
+      "fingerprint": "84d46775348b3f5afc55f3a430a658725759eadc13b6a30523886bf55548bacf",
+      "object": "security_master.securities.ck_securities_terms_format_declared",
+      "object_type": "constraint"
+    },
+    {
       "comment": "Relational projection of CapFloor asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms.",
       "fingerprint": "b587d5959ceb0d91518f07890eb24e03514a7f5d3939ee3df146970829aa1e9d",
       "object": "security_master.cap_floor_projection",
@@ -1918,6 +1924,30 @@
       "fingerprint": "164ebd39be706eb9056a6881f4e39926436cb287d1097d28de563ac93231ca5e",
       "kind": "normal",
       "source": "security_master.ck_securities_terms_format on security_master.securities",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.securities.terms_format",
+      "target_kind": "table column",
+      "target_name": "securities",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "96e7651326af7517f88e73c7101416b627a9d77da7d004e9cc2617c5d2c26830",
+      "kind": "normal",
+      "source": "security_master.ck_securities_terms_format_declared on security_master.securities",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.securities.asset_specific_terms",
+      "target_kind": "table column",
+      "target_name": "securities",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "b033d3a31871d6e134c362da5b4160d2d201c2fd4c08d7a3648d95e190290d3c",
+      "kind": "normal",
+      "source": "security_master.ck_securities_terms_format_declared on security_master.securities",
       "source_kind": "table constraint",
       "source_name": null,
       "source_schema": "security_master",
@@ -5111,7 +5141,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "b9f1292c3bf3305c0e4101498425e2050707fe7d3782583e8b9dc60758127dc2",
+  "fingerprint": "ae4bd3ea661bce14a2396243cc80ebcebf9c6f6f4d15e296a05b978060382bf2",
   "foreign_tables": [],
   "functions": [
     {
@@ -41164,6 +41194,27 @@
         },
         {
           "columns": [
+            "asset_specific_terms",
+            "terms_format"
+          ],
+          "comment": "Every asset_specific_terms document declares termsFormat, equal to terms_format (ADR-024 amendment 2026-11-13, migration 068).",
+          "deferrable": false,
+          "definition": "CHECK (COALESCE((asset_specific_terms ->> 'termsFormat'::text) = terms_format, false))",
+          "delete_action": null,
+          "fingerprint": "6dddb1bafbb307522fc13c3ace06196cdb00975864903bfbd5a246f1cbbc4fc5",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_securities_terms_format_declared",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
             "security_id"
           ],
           "comment": null,
@@ -41185,7 +41236,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "800a7fe0d09a3fc1e3c09c2d66f948474157ca6ff580f3decc1575e4810f1287",
+      "fingerprint": "ac18234c31ecb97235f14f99bb83b2823b206ed2e7432d3ba3a11eefa34cdd49",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -93033,6 +93084,27 @@
         },
         {
           "columns": [
+            "asset_specific_terms",
+            "terms_format"
+          ],
+          "comment": "Every asset_specific_terms document declares termsFormat, equal to terms_format (ADR-024 amendment 2026-11-13, migration 068).",
+          "deferrable": false,
+          "definition": "CHECK (COALESCE((asset_specific_terms ->> 'termsFormat'::text) = terms_format, false))",
+          "delete_action": null,
+          "fingerprint": "6dddb1bafbb307522fc13c3ace06196cdb00975864903bfbd5a246f1cbbc4fc5",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_securities_terms_format_declared",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
             "security_id"
           ],
           "comment": null,
@@ -93054,7 +93126,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "800a7fe0d09a3fc1e3c09c2d66f948474157ca6ff580f3decc1575e4810f1287",
+      "fingerprint": "ac18234c31ecb97235f14f99bb83b2823b206ed2e7432d3ba3a11eefa34cdd49",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
