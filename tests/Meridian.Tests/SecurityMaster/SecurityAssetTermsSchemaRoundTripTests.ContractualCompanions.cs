@@ -12,6 +12,11 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
     [Fact]
     public void EveryVersionedRootTerm_HasAnExplicitHistoricalOrCompanionReaderTestOwner()
     {
+        // The v5 workflow's separate admission suite owns typed round-trip, inert older stamps
+        // and the governed publish boundary. Name the actual methods so the ownership cannot drift.
+        const string workflowReader = nameof(Workbench.BondWorkflowTermsAdmissionTests.BondWorkflowVersionFiveSurvivesTypedRecordAndSnapshotCodec);
+        const string workflowHistory = nameof(Workbench.BondWorkflowTermsAdmissionTests.BondWorkflowOlderStampResidueCannotActivateOrChangeHistoricalCodecBytes);
+        const string workflowPublisher = nameof(Workbench.SecurityMasterWorkbenchCommandServiceTests.BondWorkflowExplicitGovernedEditStagesPublishesAndPersistsVersionFive);
         foreach (var assetClass in SecurityAssetClassCatalog.AssetClasses)
         {
             var floor = SecurityAssetClassCatalog.GetStampFloor(assetClass);
@@ -19,8 +24,9 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
                 .Concat(SecurityAssetTermsSchema.Fields(assetClass).SelectMany(field => SecurityAssetTermsSchema.ElementFields(assetClass, field.Key)))
                 .Where(field => field.SinceTermsVersion > floor)
                 .Should().OnlyContain(field => field.Key == ScheduleConventionsKey || field.Key == CallScheduleKey
-                    || field.Key == PutScheduleKey || field.Key == SecurityContractualCashFlowTerms.Key,
-                    "a new readable term must add explicit typed-reader, round-trip and write-boundary coverage");
+                    || field.Key == PutScheduleKey || field.Key == SecurityContractualCashFlowTerms.Key
+                    || field.Key == SecurityRecordRateUnit.FieldKey || assetClass == "Bond" && field.Key == "bondWorkflow",
+                    $"a new readable term must add explicit typed-reader, round-trip and write-boundary coverage; Bond.bondWorkflow is owned by {workflowReader}, {workflowHistory} and {workflowPublisher}");
         }
     }
 

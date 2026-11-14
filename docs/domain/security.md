@@ -50,6 +50,13 @@ security/account identity. Replay by receipt preserves what was actually evaluat
 transaction with an earlier recorded timestamp commits later. Timestamp cutoffs alone are
 eligibility predicates, not durable certification or a commit-consistent snapshot.
 
+Bond quotation evidence also declares clean/dirty basis, per-100 or currency-per-unit convention,
+bid/ask/evaluated status and settlement facts. Analytics can consume an immutable retained receipt
+instead of a manually copied price; incompatible, stale or incomplete evidence blocks calculation.
+Imported holdings retain original face, factor, accrued interest and consideration basis alongside
+provider value, normalized value and variance. Import identity preview resolves every supplied
+identifier and retains an operator's conflict decision against the exact matching evidence.
+
 `GetRecordedByIdentifierAsOfAsync` applies that same timestamp limitation to retained Security
 Master event state and alias revisions. Its recorded cutoff filters stored timestamps; the separate
 effective cutoff selects identifier validity. Event timestamps and alias transaction timestamps can
@@ -174,10 +181,28 @@ lot conventions and pack membership are held in parity by `SecurityAssetClassReg
 `SecurityAssetClassOperationalWiringTests` extends that guard through actual readiness rows and aliases.
 
 Readiness definitions, depth targets, profile identities and classification keywords are owned by
-`SecurityAssetPackRegistry`. Every catalog class receives a row. A new class without a specialized
+`SecurityAssetPackRegistry`. A class covered by more than one built-in pack, claimed or planned, is
+listed in `DeclaredSharedCoverage` with its reason; `ValidateAll()` reports any other built-in
+overlap. Every catalog class receives a row. A new class without a specialized
 operational profile stays `ReviewRequired`, including after provider evidence is retained; adding a
 class never silently removes it from readiness. Broad operational vocabulary is scoped to readiness,
 while canonical aliases are shared through the asset catalog. MBS, ABS, CLO and CMBS evidence belongs
 only to StructuredCredit. Profile metadata, including nested fields, cannot contradict the registered
 profile's canonical class. Custom profile documents still require explicit typed-term integration to
 produce contractual schedules; a readiness row alone does not supply that integration.
+
+## Structured-note valuation accounting
+
+StructuredNote uses fair value through profit or loss, as decided on 2026-11-11. Its catalog
+declaration selects `structured-note-fvtpl-v1` in the existing daily valuation route. Quantity is
+face value; raw cost and market quotes use the class's percentage-of-par convention through
+`LotQuantity`, so 1,000 face at 101 is worth 1,010. The journal recognizes only the change from
+the retained monetary carrying value, with unrealized gain in revenue or unrealized loss in
+expense. It does not repeat cumulative gains on subsequent valuation dates.
+
+The existing valuation freshness policy, canonical Security Master identity, retained mark and
+carrying-value evidence, period controls, draft submission, independent approval and posting
+lifecycle remain authoritative. The draft retains its template version and treatment; retries
+use the same mark fingerprint and corrected marks produce a new reviewable draft. Missing or
+stale marks cannot produce a draft. StructuredNote remains outside the coupon/accrual accounting
+event slice, so its FixedIncome taxonomy cannot authorize bond accruals or amortization.

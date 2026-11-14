@@ -9,7 +9,6 @@ import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { Input } from "@/components/ui/input";
 import { SkeletonCardRow, SkeletonGrid, SkeletonTimeline } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { accountingToolingBadgeVariant, accountingToolingBorderClass } from "@/screens/accounting-screen.styles";
 import { AccountingChip } from "@/screens/accounting-screen.workbench-context";
 import type {
   AccountingCloseReportPackageViewModel,
@@ -17,6 +16,10 @@ import type {
   AccountingWorkflowLaunchViewState,
   CloseCommandCenterViewState
 } from "@/screens/accounting-screen.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import { TextArea } from "@/components/ui/text-area";
+import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
+import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
 
 export const CLOSE_COCKPIT_FRESHNESS_BUDGET_MS = 15 * 60_000;
 
@@ -51,7 +54,7 @@ export function AccountingWorkflowLaunchPanel({ view }: { view: AccountingWorkfl
           <p className="workspace-section-summary">{view.description}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={accountingToolingBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
+          <Badge variant={statusBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
           <AccountingChip label="Active" value={view.activeLabel} />
         </div>
       </div>
@@ -68,7 +71,7 @@ export function AccountingWorkflowLaunchPanel({ view }: { view: AccountingWorkfl
                 aria-current={step.isActive ? "page" : undefined}
                 className={cn(
                   "group rounded-md border px-3 py-3 transition focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
-                  accountingToolingBorderClass(step.tone),
+                  statusPanelClass(step.tone),
                   step.isActive && "border-primary/60 bg-primary/10"
                 )}
               >
@@ -80,7 +83,7 @@ export function AccountingWorkflowLaunchPanel({ view }: { view: AccountingWorkfl
                     </div>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{step.caption}</p>
                   </div>
-                  <Badge variant={accountingToolingBadgeVariant(step.tone)}>{step.statusLabel}</Badge>
+                  <Badge variant={statusBadgeVariant(step.tone)}>{step.statusLabel}</Badge>
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-2 border-t border-border/60 pt-2 text-xs">
                   <span className="text-muted-foreground">{step.metricLabel}</span>
@@ -138,7 +141,7 @@ export function CloseCommandCenterPanel({
           <p className="workspace-section-summary">{view.description}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={accountingToolingBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
+          <Badge variant={statusBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
           <Button type="button" size="sm" variant="outline" disabled={view.status === "loading"} busy={view.status === "loading"} busyLabel="Refreshing close command center" onClick={onRefresh}>
             <RefreshCcw className={cn("h-3.5 w-3.5", view.status === "loading" && "animate-spin")} aria-hidden="true" />
             Refresh
@@ -146,7 +149,7 @@ export function CloseCommandCenterPanel({
         </div>
       </div>
 
-      <Card className={cn("panel-surface", accountingToolingBorderClass(view.statusTone))} role="region" aria-label={view.ariaLabel}>
+      <Card className={cn("panel-surface", statusPanelClass(view.statusTone))} role="region" aria-label={view.ariaLabel}>
         <CardHeader>
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.35fr)]">
             <div className="min-w-0">
@@ -183,10 +186,10 @@ export function CloseCommandCenterPanel({
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {view.metricRows.map((metric) => {
               const body = (
-                <div className={cn("h-full rounded-md border bg-secondary/20 px-3 py-3", accountingToolingBorderClass(metric.tone))}>
+                <div className={cn("h-full rounded-md border bg-secondary/20 px-3 py-3", statusPanelClass(metric.tone))}>
                   <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 text-xs font-semibold uppercase text-muted-foreground">{metric.label}</div>
-                    <Badge variant={accountingToolingBadgeVariant(metric.tone)}>{metric.value}</Badge>
+                    <div className={cn("min-w-0 text-xs font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase")}>{metric.label}</div>
+                    <Badge variant={statusBadgeVariant(metric.tone)}>{metric.value}</Badge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
                 </div>
@@ -204,14 +207,14 @@ export function CloseCommandCenterPanel({
 
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
             <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">Blocking and at-risk items</div>
+              <div className="text-xs font-semibold text-muted-foreground">Blocking and at-risk items</div>
               {view.blockerRows.length > 0 ? (
                 <div role="list" className="mt-3 space-y-2" aria-label="Close command center blockers">
                   {view.blockerRows.map((item) => (
-                    <div key={item.id} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", accountingToolingBorderClass(item.tone))}>
+                    <div key={item.id} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", statusPanelClass(item.tone))}>
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <span className="font-semibold text-foreground">{item.label}</span>
-                        <Badge variant={accountingToolingBadgeVariant(item.tone)}>{item.tone === "danger" ? "Blocker" : "Review"}</Badge>
+                        <Badge variant={statusBadgeVariant(item.tone)}>{item.tone === "danger" ? "Blocker" : "Review"}</Badge>
                       </div>
                       <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.detail}</p>
                       <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
@@ -343,7 +346,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
           <p className="workspace-section-summary">{view.description}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={accountingToolingBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
+          <Badge variant={statusBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
           <Button type="button" size="sm" variant="outline" disabled={view.loading} busy={view.loading} busyLabel="Refreshing close package" onClick={() => void view.refresh()}>
             <RefreshCcw className={cn("h-3.5 w-3.5", view.loading && "animate-spin")} aria-hidden="true" />
             Refresh
@@ -428,7 +431,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
         </div>
       </div>
 
-      <Card className={cn("panel-surface", accountingToolingBorderClass(view.statusTone))} role="region" aria-label={view.ariaLabel}>
+      <Card className={cn("panel-surface", statusPanelClass(view.statusTone))} role="region" aria-label={view.ariaLabel}>
         <CardHeader>
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.35fr)]">
             <div className="min-w-0">
@@ -592,7 +595,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
 
           <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3" aria-label="End-to-end close workflow controls">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">Close workflow control</div>
+              <div className="text-xs font-semibold text-muted-foreground">Close workflow control</div>
               <Badge variant="outline">{view.closeWorkflowSteps.length} steps</Badge>
             </div>
             <div role="list" className="mt-3 grid gap-2 lg:grid-cols-2 xl:grid-cols-4">
@@ -600,11 +603,11 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                 <div
                   key={step.id}
                   role="listitem"
-                  className={cn("grid min-h-[12rem] gap-3 rounded-md border bg-background/45 px-3 py-3", accountingToolingBorderClass(step.tone))}
+                  className={cn("grid min-h-[12rem] gap-3 rounded-md border bg-background/45 px-3 py-3", statusPanelClass(step.tone))}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <span className="font-semibold text-foreground">{step.label}</span>
-                    <Badge variant={accountingToolingBadgeVariant(step.tone)}>{step.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(step.tone)}>{step.statusLabel}</Badge>
                   </div>
                   <div className="grid content-start gap-1 text-xs leading-5 text-muted-foreground">
                     <span>{step.detail}</span>
@@ -630,10 +633,10 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
 
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {view.metrics.map((metric) => (
-              <div key={metric.id} className={cn("rounded-md border bg-secondary/20 px-3 py-3", accountingToolingBorderClass(metric.tone))}>
+              <div key={metric.id} className={cn("rounded-md border bg-secondary/20 px-3 py-3", statusPanelClass(metric.tone))}>
                 <div className="flex items-start justify-between gap-2">
-                  <div className="text-xs font-semibold uppercase text-muted-foreground">{metric.label}</div>
-                  <Badge variant={accountingToolingBadgeVariant(metric.tone)}>{metric.value}</Badge>
+                  <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase")}>{metric.label}</div>
+                  <Badge variant={statusBadgeVariant(metric.tone)}>{metric.value}</Badge>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
               </div>
@@ -643,13 +646,13 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
           <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3" role="region" aria-label="Post closing entries gate">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
-                <div className="text-xs font-semibold uppercase text-muted-foreground">Post closing entries</div>
+                <div className="text-xs font-semibold text-muted-foreground">Post closing entries</div>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Shared close-service projection of the scoped temporary-account roll before period lock.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant={view.closingEntriesGate ? accountingToolingBadgeVariant(view.closingEntriesGate.statusTone) : "warning"}>
+                <Badge variant={view.closingEntriesGate ? statusBadgeVariant(view.closingEntriesGate.statusTone) : "warning"}>
                   {view.closingEntriesGate?.statusLabel ?? "Not supplied"}
                 </Badge>
                 <Button
@@ -695,28 +698,22 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                 </div>
                 {view.closingEntriesGate.balances.length > 0 ? (
                   <div className="overflow-x-auto rounded-md border border-border/70">
-                    <table className="w-full text-left text-xs" aria-label="Scoped temporary-account balances">
-                      <thead className="bg-secondary/35 text-muted-foreground">
-                        <tr>
-                          <th scope="col" className="px-3 py-2 font-semibold">Account</th>
-                          <th scope="col" className="px-3 py-2 font-semibold">Type</th>
-                          <th scope="col" className="px-3 py-2 font-semibold">Balance</th>
-                          <th scope="col" className="px-3 py-2 font-semibold">Scope</th>
-                          <th scope="col" className="px-3 py-2 font-semibold">Financial account</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {view.closingEntriesGate.balances.map((balance) => (
-                          <tr key={balance.rowId} className="border-t border-border/60">
-                            <td className="px-3 py-2 font-semibold text-foreground">{balance.accountLabel}</td>
-                            <td className="px-3 py-2 text-muted-foreground">{balance.accountTypeLabel}</td>
-                            <td className="px-3 py-2 font-mono text-foreground">{balance.balanceLabel}</td>
-                            <td className="px-3 py-2 text-muted-foreground">{balance.scopeLabel}</td>
-                            <td className="px-3 py-2 font-mono text-muted-foreground">{balance.financialAccountLabel}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Account", className: "px-3 py-2 font-semibold text-foreground", render: (balance) => <>{balance.accountLabel}</> },
+            { id: "column-2", label: "Type", className: "px-3 py-2 text-muted-foreground", render: (balance) => <>{balance.accountTypeLabel}</> },
+            { id: "column-3", label: "Balance", className: "px-3 py-2 font-mono text-foreground", render: (balance) => <>{balance.balanceLabel}</> },
+            { id: "column-4", label: "Scope", className: "px-3 py-2 text-muted-foreground", render: (balance) => <>{balance.scopeLabel}</> },
+            { id: "column-5", label: "Financial account", className: "px-3 py-2 font-mono text-muted-foreground", render: (balance) => <>{balance.financialAccountLabel}</> }
+          ]}
+          rows={view.closingEntriesGate.balances}
+          getRowId={(balance) => String(balance.rowId)}
+          getRowClassName={() => "border-t border-border/60"}
+          ariaLabel={"Scoped temporary-account balances"}
+          tableClassName={"w-full text-left text-xs"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">No non-zero scoped temporary-account balances were returned.</p>
@@ -739,10 +736,10 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
             {view.operatingCoverageRows.length > 0 ? (
               <div role="list" className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                 {view.operatingCoverageRows.map((row) => (
-                  <div key={row.controlId} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", accountingToolingBorderClass(row.statusTone))}>
+                  <div key={row.controlId} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", statusPanelClass(row.statusTone))}>
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <span className="font-semibold text-foreground">{row.label}</span>
-                      <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                      <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                     </div>
                     <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                       <span>{row.evidenceLabel}; {row.blockerLabel}</span>
@@ -798,7 +795,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                         >
                           <div className="flex flex-wrap items-start justify-between gap-2">
                             <span className="font-semibold text-foreground">{task.displayName}</span>
-                            <Badge variant={accountingToolingBadgeVariant(task.statusTone)}>{task.statusLabel}</Badge>
+                            <Badge variant={statusBadgeVariant(task.statusTone)}>{task.statusLabel}</Badge>
                           </div>
                           <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                             <span>{task.taskId}</span>
@@ -960,7 +957,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                         >
                           <div className="flex flex-wrap items-start justify-between gap-2">
                             <span className="font-semibold text-foreground">{task.displayName}</span>
-                            <Badge variant={accountingToolingBadgeVariant(task.statusTone)}>{task.statusLabel}</Badge>
+                            <Badge variant={statusBadgeVariant(task.statusTone)}>{task.statusLabel}</Badge>
                           </div>
                           <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                             <span>{task.taskId}</span>
@@ -1024,7 +1021,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                   </label>
                 </div>
                 <div className="space-y-2" aria-label="Close setup sign-off role candidates">
-                  <div className="text-xs font-semibold uppercase text-muted-foreground">Sign-off role candidates</div>
+                  <div className="text-xs font-semibold text-muted-foreground">Sign-off role candidates</div>
                   {view.closeSetupSignOffRoleOptions.length > 0 ? (
                     <div role="list" className="grid gap-2 md:grid-cols-2">
                       {view.closeSetupSignOffRoleOptions.map((role) => (
@@ -1062,8 +1059,8 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                 </label>
                 <label className="space-y-1 text-sm">
                   <span className="text-xs font-semibold uppercase text-muted-foreground">Sign-off matrix</span>
-                  <textarea
-                    className="min-h-[88px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+                  <TextArea rows={2}
+                    className="min-h-[88px] w-full text-sm"
                     value={view.closeSetupDraft.taskSignOffRequirements}
                     onChange={(event) => view.updateCloseSetupDraft({ taskSignOffRequirements: event.target.value })}
                   />
@@ -1086,7 +1083,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                           >
                             <div className="flex flex-wrap items-start justify-between gap-2">
                               <span className="font-semibold text-foreground">{dependency.displayName}</span>
-                              <Badge variant={accountingToolingBadgeVariant(dependency.statusTone)}>{dependency.statusLabel}</Badge>
+                              <Badge variant={statusBadgeVariant(dependency.statusTone)}>{dependency.statusLabel}</Badge>
                             </div>
                             <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                               <span>{dependency.taskId}</span>
@@ -1103,7 +1100,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                   )}
                 </div>
                 <label className="space-y-1 text-sm">
-                  <span className="text-xs font-semibold uppercase text-muted-foreground">Depends on task ids</span>
+                  <span className="text-xs font-semibold text-muted-foreground">Depends on task ids</span>
                   <Input
                     value={view.closeSetupDraft.taskDependsOnTaskIds}
                     onChange={(event) => view.updateCloseSetupDraft({ taskDependsOnTaskIds: event.target.value })}
@@ -1124,10 +1121,10 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
             <div className="text-xs font-semibold uppercase text-muted-foreground">Certification safeguards</div>
             <div role="list" className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
               {view.certificationSafeguards.map((safeguard) => (
-                <div key={safeguard.id} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", accountingToolingBorderClass(safeguard.tone))}>
+                <div key={safeguard.id} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", statusPanelClass(safeguard.tone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <span className="font-semibold text-foreground">{safeguard.label}</span>
-                    <Badge variant={accountingToolingBadgeVariant(safeguard.tone)}>{safeguard.value}</Badge>
+                    <Badge variant={statusBadgeVariant(safeguard.tone)}>{safeguard.value}</Badge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{safeguard.detail}</p>
                 </div>
@@ -1140,10 +1137,10 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
             {view.closeCalendar.length > 0 ? (
               <div role="list" className="mt-3 grid gap-2 lg:grid-cols-2 xl:grid-cols-3" aria-label="Close calendar milestones">
                 {view.closeCalendar.map((milestone) => (
-                  <div key={milestone.milestoneId} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", accountingToolingBorderClass(milestone.statusTone))}>
+                  <div key={milestone.milestoneId} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", statusPanelClass(milestone.statusTone))}>
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <span className="font-semibold text-foreground">{milestone.displayName}</span>
-                      <Badge variant={accountingToolingBadgeVariant(milestone.statusTone)}>{milestone.statusLabel}</Badge>
+                      <Badge variant={statusBadgeVariant(milestone.statusTone)}>{milestone.statusLabel}</Badge>
                     </div>
                     <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                       <span>Due: {milestone.dueDateLabel}</span>
@@ -1166,10 +1163,10 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
               {view.tasks.length > 0 ? (
                 <div role="list" className="mt-3 space-y-2" aria-label="Close package checklist tasks">
                   {view.tasks.map((task) => (
-                    <div key={task.taskId} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", accountingToolingBorderClass(task.statusTone))}>
+                    <div key={task.taskId} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", statusPanelClass(task.statusTone))}>
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <span className="font-semibold text-foreground">{task.displayName}</span>
-                        <Badge variant={accountingToolingBadgeVariant(task.statusTone)}>{task.statusLabel}</Badge>
+                        <Badge variant={statusBadgeVariant(task.statusTone)}>{task.statusLabel}</Badge>
                       </div>
                       <div className="mt-2 grid gap-2 text-xs text-muted-foreground md:grid-cols-2 xl:grid-cols-4">
                         <span>Owner: {task.ownerLabel}</span>
@@ -1200,10 +1197,10 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                   {view.dependencyGraphRows.length > 0 ? (
                     <div role="list" className="mt-3 space-y-2">
                       {view.dependencyGraphRows.map((dependency) => (
-                        <div key={dependency.dependencyId} role="listitem" className={cn("rounded-md border px-3 py-2", accountingToolingBorderClass(dependency.statusTone))}>
+                        <div key={dependency.dependencyId} role="listitem" className={cn("rounded-md border px-3 py-2", statusPanelClass(dependency.statusTone))}>
                           <div className="flex flex-wrap items-start justify-between gap-2">
                             <span className="font-semibold text-foreground">{dependency.taskLabel}</span>
-                            <Badge variant={accountingToolingBadgeVariant(dependency.statusTone)}>{dependency.statusLabel}</Badge>
+                            <Badge variant={statusBadgeVariant(dependency.statusTone)}>{dependency.statusLabel}</Badge>
                           </div>
                           <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                             <span>Depends on: {dependency.predecessorLabel}</span>
@@ -1226,10 +1223,10 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                   {view.signOffMatrixRows.length > 0 ? (
                     <div role="list" className="mt-3 space-y-2">
                       {view.signOffMatrixRows.map((row) => (
-                        <div key={row.rowId} role="listitem" className={cn("rounded-md border px-3 py-2", accountingToolingBorderClass(row.statusTone))}>
+                        <div key={row.rowId} role="listitem" className={cn("rounded-md border px-3 py-2", statusPanelClass(row.statusTone))}>
                           <div className="flex flex-wrap items-start justify-between gap-2">
                             <span className="font-semibold text-foreground">{row.roleLabel}</span>
-                            <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.approvedLabel}</Badge>
+                            <Badge variant={statusBadgeVariant(row.statusTone)}>{row.approvedLabel}</Badge>
                           </div>
                           <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                             <span>{row.taskLabel}</span>
@@ -1264,7 +1261,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                     >
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <span className="break-all font-mono text-xs font-semibold text-foreground">{item.packageId}</span>
-                        <Badge variant={accountingToolingBadgeVariant(item.certificationTone)}>{item.certificationLabel}</Badge>
+                        <Badge variant={statusBadgeVariant(item.certificationTone)}>{item.certificationLabel}</Badge>
                       </div>
                       <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                         <span>Period {item.periodLabel}</span>
@@ -1366,7 +1363,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                       <p className="mt-2 text-sm leading-6 text-muted-foreground">{adjustment.reason}</p>
                       <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                         <span>{adjustment.amountLabel}</span>
-                        <Badge variant={accountingToolingBadgeVariant(adjustment.materialityTone)} className="w-fit">{adjustment.materialityLabel}</Badge>
+                        <Badge variant={statusBadgeVariant(adjustment.materialityTone)} className="w-fit">{adjustment.materialityLabel}</Badge>
                         <span>{adjustment.requestedByLabel}</span>
                         {adjustment.decisionLabel ? <span>{adjustment.decisionLabel}</span> : null}
                         <span>{adjustment.evidenceLabel}</span>
@@ -1407,16 +1404,16 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
 
             <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="text-xs font-semibold uppercase text-muted-foreground">Evidence and blockers</div>
+                <div className="text-xs font-semibold text-muted-foreground">Evidence and blockers</div>
                 <Badge variant={view.evidenceReviewRows.length > 0 ? "outline" : "success"}>{view.evidenceReviewRows.length}</Badge>
               </div>
               {view.evidenceReviewRows.length > 0 ? (
                 <div role="list" className="mt-3 space-y-2" aria-label="Close evidence and blocker review rows">
                   {view.evidenceReviewRows.map((row) => (
-                    <div key={row.rowId} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", accountingToolingBorderClass(row.statusTone))}>
+                    <div key={row.rowId} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", statusPanelClass(row.statusTone))}>
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <span className="font-semibold text-foreground">{row.label}</span>
-                        <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                       </div>
                       <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                         <span>{row.categoryLabel}</span>

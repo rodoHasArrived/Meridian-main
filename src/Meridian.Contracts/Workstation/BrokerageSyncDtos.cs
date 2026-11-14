@@ -185,7 +185,14 @@ public sealed record BrokerageHouseholdPositionDto(
     string? Description = null,
     string? PositionId = null,
     string? Currency = null,
-    MarkFreshnessAssessmentDto? MarkFreshness = null);
+    MarkFreshnessAssessmentDto? MarkFreshness = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? AccruedInterest { get; init; }
+    /// <summary>ProviderReported, CostDerived, or Unavailable; a cost proxy is not an observed mark.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ValuationBasis { get; init; }
+}
 
 public sealed record BrokerageHouseholdPortfolioDto(
     string ProviderId,
@@ -217,7 +224,14 @@ public sealed record FundAccountBrokeragePositionDto(
     string? Description = null,
     string? PositionId = null,
     string? Currency = null,
-    MarkFreshnessAssessmentDto? MarkFreshness = null);
+    MarkFreshnessAssessmentDto? MarkFreshness = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? AccruedInterest { get; init; }
+    /// <summary>ProviderReported, CostDerived, or Unavailable; a cost proxy is not an observed mark.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ValuationBasis { get; init; }
+}
 
 public sealed record FundAccountBrokerageOrderDto(
     string OrderId,

@@ -10,7 +10,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Tests.Ui;
@@ -37,6 +39,16 @@ public sealed class SupportedPostureStartupIntegrationTests
             using var startTimeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
 
             var app = GetServerApp(server);
+            var endpoints = ((IEndpointRouteBuilder)app).DataSources
+                .SelectMany(source => source.Endpoints).ToArray();
+            endpoints.Should().NotBeEmpty("the real host must compose its complete workstation endpoint graph");
+            var duplicateNames = endpoints
+                .Where(endpoint => endpoint.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName is not null)
+                .GroupBy(endpoint => endpoint.Metadata.GetMetadata<IEndpointNameMetadata>()!.EndpointName, StringComparer.Ordinal)
+                .Where(group => group.Count() > 1)
+                .Select(group => $"{group.Key}: {string.Join(", ", group.Select(endpoint => (endpoint as RouteEndpoint)?.RoutePattern.RawText ?? endpoint.DisplayName))}")
+                .ToArray();
+            duplicateNames.Should().BeEmpty("endpoint names share one namespace across all domains in the composed host");
             app.MapGet(
                 "/api/problem-details/empty-unauthorized",
                 () => Results.Unauthorized());
@@ -132,12 +144,13 @@ public sealed class SupportedPostureStartupIntegrationTests
     }
 
     [Fact]
-    public async Task UiServer_StartAsync_CompletesReportingMigrationBeforeHostedServiceConstruction()
+    public async Task UiServer_StartAsync_CompletesDatabasePlanThenReportingBeforeHostedServiceConstruction()
     {
         using var environment = UiServerDevelopmentEnvironmentScope.Enable();
         var root = CreateTempRoot();
         var configPath = WriteMinimalConfig(root);
-        var migration = new RecordingReportingMigrationStartup();
+        var events = new List<string>();
+        var migration = new RecordingReportingMigrationStartup(() => events.Add("reporting"));
         var hostedServiceObservedReady = false;
 
         try
@@ -150,9 +163,18 @@ public sealed class SupportedPostureStartupIntegrationTests
                 apiHostOptions: null,
                 configureServices: services =>
                 {
+                    services.RemoveAll<DatabaseStartupStep>();
+                    services.AddSingleton(new DatabaseStartupStep("probe", [], (_, cancellationToken, _) =>
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        events.Add("database");
+                        return Task.CompletedTask;
+                    }));
                     services.AddSingleton<IReportingMigrationStartup>(migration);
+                    services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, WorkstationReportingMigrationHostedService>());
                     services.AddSingleton<IHostedService>(_ =>
                     {
+                        events.Add("hosted-construction");
                         hostedServiceObservedReady = migration.IsReady;
                         return new StopAndDisposeProbeHostedService();
                     });
@@ -162,9 +184,77 @@ public sealed class SupportedPostureStartupIntegrationTests
             await server.StartAsync(startTimeout.Token);
 
             migration.CallCount.Should().Be(1);
+            migration.InvocationCount.Should().Be(2,
+                "pre-start readiness and the hosted fallback must share one idempotent initialization");
+            events.Should().Equal("database", "reporting", "hosted-construction");
             hostedServiceObservedReady.Should().BeTrue(
                 "reporting schema readiness must precede construction of schedule and distribution hosted services");
             await server.StopAsync(startTimeout.Token);
+        }
+        finally
+        {
+            CleanupTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task UiServer_StartAsync_DatabaseFailureRemainsRetryableBeforeApplicationStart()
+    {
+        using var environment = UiServerDevelopmentEnvironmentScope.Enable();
+        var root = CreateTempRoot();
+        var configPath = WriteMinimalConfig(root);
+        var events = new List<string>();
+        var failure = new InvalidOperationException("database readiness sentinel");
+        var failInitialization = true;
+        var migration = new RecordingReportingMigrationStartup(() => events.Add("reporting"));
+
+        try
+        {
+            await using var server = new UiServer(
+                configPath,
+                port: 0,
+                lifecycle: new RecordingLifecycleCoordinator(),
+                ownsLifecycle: true,
+                apiHostOptions: null,
+                configureServices: services =>
+                {
+                    services.RemoveAll<DatabaseStartupStep>();
+                    // Register the dependent first to exercise planning through the real host.
+                    services.AddSingleton(new DatabaseStartupStep("dependent", ["schema"], (_, _, _) =>
+                    {
+                        events.Add("dependent");
+                        return Task.CompletedTask;
+                    }));
+                    services.AddSingleton(new DatabaseStartupStep("schema", [], (_, cancellationToken, _) =>
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        events.Add("schema");
+                        return failInitialization ? Task.FromException(failure) : Task.CompletedTask;
+                    }));
+                    services.AddSingleton<IReportingMigrationStartup>(migration);
+                    services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, WorkstationReportingMigrationHostedService>());
+                    services.AddSingleton<IHostedService>(_ =>
+                    {
+                        events.Add("hosted-construction");
+                        return new StopAndDisposeProbeHostedService();
+                    });
+                });
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+
+            var thrown = await Assert.ThrowsAsync<InvalidOperationException>(() => server.StartAsync(timeout.Token));
+
+            thrown.Should().BeSameAs(failure);
+            events.Should().Equal("schema");
+            migration.CallCount.Should().Be(0);
+
+            failInitialization = false;
+            await server.StartAsync(timeout.Token);
+
+            events.Should().Equal("schema", "schema", "dependent", "reporting", "hosted-construction");
+            migration.CallCount.Should().Be(1);
+            migration.InvocationCount.Should().Be(2,
+                "the retried startup must initialize once before the hosted fallback rechecks readiness");
+            await server.StopAsync(timeout.Token);
         }
         finally
         {
@@ -554,19 +644,30 @@ public sealed class SupportedPostureStartupIntegrationTests
         }
     }
 
-    private sealed class RecordingReportingMigrationStartup : IReportingMigrationStartup
+    private sealed class RecordingReportingMigrationStartup(Action? onReady = null) : IReportingMigrationStartup
     {
+        private readonly object _gate = new();
         private int _callCount;
+        private int _invocationCount;
         private int _ready;
 
         public int CallCount => Volatile.Read(ref _callCount);
+        public int InvocationCount => Volatile.Read(ref _invocationCount);
         public bool IsReady => Volatile.Read(ref _ready) == 1;
 
         public Task EnsureReadyAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Interlocked.Increment(ref _callCount);
-            Volatile.Write(ref _ready, 1);
+            Interlocked.Increment(ref _invocationCount);
+            lock (_gate)
+            {
+                if (IsReady)
+                    return Task.CompletedTask;
+
+                onReady?.Invoke();
+                Interlocked.Increment(ref _callCount);
+                Volatile.Write(ref _ready, 1);
+            }
             return Task.CompletedTask;
         }
     }

@@ -137,6 +137,12 @@ findings even when HTTP status is `200`. A completed import retains source/canon
 a reconciliation route. A resolved break needs retained evidence and an accepted correction or
 explanation; an empty queue or a successful fetch alone is insufficient.
 
+The margin control view and its certification require tenant and company scope. They show only
+provider accounts whose external account id is bound to an active fund account owned by your
+tenant and company (account code, custodian sub-account, bank account number or IBAN). A retained
+statement that is missing from the view usually means that binding is absent: fix the fund
+account's identifiers rather than the evidence.
+
 | Symptom | Next action |
 | --- | --- |
 | `401/403` or missing expected scope | Reauthenticate and verify permissions/company assignment before changing records. |

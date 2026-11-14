@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
 import { SettingsScreen } from "@/screens/settings-screen";
 import { renderWithRouter } from "@/test/render";
+import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
+import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import type {
   BrokerageConnectionStatus,
   LedgerMappingWorkbench,
@@ -567,7 +569,7 @@ describe("SettingsScreen", () => {
     apiMocks.activateProviderIntegration.mockReset();
   });
 
-  it("lands the bare /settings route on the focused task chooser", () => {
+  it("lands the bare /settings route on the evidence-based setup checklist", () => {
     renderWithRouter(
       <SettingsScreen
         session={session}
@@ -578,15 +580,16 @@ describe("SettingsScreen", () => {
     );
 
     expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
-      "Settings"
+      "Choose a settings task"
     );
     expect(screen.queryByRole("tablist", { name: "Settings routes" })).not.toBeInTheDocument();
-    expect(screen.getByRole("treegrid", { name: "Settings tasks" })).toBeInTheDocument();
     expect(screen.queryByLabelText("Operator control posture metrics")).not.toBeInTheDocument();
     expect(screen.queryByText("Active runs")).not.toBeInTheDocument();
     expect(screen.queryByText("Open positions")).not.toBeInTheDocument();
     expect(screen.queryByText("Storage health")).not.toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /Open Preferences:/ })[0]).toHaveAttribute("href", "/settings/preferences");
+    expect(screen.getByRole("region", { name: "Workstation setup checklist" })).toBeInTheDocument();
+    expect(screen.getByText("Defaults or saved preferences active")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Preferences" })).toHaveAttribute("href", "/settings/preferences");
     expect(screen.queryByRole("region", { name: "Profile and authentication posture" })).not.toBeInTheDocument();
   });
 
@@ -625,6 +628,34 @@ describe("SettingsScreen", () => {
     expect(screen.queryByText("Focused provider: polygon")).not.toBeInTheDocument();
   });
 
+  it("states the cross-screen counts as the source of provider health, with their own evidence", () => {
+    // The overview reloaded at 18:10. The cross-screen counts reload failed, so provider health
+    // is still the 17:40 figure: it must not borrow the overview's source, time or freshness.
+    renderWithRouter(
+      <WorkspaceFigureContextProvider
+        value={{
+          freshness: "fresh",
+          dataLabel: null,
+          staleSources: ["crossScreenCounts"],
+          sourceLoadedAt: { overview: "2026-06-30T18:10:00Z", crossScreenCounts: "2026-06-30T17:40:00Z" }
+        }}
+      >
+        <CrossScreenCountsProvider
+          counts={{ asOf: "2026-06-30T17:40:00Z", openOrders: null, providers: { healthy: 3, total: 4, definition: "Healthy providers." }, openBreaks: null }}
+        >
+          <SettingsScreen session={session} overview={overview} />
+        </CrossScreenCountsProvider>
+      </WorkspaceFigureContextProvider>,
+      { initialEntries: ["/settings"] }
+    );
+
+    const strip = screen.getByLabelText("Operator control posture metrics");
+    expect(within(strip).getByText("3 / 4")).toHaveClass("text-muted-foreground");
+    expect(strip.parentElement).toHaveTextContent(
+      "Stale figures · Active runs, Open positions, Storage health from System overview · As of Jun 30, 2026, 18:10 UTC · Scope: All authorized scopes; Providers healthy from Cross-screen counts · As of Jun 30, 2026, 17:40 UTC"
+    );
+  });
+
   it("renders recent events as accessible status evidence rows", () => {
     renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
       initialEntries: ["/settings#diagnostic-endpoints"]
@@ -636,13 +667,13 @@ describe("SettingsScreen", () => {
     );
     const eventTable = screen.getByRole("treegrid", { name: "1 recent system event" });
     const eventRow = within(eventTable).getByRole("row", {
-      name: /Select event evt-1\. OBS event from Provider health at May 1, 00:00 UTC\. Brokerage sync delayed\./i
+      name: /Select event evt-1\. OBS event from Provider health at May 1, 2026, 00:00 UTC\. Brokerage sync delayed\./i
     });
     const eventDetail = screen.getByRole("complementary", { name: "Selected recent event detail" });
     const diagnosticsCard = document.querySelector("#diagnostic-endpoints");
 
     expect(diagnosticsCard).toBeInTheDocument();
-    expect(within(diagnosticsCard as HTMLElement).getByLabelText(/Heartbeat Stale · May 1, 00:00 UTC/)).toBeInTheDocument();
+    expect(within(diagnosticsCard as HTMLElement).getByLabelText(/Heartbeat Stale · May 1, 2026, 00:00 UTC/)).toBeInTheDocument();
     expect(within(diagnosticsCard as HTMLElement).getByText("Heartbeat details").closest("details")).not.toHaveAttribute("open");
     expect(within(diagnosticsCard as HTMLElement).getByText("2026-05-01T00:00:00Z")).not.toBeVisible();
     expect(eventRow).toHaveAttribute("aria-selected", "true");
@@ -795,6 +826,7 @@ describe("SettingsScreen", () => {
     const appearanceRegion = screen.getByRole("region", { name: "Appearance preferences" });
     expect(within(appearanceRegion).getByRole("radiogroup", { name: "Appearance" })).toBeInTheDocument();
     expect(within(appearanceRegion).getByRole("radiogroup", { name: "Display density" })).toBeInTheDocument();
+    expect(within(appearanceRegion).getByRole("combobox", { name: "Time zone" })).toHaveValue("UTC");
   });
 
   it("renders fund operations controls for mappings, roles, approvals, and close calendar", () => {
@@ -816,7 +848,7 @@ describe("SettingsScreen", () => {
     expect(within(controlCenter).getByText("Account Close Calendar")).toBeInTheDocument();
     expect(within(controlCenter).getByText("1 unmapped")).toBeInTheDocument();
     expect(within(controlCenter).getByText("Accounting active")).toBeInTheDocument();
-    expect(within(controlCenter).getByText("1 rules")).toBeInTheDocument();
+    expect(within(controlCenter).getByText("1 rule")).toBeInTheDocument();
     expect(within(controlCenter).getByText("1 blocked")).toBeInTheDocument();
     const roleCard = within(controlCenter).getByText("Role and Permission Studio").closest('[role="listitem"]');
     const closeCard = within(controlCenter).getByText("Account Close Calendar").closest('[role="listitem"]');
@@ -1946,7 +1978,7 @@ describe("SettingsScreen", () => {
     });
     expect(await within(panel).findByText("Provider integration runtime evidence loaded.")).toBeInTheDocument();
     expect(within(panel).getByText("provider-reference")).toBeInTheDocument();
-    expect(within(panel).getByText("Jun 16, 12:30 UTC")).toBeInTheDocument();
+    expect(within(panel).getByText("Jun 16, 2026, 12:30 UTC")).toBeInTheDocument();
     expect(within(panel).getByText("2 / 4")).toBeInTheDocument();
     expect(within(panel).getByText("14 / 3")).toBeInTheDocument();
     expect(within(panel).getByText("1 critical / 1 warning")).toBeInTheDocument();
@@ -2024,7 +2056,7 @@ describe("SettingsScreen", () => {
         note: "Reviewed from the Settings Provider Connection Center runtime evidence panel."
       }));
     });
-    expect(await within(panel).findByText("Decision: Review by Andrew Rowden · Jun 16, 12:42 UTC")).toBeInTheDocument();
+    expect(await within(panel).findByText("Decision: Review by Andrew Rowden · Jun 16, 2026, 12:42 UTC")).toBeInTheDocument();
     expect(within(panel).getByText("Decision recorded")).toBeInTheDocument();
     expect(within(panel).queryByRole("button", {
       name: "Review quarantine record quarantine-position-1 for Polygon.io"
@@ -2075,7 +2107,7 @@ describe("SettingsScreen", () => {
         note: "Marked from the Settings Provider Connection Center for replay after mapping changes."
       }));
     });
-    expect(await within(panel).findByText("Decision: Replay after mapping change by Andrew Rowden · Jun 16, 12:43 UTC")).toBeInTheDocument();
+    expect(await within(panel).findByText("Decision: Replay after mapping change by Andrew Rowden · Jun 16, 2026, 12:43 UTC")).toBeInTheDocument();
     expect(within(panel).queryByRole("button", {
       name: "Mark quarantine record quarantine-position-2 as cash position for Polygon.io"
     })).not.toBeInTheDocument();
@@ -2096,7 +2128,7 @@ describe("SettingsScreen", () => {
         note: "Ignored from the Settings Provider Connection Center after operator review."
       }));
     });
-    expect(await within(panel).findByText("Decision: Ignore provider record by Andrew Rowden · Jun 16, 12:44 UTC")).toBeInTheDocument();
+    expect(await within(panel).findByText("Decision: Ignore provider record by Andrew Rowden · Jun 16, 2026, 12:44 UTC")).toBeInTheDocument();
 
     await user.click(within(panel).getByRole("button", { name: "Run due provider integration sync for Polygon.io" }));
     expect(apiMocks.runDueProviderIntegrationSync).not.toHaveBeenCalled();
@@ -2698,7 +2730,7 @@ describe("SettingsScreen", () => {
     );
 
     const storageRow = screen.getByRole("row", {
-      name: /Select event evt-2\. CRIT event from Storage at May 1, 00:04 UTC\. Storage heartbeat missed\./i
+      name: /Select event evt-2\. CRIT event from Storage at May 1, 2026, 00:04 UTC\. Storage heartbeat missed\./i
     });
 
     storageRow.focus();

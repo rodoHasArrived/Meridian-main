@@ -454,14 +454,14 @@ describe("strategy designer view-model", () => {
       statusLabel: "Long exposure",
       statusVariant: "success"
     });
-    expect(detail?.description).toContain("payoff at spot is −$4.00");
+    expect(detail?.description).toContain("payoff at spot is -$4.00");
     expect(detail?.fields).toEqual([
       { id: "leg-id", label: "Leg ID", value: "leg-1", tone: "muted" },
       { id: "quantity", label: "Quantity", value: "1", tone: "default" },
       { id: "strike", label: "Strike", value: "$100.00", tone: "default" },
       { id: "premium", label: "Premium", value: "$4.00", tone: "default" },
       { id: "break-even", label: "Break-even", value: "$104.00", tone: "default" },
-      { id: "payoff-at-spot", label: "Payoff at spot", value: "−$4.00", tone: "danger" }
+      { id: "payoff-at-spot", label: "Payoff at spot", value: "-$4.00", tone: "danger" }
     ]);
   });
 

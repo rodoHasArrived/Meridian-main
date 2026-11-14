@@ -29,7 +29,7 @@ DATA_SOURCES = [
     "docs/status/contract-compatibility-matrix.md",
     "docs/status/FEATURE_INVENTORY.md",
     "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
-    "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs",
+    "tests/Meridian.Tests/Ui/WorkstationEndpointsTests*.cs",
 ]
 
 CHECKS = [
@@ -82,7 +82,7 @@ CHECKS = [
         "id": "governance-tests",
         "category": "Validation",
         "label": "Endpoint tests cover governance break queue and calibration readiness",
-        "paths": ["tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs"],
+        "paths": ["tests/Meridian.Tests/Ui/WorkstationEndpointsTests*.cs"],
         "terms": ["BreakQueue", "ReconciliationCalibrationSummary", "Signoff"],
         "weight": 2,
         "remediation": "Add focused endpoint tests for governance break queue and calibration readiness.",

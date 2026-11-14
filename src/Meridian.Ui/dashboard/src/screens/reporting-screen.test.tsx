@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReportingScreen } from "@/screens/reporting-screen";
@@ -24,6 +24,13 @@ vi.mock("@/hooks/use-report-run-stream", () => ({
 vi.mock("@/lib/reporting-income-comparison-api", async (importOriginal) => ({
   ...await importOriginal<typeof import("@/lib/reporting-income-comparison-api")>(),
   getIncomeComparisonCandidates: vi.fn(async () => [])
+}));
+
+// Personal-view reads are covered by the workbench suite. Keep export command
+// response ordering independent of that separate background preferences read.
+vi.mock("@/lib/table-workbench", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/table-workbench")>(),
+  loadTableViews: vi.fn(async () => [])
 }));
 
 function recentRun(overrides: Partial<ReportingRunStatusProjection>): ReportingRunStatusProjection {
@@ -1334,7 +1341,7 @@ function createReportLineProvenanceExplorer(): FinancialRecordExplorerDto {
   };
 }
 
-function withReportingSchedule(state: "Active" | "Paused" = "Active"): AccountingWorkspaceResponse {
+function withReportingSchedule(state: "Active" | "Paused" | "Disabled" = "Active"): AccountingWorkspaceResponse {
   return {
     ...accounting,
     reporting: {
@@ -1367,18 +1374,6 @@ function withReportingSchedule(state: "Active" | "Paused" = "Active"): Accountin
       ]
     }
   };
-}
-
-function formatExpectedScheduleTimestamp(value: string): string {
-  const timestamp = new Date(value);
-  return timestamp.toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: "UTC",
-    timeZoneName: "short"
-  });
 }
 
 describe("ReportingScreen", () => {
@@ -1591,7 +1586,7 @@ describe("ReportingScreen", () => {
     const confidence = screen.getByRole("region", { name: "Reporting data confidence" });
     const confidenceSummary = confidence.querySelector("summary")!;
     expect(confidenceSummary).toHaveTextContent("Governed Reporting service");
-    expect(confidenceSummary).toHaveTextContent("As of:");
+    expect(confidenceSummary).toHaveTextContent("Freshness:No as-of date retained");
     expect(within(cockpit).getByLabelText("Board portal package failed decision facts")).toHaveTextContent("fund-controller");
     expect(within(cockpit).getByLabelText("Board portal package failed decision facts")).toHaveTextContent("1 evidence gap");
     expect(screen.queryByRole("tablist", { name: "Reporting routes" })).not.toBeInTheDocument();
@@ -2326,7 +2321,7 @@ describe("ReportingScreen", () => {
     expect(grid).toHaveTextContent("Descending by pnl");
     expect(grid).toHaveTextContent("1 saved filter");
     expect(within(grid).getByRole("status", { name: "Sector Pivot current report-writer layout" })).toHaveTextContent(
-      "Pivot draft · 2 dimensions · 2 metrics · 1 formula · 2 filters including draft filter"
+      "Pivot draft · 2 dimensions · 2 metrics · 1 formula · 1 filter in draft"
     );
     expect(within(grid).getByLabelText("Sector Pivot saved filters")).toHaveTextContent("strategy = Core");
     expect(within(grid).getByLabelText("Sector Pivot preview dataset")).toHaveValue("portfolioPositions");
@@ -2363,16 +2358,22 @@ describe("ReportingScreen", () => {
 
     expect(within(formulas).getByText("pnl")).toBeInTheDocument();
     expect(within(grid).getByRole("status", { name: "Sector Pivot current report-writer layout" })).toHaveTextContent(
-      "Pivot draft · 2 dimensions · 2 metrics · 2 formulas · 2 filters including draft filter"
+      "Pivot draft · 2 dimensions · 2 metrics · 2 formulas · 1 filter in draft"
     );
     let formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
     expect(formulaTokenLabels[0]).toContain("Return %");
     expect(formulaTokenLabels[1]).toContain("pnl");
-    await user.click(within(formulas).getByRole("button", { name: "Move pnl left" }));
+    const moveLeft = within(formulas).getByRole("button", { name: "Move pnl left" });
+    expect(within(formulas).getByRole("button", { name: "Move pnl right" })).toHaveAttribute("title", "This token is already last in the list.");
+    moveLeft.focus();
+    await user.keyboard("{Enter}");
+    expect(within(formulas).getByRole("button", { name: "Move pnl left" })).toBeDisabled();
+    expect(within(formulas).getByRole("button", { name: "Move pnl left" })).toHaveAttribute("title", "This token is already first in the list.");
     formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
     expect(formulaTokenLabels[0]).toContain("pnl");
     expect(formulaTokenLabels[1]).toContain("Return %");
-    await user.click(within(formulas).getByRole("button", { name: "Move pnl right" }));
+    within(formulas).getByRole("button", { name: "Move pnl right" }).focus();
+    await user.keyboard(" ");
     formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
     expect(formulaTokenLabels[0]).toContain("Return %");
     expect(formulaTokenLabels[1]).toContain("pnl");
@@ -2384,12 +2385,12 @@ describe("ReportingScreen", () => {
     expect(within(formulas).queryByText("pnl")).not.toBeInTheDocument();
     expect(within(metrics).getByText("pnl")).toBeInTheDocument();
     expect(within(grid).getByRole("status", { name: "Sector Pivot current report-writer layout" })).toHaveTextContent(
-      "Pivot draft · 2 dimensions · 3 metrics · 1 formula · 2 filters including draft filter"
+      "Pivot draft · 2 dimensions · 3 metrics · 1 formula · 1 filter in draft"
     );
     await user.click(within(metrics).getByRole("button", { name: "Remove pnl" }));
     expect(within(metrics).queryByText("pnl")).not.toBeInTheDocument();
     expect(within(grid).getByRole("status", { name: "Sector Pivot current report-writer layout" })).toHaveTextContent(
-      "Pivot draft · 2 dimensions · 2 metrics · 1 formula · 2 filters including draft filter"
+      "Pivot draft · 2 dimensions · 2 metrics · 1 formula · 1 filter in draft"
     );
     fireEvent.dragStart(sourceField!, { dataTransfer });
     fireEvent.drop(formulas, { dataTransfer });
@@ -2509,6 +2510,127 @@ describe("ReportingScreen", () => {
         "Sector Pivot Draft draft saved."
       );
     });
+  });
+
+  it("starts a blank custom report from the builder and saves it as a new template draft", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        definition: {
+          templateId: { name: "custom-report-1", version: 1 },
+          displayName: "Custom report 1 Draft",
+          parameters: [],
+          sections: [],
+          grids: [],
+          accessPolicy: null
+        },
+        status: "Draft",
+        family: "CustomReport",
+        isBuiltIn: false,
+        isLatestApproved: false,
+        createdBy: "controller.admin",
+        createdAt: "2026-06-08T00:00:00Z",
+        updatedBy: "controller.admin",
+        updatedAt: "2026-06-08T00:00:00Z",
+        validationIssues: [],
+        auditTrail: []
+      })
+    });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+
+    expect(screen.queryByRole("group", { name: "Custom report 1 new report-writer grid" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+
+    const grid = screen.getByRole("group", { name: "Custom report 1 new report-writer grid" });
+    expect(grid).toHaveTextContent("New report · not saved yet");
+    expect(within(grid).getByLabelText("Custom report 1 draft name")).toHaveValue("custom-report-1");
+    const sourceFields = within(grid).getByRole("list", { name: "Custom report 1 source fields" });
+    const transferStore = new Map<string, string>();
+    const dataTransfer = {
+      effectAllowed: "",
+      setData: vi.fn((type: string, value: string) => transferStore.set(type, value)),
+      getData: vi.fn((type: string) => transferStore.get(type) ?? "")
+    };
+    fireEvent.dragStart(within(sourceFields).getByText("Strategy").closest("[role='listitem']")!, { dataTransfer });
+    fireEvent.drop(within(grid).getByRole("list", { name: "Custom report 1 Rows" }), { dataTransfer });
+    fireEvent.dragStart(within(sourceFields).getByText("Gross exposure").closest("[role='listitem']")!, { dataTransfer });
+    fireEvent.drop(within(grid).getByRole("list", { name: "Custom report 1 Metrics" }), { dataTransfer });
+
+    await user.click(within(grid).getByRole("button", { name: "Save Custom report 1 as governed report template draft" }));
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/templates/drafts",
+      expect.objectContaining({ method: "POST" })
+    );
+    const [, request] = fetchMock.mock.calls[0];
+    const body = JSON.parse((request as RequestInit).body as string);
+    expect(body).toMatchObject({
+      name: "custom-report-1",
+      displayName: "Custom report 1 Draft",
+      family: "CustomReport",
+      basedOnVersion: null,
+      rationale: "New no-code custom report Custom report 1.",
+      grids: [
+        {
+          gridId: "grid-1",
+          title: "Custom report 1",
+          kind: "Pivot",
+          rowFields: ["strategy"],
+          metrics: [{ sourceField: "grossExposure", function: "Sum" }]
+        }
+      ]
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("status", { name: "Save report-writer draft status" })).toHaveTextContent(
+        "Custom report 1 Draft draft saved."
+      );
+    });
+
+    await user.click(screen.getByRole("button", { name: "Discard new reports" }));
+    expect(screen.queryByRole("group", { name: "Custom report 1 new report-writer grid" })).not.toBeInTheDocument();
+  });
+
+  it("does not restore a discarded new report's edits into the next new report", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+    let grid = screen.getByRole("group", { name: "Custom report 1 new report-writer grid" });
+    fireEvent.change(within(grid).getByLabelText("Custom report 1 draft display name"), {
+      target: { value: "Edited then discarded" }
+    });
+    await user.click(screen.getByRole("button", { name: "Discard new reports" }));
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+
+    grid = screen.getAllByRole("group", { name: /new report-writer grid$/ })[0];
+    expect(within(grid).getByLabelText(/draft display name$/)).not.toHaveValue("Edited then discarded");
+  });
+
+  it("names a new custom report so it cannot collide with a retained template", async () => {
+    const user = userEvent.setup();
+    const retained = accounting.reporting.templates![0];
+    renderWithRouter(
+      <ReportingScreen
+        data={withReportTemplate({
+          ...retained,
+          templateId: "custom-report-1",
+          name: "Custom report 1",
+          family: "CustomReport",
+          isBuiltIn: false,
+          reportWriterGrids: []
+        })}
+      />,
+      { initialEntries: ["/reporting/report-builder"] }
+    );
+
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+
+    expect(screen.queryByRole("group", { name: "Custom report 1 new report-writer grid" })).not.toBeInTheDocument();
+    const second = screen.getByRole("group", { name: "Custom report 2 new report-writer grid" });
+    expect(within(second).getByLabelText("Custom report 2 draft name")).toHaveValue("custom-report-2");
+    expect(screen.getByRole("group", { name: "Custom report 3 new report-writer grid" })).toBeInTheDocument();
   });
 
   it("locks private no-code report-writer drafts to a user owner", async () => {
@@ -3384,7 +3506,7 @@ describe("ReportingScreen", () => {
       name: "Approve reporting run service reference retained for diagnostics"
     })).not.toBeInTheDocument();
     expect(screen.getByLabelText("investor-monthly-statement-20260501 governed workflow continuation")).toHaveTextContent(
-      "Legacy pack mutations are retired"
+      "Report packs can no longer be changed here"
     );
     expect(screen.getByRole("link", { name: "Open governed run" })).toHaveAttribute(
       "href",
@@ -3431,6 +3553,121 @@ describe("ReportingScreen", () => {
     });
 
     expect(screen.getByLabelText("Reporting schedule due at UTC")).toHaveValue("2026-07-01T08:00:00Z");
+  });
+
+  it("sends every report-writer filter row to the render endpoint, not just the first", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({ templateId: "investor-monthly-statement", grids: [], warnings: [] })
+    });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+
+    const writer = screen.getByRole("region", { name: "No-code report writer" });
+    const grid = within(writer).getByRole("group", {
+      name: "Investor Monthly Statement Sector Pivot Pivot report-writer grid"
+    });
+
+    // The saved "strategy = Core" filter pre-fills the first row; add two more.
+    await user.click(within(grid).getByRole("button", { name: "Add Sector Pivot filter" }));
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot filter 2 field"), "marketValue");
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot filter 2 operator"), "GreaterThan");
+    fireEvent.change(within(grid).getByLabelText("Sector Pivot filter 2 value"), { target: { value: "1000" } });
+    await user.click(within(grid).getByRole("button", { name: "Add Sector Pivot filter" }));
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot filter 3 field"), "sector");
+    // Filter 3 has no value yet, so it is incomplete and must be left out.
+    expect(grid).toHaveTextContent("3 filters in draft");
+
+    await user.click(within(grid).getByRole("button", { name: "Preview Sector Pivot report-writer grid" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/templates/render",
+      expect.objectContaining({ method: "POST" })
+    ));
+    const request = JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string);
+    expect(request.grids[0].filters).toEqual([
+      { field: "strategy", operator: "Equals", value: "Core", label: "strategy = Core" },
+      { field: "marketValue", operator: "GreaterThan", value: "1000", label: "marketValue > 1000" }
+    ]);
+
+    await user.click(within(grid).getByRole("button", { name: "Remove Sector Pivot filter 2" }));
+    expect(within(grid).queryByLabelText("Sector Pivot filter 3 field")).not.toBeInTheDocument();
+    expect(within(grid).getByLabelText("Sector Pivot filter 2 field")).toHaveValue("sector");
+  });
+
+  it("offers daily, semi-monthly, month-end and annual cadence presets", () => {
+    renderWithRouter(<ReportingScreen data={withReportingSchedule()} />, { initialEntries: ["/reporting/scheduled"] });
+
+    const cadence = screen.getByLabelText("Reporting schedule cadence");
+    const labels = within(cadence).getAllByRole("option").map((option) => option.textContent);
+    expect(labels).toEqual(expect.arrayContaining([
+      "Every day",
+      "Twice a month (1st and 15th)",
+      "Last day of each month",
+      "Annually (1 January)"
+    ]));
+
+    fireEvent.change(screen.getByLabelText("Reporting schedule next report period end"), {
+      target: { value: "2026-02-10" }
+    });
+    fireEvent.change(cadence, { target: { value: "0 8 L * *" } });
+
+    expect(screen.getByLabelText("Reporting schedule cron expression")).toHaveValue("0 8 L * *");
+    expect(screen.getByLabelText("Reporting schedule due at UTC")).toHaveValue("2026-02-28T08:00:00Z");
+  });
+
+  it("builds a period-close schedule: due date offset from the period end and a periodCadence in the request", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify(withReportingSchedule().reporting.schedules![0])
+    });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/scheduled"] });
+
+    expect(screen.queryByLabelText("Reporting schedule due days after period end")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Reporting schedule next report period end"), {
+      target: { value: "2026-06-30" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule report period"), { target: { value: "Quarterly" } });
+    fireEvent.change(screen.getByLabelText("Reporting schedule due days after period end"), { target: { value: "20" } });
+
+    expect(screen.getByLabelText("Reporting schedule due at UTC")).toHaveValue("2026-07-20T08:00:00Z");
+    expect(screen.getByLabelText("Reporting schedule cadence")).toBeDisabled();
+    expect(screen.getByText(/Runs once per quarter, as of each period end and due 20 days after the period end/)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Reporting schedule recipient principal kind"), { target: { value: "Group" } });
+    fireEvent.change(screen.getByLabelText("Reporting schedule recipient principal ID"), { target: { value: "reporting-ops" } });
+    fireEvent.change(screen.getByLabelText("Reporting schedule ledger book code"), { target: { value: "STAT-GL" } });
+    fireEvent.change(screen.getByLabelText("Reporting schedule ledger book ID"), {
+      target: { value: "11111111-1111-1111-1111-111111111111" }
+    });
+    await user.click(screen.getByRole("button", { name: "Save reporting schedule" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/schedules",
+      expect.objectContaining({ method: "POST" })
+    ));
+    const call = fetchMock.mock.calls.find(([url]) => url === "/api/fund-structure/reporting/schedules");
+    expect(JSON.parse((call?.[1] as RequestInit).body as string)).toMatchObject({
+      nextAsOfDate: "2026-06-30",
+      dueAtUtc: "2026-07-20T08:00:00Z",
+      periodCadence: { frequency: "Quarterly", dueDaysAfterPeriodEnd: 20 }
+    });
+  });
+
+  it("converts the schedule due time from the selected time zone to UTC", () => {
+    renderWithRouter(<ReportingScreen data={withReportingSchedule()} />, { initialEntries: ["/reporting/scheduled"] });
+
+    fireEvent.change(screen.getByLabelText("Reporting schedule next report period end"), {
+      target: { value: "2026-06-30" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule time zone"), {
+      target: { value: "America/New_York" }
+    });
+
+    // 08:00 on 1 July in New York is daylight time, four hours behind UTC.
+    expect(screen.getByLabelText("Reporting schedule due at UTC")).toHaveValue("2026-07-01T12:00:00Z");
+    expect(screen.getByText(/Run times follow America\/New_York local time/)).toBeInTheDocument();
   });
 
   it("saves operator-authored report schedules through the shared schedule endpoint", async () => {
@@ -3588,6 +3825,7 @@ describe("ReportingScreen", () => {
       scheduleId: "sched-investor-email",
       templateId: "investor-monthly-statement",
       cronExpression: "0 9 * * 1",
+      timeZoneId: "UTC",
       nextAsOfDate: "2026-06-30",
       dueAtUtc: "2026-07-01T15:00:00Z",
       maxRetries: 3,
@@ -4296,7 +4534,7 @@ describe("ReportingScreen", () => {
     expect(scheduleRow).toBeInTheDocument();
     expect(scheduleRow).toHaveTextContent("Next scheduled run");
     expect(scheduleRow).toHaveTextContent("Report period endJun 1, 2026");
-    expect(screen.getByText("Runs on the first day of each month. The report uses the period-end date selected beside the cadence.")).toBeInTheDocument();
+    expect(screen.getByText("Runs on the first day of each month. The report uses the period-end date selected beside the cadence. Run times are in UTC.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Run now" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Pause" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Resume" })).toBeDisabled();
@@ -4321,7 +4559,7 @@ describe("ReportingScreen", () => {
     });
     expect(boardPlan).toHaveTextContent("Will deliver Pdf/Xlsx/Csv by SecurePortal to Board reporting committee");
     expect(boardPlan).toHaveTextContent("Pdf, Xlsx, Csv");
-    expect(boardPlan).toHaveTextContent(formatExpectedScheduleTimestamp("2026-05-17T20:15:00Z"));
+    expect(boardPlan).toHaveTextContent("May 17, 2026, 20:15 UTC");
     expect(boardPlan).toHaveTextContent("Email-link package is available through the token-gated route /reporting/package/board.");
     expect(boardPlan).toHaveTextContent("EmailLink delivery to Board reporting committee via Board portal.");
     expect(boardPlan).toHaveTextContent("3 artifact(s) retained as Pdf/Xlsx/Csv; manifest workstation/reporting/deliveries/board/manifest.json.");
@@ -4543,6 +4781,61 @@ describe("ReportingScreen", () => {
     const status = screen.getByRole("status", { name: "Resume sched-investor status" });
     expect(status).toHaveTextContent("Schedule cannot resume until distribution targets are ready.");
     expect(status).toHaveTextContent("board-reporting-committee is missing retained portal entitlement evidence.");
+  });
+
+  it("disables a reporting schedule through the shared schedule endpoint", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify(withReportingSchedule("Disabled").reporting.schedules![0])
+    });
+
+    renderWithRouter(<ReportingScreen data={withReportingSchedule("Active")} />, { initialEntries: ["/reporting/scheduled"] });
+
+    await user.click(screen.getByRole("button", { name: "Disable" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/schedules/sched-investor/disable",
+      expect.objectContaining({ method: "POST" })
+    ));
+    expect(screen.getByRole("status", { name: "Disable sched-investor status" }))
+      .toHaveTextContent("Disable sched-investor completed.");
+  });
+
+  it("lets a disabled reporting schedule be resumed but not disabled again", () => {
+    renderWithRouter(<ReportingScreen data={withReportingSchedule("Disabled")} />, { initialEntries: ["/reporting/scheduled"] });
+
+    expect(screen.getByRole("button", { name: "Resume" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Disable" })).toBeDisabled();
+  });
+
+  it("deletes a reporting schedule only after the operator confirms", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify(withReportingSchedule("Paused").reporting.schedules![0])
+    });
+
+    renderWithRouter(<ReportingScreen data={withReportingSchedule("Paused")} />, { initialEntries: ["/reporting/scheduled"] });
+
+    await user.click(screen.getByRole("button", { name: "Delete sched-investor" }));
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/schedules/sched-investor",
+      expect.anything()
+    );
+
+    await user.click(screen.getByRole("button", { name: "Cancel delete sched-investor" }));
+    expect(screen.queryByRole("button", { name: "Confirm delete sched-investor" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Delete sched-investor" }));
+    await user.click(screen.getByRole("button", { name: "Confirm delete sched-investor" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/schedules/sched-investor",
+      expect.objectContaining({ method: "DELETE" })
+    ));
+    expect(screen.getByRole("status", { name: "Delete sched-investor status" }))
+      .toHaveTextContent("Delete sched-investor completed.");
   });
 
   it("shows schedule delivery counts after running a configured reporting schedule", async () => {
@@ -4859,7 +5152,7 @@ describe("ReportingScreen", () => {
 
     const task = screen.getByRole("region", { name: "Report-pack approval task" });
     expect(task).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Report packs" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Report packs awaiting approval" })).toBeInTheDocument();
     expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
     expect(within(task).getByText("Report-pack approval")).toBeInTheDocument();
     expect(within(task).getByRole("list", { name: "Report-pack distribution recipients" })).toBeInTheDocument();
@@ -5091,7 +5384,7 @@ describe("ReportingScreen", () => {
     expect(within(restatement).getByText("report-restated-1")).toBeInTheDocument();
     expect(within(restatement).getByRole("list", { name: "Restatement changed lines" })).toBeInTheDocument();
     expect(within(restatement).getByLabelText("nav.total changed from 1250000 to 1249500 with 1 evidence link")).toHaveTextContent(
-      "1250000 -> 1249500"
+      "1250000 → 1249500"
     );
     expect(within(restatement).getByRole("link", { name: "Open evidence for nav.total" })).toHaveAttribute(
       "href",
@@ -5100,7 +5393,7 @@ describe("ReportingScreen", () => {
 
     const publication = screen.getByRole("region", { name: "Report-pack publication review" });
     expect(within(publication).getByText("Publication review")).toBeInTheDocument();
-    expect(within(publication).getByText("Publication signed off by Reporting ops on May 28, 3:20 PM UTC.")).toBeInTheDocument();
+    expect(within(publication).getByText("Publication signed off by Reporting ops on May 28, 2026, 15:20 UTC.")).toBeInTheDocument();
     expect(within(publication).getByText("Controller")).toBeInTheDocument();
     expect(within(publication).getByText("Approved NAV correction package.")).toBeInTheDocument();
     expect(within(publication).getByText("Authenticated actor 'Reporting ops' with role 'Controller' approved publication via Human operator.")).toBeInTheDocument();
@@ -5495,5 +5788,84 @@ describe("ReportingScreen", () => {
     // channel attaches to a run the endpoint can resolve instead of 404-looping.
     expect(useReportRunStream).toHaveBeenCalledWith("investor-monthly-statement-20260501");
     expect(useReportRunStream).not.toHaveBeenCalledWith("report-pack:11111111-1111-1111-1111-111111111111");
+  });
+  it("moves run-status keyboard selection with j/k while leaving governed actions explicit", async () => {
+    const user = userEvent.setup();
+    const data = { ...accounting, reporting: { ...accounting.reporting, recentRuns: [
+      recentRun({ runId: "keyboard-run-a" }), recentRun({ runId: "keyboard-run-b" })
+    ] } };
+    renderWithRouter(<ReportingScreen data={data} />, { initialEntries: ["/reporting/run-status"] });
+    const queue = screen.getByRole("list", { name: "Report run review queue" });
+    const first = within(queue).getByRole("listitem", { name: "Review run keyboard-run-a" });
+    const second = within(queue).getByRole("listitem", { name: "Review run keyboard-run-b" });
+    expect(first).toHaveAttribute("tabindex", "0");
+    first.focus();
+    await user.keyboard("j");
+    await waitFor(() => expect(second).toHaveFocus());
+    expect(second).toHaveAttribute("aria-current", "true");
+    await user.keyboard("ard");
+    expect(second).toHaveFocus();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await user.keyboard("k");
+    await waitFor(() => expect(first).toHaveFocus());
+    expect(screen.getByText(/j\/k select a run/)).toBeInTheDocument();
+  });
+
+  it("keeps reporting queue shortcuts out of audit controls and modifier commands", async () => {
+    const user = userEvent.setup();
+    const data = { ...accounting, reporting: { ...accounting.reporting, recentRuns: [
+      recentRun({ runId: "keyboard-run-a" }), recentRun({ runId: "keyboard-run-b" })
+    ] } };
+    renderWithRouter(<ReportingScreen data={data} />, { initialEntries: ["/reporting/run-status"] });
+    const queue = screen.getByRole("list", { name: "Report run review queue" });
+    const first = within(queue).getByRole("listitem", { name: "Review run keyboard-run-a" });
+    const audit = within(first).getByRole("button", { name: /Audit, lineage, and artifacts/ });
+    audit.focus();
+    await user.keyboard("jk");
+    expect(audit).toHaveFocus();
+    expect(first).toHaveAttribute("aria-current", "true");
+    first.focus();
+    await user.keyboard("{Control>}j{/Control}");
+    expect(first).toHaveFocus();
+    expect(first).toHaveAttribute("aria-current", "true");
+  });
+
+});
+
+describe.each([
+  { zone: "America/New_York", now: "2026-07-01T02:30:00Z", localDay: "2026-06-30" },
+  { zone: "Asia/Tokyo", now: "2026-06-30T22:30:00Z", localDay: "2026-07-01" }
+])("ReportingScreen blank as-of default for an operator in $zone", ({ zone, now, localDay }) => {
+  const originalTimeZone = process.env.TZ;
+  const utcDay = now.substring(0, 10);
+
+  beforeEach(() => {
+    process.env.TZ = zone;
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(now));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    if (originalTimeZone === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = originalTimeZone;
+    }
+  });
+
+  it("starts a new schedule on the UTC calendar day, with its due time on that same UTC day", () => {
+    // The operator's own calendar reads a different day at this instant; the default stays UTC.
+    const operatorNow = new Date();
+    expect(`${operatorNow.getFullYear()}-${String(operatorNow.getMonth() + 1).padStart(2, "0")}-${String(operatorNow.getDate()).padStart(2, "0")}`).toBe(localDay);
+    expect(localDay).not.toBe(utcDay);
+
+    const rendered = renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/scheduled"] });
+    try {
+      expect(screen.getByLabelText("Reporting schedule next report period end")).toHaveValue(utcDay);
+      expect(screen.getByLabelText("Reporting schedule due at UTC")).toHaveValue(`${utcDay}T20:00:00Z`);
+    } finally {
+      rendered.unmount();
+    }
   });
 });

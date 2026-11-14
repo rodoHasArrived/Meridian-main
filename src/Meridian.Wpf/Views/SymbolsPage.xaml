@@ -1,4 +1,5 @@
 <Page x:Class="Meridian.Wpf.Views.SymbolsPage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -237,8 +238,8 @@
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <TextBlock Text="Symbol" FontWeight="SemiBold"
-                                       Foreground="{StaticResource AccentCyanBrush}" FontSize="11" />
-                            <TextBlock Text=" ↑" FontSize="9" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" />
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontSize="11" />
+                            <TextBlock Text=" ↑" FontSize="9" Foreground="{StaticResource SidebarActiveIndicatorBrush}" VerticalAlignment="Center" />
                         </StackPanel>
                         <StackPanel Grid.Column="2" Orientation="Horizontal">
                             <TextBlock Text="Trades" FontWeight="SemiBold"

@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
+using Meridian.Contracts.Integrity;
 using Meridian.Core.Resilience;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
@@ -96,8 +97,8 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway, IExecutionGatewa
         EnsureConnected();
 
         Logger.LogInformation(
-            "{Gateway} submitting order: {Side} {Quantity} {Symbol} @ {Type}",
-            GatewayId, request.Side, request.Quantity, request.Symbol, request.Type);
+            "{Gateway} submitting order: {Side} {Quantity} symbol {SymbolHash} @ {Type}",
+            GatewayId, request.Side, request.Quantity, Sha256Digest.ComputeUtf8(request.Symbol ?? string.Empty), request.Type);
 
         var report = await SubmitOrderCoreAsync(request, ct).ConfigureAwait(false);
         await PublishReportAsync(report, ct).ConfigureAwait(false);
@@ -111,7 +112,8 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway, IExecutionGatewa
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
 
-        Logger.LogInformation("{Gateway} cancelling order {OrderId}", GatewayId, orderId);
+        Logger.LogInformation("{Gateway} cancelling order {OrderHash}", GatewayId,
+            Sha256Digest.ComputeUtf8(orderId ?? string.Empty));
 
         var report = await CancelOrderCoreAsync(orderId, ct).ConfigureAwait(false);
         await PublishReportAsync(report, ct).ConfigureAwait(false);
@@ -127,7 +129,8 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway, IExecutionGatewa
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
 
-        Logger.LogInformation("{Gateway} modifying order {OrderId}", GatewayId, orderId);
+        Logger.LogInformation("{Gateway} modifying order {OrderHash}", GatewayId,
+            Sha256Digest.ComputeUtf8(orderId ?? string.Empty));
 
         var report = await ModifyOrderCoreAsync(orderId, modification, ct).ConfigureAwait(false);
         await PublishReportAsync(report, ct).ConfigureAwait(false);

@@ -6,10 +6,14 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-05
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Reporting
+
+New reconciliation receipt creation rejects reserved W14 preparer-assertion references in ordinary
+approval fields. Historical receipt validation preserves the retained classification and bytes;
+opaque reference text does not authenticate an independent reviewer.
 
 ## Purpose
 
@@ -26,6 +30,12 @@ change the source checkpoint even when period activity rows are unchanged. Legac
 retained population cannot expose verified generated amount proof and require fresh certification.
 `ReportingRetainedLedgerPopulationValidation` verifies the same payload, scoped journals, counts,
 certified dataset, and source digest at every retained-manifest and artifact-production boundary.
+Canonical parameter serialization repeats certification's ordinal external-dimension key ordering
+on read-back, so PostgreSQL JSONB property ordering cannot change retained parameter bindings.
+The existing normalized parameter bytes and hashes remain unchanged.
+Retained validation also accepts the exact previous raw-dictionary serialization of the same
+parameter DTO. It preserves the original frozen JSON and validates its original parameter and
+snapshot hashes; changed keys, values, flags, casing or other fields do not match.
 
 ## Layer responsibility
 
@@ -37,6 +47,11 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `DefaultReportingTemplateCatalog.cs` - canonical investor statement, SEC filing, shadow NAV,
   performance, holdings, capital account, board packet, audit package, and certified-dataset
   template metadata.
+- `ReportingTemplateRegistryService.cs` - versioned template drafting, formula validation,
+  submission, independent approval/rejection, supersession, scoped lookup, and template rendering.
+  `IReportingTemplateGovernanceStore.cs` is its storage port; the existing workstation file
+  adapter retains the same snapshots. `ReportingAccessPolicyEvaluator.cs` owns policy
+  normalization, validation, and caller/immutable-manifest access evaluation.
 - `ReportingStarterKitCatalog.cs` - starter reporting-desk kit records that map operator
   archetypes to enabled template ids, hub layout ids, default periods, and draft schedule seeds.
 - `ReportingContracts.cs` - reporting run, schedule, lineage, template, approval, manifest, and
@@ -69,6 +84,14 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   with optional Security Master classification.
 
 ## Important workflows
+
+Template governance can run directly from this module through
+`ReportingTemplateRegistryService` and `ReportingAccessQueryContext`, without referencing UI
+Shared. Existing workstation registry and access-policy types delegate to the same implementation
+and preserve their public signatures, DTOs, registrations, and tenant/company checks. The legacy
+template store interface remains unchanged behind an adapter, including explicitly implemented
+store methods. File storage and the template lifecycle retain their existing behavior; approving
+a template does not approve or release a report run.
 
 Investment-income comparisons use two explicit retained run IDs and a retained grid/metric.
 `ReportingIncomeComparisonEngine` freezes both manifests and reuses `ReportSnapshotDiffEngine`.
@@ -154,6 +177,11 @@ it does not rebuild partners-capital tables through a parallel renderer. Release
 treat the `ClientPackage` primary pair atomically: neither a missing, duplicated, PDF-only, nor
 XLSX-only subset is releasable or deliverable.
 
+`ReportingGovernanceService.ReleaseAsync` optionally consults `IBookOfRecordGuard` before any release
+state check. A run whose `BookId` is a ledger book in shadow-mode onboarding (W11-SHADOW-001), or
+a withdrawn shadow trial, is refused with a `ReportingGovernanceException`, which the endpoint maps
+to 409. A host without the guard registered is unaffected.
+
 The Statement Reconciliation Report endpoint is an intake adapter owned by UI Shared. It resolves
 durable account/fund/book/open-period scope, retains statement and Evidence Vault evidence, starts
 or reuses the exact Operations Continuity workflow, and publishes statement obligations into the
@@ -161,6 +189,38 @@ existing governed reconciliation queue. Its retained JSON/CSV artifacts are not 
 governed artifact package, approval, release, or delivery receipt. Only a separately started,
 readiness-approved run enters this module's certification and governance lifecycle, followed by the
 shared client-document renderer and secure distribution after independent release.
+
+The `capital-call-notice` template consumes only the exact investor's posted issuance journal.
+Its generation operation uses one caller-supplied UUID, bound by the server to the authenticated
+actor and exact tenant/company/entity/fund/book/currency/call/investor/selected-commitment scope. Replaying that
+operation recovers the original certified manifest and retained package, including after restart
+or a lost response, before querying current accounting inputs. A deliberate regeneration requires
+a new UUID. PostgreSQL run-store create claims fence competing hosts; file-backed compatibility
+stores cannot run this operation. Each notice addresses one complete posted commitment installment;
+an investor with multiple commitments in one call receives separate notices. An omitted legacy
+selector is accepted for new generation only when the investor has one call installment, and a
+retained omitted-selector operation keeps its original request hash for recovery.
+UI Shared resolves the frozen call plan, approved commitment revision, and atomic posting receipt;
+the authoritative source then filters by investor, capital account, call ID, commitment ID, and issuance kind and
+checks journal identity and balanced call amount. Notice certification retains the call plan hash,
+installment, dates, commitment revision and posted journal bindings. A deployment-owned
+`PrivateCapital:NoticeRecipients` mapping explicitly connects tenant/company/fund/investor to a
+Reporting user principal; investor IDs are never assumed to be user identities. Missing or
+ambiguous bindings block generation. The same binding must declare `ReviewGroupPrincipalId`, an
+internal Reporting group whose members can independently review and release the notice without
+making the investor its approver. Each immutable notice audience is restricted to that one
+recipient, the configured review group, and its operator owner, while the existing destination directory independently checks
+delivery addresses. The existing Documents renderer produces the notice's PDF/XLSX pair. Generation
+retains an actual reconciliation of the frozen installment to the posted journal, then returns a
+governed Draft. This receipt makes no accounting-close claim and is independent of unrelated
+mutable close casework. Its source branch verifies exact notice, investor, commitment and posted
+source bindings. The named
+operational-notice template can proceed through normal independent review, approval and release
+while its accounting period is open; release rechecks its exact posted source, reconciliation,
+recipient binding and immutable bytes under the existing period consistency fence. Other report
+templates continue to require Final-certified parameters and committed-close evidence. Revocation
+and delivery receipts remain authoritative. A call plan, posted issuance, generated notice,
+released notice and delivered notice are distinct states.
 
 ## Diagrams
 
@@ -171,6 +231,7 @@ shared client-document renderer and secure distribution after independent releas
 <!-- source-roadmap-traceability:begin module=SRC-DESIGN-REPORTING -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 <!-- source-roadmap-traceability:end -->
@@ -185,6 +246,7 @@ shared client-document renderer and secure distribution after independent releas
 
 ```bash
 dotnet build src/Meridian.Reporting/Meridian.Reporting.csproj /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingTemplateRegistryServiceTests|FullyQualifiedName~ReportPackWorkflowServiceTests|FullyQualifiedName~ReportingTenantIsolationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingOrchestrationServiceTests|FullyQualifiedName~ReportingGovernance|FullyQualifiedName~ReportingArtifact|FullyQualifiedName~ReportingSecureDistribution|FullyQualifiedName~ReportingRunCertification|FullyQualifiedName~ReportingTenantIsolation" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
@@ -226,10 +288,19 @@ and downstream exports can retain a source-backed audit trace without relying on
 synthesis. Formula lineage includes brace references, bare identifier references, and `total(...)`
 references, while the evaluator supports nested `abs(...)`, `min(...)`, `max(...)`,
 `safeDivide(numerator, denominator[, fallback])`, `percent(numerator, denominator[, fallback])`,
-`basisPoints(numerator, denominator[, fallback])`, and `round(value[, decimals])` expressions for
-guarded P&L, exposure, contribution, return, and basis-point calculations. Custom formula grids
+`basisPoints(numerator, denominator[, fallback])`, `round(value[, decimals])`, and
+`if(condition, whenTrue, whenFalse)` expressions for guarded P&L, exposure, contribution, return,
+and basis-point calculations. Comparisons (`=`, `<>`, `<`, `<=`, `>`, `>=`) yield 1 or 0 and are
+numeric only; `if` evaluates just the selected branch, so `if({mv} = 0, 0, {pnl} / {mv})` cannot
+raise a division-by-zero warning. The same function list is mirrored by hand in
+`ReportingWorkflowService.IsFormulaFunctionIdentifier` and the dashboard's
+`isReportWriterFormulaFunction`; update all three together. Custom formula grids
 therefore retain the same source evidence that was used for evaluation, and formula data-dictionary
 rows retain those source-field pointers while still marking the column as generated.
+Bare references that contain hyphens follow one rule, shared through `ReportWriterFormulaReferences`:
+the whole identifier is the field when a field of that name exists (`net-pnl`); otherwise the longest
+known hyphen-delimited prefix is the field and the rest is read as subtraction (`pnl-fees`). Braced
+references such as `{net-pnl}` are never split.
 Generated Reporting run manifests also retain the report-writer grid
 artifact metadata generated from approved template definitions, including grid title, kind,
 artifact URI, dimension count, metric count, and formula count, while shared UI projections derive

@@ -29,7 +29,7 @@ public sealed partial class OrderManagementSystem
 
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
-        if (_amendmentBook.Contains(orderId) || IsTerminal(state.Status))
+        if (_amendmentBook.Contains(orderId) || OrderStatusFacts.IsTerminal(state.Status))
             return new OrderResult
             {
                 Success = false,
@@ -100,8 +100,15 @@ public sealed partial class OrderManagementSystem
         PendingOrderAmendment? amendment = null;
         try
         {
+            await RecordJournalOperationAsync(state, "ReplaceIntent", ct, modification).ConfigureAwait(false);
             amendment = await BeginOrderAmendmentAsync(orderId, state, modification, ct).ConfigureAwait(false);
             ct.ThrowIfCancellationRequested();
+            if (RequiresRiskRevalidation(state, modification))
+            {
+                var dispatchProbe = BuildAmendmentProbe(state, modification);
+                if (await _admissionPolicy.EvaluateDispatchMarketChecksAsync(dispatchProbe, ct).ConfigureAwait(false) is { } marketRefusal)
+                    throw new BrokerageRequestNotSentException(marketRefusal.Reason ?? "Current market conditions do not allow replacement dispatch.");
+            }
             amendmentDispatchAttempted = true;
             report = _gateway is IExplicitOrderModificationGateway explicitModification
                 ? await explicitModification.ModifyOrderAsync(
@@ -162,7 +169,11 @@ public sealed partial class OrderManagementSystem
                 RollBackSpeculativeReservation(orderId, speculativeReservation, state);
             }
             else
+            {
                 MarkBrokerageRecoveryRequired(orderId);
+                await RecordJournalOperationAsync(state, "ReplaceOutcomeUnconfirmed", CancellationToken.None, modification,
+                    "Replacement acknowledgement unavailable. Reconcile predecessor and candidate identities before retrying.").ConfigureAwait(false);
+            }
             throw;
         }
 

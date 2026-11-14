@@ -1,6 +1,34 @@
 // Meridian Validators — shared field validation functions for forms and tables.
 // Returns true for valid, or an error message string for invalid.
 // Use in EditableCell, forms, and field validations.
+import { fromISO, pad, toISO } from "./localDate.js";
+
+// A validated date field holds a CALENDAR date, so every shape is parsed to local midnight via
+// localDate.fromISO. The previous build fed each format to `new Date()`: "2026-6-15" parsed local,
+// "06/15/2026" was rebuilt into an ISO string and parsed UTC, and min/max were parsed UTC too — so
+// the same day compared true on one path and "before minDate" on another for anyone east of UTC.
+const DATE_SHAPES = {
+  iso: { re: /^(\d{4})-(\d{1,2})-(\d{1,2})$/, order: [1, 2, 3], hint: "YYYY-MM-DD" },
+  us: { re: /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, order: [3, 1, 2], hint: "MM/DD/YYYY" },
+  eu: { re: /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/, order: [3, 2, 1], hint: "DD.MM.YYYY" },
+};
+
+/** Strict parse in one named format → local Date at midnight, or null. Rejects 2026-02-30. */
+const parseIn = (value, format) => {
+  const shape = DATE_SHAPES[format];
+  if (!shape) return null;
+  const m = shape.re.exec(String(value).trim());
+  if (!m) return null;
+  const [y, mo, d] = shape.order.map((i) => Number(m[i]));
+  return fromISO(`${y}-${pad(mo)}-${pad(d)}`);
+};
+
+/** A min/max bound: Date, "YYYY-MM-DD", or any accepted display format → local midnight. */
+const parseBound = (v) => {
+  if (v == null || v === "") return null;
+  if (v instanceof Date) return isNaN(v.getTime()) ? null : new Date(v.getFullYear(), v.getMonth(), v.getDate());
+  return parseIn(v, "iso") || parseIn(v, "us") || parseIn(v, "eu");
+};
 
 export const Validators = {
   /**
@@ -18,7 +46,7 @@ export const Validators = {
     }
 
     // Strip common currency symbols and whitespace
-    let cleaned = value.replace(/[$\s]/g, "").trim();
+    let cleaned = value.trim().replace(/\s/g, "");
 
     // Handle accounting parentheses (1,234.00) = negative
     let isNegative = false;
@@ -27,11 +55,16 @@ export const Validators = {
       cleaned = cleaned.slice(1, -1);
     }
 
-    // Strip commas and parse
+    // A currency prefix is allowed; embedded symbols, partial parses and
+    // contradictory parenthesized signs are never valid monetary instructions.
+    cleaned = cleaned.replace(/^\$/, "").replace(/^(-)\$/, "$1");
+    if ((isNegative && cleaned.startsWith("-")) || !/^-?(?:(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d*)?|\.\d+)$/.test(cleaned)) {
+      return "Invalid currency amount";
+    }
     cleaned = cleaned.replace(/,/g, "");
-    const num = parseFloat(cleaned);
+    const num = Number(cleaned);
 
-    if (isNaN(num)) {
+    if (!Number.isFinite(num)) {
       return "Invalid currency amount";
     }
 
@@ -55,8 +88,10 @@ export const Validators = {
   },
 
   /**
-   * Date — validates ISO or locale date strings.
-   * Accepts: 2026-06-15, 06/15/2026, 15.06.2026, etc.
+   * Date — validates a calendar date in one named format (no timezone round-trip).
+   * format: "iso" 2026-06-15 · "us" 06/15/2026 · "eu" 15.06.2026. Only the named shape is accepted,
+   * so a datetime or a foreign format is an error rather than a silent reinterpretation.
+   * minDate/maxDate are inclusive and may be a Date or a date string.
    * Returns: true if valid, error message otherwise.
    */
   date: (value, opts = {}) => {
@@ -65,30 +100,24 @@ export const Validators = {
       return "Date required";
     }
 
-    let date = null;
-
-    if (format === "iso") {
-      date = new Date(value);
-    } else if (format === "us") {
-      // MM/DD/YYYY
-      const [m, d, y] = value.split("/");
-      date = new Date(`${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`);
-    } else if (format === "eu") {
-      // DD.MM.YYYY
-      const [d, m, y] = value.split(".");
-      date = new Date(`${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`);
+    const shape = DATE_SHAPES[format];
+    if (!shape) {
+      return `Unknown date format "${format}" (expected iso, us or eu)`;
     }
 
-    if (!date || isNaN(date.getTime())) {
-      return `Invalid date (expected ${format})`;
+    const date = parseIn(value, format);
+    if (!date) {
+      return `Invalid date (expected ${shape.hint})`;
     }
 
-    if (minDate && date < new Date(minDate)) {
-      return `Date must be on or after ${minDate}`;
+    const min = parseBound(minDate);
+    if (min && date < min) {
+      return `Date must be on or after ${toISO(min)}`;
     }
 
-    if (maxDate && date > new Date(maxDate)) {
-      return `Date must be on or before ${maxDate}`;
+    const max = parseBound(maxDate);
+    if (max && date > max) {
+      return `Date must be on or before ${toISO(max)}`;
     }
 
     return true;
@@ -153,7 +182,7 @@ export const Validators = {
    */
   required: (value, opts = {}) => {
     const { fieldName = "This field" } = opts;
-    if (!value || (typeof value === "string" && !value.trim())) {
+    if (value == null || (typeof value === "string" && !value.trim()) || (Array.isArray(value) && value.length === 0)) {
       return `${fieldName} is required`;
     }
     return true;

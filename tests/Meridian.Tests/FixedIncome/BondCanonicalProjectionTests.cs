@@ -66,7 +66,7 @@ public sealed class BondCanonicalProjectionTests
     }
 
     [Fact]
-    public async Task CanonicalFloatingCoupon_ReachesTheRegisteredForwardCurve()
+    public async Task CanonicalFloatingCoupon_WithAnUndeclaredCap_IsFlaggedNotProjected()
     {
         var security = Canonical(new
         {
@@ -93,12 +93,15 @@ public sealed class BondCanonicalProjectionTests
         leg.CapRate.Should().Be(8m);
         leg.FloorRate.Should().Be(0m);
 
+        // D3 (decided 2026-11-05): undeclared non-zero rates block. The canonical row declares no
+        // couponRateUnit, so its cap of 8 (applied raw before slice 4) is flagged and the projection
+        // blocks. Before D3 it projected two coupons of 2.5 at the 4% curve + 100bp and 100 principal.
         var projection = await Service(security, curve).GetProjectionAsOfAsync(
             security.SecurityId, StructuredCashFlowScenario.Base, AsOf);
-        projection!.BlockedReason.Should().BeNull();
-        projection.Schedule.Should().HaveCount(2);
-        projection.Schedule.Should().OnlyContain(row => row.InterestAmount == 2.5m);
-        projection.Schedule.Sum(row => row.PrincipalAmount).Should().Be(100m);
+        projection!.BlockedReason.Should().Be(
+            "Rate capRate = 8 on Bond has no declared unit (Fraction, Percent or BasisPoints). "
+            + "A legacy value is flagged rather than converted; its unit cannot be inferred from its magnitude.");
+        projection.Schedule.Should().BeEmpty();
     }
 
     [Theory]

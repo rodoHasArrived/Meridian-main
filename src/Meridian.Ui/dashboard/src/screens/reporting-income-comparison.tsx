@@ -7,6 +7,8 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { Sheet, SheetBody, SheetCloseButton, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ReportWriterGridDiffView } from "@/components/meridian/report-writer-grid-diff-view";
+import { IncomeMovementWaterfall } from "@/components/meridian/income-movement-waterfall";
+import { buildIncomeWaterfall, formatIncomeAmount as amount } from "@/lib/income-movement-waterfall";
 import { createIncomeComparison, getIncomeComparison, getIncomeComparisonCandidates, getIncomeContributionSupport } from "@/lib/reporting-income-comparison-api";
 import type { IncomeComparison, IncomeComparisonRun, IncomeContributionSupport } from "@/types/reporting-income-comparison";
 
@@ -154,7 +156,7 @@ export function ReportingIncomeComparisonPanel({ currentRunId = "" }: { currentR
   return (
     <Card className="panel-surface" id="income-comparison">
       <CardHeader>
-        <div className="eyebrow-label">Retained report comparison</div>
+        <div className="eyebrow-label eyebrow-label--sentence">Retained report comparison</div>
         <CardTitle>Explain investment-income movement</CardTitle>
         <CardDescription>Choose the baseline explicitly, including originally published or restated results. Movement is current minus baseline; inputs and supporting records are retained with the explanation.</CardDescription>
       </CardHeader>
@@ -189,7 +191,20 @@ export function ReportingIncomeComparisonPanel({ currentRunId = "" }: { currentR
           </label>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" onClick={compare} disabled={!canCompare} busy={busy} busyLabel="Loading comparison…">Compare and retain explanation</Button>
+          <Button
+            type="button"
+            onClick={compare}
+            disabled={!canCompare}
+            disabledReason={candidatePhase !== "ready"
+              ? "Wait for the retained report runs to load."
+              : baselineId === currentId
+                ? "Choose two different report runs to compare."
+                : "Choose a baseline run, a current run and a metric the current run reports."}
+            busy={busy}
+            busyLabel="Loading comparison…"
+          >
+            Compare and retain explanation
+          </Button>
           <Button type="button" variant="outline" onClick={() => setRefresh((value) => value + 1)} disabled={busy}>Retry / refresh retained records</Button>
         </div>
         {baselineId && baselineId === currentId ? <p role="status" className="text-sm text-warning">Choose two different retained runs.</p> : null}
@@ -209,19 +224,10 @@ function isZeroAmount(value: string | null) {
   return value !== null && /^-?0(?:\.0+)?$/.test(value);
 }
 
-function amount(value: string | null, currency: string) {
-  if (value === null) return "Not comparable";
-  const negative = value.startsWith("-");
-  const [integer, retainedFraction = ""] = (negative ? value.slice(1) : value).split(".");
-  const groupedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  // Group and pad decimal text directly: every significant retained digit remains visible.
-  const fraction = retainedFraction.replace(/0+$/, "").padEnd(2, "0");
-  const sign = negative && !isZeroAmount(value) ? "-" : "";
-  return `${sign}${groupedInteger}.${fraction} ${currency}`;
-}
-
 function ComparisonExplanation({ comparison: c, onSupport }: { comparison: IncomeComparison; onSupport: (id: string) => void }) {
-  const reconciled = c.compatible && c.status === "Reconciled" && isZeroAmount(c.residualAmount);
+  const reconciled = c.compatible && c.status === "Reconciled" && isZeroAmount(c.residualAmount)
+    && buildIncomeWaterfall(c).reason === null
+    && !c.contributions.some((item) => item.kind === "Unexplained" && !isZeroAmount(item.amount));
   const currency = c.baseline.currency === c.current.currency ? c.current.currency : "(different currencies)";
   return (
     <section aria-label="Retained income explanation" className="space-y-4">
@@ -245,6 +251,7 @@ function ComparisonExplanation({ comparison: c, onSupport }: { comparison: Incom
         <AmountFact label="Unexplained residual" value={amount(c.residualAmount, currency)} />
         <div><dt className="text-xs text-muted-foreground">Retained on</dt><dd className="mt-1 break-all font-mono text-sm">{c.retainedAtUtc}</dd></div>
       </dl>
+      <IncomeMovementWaterfall comparison={c} onSupport={onSupport} />
       {c.warnings.length ? <ul aria-label="Comparison warnings" className="space-y-1 text-sm text-warning">{c.warnings.map((warning, index) => <li key={index}>{warning}</li>)}</ul> : null}
       {["Journal", "Population", "Methodology", "Unexplained"].map((kind) => {
         const contributions = c.contributions.filter((item) => item.kind === kind);

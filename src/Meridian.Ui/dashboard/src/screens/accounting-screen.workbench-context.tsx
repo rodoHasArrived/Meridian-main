@@ -30,13 +30,8 @@ export function AccountingWorkbenchContext({
       data-task-mode={taskMode.id}
       className="min-w-0"
     >
-      <SectionHeading
-        as="h2"
-        title={taskMode.label}
-        description={taskMode.description}
-        helpId={`accounting-${taskMode.id}`}
-        headingClassName="text-base"
-      />
+      <SectionHeading as="h2" title={taskMode.title} description={taskMode.description}
+        helpId={`accounting-${taskMode.id}`} headingClassName="text-base" />
     </section>
   );
 }

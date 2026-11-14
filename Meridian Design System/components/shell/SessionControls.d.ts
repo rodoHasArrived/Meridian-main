@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Session & permission primitives — the pieces every real deployment needs and no template
  * previously showed.
@@ -30,7 +31,7 @@ export interface UserMenuProps {
   /** Style the chip for the near-black chrome (true) or paper surfaces (false). @default true */
   onChrome?: boolean;
 }
-export declare function UserMenu(props: UserMenuProps): JSX.Element;
+export declare function UserMenu(props: UserMenuProps): React.JSX.Element;
 
 export interface RoleBadgeProps {
   /** admin · operator · viewer (unknown values render as viewer style with the raw label). @default "viewer" */
@@ -38,12 +39,12 @@ export interface RoleBadgeProps {
   /** Override the visible label. */
   label?: React.ReactNode;
 }
-export declare function RoleBadge(props: RoleBadgeProps): JSX.Element;
+export declare function RoleBadge(props: RoleBadgeProps): React.JSX.Element;
 
 export interface ReadOnlyBannerProps {
   message?: React.ReactNode;
 }
-export declare function ReadOnlyBanner(props: ReadOnlyBannerProps): JSX.Element;
+export declare function ReadOnlyBanner(props: ReadOnlyBannerProps): React.JSX.Element;
 
 /** Namespace object bundling the three session primitives. */
 export declare const SessionControls: {

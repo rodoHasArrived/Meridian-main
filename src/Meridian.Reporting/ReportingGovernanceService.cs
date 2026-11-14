@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
 
@@ -14,15 +15,18 @@ public sealed class ReportingGovernanceService
     private readonly IReportingGovernanceRepository _repository;
     private readonly TimeProvider _timeProvider;
     private readonly Func<string, string> _idFactory;
+    private readonly IBookOfRecordGuard? _bookOfRecordGuard;
 
     public ReportingGovernanceService(
         IReportingGovernanceRepository repository,
         TimeProvider? timeProvider = null,
-        Func<string, string>? idFactory = null)
+        Func<string, string>? idFactory = null,
+        IBookOfRecordGuard? bookOfRecordGuard = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _timeProvider = timeProvider ?? TimeProvider.System;
         _idFactory = idFactory ?? (prefix => $"{prefix}_{Guid.NewGuid():N}");
+        _bookOfRecordGuard = bookOfRecordGuard;
     }
 
     public ValueTask<GovernedReportingRun> CreateRunAsync(
@@ -346,7 +350,8 @@ public sealed class ReportingGovernanceService
             ReportingGovernancePermission.ReleaseRun,
             humanRequired: true,
             cancellationToken,
-            run =>
+            precheck: EnsureBookOfRecordAsync,
+            mutation: run =>
             {
                 EnsureMutable(run, "release");
                 if (run.ExecutionState != GovernedReportingExecutionState.Succeeded ||
@@ -356,7 +361,7 @@ public sealed class ReportingGovernanceService
                     throw InvalidState(run, "release only a successfully executed and approved run");
                 }
 
-                ReportingGovernanceCanonicalValidation.ValidateFinalReleaseSnapshot(run.Snapshot);
+                ReportingGovernanceCanonicalValidation.ValidateReleaseSnapshot(run);
                 ReportingGovernanceCanonicalValidation.ValidateCompleteClientPackageRelease(
                     run.RunId,
                     run.Snapshot,
@@ -386,6 +391,19 @@ public sealed class ReportingGovernanceService
                     ReportingGovernanceCanonicalValidation.BuildReleaseAuditNote(release),
                     occurredAtUtc: now);
             });
+    }
+
+    /// <summary>A shadow book (W11-SHADOW-001) cannot release governed output as the book of record.</summary>
+    private async Task EnsureBookOfRecordAsync(GovernedReportingRun run, CancellationToken ct)
+    {
+        if (_bookOfRecordGuard is null || !Guid.TryParse(run.Scope.BookId, out var ledgerBookId))
+            return;
+        var status = await _bookOfRecordGuard.GetStatusAsync(run.Scope.TenantId, run.Scope.CompanyId, ledgerBookId, ct)
+            .ConfigureAwait(false);
+        if (!status.IsBookOfRecord)
+            throw new ReportingGovernanceException(
+                $"Run '{run.RunId}' cannot be released as the book of record: {status.Reason}",
+                new ShadowBookNotBookOfRecordException(status.Reason));
     }
 
     public ValueTask<ReportingRestatementRequest> RequestRestatementAsync(
@@ -646,6 +664,17 @@ public sealed class ReportingGovernanceService
         bool humanRequired,
         CancellationToken cancellationToken,
         Func<GovernedReportingRun, Mutation> mutation)
+        => MutateRunAsync(runId, expectedVersion, authority, permission, humanRequired, cancellationToken, null, mutation);
+
+    private ValueTask<GovernedReportingRun> MutateRunAsync(
+        string runId,
+        long expectedVersion,
+        ReportingAuthorityScope authority,
+        ReportingGovernancePermission permission,
+        bool humanRequired,
+        CancellationToken cancellationToken,
+        Func<GovernedReportingRun, CancellationToken, Task>? precheck,
+        Func<GovernedReportingRun, Mutation> mutation)
     {
         RequireText(runId, nameof(runId));
         ArgumentNullException.ThrowIfNull(authority);
@@ -657,6 +686,8 @@ public sealed class ReportingGovernanceService
             EnsureExpectedVersion(run.Version, expectedVersion, run.RunId);
             EnsureAuthority(authority, run.Scope, permission, humanRequired);
             EnsureAccess(run.Access, authority);
+            if (precheck is not null)
+                await precheck(run, ct).ConfigureAwait(false);
 
             var result = mutation(run);
             var now = result.OccurredAtUtc ?? _timeProvider.GetUtcNow();

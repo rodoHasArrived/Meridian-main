@@ -6,14 +6,53 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Ui
 
+The Providers workstation includes guarded failover, historical provider limits and routing previews,
+symbol rollout, validation profiles and quota history. Data and Settings share pending activation
+status from the host; rebuild the dashboard to refresh these served controls. See the dashboard and
+shared-service READMEs for validation and runtime boundaries.
+
+The browser bond workstation extends the existing Data/Security Master and Portfolio cash screens. Shared endpoints retain accepted holdings, input revisions, comparisons, forecasts, collection watches, risk and governed income preparations. See [bond operations](../../docs/operators/bond-workflows.md) for source formats and activation boundaries.
+
+The served bundle also includes linked analytical investigation views across the existing workspaces: orders, displayed depth, options, margin, maturities, ownership, retained private capital, fixed-income exercises, corporate dates, tax parcels and retained strategy sweeps. The dashboard and shared-source READMEs document their source, unit and authority boundaries; generated assets must be rebuilt after integration.
+
+The served Accounting configuration bundle includes the intercompany agreement registry, immutable
+revision/evidence inspection and governed proposal review over shared tenant-scoped APIs. Optional
+journal-line reference editing follows the server's rollout capability; the browser retains exact
+rate text and source amounts. Rebuild with the canonical dashboard command after changes. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md) for authority and configuration.
+
+The rebuilt bundle also includes explicit retained quote and observed-fixing selection, typed
+rates ingestion, provider identity-review evidence and shared chart accessibility. Dashboard reads
+preserve exact decimal text from fixed-income responses; calculation and review authority remains
+in the shared services. See the dashboard README for these workflows and rebuild validation.
+
+The host-served bundle includes the Security Master bond analytics model selector and floating v3
+metrics, projected payments, fixing provenance and typed refusal states. Rebuild it from `dashboard/`
+after source changes; the shared analytics endpoint remains the calculation authority.
+
+The browser `/accounting/capital-calls` workflow consumes the shared commitment-to-cash API and
+retained reporting notice summaries. It presents commitment approval, call planning, posted activity,
+funding review and notice governance as distinct states. No browser-local balances, WPF state fork,
+new root navigation or live payment capability is introduced. See the dashboard and UI Shared
+READMEs for the exact support boundary and validation.
+
 The host-served workstation bundle uses paired React/React DOM runtime packages and preserves
 accessible separators between account labels, tab counts, and provider state badges. Dashboard
 runtime requirements remain declared in its package manifest and checked before dependency work.
+
+The rebuilt browser assets include the current design-system date and keyboard adapters and
+current-view print styling. Printed views retain mounted selection, financial context, session and
+provenance; printing does not fetch unmounted records or change report authority.
+
+Run Ledger Explorer includes an inclusive UTC as-of date and accounting-package downloads in
+CSV, Excel, Parquet, or Arrow. The shared API enforces run visibility and supplies journal,
+trial-balance, cash-flow, and available retained lot schedules; missing lot evidence is explicit
+in the package. Rebuild `dashboard/` to refresh the checked-in workstation bundle.
 
 Browser reconciliation queue source observations and retained occurrence age are projected separately from case status. Shared services own lineage, comparison evidence and SLA calendars.
 
@@ -26,7 +65,9 @@ independent close-price review and dated cash forecasts, with source evidence an
 
 Accounting's External GL surface includes bounded onboarding backed by shared retained workspace
 services. Rebuild the dashboard to serve source selection, comparison history, review controls and
-canonical frozen packet downloads. The host exposes no onboarding posting or authority transition.
+canonical frozen packet downloads. The host exposes no onboarding posting. Shadow-mode onboarding adds
+one audited authority transition: promoting a shadow book to book of record, which needs an
+independent reviewer and a verified parallel-run certificate.
 
 The checked-in workstation bundle includes retained manual-journal amount proof and durable
 reconciliation lineage display. Regenerate it from the dashboard after related source changes;
@@ -40,9 +81,152 @@ The rebuilt browser bundle includes the reconciliation queue/inspector pilot, UR
 break and filter continuity, navigation-state queue scroll restoration, and shared-shell recovery
 detail. Reconciliation commands and approvals remain owned by the existing shared services.
 
+The host-served bundle carries the shell hierarchy pass: a one-row masthead with the environment
+in the trust pill, a provenance banner that becomes a stripe once seen, a two-row workspace header,
+route-first workspace screens with the sidebar as the only sub-navigation, and a pinned Today entry
+with Control Tower attention counts. No shared contract changed.
+
+The host-served bundle carries the design-system consolidation. It includes one status
+component; one formatting module (year-bearing UTC timestamps; accounting negatives in
+parentheses); and one table system with sorting, sticky headers, operator density and column
+visibility on positions, orders, the ledger, breaks, the execution blotter and report families.
+It also adds a three-tier type scale with sentence-case labels past two words and prose in the
+body face. Ratchets in `dashboard/scripts/design-system-ratchets.mjs`, and the sub-12px
+typography floor check in `dashboard/scripts/check-typography-floor.mjs` (run by `npm run lint`),
+keep legacy uses from growing. No shared contract changed; positions and orders still arrive as preformatted strings,
+so those tables sort on their text columns until a shared seam carries raw figures.
+
+The host-served bundle carries the operator-copy pass: display names in place of GUID-shaped
+identifiers on the close cockpit, trial balance heading, factor-paydown scope and loan-book
+facility selector; counts that agree with their nouns; one "No mark observed" hint for a position
+with no mark assessment; a Providers item in the status bar whenever provider trust needs review;
+and a Control Tower evidence line that names only correlated evidence. The screenshot harness
+fails a route whose rendered content shows a raw identifier or a "1 rows" style count. No shared
+contract changed; Operations Continuity still shows fund-account identifiers because its shared
+summary carries no account name.
+
+The host-served bundle carries the status-signal consolidation: one rule
+(`dashboard/src/lib/status-signals.ts`) and one shell attention state
+(`dashboard/src/app-shell.attention.ts`) now feed every status indicator. The masthead keeps an
+environment badge (`PAPER · SEEDED`, replacing the trust pill's provider text and the separate
+sample-data chip) and one attention pill that names the worst open issue and opens Today. Page
+status rows read `All sources current` or name only the facts that are not ready, with the
+per-fact breakdown behind Details, and fold in shell source issues so they cannot contradict the
+pill. Today leads with the same worst decision on every route, the status bar repeats the pill
+instead of a Providers item, and the provenance banner is a stripe whenever the badge names the
+provenance. Declared demo data on a Paper session is no longer raised as a warning. No shared
+contract changed; the WPF shell keeps its own indicators until it consumes the same rule.
+
+The host-served bundle carries the shared detail pane: a selected row's pane has one heading
+line (object type, name, one status badge) with no separate "Selected from …" pill or "Detail"
+chip; field values are left-aligned and never broken mid-word, with figures and dates on one
+line; opaque identifiers sit behind a copyable "Technical details" disclosure; and Trading
+orders and fills share one pane keyed to the table selected last. No shared contract changed.
+
+The host-served bundle carries the headline-figure trust rules: every workspace stat strip
+states its source and as-of time (and scope where the page has one); a change is shown only with
+the baseline it is measured against, so the placeholder deltas the workspace read models still
+send (`0%`, `+N`, `+session`) are not rendered; figures fed by stale or unverified data are muted
+and marked; Portfolio explains a header strip and explorer that disagree; and profit and loss
+reads "P&L" in every label. `WorkstationMetricCard` is unchanged: the browser carries the
+baseline, provenance and freshness fields on its own `MetricSnapshot` until a read model supplies
+real comparison data.
+
+It also carries the first Phase 3 increment of the
+[UX review plan](../../docs/engineering/plans/web-workstation-ux-review-plan-2026-11.md): a failed
+request shows a plain sentence with the request path collapsed under "Technical details"; when a
+page's status row says its freshness needs review, the status bar says "Sync connected" and
+repeats the row's words instead of "up to date"; disabled buttons share one readable style and
+carry their reason; and "Cancel all" sits in an overflow menu. The screenshot harness additionally
+fails a route that renders a request path, "lane", "payload", "mutation", "caller-visible", a
+slug-shaped identifier, an unexplained disabled primary button, or a status bar that contradicts
+the page. No shared contract changed; routes whose read models name records only by key are listed
+with reasons in `scripts/dev/web-screenshot-routes.json`.
+
+It also carries the Phase 3 trust fixes from the same plan:
+- Data overview shows a provider's "Latency" only as a reported duration or "Latency not
+  reported"; the "Trust / last good" column keeps the last response time.
+- Today has one queue grid. Workspace signals (the items the sidebar badges count) and shared
+  inbox items are interleaved by severity, then age, and a Source column names each row's source.
+  The Source filter (All sources, Workspace signals, Shared inbox) filters rows of that grid and
+  shows a count per source. Inbox rows keep assign, snooze, acknowledge, bulk assign and
+  unconfirmed-command retry. Each count names its unit (for example "+5 more issues" in the
+  masthead trust strip).
+- The bottom status bar holds connectivity and freshness only; the masthead trust strip is the one
+  shell place that names the worst open issue.
+- Trading shows a neutral "Choose a fund account" state instead of a red recovery block when no
+  account is in scope in a non-live brokerage environment; live, unknown and failed states still
+  block.
+- A figures strip prints a basis line only when its source declares a basis or an as-of time;
+  the figure passport still states an undeclared basis.
+- The screenshot harness fails a route that shows a time under "Latency", a "Basis unavailable"
+  or "Saved views unavailable" placeholder, or a status badge whose text is clipped
+  (`truncated-badge`). Badges never truncate: one- or two-word badges keep their width and
+  longer ones wrap.
+
+No shared contract changed.
+
+Dashboard source carries the first P4 step of the
+[UX consolidation plan](../../docs/engineering/plans/workstation-ux-consolidation-plan-2026-11.md)
+(the host-served bundle is not yet rebuilt from it):
+- The top bar shows the operating scope as a permanent, labelled scope bar,
+  `Scope  Account … › Period …`, with Subject, Run and Provider added when set. An unset dimension
+  reads "All authorized"; the header no longer has a "Context: No scope selected" control, and the
+  empty scope reads "All authorized scopes" wherever it is summarized, as Today already did. The
+  bar opens the scope picker, which still holds the workflow detail.
+- Every figures strip prints the scope its figures were counted over, inherited from the shell: the
+  account the supplying payload was loaded for, "All authorized scopes" for a payload the shell
+  loads without a scope filter, or the scope the route applies. A screen can pass its own. Trading's
+  totals without a fund account read "Brokerage account …".
+- Trading (overview and the one-line row on Orders and the other Trading routes) offers an inline
+  fund-account picker in place of the "Choose a fund account" empty state in a non-live
+  environment; live, unknown and failed states still block. Applying an account sets it in the
+  operating scope and the URL, so links carry it.
+
+No shared contract changed in that step.
+
+Dashboard source also carries the P4 entity, fund and period step (host bundle not yet rebuilt):
+- The scope bar reads `Scope  Entity … › Fund … › Account … › Period …`. An unset Entity, Fund
+  or Account reads "All authorized"; an unset Period reads "All periods". Entity and fund are the
+  `entityId` and `fundId` URL parameters, carried on every route and in storage, recent scopes,
+  saved layouts, Copy link and the server-side default scope. Accounting applies `entityId`.
+  Portfolio > Brokerage sync (household accounts and positions) and Accounting > Close calendar
+  (close workflows) narrow their fund-account rows to the chosen fund or entity client-side, using
+  the organization graph; there the bar shows Entity and Fund as applied. Elsewhere, and on those
+  screens when the structure read is unavailable, a set fund shows as retained (muted) and nothing is hidden.
+- The Trading inline account picker narrows its suggestions by the chosen entity and fund as the
+  scope picker does, and flags an account the graph places outside them.
+- The scope picker lists entities, funds and accounts from `GET /api/workstation/scope-options`,
+  which every operator may call and which lists only what the caller's scoped grants let it read
+  (older hosts: the organization graph `GET /api/fund-structure/graph?activeOnly=true`). An entity
+  narrows the funds and accounts; a fund narrows the accounts. When the read fails the picker takes
+  typed ids and narrows nothing.
+- A Period control sets the window: All periods, Today, MTD, QTD, YTD, Last month, Custom range
+  (shared date-range picker) or As of a date, on the operator's calendar day.
+
+Shared contract change (additive): `OperatingScopeValuesDto` gained optional `EntityId` and
+`FundId`, appended last; WPF is unaffected.
+
+The host-served bundle carries the browser presentation correctness fixes: font stacks that end
+in a generic family (no serif fallback for data text), Ledger Explorer amounts at currency
+precision with journal-ID links, no invented Strategy metrics, and a masthead activation chip that
+leaves once setup is complete. No shared contract changed; entity display names still need a
+shared seam before the ledger can show them.
+
+Dashboard source includes signed report-value summaries, a retained investment-income movement
+waterfall with exact-decimal bridge checks, and position-table display graphics. Financial strings,
+missing observations, shared mark assessments and retained supporting-record paths remain visible.
+The host-served bundle is rebuilt from these dashboard changes.
+
 ## Purpose
 
 Meridian.Ui contains the browser workstation source folder and built host-served workstation assets.
+
+This folder is not a .NET project: it has no project file and nothing references it as one. The
+`src/Meridian` host (`Meridian.csproj`) links `wwwroot/` as content, copies it beside the
+executable, and serves it. Host-side serving code lives in `src/Meridian/UiServer.cs` and
+`src/Meridian/WorkstationAssetTree.cs`; the .NET projects named `Meridian.Ui.Services` and
+`Meridian.Ui.Shared` are separate sibling folders.
 
 ## Layer responsibility
 
@@ -51,7 +235,7 @@ This folder owns browser workstation packaging and host-served assets. Active so
 ## Key folders and files
 
 - `dashboard/` - active browser workstation application.
-- `wwwroot/workstation/` - built workstation assets served by the Meridian host.
+- `wwwroot/workstation/` - built workstation assets served by the `src/Meridian` host.
 
 ## Important workflows
 
@@ -59,6 +243,10 @@ Use `dashboard/` for source changes and generated `wwwroot/workstation/` assets 
 Browser workflow target routing keeps desktop compatibility page tags aligned to the canonical operator lanes under `dashboard/`.
 The browser Data workspace exposes provider catalog/onboarding discovery through `/data/providers`
 while keeping generated host assets in `wwwroot/workstation/` as build output.
+Fixed-income task aliases in command search open the existing Security Master, Asset detail,
+cash-ladder, account-oversight, factor-paydown and cutover routes. Reference probes wait for the
+authoritative selected instrument's currency and identifiers, including ladder selections outside
+search results. The rebuilt host-served bundle carries the same routing and selection behavior.
 The browser app shell projects the design-document primary operator workflow
 (`Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, `Report`) from dashboard view-model
 state so host-served workstation assets retain the same financial-operations flow after rebuilds.
@@ -100,6 +288,9 @@ endpoints, and the workstation identifier-kind union includes `LoanX` and `Clip`
 The generated route table includes the income cash-flow, factor-history and term-block
 Security Master routes.
 
+The host-served bundle includes Trading's governed approvals panel showing each parked order's
+economic terms from the shared escalation contract. Rebuild it from `dashboard/` after source changes.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
@@ -109,6 +300,7 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-UI -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W3-CONT-001` | Research to paper continuity |
 <!-- source-roadmap-traceability:end -->

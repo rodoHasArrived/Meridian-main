@@ -4,6 +4,7 @@ import type { ShellStatusPanel } from "@/app-shell.status-panel";
 import { Button } from "@/components/ui/button";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export function WorkspaceStatus({ panel, onRetry, refreshing = false }: {
   panel: ShellStatusPanel;
@@ -39,7 +40,7 @@ export function WorkspaceStatus({ panel, onRetry, refreshing = false }: {
               {itemSummary ? (
                 <span
                   aria-hidden="true"
-                  className="rounded-sm border border-border/60 bg-background/45 px-1.5 py-0.5 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-muted-foreground"
+                  className={cn("rounded-sm border border-border/60 bg-background/45 px-1.5 py-0.5 text-[0.625rem] text-muted-foreground", usesTrackedCaps(itemSummary) && "font-mono uppercase tracking-[0.12em]")}
                 >
                   {itemSummary}
                 </span>

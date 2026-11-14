@@ -1,5 +1,8 @@
+import { TableWorkbench } from "@/components/meridian/table-workbench";
+import { formatNumber, formatCurrency } from "@/lib/format";
+import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { RefreshCw, ShieldAlert } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,21 +10,28 @@ import { Input } from "@/components/ui/input";
 import { PanelSurface } from "@/components/ui/panel-surface";
 import { certifyMarginSnapshot, getMarginControlCenter } from "@/lib/api";
 import type { MarginControlAccount, MarginControlCenter } from "@/types";
+import { MarginComparisonOverview, marginAccountAnchor, marginAccountKey } from "@/screens/margin-comparison-overview";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export function MarginControlCenterScreen() {
   const [data, setData] = useState<MarginControlCenter | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const loadGeneration = useRef(0);
 
   const load = useCallback(async (signal?: AbortSignal) => {
+    const generation = ++loadGeneration.current;
     setLoading(true);
     setError(null);
     try {
-      setData(await getMarginControlCenter({ signal }));
+      const next = await getMarginControlCenter({ signal });
+      if (!signal?.aborted && generation === loadGeneration.current) setData(next);
     } catch (reason) {
-      if (!signal?.aborted) setError(reason instanceof Error ? reason.message : "Margin control data could not be loaded.");
+      if (!signal?.aborted && generation === loadGeneration.current) setError(reason instanceof Error ? reason.message : "Margin control data could not be loaded.");
     } finally {
-      if (!signal?.aborted) setLoading(false);
+      if (!signal?.aborted && generation === loadGeneration.current) setLoading(false);
     }
   }, []);
 
@@ -37,7 +47,7 @@ export function MarginControlCenterScreen() {
         <div>
           <div className="flex items-center gap-2">
             <ShieldAlert className="h-4 w-4 text-primary" aria-hidden="true" />
-            <h1 className="text-base font-semibold text-foreground">Margin Control Center</h1>
+            <h2 className="text-base font-semibold text-foreground">Margin Control Center</h2>
           </div>
           <p className="mt-1 max-w-3xl text-xs leading-5 text-muted-foreground">
             Compare broker-reported margin to Meridian shadow estimates across accounts and primes. Provider figures
@@ -53,6 +63,7 @@ export function MarginControlCenterScreen() {
       {error ? (
         <div className="rounded-[2px] border border-destructive/40 bg-destructive/5 p-3 text-xs text-destructive" role="alert">
           {error}
+          {data ? " Last successfully loaded snapshots remain visible; the refresh failed." : ""}
         </div>
       ) : null}
 
@@ -63,10 +74,16 @@ export function MarginControlCenterScreen() {
           <div className="rounded-[2px] border border-amber-300/70 bg-amber-50 p-3 text-xs leading-5 text-amber-950">
             {data.authorityNote} <span className="font-medium">Next:</span> {data.nextAction}
           </div>
+          <MarginComparisonOverview accounts={data.accounts} selectedId={selectedId} onSelect={(account) => {
+            setSelectedId(marginAccountKey(account));
+            const evidence = document.getElementById(marginAccountAnchor(account));
+            evidence?.focus();
+            evidence?.scrollIntoView?.({ block: "start", behavior: "auto" });
+          }} />
           <PrimeTable data={data} />
           <AlertPanel data={data} />
           <div className="flex flex-col gap-3">
-            {data.accounts.map((account) => <AccountMarginCard key={`${account.providerId}:${account.accountId}`} account={account} onCertified={() => void load()} />)}
+            {data.accounts.map((account) => <div id={marginAccountAnchor(account)} key={marginAccountKey(account)} tabIndex={-1} className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" aria-label={`Margin evidence ${account.providerId} ${account.accountId}`}><AccountMarginCard account={account} onCertified={() => void load()} /></div>)}
           </div>
         </>
       ) : null}
@@ -86,7 +103,7 @@ function SummaryCards({ data, loading }: { data: MarginControlCenter | null; loa
       {items.map(([label, value]) => (
         <Card key={label}>
           <CardContent className="p-4">
-            <p className="text-[0.6875rem] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+            <p className={cn("text-[0.6875rem] font-medium text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p>
             <p className="mt-2 font-mono text-xl font-semibold tabular-nums">{loading ? "—" : value ?? 0}</p>
           </CardContent>
         </Card>
@@ -103,24 +120,13 @@ function PrimeTable({ data }: { data: MarginControlCenter }) {
         <CardDescription>Account totals use the most recent retained connector evidence for each provider/account pair.</CardDescription>
       </CardHeader>
       <CardContent className="overflow-x-auto p-0">
-        <table className="w-full min-w-[720px] text-xs">
-          <thead className="border-b border-border bg-muted/30 text-left text-muted-foreground">
-            <tr><Th>Provider</Th><Th>Accounts</Th><Th>Equity</Th><Th>Provider maintenance</Th><Th>Provider excess</Th><Th>Critical</Th></tr>
-          </thead>
-          <tbody>
-            {data.primeSummaries.map((prime) => (
-              <tr key={prime.providerId} className="border-b border-border/60 last:border-0">
-                <Td className="font-medium">{prime.providerId}</Td>
-                <Td>{prime.accountCount}</Td>
-                <Td>{money(prime.totalEquity)}</Td>
-                <Td>{money(prime.providerMaintenanceMargin)}</Td>
-                <Td>{money(prime.providerExcessLiquidity)}</Td>
-                <Td>{prime.criticalAccountCount}</Td>
-              </tr>
-            ))}
-            {data.primeSummaries.length === 0 ? <tr><Td colSpan={6}>No connector account snapshots are retained yet.</Td></tr> : null}
-          </tbody>
-        </table>
+        <TableWorkbench<(typeof data.primeSummaries)[number]> workbenchId="margin-prime-summary" sourceKey={JSON.stringify(data.primeSummaries)} rows={data.primeSummaries} columns={[{id:"field-0",label:"Provider",exportValue:prime=>prime.providerId,render:prime=><>{prime.providerId}</>},
+{id:"field-1",label:"Accounts",exportValue:prime=>prime.accountCount,render:prime=><>{prime.accountCount}</>},
+{id:"field-2",label:"Equity",exportValue:prime=>primeCurrency(prime.providerId, prime.accountCount, data) ? prime.totalEquity : null,render:prime=><>{money(prime.totalEquity, primeCurrency(prime.providerId, prime.accountCount, data))}</>},
+{id:"field-3",label:"Provider maintenance",exportValue:prime=>primeCurrency(prime.providerId, prime.accountCount, data) ? prime.providerMaintenanceMargin : null,render:prime=><>{money(prime.providerMaintenanceMargin, primeCurrency(prime.providerId, prime.accountCount, data))}</>},
+{id:"field-4",label:"Provider excess",exportValue:prime=>primeCurrency(prime.providerId, prime.accountCount, data) ? prime.providerExcessLiquidity : null,render:prime=><>{money(prime.providerExcessLiquidity, primeCurrency(prime.providerId, prime.accountCount, data))}</>},
+{id:"field-5",label:"Critical",exportValue:prime=>prime.criticalAccountCount,render:prime=><>{prime.criticalAccountCount}</>},
+{id:"currency",label:"Currency",exportValue:prime=>primeCurrency(prime.providerId, prime.accountCount, data),render:prime=>primeCurrency(prime.providerId, prime.accountCount, data) ?? "No single declared currency"}]} getRowId={prime=>prime.providerId} getSearchText={prime=>prime.providerId} completePopulation sourceDescription="Latest retained provider/account evidence; monetary totals require a complete same-currency population."  ariaLabel="Provider margin account summaries" emptyText="No connector account snapshots are retained yet." />
       </CardContent>
     </Card>
   );
@@ -205,7 +211,7 @@ function AccountMarginCard({ account, onCertified }: { account: MarginControlAcc
               Certification note
               <Input className="mt-1" value={note} onChange={(event) => setNote(event.target.value)} placeholder="Explain the EOD evidence reviewed" />
             </label>
-            <Button size="sm" onClick={() => void certify()} disabled={!note.trim()} busy={certifying} busyLabel="Certifying…">Certify EOD snapshot</Button>
+            <Button size="sm" onClick={() => void certify()} disabled={!note.trim()} disabledReason="Enter a certification note first." busy={certifying} busyLabel="Certifying…">Certify EOD snapshot</Button>
             {certificationError ? <p className="text-xs text-destructive" role="alert">{certificationError}</p> : null}
           </div>
         ) : account.certificationState === "Certified" ? (
@@ -214,19 +220,15 @@ function AccountMarginCard({ account, onCertified }: { account: MarginControlAcc
           </div>
         ) : null}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-xs">
-            <thead className="border-y border-border bg-muted/30 text-left text-muted-foreground"><tr><Th>Symbol</Th><Th>Security master</Th><Th>Quantity</Th><Th>Market value</Th><Th>Shadow initial</Th><Th>Shadow maintenance</Th><Th>Borrow</Th><Th>Rate</Th><Th>Lots / options</Th></tr></thead>
-            <tbody>
-              {account.positionContributions.map((position) => (
-                <tr key={position.symbol} className="border-b border-border/60">
-                  <Td className="font-medium">{position.symbol}</Td><Td title={position.securityMasterSource ?? "ProviderStatementSymbolUnresolved"}>{position.securityId ?? "Unresolved provider symbol"}</Td><Td>{number(position.quantity)}</Td><Td>{money(position.marketValue, account.currency)}</Td>
-                  <Td>{money(position.shadowInitialMargin, account.currency)}</Td><Td>{money(position.shadowMaintenanceMargin, account.currency)}</Td>
-                  <Td>{position.borrowStatus ?? "—"}</Td><Td>{position.borrowRate == null ? "—" : `${number(position.borrowRate)}%`}</Td><Td>{position.taxLotCount} / {position.optionLifecycleEventCount}</Td>
-                </tr>
-              ))}
-              {account.positionContributions.length === 0 ? <tr><Td colSpan={9}>No canonical position rows were retained for this account.</Td></tr> : null}
-            </tbody>
-          </table>
+          <TableWorkbench<(typeof account.positionContributions)[number]> workbenchId="margin-account-positions" sourceKey={JSON.stringify(account.positionContributions)} rows={account.positionContributions} columns={[{id:"field-0",label:"Symbol",exportValue:position=>position.symbol,render:position=><>{position.symbol}</>},
+{id:"field-1",label:"Security master",exportValue:position=>position.securityId,render:position=><>{position.securityId ?? "Unresolved provider symbol"}</>},
+{id:"field-2",label:"Quantity",exportValue:position=>position.quantity,render:position=><>{number(position.quantity)}</>},
+{id:"field-3",label:"Market value",exportValue:position=>position.marketValue,render:position=><>{money(position.marketValue, account.currency)}</>},
+{id:"field-4",label:"Shadow initial",exportValue:position=>position.shadowInitialMargin,render:position=><>{money(position.shadowInitialMargin, account.currency)}</>},
+{id:"field-5",label:"Shadow maintenance",exportValue:position=>position.shadowMaintenanceMargin,render:position=><>{money(position.shadowMaintenanceMargin, account.currency)}</>},
+{id:"field-6",label:"Borrow",exportValue:position=>position.borrowStatus,render:position=><>{position.borrowStatus ?? "—"}</>},
+{id:"field-7",label:"Rate",exportValue:position=>position.borrowRate,render:position=><>{position.borrowRate == null ? "—" : `${number(position.borrowRate)}%`}</>},
+{id:"field-8",label:"Lots / options",exportValue:position=>`${position.taxLotCount}/${position.optionLifecycleEventCount}`,render:position=><>{position.taxLotCount} / {position.optionLifecycleEventCount}</>}]} getRowId={position=>position.symbol} getSearchText={position=>`${position.symbol} ${position.securityId ?? ""}`} completePopulation sourceDescription="Retained position contributions in the selected account currency." exportContext={{currency:account.currency,asOf:account.asOf,account:account.accountId}} ariaLabel="Retained account margin position contributions" emptyText="No canonical position rows were retained for this account." />
         </div>
       </CardContent>
     </Card>
@@ -237,9 +239,13 @@ function Comparison({ label, initial, maintenance, excess, currency }: { label: 
   return <div className="rounded-[2px] border border-border p-3"><p className="text-xs font-semibold">{label}</p><dl className="mt-2 grid grid-cols-3 gap-2 text-xs"><div><dt className="text-muted-foreground">Initial</dt><dd className="mt-1 font-mono">{money(initial, currency)}</dd></div><div><dt className="text-muted-foreground">Maintenance</dt><dd className="mt-1 font-mono">{money(maintenance, currency)}</dd></div><div><dt className="text-muted-foreground">Excess</dt><dd className="mt-1 font-mono">{money(excess, currency)}</dd></div></dl></div>;
 }
 
-function Metric({ label, value }: { label: string; value: string }) { return <div><p className="text-[0.6875rem] uppercase tracking-wide text-muted-foreground">{label}</p><p className="mt-1 font-mono text-sm font-semibold tabular-nums">{value}</p></div>; }
-function Th(props: React.ThHTMLAttributes<HTMLTableCellElement>) { return <th className="px-3 py-2 font-medium" {...props} />; }
-function Td({ className = "", ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) { return <td className={`px-3 py-2 ${className}`} {...props} />; }
-function number(value: number) { return new Intl.NumberFormat(undefined, { maximumFractionDigits: 4 }).format(value); }
-function money(value: number | null | undefined, currency = "USD") { return value == null ? "—" : new Intl.NumberFormat(undefined, { style: "currency", currency, maximumFractionDigits: 2 }).format(value); }
-function dateTime(value: string) { const parsed = new Date(value); return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString(); }
+function Metric({ label, value }: { label: string; value: string }) { return <div><p className={cn("text-[0.6875rem] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p><p className="mt-1 font-mono text-sm font-semibold tabular-nums">{value}</p></div>; }
+function number(value: number) { return formatNumber(value, { maximumFractionDigits: 4 }); }
+function money(value: number | null | undefined, currency?: string) { return value == null ? "—" : currency ? formatCurrency(value, { currency, maximumFractionDigits: 2 }) : "Currency unavailable"; }
+function dateTime(value: string) { return formatDateTimeLabel(value); }
+
+function primeCurrency(providerId: string, expectedCount: number, data: MarginControlCenter): string | undefined {
+  const accounts = data.accounts.filter(account => account.providerId === providerId);
+  const currencies = new Set(accounts.map(account => account.currency?.trim().toUpperCase()).filter(Boolean));
+  return accounts.length === expectedCount && currencies.size === 1 ? [...currencies][0] : undefined;
+}

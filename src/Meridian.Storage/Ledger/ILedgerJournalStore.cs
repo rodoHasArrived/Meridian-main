@@ -124,6 +124,23 @@ public interface ILedgerJournalStore
             new NotSupportedException("This ledger journal store does not support asset-scoped tax-lot reads."));
 
     /// <summary>
+    /// Reconstructs daily face-value accrual entitlements from retained mutation evidence in one
+    /// scoped read. Closing acquisitions/disposals retain their existing timing; a same-day factor
+    /// paydown follows interest, including the final day of a full paydown that closes the lot.
+    /// Missing face terms or incomplete history refuses the whole read. Returned acquisition facts
+    /// and current version tokens are evidence, not writable historical lot records.
+    /// </summary>
+    Task<IReadOnlyList<Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding>> ListTaxLotAccrualSnapshotsAsync(
+        Guid ledgerBookId,
+        Guid securityId,
+        Guid bookPositionId,
+        DateOnly from,
+        DateOnly through,
+        CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding>>(
+            new NotSupportedException("This ledger journal store does not support retained accrual-history reads."));
+
+    /// <summary>
     /// Resolves one immutable atomic tax-lot posting batch together with its journal and mutation
     /// evidence. Public Posted projections use this read to prove that a supplied mutation-batch
     /// identity is durable authority rather than caller-provided lifecycle metadata.
@@ -140,6 +157,14 @@ public interface ILedgerJournalStore
 /// </summary>
 public interface IAtomicLedgerPeriodCloseStore
 {
+    /// <summary>Returns the immutable latest or selected close version, scoped like period reads.</summary>
+    Task<LedgerPeriodCloseSnapshot?> GetCloseSnapshotAsync(
+        Guid periodId,
+        long? periodVersion = null,
+        CancellationToken ct = default)
+        => Task.FromException<LedgerPeriodCloseSnapshot?>(
+            new NotSupportedException("This ledger store does not retain close snapshots."));
+
     /// <summary>
     /// Hard-closes a retained period only after rechecking revenue and expense balances while
     /// holding the same exclusion boundary used by journal appends. The balance guard, period
@@ -159,6 +184,14 @@ public interface ITransactionalLedgerJournalStore :
     ILedgerJournalStore,
     IAtomicLedgerPeriodCloseStore
 {
+    /// <summary>Retain this scope through commit/rollback of the caller-owned transaction.</summary>
+    Task<IAsyncDisposable> AcquirePostingAuthorityAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        IReadOnlyList<LedgerJournalEntryWrite> entries,
+        CancellationToken ct = default)
+        => Task.FromResult<IAsyncDisposable>(EmptyLedgerAuthorityLease.Instance);
+
     Task AppendAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,

@@ -12,7 +12,7 @@ import {
   formatLastGoodProviderResponse,
   formatProviderReasonLabel,
   formatProviderRoutingCapability,
-  formatProviderUtcMinute,
+  formatProviderMinute,
   joinProviderDetailSentences,
   normalizeProviderToken,
   normalizeProviderTrustScore,
@@ -85,6 +85,7 @@ import type {
   ProviderSetupResult
 } from "@/types";
 
+import { formatCount, formatDecimal, formatNumber, formatPercent, formatTimestamp } from "@/lib/format";
 export {
   DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
   buildDataLoadingState,
@@ -387,7 +388,10 @@ export interface DataOperationsProviderRow {
   affectedWorkflowsText: string;
   actionLabel: string;
   actionHref: string;
+  /** Reported latency only; "Latency not reported" when the source reports none. Never a timestamp. */
   latencyText: string;
+  /** Reported latency, else the last successful (or last verified) time. Only for surfaces labelled "last good". */
+  latencyOrLastGoodText: string;
   trustScoreText: string;
   signalSourceText: string;
   note: string;
@@ -792,7 +796,7 @@ export const defaultDataUploadTemplateCatalog: DataUploadTemplateCatalog = {
       label: "Trade data",
       description: "Executions or fills that should enter validation before paper or accounting workflows consume them.",
       dataDomain: "Trading",
-      targetWorkflow: "Import -> Validate -> Reconcile -> Approve -> Report",
+      targetWorkflow: "Import → Validate → Reconcile → Approve → Report",
       fileName: "meridian-trade-data-template.csv",
       contentType: "text/csv",
       headerLine: "trade_id,trade_date,account_code,symbol,side,quantity,price,currency,strategy_id,source_system,source_document_id",
@@ -822,7 +826,7 @@ export const defaultDataUploadTemplateCatalog: DataUploadTemplateCatalog = {
       label: "Transaction data",
       description: "Cash, dividend, fee, interest, transfer, or adjustment activity used as retained source evidence.",
       dataDomain: "Transactions",
-      targetWorkflow: "Import -> Validate -> Reconcile -> Approve -> Report",
+      targetWorkflow: "Import → Validate → Reconcile → Approve → Report",
       fileName: "meridian-transaction-data-template.csv",
       contentType: "text/csv",
       headerLine: "transaction_id,effective_date,account_code,transaction_type,amount,currency,security_id,counterparty,source_system,source_document_id",
@@ -851,7 +855,7 @@ export const defaultDataUploadTemplateCatalog: DataUploadTemplateCatalog = {
       label: "Asset information",
       description: "Security Master candidate facts and instrument metadata for operator review.",
       dataDomain: "Security Master",
-      targetWorkflow: "Import -> Validate -> Reconcile -> Approve -> Report",
+      targetWorkflow: "Import → Validate → Reconcile → Approve → Report",
       fileName: "meridian-asset-information-template.csv",
       contentType: "text/csv",
       headerLine: "asset_id,symbol,asset_name,asset_class,issuer,currency,country,maturity_date,coupon_rate,source_system",
@@ -880,7 +884,7 @@ export const defaultDataUploadTemplateCatalog: DataUploadTemplateCatalog = {
       label: "Entity configuration",
       description: "Fund, vehicle, sleeve, legal entity, or account structure candidates for governance review.",
       dataDomain: "Entity setup",
-      targetWorkflow: "Import -> Validate -> Reconcile -> Approve -> Report",
+      targetWorkflow: "Import → Validate → Reconcile → Approve → Report",
       fileName: "meridian-entity-configuration-template.csv",
       contentType: "text/csv",
       headerLine: "entity_id,entity_name,entity_type,parent_entity_id,base_currency,jurisdiction,ownership_percent,effective_from,source_system",
@@ -955,6 +959,11 @@ const BACKFILL_PROVIDER_ALIASES: Record<string, string> = {
 export const DATA_BACKFILL_DETAIL_PANEL_ID = "data-backfill-detail-panel";
 export const DATA_EXPORT_DETAIL_PANEL_ID = "data-export-detail-panel";
 export const DATA_PROVIDER_DETAIL_PANEL_ID = "data-provider-detail-panel";
+
+// Matches the sentinel the server writes for providers without latency metrics
+// (src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataProviders.cs:128), so fixture and
+// production rows read the same.
+const LATENCY_NOT_REPORTED = "Latency not reported";
 
 export function useDataViewModel(
   data: DataWorkspaceResponse | null,
@@ -1908,6 +1917,7 @@ export function useDataViewModel(
     runResultCard,
     liveProgressState,
     remediationQueueState,
+    retainedBackfillHistory: remediationHistory,
     remediationHistoryLoading,
     remediationHistoryError,
     remediationQueueSort,
@@ -2080,7 +2090,7 @@ export function buildDataUploadPanelState(
       : error
         ? error.summary
         : preview
-          ? `${preview.parsedRowCount.toLocaleString()} rows parsed from ${preview.fileName}. ${preview.nextAction}`
+          ? `${formatCount(preview.parsedRowCount)} rows parsed from ${preview.fileName}. ${preview.nextAction}`
           : selectedTemplate
             ? `${selectedTemplate.label} accepts ${resolvedCatalog.acceptedFileExtensions.join(", ")} files up to ${formatDataUploadFileSize(resolvedCatalog.maxFileBytes)}.`
             : "No upload templates are available.",
@@ -2331,7 +2341,11 @@ export function buildProviderRow(
   const readiness = record.readiness;
   const trust = record.trustSnapshot;
   const bindings = record.bindings;
-  const latencyText = formatProviderValue(providerRecord?.latency, connection ? formatLastGoodProviderResponse(connection) : "Latency not reported");
+  const providerLatency = formatProviderValue(providerRecord?.latency, "");
+  const reportedLatency = providerLatency === LATENCY_NOT_REPORTED ? "" : providerLatency;
+  const latencyText = reportedLatency || LATENCY_NOT_REPORTED;
+  const latencyOrLastGoodText = reportedLatency
+    || (connection ? formatLastGoodProviderResponse(connection) : LATENCY_NOT_REPORTED);
   const trustScoreText = trust
     ? `${normalizeProviderTrustScore(trust.score)}% · ${trust.healthStatus}`
     : readiness?.degradationScore !== null && readiness?.degradationScore !== undefined
@@ -2380,6 +2394,7 @@ export function buildProviderRow(
     actionLabel: primaryAction?.label ?? (connection?.providerId === "alpaca" ? "Manage Alpaca" : "View Details"),
     actionHref: primaryAction?.target ?? connection?.actionHref ?? readiness?.actionHref ?? `/settings#provider-${record.providerId}-connection`,
     latencyText,
+    latencyOrLastGoodText,
     trustScoreText,
     signalSourceText,
     note: recommendedActionText ?? providerRecord?.note ?? "No operator action reported",
@@ -2419,7 +2434,7 @@ export function buildProviderRow(
       providerRecord?.note ?? recommendedActionText,
       `Credential ${credentialText}`,
       `Verification ${verificationText}`,
-      `Latency ${latencyText}`,
+      latencyText === LATENCY_NOT_REPORTED ? LATENCY_NOT_REPORTED : `Latency ${latencyText}`,
       `Trust score ${trustScoreText}`,
       `Gate impact ${gateImpactText}`,
       `Recommended action ${recommendedActionText}`
@@ -2919,7 +2934,7 @@ function buildProviderSummaryCards(
     { id: "health", label: "Connection Health", value: health, detail: detail.description, tone: detail.statusTone },
     { id: "credentials", label: "Credential State", value: credential, detail: `${verifiedCount}/${rows.length} providers are verified or credential-free.`, tone: credentialToneFromLabel(credential) },
     { id: "verification", label: "Verification State", value: verification, detail: "Verification is separate from configured state.", tone: verificationToneFromLabel(verification) },
-    { id: "latency", label: "Latency / Last Response", value: latency, detail: "Last successful heartbeat or reported latency.", tone: "default" },
+    { id: "latency", label: "Latency / Last Response", value: latency, detail: "Last successful call or verification.", tone: "default" },
     { id: "workflows", label: "Affected Workflows", value: workflows, detail: "Workflow impact before routing changes.", tone: "default" },
     { id: "action", label: "Recommended Action", value: detail.actionText, detail: detail.gateImpactText, tone: detail.statusTone }
   ];
@@ -2942,9 +2957,9 @@ function buildProviderOverviewFields(
     },
     { id: "credential-state", label: "Credential state", value: row.credentialText },
     { id: "verification-state", label: "Verification", value: row.verificationText },
-    { id: "last-verified", label: "Last verified", value: formatProviderUtcMinute(connection?.lastVerifiedAt) },
+    { id: "last-verified", label: "Last verified", value: formatProviderMinute(connection?.lastVerifiedAt) },
     { id: "last-response", label: "Last successful call", value: row.lastSuccessfulText },
-    { id: "last-failure", label: "Last failure", value: formatProviderUtcMinute(connection?.lastFailureAt) },
+    { id: "last-failure", label: "Last failure", value: formatProviderMinute(connection?.lastFailureAt) },
     { id: "last-error", label: "Last error", value: connection?.lastError ?? "None reported" },
     {
       id: "fallback",
@@ -3027,7 +3042,7 @@ function buildProviderDiagnostics(record: DataOperationsProviderCenterRecord): D
       statusLabel: providerReadinessStatusLabel(item.status),
       detail: [
         item.detail,
-        item.observedAt ? `Observed ${formatProviderUtcMinute(item.observedAt)}.` : null
+        item.observedAt ? `Observed ${formatProviderMinute(item.observedAt)}.` : null
       ].filter(Boolean).join(" ")
     }));
   }
@@ -3800,11 +3815,11 @@ export function buildBackfillResultCardState(
     ? ((result as BackfillPreviewResult).symbols.map((entry) => entry.symbol).join(", ") || "No symbols reported")
     : ((result as BackfillTriggerResult).symbols.join(", ") || "No symbols reported");
   const barsText = isPreview
-    ? (result as BackfillPreviewResult).symbols.reduce((total, entry) => total + entry.estimatedBars, 0).toLocaleString()
-    : (result as BackfillTriggerResult).barsWritten.toLocaleString();
+    ? formatCount((result as BackfillPreviewResult).symbols.reduce((total, entry) => total + entry.estimatedBars, 0))
+    : formatCount((result as BackfillTriggerResult).barsWritten);
   const rangeText = formatBackfillRange(result.from, result.to);
   const timingText = isPreview
-    ? `${(result as BackfillPreviewResult).estimatedDurationSeconds.toLocaleString()} sec est.`
+    ? `${formatCount((result as BackfillPreviewResult).estimatedDurationSeconds)} sec est.`
     : formatBackfillTiming((result as BackfillTriggerResult).startedUtc, (result as BackfillTriggerResult).completedUtc);
   const tone = isPreview ? "warning" : resolveBackfillResultTone(result as BackfillTriggerResult, kind);
   const statusLabel = isPreview ? "Preview only" : resolveBackfillResultStatusLabel(result as BackfillTriggerResult, kind);
@@ -3857,7 +3872,7 @@ export function buildBackfillLiveProgressState(
         ? `Attempt ${symbol.providerAttempt}${symbol.retryRound > 0 ? `, retry ${symbol.retryRound}` : ""}`
         : "Not started",
       status: resolveBackfillProviderProgressStatus(symbol),
-      progress: `${clampBackfillProgress(symbol.percentComplete).toLocaleString(undefined, { maximumFractionDigits: 1 })}%`,
+      progress: `${formatPercent(clampBackfillProgress(symbol.percentComplete), { maximumFractionDigits: 1 })}`,
       error: symbol.error
     }));
   const recentAttempts = snapshot.recentProviderAttempts.slice(-8).reverse().map((attempt) => ({
@@ -3867,7 +3882,7 @@ export function buildBackfillLiveProgressState(
       formatBackfillRange(attempt.rangeStart, attempt.rangeEnd),
       `attempt ${attempt.providerAttempt}${attempt.retryRound > 0 ? `, retry ${attempt.retryRound}` : ""}`,
       attempt.status ?? attempt.operation ?? "provider update",
-      `${attempt.barsDownloaded.toLocaleString()} bars`,
+      `${formatCount(attempt.barsDownloaded)} bars`,
       attempt.error
     ].filter(Boolean).join(" · "),
     tone: attempt.error
@@ -3881,15 +3896,15 @@ export function buildBackfillLiveProgressState(
   const observedAt = formatBackfillProgressTimestamp(snapshot.timestamp || response.timestamp);
 
   return {
-    ariaLabel: `Live backfill provider progress. ${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete. ${overallPercent.toLocaleString(undefined, { maximumFractionDigits: 1 })} percent.`,
+    ariaLabel: `Live backfill provider progress. ${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete. ${formatNumber(overallPercent, { maximumFractionDigits: 1 })} percent.`,
     title: active ? "Live provider progress" : "Final provider progress",
-    summary: `${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete · ${snapshot.failedSymbols} failed · ${overallPercent.toLocaleString(undefined, { maximumFractionDigits: 1 })}% overall`,
+    summary: `${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete · ${snapshot.failedSymbols} failed · ${formatPercent(overallPercent, { maximumFractionDigits: 1 })} overall`,
     active,
     overallPercent,
     symbols,
     recentAttempts,
     droppedNotificationWarning: snapshot.droppedProviderNotifications > 0
-      ? `${snapshot.droppedProviderNotifications.toLocaleString()} older provider notification${snapshot.droppedProviderNotifications === 1 ? " was" : "s were"} dropped from the bounded live stream; the latest per-symbol state remains authoritative.`
+      ? `${formatCount(snapshot.droppedProviderNotifications)} older provider notification${snapshot.droppedProviderNotifications === 1 ? " was" : "s were"} dropped from the bounded live stream; the latest per-symbol state remains authoritative.`
       : null,
     observedAt
   };
@@ -3915,7 +3930,7 @@ export function buildBackfillRemediationQueueState(
         tier: sla.tier === "SameBusinessDay" ? "Same business day" : "Standard",
         tierSort: sla.tier === "SameBusinessDay" ? 0 : 1,
         status: formatBackfillRemediationStatus(sla.status),
-        deadline: Number.isNaN(dueAt.getTime()) ? "Deadline unavailable" : `${formatUtcMinute(dueAt)} UTC`,
+        deadline: Number.isNaN(dueAt.getTime()) ? "Deadline unavailable" : formatTimestamp(dueAt),
         deadlineSort,
         workflow: formatBackfillValue(sla.downstreamWorkflow, "Unassigned"),
         owner: sla.requiresOwnerAssignment ? "Assignment required" : "Not required",
@@ -3968,7 +3983,7 @@ function clampBackfillProgress(value: number): number {
 function formatBackfillProgressTimestamp(value: string | null | undefined): string {
   if (!value) return "Time unavailable";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? "Time unavailable" : `${formatUtcMinute(parsed)} UTC`;
+  return Number.isNaN(parsed.getTime()) ? "Time unavailable" : formatTimestamp(parsed);
 }
 
 function waitForBackfillProgressPoll(delayMs: number, signal: AbortSignal): Promise<void> {
@@ -4114,19 +4129,9 @@ function formatBackfillTiming(startedUtc: string, completedUtc: string): string 
   }
 
   const elapsedSeconds = Math.max(0, Math.round((completed.getTime() - started.getTime()) / 1000));
-  return `${formatUtcMinute(started)} · ${elapsedSeconds}s elapsed`;
+  return `${formatTimestamp(started)} · ${elapsedSeconds}s elapsed`;
 }
 
-function formatUtcMinute(date: Date): string {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const month = months[date.getUTCMonth()];
-  const day = String(date.getUTCDate()).padStart(2, "0");
-  const year = date.getUTCFullYear();
-  const hour = String(date.getUTCHours()).padStart(2, "0");
-  const minute = String(date.getUTCMinutes()).padStart(2, "0");
-
-  return `${month} ${day}, ${year} ${hour}:${minute} UTC`;
-}
 
 function dataUploadField(
   name: string,
@@ -4221,7 +4226,7 @@ function formatDataUploadFileSize(bytes: number): string {
 
   if (bytes >= 1024 * 1024) {
     const megabytes = bytes / (1024 * 1024);
-    return `${Number.isInteger(megabytes) ? megabytes.toFixed(0) : megabytes.toFixed(1)} MB`;
+    return `${formatDecimal(megabytes, Number.isInteger(megabytes) ? 0 : 1)} MB`;
   }
 
   return `${Math.ceil(bytes / 1024)} KB`;

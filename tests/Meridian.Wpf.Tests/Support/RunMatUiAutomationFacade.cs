@@ -199,11 +199,11 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
             });
             dictionaries.Add(new ResourceDictionary
             {
-                Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/AppStyles.xaml", UriKind.Absolute)
+                Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/ThemeTypography.xaml", UriKind.Absolute)
             });
             dictionaries.Add(new ResourceDictionary
             {
-                Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/ThemeTypography.xaml", UriKind.Absolute)
+                Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/AppStyles.xaml", UriKind.Absolute)
             });
             dictionaries.Add(new ResourceDictionary
             {
@@ -260,7 +260,8 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
     public static IServiceProvider CreateMainPageServiceProvider(
         RunMatService? runMatService = null,
         FundContextService? fundContextService = null,
-        IWorkstationOperatorInboxApiClient? operatorInboxApiClient = null)
+        IWorkstationOperatorInboxApiClient? operatorInboxApiClient = null,
+        bool validateScopes = false)
     {
         var services = new ServiceCollection();
         var configureServices = typeof(Meridian.Wpf.App)
@@ -341,7 +342,7 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
         services.AddTransient<SecurityMasterPage>();
         services.AddTransient<MainPageViewModel>();
         services.AddTransient<MainPage>();
-        return services.BuildServiceProvider();
+        return services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = validateScopes });
     }
 
     public static void InvokeMainPageLoaded(MainPage page)

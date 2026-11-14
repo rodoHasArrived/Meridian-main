@@ -109,6 +109,12 @@ public enum BacktestCommissionKind
 /// Number of consecutive calendar days without events before an open position's symbol is treated
 /// as delisted. Keeps weekends, holidays, and short data gaps from triggering liquidation (default: 5).
 /// </param>
+/// <param name="PopulateAssetEventsFromSecurityMaster">
+/// When <c>true</c> and <paramref name="AssetEvents"/> is not supplied, the engine builds dividend
+/// and split events for the universe from confirmed Security Master corporate actions. Only valid
+/// for raw-price runs (<paramref name="AdjustForCorporateActions"/> = <c>false</c>): back-adjusted
+/// prices already contain those actions, so combining the two is rejected. Default <c>false</c>.
+/// </param>
 public sealed record BacktestRequest(
     DateOnly From,
     DateOnly To,
@@ -139,8 +145,18 @@ public sealed record BacktestRequest(
     FillConservatism FillConservatism = FillConservatism.Conservative,
     DelistingPolicy DelistingPolicy = DelistingPolicy.LiquidateAtLastPrice,
     decimal DelistingHaircutPercent = 0m,
-    int DelistingGraceDays = 5)
+    int DelistingGraceDays = 5,
+    bool PopulateAssetEventsFromSecurityMaster = false)
 {
+    /// <summary>Abort at day-end when ledger cash, lot basis, or clearing balances fail reconciliation.</summary>
+    public bool FailOnLedgerIntegrityBreak { get; init; }
+
+    /// <summary>
+    /// Apply confirmed Security Master actions to positions and cash using raw historical prices
+    /// when a source is configured. Disable for reviewed manual AssetEvents or legacy adjusted-price research.
+    /// </summary>
+    public bool ApplyStoredCorporateActions { get; init; } = true;
+
     /// <summary>
     /// Captures every setting on this request that changes what numbers the run produces, so run
     /// identity can account for execution realism rather than strategy inputs alone.
@@ -166,7 +182,12 @@ public sealed record BacktestRequest(
         AnnualShortRebateRate,
         CanonicalAccountFinancing(),
         CanonicalRiskFreeRateSeries(),
-        DefaultBrokerageAccountId);
+        DefaultBrokerageAccountId,
+        // Only counts when it takes effect: explicit request events win over the source.
+        PopulateAssetEventsFromSecurityMaster && AssetEvents is null)
+    {
+        ApplyStoredCorporateActions = ApplyStoredCorporateActions
+    };
 
     /// <summary>
     /// Canonical form of the resolved account financing configuration. Uses <see cref="ResolveAccounts"/>

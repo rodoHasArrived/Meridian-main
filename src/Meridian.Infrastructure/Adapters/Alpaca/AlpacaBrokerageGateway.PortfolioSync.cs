@@ -7,7 +7,15 @@ public sealed partial class AlpacaBrokerageGateway
     /// <inheritdoc />
     public async Task<IReadOnlyList<BrokerageExternalAccountDto>> GetAccountsAsync(CancellationToken ct = default)
     {
-        var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
+        var (account, providerAccountId) = await ReadAccountAsync(null, ct).ConfigureAwait(false);
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["environment"] = CurrentCredentials.Environment,
+            ["broker"] = BrokerDisplayName
+        };
+        // Lets authorized discovery keep showing an account whose link was retained under the UUID.
+        if (providerAccountId is not null)
+            metadata[BrokerageExternalAccountMetadata.AccountIdAliases] = providerAccountId;
         return
         [
             new BrokerageExternalAccountDto(
@@ -17,11 +25,7 @@ public sealed partial class AlpacaBrokerageGateway
                 Status: account.Status,
                 Currency: account.Currency,
                 RetrievedAt: account.RetrievedAt,
-                Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["environment"] = CurrentCredentials.Environment,
-                    ["broker"] = BrokerDisplayName
-                })
+                Metadata: metadata)
         ];
     }
 
@@ -80,7 +84,11 @@ public sealed partial class AlpacaBrokerageGateway
                     // account base currency is not a general position denomination fallback.
                     Currency: string.Equals(account.Currency, "USD", StringComparison.Ordinal)
                         && position.AssetClass is "us_equity" or "us_option" ? "USD" : null,
-                    Metadata: position.Metadata))
+                    Metadata: position.Metadata)
+                {
+                    AccruedInterest = position.AccruedInterest,
+                    ValuationBasis = position.ValuationBasis
+                })
                 .ToArray(),
             RetrievedAt: retrievedAt,
             AccountSnapshot: new BrokerageAccountSnapshotDto(

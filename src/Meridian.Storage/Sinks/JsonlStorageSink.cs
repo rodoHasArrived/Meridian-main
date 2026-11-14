@@ -254,8 +254,12 @@ public sealed class JsonlStorageSink : IStorageSink
         }
 
         // Batched write mode
-        var buffer = _buffers.GetOrAdd(path, _bufferFactory);
-        buffer.Add(evt);
+        MarketEventBuffer buffer;
+        do
+        {
+            buffer = _buffers.GetOrAdd(path, _bufferFactory);
+        }
+        while (!buffer.TryAdd(evt));
         Interlocked.Increment(ref _eventsBuffered);
 
         // Flush if buffer is full
@@ -319,6 +323,8 @@ public sealed class JsonlStorageSink : IStorageSink
         Interlocked.Add(ref _eventsWritten, events.Count);
         Interlocked.Add(ref _eventsBuffered, -events.Count);
         Interlocked.Increment(ref _batchesWritten);
+        if (buffer.TryRetireWhenEmpty())
+            _buffers.TryRemove(new KeyValuePair<string, MarketEventBuffer>(path, buffer));
     }
 
     private async Task FlushAllBuffersAsync(CancellationToken ct = default)
@@ -412,6 +418,7 @@ public sealed class JsonlStorageSink : IStorageSink
             if (kv.Value.IsValueCreated)
                 await kv.Value.Value.FlushAsync(ct).ConfigureAwait(false);
         }
+        await CloseIdleWritersAsync().ConfigureAwait(false);
     }
 
     public async ValueTask DisposeAsync()
@@ -577,7 +584,7 @@ public sealed class JsonlStorageSink : IStorageSink
 
             try
             {
-                RepairTornJsonlTail(stream);
+                JsonlAppendWriter.RepairTornTail(stream);
                 stream.Position = stream.Length;
                 _stream = stream;
                 return stream;
@@ -750,38 +757,6 @@ public sealed class JsonlStorageSink : IStorageSink
                 stream.Position = startPosition;
                 throw;
             }
-        }
-
-        private static void RepairTornJsonlTail(FileStream stream)
-        {
-            if (stream.Length == 0)
-                return;
-
-            stream.Position = stream.Length - 1;
-            if (stream.ReadByte() == '\n')
-                return;
-
-            const int bufferSize = 4096;
-            var buffer = new byte[bufferSize];
-            var position = stream.Length;
-            while (position > 0)
-            {
-                var readLength = (int)Math.Min(bufferSize, position);
-                position -= readLength;
-                stream.Position = position;
-                stream.ReadExactly(buffer, 0, readLength);
-
-                for (var index = readLength - 1; index >= 0; index--)
-                {
-                    if (buffer[index] != '\n')
-                        continue;
-
-                    stream.SetLength(position + index + 1);
-                    return;
-                }
-            }
-
-            stream.SetLength(0);
         }
 
         // Compressed files are always written copy-on-write. Refuse to append to a legacy torn

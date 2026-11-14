@@ -14,12 +14,13 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// Registry-backed symbol mapping endpoints shared by browser and desktop hosts.
 /// Legacy configuration remains a migration/rollback input but is not a second write model.
 /// </summary>
-public static class SymbolMappingEndpoints
+public static partial class SymbolMappingEndpoints
 {
     private static readonly string[] LegacyProviders = ["ib", "alpaca", "polygon", "yahoo"];
 
     public static void MapSymbolMappingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        MapRolloutEndpoints(app, jsonOptions);
         var group = app.MapGroup("").WithTags("Symbol Mapping");
         var requireModifyConfig = EndpointAuthorization.Require(UserPermission.ModifyConfig);
 

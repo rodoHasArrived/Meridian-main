@@ -654,7 +654,7 @@ describe("strategy-screen view model", () => {
     expect(panel.hasParameterChanges).toBe(true);
     expect(panel.parameterChanges[0]).toMatchObject({
       key: "lookback",
-      valueText: "20 -> 30",
+      valueText: "20 → 30",
       ariaLabel: "lookback changed from 20 to 30.",
       rowSelectAriaLabel: "Inspect lookback parameter diff",
       detailPanelId: "strategy-run-diff-selected-parameter-detail",
@@ -690,7 +690,7 @@ describe("strategy-screen view model", () => {
     expect(selectedSecond.selectedParameterKey).toBe("threshold");
     expect(selectedSecond.parameterChanges[1]).toMatchObject({
       detailExpanded: true,
-      valueText: "1.5 -> 2.0"
+      valueText: "1.5 → 2.0"
     });
   });
 
@@ -710,7 +710,7 @@ describe("strategy-screen view model", () => {
     expect(plotTool.workspace.notebookToolbarItems).toEqual([
       { id: "count", label: "Notebook set", value: "3 retained" },
       { id: "selected", label: "Selected", value: "Mean Reversion FX", active: true },
-      { id: "lane", label: "Lane", value: "Strategy" }
+      { id: "lane", label: "Workspace", value: "Strategy" }
     ]);
     expect(plotTool.studies[0]).toMatchObject({
       id: "run-1",
@@ -779,6 +779,28 @@ describe("strategy-screen view model", () => {
     expect(plotTool.workspace.statusBadgeLabel).not.toBe("RESEARCH");
   });
 
+  it("renders run-linked PlotTool metrics as Unavailable instead of inventing values when no run exists", () => {
+    const plotTool = buildPlotToolState({
+      metrics,
+      runs: [],
+      selectedRuns: [],
+      comparison: [],
+      runDiff: null
+    });
+
+    const moments = Object.fromEntries(plotTool.statistics.moments.map((row) => [row.id, row.value]));
+    expect(moments["net-pnl"]).toBe("Unavailable");
+    expect(moments.return).toBe("Unavailable");
+    expect(moments.sharpe).toBe("Unavailable");
+    expect(moments.drawdown).toBe("Unavailable");
+    expect(plotTool.statistics.moments.map((row) => row.value).join(" ")).not.toContain("3,200");
+
+    const sharpeTile = plotTool.statistics.summaryTiles.find((tile) => tile.id === "sharpe");
+    const drawdownTile = plotTool.statistics.summaryTiles.find((tile) => tile.id === "drawdown");
+    expect(sharpeTile).toMatchObject({ value: "Unavailable", tone: "default" });
+    expect(drawdownTile).toMatchObject({ value: "Unavailable", tone: "default" });
+  });
+
   it("builds PlotTool table states with explicit empty copy", () => {
     expect(buildPlotToolMomentsTable([])).toEqual({
       rows: [],
@@ -826,7 +848,7 @@ describe("strategy-screen view model", () => {
     expect(buildPlotNotebookToolbarItems(rows, "run-2")).toEqual([
       { id: "count", label: "Notebook set", value: "3 retained" },
       { id: "selected", label: "Selected", value: "Index Momentum", active: true },
-      { id: "lane", label: "Lane", value: "Strategy" }
+      { id: "lane", label: "Workspace", value: "Strategy" }
     ]);
 
     const state = buildStrategyRunLibraryState({
@@ -1178,6 +1200,7 @@ describe("strategy-screen view model", () => {
 
   it("prefers API-backed PlotTool payload when provided", () => {
     const apiPlotTool: StrategyPlotToolPayload = {
+      analyticsEvidenceStatus: "Retained",
       activeView: "workspace",
       tabs: [],
       studies: [],
@@ -1233,6 +1256,20 @@ describe("strategy-screen view model", () => {
 
     expect(state.plotTool.workspace.title).toBe("API workspace");
     expect(state.plotTool.statistics.title).toBe("API stats");
+    expect(state.plotTool.workspace.points).toEqual([]);
+    expect(state.plotTool.workspace.scatterChart.points).toEqual([]);
+    expect(state.plotTool.statistics.distributionBars).toEqual([]);
+  });
+
+  it("withholds statistical observations whose producer has not declared retained or illustrative evidence", () => {
+    const state = buildStrategyRunLibraryState({ runs, selectedIds: [], selectedRun: null,
+      comparison: [], runDiff: null, promotionHistory: [], activeCommand: null, actionError: null,
+      plotToolFromApi: { workspace: { points: [{ x: 1, y: 2, emphasis: true }] },
+        statistics: { distributionBars: [1, 2, 3] }, studies: [], tabs: [] } });
+    expect(state.plotTool.analyticsEvidenceStatus).toBe("Unverified");
+    expect(state.plotTool.workspace.points).toEqual([]);
+    expect(state.plotTool.statistics.distributionBars).toEqual([]);
+    expect(state.plotTool.statistics.sampleRows).toEqual([]);
   });
 
   it("uses an honest empty PlotTool state when no API payload is provided", () => {

@@ -152,6 +152,7 @@ public sealed partial class AccountingConfigurationService
     {
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         var chartByPath = BuildChartByPath(workspace.ChartOfAccounts);
+        issues.AddRange(ValidateIntercompanyAccountRoles(workspace.ChartOfAccounts));
         if (requireLedgerBookSetup && workspace.LedgerBookId is { } ledgerBookId &&
             !workspace.LedgerBooks.Any(book => book.LedgerBookId == ledgerBookId))
         {
@@ -875,6 +876,8 @@ public sealed partial class AccountingConfigurationService
                ScopeValuesOverlap(left.CapitalAccountId, right.CapitalAccountId) &&
                (!left.InstrumentId.HasValue || !right.InstrumentId.HasValue || left.InstrumentId == right.InstrumentId) &&
                (!left.PositionId.HasValue || !right.PositionId.HasValue || left.PositionId == right.PositionId) &&
+               (!left.IntercompanyAgreementId.HasValue || !right.IntercompanyAgreementId.HasValue || left.IntercompanyAgreementId == right.IntercompanyAgreementId) &&
+               (!left.IntercompanyAgreementVersion.HasValue || !right.IntercompanyAgreementVersion.HasValue || left.IntercompanyAgreementVersion == right.IntercompanyAgreementVersion) &&
                ScopeValuesOverlap(left.TaxLotId, right.TaxLotId) &&
                ScopeValuesOverlap(left.CostCenterId, right.CostCenterId) &&
                ScopeValuesOverlap(left.CounterpartyId, right.CounterpartyId) &&

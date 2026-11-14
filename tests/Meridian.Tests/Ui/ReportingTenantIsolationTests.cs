@@ -109,6 +109,32 @@ public sealed class ReportingTenantIsolationTests
     }
 
     [Fact]
+    public void ScheduleDelete_IsRefusedWhileAReportAwaitingReleaseStillHasPendingDeliveries()
+    {
+        var handoff = BuildReleaseHandoff();
+        var store = new StubReportingScheduleStore([BuildHandoffSchedule([handoff])]);
+        var service = CreateScheduleService(store);
+        var tenantA = Scope("operator-a", "tenant-a", "company-shared");
+        var scheduleId = service.ListSchedules(tenantA).Single().ScheduleId;
+
+        var deleteWhilePending = () => service.Delete(scheduleId, tenantA);
+
+        deleteWhilePending.Should().Throw<InvalidOperationException>(
+            "deleting the schedule would drop the delivery of a report that is still awaiting release");
+        service.ListPendingReleaseHandoffsForWorker().Should().ContainSingle();
+
+        service.MarkReleaseHandoffEnqueuedForWorker(
+            handoff.HandoffId,
+            "tenant-a",
+            "company-shared",
+            "delivery-job-a",
+            FixedNow.AddMinutes(1));
+
+        service.Delete(scheduleId, tenantA).ScheduleId.Should().Be(scheduleId);
+        service.ListSchedules(tenantA).Should().BeEmpty();
+    }
+
+    [Fact]
     public void ScheduledReleaseHandoff_IsDurableScopedAndIdempotentlyCompletedAfterQueueSuccess()
     {
         var handoff = BuildReleaseHandoff();

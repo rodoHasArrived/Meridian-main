@@ -53,22 +53,6 @@ public static class DailyPortfolioPricingDraftBuilder
         return drafts;
     }
 
-    /// <summary>
-    /// Compatibility helper for a single-security projection. Multi-security projections fail
-    /// closed so a caller cannot silently discard drafts; use <see cref="BuildDrafts"/> instead.
-    /// </summary>
-    public static AutomatedJournalDraft? BuildDraft(DailyPortfolioPricingProjection projection)
-    {
-        var drafts = BuildDrafts(projection);
-        return drafts.Count switch
-        {
-            0 => null,
-            1 => drafts[0],
-            _ => throw new InvalidOperationException(
-                "Daily portfolio pricing produced multiple security/account drafts; use BuildDrafts to retain the full batch.")
-        };
-    }
-
     private static AutomatedJournalDraft BuildDraft(
         DailyPortfolioPricingProjection projection,
         DraftScope scope,
@@ -165,6 +149,19 @@ public static class DailyPortfolioPricingDraftBuilder
                 .Order(StringComparer.Ordinal))
         };
 
+        if (pricingLines.Any(static line => StructuredNoteAccountingTemplate.AppliesTo(line.InstrumentType)))
+        {
+            if (!pricingLines.All(static line => StructuredNoteAccountingTemplate.AppliesTo(line.InstrumentType)))
+                throw new InvalidOperationException("One security/account valuation scope cannot mix accounting treatments.");
+
+            tags["accounting.template"] = StructuredNoteAccountingTemplate.TemplateId;
+            tags["accounting.classification"] = "FairValueThroughProfitOrLoss";
+            tags["valuation.quoteConvention"] = Meridian.Contracts.SecurityMaster.LotQuantity
+                .QuoteConventionFor(pricingLines[0].InstrumentType).ToString();
+            tags["valuation.quantityUnit"] = Meridian.Contracts.SecurityMaster.LotQuantity
+                .UnitFor(pricingLines[0].InstrumentType).UnitKind.ToString();
+        }
+
         tags[ValuationMarkEvidenceGuard.DigestTag] = Sha256Digest.ComputeUtf8(tags[ValuationMarkEvidenceGuard.EvidenceTag]);
 
         var metadata = new JournalEntryMetadata(
@@ -246,6 +243,12 @@ public static class DailyPortfolioPricingDraftBuilder
 
         foreach (var line in lines)
         {
+            // New note economics have their own retry identity; historical generic valuations keep
+            // their existing fingerprints. Retain the convention as well as the template version.
+            if (StructuredNoteAccountingTemplate.AppliesTo(line.InstrumentType))
+                canonical.Append("|template=").Append(StructuredNoteAccountingTemplate.TemplateId)
+                    .Append("|quote=").Append(Meridian.Contracts.SecurityMaster.LotQuantity.QuoteConventionFor(line.InstrumentType));
+
             canonical
                 .Append("||").Append(Format(line.Quantity))
                 .Append('|').Append(Format(line.CostPrice))

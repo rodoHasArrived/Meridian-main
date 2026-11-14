@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * HotkeysProvider — chord + sequence keyboard bindings, plus the built-in shortcut cheat
  * sheet ("?" or Ctrl+/ toggles it; Escape closes). Makes NavRail's "G D" hints and the
@@ -29,4 +30,4 @@ export interface HotkeysProviderProps {
   /** @default "Keyboard shortcuts" */
   sheetTitle?: string;
 }
-export declare function HotkeysProvider(props: HotkeysProviderProps): JSX.Element | null;
+export declare function HotkeysProvider(props: HotkeysProviderProps): React.JSX.Element | null;

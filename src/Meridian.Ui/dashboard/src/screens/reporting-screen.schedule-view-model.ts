@@ -14,22 +14,7 @@ import type {
   ReportingScheduleRow,
   ReportingScheduledReleaseHandoffRow
 } from "@/screens/reporting-screen.view-model";
-
-const reportingTimestampFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-  timeZone: "UTC",
-  timeZoneName: "short"
-});
-
-const reportingDateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-  timeZone: "UTC"
-});
+import { formatTimestamp, formatUtcDate } from "@/lib/format";
 
 export function hasRetainedReportingAsOfDate(value: string | null | undefined): boolean {
   return hasRetainedReportingAsOfDateValue(value);
@@ -47,16 +32,17 @@ export function presentReportingAsOfDate(value: string | null | undefined): stri
   }
 
   const parsed = new Date(`${isoDate}T00:00:00Z`);
-  return Number.isNaN(parsed.getTime()) ? retained : reportingDateFormatter.format(parsed);
+  return Number.isNaN(parsed.getTime()) ? retained : formatUtcDate(parsed);
 }
 
+/** A retained reporting instant in the shared `formatTimestamp` form; unparseable text is shown as retained. */
 export function formatReportingTimestamp(value: string): string {
   const timestamp = new Date(value);
   if (Number.isNaN(timestamp.getTime())) {
     return value;
   }
 
-  return reportingTimestampFormatter.format(timestamp);
+  return formatTimestamp(timestamp);
 }
 
 export function buildScheduleRows(
@@ -68,7 +54,7 @@ export function buildScheduleRows(
     templateId: schedule.templateId,
     state: schedule.state,
     stateVariant: schedule.state === "Active" ? "success" : schedule.state === "Paused" ? "warning" : "outline",
-    cronLabel: schedule.cronExpression,
+    cronLabel: schedule.timeZoneId ? `${schedule.cronExpression} (${schedule.timeZoneId})` : schedule.cronExpression,
     dueLabel: formatReportingTimestamp(schedule.dueAtUtc),
     nextAsOfLabel: presentReportingAsOfDate(schedule.nextAsOfDate),
     lastRunLabel: schedule.lastRunAtUtc ? formatReportingTimestamp(schedule.lastRunAtUtc) : "Not run",
@@ -78,7 +64,8 @@ export function buildScheduleRows(
     datasetSourceLabel: formatScheduleDatasetSource(schedule.datasetSourceId, datasetSources),
     ...buildScheduleReleaseView(schedule),
     canPause: schedule.state === "Active",
-    canResume: schedule.state === "Paused",
+    canResume: schedule.state === "Paused" || schedule.state === "Disabled",
+    canDisable: schedule.state !== "Disabled",
     ariaLabel: `${schedule.scheduleId} ${schedule.templateId} reporting schedule is ${schedule.state}`
   }));
 }

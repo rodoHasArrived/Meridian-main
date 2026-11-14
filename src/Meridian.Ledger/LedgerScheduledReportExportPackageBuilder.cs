@@ -99,7 +99,9 @@ public static class LedgerScheduledReportExportPackageBuilder
         builder.AppendLine(CultureInfo.InvariantCulture, $"  \"netCashFlow\": {FormatDecimal(statements.CashFlow?.NetCashFlow ?? 0m)},");
         builder.AppendLine(CultureInfo.InvariantCulture, $"  \"endingCash\": {FormatDecimal(statements.CashFlow?.EndingCash ?? 0m)},");
         builder.AppendLine(CultureInfo.InvariantCulture, $"  \"endingPartnersCapital\": {FormatDecimal(statements.PartnersCapital?.EndingCapital ?? 0m)},");
-        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"reportPackSignature\": {JsonString(reportPack.Signature.PayloadChecksumSha256)}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"reportPackSignature\": {JsonString(reportPack.Signature.PayloadChecksumSha256)}{(reportPack.PreparerAttestations is { Count: > 0 } ? "," : string.Empty)}");
+        if (reportPack.PreparerAttestations is { Count: > 0 } attestations)
+            builder.AppendLine($"  \"preparerAttestations\": {System.Text.Json.JsonSerializer.Serialize(attestations, new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web))}");
         builder.AppendLine("}");
         var content = builder.ToString();
         return new LedgerReportPackArtifact("scheduled-export-financials.json", "application/json", content, ComputeSha256(content));
@@ -184,6 +186,21 @@ public static class LedgerScheduledReportExportPackageBuilder
             writer.WriteElementString("EndingEquity", FormatDecimal(reportPack.Statements.EndingEquity));
             writer.WriteElementString("AccountingEquationVariance", FormatDecimal(reportPack.Statements.AccountingEquationVariance));
             writer.WriteElementString("ReportPackSignature", reportPack.Signature.PayloadChecksumSha256);
+            if (reportPack.PreparerAttestations is { Count: > 0 } attestations)
+            {
+                writer.WriteStartElement("AccountingPreparerAttestations");
+                foreach (var item in attestations)
+                {
+                    writer.WriteStartElement("Decision");
+                    writer.WriteElementString("JournalEntryId", item.JournalEntryId.ToString("D"));
+                    writer.WriteElementString("Classification", item.Classification);
+                    writer.WriteElementString("Disclosure", item.Disclosure);
+                    writer.WriteElementString("ReceiptReference", item.ReceiptReference);
+                    writer.WriteElementString("IndependentApprovalSatisfied", "false");
+                    writer.WriteEndElement();
+                }
+                writer.WriteEndElement();
+            }
             writer.WriteStartElement("Recipients");
             foreach (var recipient in scheduledExport.Recipients.Order(StringComparer.OrdinalIgnoreCase))
                 writer.WriteElementString("Recipient", recipient);
@@ -252,10 +269,5 @@ public static class LedgerScheduledReportExportPackageBuilder
     }
 
     private static string EscapeCsv(string value)
-    {
-        if (!value.Contains(',') && !value.Contains('"') && !value.Contains('\n') && !value.Contains('\r'))
-            return value;
-
-        return $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
-    }
+        => LedgerCsvCell.Escape(value);
 }

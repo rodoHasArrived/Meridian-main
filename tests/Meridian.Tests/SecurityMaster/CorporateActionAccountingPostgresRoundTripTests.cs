@@ -27,7 +27,7 @@ namespace Meridian.Tests.SecurityMaster;
 /// are test evidence, not certification of source fan-out or legacy binding.
 /// </summary>
 [Trait("Category", "Integration")]
-public sealed class CorporateActionAccountingPostgresRoundTripTests
+public sealed partial class CorporateActionAccountingPostgresRoundTripTests
 {
     private const string Tenant = "corpact-test-tenant";
     private const string Company = "corpact-test-company";
@@ -72,7 +72,8 @@ public sealed class CorporateActionAccountingPostgresRoundTripTests
         await SecurityMasterTestCapabilityFloor.InitializeAndActivateAsync(server, securityOptions, ct);
         await new AssetOperationsMigrationRunner(assetOptions).EnsureMigratedAsync(ct);
 
-        var journal = new PostgresLedgerJournalStore(ledgerOptions);
+        var journal = new PostgresLedgerJournalStore(ledgerOptions,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         var books = new PostgresLedgerBookService(journal);
         var assets = new PostgresAssetOperationsProjectionStore(assetOptions, journal);
         var operations = new PostgresCorporateActionOperationsStore(securityOptions);
@@ -236,7 +237,8 @@ public sealed class CorporateActionAccountingPostgresRoundTripTests
         posted.Posting.TotalCredits.Should().Be(Amount);
 
         // Reconstruct every persistence-facing service to prove the result is not process-local.
-        var reopenedJournal = new PostgresLedgerJournalStore(ledgerOptions);
+        var reopenedJournal = new PostgresLedgerJournalStore(ledgerOptions,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         var reopenedAssets = new PostgresAssetOperationsProjectionStore(assetOptions, reopenedJournal);
         var reopenedOperations = new PostgresCorporateActionOperationsStore(securityOptions);
         var reopened = new CorporateActionCaseAccountingService(reopenedOperations, reopenedAssets,

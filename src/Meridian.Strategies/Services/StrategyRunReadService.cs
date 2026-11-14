@@ -14,7 +14,7 @@ public sealed record StrategyRunReadScope(string? TenantId, string? CompanyId);
 /// <summary>
 /// Provides the shared Phase 12 run browser/read model for backtest, paper, and live history.
 /// </summary>
-public sealed class StrategyRunReadService
+public sealed partial class StrategyRunReadService
 {
     private const string ContinuityStatusHealthy = "Healthy";
     private const string ContinuityStatusWarning = "Warning";
@@ -36,6 +36,7 @@ public sealed class StrategyRunReadService
     private readonly LedgerReadService _ledgerReadService;
     private readonly IPromotionRecordStore? _promotionRecordStore;
     private readonly CashFlowProjectionService? _cashFlowProjectionService;
+    private readonly IStrategyRunLedgerSource? _postedLedgerSource;
 
     internal PortfolioReadService PortfolioReadService => _portfolioReadService;
     internal LedgerReadService LedgerReadService => _ledgerReadService;
@@ -45,13 +46,15 @@ public sealed class StrategyRunReadService
         PortfolioReadService portfolioReadService,
         LedgerReadService ledgerReadService,
         IPromotionRecordStore? promotionRecordStore = null,
-        CashFlowProjectionService? cashFlowProjectionService = null)
+        CashFlowProjectionService? cashFlowProjectionService = null,
+        IStrategyRunLedgerSource? postedLedgerSource = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _portfolioReadService = portfolioReadService ?? throw new ArgumentNullException(nameof(portfolioReadService));
         _ledgerReadService = ledgerReadService ?? throw new ArgumentNullException(nameof(ledgerReadService));
         _promotionRecordStore = promotionRecordStore;
         _cashFlowProjectionService = cashFlowProjectionService;
+        _postedLedgerSource = postedLedgerSource;
     }
 
     public Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(
@@ -260,7 +263,7 @@ public sealed class StrategyRunReadService
                 .ConfigureAwait(false);
         }
         var portfolioTask = _portfolioReadService.BuildSummaryAsync(run, ct);
-        var ledgerTask = _ledgerReadService.BuildSummaryAsync(run, ct);
+        var ledgerTask = BuildRunLedgerSummaryAsync(run, scope, ct);
 
         await Task.WhenAll(portfolioTask, ledgerTask).ConfigureAwait(false);
 
@@ -606,8 +609,16 @@ public sealed class StrategyRunReadService
         return await GetRunsAsync(query, ct).ConfigureAwait(false);
     }
 
+    /// <summary>Returns retained source evidence only after the same tenant/company visibility check as other run reads.</summary>
+    public async Task<BacktestResult?> GetRetainedResultAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        var run = await GetRunForScopeAsync(runId, scope, ct).ConfigureAwait(false);
+        return run?.Metrics;
+    }
+
     public Task<LedgerSummary?> GetLedgerSummaryAsync(string runId, CancellationToken ct = default) =>
-        GetLedgerSummaryCoreAsync(runId, scope: null, ct);
+        GetLedgerSummaryCoreAsync(runId, scope: null, asOf: null, ct);
 
     public Task<LedgerSummary?> GetLedgerSummaryAsync(
         string runId,
@@ -615,18 +626,36 @@ public sealed class StrategyRunReadService
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(scope);
-        return GetLedgerSummaryCoreAsync(runId, scope, ct);
+        return GetLedgerSummaryCoreAsync(runId, scope, asOf: null, ct);
+    }
+
+    /// <summary>Reads retained postings on or before the inclusive economic timestamp.</summary>
+    public Task<LedgerSummary?> GetLedgerSummaryAsync(string runId, DateTimeOffset asOf, CancellationToken ct = default) =>
+        GetLedgerSummaryCoreAsync(runId, scope: null, asOf, ct);
+
+    public Task<LedgerSummary?> GetLedgerSummaryAsync(
+        string runId,
+        DateTimeOffset asOf,
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetLedgerSummaryCoreAsync(runId, scope, asOf, ct);
     }
 
     private async Task<LedgerSummary?> GetLedgerSummaryCoreAsync(
         string runId,
         StrategyRunReadScope? scope,
+        DateTimeOffset? asOf,
         CancellationToken ct)
     {
         var run = await GetRunForScopeAsync(runId, scope, ct).ConfigureAwait(false);
-        return run is null
-            ? null
-            : await _ledgerReadService.BuildSummaryAsync(run, ct).ConfigureAwait(false);
+        if (run is null)
+            return null;
+        var ledger = await ReadRunLedgerAsync(run, scope, ct).ConfigureAwait(false);
+        return asOf.HasValue
+            ? await _ledgerReadService.BuildSummaryAsync(run, asOf.Value, ct, ledger).ConfigureAwait(false)
+            : await _ledgerReadService.BuildSummaryAsync(run, ct, ledger).ConfigureAwait(false);
     }
 
     public Task<IReadOnlyList<StrategyRunComparison>> CompareRunsAsync(
@@ -685,7 +714,11 @@ public sealed class StrategyRunReadService
                 HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
                 HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference),
                 CompatibilityWarnings: compatibilityWarnings,
-                ArtifactCompleteness: artifactCompleteness));
+                ArtifactCompleteness: artifactCompleteness)
+            {
+                FinancingCoverageStatus = run.Metrics?.EngineMetadata?.FinancingCoverageStatus,
+                RunAttributedMarginInterest = run.Metrics?.EngineMetadata?.RunAttributedMarginInterest
+            });
         }
 
         return results
@@ -779,7 +812,11 @@ public sealed class StrategyRunReadService
                 LedgerCoverageStatus: continuity.LedgerCoverageStatus,
                 CashFlowHealth: continuity.CashFlowHealth,
                 CompatibilityWarnings: compatibilityWarnings,
-                ArtifactCompleteness: artifactCompleteness));
+                ArtifactCompleteness: artifactCompleteness)
+            {
+                FinancingCoverageStatus = run.Metrics?.EngineMetadata?.FinancingCoverageStatus,
+                RunAttributedMarginInterest = run.Metrics?.EngineMetadata?.RunAttributedMarginInterest
+            });
         }
 
         var ordered = governanceFirst
@@ -802,7 +839,9 @@ public sealed class StrategyRunReadService
         var ledgerEntryCount = run.RetainedJournalEntryCount;
         var hasLedgerEntryCoverage = hasLedgerReference && ledgerEntryCount > 0;
         var cashFlowEntries = run.Metrics?.CashFlows?.Count ?? 0;
-        var hasCashFlowCoverage = cashFlowEntries > 0;
+        var financingUnavailable = run.Metrics?.EngineMetadata?.FinancingCoverageStatus
+            == BacktestFinancingCoverageStatuses.Unavailable;
+        var hasCashFlowCoverage = cashFlowEntries > 0 && !financingUnavailable;
         var hasAuditTrail = !string.IsNullOrWhiteSpace(run.AuditReference);
 
         var continuityStatus = (hasLedgerEntryCoverage, hasCashFlowCoverage, hasAuditTrail) switch
@@ -818,7 +857,8 @@ public sealed class StrategyRunReadService
             HighestSeverity: ReconciliationBreakSeverity.Info,
             HasLedgerEntryCoverage: hasLedgerEntryCoverage,
             LedgerCoverageStatus: hasLedgerEntryCoverage ? LedgerCoverageStatusCovered : LedgerCoverageStatusMissing,
-            CashFlowHealth: hasCashFlowCoverage ? CashFlowHealthHealthy : CashFlowHealthMissing);
+            CashFlowHealth: financingUnavailable ? "Incomplete"
+                : hasCashFlowCoverage ? CashFlowHealthHealthy : CashFlowHealthMissing);
     }
 
     private sealed record ComparisonContinuitySignals(
@@ -906,28 +946,36 @@ public sealed class StrategyRunReadService
             : await GetRunsAsync(query, scope, ct).ConfigureAwait(false);
         return runs
             .Where(static run => !string.IsNullOrWhiteSpace(run.SweepId) && !string.IsNullOrWhiteSpace(run.SweepDefinitionHash))
-            .GroupBy(static run => $"{run.SweepId}|{run.SweepDefinitionHash}", StringComparer.Ordinal)
+            .GroupBy(static run => (run.SweepId, run.SweepDefinitionHash, run.StrategyId,
+                run.Engine, run.Mode, run.DatasetReference, run.FeedReference, run.SweepObjective))
             .OrderByDescending(static group => group.Max(run => run.StartedAt))
             .Take(Math.Clamp(limit, 1, 100))
             .Select(group =>
             {
                 var groupedRuns = group.OrderByDescending(static run => run.StartedAt).ToArray();
+                var head = groupedRuns[0];
+                decimal? ObjectiveValue(StrategyRunSummary run) => head.SweepObjective?.Trim().ToUpperInvariant() switch
+                {
+                    "FINALEQUITY" => run.FinalEquity,
+                    "NETPNL" => run.NetPnl,
+                    "TOTALRETURN" => run.TotalReturn,
+                    _ => null
+                };
                 var topObjective = groupedRuns
-                    .Where(static run => run.Status == StrategyRunStatus.Completed)
-                    .OrderByDescending(static run => run.FinalEquity ?? decimal.MinValue)
-                    .ThenByDescending(static run => run.NetPnl ?? decimal.MinValue)
+                    .Where(run => run.Status == StrategyRunStatus.Completed && ObjectiveValue(run).HasValue)
+                    .OrderByDescending(run => ObjectiveValue(run))
+                    .ThenBy(static run => run.RunId, StringComparer.Ordinal)
                     .Take(10)
-                    .Select(static run => new StrategySweepObjectiveRanking(
+                    .Select(run => new StrategySweepObjectiveRanking(
                         run.RunId,
                         run.StrategyName,
-                        run.FinalEquity,
+                        ObjectiveValue(run),
                         run.NetPnl,
                         run.TotalReturn,
                         run.FinalEquity,
                         run.LastUpdatedAt))
                     .ToArray();
 
-                var head = groupedRuns[0];
                 return new StrategySweepResultGroup(
                     SweepId: head.SweepId!,
                     SweepDefinitionHash: head.SweepDefinitionHash!,
@@ -935,7 +983,9 @@ public sealed class StrategyRunReadService
                     StartedAt: groupedRuns.Min(static run => run.StartedAt),
                     RunCount: groupedRuns.Length,
                     Runs: groupedRuns,
-                    ObjectiveRankings: topObjective);
+                    ObjectiveRankings: topObjective,
+                    ComparisonContextVerified: head.SweepDefinitionHash!.StartsWith("sweep-v2:", StringComparison.Ordinal),
+                    HistoryMayBeTruncated: runs.Count >= query.Limit);
             })
             .ToArray();
     }
@@ -973,7 +1023,8 @@ public sealed class StrategyRunReadService
             ParentRunId: run.ParentRunId,
             SweepId: run.SweepId,
             SweepDefinitionHash: run.SweepDefinitionHash,
-            SweepObjective: run.SweepObjective);
+            SweepObjective: run.SweepObjective,
+            Parameters: run.ParameterSet);
     }
 
 
@@ -1009,7 +1060,11 @@ public sealed class StrategyRunReadService
             HasPortfolio: !string.IsNullOrWhiteSpace(run.PortfolioId),
             HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
             HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference),
-            AuditReference: run.AuditReference);
+            AuditReference: run.AuditReference)
+        {
+            FinancingCoverageStatus = run.Metrics?.EngineMetadata?.FinancingCoverageStatus,
+            RunAttributedMarginInterest = run.Metrics?.EngineMetadata?.RunAttributedMarginInterest
+        };
     }
 
     private static IEnumerable<StrategyRunLineageTimelineEntry> BuildLineageTimelineEntries(

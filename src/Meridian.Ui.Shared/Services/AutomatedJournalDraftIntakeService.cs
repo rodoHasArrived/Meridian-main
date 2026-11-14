@@ -1,6 +1,8 @@
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Meridian.Contracts.Integrity;
+using System.Text.Json;
+using Meridian.Ui.Shared.Serialization;
 using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
@@ -60,7 +62,8 @@ public sealed record AutomatedJournalPreparedDraftIntakeRequest(
     string? CompanyId = null,
     IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null,
     string? BatchCorrelationId = null,
-    Guid? RecurringJournalEntryId = null);
+    Guid? RecurringJournalEntryId = null,
+    AccountingBasisKindDto? AccountingBasis = null);
 
 /// <summary>
 /// One event the intake did not turn into a new draft, with the reason it was skipped.
@@ -240,6 +243,16 @@ public sealed class AutomatedJournalDraftIntakeService
                      existing.RecurringJournalEvidenceJson != draft.Metadata.Tags?.GetValueOrDefault(RecurringJournalEvidenceGuard.EvidenceTag) ||
                      existing.RecurringJournalEvidenceDigest != draft.Metadata.Tags?.GetValueOrDefault(RecurringJournalEvidenceGuard.DigestTag)))
                     throw new InvalidOperationException("The retained recurring draft does not match this exact occurrence provenance.");
+                var incomingCapitalAuthority = draft.Metadata.Tags?.GetValueOrDefault(PrivateCapitalPostingAuthority.MetadataTag);
+                if ((existing.PrivateCapitalAuthorityJson is not null || incomingCapitalAuthority is not null)
+                    && existing.PrivateCapitalAuthorityJson != incomingCapitalAuthority)
+                    throw new InvalidOperationException("This capital-call posting identity already retains different approved inputs or funding evidence.");
+                if (existing.DistributionDeclarationJson != draft.Metadata.Tags?.GetValueOrDefault(DistributionDeclarationDraftProducer.DeclarationTag))
+                    throw new InvalidOperationException("This distribution identity already retains different declaration terms or waterfall tiers.");
+                var priorSource = ReadPriorPeriodAdjustmentSource(draft);
+                if ((existing.PriorPeriodAdjustmentSource is null) != (priorSource is null)
+                    || (priorSource is not null && existing.PriorPeriodAdjustmentSource! with { ExpectedLines = priorSource.ExpectedLines } != priorSource))
+                    throw new InvalidOperationException("This prior-period adjustment identity already retains different source, target, policy or reason.");
                 var incomingAssessment = request.EvidenceAssessments is not null &&
                                          request.EvidenceAssessments.TryGetValue(idempotencyKey, out var candidateAssessment)
                     ? candidateAssessment
@@ -442,7 +455,7 @@ public sealed class AutomatedJournalDraftIntakeService
                     Amount: isDebit ? line.debit : line.credit,
                     Currency: request.Currency,
                     AccountPath: chartLookup.ResolvePath(line.account),
-                    SecurityId: line.account.Symbol is not null ? draft.Event.SecurityId : null,
+                    SecurityId: line.account.Symbol is not null ? line.dimensions?.InstrumentId ?? draft.Event.SecurityId : null,
                     SecurityDisplayName: line.account.Symbol,
                     Description: line.account.ToString(),
                     EvidenceLink: firstEvidenceLink,
@@ -452,12 +465,14 @@ public sealed class AutomatedJournalDraftIntakeService
             })
             .ToArray();
 
+        var priorPeriodSource = ReadPriorPeriodAdjustmentSource(draft);
+
         return new ManualJournalEntryDraftDto(
             JournalEntryId: journalEntryId,
             Status: ManualJournalEntryStatusDto.Draft,
             FundProfileId: request.FundProfileId,
             LedgerBookId: request.LedgerBookId,
-            AccountingBasis: AccountingBasisKindDto.Primary,
+            AccountingBasis: request.AccountingBasis ?? AccountingBasisKindDto.Primary,
             AccountingDate: effectiveDate,
             PeriodId: request.PeriodId,
             EntityId: request.EntityId,
@@ -492,12 +507,19 @@ public sealed class AutomatedJournalDraftIntakeService
             RequiresValuationMarkEvidence: ValuationMarkEvidenceGuard.IsValuation(draft.Metadata.IdempotencyKey),
             RecurringJournalEvidenceJson: draft.Metadata.Tags?.GetValueOrDefault(RecurringJournalEvidenceGuard.EvidenceTag),
             RecurringJournalEvidenceDigest: draft.Metadata.Tags?.GetValueOrDefault(RecurringJournalEvidenceGuard.DigestTag),
-            RequiresRecurringJournalEvidence: RecurringJournalEvidenceGuard.IsRecurring(draft.Event.IdempotencyKey));
+            RequiresRecurringJournalEvidence: RecurringJournalEvidenceGuard.IsRecurring(draft.Event.IdempotencyKey))
+        {
+            PriorPeriodAdjustmentSource = priorPeriodSource is null ? null : priorPeriodSource with { ExpectedLines = lines },
+            ReversalOfJournalEntryId = priorPeriodSource?.SourceJournalEntryId,
+            PrivateCapitalAuthorityJson = draft.Metadata.Tags?.GetValueOrDefault("private-capital.authority"),
+            DistributionDeclarationJson = draft.Metadata.Tags?.GetValueOrDefault(DistributionDeclarationDraftProducer.DeclarationTag)
+        };
     }
 
     private static ManualJournalEntryTypeDto MapEntryType(AutomatedJournalEventKind kind)
         => kind switch
         {
+            AutomatedJournalEventKind.PriorPeriodAdjustment => ManualJournalEntryTypeDto.Reversal,
             AutomatedJournalEventKind.DividendDeclared => ManualJournalEntryTypeDto.AccruedBalance,
             AutomatedJournalEventKind.ManagementFeeAccrued or
             AutomatedJournalEventKind.PerformanceFeeAccrued or
@@ -511,8 +533,25 @@ public sealed class AutomatedJournalDraftIntakeService
             // counts them in the commitment roll-forward; funding stays General (a cash receipt),
             // otherwise it would double-count as a second call.
             AutomatedJournalEventKind.CapitalCallIssued => ManualJournalEntryTypeDto.CapitalCall,
+            // A declared distribution posts as the sanctioned Distribution kind so the
+            // private-capital projection reports it as one.
+            AutomatedJournalEventKind.DistributionDeclared => ManualJournalEntryTypeDto.Distribution,
             _ => ManualJournalEntryTypeDto.General
         };
+
+    private static PriorPeriodAdjustmentSourceDto? ReadPriorPeriodAdjustmentSource(AutomatedJournalDraft draft)
+    {
+        var json = draft.Metadata.Tags?.GetValueOrDefault(PeriodAdjustmentPreparationService.SourceTag);
+        if (draft.Event.Kind != AutomatedJournalEventKind.PriorPeriodAdjustment)
+        {
+            if (json is not null)
+                throw new InvalidOperationException("Prior-period source authority is reserved for the correction preparation path.");
+            return null;
+        }
+        return json is null ? throw new InvalidOperationException("Prior-period correction source authority is required.")
+            : JsonSerializer.Deserialize(json, PeriodAdjustmentJsonContext.Default.PriorPeriodAdjustmentSourceDto)
+                ?? throw new InvalidOperationException("Prior-period correction source authority is invalid.");
+    }
 
     private static string BuildFallbackIdempotencyKey(AutomatedJournalEvent journalEvent)
     {

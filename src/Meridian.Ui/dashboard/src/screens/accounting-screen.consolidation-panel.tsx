@@ -73,7 +73,7 @@ function ConsolidationScopePanel({ initialBookId, initialPeriodId }: Consolidati
     <Card className="panel-surface min-w-0" aria-labelledby="consolidation-title">
       <CardHeader>
         <CardTitle id="consolidation-title">Group consolidation</CardTitle>
-        <CardDescription>First slice: exactly two directly wholly owned entities under one ownership root, Primary basis, and one shared functional currency. Foreign currency translation, minority interests, and nested ownership are outside this slice.</CardDescription>
+        <CardDescription>Reviewed eliminations on Primary books under authoritative direct 100% ownership. The selected book policy determines entity count, FX translation and receivable/payable or revenue/expense treatments. Minority interests and nested ownership remain unsupported.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
         <form onSubmit={preview} className="space-y-3">
@@ -95,7 +95,15 @@ function ConsolidationScopePanel({ initialBookId, initialPeriodId }: Consolidati
             <p className="text-xs leading-5 text-muted-foreground">Book and period start from the current ledger selection. Select the dedicated elimination book and its period. Authoritative effective-dated ownership determines the included entities.</p>
             <div className="flex flex-wrap gap-2">
               <Button type="submit" variant="outline" disabled={!ready || busy !== null}>{busy === "preview" ? "Refreshing preview…" : "Preview consolidation"}</Button>
-              <Button type="button" disabled={!canCreateDrafts || !view || view.blockers.length > 0 || busy !== null} aria-describedby={view && !canCreateDrafts ? "consolidation-draft-permission" : undefined} onClick={() => void run("drafts")}>{busy === "drafts" ? "Creating review drafts…" : "Create review drafts"}</Button>
+              <Button type="button" disabled={!canCreateDrafts || !view || view.blockers.length > 0 || busy !== null}
+                disabledReason={!view
+                  ? "Preview the consolidation before creating review drafts."
+                  : !canCreateDrafts
+                    ? "Creating review drafts requires ledger management permission."
+                    : view.blockers.length > 0
+                      ? "Resolve the preview's blockers before creating review drafts."
+                      : "Wait for the current consolidation request to finish."}
+                aria-describedby={view && !canCreateDrafts ? "consolidation-draft-permission" : undefined} onClick={() => void run("drafts")}>{busy === "drafts" ? "Creating review drafts…" : "Create review drafts"}</Button>
             </div>
             {view && !canCreateDrafts ? <p id="consolidation-draft-permission" className="text-sm text-muted-foreground">You can inspect this preview. Creating review drafts requires an authenticated session with ledger management permission.</p> : null}
           </fieldset>

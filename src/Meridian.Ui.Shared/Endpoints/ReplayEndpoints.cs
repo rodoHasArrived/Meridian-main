@@ -17,14 +17,17 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 /// <summary>
 /// Extension methods for registering event replay API endpoints.
-/// Integrates with JsonlReplayer for actual JSONL event reading and replay.
+/// Integrates with JsonlReplayer for JSONL event inspection and event-count scans.
+/// Timed playback and playback controls are not implemented by this host.
 /// </summary>
 public static class ReplayEndpoints
 {
+    private const int MaxRetainedScans = 64;
     public static void MapReplayEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var scans = app.Services.GetRequiredService<ReplayScanLifetime>();
         var sessions = new ConcurrentDictionary<string, ReplaySession>(StringComparer.OrdinalIgnoreCase);
+        var sessionGate = new object();
         var group = app.MapGroup("").WithTags("Replay");
 
         // List replay files - scans actual storage directory
@@ -67,7 +70,7 @@ public static class ReplayEndpoints
         .WithName("GetReplayFiles").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
 
-        // Start replay - creates a replay session backed by JsonlReplayer
+        // Legacy route: starts an event-count scan, not timed market-event playback.
         group.MapPost(UiApiRoutes.ReplayStart, (ReplayStartRequest req, [FromServices] StorageOptions? storageOptions) =>
         {
             if (string.IsNullOrWhiteSpace(req.FilePath))
@@ -77,96 +80,98 @@ public static class ReplayEndpoints
             if (!TryResolvePathWithinRoot(req.FilePath, rootPath, out var resolvedFilePath))
                 return Results.BadRequest(new { error = "Invalid file path." });
 
+            var speed = req.SpeedMultiplier ?? 1.0;
+            if (!double.IsFinite(speed) || speed <= 0)
+                return Results.BadRequest(new { error = "Speed multiplier must be finite and greater than zero." });
+            if (speed != 1.0)
+                return PlaybackUnavailable();
+
             var sessionId = Guid.NewGuid().ToString("N")[..12];
-            var session = new ReplaySession(sessionId, resolvedFilePath, req.SpeedMultiplier ?? 1.0);
+            ReplaySession session;
 
-            // The host tracks readers through shutdown before releasing its owned data files.
-            if (!session.StartEventCounting(scans))
-                return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+            lock (sessionGate)
+            {
+                // Retain a bounded recent scan history. Never evict an active reader to admit work.
+                if (sessions.Count >= MaxRetainedScans)
+                {
+                    var oldestFinished = sessions.Values.Where(s => s.IsFinished)
+                        .OrderBy(s => s.StartedAt).FirstOrDefault();
+                    if (oldestFinished is not null)
+                        sessions.TryRemove(oldestFinished.SessionId, out _);
+                }
+                if (sessions.Count >= MaxRetainedScans)
+                    return Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable,
+                        title: "Replay scan capacity reached", detail: "Stop an active event-count scan before starting another.");
 
-            sessions[sessionId] = session;
+                session = new ReplaySession(sessionId, resolvedFilePath);
+                // The host tracks readers through shutdown before releasing its owned data files.
+                if (!session.StartEventCounting(scans))
+                    return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+
+                sessions[sessionId] = session;
+            }
 
             return Results.Json(new
             {
                 sessionId,
                 filePath = resolvedFilePath,
-                status = "started",
-                speedMultiplier = session.Speed,
+                status = "scanning",
+                mode = "event_count",
+                playbackSupported = false,
+                detail = "Counts stored events only. Timed playback and playback controls are not implemented.",
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
         .WithName("StartReplay").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(400)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .Produces(StatusCodes.Status503ServiceUnavailable)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Pause replay
-        group.MapPost(UiApiRoutes.ReplayPause, (string sessionId) =>
-        {
-            if (!sessions.TryGetValue(sessionId, out var session))
-                return Results.NotFound(new { error = $"Session '{sessionId}' not found" });
-
-            session.Status = "paused";
-            return Results.Json(new { sessionId, status = session.Status, eventsProcessed = session.EventsProcessed }, jsonOptions);
-        })
+        // These legacy playback routes have no playback engine behind them.
+        group.MapPost(UiApiRoutes.ReplayPause, () => PlaybackUnavailable())
         .WithName("PauseReplay").RequirePermission(UserPermission.ViewHistoricalData)
-        .Produces(200)
-        .Produces(404)
+        .DeclareNonMutating("Reports that playback control is unavailable; no replay state is changed.")
+        .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Resume replay
-        group.MapPost(UiApiRoutes.ReplayResume, (string sessionId) =>
-        {
-            if (!sessions.TryGetValue(sessionId, out var session))
-                return Results.NotFound(new { error = $"Session '{sessionId}' not found" });
-
-            session.Status = "running";
-            return Results.Json(new { sessionId, status = session.Status, eventsProcessed = session.EventsProcessed }, jsonOptions);
-        })
+        group.MapPost(UiApiRoutes.ReplayResume, () => PlaybackUnavailable())
         .WithName("ResumeReplay").RequirePermission(UserPermission.ViewHistoricalData)
-        .Produces(200)
-        .Produces(404)
+        .DeclareNonMutating("Reports that playback control is unavailable; no replay state is changed.")
+        .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Stop replay - cancels and cleans up the session
+        // Stop the event-count scan. Keep it tracked until its reader has actually exited.
         group.MapPost(UiApiRoutes.ReplayStop, (string sessionId) =>
         {
-            if (!sessions.TryRemove(sessionId, out var session))
+            if (!sessions.TryGetValue(sessionId, out var session))
                 return Results.NotFound(new { error = $"Session '{sessionId}' not found" });
 
             session.Cancel();
-            return Results.Json(new { sessionId, status = "stopped", eventsProcessed = session.EventsProcessed }, jsonOptions);
+            return Results.Json(new { sessionId, status = session.Status, eventsProcessed = session.EventsProcessed }, jsonOptions);
         })
         .WithName("StopReplay").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Seek replay
-        group.MapPost(UiApiRoutes.ReplaySeek, (string sessionId, SeekRequest req) =>
-        {
-            if (!sessions.TryGetValue(sessionId, out var session))
-                return Results.NotFound(new { error = $"Session '{sessionId}' not found" });
-
-            return Results.Json(new { sessionId, positionMs = req.PositionMs, status = session.Status }, jsonOptions);
-        })
+        group.MapPost(UiApiRoutes.ReplaySeek, () => PlaybackUnavailable())
         .WithName("SeekReplay").RequirePermission(UserPermission.ViewHistoricalData)
-        .Produces(200)
-        .Produces(404)
+        .DeclareNonMutating("Reports that playback control is unavailable; no replay state is changed.")
+        .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Set replay speed
-        group.MapPost(UiApiRoutes.ReplaySpeed, (string sessionId, SpeedRequest req) =>
+        group.MapPost(UiApiRoutes.ReplaySpeed, (SpeedRequest req) =>
         {
-            if (!sessions.TryGetValue(sessionId, out var session))
-                return Results.NotFound(new { error = $"Session '{sessionId}' not found" });
-
-            session.Speed = req.SpeedMultiplier;
-            return Results.Json(new { sessionId, speedMultiplier = session.Speed, status = session.Status }, jsonOptions);
+            if (!double.IsFinite(req.SpeedMultiplier) || req.SpeedMultiplier <= 0)
+                return Results.BadRequest(new { error = "Speed multiplier must be finite and greater than zero." });
+            return PlaybackUnavailable();
         })
         .WithName("SetReplaySpeed").RequirePermission(UserPermission.ViewHistoricalData)
-        .Produces(200)
-        .Produces(404)
+        .DeclareNonMutating("Reports that playback control is unavailable; no replay state is changed.")
+        .Produces(400)
+        .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Get replay status - returns actual event count and progress
@@ -184,7 +189,8 @@ public static class ReplayEndpoints
                 sessionId,
                 filePath = session.FilePath,
                 status = session.Status,
-                speedMultiplier = session.Speed,
+                mode = "event_count",
+                playbackSupported = false,
                 eventsProcessed = session.EventsProcessed,
                 totalEvents = session.TotalEvents,
                 progressPercent = Math.Round(progress, 2),
@@ -310,7 +316,11 @@ public static class ReplayEndpoints
 
             return Results.Json(new
             {
-                activeSessions = sessions.Count,
+                activeSessions = sessions.Values.Count(s => !s.IsFinished),
+                retainedSessions = sessions.Count,
+                maxRetainedSessions = MaxRetainedScans,
+                playbackSupported = false,
+                mode = "event_count",
                 sessions = sessions.Values.Select(s => new
                 {
                     sessionId = s.SessionId,
@@ -365,25 +375,35 @@ public static class ReplayEndpoints
     {
         private readonly CancellationTokenSource _cts = new();
 
-        public ReplaySession(string sessionId, string filePath, double speed)
+        public ReplaySession(string sessionId, string filePath)
         {
             SessionId = sessionId;
             FilePath = filePath;
-            Speed = speed;
         }
 
         public string SessionId { get; }
         public string FilePath { get; }
-        public string Status { get; set; } = "running";
-        public double Speed { get; set; }
+        private string _status = "scanning";
+        private long _eventsProcessed;
+        private long _totalEvents;
+        private readonly object _gate = new();
+        private bool _finished;
+
+        public string Status => Volatile.Read(ref _status);
+        public bool IsFinished => Volatile.Read(ref _finished);
         public DateTimeOffset StartedAt { get; } = DateTimeOffset.UtcNow;
-        public long EventsProcessed { get; private set; }
-        public long TotalEvents { get; private set; }
+        public long EventsProcessed => Interlocked.Read(ref _eventsProcessed);
+        public long TotalEvents => Interlocked.Read(ref _totalEvents);
 
         public void Cancel()
         {
-            _cts.Cancel();
-            Status = "stopped";
+            lock (_gate)
+            {
+                if (_finished)
+                    return;
+                Volatile.Write(ref _status, "stopping");
+                _cts.Cancel();
+            }
         }
 
         /// <summary>
@@ -392,11 +412,17 @@ public static class ReplayEndpoints
         /// threads on I/O-bound work.
         /// </summary>
         public bool StartEventCounting(ReplayScanLifetime scans)
-            => scans.TryStart(CountEventsAsync);
+        {
+            if (scans.TryStart(CountEventsAsync))
+                return true;
+            _cts.Dispose();
+            return false;
+        }
 
         private async Task CountEventsAsync(CancellationToken stoppingToken)
         {
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token, stoppingToken);
+            var finalStatus = "completed";
             try
             {
                 var replayer = new JsonlReplayer(FilePath);
@@ -404,25 +430,37 @@ public static class ReplayEndpoints
                 await foreach (var _ in replayer.ReadEventsAsync(linked.Token))
                 {
                     count++;
-                    EventsProcessed = count;
+                    Interlocked.Exchange(ref _eventsProcessed, count);
                 }
-                TotalEvents = count;
-                Status = "completed";
+                Interlocked.Exchange(ref _totalEvents, count);
             }
             catch (OperationCanceledException)
             {
-                Status = "stopped";
+                finalStatus = "stopped";
             }
             catch (Exception ex)
             {
                 _ = ex; // Observed to prevent unobserved task exception
-                Status = "error";
+                finalStatus = "error";
+            }
+            finally
+            {
+                lock (_gate)
+                {
+                    Volatile.Write(ref _finished, true);
+                    Volatile.Write(ref _status, linked.IsCancellationRequested ? "stopped" : finalStatus);
+                    _cts.Dispose();
+                }
             }
         }
     }
 
+    private static IResult PlaybackUnavailable() => Results.Problem(
+        statusCode: StatusCodes.Status501NotImplemented,
+        title: "Replay playback controls are not implemented",
+        detail: "This host supports file previews and event-count scans only. No playback position, speed or pause state was changed.");
+
     private sealed record ReplayStartRequest(string? FilePath, double? SpeedMultiplier);
-    private sealed record SeekRequest(long PositionMs);
     private sealed record SpeedRequest(double SpeedMultiplier);
 
     private static bool TryResolvePathWithinRoot(string candidatePath, string rootPath, out string resolvedPath)

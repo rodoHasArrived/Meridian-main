@@ -18,7 +18,7 @@ using Meridian.Contracts.Store;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Infrastructure.Adapters.Polygon;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Instruments.FixedIncome;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Storage;
@@ -42,6 +42,32 @@ namespace Meridian.Tests.Application.Composition;
 [Collection("Sequential")]
 public sealed class StorageFeatureRegistrationTests : IDisposable
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void InstanceConfiguration_BindsIdentifierHistoryUpgradeAttestations(bool acknowledged)
+    {
+        var values = new Dictionary<string, string?>
+        {
+            ["DOTNET_ENVIRONMENT"] = "Test",
+            ["MERIDIAN_USE_INMEMORY_GOVERNANCE"] = "true",
+            [SecurityMasterStartup.ConnectionStringVariable] = "Host=unused;Database=unused;Username=test;Password=test"
+        };
+        if (acknowledged)
+        {
+            values["MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_WRITERS_STOPPED"] = "true";
+            values["MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_LEGACY_WRITERS_RETIRED"] = "true";
+        }
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(values).Build();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddMarketDataServices(CompositionOptions.Minimal with { Configuration = configuration });
+        using var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<SecurityMasterOptions>();
+        options.IdentifierHistoryMigrationWritersStopped.Should().Be(acknowledged);
+        options.IdentifierHistoryMigrationLegacyWritersRetired.Should().Be(acknowledged);
+    }
+
     private readonly string? _originalSecurityMasterConnectionString;
     private readonly string? _originalSecurityMasterSchema;
     private readonly string? _originalDirectLendingConnectionString;
@@ -227,6 +253,67 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
             restarted.GetRequiredService<CanonicalLotAmortizationService>().Should().NotBeNull();
             await restarted.GetRequiredService<FileBondCalculationPolicy>().Invoking(policy => policy.ReadAsync())
                 .Should().ThrowAsync<InvalidDataException>().WithMessage("*receipt is missing*");
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task MinimalComposition_SecurityMasterGovernanceReadersShareOneSeam_AndAProductionPostureIsInstitutional()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "meridian-governance-composition-" + Guid.NewGuid().ToString("N"));
+        var configPath = Path.Combine(directory, "appsettings.json");
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(configPath, JsonSerializer.Serialize(new { DataRoot = Path.Combine(directory, "data") }));
+        var options = CompositionOptions.Minimal with
+        {
+            ConfigPath = configPath,
+            EnableProcessWideHostedServices = false,
+            Configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DOTNET_ENVIRONMENT"] = "Test",
+                ["MERIDIAN_USE_INMEMORY_GOVERNANCE"] = "true"
+            }).Build()
+        };
+        try
+        {
+            var services = new ServiceCollection().AddLogging().AddMarketDataServices(options);
+            services.Should().ContainSingle(sd => sd.ServiceType == typeof(ISecurityMasterGovernanceRequirements));
+            services.Should().ContainSingle(sd => sd.ServiceType == typeof(SecurityMasterGovernanceProfileGuard));
+
+            using (var standard = services.BuildServiceProvider())
+            {
+                var current = standard.GetRequiredService<ISecurityMasterGovernanceRequirements>().Current;
+                current.Profile.Should().Be(SecurityMasterGovernanceProfile.Standard);
+                current.RequireIndependentProfileApprover.Should().BeFalse();
+                standard.GetRequiredService<IGovernedTermAmendmentPolicy>().RefusalReason.Should().BeNull();
+
+                var governance = standard.GetRequiredService<ISecurityAssetProfileGovernanceService>();
+                var draft = await governance.DraftProfileAsync(
+                    Meridian.Tests.SecurityMaster.SecurityAssetProfileGovernanceServiceTests.CreateDraftRequest("custom-composed-standard"), "maker");
+                (await governance.ApproveProfileAsync(
+                        Meridian.Tests.SecurityMaster.SecurityAssetProfileGovernanceServiceTests.Approval("custom-composed-standard", draft.Profile.Version), "maker"))
+                    .Profile.Status.Should().Be(SecurityAssetProfileStatusDto.Approved, "the Standard profile keeps single-operator approval");
+            }
+
+            // Declared after composition, as the final-graph guard also allows for: the seam decides
+            // the posture from the final collection.
+            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            using var production = services.BuildServiceProvider();
+
+            var effective = production.GetRequiredService<ISecurityMasterGovernanceRequirements>().Current;
+            effective.Profile.Should().Be(SecurityMasterGovernanceProfile.Institutional);
+            effective.ProfileSource.Should().Be(SecurityMasterGovernanceProfileSource.ProductionComposition);
+            production.GetRequiredService<IGovernedTermAmendmentPolicy>().RefusalReason.Should().NotBeNull();
+
+            var composed = production.GetRequiredService<ISecurityAssetProfileGovernanceService>();
+            var composedDraft = await composed.DraftProfileAsync(
+                Meridian.Tests.SecurityMaster.SecurityAssetProfileGovernanceServiceTests.CreateDraftRequest("custom-composed-production"), "maker");
+            await composed.Invoking(g => g.ApproveProfileAsync(
+                    Meridian.Tests.SecurityMaster.SecurityAssetProfileGovernanceServiceTests.Approval("custom-composed-production", composedDraft.Profile.Version), "maker"))
+                .Should().ThrowAsync<ArgumentException>("the container selected the constructor that reads the seam");
         }
         finally
         {
@@ -459,6 +546,33 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
             sd.ImplementationType == typeof(TenantPostureHostedService<DirectLendingOutboxDispatcher>));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
             sd.ImplementationType == typeof(TenantPostureHostedService<DailyAccrualWorker>));
+    }
+
+    [Fact]
+    public void Register_ComposesLoanAccountingProjectorWithoutLedger_WhenOnlySecurityMasterConnectionIsConfigured()
+    {
+        ConfigureInMemoryGovernanceFixture();
+        ClearGovernancePersistenceEnvironment();
+        ClearPostgresBackedStorageEnvironment();
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, "Host=sm-db;Port=5432;Database=security;Username=postgres;Password=secret");
+
+        var services = new ServiceCollection();
+
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+        // Direct lending still falls back to the Security Master database, but the ledger stays absent.
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(DirectLendingOptions));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IDirectLendingService));
+        services.Should().NotContain(sd => sd.ServiceType == typeof(ILedgerJournalStore));
+
+        var descriptor = services.Should().ContainSingle(sd => sd.ServiceType == typeof(LoanAccountingProjector)).Subject;
+        descriptor.ImplementationFactory.Should().NotBeNull(
+            "the projector must compose with an optional ledger store instead of requiring one");
+
+        using var minimal = new ServiceCollection()
+            .AddSingleton(Substitute.For<IAccountingPolicyService>())
+            .BuildServiceProvider();
+        descriptor.ImplementationFactory!(minimal).Should().BeOfType<LoanAccountingProjector>();
     }
 
     [Fact]

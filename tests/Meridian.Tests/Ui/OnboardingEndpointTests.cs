@@ -386,6 +386,43 @@ public sealed class OnboardingEndpointTests
             .Should().Be(before);
     }
 
+    [Fact]
+    public async Task ShadowDesignation_IsOwnerAndHumanOnly_AndMarksTheBookAsNotBookOfRecord()
+    {
+        using var fixture = new Fixture();
+        var workspace = await fixture.SeedComparedWorkspaceAsync();
+        var route = Route(UiApiRoutes.OnboardingShadowDesignation, workspace);
+        var statusRoute = UiApiRoutes.OnboardingBookOfRecordStatus.Replace("{ledgerBookId:guid}",
+            workspace.Scope.LedgerBookId.ToString("D"), StringComparison.Ordinal);
+
+        await using (var automated = await fixture.CreateAppAsync(apiKey: true))
+            (await automated.GetTestClient().PostAsJsonAsync(route, new DesignateShadowBookRequestDto(workspace.Version, "Trial.")))
+                .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await using (var reviewer = await fixture.CreateAppAsync(actor: Fixture.Reviewer))
+            (await reviewer.GetTestClient().PostAsJsonAsync(route, new DesignateShadowBookRequestDto(workspace.Version, "Trial.")))
+                .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        await using var app = await fixture.CreateAppAsync();
+        var client = app.GetTestClient();
+        (await client.GetFromJsonAsync<BookOfRecordStatusDto>(statusRoute, JsonOptions))!.IsBookOfRecord.Should().BeTrue();
+        var response = await client.PostAsJsonAsync(route, new DesignateShadowBookRequestDto(workspace.Version, "Parallel run."));
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var designated = (await response.Content.ReadFromJsonAsync<OnboardingWorkspaceDto>(JsonOptions))!;
+        designated.ShadowDesignation!.State.Should().Be(OnboardingShadowStates.Shadow);
+        (await client.PostAsJsonAsync(route, new DesignateShadowBookRequestDto(workspace.Version, "Stale.")))
+            .StatusCode.Should().Be(HttpStatusCode.Conflict);
+        var status = (await client.GetFromJsonAsync<BookOfRecordStatusDto>(statusRoute, JsonOptions))!;
+        status.IsBookOfRecord.Should().BeFalse();
+        status.ShadowWorkspaceId.Should().Be(workspace.WorkspaceId);
+
+        // Promotion is the authority transition: the onboarding owner can never promote their own trial.
+        (await client.PostAsJsonAsync(Route(UiApiRoutes.OnboardingPromotion, workspace),
+                new PromoteShadowBookRequestDto(designated.Version, Guid.NewGuid().ToString("N"), "Cut over.", [])))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.GetAsync(Route(UiApiRoutes.OnboardingOpeningBalanceReport, workspace)))
+            .StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     private static string Route(string template, OnboardingWorkspaceDto workspace)
         => template.Replace("{workspaceId:guid}", workspace.WorkspaceId, StringComparison.Ordinal);
 
@@ -450,6 +487,7 @@ public sealed class OnboardingEndpointTests
             builder.Services.AddSingleton<ICloseReadinessSubjectSource>(Subjects);
             builder.Services.AddSingleton<IFundProfileTenancyRegistry>(Tenancy);
             builder.Services.AddSingleton(Evidence.Object);
+            builder.Services.AddSingleton<IBookOfRecordGuard>(new OnboardingBookOfRecordGuard(Store));
             builder.Services.AddSingleton<OnboardingComparisonSource>(_ =>
                 throw new NotSupportedException("Source selection is outside these endpoint authorization tests."));
             builder.Services.AddSingleton(new FundScopedWriteTenantOptions(Enforce: true));

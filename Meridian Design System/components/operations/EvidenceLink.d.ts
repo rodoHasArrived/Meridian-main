@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Evidence link — a reference to an evidence artifact (readiness, reconciliation,
  * provider, or report-pack evidence). Mirrors the `EvidenceStatus` model
@@ -21,4 +22,4 @@ export interface EvidenceLinkProps extends React.HTMLAttributes<HTMLElement> {
   /** Click handler (when used as a button). */
   onOpen?: () => void;
 }
-export declare function EvidenceLink(props: EvidenceLinkProps): JSX.Element;
+export declare function EvidenceLink(props: EvidenceLinkProps): React.JSX.Element;

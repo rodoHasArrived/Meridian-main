@@ -56,7 +56,9 @@ internal sealed class LedgerFeatureRegistration : IServiceFeatureRegistration
             sp.GetService<ILedgerJournalStore>(),
             sp.GetService<ISecurityMasterStore>(),
             sp.GetService<IInstrumentPositionProjectionStore>(),
-            sp.GetService<IFactorPaydownProjectionService>()));
+            sp.GetService<IFactorPaydownProjectionService>(),
+            sp.GetService<Meridian.Contracts.Accounting.Lots.IBondIncomeService>(),
+            () => sp.GetService<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService>()));
         services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidateAuthorityBuilder>(sp =>
             sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>() as IAccountingPostingCandidateAuthorityBuilder
@@ -88,7 +90,9 @@ internal sealed class LedgerFeatureRegistration : IServiceFeatureRegistration
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<Meridian.Storage.SecurityMaster.ISecurityMasterStore>(),
                 sp.GetService<Meridian.Contracts.FixedIncome.IBondCalculationPolicy>(),
-                sp.GetService<Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService>())!);
+                sp.GetService<Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService>(),
+                sp.GetService<Meridian.Contracts.Accounting.Lots.IBondIncomeService>(),
+                () => sp.GetService<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService>())!);
         services.TryAddSingleton(sp => new CanonicalLotCorporateActionService(
             sp.GetService<ILedgerJournalStore>(),
             sp.GetService<ISecurityMasterStore>(),
@@ -102,7 +106,11 @@ internal sealed class LedgerFeatureRegistration : IServiceFeatureRegistration
                 sp.GetService<IAssetAccountingEventProjectionStore>(),
                 sp.GetRequiredService<IAccountingPostingCandidateAuthorityBuilder>(),
                 sp.GetService<Meridian.Contracts.FixedIncome.IBondCalculationPolicy>(),
-                sp.GetService<Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService>()));
+                sp.GetService<Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService>(),
+                sp.GetService<Meridian.Application.SecurityMaster.ISecurityMasterTermsCapabilityVerifier>() is { } floor
+                    ? floor.VerifyAsync
+                    : null,
+                instrumentPositions: sp.GetService<IInstrumentPositionProjectionStore>()));
         services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
 
         return services;

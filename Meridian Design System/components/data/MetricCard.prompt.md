@@ -7,3 +7,14 @@ KPI tile mirroring the desktop `MetricCardStyle` — raised off-white surface wi
 ```
 
 `tone` sets the left bar: `neutral | info | success | warning | danger`. Delta color is inferred from its leading sign (override with `trend`). Lay out 4–5 in a row.
+
+4.0: a **stated figure** (P&L, total, tie-out difference) passes `envelope` — the facets minus value/label — and the tile's value renders as a `ValueEnvelope` with the standard marks and hover disclosure. Counts and rates keep the plain string.
+
+```jsx
+<MetricCard label="Difference" value="+$108.00" tone="warning"
+  envelope={{ condition: "exception", authority: "derived", detail: "Statement − Ledger",
+    evidence: [{ label: "Run SRUN-1044", ref: "evidence://recon/SRUN-1044" }],
+    clocks: { asOf: "2026-06-30" } }} />
+```
+
+A11y (3.5): the group's accessible name carries value, trend + delta, context, non-neutral tone, and the optional `sparklineLabel` description.

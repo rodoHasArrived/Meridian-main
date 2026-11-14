@@ -296,7 +296,12 @@ describe("StrategyScreen", () => {
 
     expect(screen.getByText("Distribution profile")).toBeInTheDocument();
     expect(screen.getByText("Residual distribution")).toBeInTheDocument();
-    expect(screen.getByLabelText("PlotTool residual distribution chart")).toBeInTheDocument();
+    // The label sits on the chart svg itself, not on a wrapping role="img" div, so there is
+    // exactly one image with this name and it is not nested inside another image.
+    const distributionCharts = screen.getAllByRole("img", { name: "PlotTool residual distribution chart" });
+    expect(distributionCharts).toHaveLength(1);
+    expect(distributionCharts[0].tagName.toLowerCase()).toBe("svg");
+    expect(distributionCharts[0].parentElement?.closest('[role="img"]')).toBeNull();
     expect(screen.getByText("Regression frame")).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "PlotTool moments table" })).toBeInTheDocument();
     expect(screen.getByText("PlotTool moments for the active strategy pair.")).toBeInTheDocument();
@@ -370,7 +375,7 @@ describe("StrategyScreen", () => {
     expect(disabledDiff).toHaveAttribute("title", "Select exactly two runs before using this command. 0 selected.");
     expect(screen.getByText("No runs selected")).toBeInTheDocument();
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
 
@@ -421,7 +426,7 @@ describe("StrategyScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
     await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
@@ -453,7 +458,7 @@ describe("StrategyScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
     await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
@@ -496,7 +501,7 @@ describe("StrategyScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
     await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
@@ -531,7 +536,7 @@ describe("StrategyScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
     await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
@@ -547,7 +552,7 @@ describe("StrategyScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
     await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
@@ -617,7 +622,7 @@ describe("StrategyScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
     await user.click(screen.getByRole("button", { name: /diff 2 runs/i }));
@@ -659,7 +664,7 @@ describe("StrategyScreen", () => {
     await user.click(thresholdRow);
     expect(thresholdRow).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: "Selected parameter diff detail for threshold" }))
-      .toHaveTextContent("1.5 -> 2.0");
+      .toHaveTextContent("1.5 → 2.0");
     expect(api.diffRuns).toHaveBeenCalledOnce();
   });
 
@@ -688,7 +693,7 @@ describe("StrategyScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
     await user.click(screen.getByRole("button", { name: /diff 2 runs/i }));
@@ -955,9 +960,8 @@ describe("StrategyScreen route views", () => {
   it("leads the overview with retained runs and retains focused task routes", async () => {
     renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy"] });
 
-    const tablist = screen.getByRole("tablist", { name: "Strategy routes" });
-    expect(tablist).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Overview", selected: true })).toBeInTheDocument();
+    // The sidebar is the only sub-route navigation; the route heading says where you are.
+    expect(screen.queryByRole("tablist", { name: "Strategy routes" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Strategy overview" })).toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Retained strategy runs" })).toBeInTheDocument();
     await userEvent.setup().click(screen.getByText("Strategy authoring and analysis tools"));
@@ -975,8 +979,8 @@ describe("StrategyScreen route views", () => {
   it("scopes /strategy/promotions to the run library and keeps raw run IDs in technical details", () => {
     renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy/promotions"] });
 
-    expect(screen.getByRole("tab", { name: "Promotions", selected: true })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Promotions" })).toBeInTheDocument();
+    expect(screen.queryByRole("tablist", { name: "Strategy routes" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Promotion review" })).toBeInTheDocument();
     expect(screen.getByText("Strategy run library")).toBeInTheDocument();
     const runReferences = screen.getByText("Run references").closest("details");
     expect(runReferences).not.toBeNull();
@@ -991,7 +995,7 @@ describe("StrategyScreen route views", () => {
   it("scopes /strategy/lab to the PlotTool workstation", () => {
     renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy/lab"] });
 
-    expect(screen.getByRole("tab", { name: "Strategy Lab", selected: true })).toBeInTheDocument();
+    expect(screen.queryByRole("tablist", { name: "Strategy routes" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Strategy Lab" })).toBeInTheDocument();
     expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
     expect(screen.queryByText("Strategy run library")).not.toBeInTheDocument();

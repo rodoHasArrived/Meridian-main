@@ -132,5 +132,5 @@ export function resolveDryRunRuleMismatchReason(
 export function formatRuleEffectiveRange(rule: PostingRule): string {
   const start = rule.effectiveFrom ?? "open start";
   const end = rule.effectiveTo ?? "open end";
-  return `${start} -> ${end}`;
+  return `${start} → ${end}`;
 }

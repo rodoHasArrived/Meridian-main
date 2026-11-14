@@ -61,6 +61,19 @@ export interface RestatementCandidate {
   changedLines: unknown[];
 }
 
+/** What publishing an approved revision did to the canonical (golden) record. */
+export type SecurityMasterCanonicalMergeOutcomeKind =
+  | "NotApplicable"
+  | "OverlayOnly"
+  | "AlreadyCanonical"
+  | "Merged";
+
+export interface SecurityMasterCanonicalMergeOutcome {
+  outcome: SecurityMasterCanonicalMergeOutcomeKind;
+  detail: string;
+  canonicalVersion: number | null;
+}
+
 export interface SecurityMasterPublishResult {
   securityId: string;
   revisionId: string;
@@ -68,6 +81,8 @@ export interface SecurityMasterPublishResult {
   restatementRequired: boolean;
   restatementCandidates: RestatementCandidate[];
   invalidatedProjections: string[];
+  /** Null when no publish handler reported a canonical-merge outcome. */
+  canonicalMerge?: SecurityMasterCanonicalMergeOutcome | null;
 }
 
 /** Effective-dated edit to a single passport field. `actor` is server-derived and not supplied here. */

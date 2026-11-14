@@ -53,26 +53,41 @@ public partial class FundLedgerPage : Page
     }
 
     private async void OnReconciliationRefreshClick(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ReconciliationRefreshClickCoreAsync(sender, e), nameof(OnReconciliationRefreshClick)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ReconciliationRefreshClickCoreAsync(object sender, RoutedEventArgs e)
     {
         await RunReconciliationOperationAsync(ct => _viewModel.RefreshReconciliationWorkbenchAsync(ct));
     }
 
     private async void OnStartReviewBreakClick(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => StartReviewBreakClickCoreAsync(sender, e), nameof(OnStartReviewBreakClick)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task StartReviewBreakClickCoreAsync(object sender, RoutedEventArgs e)
     {
         await RunReconciliationOperationAsync(ct => _viewModel.StartReviewSelectedBreakAsync(ct));
     }
 
     private async void OnResolveBreakClick(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ResolveBreakClickCoreAsync(sender, e), nameof(OnResolveBreakClick)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ResolveBreakClickCoreAsync(object sender, RoutedEventArgs e)
     {
         await RunReconciliationOperationAsync(ct => _viewModel.ResolveSelectedBreakAsync(ct));
     }
 
     private async void OnMatchSelectedReconciliationItemsClick(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => MatchSelectedReconciliationItemsClickCoreAsync(sender, e), nameof(OnMatchSelectedReconciliationItemsClick)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task MatchSelectedReconciliationItemsClickCoreAsync(object sender, RoutedEventArgs e)
     {
         await RunReconciliationOperationAsync(ct => _viewModel.MatchSelectedReconciliationItemsAsync(ct));
     }
 
     private async void OnDismissBreakClick(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => DismissBreakClickCoreAsync(sender, e), nameof(OnDismissBreakClick)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task DismissBreakClickCoreAsync(object sender, RoutedEventArgs e)
     {
         await RunReconciliationOperationAsync(ct => _viewModel.DismissSelectedBreakAsync(ct));
     }

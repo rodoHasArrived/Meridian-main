@@ -1,3 +1,4 @@
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
@@ -18,7 +19,7 @@ public sealed partial class OrderManagementSystem
     /// <inheritdoc />
     public async Task<KillSwitchSweepResult> CancelAllAsync(CancellationToken ct = default)
     {
-        using var operation = EnterOperation();
+        using var operation = _lifecycle.EnterOperation(allowCancellationAfterFailure: true);
 
         // The sweep deliberately ignores the caller's token from here on, and the parameter is kept
         // only so the interface reads the same as every other async member. A kill switch is owed
@@ -69,7 +70,7 @@ public sealed partial class OrderManagementSystem
             }
 
             _orders.TryGetValue(unsettledOrderId, out var unsettledState);
-            if (unsettledState is not null && IsTerminalStatus(unsettledState.Status))
+            if (unsettledState is not null && OrderStatusFacts.IsTerminal(unsettledState.Status))
             {
                 continue;
             }

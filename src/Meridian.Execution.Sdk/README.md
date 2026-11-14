@@ -6,10 +6,12 @@ module_id: SRC-EXECUTION-SDK
 path: src/Meridian.Execution.Sdk
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-07-05
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Execution.Sdk
+
+`IOrderManager.GetUnitReservingOrders` returns the exposure reservations, except that a pending amendment reserves its larger-quantity outcome rather than its larger-value one, for unit limits.
 
 `CanonicalTaxLotAdapter` now compares explicit retained direction with the execution lot's sign,
 then compares absolute quantity, original date, identity and exact basis. Matching short lots may
@@ -17,10 +19,15 @@ bind; opposite directions cannot net. Symbols remain display evidence and bindin
 posting authority or tax character.
 
 
+Brokerage position snapshots preserve supplied accrued interest and distinguish provider-reported, cost-derived, and unavailable valuation bases. Cost basis is not evidence of a current bond quote.
+
 `BrokeragePortfolioSnapshotDto.IsComplete` defaults to false until a provider establishes complete
 account and holding evidence. `IBrokerageConnectionState` supplies a credential-free connection
 epoch and verified account/environment scope, so cached execution evidence cannot survive a
-connection switch. `IBrokerageOrderRecoveryGateway` reads a retained client identity without
+connection switch. `IBrokerageAccountIdentity` is for a broker that gives one account more than one
+identifier: the gateway reports one as the account's identity and recognizes the others, so a link
+retained under an older identifier is neither refused nor treated as a second account. A catalog
+entry declares such identifiers under `BrokerageExternalAccountMetadata.AccountIdAliases`. `IBrokerageOrderRecoveryGateway` reads a retained client identity without
 submitting or treating a missing broker response as permission to retry.
 
 ## Shared close and lot convergence
@@ -42,6 +49,19 @@ This layer should hold reusable execution contracts without binding them to one 
 
 ## Important workflows
 
+`ExecutionWorkflows.cs` defines broker-neutral preview, session-policy, executable-side quote and
+USD-equity coverage ports. `IOrderPreviewService` returns `OrderPreviewResult` with checks, nullable estimates, a fingerprint
+and evaluation/expiry times; preview grants no routing authority. `IRiskPreviewValidator` is the
+optional observation-only risk port: implementations must not reserve capacity or change execution
+controls. Submission performs current admission and risk validation again.
+
+`OrderRequest.SessionIntent`, `OrderState.SessionIntent` and `OrderState.JournalAttemptId` are nullable
+additions; absent session policies preserve legacy requests. `OrderResult.RequiresOrderReconciliation` identifies an uncertain submission requiring
+reconciliation before retry; `OrderSubmissionRefusal` marks known pre-dispatch exceptions without
+replacing their type. `AccountInfo.PreviousCloseEquity` and `EquityEvidenceComplete` carry explicit
+baseline and quality evidence; absent values remain unknown. See
+[execution workflows](../../docs/engineering/execution-workflows.md).
+
 New OMS submissions follow `OrderRequest` → `ValidatedOrder` → `GatewayResolvedOrder` before
 pre-trade risk. `ValidatedOrder.TryCreate` freezes metadata and legs and returns structured
 field errors for blank symbols, undefined order enums, missing price limbs, or conflicting /
@@ -53,6 +73,23 @@ quantity, broker-native notional, or face value priced as percentage of par as d
 `ToRiskRequest` is the compatibility boundary for existing risk rules: it stamps resolved sizing
 on a copy, never on the submitted gateway request. Neither typed object permits construction with
 arbitrary caller-asserted sizing. Amendments and recovery retain their existing contracts.
+
+`IOrderPreviewService` returns the normalized request, fingerprint, expiry, market reference and
+checks without granting routing authority. `IRiskPreviewValidator` observes a resolved order without
+reserving capacity or changing execution controls; submission still performs current admission and
+risk validation. `IOrderSessionPolicy`, `IOrderMarketReferenceSource` and
+`IOrderInstrumentCoverageSource` supply shared policy and evidence seams. `OrderRequest.SessionIntent`
+and `OrderState.SessionIntent` carry `RegularOnly`, `QueueNextSession` or `ExtendedHours` intent.
+See [execution workflows](../../docs/engineering/execution-workflows.md) for session eligibility,
+preview freshness and supported instrument coverage.
+
+`OrderResult.RequiresOrderReconciliation` identifies a failed submission that may have routed;
+reconcile the retained order identity before retrying. `OrderSubmissionRefusal` marks exceptions known
+to precede dispatch while preserving their type and cause. `OrderState.JournalAttemptId` identifies
+the tracked submission incarnation, keeping reused client IDs separate in retained history.
+`AccountInfo.PreviousCloseEquity` and `EquityEvidenceComplete` carry provider equity evidence for
+loss monitoring; missing or invalid evidence must remain unknown. These nullable fields and session
+intent are omitted from JSON when absent; the reconciliation flag is omitted when false.
 
 Use this module when execution integration contracts need to be shared by multiple execution implementations.
 `BrokerageOrderPlacementGate` is the shared pre-submit safety gate for HTTP endpoints and the OMS:
@@ -93,6 +130,12 @@ scope so synchronization and durable recovery revoke evidence when the active co
 The OMS retains it in `OrderState.BrokerAccountId` for exact account-qualified restart recovery;
 it is distinct from internal `FundAccountId` and cannot be supplied through caller routing metadata.
 Both fields are omitted when null, so old recovery snapshots remain readable without inventing ownership.
+`ExecutionReport.BookedMoneyMultiplier` records the money scale a paper book applied to a fill (the
+contract multiplier for listed premium contracts); it is omitted when null, and an unstamped durable
+record replays at the 1× it was booked at. `ExecutionReport.BookedVariationMargin` records that a
+paper book booked a futures fill under daily variation margin (no notional moved); it is omitted when
+null, and an unstamped durable record replays on the notional model. `PositionState.ContractMultiplier` (default 1) scales its
+`UnrealizedPnl` and `MarketValue`, while `AverageCostBasis` and `MarketPrice` stay per-unit quotes.
 Brokerage activity fill snapshots can carry explicit provider-reported realized P&L when a broker
 or custodian supplies it; callers should leave the field null rather than infer it from fill
 notional. Activity snapshots can also carry provider corporate-action/factor events such as
@@ -130,6 +173,10 @@ Generic execution and backtesting lot prices are raw quotes: debt is priced as p
 and contract quotes are scaled by the declared multiplier. Cost, value, and P&L methods apply
 those conventions; retained exact monetary basis is never scaled again.
 
+`OrderState.ParentOrderId` links a broker-side exit leg to its parent order, so risk rules can count
+one-cancels-other legs once. It is omitted when null; records written before it existed read as
+unlinked orders.
+
 ## Diagrams
 
 See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
@@ -153,6 +200,7 @@ See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet build src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~Meridian.Tests.Execution.ExecutionWorkflowTests" --logger "console;verbosity=normal"
 ```
 
 ## Change rules

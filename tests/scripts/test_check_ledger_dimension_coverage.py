@@ -112,7 +112,7 @@ def build_tree(
 
 class CheckLedgerDimensionCoverageTests(unittest.TestCase):
     def test_complete_surfaces_report_no_gaps(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             self.assertEqual(guard.find_gaps(build_tree(Path(temp_dir))), [])
 
     def test_canonical_dimensions_reads_positional_and_declared_members(self) -> None:
@@ -126,7 +126,7 @@ class CheckLedgerDimensionCoverageTests(unittest.TestCase):
             '        AddDimensionFilter(filters, "project", "Project", dimensions.Select(value => value.ProjectId));\n',
             "",
         )
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             gaps = guard.find_gaps(build_tree(Path(temp_dir), explorer=explorer))
 
         self.assertEqual(len(gaps), 1)
@@ -141,7 +141,7 @@ class CheckLedgerDimensionCoverageTests(unittest.TestCase):
         containment = COMPLETE_CONTAINMENT.replace(
             '        AddDimension(values, "costCenterId", dimensions.CostCenterId);\n', ""
         )
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             gaps = guard.find_gaps(build_tree(Path(temp_dir), containment=containment))
 
         flagged = {(member, tuple(missing)) for _, member, missing, _ in gaps}
@@ -160,13 +160,13 @@ class CheckLedgerDimensionCoverageTests(unittest.TestCase):
     }
 """ + COMPLETE_EXPLORER
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             self.assertEqual(guard.find_gaps(build_tree(Path(temp_dir), explorer=explorer)), [])
 
     def test_a_renamed_surface_member_fails_closed(self) -> None:
         """Coverage must never go unchecked silently: a surface whose member vanished is an error,
         not a skip."""
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = build_tree(Path(temp_dir), explorer=COMPLETE_EXPLORER.replace("AddDimensionFilters", "AddScopeFilters"))
 
             with self.assertRaises(SystemExit) as raised:
@@ -175,7 +175,7 @@ class CheckLedgerDimensionCoverageTests(unittest.TestCase):
         self.assertIn("AddDimensionFilters", str(raised.exception))
 
     def test_an_unparsable_canonical_source_fails_rather_than_passing_vacuously(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = build_tree(Path(temp_dir), canonical="public sealed record LedgerLineDimensionSet();")
 
             with self.assertRaises(SystemExit) as raised:
@@ -191,7 +191,7 @@ class CheckLedgerDimensionCoverageTests(unittest.TestCase):
         explorer = COMPLETE_EXPLORER.replace(
             '        AddDimensionField(fields, "Project", dimensions.ProjectId);\n', ""
         )
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = build_tree(Path(temp_dir), explorer=explorer)
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT_PATH), "--repo-root", str(root)],

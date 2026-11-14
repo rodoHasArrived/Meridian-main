@@ -27,7 +27,8 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public MainPageUiAutomationFacade(
         FundContextService? fundContextService = null,
-        IWorkstationOperatorInboxApiClient? operatorInboxApiClient = null)
+        IWorkstationOperatorInboxApiClient? operatorInboxApiClient = null,
+        bool validateScopes = false)
     {
         // These tests compose the shell the way a developer runs it: no desktop accounts configured
         // and nobody signed in. What that shell may read is decided by DesktopAuthenticationSession,
@@ -66,7 +67,8 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         _serviceProvider = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider(
             runMatService,
             fundContextService,
-            operatorInboxApiClient);
+            operatorInboxApiClient,
+            validateScopes);
         navigationService.SetServiceProvider(_serviceProvider);
 
         Page = _serviceProvider.GetRequiredService<MainPage>();

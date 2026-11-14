@@ -1,11 +1,16 @@
-// Fund-account options for the operating-scope picker. There is no fund-account
-// list endpoint; the household brokerage payload is the cleanest available source
-// (id + display name), so we derive suggestions from it defensively.
+// Fund-account options for the operating-scope picker. The household brokerage
+// payload is available to every trading operator (id + display name), so we derive
+// suggestions from it defensively. Fund and entity relationships come from the
+// organization graph instead (see `structure-options.ts`), when the operator may read it.
 import type { BrokerageHouseholdPortfolio } from "@/types";
 
 export interface ScopeFundAccountOption {
   id: string;
   label: string;
+  /** The fund the account belongs to, when a loaded read model states it. */
+  fundId?: string | null;
+  /** The legal entity the account is booked to, when a loaded read model states it. */
+  entityId?: string | null;
 }
 
 /**

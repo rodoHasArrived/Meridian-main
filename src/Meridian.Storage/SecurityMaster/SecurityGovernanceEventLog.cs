@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Npgsql;
@@ -21,7 +22,11 @@ public static class SecurityGovernanceStreams
     public const string OtcCollateral = "OtcCollateral";
 }
 
-/// <summary>One recorded governance event.</summary>
+/// <summary>
+/// One recorded governance event. <see cref="Payload"/> is the stored JSON as written;
+/// <see cref="ReadPayload{TPayload}"/> reads it through the declared contract for
+/// <see cref="Stream"/>/<see cref="EventType"/>, dispatching on <see cref="PayloadVersion"/>.
+/// </summary>
 public sealed record SecurityGovernanceEvent(
     long GlobalSequence,
     Guid? SecurityId,
@@ -30,7 +35,38 @@ public sealed record SecurityGovernanceEvent(
     string Actor,
     DateTimeOffset OccurredAt,
     JsonElement Payload,
-    int PayloadVersion);
+    int PayloadVersion)
+{
+    /// <summary>
+    /// The payload as its declared type. Throws <see cref="SecurityGovernancePayloadContractException"/>
+    /// when the event type has no contract on this node, <see cref="SecurityGovernancePayloadVersionException"/>
+    /// when <see cref="PayloadVersion"/> has no reader, and <see cref="InvalidOperationException"/> when
+    /// <typeparamref name="TPayload"/> is not the declared type.
+    /// </summary>
+    public TPayload ReadPayload<TPayload>()
+        where TPayload : class, ISecurityGovernancePayload
+        => SecurityGovernancePayloadContracts.Read<TPayload>(Stream, EventType, PayloadVersion, Payload);
+
+    /// <summary>
+    /// Reads the payload when this node declares a contract and a reader for its version and
+    /// <typeparamref name="TPayload"/> is the declared type; otherwise returns false and leaves the
+    /// raw <see cref="Payload"/> as the only reading. Malformed JSON for a declared version still throws.
+    /// </summary>
+    public bool TryReadPayload<TPayload>([NotNullWhen(true)] out TPayload? payload)
+        where TPayload : class, ISecurityGovernancePayload
+    {
+        payload = null;
+        if (!SecurityGovernancePayloadContracts.TryResolve(Stream, EventType, out var contract)
+            || !typeof(TPayload).IsAssignableFrom(contract.PayloadType)
+            || !contract.ReadableVersions.Contains(PayloadVersion))
+        {
+            return false;
+        }
+
+        payload = ReadPayload<TPayload>();
+        return true;
+    }
+}
 
 /// <summary>Reads the append-only Security Master governance event log.</summary>
 public interface ISecurityGovernanceEventReader
@@ -62,8 +98,14 @@ public sealed class PostgresSecurityGovernanceEventLog : ISecurityGovernanceEven
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
-    /// <summary>Appends one governance event inside the caller's transaction.</summary>
-    public static async Task AppendAsync(
+    /// <summary>
+    /// Appends one governance event inside the caller's transaction. The payload must be the type
+    /// declared for <paramref name="stream"/>/<paramref name="eventType"/> in
+    /// <see cref="SecurityGovernancePayloadContracts"/>; it is serialized through
+    /// <see cref="SecurityGovernanceJsonContext"/>, and its contract's current version is written to
+    /// <c>payload_version</c> explicitly rather than left to the column default.
+    /// </summary>
+    public static async Task AppendAsync<TPayload>(
         NpgsqlConnection connection,
         NpgsqlTransaction? transaction,
         string schema,
@@ -72,29 +114,32 @@ public sealed class PostgresSecurityGovernanceEventLog : ISecurityGovernanceEven
         string eventType,
         string actor,
         DateTimeOffset occurredAt,
-        object payload,
+        TPayload payload,
         CancellationToken ct)
+        where TPayload : class, ISecurityGovernancePayload
     {
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentException.ThrowIfNullOrWhiteSpace(stream);
         ArgumentException.ThrowIfNullOrWhiteSpace(eventType);
         ArgumentNullException.ThrowIfNull(payload);
+        var contract = SecurityGovernancePayloadContracts.ResolveForWrite<TPayload>(stream, eventType);
 
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText =
             $"""
             insert into {schema}.security_governance_events
-                (security_id, stream, event_type, actor, occurred_at, payload)
+                (security_id, stream, event_type, actor, occurred_at, payload, payload_version)
             values
-                (@security_id, @stream, @event_type, @actor, @occurred_at, @payload::jsonb);
+                (@security_id, @stream, @event_type, @actor, @occurred_at, @payload::jsonb, @payload_version);
             """;
         command.Parameters.AddWithValue("security_id", (object?)securityId ?? DBNull.Value);
         command.Parameters.AddWithValue("stream", stream);
         command.Parameters.AddWithValue("event_type", eventType);
         command.Parameters.AddWithValue("actor", string.IsNullOrWhiteSpace(actor) ? "system" : actor.Trim());
         command.Parameters.AddWithValue("occurred_at", occurredAt.UtcDateTime);
-        command.Parameters.AddWithValue("payload", JsonSerializer.Serialize(payload));
+        command.Parameters.AddWithValue("payload", contract.Serialize(payload));
+        command.Parameters.AddWithValue("payload_version", contract.CurrentVersion);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 

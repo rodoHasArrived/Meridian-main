@@ -6,20 +6,84 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-02
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Ledger
 
+`LedgerJournalReversal` preserves explicit transaction/functional currency and acquisition FX
+while swapping both functional and transaction debit/credit amounts. A correction never drops the
+currency evidence from its immutable source.
+
+Explicitly classified investing activities recognize either an asset carrying leg or a
+liability carrying leg (short securities payable). A short cover with retained investing
+classification reports its actual cash cost while preserving the booked realized result.
+
+Optional intercompany agreement/revision, chart-node/binding and transaction identities retain
+source provenance on immutable journal legs. Null fields are omitted to preserve historic evidence
+serialization. Reviewed legacy-attribution sidecars add missing historical identity without editing
+posted legs; consolidation output remains a separate reviewed overlay. See
+[the domain dictionary](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md).
+Cost-basis relief uses monetary cost per recorded quantity. Face-value amortization targets the
+economic face represented by that quantity and retains decimal unit-cost precision; share rounding
+is unchanged. Unaffected lots retain their exact basis. Known exact whole-lot basis follows each
+split, factor, amortization, capital-return and wash-sale monetary transform.
+
+`JournalEntryMetadata.PreparerAttestation` retains the exact native cash-dividend preparer receipt,
+owner scope and posting fingerprints on the immutable journal for current and frozen report proof.
+The absent property is omitted from JSON so historical journal hashes remain unchanged. This
+classification establishes preparer attestation only; source verification, independent approval
+and financial coverage remain separate.
+
+`LedgerLineDimensionSet` retains optional `IntercompanyAgreementId` and approved version as a pair.
+Canonicalization, grouping and replay preserve the distinction between agreement revisions without
+changing legacy signatures when references are absent. Agreement provenance explains a line; it
+does not create paired postings, settlement or agreement-level consolidation. The durable storage
+boundary validates supplied references and historical reversals. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+`StructuredNoteAccountingTemplate` recognizes dated fair-value gains and losses in profit or loss
+through the existing governed daily-valuation drafts. It converts face quantities and raw percentage
+quotes through the shared lot model, applies currency minor units, and retains template/convention
+evidence with its retry identity. Structured notes do not enter the bond coupon-accrual route.
+
+`LedgerAccounts.ShortSaleCollateralReceivable` is the asset account for collateral the broker holds against open Reg T short sales.
+
+Share-class redemptions round cash to the class currency's minor units (`NavPerUnitCalculator.CashForRedemption(units, nav, currency)`).
+
+`PrivateCapitalPostingAuthority` binds frozen call plans and approved commitment revisions to
+governed issuance/funding drafts. Native funding has a distinct stable receipt identity for each
+partial receipt while retaining the originating installment and fund-event identity. Historical
+factory calls without a receipt identity retain their previous idempotency keys. Bank evidence
+must identify a positive, unvoided `CapitalCallFunding` transaction matching entity, currency,
+amount and effective date; source snapshots are hashed and rechecked before posting.
+
+`IPrivateCapitalStore` exposes durable commitment revisions, frozen call plans, and immutable posting
+receipts without owning a storage engine. `PrivateCapitalAuthorityRules` validates explicit scope
+and source terms; `PrivateCapitalCallPlanHash` binds the reviewed allocation while excluding later
+posting observations. The commitment-to-cash workflow reuses the existing capital-call kernel and
+requires source-backed opening authority instead of inferring commitments from assignments.
+Call allocation uses called capital as of its notice date. The shared authority rule also walks
+all posted issuance dates and approved effective-date checkpoints, so backdated calls cannot break
+a future reduction and later increases cannot authorize an earlier overcall. At one effective date,
+the highest approved revision owns the cap; superseded and draft terms do not constrain the timeline.
+
 `ShortCarryProjector` derives the borrow-fee and payment-in-lieu journals (expense debit, cash
 credit) from a reviewed `ShortCarryInstruction`; it refuses long lots, non-functional currencies,
 zero-rounding charges and mixed inputs, and changes no lot quantity or basis.
-`ShortLotJournalProjector` owns book accounting for governed short opening and cover. Quantities
+`ShortLotJournalProjector` owns book accounting for governed short opening and cover; its
+`CoverInCurrency` derives the transaction-currency cover with fees from reviewed `ShortCoverTerms`
+(cash at cover FX, liability relief at acquisition FX, fee expense, book result at acquisition FX and
+a separate realized FX result, each amount rounded once to its currency's minor units), and `Reverse`
+yields the exact inverse of a posted short journal for immutable reversal receipts. Quantities
 and retained proceeds stay positive; direction selects liability accounting. A cover relieves
 opening proceeds against cash execution cost and recognizes the difference as book gain/loss.
 It does not infer short-sale tax character or manufacture corporate-action payments.
 
 Cash-flow reversal remaps accepted retained attribution tags case-insensitively, matching the attribution reader after serialization and line reordering. Unsupported or incomplete attribution still blocks reporting.
+`LedgerJournalReversal` also reverses each retained transaction-currency debit/credit while
+preserving both currency codes and the recorded FX rate. Corrections therefore reverse the
+functional and transaction amounts together; original entries remain immutable.
 
 
 `OpenLotReliefService` treats explicit long/short direction as part of the pool scope. It never
@@ -76,12 +140,37 @@ This layer should model ledger behavior and accounting evidence without owning U
 
 ## Important workflows
 
+Backtesting, paper portfolios, durable execution fills and direct-lending journals resolve posting
+accounts through `IChartOfAccounts` and the immutable `StandardChartOfAccounts` role registry.
+Account types and symbol requirements are explicit; an unknown role is rejected. `GetDefinition`
+provides name/type metadata without inventing a financial account or bypassing posting-scope checks.
+Existing names and scopes remain compatible with retained journals and `LedgerAccounts` balance
+lookups. Loan roles preserve their historical classification, instrument symbol and loan-account
+scope; cash uses the same role as trading. The hierarchical `ChartOfAccounts` remains a reporting rollup.
+
+`SecurityTradePostingProjector` supplies the common opening, closing, commission, financing,
+short-collateral and variation-margin line economics. Callers retain exact opening/closing quantities,
+execution values and relieved long basis or original short proceeds; crossing zero retains both
+legs. New short openings and covers use `Short Securities Payable`, while gains and losses use the
+retained carrying value even for breakeven or partial closes. The kernel never selects lots or
+reconstructs basis from an average quote or realized result. `TradeFillAccountingEvidence` carries
+these facts, source costs, collateral and financial-account scope from the paper lot mutation into
+the durable fill event. Old retained events and journals keep their historical shapes during retry;
+this convergence does not rewrite posted history or supply missing basis authority.
+
 Use this module for books, ledger behavior, reconciliation evidence, and accounting workflow support.
 `ChartOfAccounts` supports customizable colon-delimited account hierarchies such as
 `Assets:Cash:Brokerage` and can roll flat trial-balance output up to parent accounts for
 fund/accounting reports.
 `LedgerFinancialStatementBuilder` projects current or point-in-time trial balances into
 income-statement and balance-sheet rows with net-income and accounting-equation checks;
+`BuildIncomeStatementForPeriod` separately returns a `LedgerIncomeStatement` over
+`(PeriodStart, AsOf]`, scoped to the requested financial account and line dimensions. It excludes
+opening balances and pure retained-earnings closing transfers while retaining ordinary reversals
+and corrections. Its period revenue, expenses and result remain available after closing the books.
+Zero-result closes without a retained-earnings leg require retained period-close provenance and a
+balanced temporary-account scope; an ordinary P&L reclassification does not become a closing transfer.
+Existing point-in-time statements and `BuildForPeriod` keep their accumulated unclosed P&L contract.
 `BuildForPeriod` additionally derives a direct-method `LedgerCashFlowStatement` (operating /
 investing / financing, reconciled to beginning and ending cash) and a
 `LedgerPartnersCapitalStatement` roll-forward (beginning capital, contributions, distributions,
@@ -135,13 +224,33 @@ Csv, Json, RegulatoryXml natively plus real binary Xlsx/Pdf through the
 `ILedgerReportBinaryRenderer` seam (the dependency-free `BuiltInLedgerReportBinaryRenderer` by
 default; `Meridian.Documents.FinancialReportDocumentRenderer` supplies branded, deterministic
 QuestPDF/ClosedXML output for client delivery).
+Text cells in both builders' CSV artifacts pass through `LedgerCsvCell`, which prefixes
+formula-looking text (leading `=`, `+`, `@`, tab, or a non-numeric `-`) with an apostrophe so
+spreadsheets open it as text; ordinary values and negative amounts keep their existing bytes.
 The report pack's trial-balance, income-statement, and balance-sheet line provenance includes the
 complete selected as-of history, matching those point-in-time amounts. Prior-period entries remain
 explicit support for opening balances instead of being omitted from a current-period proof.
+When a chart row aggregates multiple investor, financial-account, or symbol identities under one
+account path, its provenance resolves the actual posted accounts of that type and path. The
+as-of, financial-account, and line-dimension filters still apply, so an aggregate retains every
+contributing journal without widening the selected scope.
 Ledger legs can carry explicit `LedgerEntryCurrency` (transaction currency, transaction amounts,
 and FX rate) alongside the functional debit/credit so currency no longer has to be inferred from
 account symbols; the currency-aware `Ledger.PostLines` overload and
 `MultiCurrencyJournalProjection.ToCurrencyAwareLedgerLines` post that detail durably.
+`JournalEntry.IsBalanced` refuses nominal offsets between different declared functional currencies.
+Fully declared single-transaction-currency journals must also balance their original amounts;
+cross-currency exchanges balance their converted functional amounts. Same-currency amounts require
+a rate of one. Legacy lines without currency detail remain readable, while the durable book guard
+checks every declared functional currency against the retained book's base currency.
+
+`LedgerReportPackBuilder` also emits `gl-detail.csv` (one row per journal line posted after the
+period start and up to the as-of time, the same window as the period statements, inside the pack's financial-account and dimension scope) and
+`pnl-by-strategy-symbol.csv` (period revenue and expense grouped by the journal's `StrategyId` and
+the line's symbol; lines without either are kept under an empty key, and closing journals that only
+transfer revenue and expense to retained earnings are left out so the rows sum to the period's
+result from activity). `manifest.csv` carries control totals over the GL detail: journal-entry count, line
+count, total debits, total credits, and their variance.
 
 Fund-ops economics are modeled as pure calculators: `PreferredReturnCalculator` (compounding or
 simple preferred return on a contribution timeline), `EuropeanDistributionWaterfall` (return of
@@ -164,6 +273,11 @@ uncalled. The `CommitmentRollForwardCalculator` and `DefaultInterestCalculator` 
 F# posting kernel so storage and reporting projections do not duplicate account-type math.
 `MultiCurrencyLedgerTranslator` translates local-currency balances to a base currency and prepares
 balanced unrealized FX revaluation journal lines for monetary asset/liability accounts.
+`JournalTemplate.Calculation` marks a template whose lines come from a registered posting
+calculation each period; the recurring-journal runner uses it to draft management fees,
+performance fees, expense accruals, bond coupon and amortization, and FX revaluation for approval
+(see `docs/domain/recurring-journal.md`). `PostingCalculationNotYetConnectedAttribute` records a
+finished draft or line builder that deliberately has no production caller yet.
 `MultiCurrencyJournalProjector` converts local-currency debit/credit journal inputs into balanced
 base-currency ledger posting lines while preserving local amount, currency, and FX-rate evidence.
 `DailyPortfolioPricingProjector` applies fund-specific valuation policies to listed and OTC daily
@@ -234,9 +348,14 @@ restates open lots by reference-data-derived `LedgerTaxLotBasisAdjustment`s — 
 splits and return of capital, pool-factor paydowns, and day-count premium/discount amortization —
 before relief, keeping the ledger engine free of Security Master contracts while relieving basis
 against the effective lots. The Application-layer `SecurityMasterCostBasisAdjustmentService` reads
-the master and produces those adjustments; `SecurityMasterAmortizationLedgerBridge` posts the
-matching coupon-accrual, premium-amortization/discount-accretion, and principal-paydown journal
-entries so cash flow projections are booked instead of remaining display-only.
+the master and produces those adjustments. The separate `SecurityMasterAmortizationLedgerBridge`
+remains available to the recurring `FixedIncomeAccrualCalculation`, which invokes it on a scratch
+ledger and retains coupon-accrual and premium-amortization/discount-accretion lines in a governed
+draft. This recurring route requires explicit Bond accrual admission, measured coupon intervals,
+dated holdings and matching book currency; real posting follows the ordinary approval lifecycle.
+Projected principal paydowns are excluded from that draft and arrive through cash activity.
+The retired `StructuredCashFlowLedgerBridge` and `BuildLedgerPostingsAsync` facade do not provide
+an alternate whole-coupon posting path.
 `AutomatedJournalDraftProjector` produces balanced drafts for dividend declarations, dividend
 receipts, cash-interest credits, corporate-action cash events, and recurring accrual obligations
 such as management fees, performance fees, commissions, and withholding taxes before workflow
@@ -247,10 +366,9 @@ ledger journal entry.
 `LedgerJournalReversal` is the general correction primitive: it books a balanced reversing entry
 for any posted journal by swapping every line's debit and credit under a new journal id, linking
 back to the original via a `reversal.of` tag — so corrections stay immutable (reverse/rebook) rather
-than mutating posted history. The Application-layer `SecurityMasterLedgerBridge` uses it (opt-in via
-`CorporateActionLedgerPostingContext.AutoReverseSupersededPostings`) to automatically reverse a
-previously-posted corporate action when it is cancelled, and to reverse-then-rebook when it is
-amended.
+than mutating posted history. The retired direct corporate-action poster is retained only as a
+historical test fixture. Current corporate actions use governed accounting candidates and their
+canonical lot instructions.
 `IAutomatedJournalPostingTarget` is the shared target contract for approved automated journal
 projections: backtests and what-if runs can post through `InMemoryAutomatedJournalPostingTarget`,
 while durable implementations can append the same approved projection to the governed journal
@@ -287,7 +405,9 @@ fund/entity/sleeve plus organization, portfolio, book, account, customer, vendor
 external-GL scoped instead of emitting all same-account ledger entries.
 `LedgerReportSchedulePlanner` projects monthly, quarterly, or annual report schedules into
 period-bounded export occurrences and dimension-scoped report-pack requests for regulatory,
-investor, or internal stakeholder delivery workflows.
+investor, or internal stakeholder delivery workflows. Its `PeriodStartingOn` method is the shared
+period-boundary definition that the governed reporting scheduler uses to advance period-close
+schedules; the planner itself never executes anything.
 `LedgerScheduledReportExportPackageBuilder` turns a signed report pack plus one scheduled
 occurrence into a delivery manifest and regulator-facing XML summary artifact when requested by the
 schedule, preserving recipients, due date, requested formats, report-pack signature, dimension
@@ -360,6 +480,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-LEDGER -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |

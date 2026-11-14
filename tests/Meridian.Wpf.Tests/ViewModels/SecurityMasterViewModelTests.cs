@@ -13,6 +13,7 @@ using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
@@ -155,6 +156,20 @@ public sealed class SecurityMasterViewModelTests
                 service => service.BackfillAllAsync("backfill-operator", It.IsAny<CancellationToken>()),
                 Times.Once);
         });
+    }
+
+    /// <summary>
+    /// Reads the whole <c>SecurityMasterViewModel</c> partial class (the primary file and its
+    /// <c>SecurityMasterViewModel.*.cs</c> partials) so source assertions do not depend on which
+    /// partial file owns a member.
+    /// </summary>
+    private static string ReadSecurityMasterViewModelSource()
+    {
+        var primary = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs");
+        var directory = Path.GetDirectoryName(primary)!;
+        var partials = Directory.GetFiles(directory, "SecurityMasterViewModel.*.cs")
+            .OrderBy(path => path, StringComparer.Ordinal);
+        return string.Join("\n", new[] { primary }.Concat(partials).Select(File.ReadAllText));
     }
 
     private static string BackfillOnlyUsersJson()
@@ -545,7 +560,7 @@ public sealed class SecurityMasterViewModelTests
     public void SecurityMasterPageSource_BindsSearchRecoveryAction()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml"));
-        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
+        var viewModel = ReadSecurityMasterViewModelSource();
 
         xaml.Should().Contain("SecurityMasterClearSearchButton");
         xaml.Should().Contain("SecurityMasterSearchButton");
@@ -575,7 +590,7 @@ public sealed class SecurityMasterViewModelTests
     [Fact]
     public void SecurityMasterWorkflowSection_ShouldOwnImportPollingAndBadgeStateWithAdapterBindings()
     {
-        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
+        var viewModel = ReadSecurityMasterViewModelSource();
         var sections = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.Sections.cs"));
 
         sections.Should().Contain("internal sealed class SecurityMasterWorkflowSectionViewModel");
@@ -599,7 +614,7 @@ public sealed class SecurityMasterViewModelTests
     [Fact]
     public void SecurityMasterSearchSection_ShouldOwnSearchFilterAndRecoveryStateWithAdapterBindings()
     {
-        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
+        var viewModel = ReadSecurityMasterViewModelSource();
         var sections = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.Sections.cs"));
 
         sections.Should().Contain("public string SearchQuery { get; set; } = string.Empty;");
@@ -624,7 +639,7 @@ public sealed class SecurityMasterViewModelTests
     [Fact]
     public void SecurityMasterPrintSection_ShouldOwnCorporateActionFormStateWithAdapterBindings()
     {
-        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
+        var viewModel = ReadSecurityMasterViewModelSource();
         var sections = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.Sections.cs"));
 
         sections.Should().Contain("public bool IsRecordCorpActionVisible { get; set; }");
@@ -980,6 +995,44 @@ public sealed class SecurityMasterViewModelTests
     }
 
     [Fact]
+    public void LoadSelectedTrustSnapshotAsync_ShouldShowTypedScheduleBlockersAndEffectiveGovernance()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+            var securityId = Guid.Parse("abababab-1111-1111-1111-111111111111");
+            var snapshot = CreateTrustSnapshot(securityId);
+            snapshot = snapshot with
+            {
+                ScheduleBook = snapshot.ScheduleBook! with
+                {
+                    DeclaredExercise = new SecurityMasterDeclaredExerciseOutcomeDto(
+                        SecurityMasterDeclaredExerciseStatus.Blocked, new DateOnly(2026, 11, 11), 7, 0,
+                        [new("CalendarUnavailable", "The declared calendar is unavailable.")],
+                        ["Refresh calendar evidence."])
+                },
+                Governance = new SecurityMasterGovernanceDto("Institutional", "Latched", true, true, true, true,
+                    ["SecurityMasterWorkbench:GovernanceProfile"]),
+                CashFlowBlocker = new SecurityMasterScheduleBlockerDto("NegativeInterestUnsupported", "Signed interest is unsupported.")
+            };
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient { SnapshotFactory = (_, _) => snapshot };
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+
+            viewModel.ScheduleBookFields.Should().Contain(new SecurityMasterPresentationField("Declared call/put schedule", "Blocked"));
+            viewModel.ScheduleBookFields.Should().Contain(new SecurityMasterPresentationField("Cash-flow calculation blocker: NegativeInterestUnsupported", "Signed interest is unsupported."));
+            viewModel.ScheduleBookFields.Should().Contain(new SecurityMasterPresentationField("Schedule security version", "7"));
+            viewModel.ScheduleBookFields.Should().Contain(new SecurityMasterPresentationField("Schedule blocker: CalendarUnavailable", "The declared calendar is unavailable."));
+            viewModel.ScheduleBookFields.Should().Contain(new SecurityMasterPresentationField("Schedule diagnostic", "Refresh calendar evidence."));
+            viewModel.ScheduleBookFields.Should().Contain(new SecurityMasterPresentationField("Effective governance", "Institutional"));
+            viewModel.ScheduleBookFields.Should().Contain(field => field.Label == "Governance latch" && field.Value.Contains("until the host restarts"));
+            viewModel.ScheduleBookFields.Should().Contain(field => field.Label == "Ignored configuration" && field.Value.Contains("SecurityMasterWorkbench:GovernanceProfile"));
+        });
+    }
+
+    [Fact]
     public void LoadSelectedTrustSnapshotAsync_ShouldNotCountInformationalValidationIssuesAsAdvisory()
     {
         WpfTestThread.Run(async () =>
@@ -1146,7 +1199,7 @@ public sealed class SecurityMasterViewModelTests
     public void SecurityMasterPageSource_BindsScheduleBookAndOpenLotReadModel()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml"));
-        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
+        var viewModel = ReadSecurityMasterViewModelSource();
 
         xaml.Should().Contain("SecurityMasterScheduleBookPanel");
         xaml.Should().Contain("SecurityMasterOpenLotReadModelPanel");

@@ -266,9 +266,11 @@ internal sealed partial class FundStructureCashFlowReadService
 
         if (assignment.Units.HasValue && assignment.Units.Value != 0m)
         {
-            foreach (var action in corporateActions
-                .Where(action => AssignmentComparer.Equals(action.EventType, "Dividend"))
-                .Where(action => action.DividendPerShare.HasValue))
+            // The per-unit amount is read from the typed cash-distribution terms, the definition the
+            // ledger posting and income projection share; the event filter stays ordinary dividends.
+            foreach (var (action, dividendTerms) in corporateActions
+                .Select(static action => (Action: action, Terms: CorporateActionTerms.From(action) as CashDistributionCorporateActionTerms))
+                .Where(static candidate => candidate.Terms is { EventType: CorporateActionEventTypes.Dividend, AmountPerUnit: not null }))
             {
                 var eventDate = ToDateTimeOffset(action.PayDate ?? action.ExDate);
                 if (eventDate < projectionWindowStart || eventDate >= projectionWindowEnd)
@@ -276,7 +278,7 @@ internal sealed partial class FundStructureCashFlowReadService
                     continue;
                 }
 
-                var amount = assignment.Units.Value * action.DividendPerShare!.Value;
+                var amount = assignment.Units.Value * dividendTerms!.AmountPerUnit!.Value;
                 if (amount == 0m)
                 {
                     continue;

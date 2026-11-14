@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Channels;
+using Meridian.Contracts.Integrity;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -74,8 +75,10 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
             _logger.LogWarning(
                 "ROBINHOOD_ACCESS_TOKEN is not set; Robinhood brokerage gateway will be unavailable.");
 
-        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>(
-            singleReader: false, singleWriter: false);
+        // Execution reports carry fills and terminal order states, so they must never be
+        // evicted: wait for the consumer instead of dropping the oldest report when full.
+        _reportChannel = (EventPipelinePolicy.Default with { FullMode = BoundedChannelFullMode.Wait })
+            .CreateChannel<ExecutionReport>(singleReader: false, singleWriter: false);
     }
 
     // ── IBrokerageGateway / IExecutionGateway ─────────────────────────────
@@ -1271,7 +1274,8 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Robinhood failed to fetch equity order {OrderId}", orderId);
+            _logger.LogWarning("Robinhood failed to fetch equity order {OrderHash} ({FailureType}).",
+                Sha256Digest.ComputeUtf8(orderId ?? string.Empty), ex.GetType().Name);
             return null;
         }
     }
@@ -1297,7 +1301,8 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Robinhood failed to fetch option order {OrderId}", orderId);
+            _logger.LogWarning("Robinhood failed to fetch option order {OrderHash} ({FailureType}).",
+                Sha256Digest.ComputeUtf8(orderId ?? string.Empty), ex.GetType().Name);
             return null;
         }
     }

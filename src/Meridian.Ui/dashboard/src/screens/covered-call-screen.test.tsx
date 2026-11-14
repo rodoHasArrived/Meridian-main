@@ -88,6 +88,10 @@ const completedRunResult: CoveredCallRunResult = {
 
 const completedRunWithTrades: CoveredCallRunResult = {
   ...completedRunResult,
+  equityCurve: [
+    { date: "2024-01-02", strategyEquity: 100000, underlyingEquity: 100000 },
+    { date: "2024-03-28", strategyEquity: 104250, underlyingEquity: 103100 }
+  ],
   trades: [
     {
       strike: 505,
@@ -198,6 +202,22 @@ describe("CoveredCallScreen", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it("aborts the pending history request when the screen unmounts", async () => {
+    let rejectHistory!: (reason: unknown) => void;
+    vi.mocked(coveredCallApi.listCoveredCallRuns).mockReturnValueOnce(
+      new Promise((_, reject) => { rejectHistory = reject; })
+    );
+    const { unmount } = renderCoveredCallScreen();
+    const signal = vi.mocked(coveredCallApi.listCoveredCallRuns).mock.calls[0][1];
+    expect(signal).toBeInstanceOf(AbortSignal);
+    expect(signal?.aborted).toBe(false);
+
+    unmount();
+
+    expect(signal?.aborted).toBe(true);
+    await act(async () => rejectHistory(new DOMException("Navigation cancelled", "AbortError")));
   });
 
   it("renders chain preview rows with keyboard selection and a linked detail panel", async () => {
@@ -352,7 +372,7 @@ describe("CoveredCallScreen", () => {
 
     expect(historyTable).toBeInTheDocument();
     expect(historyRow).toHaveAttribute("tabindex", "0");
-    expect(screen.getByText("Jul 1, 14:05 UTC")).toBeInTheDocument();
+    expect(screen.getByText("Jul 1, 2024, 14:05 UTC")).toBeInTheDocument();
     expect(screen.getByText("12.3%")).toBeInTheDocument();
     expect(screen.getByText("1.42")).toBeInTheDocument();
 
@@ -530,10 +550,10 @@ describe("CoveredCallScreen", () => {
 
     const tradeTable = await screen.findByRole("treegrid", { name: "SPY covered-call trade timeline" });
     const firstTrade = await screen.findByRole("row", {
-      name: "Inspect SPY trade 1, entry 2024-01-10, exit 2024-01-24, strike 505.00, PnL $320, status Closed gain."
+      name: "Inspect SPY trade 1, entry 2024-01-10, exit 2024-01-24, strike 505.00, P&L $320, status Closed gain."
     });
     const assignedTrade = await screen.findByRole("row", {
-      name: "Inspect SPY trade 2, entry 2024-02-01, exit 2024-02-12, strike 510.00, PnL -$140, status Assigned."
+      name: "Inspect SPY trade 2, entry 2024-02-01, exit 2024-02-12, strike 510.00, P&L -$140, status Assigned."
     });
 
     expect(tradeTable).toBeInTheDocument();
@@ -554,7 +574,12 @@ describe("CoveredCallScreen", () => {
       name: "Selected covered-call trade 2: SPY 510.00 call"
     })).toBeInTheDocument();
     expect(screen.getByText("Take profit")).toBeInTheDocument();
-    expect(screen.getByText("Assigned; exit reason Assigned; -$140 total net PnL.")).toBeInTheDocument();
+    expect(screen.getByText("Assigned; exit reason Assigned; -$140 total net P&L.")).toBeInTheDocument();
+
+    const equityChart = screen.getByRole("img", { name: "Covered-call strategy versus underlying equity curve" });
+    expect(equityChart).toHaveAccessibleDescription(/2 points from 2024-01-02 to 2024-03-28\. Final strategy equity \$104,250/);
+    const equityTable = screen.getByRole("table", { name: "Covered-call strategy versus underlying equity curve data" });
+    expect(within(equityTable).getByRole("row", { name: /^2024-03-28 \$104,250(\.00)? \$103,100(\.00)?$/ })).toBeInTheDocument();
   });
 
   it("renders payoff position controls and updates the selected short-call diagram", async () => {

@@ -1,0 +1,266 @@
+<!-- @dsCard group="Documentation" viewport="1240x980" name="Workstation blueprint" subtitle="v2.0 — archetypes, surface hierarchy, data states, and the quality gate for new workstation templates" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meridian workstation blueprint v2.0</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
+<style>
+body{margin:0;padding:24px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font:600 22px var(--font-display);margin:0 0 4px}
+.lede{font-size:13px;color:var(--text-secondary);margin:0 0 6px;max-width:820px}
+.src{font-family:var(--font-data);font-size:11px;color:var(--text-muted);margin:0 0 22px}
+.axiom{font:500 14px var(--font-display);color:var(--text-primary);border-left:2px solid var(--brand-signal,#C56343);padding:4px 0 4px 10px;margin:0 0 22px}
+section{border:1px solid var(--border);background:var(--bg-light);margin-bottom:16px}
+.shead{display:flex;align-items:baseline;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg-panel,var(--bg-medium))}
+.num{font-family:var(--font-data);font-size:12px;font-weight:700;color:var(--interaction-link)}
+.shead h2{font:600 15px var(--font-display);margin:0}
+.shead .note{margin-left:auto;font-family:var(--font-data);font-size:11px;color:var(--text-muted)}
+.body{padding:14px 16px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.eyebrow{font:600 10px var(--font-body);font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);margin:0 0 8px}
+ol.rules{margin:0;padding-left:18px}
+ol.rules li{font-size:12.5px;line-height:1.6;color:var(--text-secondary);margin-bottom:4px}
+ol.rules li b{color:var(--text-primary)}
+ul.plain{margin:0;padding-left:16px}
+ul.plain li{font-size:12.5px;line-height:1.6;color:var(--text-secondary)}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:7px 10px;font-size:12px;border-bottom:1px solid var(--border);vertical-align:top}
+th{font:600 10px var(--font-body);font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);background:var(--bg)}
+td{color:var(--text-secondary)}
+td b{color:var(--text-primary);font-weight:600}
+td.num,th.num{text-align:right;font-family:var(--font-data)}
+code,.mono{font-family:var(--font-data);font-size:11.5px}
+pre{margin:0;background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:12px;overflow:auto;font-family:var(--font-data);font-size:11.5px;line-height:1.55}
+.tok-c{color:var(--text-muted)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-family:var(--font-data);font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:2px;color:var(--text-secondary);background:var(--bg);white-space:nowrap}
+.never li{color:var(--text-secondary)}
+.gate{columns:2;column-gap:24px}
+.gate li{break-inside:avoid}
+@media(max-width:860px){.cols{grid-template-columns:1fr}.gate{columns:1}}
+</style>
+</head>
+<body class="mds-specimen">
+<div class="wrap">
+<h1>Workstation blueprint v2.0</h1>
+<p class="lede">The production structure for Meridian workstation templates: repository conventions plus the Programmed Institutionalism rules — one dominant work plane, a paper–plate–well material hierarchy, explicit data states, traceable evidence, restrained brand expression.</p>
+<p class="src">Full text: <code>docs/WORKSTATION_BLUEPRINT.md</code> · Folder conventions + entry contract: <code>templates/README.md</code> · Component choice: <code>guidelines/PATTERNS.md</code> · Recipes: <code>docs/COOKBOOK.md</code></p>
+<p class="axiom">Meridian should organize complexity before it decorates it.</p>
+
+<section>
+<div class="shead"><span class="num">01</span><h2>Design contract</h2><span class="note">satisfy before component styling</span></div>
+<div class="body cols">
+<ol class="rules">
+<li><b>Choose one workspace archetype</b> — never a generic dashboard grid.</li>
+<li><b>Establish one dominant work plane;</b> secondary regions support it.</li>
+<li><b>Use the material hierarchy intentionally</b> — Paper, Plate, Well, Rail, Overlay.</li>
+<li><b>One primary action per operational region,</b> resolving to graphite or deep slate.</li>
+<li><b>Make data trustworthy at a glance</b> — state, source, freshness, as-of.</li>
+</ol>
+<ol class="rules" start="6">
+<li><b>Separate brand from semantic color.</b> Terracotta is not loss, error, or warning.</li>
+<li><b>Sentence case for working UI;</b> uppercase for environment and compact indices.</li>
+<li><b>Reduce containers before reducing type</b> — density from alignment, not 10px text.</li>
+<li><b>Primitives only when they carry meaning</b> — Datum, Field, Trace, Plate, Capsule.</li>
+<li><b>Preserve operability</b> — keyboard, 200% zoom, no color-only meaning.</li>
+</ol>
+</div>
+</section>
+
+<section>
+<div class="shead"><span class="num">02</span><h2>Pick the archetype first</h2><span class="note">declare in screen comment + root class</span></div>
+<div class="body">
+<table>
+<thead><tr><th>Archetype</th><th>Primary purpose</th><th>Default composition</th></tr></thead>
+<tbody>
+<tr><td><b>Monitor</b></td><td>Scan status and detect change</td><td>Summary strip, dominant operational plane, narrow alert/freshness rail</td></tr>
+<tr><td><b>Analyze</b></td><td>Manipulate assumptions, inspect patterns</td><td>8-col analytical well, 4-col scenario plane, lower comparison band</td></tr>
+<tr><td><b>Inspect</b></td><td>Understand one entity deeply</td><td>Stable identity header, ordered detail sequence, persistent evidence region</td></tr>
+<tr><td><b>Compare</b></td><td>Evaluate standardized peers</td><td>Repeated Plates sharing scale, label order, padding, annotation position</td></tr>
+<tr><td><b>Reconcile</b></td><td>Resolve exceptions, confirm state</td><td>Table-first plane, queue/filters, selected-record evidence, explicit resolution</td></tr>
+<tr><td><b>Compose</b></td><td>Arrange research or workspace modules</td><td>Stable application core with snapping, saveable Capsules</td></tr>
+</tbody>
+</table>
+<p class="rule" style="font-size:12px;color:var(--text-secondary);border-left:2px solid var(--brand-signal,#C56343);padding:2px 0 2px 10px;margin:14px 0 0"><b style="color:var(--text-primary)">Rule.</b> A rectangular panel is not automatically a Capsule. A Capsule is movable or replaceable, has a data contract, predictable controls, saved state, and standardized dimensions.</p>
+</div>
+</section>
+
+<section>
+<div class="shead"><span class="num">03</span><h2>The shell is a component</h2><span class="note">WorkstationShell — never hand-rolled</span></div>
+<div class="body cols">
+<div>
+<p class="eyebrow">One frame, five slots</p>
+<pre>&lt;WorkstationShell
+  archetype="reconcile"
+  labelledBy="workspace-title"
+  topbar={&lt;WorkstationTopbar …/&gt;}
+  nav={&lt;NavRail …/&gt;}
+  aside={&lt;EvidenceRail …/&gt;}
+  statusBar={&lt;StatusBar …/&gt;}&gt;
+  <span class="tok-c">{/* dominant work plane */}</span>
+&lt;/WorkstationShell&gt;</pre>
+<ul class="plain" style="margin-top:12px">
+<li>The shell renders the <code>&lt;main&gt;</code> landmark and crash-isolates main + aside — a failing panel never blanks the chrome.</li>
+<li>No hand-rolled flex scaffolding, no second <code>&lt;main&gt;</code>, no local <code>100vh</code> or row-height override.</li>
+<li>Scrolling lives in the shell's main region, never on the document body.</li>
+<li>Folder anatomy and the seed-data load order: <code>templates/README.md</code>.</li>
+</ul>
+</div>
+<div>
+<p class="eyebrow">Slot order</p>
+<pre>WorkstationShell
+├── topbar      WorkstationTopbar
+├── nav         NavRail
+├── children    dominant work plane
+├── aside       evidence rail (optional)
+└── statusBar   StatusBar</pre>
+<p class="eyebrow" style="margin-top:14px">Workspace layers, in order</p>
+<ol class="rules">
+<li><b>Header</b> — title, context, as-of, coverage, one primary action.</li>
+<li><b>Control band</b> — tabs, saved views, search, filters, scenario inputs.</li>
+<li><b>Dominant work plane</b> — table, chart, relationship view, composition surface.</li>
+<li><b>Evidence region</b> — provenance, selected record, audit trace, alerts.</li>
+</ol>
+<p style="font-size:12px;color:var(--text-secondary);margin:12px 0 0">One <code>h1</code> per screen, named to the shell via <code>labelledBy</code>; the Meridian mark appears once, in the chrome.</p>
+</div>
+</div>
+</section>
+
+<section>
+<div class="shead"><span class="num">04</span><h2>Surface hierarchy</h2><span class="note">semantic surfaces, not a universal card</span></div>
+<div class="body cols">
+<table>
+<thead><tr><th>Surface</th><th>Purpose &amp; treatment</th></tr></thead>
+<tbody>
+<tr><td><b>Paper</b></td><td>Application canvas — warm neutral, no border</td></tr>
+<tr><td><b>Plate</b></td><td>Dominant/standardized region — continuous light plane, structure via spacing</td></tr>
+<tr><td><b>Well</b></td><td>Table, chart, matrix — near-white, minimal internal framing</td></tr>
+<tr><td><b>Rail</b></td><td>Nav, filters, queue, context — slightly darker neutral</td></tr>
+<tr><td><b>Overlay</b></td><td>Modal, menu, drawer — elevated, restrained shadow</td></tr>
+<tr><td><b>Signal</b></td><td>Rare branded moment — controlled terracotta, never a semantic state</td></tr>
+</tbody>
+</table>
+<div>
+<p class="eyebrow">Avoid</p>
+<ul class="plain never">
+<li>A grid of equally weighted bordered panels.</li>
+<li>Default shadows on every region; a card inside a card.</li>
+<li>Warm beige on every nested surface.</li>
+<li>Terracotta borders around every active control.</li>
+<li>The Meridian Field used as background texture.</li>
+</ul>
+<p class="eyebrow" style="margin-top:14px">Primitives</p>
+<div class="chips">
+<span class="chip">Datum · orientation &amp; selection</span>
+<span class="chip">Field · every mark encodes data</span>
+<span class="chip">Trace · lineage &amp; audit</span>
+<span class="chip">Plate · honest comparison</span>
+<span class="chip">Capsule · Compose only</span>
+</div>
+<p style="font-size:12px;color:var(--text-secondary);margin:12px 0 0">Evidence rail for inspection that must stay visible; <code>Dialog</code> only for bounded create/edit and confirmations — never to show row detail. Width is <code>size</code> (sm 420 · md 520 · lg 720), not a second component.</p>
+</div>
+</div>
+</section>
+
+<section>
+<div class="shead"><span class="num">05</span><h2>Data states &amp; notation</h2><span class="note">color always paired with text, icon, sign, or shape</span></div>
+<div class="body cols">
+<table>
+<thead><tr><th>State</th><th>Required treatment</th></tr></thead>
+<tbody>
+<tr><td><b>Confirmed</b></td><td>Solid marker or confirmed status; no warning ornament</td></tr>
+<tr><td><b>Provisional</b></td><td>Outlined marker + the word “Provisional”</td></tr>
+<tr><td><b>Estimated</b></td><td><span class="mono">Est.</span> adjacent to the value</td></tr>
+<tr><td><b>Stale</b></td><td>Freshness cue + explicit age — <span class="mono">Stale 18m</span></td></tr>
+<tr><td><b>Overridden</b></td><td>Override label, actor, timestamp, visible source change</td></tr>
+<tr><td><b>Missing required</b></td><td><span class="mono">Missing</span> + exception reason; never a blank cell</td></tr>
+<tr><td><b>Not applicable</b></td><td>Em dash — <span class="mono">—</span></td></tr>
+<tr><td><b>Pending</b></td><td>Pending label + expected refresh when known</td></tr>
+<tr><td><b>Exception</b></td><td>Semantic red cue + a written reason</td></tr>
+<tr><td><b>Reconciled</b></td><td>Confirmation cue + reconciliation timestamp</td></tr>
+</tbody>
+</table>
+<div>
+<table>
+<thead><tr><th>Context</th><th>Convention</th></tr></thead>
+<tbody>
+<tr><td>Analytical change</td><td class="mono">−1.23%</td></tr>
+<tr><td>Accounting negative</td><td class="mono">(1.23)</td></tr>
+<tr><td>Basis points</td><td class="mono">32 bp</td></tr>
+<tr><td>Large amount</td><td class="mono">$28.4M</td> </tr>
+<tr><td>Estimated value</td><td class="mono">4.35% Est.</td></tr>
+<tr><td>Stale value</td><td class="mono">4.35% · Stale 18m</td></tr>
+<tr><td>Currency context</td><td>ISO code in the column heading</td></tr>
+</tbody>
+</table>
+<p style="font-size:12px;color:var(--text-secondary);margin:12px 0 0">Seed 3–6 realistic rows in <code>screen.jsx</code>, at least one off the happy path. <code>0</code> is a value, not missing; <code>null</code> needs an explicit state. Never repeat units in every cell.</p>
+</div>
+</div>
+</section>
+
+<section>
+<div class="shead"><span class="num">06</span><h2>Geometry — where the numbers live</h2><span class="note">one home per dimension</span></div>
+<div class="body cols">
+<table>
+<thead><tr><th>Question</th><th>Single source of truth</th></tr></thead>
+<tbody>
+<tr><td>Chrome dimensions (topbar, rail, status bar)</td><td>the shell components — <code>components/shell/*.jsx</code></td></tr>
+<tr><td>Row and control height</td><td><code>--theme-row-height</code> / <code>--theme-control-height</code> in <code>tokens/theme.css</code></td></tr>
+<tr><td>Spacing and gaps</td><td>the <code>--space-*</code> scale — <code>guidelines/TOKEN_REFERENCE.md</code></td></tr>
+<tr><td>Overlay width</td><td><code>Dialog</code>'s <code>size</code> — sm 420 · md 520 · lg 720</td></tr>
+<tr><td>A component's own sizes and variants</td><td>that component's <code>.d.ts</code></td></tr>
+</tbody>
+</table>
+<div>
+<table>
+<thead><tr><th>Density intent</th><th class="num">Row</th><th class="num">Body</th><th>Host mode</th></tr></thead>
+<tbody>
+<tr><td><b>Terminal</b></td><td class="num">26px</td><td class="num">12px</td><td class="mono">terminal</td></tr>
+<tr><td><b>Dense</b></td><td class="num">28px</td><td class="num">12.5–13px</td><td class="mono">compact</td></tr>
+<tr><td><b>Standard</b></td><td class="num">36px</td><td class="num">14px</td><td class="mono">unset</td></tr>
+<tr><td><b>Review</b></td><td class="num">44px</td><td class="num">15px</td><td class="mono">spacious</td></tr>
+</tbody>
+</table>
+<ul class="plain" style="margin-top:12px">
+<li>No universal T-shirt scale: <code>Button</code> is <code>sm|default|lg|icon</code>; many controls are <code>sm|md|lg</code>. Check the <code>.d.ts</code>.</li>
+<li>Scope every rule under the workstation root; centralize fallbacks in one alias block; never <code>!important</code>.</li>
+<li>1px rules for structure, 2px for focus and selected Datum rails.</li>
+<li>Motion: 80 / 120 / 180 / 240 / 280ms — Reflow, Trace, Reconcile, Focus. No bounce or glow.</li>
+</ul>
+</div>
+</div>
+</section>
+
+<section>
+<div class="shead"><span class="num">07</span><h2>Quality gate</h2><span class="note">ready for review only when every answer is yes</span></div>
+<div class="body">
+<ol class="rules gate">
+<li>Is the workspace archetype explicit?</li>
+<li>Is there one clearly dominant work region?</li>
+<li>Does each surface have a defined Paper/Plate/Well/Rail/Overlay/Signal role?</li>
+<li>Are related regions combined before new borders are added?</li>
+<li>One primary action per operational region?</li>
+<li>Are brand and semantic colors separated?</li>
+<li>Do important values carry state, source, freshness, or as-of?</li>
+<li>Are zero, missing, no activity, and not applicable distinguishable?</li>
+<li>Do comparable objects share geometry and scale?</li>
+<li>Does selection use a persistent Datum, not a decorative accent border?</li>
+<li>Does every Field encode real information?</li>
+<li>Is selected-record evidence available without losing the workspace?</li>
+<li>Is the screen understandable without motion?</li>
+<li>Can the primary workflow be completed by keyboard?</li>
+<li>Is the layout intentional in dense/default host mode?</li>
+<li>Does the narrow layout become a focused task flow, not a card stack?</li>
+<li>Is it recognizably Meridian without repeated logos?</li>
+<li>Does it use only supported component props and variants?</li>
+<li>Is the frame <code>WorkstationShell</code> — no hand-rolled chrome, no second <code>&lt;main&gt;</code>?</li>
+</ol>
+</div>
+</section>
+</div>
+</body>
+</html>

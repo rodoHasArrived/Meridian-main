@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Core.Config;
@@ -51,6 +52,60 @@ public sealed class ConfigJsonSchemaGeneratorTests
             .First(static node => node["type"]?.GetValue<string>() == "array");
 
         arrayBranch["items"]!["$ref"]?.GetValue<string>().Should().Be("#/$defs/SymbolConfig");
+    }
+
+    [Fact]
+    public void GenerateSchema_ValidationProfilesMatchesTheSerializedProviderKeyedObject()
+    {
+        var config = new AppConfig(Backfill: new BackfillConfig(ValidationProfiles:
+            new Dictionary<string, ProviderValidationProfile>
+            {
+                ["polygon"] = new(StaleToleranceDays: 30, MaxLatencyMs: 1500)
+            }));
+        var serialized = JsonSerializer.SerializeToNode(config, AppConfigJsonOptions.Write)!;
+        var serializedProfiles = serialized["backfill"]!["validationProfiles"]!;
+        serializedProfiles.Should().BeOfType<JsonObject>();
+        serializedProfiles["polygon"]!["staleToleranceDays"]!.GetValue<int>().Should().Be(30);
+
+        var schema = _generator.GenerateSchema();
+        var profilesSchema = schema["$defs"]!["BackfillConfig"]!["properties"]!["ValidationProfiles"]!;
+        var branches = profilesSchema["anyOf"]!.AsArray();
+        branches.Should().Contain(branch => branch!["type"]!.GetValue<string>() == "null");
+        var objectBranch = branches.Single(branch => branch!["type"]!.GetValue<string>() == "object")!;
+        objectBranch["items"].Should().BeNull();
+        objectBranch["additionalProperties"]!["$ref"]!.GetValue<string>()
+            .Should().Be("#/$defs/ProviderValidationProfile");
+        var profileProperties = schema["$defs"]!["ProviderValidationProfile"]!["properties"]!;
+        profileProperties["StaleToleranceDays"]!["type"]!.GetValue<string>().Should().Be("integer");
+        profileProperties["MaxLatencyMs"]!["type"]!.GetValue<string>().Should().Be("number");
+    }
+
+    [Fact]
+    public void GenerateSchema_ReadOnlyProviderModeDictionaryKeepsEnumValuesAndNullability()
+    {
+        var schema = _generator.GenerateSchema();
+        var modesSchema = schema["$defs"]!["SymbolMappingsConfig"]!["properties"]!["ProviderResolutionModes"]!;
+        var branches = modesSchema["anyOf"]!.AsArray();
+        branches.Should().Contain(branch => branch!["type"]!.GetValue<string>() == "null");
+        var objectBranch = branches.Single(branch => branch!["type"]!.GetValue<string>() == "object")!;
+        var valueSchema = objectBranch["additionalProperties"]!;
+        valueSchema["type"]!.GetValue<string>().Should().Be("string");
+        valueSchema["enum"]!.AsArray().Select(value => value!.GetValue<string>())
+            .Should().Contain(["Compare", "Canonical"]);
+        objectBranch["items"].Should().BeNull();
+    }
+
+    [Fact]
+    public void GenerateSchema_MutableModuleDictionaryRemainsAnObjectWithTypedValues()
+    {
+        var schema = _generator.GenerateSchema();
+        var modulesSchema = schema["$defs"]!["ProviderModulesConfig"]!["properties"]!["Modules"]!;
+        var objectBranch = modulesSchema["anyOf"]!.AsArray()
+            .Single(branch => branch!["type"]!.GetValue<string>() == "object")!;
+
+        objectBranch["additionalProperties"]!["$ref"]!.GetValue<string>()
+            .Should().Be("#/$defs/ProviderModuleSettings");
+        objectBranch["items"].Should().BeNull();
     }
 
     [Fact]
@@ -112,6 +167,28 @@ public sealed class ConfigJsonSchemaGeneratorTests
             "RequireIndependentReviewer",
             "MaxBulkResolveBatch",
             "__VACUITY_PROBE__");
+    }
+
+    [Fact]
+    public void GenerateSchema_SecurityMasterWorkbenchDeclaresTheGovernanceProfileAndItsThreeRequirements()
+    {
+        var properties = _generator.GenerateSchema()["$defs"]!["SecurityMasterWorkbenchOptions"]!["properties"]!.AsObject();
+
+        var profile = properties["GovernanceProfile"]!.AsObject();
+        profile["type"]!.GetValue<string>().Should().Be("string");
+        profile["enum"]!.AsArray().Select(static node => node!.GetValue<string>())
+            .Should().Equal("Standard", "Institutional");
+
+        foreach (var requirement in new[]
+                 {
+                     "RequireGovernedTermAmendments",
+                     "RequireIndependentReviewer",
+                     "RequireIndependentProfileApprover"
+                 })
+        {
+            properties.ContainsKey(requirement).Should().BeTrue($"{requirement} is a governance setting");
+            properties[requirement]!["type"]!.GetValue<string>().Should().Be("boolean");
+        }
     }
 
     [Fact]

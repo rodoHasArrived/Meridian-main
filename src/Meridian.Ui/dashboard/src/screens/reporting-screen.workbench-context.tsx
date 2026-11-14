@@ -23,8 +23,8 @@ export function ReportingWorkbenchContext({ taskMode, actions, compact = false }
       className="flex flex-wrap items-end justify-between gap-3"
     >
       <div className={cn("min-w-0", compact && "sr-only")}>
-        {compact ? <h2>{taskMode.label}</h2> : (
-          <SectionHeading title={taskMode.label} description={taskMode.description} helpId={`reporting-${taskMode.label}`} as="h2" headingClassName="font-display text-lg font-semibold leading-tight text-foreground" />
+        {compact ? <h2>{taskMode.title}</h2> : (
+          <SectionHeading title={taskMode.title} description={taskMode.description} helpId={`reporting-${taskMode.label}`} as="h2" headingClassName="font-display text-lg font-semibold leading-tight text-foreground" />
         )}
       </div>
       <div className="flex flex-wrap items-center justify-end gap-2">

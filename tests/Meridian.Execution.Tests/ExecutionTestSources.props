@@ -1,0 +1,8 @@
+<Project>
+  <ItemGroup>
+    <ExecutionTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Execution/**/*.cs"
+      Exclude="$(MSBuildThisFileDirectory)../Meridian.Tests/Execution/RobinhoodHostedSynchronizationTests.cs;$(MSBuildThisFileDirectory)../Meridian.Tests/Execution/PaperSessionPersistenceServiceTests.cs;$(MSBuildThisFileDirectory)../Meridian.Tests/Execution/HostedBrokerageGatewayRegistrationTests.cs;$(MSBuildThisFileDirectory)../Meridian.Tests/Execution/PaperFuturesSettlementServiceTests.cs;$(MSBuildThisFileDirectory)../Meridian.Tests/Execution/PaperFinancingPostingTests*.cs" />
+    <!-- Financing partials exercise the governed UI workflow and PostgreSQL helpers in
+         Meridian.Tests. Its shared removal list therefore leaves them compiled there. -->
+  </ItemGroup>
+</Project>

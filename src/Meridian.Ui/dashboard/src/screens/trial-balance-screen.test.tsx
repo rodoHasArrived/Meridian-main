@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useLocation } from "react-router-dom";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
@@ -201,7 +201,12 @@ describe("TrialBalanceScreen", () => {
 
     expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith(PERIOD_ID);
     expect(ledgerReportsApi.getLedgerPeriodJournalEntries).toHaveBeenCalledWith(PERIOD_ID);
-    expect(screen.getByText("Posted journal")).toBeInTheDocument();
+    // The status row is collapsed above the trial balance. Its one line names only what is not
+    // ready, so a ready source is not in it; the breakdown behind Details names the posted
+    // journal as the source.
+    const confidence = screen.getByRole("region", { name: "Data confidence" });
+    expect(within(confidence.querySelector("summary") as HTMLElement).queryByText("Posted journal")).toBeNull();
+    expect(within(confidence.querySelector("dl") as HTMLElement).getByText("Posted journal")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Trial balance scope" })).toBeInTheDocument();
     // The structure node the book is scoped to. This asserted the hard-coded "All entities" — an
     // affirmative claim about a book scoped to exactly one node — and then, briefly, the book's
@@ -305,8 +310,13 @@ describe("TrialBalanceScreen", () => {
 
     // The book is attached to a fund-structure node; "All entities" was an affirmative claim
     // about a book scoped to exactly one.
-    expect(screen.getAllByText((_, node) => (node?.textContent ?? "").includes("Fund · 00000000-0000-0000-0000-0000000000bb")).length)
+    // The heading names the node by its kind; the exact node identifier stays in the read-only
+    // scope field rather than in the page's reading path.
+    expect(screen.getAllByText((_, node) => /^Fund · [^·]*Master Fund · /.test(node?.textContent ?? "")).length)
       .toBeGreaterThan(0);
+    expect(screen.queryAllByText((_, node) => (node?.textContent ?? "").includes("00000000-0000-0000-0000-0000000000bb")))
+      .toHaveLength(0);
+    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("Fund · 00000000-0000-0000-0000-0000000000bb");
   });
 
   it("lets a book chosen by hand supersede a deep link whose period request failed", async () => {

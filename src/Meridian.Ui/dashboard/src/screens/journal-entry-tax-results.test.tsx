@@ -39,7 +39,7 @@ it("renders retained mixed character, carried holding start, exact revision and 
   expect(screen.getAllByText("-23.45 EUR")[0]).toBeVisible();
   expect(screen.getAllByText("100.00 EUR")[0]).toBeVisible();
   expect(screen.getByText("Tax result needs evidence")).toBeInTheDocument();
-  const summary = screen.getByText(/lot-carried/).closest("summary")!;
+  const summary = screen.getAllByText(/lot-carried/).map((node) => node.closest("summary")).find(Boolean)!;
   await userEvent.click(summary);
   const parcel = summary.closest("details")!;
   expect(parcel).toHaveAttribute("open");
@@ -133,7 +133,7 @@ it("renders large cents, tiny amounts and fractional quantities exactly from ret
   }] }));
   render(<JournalEntryTaxResults {...scope} />);
   expect((await screen.findAllByText("9,007,199,254,740,993.01 EUR"))[0]).toBeVisible();
-  await userEvent.click(screen.getByText(/lot-carried/).closest("summary")!);
+  await userEvent.click(screen.getAllByText(/lot-carried/).map((node) => node.closest("summary")).find(Boolean)!);
   expect(screen.getByText("0.1234567890123456789012345678")).toBeVisible();
   expect(screen.getByText("9,007,199,254,740,993.010000000001 EUR")).toBeVisible();
   expect(screen.getByText("0.000000000001 EUR")).toBeVisible();

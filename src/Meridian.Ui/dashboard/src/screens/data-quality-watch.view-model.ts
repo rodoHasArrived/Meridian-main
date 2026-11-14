@@ -24,6 +24,7 @@ import {
   type QualitySymbolHealth,
   type QualityTopErrorSymbol
 } from "@/types/data-quality-watch.types";
+import { formatCount, formatDecimal, formatPercent as formatPercentValue, formatRatioAsPercent } from "@/lib/format";
 
 export type QualityTone = "default" | "success" | "warning" | "danger";
 
@@ -166,7 +167,7 @@ export function buildLatencyOverview(statistics: QualityLatencyStatistics | null
     // Either extreme can be absent when no symbol has enough samples to rank.
     extremesLabel: `Fastest ${statistics.fastestSymbol ?? "not ranked"} · `
       + `slowest ${statistics.slowestSymbol ?? "not ranked"}`,
-    sampleLabel: `${statistics.totalSamples.toLocaleString("en-US")} samples across `
+    sampleLabel: `${formatCount(statistics.totalSamples)} samples across `
       + `${statistics.symbolsTracked} symbol${statistics.symbolsTracked === 1 ? "" : "s"}`
   };
 }
@@ -187,7 +188,7 @@ export function buildHighLatencyRow(
 export function buildTopErrorRow(entry: QualityTopErrorSymbol): SymbolCountRowViewModel {
   return {
     symbol: entry.symbol,
-    valueLabel: `${entry.errorCount.toLocaleString("en-US")} error${entry.errorCount === 1 ? "" : "s"}`,
+    valueLabel: `${formatCount(entry.errorCount)} error${entry.errorCount === 1 ? "" : "s"}`,
     tone: entry.errorCount > 0 ? "warning" : "default"
   };
 }
@@ -231,8 +232,8 @@ export function buildLowCompletenessRow(score: QualityCompletenessScore): LowCom
     // Grade is computed server-side from the same score; it is shown as sent.
     grade: score.grade,
     tone: score.score < 0.5 ? "danger" : "warning",
-    missingLabel: `${score.missingEvents.toLocaleString("en-US")} of `
-      + `${score.expectedEvents.toLocaleString("en-US")} missing`,
+    missingLabel: `${formatCount(score.missingEvents)} of `
+      + `${formatCount(score.expectedEvents)} missing`,
     coverageLabel: formatPercent(score.coveragePercent / 100),
     ariaLabel: `${score.symbol} on ${score.date}: completeness ${scoreLabel}, grade ${score.grade}, `
       + `${score.missingEvents} of ${score.expectedEvents} events missing.`
@@ -250,7 +251,7 @@ export function buildUnacknowledgedAnomalyRow(anomaly: QualityAnomaly): Unacknow
     severityLabel,
     severityTone: anomalySeverityTone(anomaly.severity),
     description: anomaly.description?.trim() || "No description recorded.",
-    deviationLabel: `${formatSignedPercent(anomaly.deviationPercent)} (z ${anomaly.zScore.toFixed(2)})`,
+    deviationLabel: `${formatPercentValue(anomaly.deviationPercent, { signed: true, minimumFractionDigits: 1, maximumFractionDigits: 1 })} (z ${formatDecimal(anomaly.zScore, 2)})`,
     detectedAt: anomaly.detectedAt,
     ariaLabel: `${severityLabel} ${typeLabel} on ${anomaly.symbol}, detected ${anomaly.detectedAt}.`
   };
@@ -335,18 +336,9 @@ function resolveOrdinal(
 }
 
 function formatPercent(fraction: number): string {
-  return `${(fraction * 100).toFixed(1)}%`;
-}
-
-function formatSignedPercent(percent: number): string {
-  const formatted = `${Math.abs(percent).toFixed(1)}%`;
-  if (percent > 0) {
-    return `+${formatted}`;
-  }
-
-  return percent < 0 ? `-${formatted}` : formatted;
+  return formatRatioAsPercent(fraction, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
 function formatMs(value: number): string {
-  return value >= 1000 ? `${(value / 1000).toFixed(2)}s` : `${value.toFixed(1)}ms`;
+  return value >= 1000 ? `${formatDecimal(value / 1000, 2)}s` : `${formatDecimal(value, 1)}ms`;
 }

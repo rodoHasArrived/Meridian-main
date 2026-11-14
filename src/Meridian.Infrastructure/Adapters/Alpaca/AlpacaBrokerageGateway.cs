@@ -40,7 +40,7 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IBrokerageConnectionState, IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway
+public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IBrokerageConnectionState, IBrokerageAccountIdentity, IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway
 {
     /// <inheritdoc />
     public bool UsesFaceValuePercentageOfPar(OrderRequest request)
@@ -105,6 +105,9 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
     private long _generationStreamEpoch;
     private AlpacaCredentialSnapshot? _connectedCredentials;
     private string? _connectedAccountId;
+    // Alpaca's internal UUID for the same account. Operators never see it, so it is accepted as
+    // a second name for the account but never reported as the account's identity.
+    private string? _connectedProviderAccountId;
 
     public AlpacaBrokerageGateway(
         IHttpClientFactory httpClientFactory,
@@ -126,9 +129,20 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 "Alpaca brokerage credentials are missing or incomplete; gateway will remain unavailable until valid credentials are provided.");
         }
 
-        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>(
-            singleReader: false, singleWriter: false);
+        _reportChannel = (EventPipelinePolicy.Default with { FullMode = ResolveReportChannelFullMode(tradeUpdates is not null) })
+            .CreateChannel<ExecutionReport>(singleReader: false, singleWriter: false);
     }
+
+    /// <summary>
+    /// How the REST report channel behaves when full. Without a trade-updates stream this channel
+    /// is the execution-report stream: reports carry fills and terminal order states, so writers
+    /// wait for the consumer rather than evict the oldest report. With a trade-updates stream,
+    /// <see cref="StreamExecutionReportsAsync"/> reads that stream instead and nothing drains this
+    /// channel, so waiting would eventually block every submit, cancel and amend; there it keeps
+    /// only the most recent reports.
+    /// </summary>
+    internal static BoundedChannelFullMode ResolveReportChannelFullMode(bool hasTradeUpdatesStream)
+        => hasTradeUpdatesStream ? BoundedChannelFullMode.DropOldest : BoundedChannelFullMode.Wait;
 
     /// <inheritdoc />
     public string GatewayId => "alpaca";
@@ -138,10 +152,13 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
 
     public bool IsExecutionStreamHealthy => _tradeUpdates?.IsHealthy ?? true;
 
+    // Durable state is bound to this exact string (the OMS recovery journal refuses any other
+    // scope), so it stays on Alpaca's immutable account UUID whenever one is reported. Naming the
+    // account by its account number must not lock an existing installation out of its journal.
     public string? ScopeIdentity => _connected && _connectedCredentials is { } connected && connected == CurrentCredentials
         && !string.IsNullOrWhiteSpace(_connectedAccountId)
         && !string.Equals(_connectedAccountId, "unknown", StringComparison.OrdinalIgnoreCase)
-            ? $"{connected.Environment}:{_connectedAccountId}"
+            ? $"{connected.Environment}:{_connectedProviderAccountId ?? _connectedAccountId}"
             : null;
 
     public long ConnectionGeneration
@@ -203,7 +220,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 "Alpaca KeyId and SecretKey are required for brokerage. Configure credentials before calling ConnectAsync.");
 
         var connectedCredentials = CurrentCredentials;
-        var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
+        var (account, providerAccountId) = await ReadAccountAsync(null, ct).ConfigureAwait(false);
         if (connectedCredentials != CurrentCredentials)
             throw new InvalidOperationException("Alpaca credentials changed during connection establishment.");
         if (_tradeUpdates is not null)
@@ -214,7 +231,9 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 throw new InvalidDataException(
                     "Alpaca did not return a provider account identity required to scope durable execution state.");
             }
-            _tradeUpdates.ConfigureDurableStateScope(account.AccountId, CurrentCredentials.Environment);
+            // Durable execution state stays keyed by Alpaca's immutable account UUID when it is
+            // reported, so naming the account by its account number does not orphan an inbox.
+            _tradeUpdates.ConfigureDurableStateScope(providerAccountId ?? account.AccountId, CurrentCredentials.Environment);
             // The gateway owns this stream until disposal. A browser recovery request must
             // not own its lifetime, or cancelling that request permanently stops later fills.
             ct.ThrowIfCancellationRequested();
@@ -222,6 +241,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         }
         _connectedCredentials = connectedCredentials;
         _connectedAccountId = account.AccountId;
+        _connectedProviderAccountId = providerAccountId;
         _connected = true;
         Interlocked.Increment(ref _connectionGeneration);
         _logger.LogInformation("Alpaca brokerage connected: account {AccountId}, status {Status}",
@@ -352,62 +372,8 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
     public async Task<AccountInfo> GetAccountInfoAsync(CancellationToken ct = default)
         => await GetAccountInfoCoreAsync(null, ct).ConfigureAwait(false);
 
-    private async Task<AccountInfo> GetAccountInfoCoreAsync(List<string>? completenessIssues, CancellationToken ct)
-    {
-        using var client = CreateHttpClient();
-        var response = await client.GetAsync($"{BaseUrl}/v2/account", ct).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-
-        var account = await response.Content.ReadFromJsonAsync(
-            AlpacaBrokerageSerializerContext.Default.AlpacaAccountResponse, ct).ConfigureAwait(false);
-
-        if (completenessIssues is not null)
-        {
-            RequirePortfolioDecimal(account?.Cash, "account cash", completenessIssues);
-            RequirePortfolioDecimal(account?.Equity, "account equity", completenessIssues);
-            RequirePortfolioDecimal(account?.BuyingPower, "account buying power", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.Multiplier, "account multiplier", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.RegTBuyingPower, "account Reg T buying power", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.InitialMargin, "account initial margin", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.MaintenanceMargin, "account maintenance margin", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.LastMaintenanceMargin, "account last maintenance margin", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.SpecialMemorandumAccount, "account SMA", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.LongMarketValue, "account long market value", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.ShortMarketValue, "account short market value", completenessIssues);
-            RequireOptionalPortfolioDecimal(account?.NonMarginableBuyingPower, "account non-marginable buying power", completenessIssues);
-            if (string.IsNullOrWhiteSpace(account?.Currency))
-                completenessIssues.Add("Account currency was not reported.");
-            if (string.IsNullOrWhiteSpace(account?.Status))
-                completenessIssues.Add("Account status was not reported.");
-            if (account?.TradingBlocked is null || account.AccountBlocked is null)
-                completenessIssues.Add("Account trading restrictions were not reported.");
-        }
-
-        return new AccountInfo
-        {
-            AccountId = account?.Id ?? account?.AccountNumber ?? "unknown",
-            Equity = ParseDecimal(account?.Equity),
-            Cash = ParseDecimal(account?.Cash),
-            BuyingPower = ParseDecimal(account?.BuyingPower),
-            Currency = account?.Currency ?? string.Empty,
-            Status = account?.Status ?? "unknown",
-            MarginMultiplier = ParseNullableDecimal(account?.Multiplier),
-            RegTBuyingPower = ParseNullableDecimal(account?.RegTBuyingPower),
-            InitialMargin = ParseNullableDecimal(account?.InitialMargin),
-            MaintenanceMargin = ParseNullableDecimal(account?.MaintenanceMargin),
-            LastMaintenanceMargin = ParseNullableDecimal(account?.LastMaintenanceMargin),
-            SpecialMemorandumAccount = ParseNullableDecimal(account?.SpecialMemorandumAccount),
-            LongMarketValue = ParseNullableDecimal(account?.LongMarketValue),
-            ShortMarketValue = ParseNullableDecimal(account?.ShortMarketValue),
-            NonMarginableBuyingPower = ParseNullableDecimal(account?.NonMarginableBuyingPower),
-            TradingBlocked = account?.TradingBlocked ?? false,
-            TransfersBlocked = account?.TransfersBlocked ?? false,
-            AccountBlocked = account?.AccountBlocked ?? false,
-            ShortingEnabled = account?.ShortingEnabled ?? false,
-            OptionsApprovedLevel = account?.OptionsApprovedLevel,
-            OptionsTradingLevel = account?.OptionsTradingLevel,
-        };
-    }
+    private async Task<AccountInfo> GetAccountInfoCoreAsync(List<string>? completenessIssues, CancellationToken ct) =>
+        (await ReadAccountAsync(completenessIssues, ct).ConfigureAwait(false)).Account;
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(CancellationToken ct = default)
@@ -455,6 +421,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             AccruedInterest = string.IsNullOrEmpty(p.AccruedInterest)
                 ? null
                 : ParseDecimal(p.AccruedInterest),
+            ValuationBasis = BrokeragePositionValuationBasis.ProviderReported,
         }).ToList().AsReadOnly();
     }
 
@@ -612,7 +579,8 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         await Task.WhenAll(openOrdersTask, activitiesTask).ConfigureAwait(false);
 
         var openOrders = await openOrdersTask.ConfigureAwait(false);
-        var activities = await activitiesTask.ConfigureAwait(false);
+        var activityResult = await activitiesTask.ConfigureAwait(false);
+        var activities = activityResult.Activities;
         if (untilExclusive.HasValue)
         {
             activities = EnforceHalfOpenActivityWindow(activities, since, untilExclusive.Value);
@@ -672,37 +640,15 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 .ToArray(),
             Fills: fills,
             CashTransactions: cashTransactions,
-            // No cursor: `GetAccountActivitiesAsync` returns a plain list. A paged variant
-            // returning an `AlpacaActivityFetchResult` with a `BrokerageActivityCursorDto` existed
-            // on `codex/deepen-broker-statement-connectors` (716d56be), but the merge into main
-            // kept this call site while taking the list-returning fetch, leaving a reference to an
-            // `activityResult` local that no longer existed — main has not compiled since. The
-            // argument is dropped rather than the fetch restored because nothing reads
-            // `BrokerageActivitySnapshotDto.Cursor` today; re-landing Alpaca activity paging is a
-            // product decision, not a build fix.
-            Activities: activities.Select(activity => BuildCanonicalActivityEvent(activity, account.Currency)).ToArray());
+            Activities: activities.Select(activity => BuildCanonicalActivityEvent(activity, account.Currency)).ToArray(),
+            Cursor: new BrokerageActivityCursorDto(
+                LastEventId: activities.OrderBy(ParseActivityTimestamp).ThenBy(BuildActivityId, StringComparer.Ordinal).LastOrDefault() is { } latest
+                    ? BuildActivityId(latest) : null,
+                HighWatermark: activities.Count == 0 ? null : activities.Max(ParseActivityTimestamp),
+                PageCount: activityResult.PageCount,
+                SourceRecordCount: activityResult.SourceRecordCount,
+                IsComplete: true));
     }
-
-    private async Task<AccountInfo> RequireRequestedAccountAsync(
-        string externalAccountId,
-        CancellationToken ct,
-        List<string>? completenessIssues = null)
-    {
-        var account = await GetAccountInfoCoreAsync(completenessIssues, ct).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(account.AccountId)
-            || !string.Equals(
-                account.AccountId.Trim(),
-                externalAccountId.Trim(),
-                StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException(
-                "The requested Alpaca account does not match the account resolved by the configured credentials.");
-        }
-
-        return account;
-    }
-
-
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()
@@ -834,8 +780,19 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 }));
         }
 
+        var skippedPackageParents = 0;
         foreach (var order in ordersById.Values)
         {
+            // A multi-leg parent names no instrument, so it has no single-instrument execution
+            // report. Emitting one with an empty symbol is refused by the durable inbox, which
+            // fails the whole reconciliation and keeps the execution stream unhealthy for every
+            // other order. Its legs are separate broker orders and reconcile on their own.
+            if (order.IsMultiLegParent)
+            {
+                skippedPackageParents++;
+                continue;
+            }
+
             var status = MapAlpacaStatus(order.Status);
             if (ordersWithExactFills.Contains(order.Id!) &&
                 status is OrderStatus.Filled or OrderStatus.PartiallyFilled)
@@ -879,6 +836,13 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 "rest-order-snapshot",
                 snapshotIdentity,
                 report));
+        }
+
+        if (skippedPackageParents > 0)
+        {
+            _logger.LogWarning(
+                "Alpaca reconciliation left {PackageParentCount} multi-leg parent order(s) unnormalized; they carry no instrument symbol and only their legs reconcile",
+                skippedPackageParents);
         }
 
         return reconciled;
@@ -988,7 +952,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         }
     }
 
-    private async Task<IReadOnlyList<AlpacaAccountActivityResponse>> GetAccountActivitiesAsync(
+    private async Task<(IReadOnlyList<AlpacaAccountActivityResponse> Activities, int PageCount, int SourceRecordCount)> GetAccountActivitiesAsync(
         DateTimeOffset? after,
         DateTimeOffset? untilExclusive,
         CancellationToken ct)
@@ -1007,6 +971,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         var activities = new List<AlpacaAccountActivityResponse>();
         var observedPageTokens = new HashSet<string>(StringComparer.Ordinal);
         string? pageToken = null;
+        var pageCount = 0;
         while (true)
         {
             ct.ThrowIfCancellationRequested();
@@ -1019,11 +984,12 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             var page = await response.Content.ReadFromJsonAsync(
                     AlpacaBrokerageSerializerContext.Default.AlpacaAccountActivityResponseArray,
                     ct)
-                .ConfigureAwait(false) ?? [];
+                .ConfigureAwait(false) ?? throw new InvalidDataException("Alpaca activity pagination returned null instead of an activity array.");
+            pageCount++;
             activities.AddRange(page);
             if (page.Length < AccountActivityPageSize)
             {
-                return activities;
+                return (activities, pageCount, activities.Count);
             }
 
             var nextPageToken = page[^1].Id;
@@ -1078,7 +1044,9 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             LimitPrice = FormatDecimal(request.LimitPrice),
             StopPrice = FormatDecimal(request.StopPrice),
             ClientOrderId = request.ClientOrderId,
-            ExtendedHours = ReadMetadataBool(request.Metadata, "extended_hours", "extendedHours", "alpaca:extended_hours"),
+            ExtendedHours = request.SessionIntent is { } sessionIntent
+                ? sessionIntent == OrderSessionIntent.ExtendedHours
+                : ReadMetadataBool(request.Metadata, "extended_hours", "extendedHours", "alpaca:extended_hours"),
         };
 
         if (ReadMetadataString(request.Metadata, out var orderClass, "order_class", "orderClass", "alpaca:order_class"))
@@ -1563,6 +1531,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             ["sourceAuthority"] = "ProviderReported",
             ["providerActivityCode"] = providerCode
         };
+        metadata["timestampPrecision"] = !activity.TransactionTime.HasValue ? "day" : "instant";
         if (usesAccountCurrency)
             metadata["currencySource"] = "VerifiedAccount";
         if (!string.IsNullOrWhiteSpace(activity.Side))
@@ -1878,6 +1847,15 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         /// </summary>
         [JsonPropertyName("legs")] public AlpacaOrderResponse[]? Legs { get; set; }
         [JsonPropertyName("asset_class")] public string? AssetClass { get; set; }
+        [JsonPropertyName("order_class")] public string? OrderClass { get; set; }
+
+        /// <summary>
+        /// A multi-leg package parent. Alpaca returns it with an empty symbol and side because
+        /// only its legs name instruments, so it cannot be read as a single-instrument order.
+        /// </summary>
+        [JsonIgnore]
+        public bool IsMultiLegParent =>
+            string.Equals(OrderClass, "mleg", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(Symbol);
     }
 
     internal sealed class AlpacaAccountResponse
@@ -1885,6 +1863,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         [JsonPropertyName("id")] public string? Id { get; set; }
         [JsonPropertyName("account_number")] public string? AccountNumber { get; set; }
         [JsonPropertyName("equity")] public string? Equity { get; set; }
+        [JsonPropertyName("last_equity")] public string? LastEquity { get; set; }
         [JsonPropertyName("cash")] public string? Cash { get; set; }
         [JsonPropertyName("buying_power")] public string? BuyingPower { get; set; }
         [JsonPropertyName("multiplier")] public string? Multiplier { get; set; }

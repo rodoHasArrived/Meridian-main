@@ -9,6 +9,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using Meridian.FinancialOperations.Intercompany;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage.Ledger;
 using static Meridian.Contracts.Text.TextPrimitives;
@@ -66,16 +67,19 @@ public sealed partial class AccountingSystemIntegrationService
 
     private readonly IReadOnlyList<IAccountingSystemProvider> _providers;
     private readonly ILedgerJournalStore? _ledgerJournalStore;
+    private readonly IIntercompanyBalanceScheduleSource? _intercompanyBalances;
     private readonly ConcurrentDictionary<string, AccountingSystemImportDetailDto> _latestImports = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, ScopedExternalGlMappingProfile> _mappingProfiles = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, ExternalGlExportPackageDto> _exportPackages = new(StringComparer.OrdinalIgnoreCase);
 
     public AccountingSystemIntegrationService(
         IEnumerable<IAccountingSystemProvider> providers,
-        ILedgerJournalStore? ledgerJournalStore = null)
+        ILedgerJournalStore? ledgerJournalStore = null,
+        IIntercompanyBalanceScheduleSource? intercompanyBalances = null)
     {
         _providers = providers?.ToArray() ?? [];
         _ledgerJournalStore = ledgerJournalStore;
+        _intercompanyBalances = intercompanyBalances;
     }
 
     public async Task<IReadOnlyList<AccountingSystemProviderDto>> ListProvidersAsync(CancellationToken ct = default)
@@ -215,6 +219,18 @@ public sealed partial class AccountingSystemIntegrationService
             generatedLines,
             packageReconciliationSnapshotHash: reconciliationSnapshotHash);
         var evidenceLinks = BuildExportEvidenceLinks(request, mappingProfile, reconciliation);
+        if (IsNetSuiteProvider(providerId))
+        {
+            // Only this source-backed calculation can mint a structured schedule reference.
+            evidenceLinks = evidenceLinks.Where(x => !x.StartsWith("intercompany-schedule:", StringComparison.Ordinal)).ToArray();
+            if (_intercompanyBalances is not null)
+            {
+                var schedule = await _intercompanyBalances.GetAsync(tenantId, companyId, fundProfileId,
+                    request.LedgerBookId, periodEnd, ct).ConfigureAwait(false);
+                if (schedule.Available)
+                    evidenceLinks = [.. evidenceLinks, $"intercompany-schedule:{schedule.ContentHash}"];
+            }
+        }
         validationIssues = [.. validationIssues, .. await ValidateProviderExportAsync(providerId, fundProfileId,
             request.LedgerBookId, periodStart, periodEnd, generatedLines, evidenceLinks, tenantId, companyId, ct).ConfigureAwait(false)];
         var hasCritical = validationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
@@ -430,6 +446,12 @@ public sealed partial class AccountingSystemIntegrationService
         return detail;
     }
 
+    /// <summary>
+    /// Returns the latest persisted import for the scope. When none has been persisted, an
+    /// unpersisted preview is computed and returned instead. The preview is never cached: this
+    /// method backs HTTP GET routes, which must stay free of side effects, and caching it would
+    /// make a read silently record (possibly fixture) evidence as the scope's latest import.
+    /// </summary>
     public async Task<AccountingSystemImportDetailDto> GetLatestImportAsync(
         string? providerId = null,
         string? fundProfileId = null,
@@ -453,7 +475,7 @@ public sealed partial class AccountingSystemIntegrationService
                 normalizedProviderId,
                 normalizedFundProfileId,
                 ledgerBookId,
-                PersistPreview: true,
+                PersistPreview: false,
                 TenantId: normalizedTenantId,
                 CompanyId: normalizedCompanyId),
             ct).ConfigureAwait(false);
@@ -567,17 +589,39 @@ public sealed partial class AccountingSystemIntegrationService
             package.TenantId, package.CompanyId, ct).ConfigureAwait(false)];
     }
 
-    private Task<IReadOnlyList<AccountingConfigurationValidationIssueDto>> ValidateProviderExportAsync(
+    private async Task<IReadOnlyList<AccountingConfigurationValidationIssueDto>> ValidateProviderExportAsync(
         string providerId, string fundProfileId, Guid? ledgerBookId, DateOnly periodStart, DateOnly periodEnd,
         IReadOnlyList<ExternalGlExportLineDto> lines, IReadOnlyList<string> evidenceLinks,
         string? tenantId, string? companyId, CancellationToken ct)
     {
         var provider = _providers.FirstOrDefault(p => string.Equals(p.ProviderId, providerId, StringComparison.OrdinalIgnoreCase));
-        if (provider is not IAccountingSystemExportValidator validator)
-            return Task.FromResult<IReadOnlyList<AccountingConfigurationValidationIssueDto>>([]);
-        _latestImports.TryGetValue(ImportKey(providerId, fundProfileId, ledgerBookId, tenantId, companyId), out var import);
-        return validator.ValidateExportAsync(new(ledgerBookId, periodStart, periodEnd, import, lines, evidenceLinks), ct);
+        var issues = new List<AccountingConfigurationValidationIssueDto>();
+        if (provider is IAccountingSystemExportValidator validator)
+        {
+            _latestImports.TryGetValue(ImportKey(providerId, fundProfileId, ledgerBookId, tenantId, companyId), out var import);
+            issues.AddRange(await validator.ValidateExportAsync(new(ledgerBookId, periodStart, periodEnd, import, lines, evidenceLinks), ct).ConfigureAwait(false));
+        }
+        if (!IsNetSuiteProvider(providerId))
+            return issues;
+        if (_intercompanyBalances is null)
+        {
+            issues.Add(IntercompanyExportIssue("Unavailable", "The structured intercompany balance/mapping authority is unavailable."));
+            return issues;
+        }
+        var schedule = await _intercompanyBalances.GetAsync(tenantId, companyId, fundProfileId, ledgerBookId, periodEnd, ct).ConfigureAwait(false);
+        if (!schedule.IsMappingComplete)
+            issues.Add(IntercompanyExportIssue("Incomplete", "Posted due-to/due-from facts contain unavailable, ambiguous or unmapped legacy agreement/account/party evidence."));
+        if (!schedule.Available || !evidenceLinks.Contains($"intercompany-schedule:{schedule.ContentHash}", StringComparer.Ordinal))
+            issues.Add(IntercompanyExportIssue("Changed", "The structured intercompany schedule changed or was not retained with this export package; regenerate and review it."));
+        return issues;
     }
+
+    private static bool IsNetSuiteProvider(string providerId)
+        => providerId.Equals("netsuite", StringComparison.OrdinalIgnoreCase) || providerId.Equals("netsuite-fixture", StringComparison.OrdinalIgnoreCase);
+
+    private static AccountingConfigurationValidationIssueDto IntercompanyExportIssue(string suffix, string message)
+        => new($"ExternalGlProviderIntercompanySchedule{suffix}", AccountingConfigurationValidationSeverityDto.Critical,
+            message, "netsuite:intercompany-controls", "Resolve structured agreement/account mapping and retain current schedule plus external NetSuite control evidence before certification.");
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildExportValidationIssues(
         string providerId,
@@ -1231,9 +1275,10 @@ public sealed partial class AccountingSystemIntegrationService
             dimensions.VendorId ?? string.Empty,
             dimensions.ProjectId ?? string.Empty);
 
-        return dimensions.PositionId.HasValue
+        var withPosition = dimensions.PositionId.HasValue
             ? $"{signature}\u001epositionId={dimensions.PositionId.Value:D}"
             : signature;
+        return Meridian.Contracts.Ledger.LedgerAgreementDimensions.AppendSignature(withPosition, dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion, "\u001e");
     }
 
     private static AccountingSystemImportDetailDto NormalizeImportedDetail(
@@ -1728,7 +1773,7 @@ public sealed partial class AccountingSystemIntegrationService
                     $"{normalizedProviderId}:intercompany-controls",
                     "Intercompany controls",
                     journalEvidenceKind,
-                    "Retain intercompany elimination and due-to/due-from mapping evidence before NetSuite export packages can be certified.")
+                    "Validate posted due-to/due-from facts against approved agreement/account/party mappings, retain the structured schedule hash, and retain external NetSuite intercompany elimination/mapping evidence before certification.")
             ],
             _ => []
         };

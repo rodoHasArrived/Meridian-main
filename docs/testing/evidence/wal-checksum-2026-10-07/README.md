@@ -19,3 +19,12 @@ Earlier failures and the interrupted local optimization remain preserved as reco
 The [current-main integration receipt](receipts/current-main-provider-integration.json) verifies all twenty accepted source files against actual working bytes and the resolved merge index for main `83d6440e`, with evidence parent `a9daba63`. The [provider source-binding receipt](receipts/provider-source-binding.json) retains the original checkpoint hashes and binds the actual signed hosted tested merge to `bba13ca9`. Its [GitHub merge metadata](receipts/provider-tested-merge-metadata.json) is retained separately. The [earlier seventeen-file receipt](receipts/current-main-integration.json) remains historical. [CI environment evidence](ci/README.md) preserves every retained failed local command and the independent process-reaper proof. Current hosted outcomes are recorded on [PR #3123](https://github.com/rodoHasArrived/Meridian-main/pull/3123). [Third-party notices](third-party-notices/README.md) preserve attribution for archived diagnostic source.
 
 The [upstream native project snapshot](components/native/src_Blake3.Native_Blake3.Native.csproj.gz) is retained as lossless gzip so repository project discovery does not treat third-party source material as a Meridian project. Decompression restores its original 1,428 bytes. The manifest and [packaging receipt](receipts/native-upstream-project-packaging.json) retain original and gzip SHA-256 hashes.
+
+The six diagnostic `Profile.csproj` snapshots are also archived in place as `Profile.csproj.gz`,
+so project globs do not discover historical profiling projects under `docs/`. The
+[diagnostic project packaging receipt](receipts/diagnostic-project-packaging.json) records their
+original paths, sizes and SHA-256 hashes alongside the compressed copies. The packet verifier
+checks byte-identical decompression. Historical commands and measurements remain as recorded;
+these snapshots contain original machine-specific references and are not maintained benchmark
+projects. To inspect an original project without restoring a discoverable `.csproj` file,
+run `gzip -dc components/packbits/Profile.csproj.gz`.

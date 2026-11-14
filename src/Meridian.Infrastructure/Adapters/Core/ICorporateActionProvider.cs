@@ -16,8 +16,9 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// conflict resolution keyed by <c>(securityId, ex_date, corporateActionType)</c>.
 /// </para>
 /// <para>
-/// Implementations must degrade gracefully (log and return empty) when the upstream
-/// API is unavailable or the ticker is not recognised by the provider.
+/// Coverage-aware callers use <see cref="FetchWithOutcomeAsync"/> to distinguish an empty
+/// successful response from an unavailable or incomplete fetch. The collection-only API
+/// remains a compatibility surface and cannot establish coverage.
 /// </para>
 /// </remarks>
 [ImplementsAdr("ADR-001", "Provider-agnostic corporate action abstraction follows IHistoricalDataProvider pattern")]
@@ -53,6 +54,18 @@ public interface ICorporateActionProvider
         string ticker,
         Guid securityId,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Fetches observations with explicit coverage for this adapter's supported request scope.
+    /// Legacy adapters retain unknown coverage until they implement this method; an empty
+    /// legacy collection never establishes that no actions exist.
+    /// </summary>
+    async Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
+        string ticker,
+        Guid securityId,
+        CancellationToken ct = default)
+        => new(await FetchAsync(ticker, securityId, ct).ConfigureAwait(false),
+            CorporateActionFetchStatus.Unknown, [new("coverage-unreported")]);
 }
 
 /// <summary>

@@ -120,6 +120,8 @@ public sealed class AtomicFileWriterTests : TempDirectoryTestBase
                 var destination = usePathAliases && index % 2 == 1
                     ? Path.Combine(TestDataRoot, ".", Path.GetFileName(path))
                     : path;
+                if (usePathAliases && OperatingSystem.IsWindows() && index % 4 == 3)
+                    destination = @"\\?\" + path;
                 // Dedicated threads exercise overlapping synchronous publication even on a
                 // runner whose thread-pool minimum is lower than the publisher count.
                 return Task.Factory.StartNew(
@@ -141,8 +143,10 @@ public sealed class AtomicFileWriterTests : TempDirectoryTestBase
         }
     }
 
-    [Fact]
-    public async Task WriteAsync_WithOpenWindowsSnapshot_PreservesProtectedAccessRules()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task WriteAndReplace_WithOpenWindowsSnapshot_PreservesProtectedAccessRules(bool replaceWithBackup)
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -159,12 +163,21 @@ public sealed class AtomicFileWriterTests : TempDirectoryTestBase
         using var snapshot = new StreamReader(new FileStream(
             path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete));
 
-        await AtomicFileWriter.WriteAsync(path, "updated");
+        if (replaceWithBackup)
+            await AtomicFileWriter.ReplaceAsync(path, "updated");
+        else
+            await AtomicFileWriter.WriteAsync(path, "updated");
 
         (await snapshot.ReadToEndAsync()).Should().Be("original");
         (await File.ReadAllTextAsync(path)).Should().Be("updated");
         new FileInfo(path).GetAccessControl().GetSecurityDescriptorSddlForm(AccessControlSections.Access)
             .Should().Be(expected);
+        if (replaceWithBackup)
+        {
+            (await File.ReadAllTextAsync(path + ".bak")).Should().Be("original");
+            new FileInfo(path + ".bak").GetAccessControl().GetSecurityDescriptorSddlForm(AccessControlSections.Access)
+                .Should().Be(expected);
+        }
         Directory.GetFiles(TestDataRoot, "*.tmp").Should().BeEmpty();
     }
 
@@ -482,6 +495,163 @@ public sealed class AtomicFileWriterTests : TempDirectoryTestBase
         (await File.ReadAllTextAsync(path)).Should().Be("brand new");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReplaceAsync_ConcurrentReaders_AlwaysSeeOneCompletePublishedGeneration(bool keepBackup)
+    {
+        var path = Path.Combine(TestDataRoot, "continuous-reader.txt");
+        var generations = Enumerable.Range(0, 32).Select(i => $"generation-{i}:" + new string('x', 4096)).ToArray();
+        await File.WriteAllTextAsync(path, generations[0]);
+        using var stop = new CancellationTokenSource();
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var reader = Task.Run(async () =>
+        {
+            while (!stop.IsCancellationRequested)
+            {
+                using var snapshot = new StreamReader(new FileStream(path, FileMode.Open,
+                    FileAccess.Read, FileShare.Read | FileShare.Delete));
+                generations.Should().Contain(await snapshot.ReadToEndAsync());
+                started.TrySetResult();
+            }
+        });
+
+        try
+        {
+            await started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            foreach (var generation in generations.Skip(1))
+                await AtomicFileWriter.ReplaceAsync(path, generation, keepBackup);
+        }
+        finally
+        {
+            stop.Cancel();
+            await reader;
+        }
+
+        (await File.ReadAllTextAsync(path)).Should().Be(generations[^1]);
+        if (keepBackup)
+            (await File.ReadAllTextAsync(path + ".bak")).Should().Be(generations[^2]);
+        else
+            File.Exists(path + ".bak").Should().BeFalse();
+        Directory.GetFiles(TestDataRoot, "*.tmp").Should().BeEmpty();
+        Directory.GetFiles(TestDataRoot, ".atomic-recovery.*.bak").Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("sync")]
+    [InlineData("text")]
+    [InlineData("bytes")]
+    [InlineData("writer")]
+    [InlineData("stream")]
+    [InlineData("append")]
+    [InlineData("checksum")]
+    public async Task Write_ConcurrentReaders_AlwaysSeeOneCompletePublishedGeneration(string surface)
+    {
+        var path = Path.Combine(TestDataRoot, "continuous-overwrite-reader.txt");
+        await File.WriteAllTextAsync(path, "original");
+        var generations = surface == "append"
+            ? Enumerable.Range(0, 32).Select(i => "original" + string.Concat(Enumerable.Repeat("updated", i))).ToArray()
+            : ["original", "updated"];
+        using var stop = new CancellationTokenSource();
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var reader = Task.Run(async () =>
+        {
+            while (!stop.IsCancellationRequested)
+            {
+                using var snapshot = new StreamReader(new FileStream(path, FileMode.Open,
+                    FileAccess.Read, FileShare.Read | FileShare.Delete));
+                generations.Should().Contain(await snapshot.ReadToEndAsync());
+                started.TrySetResult();
+            }
+        });
+
+        try
+        {
+            await started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            for (var generation = 1; generation < 32; generation++)
+                await PublishAsync(surface, path);
+        }
+        finally
+        {
+            stop.Cancel();
+            await reader;
+        }
+
+        (await File.ReadAllTextAsync(path)).Should().Be(generations[^1]);
+        Directory.GetFiles(TestDataRoot, "*.tmp").Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReplaceAsync_DeniedWindowsPublication_PreservesDestinationAndPriorBackup(bool blockBackup)
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+
+        var path = Path.Combine(TestDataRoot, "blocked-replacement.txt");
+        await File.WriteAllTextAsync(path, "original");
+        await File.WriteAllTextAsync(path + ".bak", "previous backup");
+        using var blocker = new FileStream(blockBackup ? path + ".bak" : path,
+            FileMode.Open, FileAccess.Read, FileShare.Read);
+
+        var failure = await Record.ExceptionAsync(() => AtomicFileWriter.ReplaceAsync(path, "unpublished"));
+
+        (failure is IOException or UnauthorizedAccessException).Should().BeTrue();
+        (await File.ReadAllTextAsync(path)).Should().Be("original");
+        (await File.ReadAllTextAsync(path + ".bak")).Should().Be("previous backup");
+        Directory.GetFiles(TestDataRoot, "*.tmp").Should().BeEmpty();
+        Directory.GetFiles(TestDataRoot, ".atomic-recovery.*.bak").Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task WriteAndReplace_LongWindowsPaths_RetainOpenedGenerations(bool explicitExtendedPath)
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+
+        var directory = Path.Combine(TestDataRoot, new string('a', 80), new string('b', 80), new string('c', 80));
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "generation-世界.txt");
+        path.Length.Should().BeGreaterThan(260);
+        if (explicitExtendedPath)
+            path = @"\\?\" + path;
+        await File.WriteAllTextAsync(path, "original");
+        using var original = new StreamReader(new FileStream(path, FileMode.Open, FileAccess.Read,
+            FileShare.Read | FileShare.Delete));
+
+        await AtomicFileWriter.WriteAsync(path, "middle");
+        using var middle = new StreamReader(new FileStream(path, FileMode.Open, FileAccess.Read,
+            FileShare.Read | FileShare.Delete));
+        await AtomicFileWriter.ReplaceAsync(path, "final");
+
+        (await original.ReadToEndAsync()).Should().Be("original");
+        (await middle.ReadToEndAsync()).Should().Be("middle");
+        (await File.ReadAllTextAsync(path)).Should().Be("final");
+        (await File.ReadAllTextAsync(path + ".bak")).Should().Be("middle");
+        Directory.GetFiles(directory, "*.tmp").Should().BeEmpty();
+        Directory.GetFiles(directory, ".atomic-recovery.*.bak").Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ReplaceAsync_PreCancelled_PreservesDestinationAndBackup()
+    {
+        var path = Path.Combine(TestDataRoot, "cancelled-replace.txt");
+        await File.WriteAllTextAsync(path, "original");
+        await File.WriteAllTextAsync(path + ".bak", "older");
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            AtomicFileWriter.ReplaceAsync(path, "unpublished", keepBackup: true, cancellation.Token));
+
+        (await File.ReadAllTextAsync(path)).Should().Be("original");
+        (await File.ReadAllTextAsync(path + ".bak")).Should().Be("older");
+        Directory.GetFiles(TestDataRoot, "*.tmp").Should().BeEmpty();
+    }
+
     [Fact]
     public async Task WriteAsync_String_UsesUTF8Encoding()
     {
@@ -687,8 +857,7 @@ public sealed class AtomicFileWriterTests : TempDirectoryTestBase
         (await reader.ReadToEndAsync()).Should().Be("original");
     }
 
-    // ReplaceAsync renames the existing destination aside before moving the temp file in; both
-    // moves must wait for a briefly held handle the same way the overwrite rename does.
+    // An atomic replacement must wait for readers that briefly deny replacement on Windows.
     [Fact]
     public async Task ReplaceAsync_WaitsForABrieflyHeldDestinationHandleOnWindows()
     {

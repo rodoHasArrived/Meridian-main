@@ -8,8 +8,14 @@ import { ApiError, describeApiError } from "@/lib/api-errors";
 import { createFactorPaydownDraft, prepareFactorPaydown } from "@/lib/api/factor-paydown.api";
 import type { AccountingBasisKind } from "@/types";
 import type { FactorPaydownDraftResult, FactorPaydownPreview, FactorPaydownRequest } from "@/types/factor-paydown";
+import { TextArea } from "@/components/ui/text-area";
+import { Checkbox } from "@/components/ui/checkbox";
 
-interface Props { periodVersion: number | null; bookId: string; periodId: string | null; fundProfileId: string; accountingBasis?: AccountingBasisKind; active?: boolean }
+interface Props {
+  periodVersion: number | null; bookId: string; periodId: string | null; fundProfileId: string; accountingBasis?: AccountingBasisKind; active?: boolean;
+  /** Display names for the scope line. The identifiers above remain what is sent to the server. */
+  bookLabel?: string | null; periodLabel?: string | null;
+}
 const fields = [
   ["securityId", "Security ID"], ["bookPositionId", "Book position ID"],
   ["effectiveDate", "Paydown effective date", "date"],
@@ -33,7 +39,7 @@ export function FactorPaydownPanel(props: Props) {
   return <FactorPaydownScopePanel key={`${props.bookId}:${props.periodId}:${props.fundProfileId}:${props.accountingBasis}:${props.periodVersion}`} {...props} />;
 }
 
-function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileId, accountingBasis = "Primary" }: Props) {
+function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileId, accountingBasis = "Primary", bookLabel, periodLabel }: Props) {
   const id = useId();
   const [form, setForm] = useState<Form>(emptyForm);
   const [evidence, setEvidence] = useState("");
@@ -45,6 +51,8 @@ function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileI
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState<"prepare" | "draft" | null>(null);
   const [uncertain, setUncertain] = useState(false);
+  const [scheduledPrincipal, setScheduledPrincipal] = useState(false);
+  const [adoptedPosition, setAdoptedPosition] = useState(false);
   const controller = useRef<AbortController | null>(null);
   useEffect(() => () => controller.current?.abort(), []);
 
@@ -55,7 +63,7 @@ function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileI
     setMessage("Inputs changed. Prepare again before creating a review draft.");
   }
   function update(field: Field, value: string) {
-    invalidate(); setForm((current) => ({ ...current, [field]: value }));
+    invalidate(); setScheduledPrincipal(false); setAdoptedPosition(false); setForm((current) => ({ ...current, [field]: value }));
   }
   function buildRequest(): FactorPaydownRequest {
     if (!bookId || !periodId || periodVersion === null || !fundProfileId) throw new Error("Select an authoritative ledger book and period first.");
@@ -71,7 +79,7 @@ function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileI
       throw new Error("Supply a nonempty JSON array of retained factor evidence identities.");
     }
     return { ...form, ledgerBookId: bookId, periodId, fundProfileId, accountingBasis,
-      expectedPeriodVersion: periodVersion, factorEvidence: retained };
+      expectedPeriodVersion: periodVersion, factorEvidence: retained, ...(scheduledPrincipal ? { scheduledPrincipal: true } : {}) };
   }
   async function prepare() {
     if (controller.current || uncertain) return;
@@ -80,7 +88,12 @@ function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileI
     try {
       const request = buildRequest();
       const result = await prepareFactorPaydown(request, { signal: requestController.signal });
-      if (!requestController.signal.aborted) { setPreview({ result, request }); setMessage("Review the authoritative lot allocation before creating a draft."); }
+      if (!requestController.signal.aborted) {
+        const adopted = result.instruction.scope.accountingBasis === "Gaap" && result.instruction.lots.length > 0
+          && result.instruction.lots.every((lot) => lot.expectedLot.acquisition?.bondIncome != null);
+        setAdoptedPosition(adopted); if (!adopted) setScheduledPrincipal(false);
+        setPreview({ result, request }); setMessage("Review the authoritative lot allocation before creating a draft.");
+      }
     } catch (cause) {
       if (!requestController.signal.aborted) setError(describeApiError(cause, "Factor paydown request failed.").summary);
     } finally {
@@ -118,26 +131,28 @@ function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileI
     <CardHeader><CardTitle>Factor paydown</CardTitle><CardDescription>Prepare principal repayment and lot basis relief from a retained factor observation. Same-currency active long positions only. Retained drafts support review, independent approval and canonical posting when authenticated workflow capabilities permit.</CardDescription></CardHeader>
     <CardContent className="space-y-4">
       {!bookId || !periodId || periodVersion === null || !fundProfileId ? <p role="status">Select a ledger book and period to prepare a factor paydown.</p> : <>
-        <p className="break-all text-xs text-muted-foreground">Book {bookId} · Period {periodId} · {accountingBasis}</p>
+        <p className="break-words text-xs text-muted-foreground" title={`Book ${bookId} · Period ${periodId}`}>Book {bookLabel?.trim() || bookId} · Period {periodLabel?.trim() || periodId} · {accountingBasis}</p>
         <form onSubmit={(event) => { event.preventDefault(); void prepare(); }}>
           <fieldset disabled={locked} className="space-y-3"><legend className="sr-only">Factor observation and posting accounts</legend>
             <FormGrid columns={3}>{fields.map(([field, label, type]) => <FormRow key={field} label={label} labelFor={`${id}-${field}`}>
               <Input id={`${id}-${field}`} value={form[field]} type={type ?? "text"} onChange={(event) => update(field, event.target.value)} />
             </FormRow>)}</FormGrid>
             <FormRow label="Retained factor evidence JSON" labelFor={`${id}-evidence`} hint="Paste existing retained evidence identities, including review and subject bindings. This form does not grant evidence authority.">
-              <textarea id={`${id}-evidence`} className="min-h-24 w-full rounded border border-border bg-background p-2 font-mono text-xs" value={evidence}
-                onChange={(event) => { invalidate(); setEvidence(event.target.value); }} />
+              <TextArea rows={2} id={`${id}-evidence`} className="min-h-24 w-full font-mono text-xs" value={evidence}
+                onChange={(event) => { invalidate(); setScheduledPrincipal(false); setAdoptedPosition(false); setEvidence(event.target.value); }} />
             </FormRow>
+            {adoptedPosition ? <Checkbox checked={scheduledPrincipal} onChange={(event) => { invalidate(); setScheduledPrincipal(event.target.checked); }} label="Use contractual scheduled-principal treatment for these adopted US GAAP bond-income lots." /> : null}
             <Button type="submit" disabled={busy !== null}>{busy === "prepare" ? "Preparing paydown…" : "Prepare factor paydown"}</Button>
           </fieldset>
         </form>
         {preview ? <section aria-label="Factor-paydown preview" className="space-y-3">
           <h3 className="text-sm font-semibold">Authoritative paydown preview</h3>
+          {preview.request.scheduledPrincipal ? <p className="text-xs text-muted-foreground">Contractual scheduled-principal treatment under the adopted US GAAP income model. The server recomputes income and basis relief before retaining a review draft.</p> : null}
           <dl className="grid grid-cols-2 gap-2 text-sm">{Object.entries(preview.result.components).map(([key, amount]) => <div key={key}><dt className="text-muted-foreground">{componentLabels[key] ?? key}</dt><dd className="font-mono">{String(amount)} {preview.result.instruction.currency}</dd></div>)}</dl>
           <div className="overflow-x-auto"><table className="w-full text-left text-xs"><caption className="sr-only">Lot principal and remaining basis</caption><thead><tr><th scope="col">Lot</th><th scope="col">Principal repaid</th><th scope="col">Transaction basis after</th><th scope="col">Functional basis after</th></tr></thead><tbody>{preview.result.instruction.lots.map((lot) => <tr key={lot.expectedLot.lotId}><th scope="row" className="py-2 font-mono">{lot.expectedLot.lotId}</th><td>{String(lot.principal)}</td><td>{String(lot.transactionBasisAfter)}</td><td>{String(lot.functionalBasisAfter)}</td></tr>)}</tbody></table></div>
           <fieldset disabled={locked} className="space-y-3"><legend className="sr-only">Review draft confirmation</legend>
             <FormRow label="Paydown journal description" labelFor={`${id}-description`}><Input id={`${id}-description`} value={description} onChange={(event) => { setDescription(event.target.value); setConfirmed(false); }} /></FormRow>
-            <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />I reviewed the factor evidence, lot allocation and posting accounts.</label>
+            <Checkbox className="flex items-start gap-2 text-sm" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} label={<>I reviewed the factor evidence, lot allocation and posting accounts.</>} />
           </fieldset>
           <Button type="button" disabled={busy !== null || !confirmed || !description.trim() || !!draft} onClick={() => void createDraft()}>{busy === "draft" ? "Creating review draft…" : uncertain ? "Retry same review draft" : "Create paydown review draft"}</Button>
         </section> : null}

@@ -1,0 +1,31 @@
+name: Set up .NET SDK with NuGet cache
+description: >-
+  Install the .NET SDK pinned by global.json and restore the shared ~/.nuget/packages cache.
+  Reproduces the setup-dotnet + "Cache NuGet packages" step pair used across Meridian workflows,
+  with the same pinned action SHAs and cache key, so adopters and inline copies share one cache
+  namespace. Requires actions/checkout to have run first: global.json and the hashed restore
+  inputs must already be in the workspace.
+
+outputs:
+  cache-hit:
+    description: Whether the NuGet package cache was restored from an exact key match.
+    value: ${{ steps.nuget.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up .NET SDK
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      with:
+        global-json-file: global.json
+
+    # Keep this key identical to the inline copies that remain in meridian-ci.yml and the other
+    # non-adopting workflows, so every workflow reads and writes the same cache entries.
+    - name: Cache NuGet packages
+      id: nuget
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/*.packages.lock.json', '**/NuGet.Config', 'global.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-v1-

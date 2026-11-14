@@ -5,9 +5,9 @@
 
 const {
   WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button,
-  DenseDataTable, ProgressBar, SeverityBadge, CoverageMatrix, LogTail,
+  DataGrid, ProgressBar, SeverityBadge, CoverageMatrix, LogTail,
   FreshnessIndicator, Timestamp,
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 const NOW = Date.UTC(2026, 6, 2, 14, 32, 8);
@@ -94,19 +94,19 @@ function IngestionOperationsScreen() {
           <PanelSurface flat style={{ padding: 12 }}>
             <Eyebrow>Backfill queue</Eyebrow>
             <div style={{ marginTop: 10 }}>
-              <DenseDataTable
+              <DataGrid
                 rows={QUEUE}
                 columns={[
                   { key: "id", label: "Job" },
                   { key: "provider", label: "Provider" },
                   { key: "scope", label: "Scope" },
                   { key: "window", label: "Window" },
-                  { key: "progress", label: "Progress", render: (r) => (
+                  { key: "progress", label: "Progress", cell: (r) => (
                     <div style={{ minWidth: 140 }}>
-                      <ProgressBar value={r.progress} showValue variant={STATE_VARIANT[r.state]} size="sm" />
+                      <ProgressBar aria-label={`Progress for job ${r.id}`} value={r.progress} showValue variant={STATE_VARIANT[r.state]} size="sm" />
                     </div>
                   )},
-                  { key: "state", label: "State", render: (r) => <SeverityBadge status={STATE_BADGE[r.state]} label={r.state} /> },
+                  { key: "state", label: "State", cell: (r) => <SeverityBadge status={STATE_BADGE[r.state]} label={r.state} /> },
                   { key: "eta", label: "ETA", align: "right" },
                 ]}
               />

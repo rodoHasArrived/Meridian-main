@@ -38,9 +38,11 @@ export const Validators: {
   currency: (value: any, opts?: ValidatorOptions) => true | string;
 
   /**
-   * Date — validates ISO or locale date strings.
-   * Accepts: 2026-06-15, 06/15/2026, 15.06.2026, etc.
-   * Options: { format?: 'iso' | 'us' | 'eu', minDate?: string, maxDate?: string }
+   * Date — validates a calendar date in ONE named format, parsed as a local date.
+   * Accepts exactly the named shape: 'iso' 2026-06-15 · 'us' 06/15/2026 · 'eu' 15.06.2026.
+   * A datetime string or a different format is an error, not a reinterpretation.
+   * minDate/maxDate are inclusive; pass a Date or a date string.
+   * Options: { format?: 'iso' | 'us' | 'eu', minDate?: string | Date, maxDate?: string | Date }
    */
   date: (value: any, opts?: ValidatorOptions) => true | string;
 

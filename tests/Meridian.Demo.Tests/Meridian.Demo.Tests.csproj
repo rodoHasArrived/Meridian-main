@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\..\src\Meridian\Meridian.csproj" />
+    <ProjectReference Include="..\Meridian.TestSupport\Meridian.TestSupport.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reuse fixture helpers without compiling the unrelated test assembly. -->
+    <Compile Include="..\Meridian.Tests\Testing\TestArtifactDirectory.cs" Link="Testing\TestArtifactDirectory.cs" />
+    <Compile Include="..\Meridian.Tests\TestSupport\ProviderCatalogTestLease.cs" Link="TestSupport\ProviderCatalogTestLease.cs" />
+    <Compile Include="..\Meridian.Tests\TestHelpers\SecurityMasterTestCapabilityFloor.cs" Link="TestHelpers\SecurityMasterTestCapabilityFloor.cs" />
+    <Compile Include="..\Meridian.Tests\TestCollections.cs" Link="TestCollections.cs" />
+  </ItemGroup>
+</Project>
