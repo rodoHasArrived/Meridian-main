@@ -15,6 +15,7 @@ import {
 import {
   appendOperatingScopeToRoute,
   buildOperatingScopeFromSearch,
+  describeOperatingScopeForRoute,
   operatingScopeDimensionsForRoute,
   readOperatingScopeFromSearch,
   removeOperatingScopeFromSearch,
@@ -24,7 +25,7 @@ import { CommandPalette } from "@/components/meridian/command-palette";
 import { KeyboardShortcutsSheet } from "@/components/meridian/keyboard-shortcuts-sheet";
 import { getGlobalKeyBinding, matchesKeyCombo } from "@/lib/keymap";
 import { ScopePicker } from "@/components/meridian/scope-picker";
-import { collectScopeFundAccounts } from "@/lib/operating-scope/fund-accounts";
+import { collectScopeFundAccounts, type ScopeFundAccountOption } from "@/lib/operating-scope/fund-accounts";
 import {
   compactOperatingScope,
   hasOperatingScopeValues,
@@ -33,7 +34,8 @@ import {
   readStoredOperatingScope,
   writeStoredOperatingScope
 } from "@/lib/operating-scope/persistence";
-import { WorkflowContinuityDock, WorkflowContextDisclosure } from "@/components/meridian/workflow-continuity-dock";
+import { WorkflowContextDisclosure } from "@/components/meridian/workflow-continuity-dock";
+import { OperatingScopeBar } from "@/components/meridian/operating-scope-bar";
 import { WorkspaceViewsMenu } from "@/components/meridian/workspace-views-menu";
 import { WorkspaceStatus } from "@/components/meridian/workspace-status";
 import { EntityInspectorProvider } from "@/components/meridian/entity-inspector";
@@ -45,7 +47,12 @@ import { isCompanionPaneRoute, openCompanionPane } from "@/lib/companion-pane/pa
 import { setOpenCompanionPaneIds } from "@/lib/companion-pane/open-registry";
 import { broadcastCompanionState } from "@/lib/companion-pane/opener-broadcast";
 import { applyDensity, writeStoredDensity } from "@/lib/density";
-import { ScopePickerOpenerProvider } from "@/lib/operating-scope/scope-picker-context";
+import {
+  FundAccountScopeSelectionProvider,
+  ScopePickerOpenerProvider,
+  type FundAccountScopeSelection
+} from "@/lib/operating-scope/scope-picker-context";
+import { OperatingScopeLabelProvider } from "@/lib/operating-scope/scope-label-context";
 import { readRecentScopes, rememberRecentScope } from "@/lib/operating-scope/recent-scopes";
 import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
 import { PageTrustProvider, usePageTrustRegistry } from "@/lib/page-trust-context";
@@ -582,6 +589,8 @@ function AppShell({
     operatorChoseScopeRef.current = true;
     applyOperatingScope(next);
   };
+  const handleSetOperatingScopeRef = useRef(handleSetOperatingScope);
+  handleSetOperatingScopeRef.current = handleSetOperatingScope;
 
   // Replay a saved layout: apply density and operating scope, re-open the recorded
   // companion panes, then navigate the captured route. Window placement across
@@ -607,6 +616,19 @@ function AppShell({
   handleRestoreLayoutRef.current = handleRestoreLayout;
 
   const scopeFundAccountOptions = useMemo(() => collectScopeFundAccounts(brokeragePortfolio), [brokeragePortfolio]);
+  // The inline account picker on single-account screens offers the loaded accounts plus the ones
+  // in this operator's recent and default scopes, and sets only the fund-account dimension.
+  const fundAccountScopeSelection = useMemo<FundAccountScopeSelection>(() => {
+    const options = new Map<string, ScopeFundAccountOption>(scopeFundAccountOptions.map((option) => [option.id, option]));
+    [...recentScopes, ...(defaultScope ? [defaultScope] : [])].forEach((recent) => {
+      const id = recent.fundAccountId?.trim();
+      if (id && !options.has(id)) options.set(id, { id, label: id });
+    });
+    return {
+      options: [...options.values()],
+      select: (fundAccountId: string) => handleSetOperatingScopeRef.current({ ...currentOperatingScopeRef.current, fundAccountId })
+    };
+  }, [scopeFundAccountOptions, recentScopes, defaultScope]);
   const scopeDimensionsInEffect = useMemo(() => operatingScopeDimensionsForRoute(pathname), [pathname]);
 
   useEffect(() => {
@@ -704,6 +726,11 @@ function AppShell({
       operatingScope: shell.workflowContinuity.operatingScope
     }),
     [shell.attention.sourceSignals, shell.workflowContinuity.operatingScope]
+  );
+  // Every figures strip prints the scope it was counted over; this is the one the route applies.
+  const figureScopeLabel = useMemo(
+    () => describeOperatingScopeForRoute(pathname, shell.workflowContinuity.operatingScope),
+    [pathname, shell.workflowContinuity.operatingScope]
   );
   // Sidebar attention counts read the same queue selection the Daily Control Tower lists.
   const workspaceAttention = useMemo(
@@ -820,6 +847,8 @@ function AppShell({
     <MetricPassportSessionProvider scopeKey={JSON.stringify([operatingScopeInput, refreshStatus.inFlight])} sessionIdentity={session}>
     <EntityInspectorProvider scopeKey={JSON.stringify(operatingScopeInput)} sessionIdentity={session} refreshSequence={refreshStatus.inFlight ? 1 : 0}>
     <ScopePickerOpenerProvider open={openScopePicker}>
+    <FundAccountScopeSelectionProvider value={fundAccountScopeSelection}>
+    <OperatingScopeLabelProvider value={figureScopeLabel}>
     <CrossScreenCountsProvider counts={crossScreenCounts}>
     <ShellStatusSignalsProvider value={shellStatusSignals}>
     <WorkspaceFigureContextProvider value={workspaceFigureContext}>
@@ -890,10 +919,10 @@ function AppShell({
             )}
             overflowActions={<CopyLinkButton operatingScope={operatingScopeInput} />}
             routeKey={shell.routeFocus.routeKey}
-            context={(
-              <WorkflowContinuityDock
-                viewModel={shell.workflowContinuity}
-                onEditOperatingContext={() => setScopePickerOpen(true)}
+            scope={(
+              <OperatingScopeBar
+                operatingScope={shell.workflowContinuity.operatingScope}
+                onEditOperatingScope={openScopePicker}
                 scopeDimensionsInEffect={scopeDimensionsInEffect}
               />
             )}
@@ -1014,7 +1043,6 @@ function AppShell({
           workspaceLabel: headerWorkspace.label,
           refreshing: loading || refreshStatus.inFlight,
           hasError: Boolean(error),
-          attention: shell.attention,
           pageFreshness
         })}
       />
@@ -1075,6 +1103,8 @@ function AppShell({
     </WorkspaceFigureContextProvider>
     </ShellStatusSignalsProvider>
     </CrossScreenCountsProvider>
+    </OperatingScopeLabelProvider>
+    </FundAccountScopeSelectionProvider>
     </ScopePickerOpenerProvider>
     </EntityInspectorProvider>
     </MetricPassportSessionProvider>

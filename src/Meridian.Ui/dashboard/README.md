@@ -533,8 +533,13 @@ The browser shell renders `WorkspaceHeader` as one row above every route:
 - **Left:** the breadcrumb, ending in the page name as the page's only `h1` (`Trading > Orders`;
   a workspace root reads `Trading`, the front door reads `Today`). The masthead shows only
   `Meridian` and announces the workspace to assistive technology, so the location is stated once.
-- **Centre:** the operating-scope chip. It shows the scope values (`All funds` when nothing is
-  set; dimensions the current screen does not apply are muted) and opens the scope picker.
+- **Centre:** the permanent operating-scope bar (`components/meridian/operating-scope-bar.tsx`),
+  `Scope  Account … › Period …`, with Subject, Run and Provider inserted when set. The scope model
+  has no entity or fund dimension of its own, so the bar does not invent one. An unset dimension
+  reads `All authorized` (never "None"); set dimensions the current screen does not apply are
+  muted and described as retained. It shows on every route and opens the scope picker. The empty
+  scope as a whole reads `All authorized scopes` (`OPERATING_SCOPE_EMPTY_SUMMARY`), the same words
+  Today prints.
 - **Right:** Refresh, `Views` (saved-layout and save-current-view controls) and an overflow menu
   holding Copy link and the workspace's About text.
 
@@ -554,7 +559,20 @@ Navigating to another workflow disposes nested view-control dialogs and their ke
 before the disclosure closes; screen-local table URL updates retain the current control session.
 Symbol suggestions support arrow keys, Enter, Escape, search progress, no matches and Retry.
 Escape dismisses suggestions before closing the dialog. Navigation reveals the active destination
-after route changes while respecting manual collapse until the next navigation.
+after route changes while respecting manual collapse until the next navigation. Applying a scope
+replaces the route's scope query parameters (`appendOperatingScopeToRoute`), so the URL, Copy link
+and every scope-carrying link hold it.
+
+Every figures strip (`StatStrip`) prints the scope it was counted over without per-screen wiring
+(`lib/operating-scope/figure-scope.ts`): a screen's own `scope` prop wins; otherwise the fund
+account the supplying payload was loaded for (`Account …`, or `All authorized accounts`), then
+`All authorized scopes` for a payload the shell loads without a scope filter (the selection does
+not narrow those figures, so they do not borrow it), then the scope the shell applies on the route
+(`OperatingScopeLabelProvider`). Figures that state their own scope keep it. Screens that need one
+fund account use `InlineFundAccountPicker`, which sets only the fund-account dimension through the
+shell (`FundAccountScopeSelectionProvider`); Trading uses it in place of its "Choose a fund
+account" empty state in a non-live environment, on the overview and in the one-line row on Orders
+and the other Trading routes. Live, unknown and failed brokerage states keep blocking.
 
 Focused regression coverage includes `app.test.tsx`, `workspace-header.test.tsx`,
 `workspace-views-menu.test.tsx`, `workflow-continuity-dock.test.tsx`, `scope-picker.test.tsx`,
@@ -741,15 +759,30 @@ not been recorded.
   blocked, info), the same set WPF uses. `SeverityBadge` and `DesignSystemStatus` are aliases of
   it. Labels of one or two words are tracked caps; longer labels render in sentence case. Product
   maturity appears in the workspace About disclosure and the navigation tooltip, not as a badge.
-  The `adHocStatusBadges` ratchet counts hand-styled chips.
-- **Formatting.** `@/lib/format` is the only module that calls Intl. It provides `formatCount`,
-  `formatMoney` (`accounting` puts negatives in parentheses at the currency's minor units,
-  `trading` uses a minus sign at instrument precision, `summary` shows whole units),
-  `formatQuantity`, and `formatUtcTimestamp`/`formatUtcDate`/`formatUtcMonthYear`, which always
-  include the year. Screens show times in UTC, not on the operator's local clock;
-  `formatDateTime` covers any other date layout through a pinned-locale `Intl.DateTimeFormat`.
-  ESLint blocks `Intl.*` and `toLocale*String` in every non-test file under `src/screens/`, and
-  the `directIntlFormatting` baseline is empty.
+  The `adHocStatusBadges` ratchet counts hand-styled chips. `@/design-system/status-styles` is
+  the only status-to-look mapping: `toSeverity` reads any status, tone or badge variant onto the
+  five severities, and `statusBadgeVariant`, `statusPanelClass`, `statusTextClass` and
+  `statusMetricTone` give each severity one style. Screens do not keep local tone maps.
+- **Formatting.** `@/lib/format` is the formatting module screens call instead of Intl. It
+  provides `formatCount`, `formatMoney` (`accounting` puts negatives in parentheses at the
+  currency's minor units, `trading` uses a minus sign at instrument precision, `summary` shows
+  whole units), `formatQuantity`, and the timestamp helpers below. `formatDateTime` covers any
+  other date layout through a pinned-locale `Intl.DateTimeFormat`. ESLint blocks `Intl.*` and
+  `toLocale*String` in every non-test file under `src/screens/`, and the `directIntlFormatting`
+  baseline is empty.
+- **Timestamps.** One format for an instant: `formatTimestamp(value)` renders
+  `Jun 30, 2026, 18:05 UTC` (month, day, year, 24-hour clock, zone label) in the operator's
+  display time zone. The zone is UTC until the operator picks another IANA zone under Settings >
+  Preferences > Appearance (`getDisplayTimeZone`/`setDisplayTimeZone`, persisted per browser in
+  localStorage; an unknown or blocked value falls back to UTC). In a picked zone the label is the
+  runtime's short name, e.g. `Jun 30, 2026, 14:05 EDT` or `Jul 1, 2026, 03:05 GMT+9`.
+  - `formatRelativeTime(value, now)` gives `30s ago`, `5m ago`, `3d ago` or `in 2h`.
+  - `<TimeText value display="absolute|relative">` from `@/components/ui/time-text` renders one
+    form inside `<time dateTime>` with the other in `title`, and re-renders when the zone changes.
+    Plain-string call sites pick up a new zone on their next render.
+  - `formatUtcTimestamp`, `formatUtcDate` and `formatUtcMonthYear` stay fixed to UTC for labels
+    defined on the UTC clock (a column headed "UTC", a UTC cut-off). An operator-facing time
+    uses `formatTimestamp`.
 - **Calendar dates.** A trade, ex-, due, effective, or period date is carried as a `YYYY-MM-DD`
   string through `@/lib/local-date` (`LocalDate`, the native port of the Design System 4.3 carrier)
   and rendered with `LocalDateText` from `@/components/ui/local-date-text`, which emits
@@ -759,17 +792,35 @@ not been recorded.
 - **Number style.** One style for a financial figure, wherever it appears:
   - *Signed P&L*: `formatPnl` puts an explicit sign on every non-zero amount with thousands
     separators and fixed decimals (`+$1,234.56`, `-$1,234.56`, `$0.00`); `pnlToneForValue`
-    gives the matching green/red tone, so sign and color never disagree.
+    gives the matching green/red tone, so sign and color never disagree. Other signed deltas
+    pass `signed: true` to `formatNumber`, `formatPercent`, `formatRatioAsPercent`,
+    `formatCount`, `formatAmountWithCode` or `formatMoney` (`+12.5%`, `-3`, `0`) instead of
+    prepending a sign in the screen.
   - *Spelling*: profit and loss is "P&L" in every label. `normalizeFinancialLabel` rewrites
     "PnL", "P/L" and "P & L"; the stat strip, metric card, record explorer and proof drawer
     apply it to labels that arrive from a read model.
   - *Currency*: pass the ISO code whenever more than one currency is in scope
-    (`formatMoney(value, { currency })`, or `formatAmountWithCode` for a code suffix).
+    (`formatMoney(value, { currency })`, `formatAmountWithCode` for a code suffix, or
+    `formatCurrencyWithCode` for a symbol amount that keeps the code, e.g. `€100 EUR`).
   - *Decimals*: currency minor units for money, instrument precision for prices and
     quantities (`formatMoney`'s `decimals`, `formatQuantity`), whole units for a headline
     figure. Figures render in tabular numerals.
-  - *Enforcement*: two ratchets hold what is left to migrate. `handRolledNumberFormatting`
-    counts `.toFixed(` in screens, which skips separators and the sign convention;
+  - *Exact amounts*: `formatMoney` accepts a number or a decimal string. Both go through the
+    exact-decimal core in `@/lib/exact-decimal` (`parseExactDecimal`, `toNumber`, `sumAmounts`),
+    which rounds half away from zero and groups digits, so a server amount is never rounded
+    through a float: `formatMoney("12345678901234.565")` is `$12,345,678,901,234.57`. An amount
+    that rounds to zero is shown unsigned.
+  - *One money formatter, two conventions*: `convention: "screen"` (the default) uses Intl
+    symbols (`$`, `€`, `CA$`) and `-`. `convention: "statement"` uses the statement symbol
+    table (`currencySymbol`) and U+2212 `−`, for ledgers, statements and journal grids. `parens`,
+    `zeroDash` and `signed` work under either convention. `@/components/accounting/money` is a
+    thin statement-convention wrapper: two decimals, no symbol unless a currency is given, and
+    unparseable text passed through as is.
+  - *Enforcement*: two ratchets keep screens on `@/lib/format`, and both baselines are empty,
+    so a new occurrence fails the ratchet test. `handRolledNumberFormatting` counts `.toFixed(`
+    in screens, which skips separators and the sign convention: a displayed figure with fixed
+    decimals uses `formatDecimal(value, digits)` (or `formatPercent`, `formatRatioAsPercent`,
+    `formatMoney`), and an SVG coordinate or CSS length uses the ungrouped `formatFixed`.
     `localMoneyFormatters` counts money and P&L formatters defined in a screen instead of
     imported from `@/lib/format`.
 - **Headline figures.** `StatStrip` and `MetricCard` apply the rules in `@/lib/metric-trust`
@@ -795,9 +846,9 @@ not been recorded.
   - *Change*: a bare change (`+8%`, `0%`, `+2`) is shown only with the `baseline` it is
     measured against (`+8% vs prior session`) and is dropped otherwise. A change that names
     its comparison (`3 new since your last visit`) and descriptive captions pass through.
-  - *Basis*: a strip prints the basis its figures share once, and "Not declared by source"
-    when the source declares none (`metricBasisValue`). Cards omit an undeclared basis; the
-    figure passport says "Basis not declared by source" (`metricBasisLabel`).
+  - *Basis*: a strip prints the basis its figures share once, and nothing when no figure
+    declares a basis or an as-of time (`hasMetricBasisDetail`). Cards omit an undeclared basis;
+    the figure passport says "Basis not declared by source" (`metricBasisLabel`).
   - *Freshness*: `freshness: "stale" | "unverified"` mutes the figure, adds a clock, marks
     the strip "Stale figures"/"Unverified figures" and explains the age on hover and to
     assistive technology. Staleness is decided per payload: a payload whose own reload failed
@@ -904,9 +955,9 @@ not been recorded.
   every status fact, and one shell attention state (`src/app-shell.attention.ts`) feeds the
   masthead attention pill, every page status row, Today's status row and the status bar. The
   same input therefore gives the same status on each surface; see "Status signals" below. The
-  status bar's Sync item reports the workstation's own read of the API, and when the attention
-  state needs review or is blocked the bar repeats the pill's worst issue as an Attention item, so
-  a green Sync is never its whole answer under a masthead warning. The Daily Control Tower's
+  status bar's Sync item reports the workstation's own read of the API. The masthead pill is the
+  one shell place that names the worst issue: the status bar and page status rows do not repeat
+  it (UX consolidation P1). The Daily Control Tower's
   Evidence line names only the event correlated with the leading decision's queue row; with none
   it says so and cites the latest event as workstation context.
 - **Page freshness in the status bar.** The shell attention state covers shell-wide sources; the
@@ -1102,11 +1153,12 @@ disagree:
 - **Page status row** (`OperationalTrustSummary`, rendered by `StatusRow`): one line that reads
   `All sources current` or names only the facts that are not ready
   (`Scope: none selected`, `Freshness: 187d stale`). The per-fact breakdown, with detail and
-  recovery actions, is behind `Details`. The row also folds in shell source issues (provider
-  posture, unverified provenance, workspace data that did not load, degraded host), so a page
-  cannot read `All sources current` while the pill warns about the same sources.
-- **Status bar** (footer): Sync, plus the pill's worst issue when the state needs review or is
-  blocked, with a count of the rest (`+5 more issues`).
+  recovery actions, is behind `Details`. Shell source issues (provider posture, unverified
+  provenance, workspace data that did not load, degraded host) are the pill's to name: the row
+  lists them only under `Details` (`contextFacts`), and when the page's own facts are ready it
+  reads `This page's sources are current · N workspace issues in the trust strip`, so it never
+  says `All sources current` under a warning pill and never repeats the pill's items.
+- **Status bar** (footer): Sync and the page's Freshness only; it never repeats the pill's issue.
 
 Rules worth knowing when adding a signal:
 
@@ -1132,8 +1184,8 @@ and nothing once evidence reconciles. With no fund account in scope and a broker
 is known and not live, the panel and row are a neutral setup state with a "Choose account" action;
 a live, unknown or failed state keeps the blocked row. The sidebar pins `Today` (the Daily Control
 Tower) above the seven workspaces and shows per-workspace attention counts from
-`selectDailyControlTowerQueueItems`, the same selection the Control Tower lists as its Finance queue
-(above the Operator inbox); each count is part of its link's accessible name, the badge sits beside
+`selectDailyControlTowerQueueItems`, the same selection the Control Tower lists as the workspace-signal
+rows of its one Today queue grid (shared inbox rows in that grid are not counted); each count is part of its link's accessible name, the badge sits beside
 the link so the visible label stays in the name, and the link's tooltip names the unit
 (`3 items from Accounting in Today's finance queue`).
 
@@ -1232,8 +1284,9 @@ The contract standardizes:
 
 Current dense-row detail consumers covered by regression tests include Portfolio positions,
 Portfolio run evidence, Trading recent fills, Data backfill queue rows, Data export rows, and
-Security Master lots. The Daily Control Tower finance queue uses the same table/inspector contract,
-including row selection, focus handoff, and Escape return behavior.
+Security Master lots. The Daily Control Tower's Today queue uses the same table/inspector contract,
+including row selection, focus handoff, and Escape return behavior: a workspace-signal row opens its
+evidence rail and a shared-inbox row opens its triage rail.
 
 The Data backfill workstream reads `/api/backfill/executions` as the durable remediation evidence
 source. Its remediation SLA queue keeps server-owned tier, deadline, status, provider, workflow,
@@ -2403,8 +2456,13 @@ of workflow continuity, trust posture, linked context, and timestamped evidence.
 is a shell-level Home location rather than an eighth workspace: none of the seven root workspace
 items is marked current (the pinned sidebar `Today` entry is), the breadcrumb heading reads
 `Today`, and the operating-context copy identifies the Daily Control Tower instead
-of falling back to Trading. It lists the combined finance queue (the items the sidebar badges
-count) and, below it, the operator triage inbox from the shared host; each states what it counts.
+of falling back to Trading. It lists one queue grid (`buildTodayQueueRows`) that interleaves the
+workspace signals (the items the sidebar badges count) with the operator triage inbox from the
+shared host. Rows sort by severity, then oldest first (rows with no observed time go after dated
+rows), then each source's own rank, with workspace signals first on a tie. A Source column and a
+Source filter with per-source counts keep the two populations distinct. The inbox's read, filters,
+bulk selection and in-flight or unconfirmed command live in `useOperatorTriageInbox`, above the
+filter, so filtering inbox rows out never drops a pending command or its "Retry same command".
 The landing model
 now prioritizes the finance sequence Today, Exceptions, Close, Reconciliation, Ledger, Reports,
 Evidence, and Data Health before non-finance surfaces. Decision drivers emphasize the finance
@@ -2458,7 +2516,9 @@ The rendered workflow-continuity dock lives in
 `components/meridian/workflow-continuity-dock.tsx` with its stylesheet in
 `src/styles/workflow-continuity-dock.css`, leaving `app.tsx` to compose routes, shell chrome, route
 recovery, and the global workstation stylesheet while the dock owns its accessible links,
-operating-scope chips, and primary-operator-flow disclosure.
+operating-scope chips, and primary-operator-flow disclosure. The shell header no longer mounts the
+dock: it shows `OperatingScopeBar`, and the scope picker shows `WorkflowContextDisclosure` from
+the same module.
 Workspace navigation rail and drawer styles live in `src/styles/workspace-nav.css`, imported by
 `components/meridian/workspace-nav.tsx`, so root-workspace routing, preserved operating-scope chips,
 expand/collapse controls, status badges, and responsive drawer variants stay with the navigation

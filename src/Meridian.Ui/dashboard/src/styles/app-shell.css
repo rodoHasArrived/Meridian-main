@@ -736,6 +736,24 @@ button.operating-scope-chip:focus-visible { outline: 2px solid var(--interaction
 .operating-scope-chip-item { display: inline-flex; gap: 0.375rem; min-width: 0; }
 .operating-scope-chip-item-retained { color: var(--ws-text-muted); font-weight: 500; }
 .operating-scope-chip-sep { color: var(--ws-text-muted); }
+/* The permanent scope bar: "Scope  Account All authorized › Period All authorized". */
+.operating-scope-bar { min-width: 0; }
+.operating-scope-bar-button {
+  display: inline-flex; align-items: center; gap: 0.5rem; max-width: min(40rem, 46vw); min-height: 1.75rem;
+  padding: 0.125rem 0.625rem; border: 1px solid var(--ws-border); border-radius: var(--radius-sm);
+  background: var(--ws-surface); color: var(--ws-text); font-size: 0.75rem; text-align: left;
+}
+button.operating-scope-bar-button { cursor: pointer; }
+button.operating-scope-bar-button:hover { border-color: var(--border-hi, var(--ws-text-muted)); background: var(--ws-surface-subtle, #EBE8E1); }
+button.operating-scope-bar-button:focus-visible { outline: 2px solid var(--interaction-focus); outline-offset: 2px; }
+.operating-scope-bar-label { flex-shrink: 0; font-weight: 600; color: var(--ws-text-muted); }
+.operating-scope-bar-segments { display: inline-flex; gap: 0.375rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.operating-scope-bar-segment { display: inline-flex; align-items: baseline; gap: 0.25rem; min-width: 0; }
+.operating-scope-bar-dimension { color: var(--ws-text-muted); }
+.operating-scope-bar-value { font-weight: 600; }
+.operating-scope-bar-segment-unset .operating-scope-bar-value { font-weight: 500; }
+.operating-scope-bar-segment-retained .operating-scope-bar-value { color: var(--ws-text-muted); font-weight: 500; }
+.operating-scope-bar-sep { color: var(--ws-text-muted); }
 /* Workflow context inside the scope picker: a plain disclosure under the scope controls. */
 .scope-picker-workflow-context { margin-top: 0.75rem; border-top: 1px solid var(--ws-border); padding-top: 0.5rem; }
 .scope-picker-workflow-context .workflow-continuity-operator-flow,
@@ -772,6 +790,7 @@ button.operating-scope-chip:focus-visible { outline: 2px solid var(--interaction
   .workstation-header-actions { grid-column: 2; grid-row: 1; }
   .workstation-header-scope { grid-column: 1 / -1; grid-row: 2; justify-self: start; }
   .operating-scope-chip { max-width: 100%; }
+  .operating-scope-bar-button { max-width: 100%; }
 }
 
 /* Warnings retain their natural height; only the workstation consumes free space. */

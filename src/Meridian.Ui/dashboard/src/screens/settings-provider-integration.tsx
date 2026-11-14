@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   Trash2
 } from "lucide-react";
-import { formatCount, formatUtcTimestamp } from "@/lib/format";
+import { formatCount, formatTimestamp } from "@/lib/format";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,6 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { TextArea } from "@/components/ui/text-area";
 import { SeverityBadge } from "@/components/operations";
-import { badgeVariantToOperatorSeverity } from "@/lib/shared-tone-mappings";
 import {
   activateProviderIntegration,
   checkProviderIntegrationSchemaDrift,
@@ -76,6 +75,7 @@ import type {
   ProviderIntegrationSyncRunHistory,
   ProviderIntegrationTemplateCatalogEntry
 } from "@/types";
+import { toSeverity } from "@/design-system/status-styles";
 
 // Domain-specific projections and components shared by the screen composition.
 
@@ -299,7 +299,7 @@ export function ProviderIntegrationRuntimePanel({
           <div className="flex flex-wrap items-center gap-2">
             <h5 className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">Runtime evidence</h5>
             <SeverityBadge
-              status={badgeVariantToOperatorSeverity(providerRuntimeStatusVariant(state))}
+              status={toSeverity(providerRuntimeStatusVariant(state))}
               label={providerRuntimeStatusLabel(state)}
             />
           </div>
@@ -373,7 +373,7 @@ export function ProviderIntegrationRuntimePanel({
       <dl className="mt-3 grid gap-2 sm:grid-cols-2">
         <SettingsFieldRow
           label="Last sync"
-          value={formatProviderRuntimeUtcMinute(state.syncRuns?.latestStartedAt ?? latestRun?.startedAt)}
+          value={formatProviderRuntimeMinute(state.syncRuns?.latestStartedAt ?? latestRun?.startedAt)}
           tone={latestRun ? providerRuntimeRunTone(latestRun) : "muted"}
         />
         <SettingsFieldRow label="Sync runs" value={`${formatProviderRuntimeNumber(returnedRuns)} / ${formatProviderRuntimeNumber(totalRuns)}`} tone={returnedRuns > 0 ? "success" : "muted"} />
@@ -446,10 +446,10 @@ export function ProviderIntegrationRuntimePanel({
             <div key={run.syncRunId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-mono text-[11px] text-foreground">{run.syncRunId}</span>
-                <SeverityBadge status={badgeVariantToOperatorSeverity(providerRuntimeRunVariant(run))} label={run.status} />
+                <SeverityBadge status={toSeverity(providerRuntimeRunVariant(run))} label={run.status} />
               </div>
               <div className="mt-1 text-[11px] text-muted-foreground">
-                {run.capability} · {formatProviderRuntimeUtcMinute(run.startedAt)} · {formatProviderRuntimeNumber(run.recordsAccepted)} accepted / {formatProviderRuntimeNumber(run.recordsQuarantined)} quarantined
+                {run.capability} · {formatProviderRuntimeMinute(run.startedAt)} · {formatProviderRuntimeNumber(run.recordsAccepted)} accepted / {formatProviderRuntimeNumber(run.recordsQuarantined)} quarantined
               </div>
             </div>
           ))}
@@ -467,15 +467,15 @@ export function ProviderIntegrationRuntimePanel({
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <SeverityBadge status={badgeVariantToOperatorSeverity(providerRuntimeProcessingStatusVariant(record.status))} label={record.status} />
+                      <SeverityBadge status={toSeverity(providerRuntimeProcessingStatusVariant(record.status))} label={record.status} />
                       <span className="font-mono text-[11px] text-foreground">{record.quarantineRecordId}</span>
                     </div>
                     <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
-                      {record.capability} · {formatProviderRuntimeUtcMinute(record.createdAt)} · {formatProviderRuntimeNumber(record.validationErrors.length)} issues
+                      {record.capability} · {formatProviderRuntimeMinute(record.createdAt)} · {formatProviderRuntimeNumber(record.validationErrors.length)} issues
                     </p>
                     {latestDecision ? (
                       <p className="mt-1 text-[11px] leading-4 text-success">
-                        Decision: {providerRuntimeQuarantineActionLabel(latestDecision.action)} by {latestDecision.reviewedBy} · {formatProviderRuntimeUtcMinute(latestDecision.reviewedAt)}
+                        Decision: {providerRuntimeQuarantineActionLabel(latestDecision.action)} by {latestDecision.reviewedBy} · {formatProviderRuntimeMinute(latestDecision.reviewedAt)}
                       </p>
                     ) : null}
                   </div>
@@ -551,7 +551,7 @@ export function ProviderIntegrationRuntimePanel({
           {issueGroups.slice(0, 3).map((group) => (
             <div key={`${group.issueCode}-${group.targetField ?? "record"}`} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center gap-2">
-                <SeverityBadge status={badgeVariantToOperatorSeverity(providerRuntimeSeverityVariant(group.severity))} label={group.severity} />
+                <SeverityBadge status={toSeverity(providerRuntimeSeverityVariant(group.severity))} label={group.severity} />
                 <span className="font-mono text-[11px] text-foreground">{group.issueCode}</span>
                 <span className="text-[11px] text-muted-foreground">{formatProviderRuntimeNumber(group.recordCount)} records</span>
               </div>
@@ -583,7 +583,7 @@ export function ProviderIntegrationRuntimePanel({
           {state.promotion.rows.slice(0, 3).map((promotionRow) => (
             <div key={promotionRow.stagingRecordId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center gap-2">
-                <SeverityBadge status={badgeVariantToOperatorSeverity(providerRuntimePromotionVariant(promotionRow.status))} label={promotionRow.status} />
+                <SeverityBadge status={toSeverity(providerRuntimePromotionVariant(promotionRow.status))} label={promotionRow.status} />
                 <span className="font-mono text-[11px] text-foreground">{promotionRow.stagingRecordId}</span>
                 <span className="text-[11px] text-muted-foreground">{promotionRow.promotionTarget}</span>
               </div>
@@ -1024,7 +1024,7 @@ export function ProviderIntegrationWorkbenchPanel({
           <div className="grid gap-2 md:grid-cols-2">
             {mappingPreview.length > 0 ? mappingPreview.slice(0, 4).map((mapping) => (
               <div key={`${mapping.capability}-${mapping.sourcePath}-${mapping.targetField}`} className="rounded-sm border border-border/60 bg-secondary/20 px-2 py-2 text-[11px] text-muted-foreground">
-                <span className="font-mono text-foreground">{mapping.sourcePath}</span> {" -> "} <span className="font-mono text-foreground">{mapping.targetField}</span> · {mapping.confidence}{mapping.required ? " · required" : ""}
+                <span className="font-mono text-foreground">{mapping.sourcePath}</span> {" → "} <span className="font-mono text-foreground">{mapping.targetField}</span> · {mapping.confidence}{mapping.required ? " · required" : ""}
               </div>
             )) : <p className="text-[11px] text-muted-foreground">No mapping rows for the selected capability.</p>}
           </div>
@@ -1783,7 +1783,7 @@ export function formatProviderRuntimeNumber(value: number): string {
 }
 
 
-export function formatProviderRuntimeUtcMinute(value: string | Date | null | undefined, unavailableLabel = "Not synced"): string {
+export function formatProviderRuntimeMinute(value: string | Date | null | undefined, unavailableLabel = "Not synced"): string {
   if (!value) {
     return unavailableLabel;
   }
@@ -1793,7 +1793,7 @@ export function formatProviderRuntimeUtcMinute(value: string | Date | null | und
     return unavailableLabel;
   }
 
-  return formatUtcTimestamp(date);
+  return formatTimestamp(date);
 }
 
 

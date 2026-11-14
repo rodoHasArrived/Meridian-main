@@ -1116,7 +1116,7 @@ describe("accounting-screen journal-entry view model", () => {
       nextActionRouteLabel: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
       netActivityLabel: "+$100.00 USD",
       grossActivityLabel: "$100 USD",
-      capitalAccountRollForwardLabel: "$0 USD opening -> +$100.00 USD ending",
+      capitalAccountRollForwardLabel: "$0 USD opening → +$100.00 USD ending",
       memoLabel: "Manual close adjustment",
       referenceLabel: "payment:fund-alpha:capital-call:manual-je-1 / settlement:fund-alpha:capital-call:20260630",
       activityRouteLabel: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
@@ -1247,9 +1247,9 @@ describe("accounting-screen journal-entry view model", () => {
       evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/source-doc"]
     }));
     expect(result.current.draft.status).toBe("Posted");
-    expect(result.current.lifecycleStatusText).toBe("Post recorded: Approved -> Posted");
+    expect(result.current.lifecycleStatusText).toBe("Post recorded: Approved → Posted");
     expect(result.current.lifecycleTransitions[0]).toMatchObject({
-      title: "Post: Approved -> Posted",
+      title: "Post: Approved → Posted",
       auditLabel: "Audit transition-post",
       correlationLabel: "Correlation manual-je-post",
       evidenceLabel: "1 evidence link(s)",

@@ -12,7 +12,7 @@ import type {
   ExecutionBlotterSnapshot,
   ExecutionGatewayHealth
 } from "@/types/execution-blotter.types";
-import { formatMoney, formatQuantity } from "@/lib/format";
+import { formatMoney, formatPnl, formatQuantity } from "@/lib/format";
 
 export type ExecutionBlotterTone = "default" | "success" | "warning" | "danger";
 
@@ -100,15 +100,15 @@ export function buildExecutionBlotterMetrics(
     {
       id: "cash",
       label: "Cash",
-      value: account === null ? "—" : formatCurrency(account.cash),
-      detail: account === null ? "Account snapshot has not loaded." : `Portfolio value ${formatCurrency(account.portfolioValue)}`,
+      value: account === null ? "—" : formatMoney(account.cash, { context: "trading", decimals: 2 }),
+      detail: account === null ? "Account snapshot has not loaded." : `Portfolio value ${formatMoney(account.portfolioValue, { context: "trading", decimals: 2 })}`,
       tone: "default"
     },
     {
       id: "unrealised",
       label: "Unrealised P&L",
-      value: account === null ? "—" : formatSignedCurrency(account.unrealisedPnl),
-      detail: account === null ? "Account snapshot has not loaded." : `Realised ${formatSignedCurrency(account.realisedPnl)}`,
+      value: account === null ? "—" : formatPnl(account.unrealisedPnl),
+      detail: account === null ? "Account snapshot has not loaded." : `Realised ${formatPnl(account.realisedPnl)}`,
       tone: account === null ? "default" : pnlTone(account.unrealisedPnl)
     },
     {
@@ -134,10 +134,10 @@ export function buildExecutionBlotterRow(position: ExecutionBlotterPosition): Ex
     product: position.productDescription,
     side: position.side,
     quantity: formatNumber(position.quantity),
-    averageCostBasis: formatCurrency(position.averageCostBasis),
-    marketPrice: formatCurrency(position.marketPrice),
-    marketValue: formatCurrency(position.marketValue),
-    unrealisedPnl: formatSignedCurrency(position.unrealisedPnl),
+    averageCostBasis: formatMoney(position.averageCostBasis, { context: "trading", decimals: 2 }),
+    marketPrice: formatMoney(position.marketPrice, { context: "trading", decimals: 2 }),
+    marketValue: formatMoney(position.marketValue, { context: "trading", decimals: 2 }),
+    unrealisedPnl: formatPnl(position.unrealisedPnl),
     unrealisedTone: pnlTone(position.unrealisedPnl),
     assetClass: position.assetClass,
     contractDetail,
@@ -151,7 +151,7 @@ export function buildExecutionBlotterRow(position: ExecutionBlotterPosition): Ex
       marketValue: position.marketValue,
       unrealisedPnl: position.unrealisedPnl
     },
-    ariaLabel: `${position.side} ${formatNumber(position.quantity)} ${position.symbol}, market value ${formatCurrency(position.marketValue)}, unrealised ${formatSignedCurrency(position.unrealisedPnl)}`
+    ariaLabel: `${position.side} ${formatNumber(position.quantity)} ${position.symbol}, market value ${formatMoney(position.marketValue, { context: "trading", decimals: 2 })}, unrealised ${formatPnl(position.unrealisedPnl)}`
   };
 }
 
@@ -175,14 +175,6 @@ function pnlTone(value: number): ExecutionBlotterTone {
   }
 
   return value < 0 ? "danger" : "default";
-}
-
-function formatCurrency(value: number): string {
-  return formatMoney(value, { context: "trading", decimals: 2 });
-}
-
-function formatSignedCurrency(value: number): string {
-  return `${value > 0 ? "+" : ""}${formatCurrency(value)}`;
 }
 
 function formatNumber(value: number): string {

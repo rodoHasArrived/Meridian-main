@@ -21,8 +21,6 @@ import {
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
-  formatCurrency,
-  formatCurrencyWithCode,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
 import {
@@ -71,7 +69,7 @@ import type {
   PrivateCapitalReportOutput,
   SecurityMasterEntry,
 } from "@/types";
-import { formatCount } from "@/lib/format";
+import { formatCount, formatCurrencyWithCode, formatPrefixedCurrency } from "@/lib/format";
 
 const defaultManualJournalEntryWorkbenchServices: ManualJournalEntryWorkbenchServices = {
   getAssetCapabilities: getAssetAccountingDraftCapabilities,
@@ -223,7 +221,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     setValidatedDraftSignature(null);
     setSelectedLineId(result.journalEntry.lines[0]?.lineId ?? selectedLineId);
     setLifecycleCorrectionDrafts(generated);
-    setLifecycleStatusText(`${result.transition.action} recorded: ${result.transition.fromStatus} -> ${result.transition.toStatus}`);
+    setLifecycleStatusText(`${result.transition.action} recorded: ${result.transition.fromStatus} → ${result.transition.toStatus}`);
     setSavedDraftSignature(buildManualJournalEditableSignature(result.journalEntry));
     setLastSavedAtUtc(result.journalEntry.updatedAtUtc);
     setSaveState("saved");
@@ -729,7 +727,7 @@ export function useManualJournalEntryWorkbenchViewModel(
   const canSubmit = submitDisabledReason === null;
   const blockingIssueCount = draft.validationIssues.filter((issue) => issue.severity === "Critical").length;
   const warningIssueCount = draft.validationIssues.filter((issue) => issue.severity === "Warning").length;
-  const balanceStatusLabel = Math.abs(balancedDraft.imbalance) === 0 ? "Balanced" : "Out by " + formatCurrency(Math.abs(balancedDraft.imbalance));
+  const balanceStatusLabel = Math.abs(balancedDraft.imbalance) === 0 ? "Balanced" : "Out by " + formatPrefixedCurrency(Math.abs(balancedDraft.imbalance));
   const saveStatusLabel = draft.assetAccountingDraft ? "Retained source draft" : saveState === "saving"
     ? "Saving draft"
     : saveState === "unsaved"
@@ -788,10 +786,10 @@ export function useManualJournalEntryWorkbenchViewModel(
     securitySearchErrorText: securitySearchError?.summary ?? null,
     securitySearchStatusText,
     attachmentDraft,
-    totalsLabel: `Debits ${formatCurrency(balancedDraft.totalDebits)} / Credits ${formatCurrency(balancedDraft.totalCredits)}`,
-    totalDebitsLabel: formatCurrency(balancedDraft.totalDebits),
-    totalCreditsLabel: formatCurrency(balancedDraft.totalCredits),
-    imbalanceLabel: `Imbalance ${formatCurrency(balancedDraft.imbalance)}`,
+    totalsLabel: `Debits ${formatPrefixedCurrency(balancedDraft.totalDebits)} / Credits ${formatPrefixedCurrency(balancedDraft.totalCredits)}`,
+    totalDebitsLabel: formatPrefixedCurrency(balancedDraft.totalDebits),
+    totalCreditsLabel: formatPrefixedCurrency(balancedDraft.totalCredits),
+    imbalanceLabel: `Imbalance ${formatPrefixedCurrency(balancedDraft.imbalance)}`,
     balanceStatusLabel,
     balanceStatusTone: Math.abs(balancedDraft.imbalance) === 0 ? "success" : "warning",
     balanceImpactRows,
@@ -1084,7 +1082,7 @@ function buildManualJournalPrivateCapitalActivityView(
       {
         id: "net-activity",
         label: "Net activity",
-        value: formatCurrencyWithCode(activity.netCapitalActivity, currency, true),
+        value: formatCurrencyWithCode(activity.netCapitalActivity, currency, { signed: true }),
         detail: "Ledger-derived capital activity",
         tone: activity.netCapitalActivity < 0 ? "warning" : activity.netCapitalActivity > 0 ? "success" : "default"
       },
@@ -1138,9 +1136,9 @@ function buildManualJournalPrivateCapitalCapitalAccountSubledgerRow(
     nextActionLabel: subledger.nextAction || "No next action",
     nextActionRouteLabel: subledger.nextActionRoute || "No next-action route",
     activityRouteLabel: subledger.activityRoute || "No subledger route",
-    netActivityLabel: formatCurrencyWithCode(subledger.netCapitalActivity, subledger.currency, true),
-    openingLabel: formatCurrencyWithCode(subledger.openingNetActivity, subledger.currency, true),
-    endingLabel: formatCurrencyWithCode(subledger.endingNetActivity, subledger.currency, true),
+    netActivityLabel: formatCurrencyWithCode(subledger.netCapitalActivity, subledger.currency, { signed: true }),
+    openingLabel: formatCurrencyWithCode(subledger.openingNetActivity, subledger.currency, { signed: true }),
+    endingLabel: formatCurrencyWithCode(subledger.endingNetActivity, subledger.currency, { signed: true }),
     contributionLabel: formatCurrencyWithCode(subledger.contributions, subledger.currency),
     distributionLabel: formatCurrencyWithCode(subledger.distributions, subledger.currency),
     otherActivityLabel: [
@@ -1204,9 +1202,9 @@ export function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
     nextActionLabel: record.nextAction || "No next action",
     nextActionRouteLabel: record.nextActionRoute ?? "No next-action route",
     effectiveDateLabel: record.effectiveDate,
-    netActivityLabel: formatCurrencyWithCode(record.netCapitalActivity, record.currency, true),
+    netActivityLabel: formatCurrencyWithCode(record.netCapitalActivity, record.currency, { signed: true }),
     grossActivityLabel: formatCurrencyWithCode(record.grossAmount, record.currency),
-    capitalAccountRollForwardLabel: `${formatCurrencyWithCode(record.capitalAccountOpeningNetActivity, record.currency, true)} opening -> ${formatCurrencyWithCode(record.capitalAccountEndingNetActivity, record.currency, true)} ending`,
+    capitalAccountRollForwardLabel: `${formatCurrencyWithCode(record.capitalAccountOpeningNetActivity, record.currency, { signed: true })} opening → ${formatCurrencyWithCode(record.capitalAccountEndingNetActivity, record.currency, { signed: true })} ending`,
     memoLabel: record.memo || record.journalEntryId,
     referenceLabel: [record.paymentIntentId, record.settlementReference].filter((value): value is string => Boolean(value)).join(" / ") || record.journalEntryId,
     paymentEvidenceLabel: paymentEvidence.label,
@@ -1410,7 +1408,7 @@ function buildManualJournalPrivateCapitalFundEventRow(
     statusLabel: event.isPosted ? "Posted" : event.journalStatus,
     statusTone: event.isPosted ? "success" : manualJournalPrivateCapitalStatusTone(event.journalStatus),
     effectiveDateLabel: event.effectiveDate,
-    amountLabel: formatCurrencyWithCode(event.netCapitalActivity, event.currency, true),
+    amountLabel: formatCurrencyWithCode(event.netCapitalActivity, event.currency, { signed: true }),
     grossAmountLabel: formatCurrencyWithCode(event.grossAmount, event.currency),
     evidenceLabel: `${formatCount(event.evidenceLinks.length)} evidence`,
     memoLabel: event.memo || event.journalEntryId,
@@ -1428,7 +1426,7 @@ function buildManualJournalPrivateCapitalAccountRow(
     id: `${account.capitalAccountId}-${account.currency}`,
     title: account.capitalAccountId,
     subtitle: account.investorId ?? "Investor not assigned",
-    netActivityLabel: formatCurrencyWithCode(account.netActivity, account.currency, true),
+    netActivityLabel: formatCurrencyWithCode(account.netActivity, account.currency, { signed: true }),
     contributionLabel: formatCurrencyWithCode(account.contributions, account.currency),
     distributionLabel: formatCurrencyWithCode(account.distributions, account.currency),
     subscriptionLabel: formatCurrencyWithCode(account.subscriptions, account.currency),
@@ -1451,8 +1449,8 @@ function buildManualJournalPrivateCapitalSubledgerEntryRow(
     statusLabel: entry.isPosted ? "Posted" : entry.approvalState,
     statusTone: entry.isPosted ? "success" : manualJournalPrivateCapitalStatusTone(entry.approvalState),
     effectiveDateLabel: entry.effectiveDate,
-    netActivityLabel: formatCurrencyWithCode(entry.netCapitalActivity, entry.currency, true),
-    runningBalanceLabel: formatCurrencyWithCode(entry.runningNetActivity, entry.currency, true),
+    netActivityLabel: formatCurrencyWithCode(entry.netCapitalActivity, entry.currency, { signed: true }),
+    runningBalanceLabel: formatCurrencyWithCode(entry.runningNetActivity, entry.currency, { signed: true }),
     grossAmountLabel: formatCurrencyWithCode(entry.grossAmount, entry.currency),
     evidenceLabel: `${formatCount(entry.evidenceLinks.length)} evidence`,
     memoLabel: entry.memo || entry.journalEntryId,
@@ -1474,7 +1472,7 @@ function buildManualJournalPrivateCapitalLedgerImpactRow(
     effectiveDateLabel: impact.effectiveDate,
     debitLabel: formatCurrencyWithCode(impact.totalDebits, impact.currency),
     creditLabel: formatCurrencyWithCode(impact.totalCredits, impact.currency),
-    imbalanceLabel: formatCurrencyWithCode(impact.imbalance, impact.currency, true),
+    imbalanceLabel: formatCurrencyWithCode(impact.imbalance, impact.currency, { signed: true }),
     evidenceLabel: `${formatCount(impact.evidenceLinks.length)} evidence`,
     lineLabel: `${formatCount(impact.lineCount)} GL lines`,
     issueLabel: impact.validationIssues.length > 0
@@ -1496,7 +1494,7 @@ function buildManualJournalPrivateCapitalReportOutputRow(
     nextActionLabel: output.nextAction || "No next action",
     nextActionRouteLabel: output.nextActionRoute ?? output.reportOutputRoute ?? output.reportRoute,
     effectiveDateLabel: output.effectiveDate,
-    amountLabel: formatCurrencyWithCode(output.netCapitalActivity, output.currency, true),
+    amountLabel: formatCurrencyWithCode(output.netCapitalActivity, output.currency, { signed: true }),
     evidenceLabel: `${formatCount(output.evidenceLinkCount)} evidence`,
     routeLabel: output.reportOutputRoute ?? output.reportRoute,
     issueLabel: output.validationIssues.length > 0
@@ -1686,15 +1684,15 @@ function buildManualJournalBalanceImpactRows(
         ? totals.debit - totals.credit
         : totals.credit - totals.debit;
       const direction = netEffect > 0 ? "increases" : netEffect < 0 ? "decreases" : "does not change";
-      const absoluteEffect = formatCurrency(Math.abs(netEffect));
+      const absoluteEffect = formatPrefixedCurrency(Math.abs(netEffect));
 
       return {
         id: accountPath,
         accountPath,
         accountName: account?.accountName ?? accountPath,
         accountType: account?.accountType ?? "Unclassified",
-        debitLabel: formatCurrency(totals.debit),
-        creditLabel: formatCurrency(totals.credit),
+        debitLabel: formatPrefixedCurrency(totals.debit),
+        creditLabel: formatPrefixedCurrency(totals.credit),
         netEffectLabel: `${netEffect >= 0 ? "+" : "-"}${absoluteEffect}`,
         balanceDirectionLabel: `This draft ${direction} the ${normalBalanceSide.toLowerCase()}-normal account balance by ${absoluteEffect}.`,
         lineCountLabel: `${totals.count} line${totals.count === 1 ? "" : "s"}`,

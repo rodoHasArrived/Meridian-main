@@ -5392,7 +5392,7 @@ describe("ReportingScreen", () => {
     expect(within(restatement).getByText("report-restated-1")).toBeInTheDocument();
     expect(within(restatement).getByRole("list", { name: "Restatement changed lines" })).toBeInTheDocument();
     expect(within(restatement).getByLabelText("nav.total changed from 1250000 to 1249500 with 1 evidence link")).toHaveTextContent(
-      "1250000 -> 1249500"
+      "1250000 → 1249500"
     );
     expect(within(restatement).getByRole("link", { name: "Open evidence for nav.total" })).toHaveAttribute(
       "href",

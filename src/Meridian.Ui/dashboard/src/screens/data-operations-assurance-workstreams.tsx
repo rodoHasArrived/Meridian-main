@@ -27,7 +27,7 @@ import type {
 } from "@/types/data-operations-assurance";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp } from "@/lib/format";
 import { Select } from "@/components/ui/select";
 
 export function IngestionOperationsWorkstream() {
@@ -209,5 +209,5 @@ function formatBytes(value: number): string {
   return `${formatNumber(current, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ${units[index]}`;
 }
 
-function formatDate(value: string): string { return formatUtcTimestamp(new Date(value)); }
+function formatDate(value: string): string { return formatTimestamp(new Date(value)); }
 function errorMessage(reason: unknown): string { return reason instanceof Error ? reason.message : "The operation could not be completed."; }

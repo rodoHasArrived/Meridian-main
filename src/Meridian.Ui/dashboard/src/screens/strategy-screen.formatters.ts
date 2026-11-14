@@ -1,4 +1,13 @@
-import { formatCount as formatCountValue, formatCurrency as formatCurrencyAmount } from "@/lib/format";
+import { formatCount as formatCountValue, formatDecimal, type MoneyFormatOptions, type SignableNumberFormatOptions } from "@/lib/format";
+
+/** Strategy-run money for `formatMoney` from `@/lib/format`: whole dollars, "Unavailable" when missing, e.g. "-$1,235". */
+export const STRATEGY_MONEY: MoneyFormatOptions = { context: "summary", fallback: "Unavailable" };
+
+/** `STRATEGY_MONEY` with an explicit sign on gains, e.g. "+$1,235" / "-$1,235" / "$0". */
+export const STRATEGY_SIGNED_MONEY: MoneyFormatOptions = { ...STRATEGY_MONEY, signed: true };
+
+/** Signed two-decimal percent for `formatRatioAsPercent` (fraction units), e.g. 0.425 -> "+42.50%". */
+export const STRATEGY_SIGNED_RETURN: SignableNumberFormatOptions = { signed: true, minimumFractionDigits: 2, maximumFractionDigits: 2, fallback: "Unavailable" };
 
 export function formatText(value: string | null | undefined): string {
   const trimmed = value?.trim();
@@ -11,18 +20,7 @@ export function formatOptionalNotes(value: string | null | undefined): string {
 }
 
 export function formatNullableNumber(value: number | null | undefined, digits: number): string {
-  return typeof value === "number" && Number.isFinite(value)
-    ? value.toFixed(digits)
-    : "Unavailable";
-}
-
-export function formatSignedNullableNumber(value: number | null | undefined, digits: number): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "Unavailable";
-  }
-
-  const formatted = Math.abs(value).toFixed(digits);
-  return value > 0 ? `+${formatted}` : value < 0 ? `-${formatted}` : formatted;
+  return formatDecimal(value, digits, { fallback: "Unavailable" });
 }
 
 export function countBy<T>(items: T[], selector: (item: T) => string): Map<string, number> {
@@ -43,61 +41,12 @@ export function isLiveAdjacentMode(mode: string | null | undefined): boolean {
   return mode?.toLowerCase() === "paper" || mode?.toLowerCase() === "live";
 }
 
-export function formatMoney(value: number | null | undefined, signed = false): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "Unavailable";
-  }
-
-  const amount = formatCurrencyAmount(Math.abs(value), { maximumFractionDigits: 0 });
-
-  if (!signed) {
-    return value < 0 ? `-${amount}` : amount;
-  }
-
-  if (value > 0) {
-    return `+${amount}`;
-  }
-
-  if (value < 0) {
-    return `-${amount}`;
-  }
-
-  return amount;
-}
-
-export function formatSignedCount(value: number | null | undefined): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "Unavailable";
-  }
-
-  const sign = value > 0 ? "+" : "";
-  return `${sign}${formatCountValue(value)}`;
-}
-
 export function formatCount(value: number | null | undefined): string {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return "Unavailable";
   }
 
   return formatCountValue(value);
-}
-
-/** Input is a fraction of 1 (0.425 -> "+42.50%"), not percent units. */
-export function formatSignedPercent(value: number | null | undefined): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "Unavailable";
-  }
-
-  const formatted = `${Math.abs(value * 100).toFixed(2)}%`;
-  if (value > 0) {
-    return `+${formatted}`;
-  }
-
-  if (value < 0) {
-    return `-${formatted}`;
-  }
-
-  return formatted;
 }
 
 export function formatPromotionState(value: string | null | undefined): string {

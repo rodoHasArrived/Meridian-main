@@ -9,7 +9,7 @@ const workflowViewModel: AppShellWorkflowContinuityViewModel = {
   title: "Market Data To Paper",
   summary: "Continue quote validation before paper trading.",
   primaryOperatorFlowLabel: "Primary operator workflow",
-  primaryOperatorFlowSummary: "Import -> Validate -> Reconcile -> Investigate -> Approve -> Report",
+  primaryOperatorFlowSummary: "Import → Validate → Reconcile → Investigate → Approve → Report",
   primaryOperatorFlowStepsLabel: "Primary operator workflow steps",
   primaryOperatorFlowSteps: [
     {
@@ -149,7 +149,7 @@ describe("WorkflowContinuityDock", () => {
     expect(screen.getByText("Subject MSFT")).toBeVisible();
     expect(screen.queryByLabelText("Operating scope")).not.toBeInTheDocument();
     expect(screen.queryByText("/data/quotes?symbol=MSFT")).not.toBeInTheDocument();
-    expect(screen.queryByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).not.toBeInTheDocument();
+    expect(screen.queryByText("Import → Validate → Reconcile → Investigate → Approve → Report")).not.toBeInTheDocument();
     // The decision brief renders as the masthead status pill, not a dock banner.
     expect(screen.queryByRole("link", { name: "Open provider posture" })).not.toBeInTheDocument();
 
@@ -159,7 +159,7 @@ describe("WorkflowContinuityDock", () => {
     await user.keyboard("{Enter}");
     expect(screen.getByText("Primary operator workflow")).toBeInTheDocument();
     expect(screen.getByText("Current workflow")).toBeInTheDocument();
-    expect(screen.getByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).toBeInTheDocument();
+    expect(screen.getByText("Import → Validate → Reconcile → Investigate → Approve → Report")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Market Data To Paper workflow steps" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Price alerts, next workflow step, Waiting" })).toHaveAttribute(
       "href",

@@ -9,7 +9,7 @@ import type {
   ProviderRateLimitsResponse,
   ProviderRegistrationFailure
 } from "@/types";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
 
 export interface ProviderAccountingServices {
   getCatalog: (signal?: AbortSignal) => Promise<ProviderCatalogResponse>;
@@ -276,5 +276,5 @@ function formatToken(value: string): string {
 
 function formatTimestamp(value: string): string {
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : formatUtcTimestamp(parsed);
+  return Number.isNaN(parsed.getTime()) ? value : formatDisplayTimestamp(parsed);
 }

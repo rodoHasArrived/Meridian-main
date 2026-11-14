@@ -28,6 +28,11 @@ export function metricBasisLabel(metric: Pick<MetricSnapshot, "basis" | "asOf">)
     : `Basis not declared by source${asOf ? ` · as of ${asOf}` : ""}`;
 }
 
+/** True when a basis line would say something beyond "not declared": a declared basis or an as-of time. */
+export function hasMetricBasisDetail(metric: Pick<MetricSnapshot, "basis" | "asOf">): boolean {
+  return Boolean(metric.basis?.trim() || metric.asOf?.trim());
+}
+
 export function hasDeclaredMetricBasis(metric: Pick<MetricSnapshot, "basis">): boolean {
   return Boolean(metric.basis?.trim());
 }

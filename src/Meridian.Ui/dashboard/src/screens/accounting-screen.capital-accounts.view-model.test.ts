@@ -452,7 +452,7 @@ describe("accounting capital account view model", () => {
       statusLabel: "Satisfied",
       routeLabel: "/evidence/source",
       policyLabel: "source-support:projection:1.1.1.1",
-      effectiveWindowLabel: "2026-06-30 -> 2026-06-30",
+      effectiveWindowLabel: "2026-06-30 → 2026-06-30",
       formulaLabel: "fund_event.source_evidence_count > 0",
       approvalLabel: "Approved / approval-lp-1 / /accounting/approvals?approvalId=approval-lp-1",
       inputSummaryLabel: "1 input(s): fund-event fund-event:fund-alpha:capital-call +$125.00 USD",
@@ -465,7 +465,7 @@ describe("accounting capital account view model", () => {
       changedLineRows: [
         expect.objectContaining({
           lineKey: "capital-account-ending",
-          valueLabel: "100.00 -> 125.00",
+          valueLabel: "100.00 → 125.00",
           evidenceLabel: "1 changed-line evidence"
         })
       ]
@@ -737,7 +737,7 @@ describe("capital account rollforward proof", () => {
 
     await settleWorkbenchRequest(request);
     const row = result.current.investorAccounts[0];
-    expect(row.rollForwardLabel).toBe("$0 USD opening -> +$125.00 USD ending");
+    expect(row.rollForwardLabel).toBe("$0 USD opening → +$125.00 USD ending");
     expect(row.activityMixLabel).toBe("Contributions $125 USD / Distributions $0 USD / Subscriptions $0 USD / Redemptions $0 USD / Fees $0 USD");
     expect(row.rollforward).toEqual(buildCapitalAccountRollforward(workbench.investorAccounts[0]));
   });

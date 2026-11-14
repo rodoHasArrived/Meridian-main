@@ -3,6 +3,7 @@
 // opener; outside the shell (isolated screen tests, pop-out panes) there is none and callers fall
 // back to explanatory text.
 import { createContext, useContext, type ReactNode } from "react";
+import type { ScopeFundAccountOption } from "@/lib/operating-scope/fund-accounts";
 
 const ScopePickerOpenerContext = createContext<(() => void) | null>(null);
 
@@ -13,4 +14,25 @@ export function ScopePickerOpenerProvider({ open, children }: { open: () => void
 /** The shell's scope-picker opener, or null where no shell is mounted. */
 export function useOpenScopePicker(): (() => void) | null {
   return useContext(ScopePickerOpenerContext);
+}
+
+/**
+ * The shell's fund-account step for screens that need exactly one account: the known account
+ * options and a setter that applies the account to the operating scope (and so to the URL),
+ * keeping every other scope dimension. Used by the inline account picker.
+ */
+export interface FundAccountScopeSelection {
+  options: ScopeFundAccountOption[];
+  select: (fundAccountId: string) => void;
+}
+
+const FundAccountScopeSelectionContext = createContext<FundAccountScopeSelection | null>(null);
+
+export function FundAccountScopeSelectionProvider({ value, children }: { value: FundAccountScopeSelection; children: ReactNode }) {
+  return <FundAccountScopeSelectionContext.Provider value={value}>{children}</FundAccountScopeSelectionContext.Provider>;
+}
+
+/** The shell's fund-account setter, or null where no shell is mounted. */
+export function useFundAccountScopeSelection(): FundAccountScopeSelection | null {
+  return useContext(FundAccountScopeSelectionContext);
 }

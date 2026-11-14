@@ -18,9 +18,9 @@ import {
 } from "@/screens/covered-call-screen.view-model";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { OptionScreeningMap } from "@/components/meridian/option-screening-map";
-import { formatPrefixedCurrency } from "@/lib/format";
+import { formatDecimal, formatPrefixedCurrency, formatRatioAsPercent } from "@/lib/format";
+import { toSeverity } from "@/design-system/status-styles";
 
 const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
   {
@@ -63,7 +63,7 @@ const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewMo
     label: "Status",
     render: (row) => (
       <SeverityBadge
-        status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)}
+        status={toSeverity(row.statusBadgeVariant)}
         label={row.statusLabel}
         aria-label={row.statusAriaLabel}
       />
@@ -91,7 +91,7 @@ const historyColumns: DenseDataTableColumn<CoveredCallHistoryRowViewModel>[] = [
     id: "status",
     label: "Status",
     render: (row) => (
-      <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.statusLabel} />
+      <SeverityBadge status={toSeverity(row.statusBadgeVariant)} label={row.statusLabel} />
     )
   },
   {
@@ -140,14 +140,14 @@ const tradeTimelineColumns: DenseDataTableColumn<CoveredCallTradeTimelineRowView
     id: "reason",
     label: "Reason",
     render: (row) => (
-      <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.exitReasonLabel} />
+      <SeverityBadge status={toSeverity(row.statusBadgeVariant)} label={row.exitReasonLabel} />
     )
   },
   {
     id: "status",
     label: "Status",
     render: (row) => (
-      <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.statusLabel} />
+      <SeverityBadge status={toSeverity(row.statusBadgeVariant)} label={row.statusLabel} />
     )
   }
 ];
@@ -473,7 +473,7 @@ function ChainPreviewTable({ vm }: { vm: CoveredCallScreenViewModel }) {
             title={panel.selectedDetail.title}
             subtitle={panel.selectedDetail.subtitle}
             description={panel.selectedDetail.description}
-            status={<SeverityBadge status={categoricalVariantToSeverityStatus(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
+            status={<SeverityBadge status={toSeverity(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
             fields={panel.selectedDetail.fields}
             ariaLabel={panel.selectedDetail.ariaLabel}
           />
@@ -630,14 +630,14 @@ function ResultsActionPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
 function MetricsTable({ result }: { result: NonNullable<CoveredCallScreenViewModel["run"]["result"]> }) {
   const rows: [string, string][] = [
     ["CAGR", fmtPct(result.metrics.cagr)],
-    ["Sharpe", result.metrics.sharpeRatio.toFixed(2)],
-    ["Sortino", result.metrics.sortinoRatio.toFixed(2)],
+    ["Sharpe", formatDecimal(result.metrics.sharpeRatio, 2)],
+    ["Sortino", formatDecimal(result.metrics.sortinoRatio, 2)],
     ["Max DD", fmtPct(result.metrics.maxDrawdownPct)],
     ["Win rate", fmtPct(result.metrics.winRate)],
     ["Assignment rate", fmtPct(result.metrics.assignmentRate)],
     ["Total trades", String(result.metrics.totalOptionTrades)],
-    ["Total premium", fmtMoney(result.metrics.totalPremiumCollected)],
-    ["Option P&L", fmtMoney(result.metrics.totalOptionPnl)],
+    ["Total premium", formatPrefixedCurrency(result.metrics.totalPremiumCollected)],
+    ["Option P&L", formatPrefixedCurrency(result.metrics.totalOptionPnl)],
     ["Up capture", fmtPct(result.metrics.upCapture)],
     ["Down capture", fmtPct(result.metrics.downCapture)]
   ];
@@ -678,26 +678,26 @@ function EquityCurve({ result }: { result: NonNullable<CoveredCallScreenViewMode
       title="Equity curve"
       subtitle="Strategy vs underlying-only buy-and-hold."
       readout={[
-        { label: "Strategy", value: fmtMoney(finalStrategy), color: "var(--chart-equity, #2E7655)" },
-        { label: "Underlying", value: fmtMoney(finalUnderlying), color: "var(--chart-axis, #606870)" }
+        { label: "Strategy", value: formatPrefixedCurrency(finalStrategy), color: "var(--chart-equity, #2E7655)" },
+        { label: "Underlying", value: formatPrefixedCurrency(finalUnderlying), color: "var(--chart-axis, #606870)" }
       ]}
       height={220}
       style={{ flexShrink: 0 }}
     >
       <EquityCurveChart
         ariaLabel="Covered-call strategy versus underlying equity curve"
-        ariaDescription={`${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final strategy equity ${fmtMoney(
+        ariaDescription={`${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final strategy equity ${formatPrefixedCurrency(
           finalStrategy
-        )}, underlying buy-and-hold ${fmtMoney(finalUnderlying)}.`}
+        )}, underlying buy-and-hold ${formatPrefixedCurrency(finalUnderlying)}.`}
         accessibleData={{
           columns: ["Date", "Strategy", "Underlying"],
-          rows: points.map((p) => [p.date, fmtMoney(p.strategyEquity), fmtMoney(p.underlyingEquity)])
+          rows: points.map((p) => [p.date, formatPrefixedCurrency(p.strategyEquity), formatPrefixedCurrency(p.underlyingEquity)])
         }}
         series={[
           { label: "Strategy", color: "var(--chart-equity, #2E7655)", points: strategy },
           { label: "Underlying", color: "var(--chart-axis, #606870)", points: underlying, dashed: true, area: false }
         ]}
-        valueFmt={fmtMoney}
+        valueFmt={(value) => formatPrefixedCurrency(value)}
       />
     </ChartCard>
   );
@@ -733,7 +733,7 @@ function PositionTimeline({ vm }: { vm: CoveredCallScreenViewModel }) {
               title={panel.selectedDetail.title}
               subtitle={panel.selectedDetail.subtitle}
               description={panel.selectedDetail.description}
-              status={<SeverityBadge status={categoricalVariantToSeverityStatus(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
+              status={<SeverityBadge status={toSeverity(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
               fields={panel.selectedDetail.fields}
               ariaLabel={panel.selectedDetail.ariaLabel}
             />
@@ -871,11 +871,5 @@ function HistoryPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
 
 /** Input is a fraction of 1 (0.425 -> "42.50%"), not percent units. */
 function fmtPct(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return `${(value * 100).toFixed(2)}%`;
-}
-
-function fmtMoney(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return formatPrefixedCurrency(value, { maximumFractionDigits: 2 });
+  return formatRatioAsPercent(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }

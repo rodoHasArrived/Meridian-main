@@ -1,4 +1,3 @@
-import { pluralizeCount } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export interface WorkstationStatusBarItem {
@@ -36,13 +35,6 @@ export function WorkstationStatusBar({ items }: WorkstationStatusBarProps) {
   );
 }
 
-/** The slice of the shell attention state the footer repeats. */
-export interface WorkstationStatusAttention {
-  tone: "ready" | "review" | "blocked" | "pending";
-  title: string;
-  moreCount: number;
-}
-
 /** The current page's freshness fact, as its status row reports it. */
 export interface WorkstationStatusPageFreshness {
   tone: "ready" | "review" | "blocked" | "unknown";
@@ -54,36 +46,17 @@ const MAX_FRESHNESS_VALUE_LENGTH = 56;
 export function buildWorkstationStatusItems({
   refreshing,
   hasError,
-  attention = null,
   pageFreshness = null
 }: {
   /** Compatibility input: the shared header already presents the route name. */
   workspaceLabel: string;
   refreshing: boolean;
   hasError: boolean;
-  attention?: WorkstationStatusAttention | null;
   pageFreshness?: WorkstationStatusPageFreshness | null;
 }): WorkstationStatusBarItem[] {
-  // "Sync" only says the workstation's own read of the API is current. When the shell attention
-  // state needs review or is blocked, the footer repeats the masthead disclosure's worst issue beside
-  // it, so a green sync dot is never the footer's whole answer while the masthead is warning.
-  // It reads the same attention state as the masthead, so the two cannot disagree. A clear or
-  // still-loading state adds nothing; route names and provider inventory stay in their existing
-  // header/disclosure surfaces instead of repeating in the footer.
-  const attentionItems: WorkstationStatusBarItem[] =
-    attention && (attention.tone === "review" || attention.tone === "blocked")
-      ? [{
-        key: "attention",
-        status: attention.tone === "blocked" ? "err" : "warn",
-        label: "Attention",
-        // "issues", not "items": moreCount also counts host and source issues outside the finance
-        // queue, and it matches the masthead's screen-reader wording.
-        value: attention.moreCount > 0
-          ? `${attention.title} +${pluralizeCount(attention.moreCount, "more issue")}`
-          : attention.title
-      }]
-      : [];
-
+  // The footer holds connectivity and freshness facts only (UX consolidation P1). What needs
+  // attention is owned by the masthead trust strip, which opens the queue; repeating its worst
+  // issue here put the same item on screen three or four times and taught operators to ignore it.
   // The shell attention state covers shell-wide sources; the freshness of the data on the page
   // belongs to the page's status row. When that row says its freshness needs review or is
   // blocked, "Sync" drops to the narrower claim it can still make (the workstation reached the
@@ -112,8 +85,7 @@ export function buildWorkstationStatusItems({
             ? "connected"
             : "up to date"
     },
-    ...freshnessItems,
-    ...attentionItems
+    ...freshnessItems
   ];
 }
 

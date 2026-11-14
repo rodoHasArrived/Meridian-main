@@ -6,7 +6,6 @@ import { DensityToggle } from "@/components/ui/density-toggle";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { usesTrackedCaps } from "@/design-system/label-case";
-import { badgeVariantToOperatorSeverity } from "@/lib/shared-tone-mappings";
 import { cn } from "@/lib/utils";
 import { type SettingsProfileAuthenticationStep } from "@/screens/settings-screen.view-model";
 import type { SystemOverviewResponse } from "@/types";
@@ -16,6 +15,8 @@ import { diagnosticToneClass, SettingsFieldRow } from "./settings-provider-integ
 import type { SettingsScreenViewModel } from "@/screens/settings-screen.view-model";
 import type { ProviderHealthCount } from "@/lib/cross-screen-counts";
 import { SettingsChip, settingsBannerTone, setupStepToneClass } from "@/screens/settings-screen.section-primitives";
+import { toSeverity } from "@/design-system/status-styles";
+import { SettingsTimeZonePreference } from "@/screens/settings-screen.time-zone-preference";
 
 interface SettingsAccessPostureSectionProps {
   vm: SettingsScreenViewModel;
@@ -44,7 +45,7 @@ export function SettingsAccessPostureSection({ vm, overview, providerHealth }: S
               <CardDescription className="mt-2">{vm.profileAuthenticationPanel.summary}</CardDescription>
             </div>
             <SeverityBadge
-              status={badgeVariantToOperatorSeverity(vm.profileAuthenticationPanel.statusTone)}
+              status={toSeverity(vm.profileAuthenticationPanel.statusTone)}
               label={vm.profileAuthenticationPanel.statusLabel}
             />
           </div>
@@ -127,7 +128,7 @@ export function SettingsAccessPostureSection({ vm, overview, providerHealth }: S
               <CardDescription className="mt-2">{vm.systemSummary}</CardDescription>
             </div>
             <SeverityBadge
-              status={badgeVariantToOperatorSeverity(vm.systemTone)}
+              status={toSeverity(vm.systemTone)}
               label={overview?.systemStatus ?? "Unavailable"}
             />
           </div>
@@ -172,7 +173,7 @@ export function SettingsAppearanceSection() {
           Appearance
         </CardTitle>
         <CardDescription className="mt-2">
-          Choose the workstation theme and screen density for this browser.
+          Choose the workstation theme, screen density and display time zone for this browser.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-2">
@@ -184,6 +185,7 @@ export function SettingsAppearanceSection() {
           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Density</div>
           <DensityToggle persist="meridian.workstation.density.v1" fullWidth />
         </div>
+        <SettingsTimeZonePreference />
       </CardContent>
     </Card>
   );
@@ -198,7 +200,7 @@ function ProfileAuthenticationStepRow({ step }: { step: SettingsProfileAuthentic
           <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
         </div>
         <SeverityBadge
-          status={badgeVariantToOperatorSeverity(step.badgeVariant)}
+          status={toSeverity(step.badgeVariant)}
           label={step.statusLabel}
           className="shrink-0"
         />

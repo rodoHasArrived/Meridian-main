@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { formatCount as formatCountValue, formatNumber, pluralizeCount } from "@/lib/format";
+import { formatCount as formatCountValue, formatDecimal, formatFixed, formatNumber, pluralizeCount } from "@/lib/format";
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import type { ApiRequestOptions } from "@/lib/api";
@@ -1845,12 +1845,12 @@ export function buildPriceSparklineViewModel(
   const xFor = (ts: number) => padX + ((ts - minTs) / tsSpan) * (width - padX * 2);
   const yFor = (price: number) => padY + (1 - (price - low) / priceSpan) * (height - padY * 2);
   const pointFor = (point: { ts: number; price: number }): LiveQuotesSparklinePointViewModel => ({
-    x: xFor(point.ts).toFixed(2),
-    y: yFor(point.price).toFixed(2)
+    x: formatFixed(xFor(point.ts), 2),
+    y: formatFixed(yFor(point.price), 2)
   });
   const points = series.map(pointFor);
   const lastPoint = points[points.length - 1]!;
-  const baseY = (height - padY).toFixed(2);
+  const baseY = formatFixed(height - padY, 2);
   const areaSegments = [`M ${points[0]!.x} ${baseY}`];
 
   for (const point of points) {
@@ -1863,13 +1863,13 @@ export function buildPriceSparklineViewModel(
     points: points.map((point) => `${point.x},${point.y}`).join(" "),
     areaPath: areaSegments.join(" "),
     lastPoint,
-    guideStartX: padX.toFixed(2),
-    guideEndX: (width - padX).toFixed(2),
-    highGuideY: yFor(high).toFixed(2),
-    lowGuideY: yFor(low).toFixed(2),
-    labelX: (width - padX).toFixed(2),
-    highLabelY: Math.max(yFor(high) - 4, 12).toFixed(2),
-    lowLabelY: Math.min(yFor(low) + 12, height - 4).toFixed(2),
+    guideStartX: formatFixed(padX, 2),
+    guideEndX: formatFixed(width - padX, 2),
+    highGuideY: formatFixed(yFor(high), 2),
+    lowGuideY: formatFixed(yFor(low), 2),
+    labelX: formatFixed(width - padX, 2),
+    highLabelY: formatFixed(Math.max(yFor(high) - 4, 12), 2),
+    lowLabelY: formatFixed(Math.min(yFor(low) + 12, height - 4), 2),
     highLabel: formatMarketPrice(high),
     lowLabel: formatMarketPrice(low),
     strokeToken,
@@ -1979,8 +1979,8 @@ function formatChangePct(value: number | null): string {
 
 function formatVolume(value: number): string {
   if (!Number.isFinite(value) || value <= 0) return LIVE_QUOTES_EMPTY_VALUE;
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+  if (value >= 1_000_000) return `${formatDecimal(value / 1_000_000, 2)}M`;
+  if (value >= 1_000) return `${formatDecimal(value / 1_000, 1)}K`;
   return formatCountValue(value);
 }
 

@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { usesTrackedCaps } from "@/design-system/label-case";
-import { badgeVariantToOperatorSeverity } from "@/lib/shared-tone-mappings";
 import { cn } from "@/lib/utils";
 import { type SettingsAlpacaCredentialFieldState } from "@/screens/settings-screen.view-model";
 import { ArrowRight, ExternalLink, KeyRound, ShieldCheck, Trash2 } from "lucide-react";
@@ -17,6 +16,7 @@ import { Link } from "react-router-dom";
 import { diagnosticToneClass, SettingsFieldRow } from "./settings-provider-integration";
 import type { SettingsAlpacaConnectionFormViewModel, SettingsRobinhoodConnectionFormViewModel, SettingsScreenViewModel } from "@/screens/settings-screen.view-model";
 import { SettingsChip, settingsBannerTone, setupStepToneClass } from "@/screens/settings-screen.section-primitives";
+import { toSeverity } from "@/design-system/status-styles";
 
 interface SettingsAlpacaSectionProps {
   vm: SettingsScreenViewModel;
@@ -41,7 +41,7 @@ export function SettingsAlpacaSection({ vm, alpacaForm }: SettingsAlpacaSectionP
             <CardDescription className="mt-2">{vm.alpacaConnectionPanel.statusDetail}</CardDescription>
           </div>
           <SeverityBadge
-            status={badgeVariantToOperatorSeverity(vm.alpacaConnectionPanel.statusTone)}
+            status={toSeverity(vm.alpacaConnectionPanel.statusTone)}
             label={vm.alpacaConnectionPanel.stateLabel}
           />
         </div>
@@ -268,7 +268,7 @@ export function SettingsAlpacaSection({ vm, alpacaForm }: SettingsAlpacaSectionP
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
                   </div>
                   <SeverityBadge
-                    status={badgeVariantToOperatorSeverity(step.badgeVariant)}
+                    status={toSeverity(step.badgeVariant)}
                     label={step.statusLabel}
                     className="shrink-0"
                   />
@@ -315,7 +315,7 @@ export function SettingsRobinhoodSection({ vm, robinhoodAuthorizationUrl, robinh
             <CardDescription className="mt-2">{vm.robinhoodConnectionPanel.statusDetail}</CardDescription>
           </div>
           <SeverityBadge
-            status={badgeVariantToOperatorSeverity(vm.robinhoodConnectionPanel.statusTone)}
+            status={toSeverity(vm.robinhoodConnectionPanel.statusTone)}
             label={vm.robinhoodConnectionPanel.stateLabel}
           />
         </div>

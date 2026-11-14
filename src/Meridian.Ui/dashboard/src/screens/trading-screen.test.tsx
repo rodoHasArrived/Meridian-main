@@ -393,7 +393,8 @@ describe("TradingScreen", () => {
     expect(within(workflowStrip).getByRole("button", { name: /strategy controls/i })).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /session replay/i })).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /promotion gate/i })).toBeInTheDocument();
-    expect(within(workflowStrip).getByLabelText("Panel: None")).toBeInTheDocument();
+    expect(within(workflowStrip).queryByLabelText(/^Open panel:/)).not.toBeInTheDocument();
+    expect(within(workflowStrip).queryByText(/^Connection$/)).not.toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /open strategy controls panel/i })).toHaveAttribute("aria-expanded", "false");
     // Route-scoped views: blotters live on their focused routes, not the overview.
     expect(screen.queryByText("Live positions")).not.toBeInTheDocument();
@@ -556,7 +557,7 @@ describe("TradingScreen", () => {
     await user.click(strategyButton);
 
     expect(screen.getByRole("dialog", { name: /strategy lifecycle/i })).toHaveAttribute("id", "strategy-lifecycle-panel");
-    expect(within(workflowStrip).getByLabelText("Panel: Strategy controls")).toBeInTheDocument();
+    expect(within(workflowStrip).getByLabelText("Open panel: Strategy controls")).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /strategy controls panel is open/i })).toHaveAttribute("aria-expanded", "true");
   });
 

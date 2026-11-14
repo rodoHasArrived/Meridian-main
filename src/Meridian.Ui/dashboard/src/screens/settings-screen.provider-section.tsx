@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { createProviderIntegrationReconciliationHandoff, getProviderIntegrationConnectionMonitor, getProviderIntegrationConnectionSyncPlan, getProviderIntegrationConnectionSyncRuns, getProviderIntegrationIdentityResolution, getProviderIntegrationPromotionReadiness, getProviderIntegrationQuarantineReview, getProviderIntegrationReconciliationHandoffHistory, getProviderIntegrationStagingReview, importProviderIntegrationOpenApi, replayProviderIntegrationQuarantineRecords, resolveProviderIntegrationQuarantineRecord, runDueProviderIntegrationSync } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
-import { badgeVariantToOperatorSeverity } from "@/lib/shared-tone-mappings";
 import { cn } from "@/lib/utils";
 import { settingsProviderAdvancedRoute, settingsProviderSetupRoute, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { type SettingsMutationConfirmation } from "@/screens/settings-mutation-confirm-dialog";
@@ -21,6 +20,7 @@ import { Link } from "react-router-dom";
 import { OwnedProviderCredentialPanel } from "./settings-owned-provider-credentials";
 import type { ProviderOpenApiImportState, ProviderRuntimeEvidenceState, ProviderRuntimePhase } from "./settings-provider-integration";
 import { createProviderOpenApiImportState, FilterSelect, parseProviderOpenApiCapabilities, ProviderIntegrationRuntimePanel, providerRuntimeErrorDetail, providerRuntimeHandoffEvidenceId, providerRuntimeLatestQuarantineDecision, providerRuntimeQuarantineActionLabel, providerRuntimeQuarantineActionNote, providerRuntimeReplaySyncRunId, providerRuntimeStateKey, providerRuntimeValue, SettingsFieldRow } from "./settings-provider-integration";
+import { toSeverity } from "@/design-system/status-styles";
 
 const emptyProviderRuntimeEvidenceState: ProviderRuntimeEvidenceState = {
   phase: "idle",
@@ -617,7 +617,7 @@ export function SettingsProviderSection({ vm, showProviderSetupControls, inlineP
               </Button>
             ) : null}
             <SeverityBadge
-              status={badgeVariantToOperatorSeverity(vm.providerConnectionCenter.statusVariant)}
+              status={toSeverity(vm.providerConnectionCenter.statusVariant)}
               label={vm.providerConnectionCenter.statusLabel}
             />
           </div>
@@ -717,12 +717,12 @@ export function SettingsProviderSection({ vm, showProviderSetupControls, inlineP
                           <h4 className="text-sm font-semibold text-foreground">{row.displayName}</h4>
                           <Badge variant="outline">{row.capabilityLabel}</Badge>
                           <SeverityBadge
-                            status={badgeVariantToOperatorSeverity(row.healthTone === "muted" ? "default" : row.healthTone)}
+                            status={toSeverity(row.healthTone === "muted" ? "default" : row.healthTone)}
                             label={row.healthLabel}
                           />
                           {showProviderSetupControls && inlineProviderManagementEnabled ? (
                             <SeverityBadge
-                              status={badgeVariantToOperatorSeverity(row.readinessTone)}
+                              status={toSeverity(row.readinessTone)}
                               label={row.readinessLabel}
                             />
                           ) : null}

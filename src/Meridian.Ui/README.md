@@ -146,14 +146,42 @@ with reasons in `scripts/dev/web-screenshot-routes.json`.
 It also carries the Phase 3 trust fixes from the same plan:
 - Data overview shows a provider's "Latency" only as a reported duration or "Latency not
   reported"; the "Trust / last good" column keeps the last response time.
-- Today lists the finance queue that the sidebar badges count, above the operator inbox, and each
-  count names its unit (for example "+5 more issues" in the status bar).
+- Today has one queue grid. Workspace signals (the items the sidebar badges count) and shared
+  inbox items are interleaved by severity, then age, and a Source column names each row's source.
+  The Source filter (All sources, Workspace signals, Shared inbox) filters rows of that grid and
+  shows a count per source. Inbox rows keep assign, snooze, acknowledge, bulk assign and
+  unconfirmed-command retry. Each count names its unit (for example "+5 more issues" in the
+  masthead trust strip).
+- The bottom status bar holds connectivity and freshness only; the masthead trust strip is the one
+  shell place that names the worst open issue.
 - Trading shows a neutral "Choose a fund account" state instead of a red recovery block when no
   account is in scope in a non-live brokerage environment; live, unknown and failed states still
   block.
-- A metric basis the source does not declare reads "Not declared by source" once per strip.
-- The screenshot harness fails a route that shows a time under "Latency" or a "Basis unavailable"
-  or "Saved views unavailable" placeholder.
+- A figures strip prints a basis line only when its source declares a basis or an as-of time;
+  the figure passport still states an undeclared basis.
+- The screenshot harness fails a route that shows a time under "Latency", a "Basis unavailable"
+  or "Saved views unavailable" placeholder, or a status badge whose text is clipped
+  (`truncated-badge`). Badges never truncate: one- or two-word badges keep their width and
+  longer ones wrap.
+
+No shared contract changed.
+
+Dashboard source carries the first P4 step of the
+[UX consolidation plan](../../docs/engineering/plans/workstation-ux-consolidation-plan-2026-11.md)
+(the host-served bundle is not yet rebuilt from it):
+- The top bar shows the operating scope as a permanent, labelled scope bar,
+  `Scope  Account … › Period …`, with Subject, Run and Provider added when set. An unset dimension
+  reads "All authorized"; the header no longer has a "Context: No scope selected" control, and the
+  empty scope reads "All authorized scopes" wherever it is summarized, as Today already did. The
+  bar opens the scope picker, which still holds the workflow detail.
+- Every figures strip prints the scope its figures were counted over, inherited from the shell: the
+  account the supplying payload was loaded for, "All authorized scopes" for a payload the shell
+  loads without a scope filter, or the scope the route applies. A screen can pass its own. Trading's
+  totals without a fund account read "Brokerage account …".
+- Trading (overview and the one-line row on Orders and the other Trading routes) offers an inline
+  fund-account picker in place of the "Choose a fund account" empty state in a non-live
+  environment; live, unknown and failed states still block. Applying an account sets it in the
+  operating scope and the URL, so links carry it.
 
 No shared contract changed.
 

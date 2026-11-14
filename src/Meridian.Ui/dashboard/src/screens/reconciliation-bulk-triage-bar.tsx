@@ -225,6 +225,7 @@ export function useReconciliationBulkTriage({
 }
 
 const NO_SELECTION_REASON = "Select breaks first: tick their boxes, or press x on a row.";
+const NO_SELECTION_HINT = "Tick breaks, or press x on a row, to assign, route or resolve them together.";
 
 export function ReconciliationBulkTriageBar({ triage, visibleCount }: { triage: ReconciliationBulkTriage; visibleCount: number }) {
   const count = triage.selectedIds.length;
@@ -233,30 +234,38 @@ export function ReconciliationBulkTriageBar({ triage, visibleCount }: { triage: 
   const problem = draft ? bulkTriageDraftProblem(draft, count) : null;
   const preview = triage.previewIsCurrent ? triage.preview : null;
   const breaks = (n: number) => `${n} ${n === 1 ? "break" : "breaks"}`;
+  // An open draft keeps its controls even if the selection empties, so it can still be cancelled.
+  const showActions = count > 0 || draft !== null;
 
   return (
     <section role="region" aria-label="Bulk break actions" className="space-y-2 rounded-lg border border-border/60 px-3 py-2">
       <div className="flex flex-wrap items-center gap-2">
         <p role="status" className="text-sm text-foreground">{count === 0 ? "No breaks selected" : `${breaks(count)} selected`}</p>
+        {showActions ? null : <p className="text-xs text-muted-foreground">{NO_SELECTION_HINT}</p>}
         <Button type="button" size="sm" variant="ghost" disabled={visibleCount === 0} onClick={triage.selectAll}>
           Select all {visibleCount}
         </Button>
-        <Button type="button" size="sm" variant="ghost" disabled={count === 0} onClick={triage.clear}>Clear selection</Button>
-        <span className="flex-1" />
-        {(["assign", "route", "resolve"] as const).map((kind) => (
-          <Button
-            key={kind}
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={count === 0 || triage.busy !== null}
-            disabledReason={count === 0 ? NO_SELECTION_REASON : null}
-            aria-pressed={draft?.kind === kind}
-            onClick={() => triage.start(kind)}
-          >
-            {BULK_TRIAGE_LABELS[kind].action}
-          </Button>
-        ))}
+        {/* Selection-only controls appear once there is a selection, instead of sitting disabled. */}
+        {showActions ? (
+          <>
+            <Button type="button" size="sm" variant="ghost" disabled={count === 0} onClick={triage.clear}>Clear selection</Button>
+            <span className="flex-1" />
+            {(["assign", "route", "resolve"] as const).map((kind) => (
+              <Button
+                key={kind}
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={count === 0 || triage.busy !== null}
+                disabledReason={count === 0 ? NO_SELECTION_REASON : null}
+                aria-pressed={draft?.kind === kind}
+                onClick={() => triage.start(kind)}
+              >
+                {BULK_TRIAGE_LABELS[kind].action}
+              </Button>
+            ))}
+          </>
+        ) : null}
       </div>
 
       {draft && labels ? (
