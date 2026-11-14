@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { SectionDescription } from "@/components/ui/section-description";
 import { cn } from "@/lib/utils";
 import { ChartAccountPathBuilder, ConfigureActivationRail, ConfigureChangePreviewPanel, ConfigureCommandBar, ConfigureProductionReadinessCard, LedgerBookSetupWizard } from "@/screens/accounting-screen.configure-panel";
 import type { AccountingConfigurationViewModel, AccountingRulesStudioPromotionReadinessViewModel } from "@/screens/accounting-screen.view-model";
@@ -17,10 +18,11 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
   return (
     <section className="workspace-section-band" aria-labelledby="accounting-configure-heading">
       <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Configure</p>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h3 id="accounting-configure-heading" className="workspace-section-title">{view.title}</h3>
-          <p className="workspace-section-summary">{view.description}</p>
+          <SectionDescription descriptionKey="accounting:configuration-workbench" label={`About ${view.title}`}>
+            {view.description}
+          </SectionDescription>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={view.statusTone === "success" ? "success" : view.statusTone === "danger" ? "danger" : view.statusTone === "warning" ? "warning" : "outline"} dot>

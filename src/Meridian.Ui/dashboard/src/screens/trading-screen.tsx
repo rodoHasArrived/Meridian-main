@@ -1,3 +1,4 @@
+import { SectionDescription } from "@/components/ui/section-description";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React, { type ReactNode } from "react";
@@ -646,7 +647,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   );
 
   return (
-    <div className={showOverview ? "space-y-5" : "space-y-2"}>
+    <div className={showOverview ? "space-y-3" : showOrders ? "space-y-1.5" : "space-y-2"}>
       {/* The route answers "where am I?" first; workspace-wide metrics follow. Sub-route
           navigation is the sidebar's job alone (no in-page tab strip). */}
       <section
@@ -655,12 +656,12 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         aria-label="Execution cockpit context"
         className="min-w-0"
       >
-        <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-          {routeCopy.title}
-        </h2>
-        <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
-          {routeCopy.description}
-        </p>
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">{routeCopy.title}</h2>
+          <SectionDescription descriptionKey={`trading:${routeView}`} label={`About ${routeCopy.title}`}>
+            {routeCopy.description}
+          </SectionDescription>
+        </div>
       </section>
 
       {/* The full recovery workspace belongs to the overview; every other route keeps one
@@ -903,7 +904,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
         <div className="min-w-0 space-y-4">
         <Card className="panel-surface">
-          <CardHeader>
+          <CardHeader className="px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <CardTitle className="flex items-center gap-2 text-base">
                 <ClipboardList className="h-4 w-4 text-primary" />
@@ -958,7 +959,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               riskWarnings={orderTicket.riskWarnings}
             />
           )}
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 px-3 py-2">
             <TableWorkbench
               workbenchId="trading-orders" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
               sourceDescription="All open orders in the current authorized workspace snapshot; filters do not alter the scope of Cancel all."
@@ -1751,7 +1752,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         </SheetContent>
       </Sheet>
 
-      {!showOverview ? <TechnicalDetails label="Trading metrics and data confidence"><StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" />{tradingConfidence}</TechnicalDetails> : null}
+      {!showOverview ? <TechnicalDetails label="Trading data confidence">{tradingConfidence}</TechnicalDetails> : null}
       <ConfirmActionDialog vm={confirmVm} />
       <SessionCloseConfirmationDialog
         sessionId={sessionCloseTarget}

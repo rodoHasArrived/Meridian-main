@@ -231,6 +231,7 @@ export function TrialBalanceScreen() {
     <ScreenLayout
       title="Trial Balance"
       scope={trialBalanceScope}
+      descriptionKey="accounting:trial-balance"
       description="Account balances from the fund's posted journal, scoped by ledger period."
       actions={scopeSelectors}
       focus={focusSignals}

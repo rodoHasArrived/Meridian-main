@@ -12,6 +12,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Kbd } from "@/components/ui/kbd";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { SectionDescription } from "@/components/ui/section-description";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { DetailRail } from "@/components/meridian/detail-rail";
@@ -499,11 +500,13 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
         )}
       >
         <Card id="reconciliation-break-queue" role="region" aria-label="Reconciliation break checklist" className="panel-surface">
-          <CardHeader>
+          <CardHeader className="flex flex-wrap items-center gap-2 px-3 py-1">
             <CardTitle>Reconciliation break queue</CardTitle>
-            <CardDescription>Review discrepancies, evidence, and permitted actions without leaving the queue.</CardDescription>
+            <SectionDescription descriptionKey="accounting:reconciliation-break-queue" label="About the reconciliation break queue">
+              Review discrepancies, evidence, and permitted actions without leaving the queue.
+            </SectionDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2 px-3 py-1">
             <span className="sr-only" aria-live="polite">{reconciliation.statusAnnouncement}</span>
             {reconciliation.loadingText && (
               <p role="status" className="text-sm text-muted-foreground">{reconciliation.loadingText}</p>
@@ -563,16 +566,11 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 </Select>
               </label>
               <Button type="button" variant="ghost" onClick={controls.clearQueueFilters}>Clear filters</Button>
-              <Button type="button" variant="ghost" aria-keyshortcuts="?" onClick={() => setShortcutsOpen(true)}>
-                Keyboard shortcuts <Kbd keys="?" />
+              <Button type="button" size="icon" variant="ghost" aria-label="Keyboard shortcuts" title="Keyboard shortcuts" aria-keyshortcuts="?" onClick={() => setShortcutsOpen(true)}>
+                <Kbd keys="?" />
               </Button>
             </div>
-            <ReconciliationBulkTriageBar triage={triage} visibleCount={visibleRows.length} />
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="space-y-0.5">
-                <p role="status" className="text-xs text-muted-foreground">{visibleRows.length} of {reconciliation.rows.length} loaded breaks</p>
-                {sinceLastVisitLine ? <p className="text-xs text-muted-foreground">{sinceLastVisitLine}</p> : null}
-              </div>
+            {triage.selectedIds.length > 0 || triage.draft || triage.message ? <ReconciliationBulkTriageBar triage={triage} visibleCount={visibleRows.length} /> : null}
               <Button
                 ref={toggleRef}
                 type="button"
@@ -584,10 +582,10 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
               >
                 Inspect selected break
               </Button>
-            </div>
             {selectedOutsideFilter ? <p role="status" className="text-sm text-muted-foreground">The selected break is outside these filters. Its evidence remains in the inspector.</p> : null}
             <div ref={queueRef} className="reconciliation-queue-scroll" onScroll={rememberQueueScroll}>
               <TableWorkbench
+                compactToolbar
                 workbenchId="accounting-reconciliation-breaks"
                 sourceKey={reconciliation.sourceRows?.map((item) => `${item.tenantId}:${item.companyId}:${item.fundAccountId}:${item.runId}`).filter((item, index, values) => values.indexOf(item) === index).sort().join("|") ?? "unverified"}
                 sourceDescription="Authorized reconciliation casework queue for the selected scope. Variance units and currency are retained only where supplied by the casework source."
@@ -625,6 +623,11 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 ariaLabel={reconciliation.tableLabel}
                 caption={reconciliation.tableCaption}
               />
+            </div>
+            {triage.selectedIds.length === 0 && !triage.draft && !triage.message ? <ReconciliationBulkTriageBar triage={triage} visibleCount={visibleRows.length} /> : null}
+            <div className="space-y-0.5">
+              <p role="status" className="text-xs text-muted-foreground">{visibleRows.length} of {reconciliation.rows.length} loaded breaks</p>
+              {sinceLastVisitLine ? <p className="text-xs text-muted-foreground">{sinceLastVisitLine}</p> : null}
             </div>
           </CardContent>
         </Card>

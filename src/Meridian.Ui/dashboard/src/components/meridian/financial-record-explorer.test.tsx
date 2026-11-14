@@ -12,8 +12,8 @@ describe("FinancialRecordExplorerShell", () => {
     window.history.replaceState(null, "", "/");
   });
 
-  it("places required scope controls above source-backed summaries and records", () => {
-    renderExplorer(undefined, createExplorerDto(), undefined, <input aria-label="Run scope" />);
+  it.each([false, true])("places required scope controls above summaries and records (compact=%s)", (compact) => {
+    renderExplorer(undefined, createExplorerDto(), undefined, compact, <input aria-label="Run scope" />);
     const scope = screen.getByRole("textbox", { name: "Run scope" });
     expect(scope.compareDocumentPosition(screen.getByLabelText("Explorer summary")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(scope.compareDocumentPosition(screen.getByRole("grid", { name: "Ledger Explorer records" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -57,6 +57,28 @@ describe("FinancialRecordExplorerShell", () => {
       "href",
       "/?frexExplorer=ledger&frexView=system-ledger-default&frexRecord=ledger%3Arun-1%3Arevenue"
     );
+  });
+
+  it("keeps compact scope, warnings and filters visible with source and proof available on demand", async () => {
+    const user = userEvent.setup();
+    const dto = createExplorerDto();
+    const { container } = renderExplorer(vi.fn(), dto, undefined, true);
+
+    expect(screen.getByLabelText("Explorer scope")).toBeVisible();
+    expect(screen.getByLabelText("Explorer summary")).toBeVisible();
+    expect(screen.getByLabelText("Applied explorer filters")).toBeVisible();
+    expect(screen.getByLabelText("Saved explorer views")).toBeVisible();
+    expect(screen.getByRole("link", { name: "Inspect record — selected record" })).toBeVisible();
+    expect(screen.getByRole("textbox", { name: "Saved view name" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Save view" })).toBeDisabled();
+    expect(screen.getByText(dto.sourceState)).not.toBeVisible();
+    await user.click(screen.getByText("Explorer details"));
+    expect(screen.getByText(dto.sourceState)).toBeVisible();
+    expect(screen.getByText("Proof drill-through")).toBeVisible();
+    await user.type(screen.getByRole("textbox", { name: "Search Ledger Explorer" }), "Revenue");
+    expect(screen.queryByRole("cell", { name: "Cash" })).not.toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Revenue" })).toBeInTheDocument();
+    expect((await axe(container)).violations).toEqual([]);
   });
 
   it("publishes the selected record so route-owned detail can stay synchronized", async () => {
@@ -613,11 +635,13 @@ function renderExplorer(
   onSaveView?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSaveView"],
   explorer: FinancialRecordExplorerDto = createExplorerDto(),
   onSelectRecord?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSelectRecord"],
+  compact = false,
   scopeControls?: Parameters<typeof FinancialRecordExplorerShell>[0]["scopeControls"]
 ) {
   return render(
     <FinancialRecordExplorerShell
       explorerLabel="Accounting"
+      compact={compact}
       title="Ledger Explorer"
       description="Static fallback"
       scopeItems={[]}
