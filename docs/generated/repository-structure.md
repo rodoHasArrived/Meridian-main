@@ -1960,6 +1960,7 @@ Meridian-main
 │   │   │   ├── source-readme-coverage.json
 │   │   │   └── source-readme-coverage.normalized.yml
 │   │   ├── configuration-schema.md
+│   │   ├── desktop-user-manual.md
 │   │   ├── interfaces.md
 │   │   ├── project-context.md
 │   │   ├── project-dependencies.md
@@ -2616,6 +2617,7 @@ Meridian-main
 │   │   │   ├── web-trading-positions.png
 │   │   │   ├── web-trading-risk.png
 │   │   │   └── web-trading-workspace.png
+│   │   ├── capture-manifest.json
 │   │   ├── README.md
 │   │   └── web-audit.md
 │   ├── security
@@ -4983,6 +4985,7 @@ Meridian-main
 │   │   ├── check-meridian-process-lifecycle.ps1
 │   │   ├── cleanup-generated.ps1
 │   │   ├── desktop-dev.ps1
+│   │   ├── desktop-workflow-fixture-config.json
 │   │   ├── desktop-workflows.json
 │   │   ├── desktop_screen_blueprint_checklist.py
 │   │   ├── generate-desktop-user-manual.ps1
@@ -14845,6 +14848,7 @@ Meridian-main
 │   │   │   └── ShellRouteRegistryTests.cs
 │   │   ├── Support
 │   │   │   ├── AppServiceTestHost.cs
+│   │   │   ├── DesktopNavigationTestHost.cs
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
 │   │   │   ├── FakeWorkstationReconciliationApiClient.cs
@@ -14981,11 +14985,14 @@ Meridian-main
 │   │   │   ├── DataQualityPageSmokeTests.cs
 │   │   │   ├── DataWorkspaceShellSmokeTests.cs
 │   │   │   ├── DesignSystemResourceTests.cs
+│   │   │   ├── DesktopWorkflowFixtureConfigurationTests.cs
 │   │   │   ├── DesktopWorkflowScriptTests.cs
 │   │   │   ├── FullNavigationSweepTests.cs
 │   │   │   ├── FundProfileSelectionPageSmokeTests.cs
 │   │   │   ├── HelpPageSmokeTests.cs
 │   │   │   ├── LifecycleControlPageSmokeTests.cs
+│   │   │   ├── MainPageLaunchNavigationTests.cs
+│   │   │   ├── MainPageNormalNavigationTests.cs
 │   │   │   ├── MainPageSmokeTests.cs
 │   │   │   ├── MainPageUiWorkflowTests.cs
 │   │   │   ├── NavigationPageSmokeTests.cs
@@ -15088,6 +15095,7 @@ Meridian-main
 │   │   ├── test_desktop_build_receipt.py
 │   │   ├── test_desktop_msix_packaging.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
+│   │   ├── test_desktop_workflow_fixture.py
 │   │   ├── test_direct_lending_outbox_claim_sql.py
 │   │   ├── test_doc_health_dashboard_merge.py
 │   │   ├── test_doc_render_determinism.py
