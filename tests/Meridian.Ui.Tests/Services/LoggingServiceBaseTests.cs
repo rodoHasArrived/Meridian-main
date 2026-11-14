@@ -202,7 +202,7 @@ public sealed class LoggingServiceBaseTests
         received.Should().NotBeNull();
         received!.Message.Should().Be(expected);
         received.Properties.Should().Contain(("Symbol", symbol));
-        _sut.WrittenMessages[0].Should().Contain(expected);
+        _sut.WrittenMessages[0].Should().Contain("] [INFO ] " + expected + " {Symbol=");
     }
 
     [Fact]

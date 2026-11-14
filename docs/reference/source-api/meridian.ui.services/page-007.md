@@ -962,9 +962,9 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.LoggingService</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/LoggingService.cs:11](../../../../src/Meridian.Ui.Services/Services/LoggingService.cs#L11).
+Source: [src/Meridian.Ui.Services/Services/LoggingService.cs:12](../../../../src/Meridian.Ui.Services/Services/LoggingService.cs#L12).
 
-Default logging service for the shared UI services layer. Platform-specific projects (WPF) override this with their own implementations by setting the Instance property during app startup.
+Default logging service for the shared UI services layer. Uses the same message rendering and structured property formatting as the platform-specific logging services.
 
 ```csharp
 public sealed class LoggingService
@@ -974,10 +974,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static LoggingService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/LoggingService.cs:15](../../../../src/Meridian.Ui.Services/Services/LoggingService.cs#L15) |  |
-| <code>public void LogError(string message, Exception? exception = null, params(string key, string value)[] properties);</code> | [src/Meridian.Ui.Services/Services/LoggingService.cs:17](../../../../src/Meridian.Ui.Services/Services/LoggingService.cs#L17) |  |
-| <code>public void LogWarning(string message, Exception? exception = null);</code> | [src/Meridian.Ui.Services/Services/LoggingService.cs:22](../../../../src/Meridian.Ui.Services/Services/LoggingService.cs#L22) |  |
-| <code>public void LogInfo(string message, params(string key, string value)[] properties);</code> | [src/Meridian.Ui.Services/Services/LoggingService.cs:27](../../../../src/Meridian.Ui.Services/Services/LoggingService.cs#L27) |  |
+| <code>public static LoggingService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/LoggingService.cs:16](../../../../src/Meridian.Ui.Services/Services/LoggingService.cs#L16) |  |
+| <code>public void LogError(string message, Exception? exception = null, params(string key, string value)[] properties);</code> | [src/Meridian.Ui.Services/Services/LoggingService.cs:18](../../../../src/Meridian.Ui.Services/Services/LoggingService.cs#L18) |  |
+| <code>public void LogWarning(string message, Exception? exception = null);</code> | [src/Meridian.Ui.Services/Services/LoggingService.cs:23](../../../../src/Meridian.Ui.Services/Services/LoggingService.cs#L23) |  |
+| <code>public void LogWarning(string message, Exception? exception, params(string key, string value)[] properties);</code> | [src/Meridian.Ui.Services/Services/LoggingService.cs:28](../../../../src/Meridian.Ui.Services/Services/LoggingService.cs#L28) |  |
+| <code>public void LogInfo(string message, params(string key, string value)[] properties);</code> | [src/Meridian.Ui.Services/Services/LoggingService.cs:33](../../../../src/Meridian.Ui.Services/Services/LoggingService.cs#L33) |  |
 
 ## MacdData
 

@@ -10484,6 +10484,7 @@ Meridian-main
 │   │   │   ├── LiveDataService.cs
 │   │   │   ├── LoggingService.cs
 │   │   │   ├── LoggingServiceBase.cs
+│   │   │   ├── LogMessageTemplate.cs
 │   │   │   ├── ManifestService.cs
 │   │   │   ├── NavigationServiceBase.cs
 │   │   │   ├── NotificationService.cs
