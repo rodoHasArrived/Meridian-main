@@ -16,6 +16,11 @@ daily usage/cap and vendor reset policy. Compatibility request-named counters ca
 clients display their unit rather than assume each HTTP request costs one. Missing daily evidence
 remains unavailable, while an explicit null daily cap means this runtime models no daily cap.
 
+Backfill provider metadata includes vendor-tier presets and the selected tier ID without credentials.
+Shared settings responses expose saved-change impacts independently of active runtime confirmation.
+Nested backfill, provider, source and symbol-mapping DTO extension data retains host-owned validation
+profiles, audit histories, failover rules/timing and other unmodeled fields during settings roundtrips.
+
 
 `Ledger/CanonicalAmortizationPreparationDtos.cs` defines browser preparation and governed draft
 handoff over the existing canonical lot engine. Requests supply retained lot/evidence identities,
@@ -157,6 +162,18 @@ for floating v3 analytics. Its null omission preserves legacy context serializat
 `BondObservedFixingReceipt` retains the scoped security/version, exact contractual reset, annual
 fraction, original typed provider observation, recording actor/time, review justification and hash.
 Observed reset evidence is distinct from a forward curve or forecast assumption.
+
+`PriorPeriodAdjustmentSourceDto` binds a newly prepared correction to its retained source journal,
+closed period, original effective date, explicitly selected open target period, operator reason,
+intent identity and expected inverse lines. Workbench saves retain this server-produced authority;
+it does not reopen or modify the source period or grant approval/posting authority.
+Its optional `Correction` identifies the immediate posted adjustment being reversed or rebooked,
+preserving the original closed-period source as the root across later corrections.
+
+Strategy execution, portfolio and comparison reads expose `FinancingCoverageStatus` and nullable
+`RunAttributedMarginInterest`. An unavailable total remains explicit JSON null and carries
+coverage warnings into continuity reads. Existing decimal totals remain compatibility fields;
+financing comparisons require complete run-allocation evidence. Legacy coverage stays unassessed.
 
 `StructuredCashFlowScheduleEntry` carries an explicit stored row version and serialized measured
 interest dates; record equality covers all stored members. Receipt writers retain a frozen legacy
@@ -376,6 +393,13 @@ decimal amounts, explicit currencies and nullable missing values. Scope is immut
 carry expected versions, and approvals refer to a particular data revision. These contracts convey
 read-only support evidence and never grant accounting or external posting authority.
 
+`Workstation/OnboardingShadowDtos.cs` adds shadow-mode onboarding (W11-SHADOW-001): shadow-book
+designation, incumbent opening-balance import requests and the opening reconciliation report,
+classified difference explanations, per-period agreement summaries, the hashed parallel-run
+certificate, the promotion decision and a hash-chained shadow audit entry. `IBookOfRecordGuard`
+answers whether a ledger book may act as the book of record; a shadow or withdrawn-trial book may
+not. New fields on `OnboardingDtos.cs` are omitted from JSON when unset so retained hashes still verify.
+
 `Ledger/AccountingClosePreparationDtos.cs` describes immutable close template versions, explicit
 calendar deadline rules, owner mappings, authoritative target previews, and retained creation history.
 Create requests identify a retained preview and idempotency key rather than asserting dates or book
@@ -422,8 +446,16 @@ provider health and open breaks) with the definition each was counted with. A co
 not read, or whose source is not registered, is null, so clients show "—" rather than a substitute.
 
 `Workstation/OperatorScopePreferenceDtos.cs` carries the signed-in operator's default operating
-scope (symbol, fund account, run, provider and date dimensions), which browser and WPF apply when a
-session opens with no scope in its link or local storage.
+scope (symbol, fund account, run, provider and date dimensions, plus the optional legal entity and
+fund dimensions `EntityId`/`FundId`, appended last), which browser and WPF apply when a session opens
+with no scope in its link or local storage.
+
+`Workstation/WorkstationScopeOptionsDtos.cs` carries the entities, funds and fund accounts the
+calling operator may scope to (`GET /api/workstation/scope-options`), with each fund's visible
+entities and each account's fund and entity. Field names match the summaries in
+`OrganizationStructureGraphDto`, so one client parser reads both. A relationship that would name a
+fund or entity the caller may not see is null, and every list may be empty. Its source-generated
+`WorkstationScopeOptionsJsonContext` is registered in the Ui.Shared endpoint JSON options.
 
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser
 and WPF Accounting queues. It carries retained schedule/template versions, source evidence

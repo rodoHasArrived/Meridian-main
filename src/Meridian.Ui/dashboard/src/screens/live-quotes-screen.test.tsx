@@ -674,7 +674,7 @@ describe("buildLiveQuotesMarketViewModel", () => {
     expect(formatMarketPrice(null)).toBe(LIVE_QUOTES_EMPTY_VALUE);
     expect(formatMarketSize(undefined)).toBe(LIVE_QUOTES_EMPTY_VALUE);
     expect(formatMarketTime("not-a-date")).toBe(LIVE_QUOTES_EMPTY_VALUE);
-    expect(formatMarketTime("2026-05-08T15:00:00.123Z")).toBe("15:00:00.123 UTC");
+    expect(formatMarketTime("2026-05-08T15:00:00.123Z")).toBe("May 8, 2026, 15:00:00.123 UTC");
 
     const vm = buildLiveQuotesMarketViewModel({
       activeSymbol: "AAPL",
@@ -722,7 +722,7 @@ describe("buildLiveQuotesMarketViewModel", () => {
       changeLabel: "+1.06 (+0.57%)",
       changeAriaLabel: "Day change +1.06 (+0.57%)",
       changeTone: "positive",
-      description: "Session 2026-05-08 quote evidence from 13:30:00.000 UTC to 14:59:59.000 UTC."
+      description: "Session 2026-05-08 quote evidence from May 8, 2026, 13:30:00.000 UTC to May 8, 2026, 14:59:59.000 UTC."
     });
     expect(sessionStats?.stats.map((stat) => [stat.label, stat.value])).toEqual([
       ["Open", "187.00"],
@@ -798,7 +798,7 @@ describe("buildLiveQuotesMarketViewModel", () => {
       venueLabel: "NASDAQ"
     });
     expect(vm.venueLabel).toBe("NASDAQ");
-    expect(vm.lastUpdateLabel).toBe("15:00:00.000 UTC");
+    expect(vm.lastUpdateLabel).toBe("May 8, 2026, 15:00:00.000 UTC");
   });
 
   it("keeps recent-trade row selection and detail state in the view model", () => {
@@ -843,7 +843,7 @@ describe("buildLiveQuotesMarketViewModel", () => {
       "Timestamp"
     ]);
     expect(vm.selectedTradeDetail?.fields.find((field) => field.label === "Timestamp")?.value)
-      .toBe("15:00:01.000 UTC");
+      .toBe("May 8, 2026, 15:00:01.000 UTC");
   });
 
   it("derives BBO, depth, quote metrics, and chart labels for the view", () => {
@@ -906,13 +906,13 @@ describe("buildLiveQuotesMarketViewModel", () => {
       fields: expect.arrayContaining([
         { label: "Venue", value: "NASDAQ" },
         { label: "Sequence", value: "42" },
-        { label: "Timestamp", value: "15:00:00.000 UTC" }
+        { label: "Timestamp", value: "May 8, 2026, 15:00:00.000 UTC" }
       ])
     });
     expect(vm.tradeDisplayRows[0]).toMatchObject({
       aggressorLabel: "Sell",
       aggressorTone: "negative",
-      timeLabel: "15:00:00.000 UTC"
+      timeLabel: "May 8, 2026, 15:00:00.000 UTC"
     });
     expect(vm.priceChart).toMatchObject({
       title: "AAPL prints over 1s",

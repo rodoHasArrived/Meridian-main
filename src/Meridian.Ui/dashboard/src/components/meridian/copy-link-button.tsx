@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { copyTextToClipboard } from "@/lib/csv";
 
-const SHAREABLE_SCOPE_FIELDS = ["symbol", "fundAccountId", "runId", "provider", "from", "to", "date", "asOf"] as const;
+const SHAREABLE_SCOPE_FIELDS = ["entityId", "fundId", "symbol", "fundAccountId", "runId", "provider", "from", "to", "date", "asOf"] as const;
 
 /**
  * The current address plus every operating-scope dimension it does not already carry (C1). A

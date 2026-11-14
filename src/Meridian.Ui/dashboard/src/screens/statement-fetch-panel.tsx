@@ -19,7 +19,7 @@ import {
 } from "@/screens/statement-fetch-panel.view-model";
 import { StatementImportPreviewDetails } from "@/screens/statement-import-preview";
 import type { StatementConnectorDescriptor, StatementMappingProfile } from "@/types";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
 
 export interface StatementFetchPanelProps {
   connectors: StatementConnectorDescriptor[];
@@ -379,7 +379,7 @@ function StatementFetchSchedulesTable({
                           </p>
                         ) : null}
                       </div>
-                    </>}]} getRowId={schedule=>schedule.scheduleId} getSearchText={schedule=>[schedule.scheduleId,schedule.sourceInstitution,schedule.externalAccountId,schedule.fundAccountId].join(" ")} completePopulation sourceDescription="Authorized persisted statement schedules; cadence is in hours and timestamps are UTC." ariaLabel="Statement fetch schedules" caption="Persisted remote statement fetch schedules and run posture" emptyText="No statement schedules returned." />
+                    </>}]} getRowId={schedule=>schedule.scheduleId} getSearchText={schedule=>[schedule.scheduleId,schedule.sourceInstitution,schedule.externalAccountId,schedule.fundAccountId].join(" ")} completePopulation sourceDescription="Authorized persisted statement schedules; cadence is in hours and timestamps are in the display time zone." ariaLabel="Statement fetch schedules" caption="Persisted remote statement fetch schedules and run posture" emptyText="No statement schedules returned." />
           </div>
         ) : null}
       </CardContent>
@@ -435,7 +435,7 @@ function formatTimestamp(value: string | null): string {
     return "—";
   }
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : formatUtcTimestamp(date);
+  return Number.isNaN(date.getTime()) ? value : formatDisplayTimestamp(date);
 }
 
 function toKebabCase(value: string): string {

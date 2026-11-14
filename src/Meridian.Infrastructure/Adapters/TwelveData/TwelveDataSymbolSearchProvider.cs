@@ -33,7 +33,7 @@ public sealed class TwelveDataSymbolSearchProvider : BaseSymbolSearchProvider
         : _rateLimiterRegistry.GetOrCreate(Name, ApiKey, "api-requests", _quotaBudget!);
     public override string Name => "twelvedata";
     public override string DisplayName => "Twelve Data";
-    public override int Priority => 22;
+    public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.TwelveDataPriority;
 
     protected override string HttpClientName => HttpClientNames.TwelveDataSymbolSearch;
     protected override string BaseUrl => "https://api.twelvedata.com/symbol_search";
@@ -81,11 +81,12 @@ public sealed class TwelveDataSymbolSearchProvider : BaseSymbolSearchProvider
         HttpClient? httpClient = null,
         ILogger? log = null,
         RateLimiterRegistry? rateLimiterRegistry = null,
-        TwelveDataQuotaConfig? quotaConfig = null)
-        : base(apiKey, httpClient, log, rateLimiterRegistry?.TimeProvider)
+        TwelveDataQuotaConfig? quotaConfig = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(apiKey, httpClient, log, rateLimiterRegistry?.TimeProvider, runtimeOptions)
     {
         _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
-        _quotaBudget = ProviderQuotaBudgets.TwelveData(quotaConfig);
+        _quotaBudget = ProviderQuotaBudgets.TwelveData(quotaConfig, runtimeOptions);
     }
 
     protected override string BuildSearchUrl(string query, string? assetType, string? exchange)

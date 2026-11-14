@@ -8,6 +8,7 @@ using System.Threading;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Exceptions;
+using Meridian.Core.Config;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -52,6 +53,7 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
     private readonly TradeDataCollector _tradeCollector;
     private readonly QuoteCollector _quoteCollector;
     protected readonly AlpacaOptions Options;
+    private readonly ProviderValidationProfile _validationProfile;
     private readonly object _subscriptionSync = new();
     private readonly SemaphoreSlim _subscriptionGate = new(1, 1);
     private Dictionary<string, HashSet<string>> _sentSubscriptions = new(StringComparer.OrdinalIgnoreCase);
@@ -82,11 +84,11 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
     private readonly Queue<(string symbol, long tradeId, string? venue, decimal price, long size, DateTimeOffset ts)> _recentTradeOrder = new();
     private const int MaxDedupWindowSize = 2048;
 
-    public AlpacaMarketDataClient(TradeDataCollector tradeCollector, QuoteCollector quoteCollector, AlpacaOptions opt)
-        : this(tradeCollector, quoteCollector, opt, WebSocketConnectionConfig.Default) { }
+    public AlpacaMarketDataClient(TradeDataCollector tradeCollector, QuoteCollector quoteCollector, AlpacaOptions opt, ProviderValidationProfile? validationProfile = null)
+        : this(tradeCollector, quoteCollector, opt, WebSocketConnectionConfig.Default, validationProfile) { }
 
     protected AlpacaMarketDataClient(TradeDataCollector tradeCollector, QuoteCollector quoteCollector,
-        AlpacaOptions opt, WebSocketConnectionConfig connectionConfig)
+        AlpacaOptions opt, WebSocketConnectionConfig connectionConfig, ProviderValidationProfile? validationProfile = null)
         : base(
             providerName: "Alpaca",
             config: connectionConfig,
@@ -95,6 +97,9 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
         _tradeCollector = tradeCollector ?? throw new ArgumentNullException(nameof(tradeCollector));
         _quoteCollector = quoteCollector ?? throw new ArgumentNullException(nameof(quoteCollector));
         Options = opt ?? throw new ArgumentNullException(nameof(opt));
+        _validationProfile = validationProfile ?? ProviderValidationProfile.Default;
+        _validationProfile.Validate();
+        Log.Information("Applying provider validation profile {Provider} {@ValidationProfile}", "alpaca", _validationProfile);
         if (string.IsNullOrWhiteSpace(Options.KeyId) || string.IsNullOrWhiteSpace(Options.SecretKey))
             throw new ArgumentException("Alpaca KeyId/SecretKey required.");
         ConnectionDiagnosticsChanged += OnConnectionDiagnosticsChanged;
@@ -786,7 +791,7 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
                     : null
             );
 
-            var issues = ProviderDataQualityValidator.ValidateTrade(ProviderId, update);
+            var issues = ProviderDataQualityValidator.ValidateTrade(ProviderId, update, profile: _validationProfile);
             if (HasBlockingIssues(issues))
             {
                 LogDataQualityRejection("trade", sym!, issues);
@@ -830,7 +835,7 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
                 Source: MarketDataSources.Alpaca
             );
 
-            var issues = ProviderDataQualityValidator.ValidateQuote(ProviderId, quoteUpdate);
+            var issues = ProviderDataQualityValidator.ValidateQuote(ProviderId, quoteUpdate, profile: _validationProfile);
             if (HasBlockingIssues(issues))
             {
                 LogDataQualityRejection("quote", sym!, issues);

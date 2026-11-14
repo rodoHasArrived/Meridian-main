@@ -13,13 +13,15 @@ namespace Meridian.Ui.Shared.Services;
 public sealed class ConfigStore
 {
     private readonly CoreConfigStore _core;
+    private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
     internal CoreConfigStore CoreStore => _core;
 
     public ConfigStore() : this(GetWebDefaultPath()) { }
 
     public ConfigStore(string? configPath, ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
-        _core = new CoreConfigStore(configPath, ownershipPolicy);
+        _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
+        _core = new CoreConfigStore(configPath, _ownershipPolicy);
     }
 
     public string ConfigPath => _core.ConfigPath;
@@ -29,25 +31,46 @@ public sealed class ConfigStore
 
     public Meridian.Core.Config.AppConfig Load() => _core.Load();
 
+    public Meridian.Contracts.Configuration.ConfigurationChangeStatus GetChangeStatus() => _core.GetChangeStatus();
+
     public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg)
         => SaveAsync(cfg, CancellationToken.None);
 
     public System.Threading.Tasks.Task SaveAsync(
         Meridian.Core.Config.AppConfig cfg,
         CancellationToken ct)
-        => _core.SaveAsync(cfg, ct);
+    {
+        var snapshot = ProviderConfigurationCredentialGuard.Prepare(cfg, _ownershipPolicy);
+        return _core.UpdateAsync(current =>
+        {
+            UiConfigurationSaveGuard.Validate(current, snapshot, confirmDataSemantics: false, wholeDocument: true);
+            return snapshot;
+        }, ct);
+    }
 
     /// <summary>Read-modify-write under the configuration lock; see the core store for the contract.</summary>
     public System.Threading.Tasks.Task<T> UpdateAsync<T>(
         Func<Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)> update,
         CancellationToken ct = default)
-        => _core.UpdateAsync(update, ct);
+        => UpdateWithConfirmationAsync(update, confirmDataSemantics: false, ct);
+
+    /// <summary>Explicit confirmation is required for edits changing the meaning of newly stored data.</summary>
+    public System.Threading.Tasks.Task<T> UpdateWithConfirmationAsync<T>(
+        Func<Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)> update,
+        bool confirmDataSemantics,
+        CancellationToken ct = default)
+        => _core.UpdateAsync(current =>
+        {
+            var (next, result) = update(current);
+            UiConfigurationSaveGuard.Validate(current, next, confirmDataSemantics, wholeDocument: false);
+            return (next, result);
+        }, ct);
 
     /// <summary>Read-modify-write under the configuration lock; see the core store for the contract.</summary>
     public System.Threading.Tasks.Task UpdateAsync(
         Func<Meridian.Core.Config.AppConfig, Meridian.Core.Config.AppConfig> update,
         CancellationToken ct = default)
-        => _core.UpdateAsync(update, ct);
+        => UpdateWithConfirmationAsync<object?>(current => (update(current), null), confirmDataSemantics: false, ct);
 
     public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics()
         => _core.TryLoadProviderMetrics();

@@ -58,7 +58,7 @@ CHECKS = [
         "id": "execution-replay-route",
         "category": "API Surface",
         "label": "Execution endpoints expose replay verification for sessions",
-        "paths": ["src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs"],
+        "paths": ["src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Sessions.cs"],
         "terms": ["replay", "VerifyReplay", "sessionId"],
         "weight": 2,
         "remediation": "Restore the execution replay verification endpoint or update the dashboard checks.",

@@ -15,14 +15,14 @@ import type {
   CoveredCallTrade
 } from "@/lib/covered-call";
 import { buildShortCallPayoffCurve, shortCallBreakEven } from "@/lib/covered-call/payoff";
+import { formatFixed, formatPrefixedCurrency } from "@/lib/format";
 import {
   formatCount,
   formatDecimal,
   formatExitReason,
   formatRatioAsPercent,
   formatPrice,
-  formatSignedMoney,
-  formatUtcDateTime
+  formatCoveredCallDateTime
 } from "@/screens/covered-call-screen.formatters";
 
 export type CoveredCallStage = "configure" | "run" | "results";
@@ -1191,7 +1191,7 @@ function buildCoveredCallPayoffChart(
     };
   }
   const path = samples
-    .map((sample, index) => `${index === 0 ? "M" : "L"}${xScale(sample.spot).toFixed(1)},${yScale(sample.payoff).toFixed(1)}`)
+    .map((sample, index) => `${index === 0 ? "M" : "L"}${formatFixed(xScale(sample.spot), 1)},${formatFixed(yScale(sample.payoff), 1)}`)
     .join(" ");
 
   return {
@@ -1210,7 +1210,7 @@ function buildCoveredCallTradeTimelineRow(
   selectedIndex: number
 ): CoveredCallTradeTimelineRowViewModel {
   const strikeLabel = formatPrice(trade.strike);
-  const pnlLabel = formatSignedMoney(trade.totalNetPnl);
+  const pnlLabel = formatPrefixedCurrency(trade.totalNetPnl);
   const statusLabel = trade.wasAssigned ? "Assigned" : trade.isWin ? "Closed gain" : "Closed loss";
   const exitReasonLabel = formatExitReason(trade.exitReason);
   const statusBadgeVariant: CoveredCallBadgeVariant = trade.wasAssigned
@@ -1256,7 +1256,7 @@ function buildCoveredCallTradeTimelineDetail(
     : trade.isWin
       ? "success"
       : "danger";
-  const totalPnl = formatSignedMoney(trade.totalNetPnl);
+  const totalPnl = formatPrefixedCurrency(trade.totalNetPnl);
 
   return {
     panelId: COVERED_CALL_TRADE_DETAIL_PANEL_ID,
@@ -1268,9 +1268,9 @@ function buildCoveredCallTradeTimelineDetail(
     statusBadgeVariant,
     fields: [
       { label: "Exit reason", value: exitReasonLabel },
-      { label: "Entry credit", value: formatSignedMoney(trade.entryCredit) },
-      { label: "Exit debit", value: formatSignedMoney(trade.exitDebit) },
-      { label: "Net per contract", value: formatSignedMoney(trade.netPnlPerContract) },
+      { label: "Entry credit", value: formatPrefixedCurrency(trade.entryCredit) },
+      { label: "Exit debit", value: formatPrefixedCurrency(trade.exitDebit) },
+      { label: "Net per contract", value: formatPrefixedCurrency(trade.netPnlPerContract) },
       { label: "Total net P&L", value: totalPnl },
       { label: "Holding days", value: formatCount(trade.holdingDays) },
       { label: "Multiplier", value: formatCount(trade.multiplier) },
@@ -1443,7 +1443,7 @@ function clampIndex(index: number, length: number): number {
 
 export function buildCoveredCallHistoryRows(history: CoveredCallRunSummary[]): CoveredCallHistoryRowViewModel[] {
   return history.map((row) => {
-    const startedAtLabel = formatUtcDateTime(row.startedAt);
+    const startedAtLabel = formatCoveredCallDateTime(row.startedAt);
     const rangeLabel = `${row.from} to ${row.to}`;
     const statusBadgeVariant = statusBadgeVariantForHistory(row.status);
     const cagrLabel = row.cagr === null ? "—" : formatRatioAsPercent(row.cagr);

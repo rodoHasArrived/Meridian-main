@@ -44,6 +44,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         TypeInfoResolver = new DefaultJsonTypeInfoResolver()
     };
 
+    protected readonly BackfillProviderRuntimeOptions? RuntimeOptions;
     protected readonly HttpClient Http;
     protected readonly RateLimiter RateLimiter;
     /// <summary>The request budget; capabilities sharing a vendor quota can override it.</summary>
@@ -180,8 +181,12 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         HttpClient? httpClient = null,
         ILogger? log = null,
         bool enableResilience = true,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
     {
+        if (runtimeOptions?.Requests is < 1 || runtimeOptions?.Window is { } window && window <= TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(runtimeOptions), "Rate limits and windows must be positive.");
+        RuntimeOptions = runtimeOptions;
         Log = log ?? LoggingSetup.ForContext(GetType());
         Http = httpClient ?? HttpClientFactoryProvider.CreateClient(HttpClientName);
         _timeProvider = timeProvider ?? TimeProvider.System;

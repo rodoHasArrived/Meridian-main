@@ -8,6 +8,9 @@ import {
   formatAmountWithCode,
   formatCompactCurrency,
   formatCurrency,
+  formatCurrencyWithCode,
+  formatDecimal,
+  formatFixed,
   formatNumber,
   formatPercent,
   formatPrefixedCurrency,
@@ -41,6 +44,42 @@ describe("formatNumber", () => {
     expect(formatNumber(undefined)).toBe("—");
     expect(formatNumber(Number.NaN, { fallback: "0" })).toBe("0");
   });
+
+  it("signs positives and negatives explicitly when signed, leaving zero unsigned", () => {
+    expect(formatNumber(1234.5, { signed: true })).toBe("+1,234.5");
+    expect(formatNumber(-1234.5, { signed: true })).toBe("-1,234.5");
+    expect(formatNumber(0, { signed: true })).toBe("0");
+    expect(formatNumber(-0, { signed: true })).toBe("0");
+    expect(formatNumber(0.001, { signed: true, minimumFractionDigits: 2 })).toBe("+0.00");
+    expect(formatNumber(Number.NaN, { signed: true, fallback: "Unavailable" })).toBe("Unavailable");
+  });
+});
+
+describe("formatDecimal", () => {
+  it("pins exactly the requested fraction digits and groups thousands", () => {
+    expect(formatDecimal(0.84, 2)).toBe("0.84");
+    expect(formatDecimal(1.5, 3)).toBe("1.500");
+    expect(formatDecimal(1234.5, 2)).toBe("1,234.50");
+    expect(formatDecimal(-12.345678, 6)).toBe("-12.345678");
+    expect(formatDecimal(42.4, 0)).toBe("42");
+    expect(formatDecimal(-0, 2)).toBe("0.00");
+  });
+
+  it("signs explicitly when asked and renders the fallback for missing values", () => {
+    expect(formatDecimal(1.234, 2, { signed: true })).toBe("+1.23");
+    expect(formatDecimal(-1.234, 2, { signed: true })).toBe("-1.23");
+    expect(formatDecimal(null, 2)).toBe("—");
+    expect(formatDecimal(Number.NaN, 2, { fallback: "Unavailable" })).toBe("Unavailable");
+  });
+});
+
+describe("formatFixed", () => {
+  it("renders ungrouped machine-readable fixed-point strings for geometry", () => {
+    expect(formatFixed(12.5, 2)).toBe("12.50");
+    expect(formatFixed(1234.567, 1)).toBe("1234.6");
+    expect(formatFixed(-0, 1)).toBe("0.0");
+    expect(formatFixed(100 / 3, 2)).toBe("33.33");
+  });
 });
 
 describe("formatPercent", () => {
@@ -51,6 +90,12 @@ describe("formatPercent", () => {
 
   it("renders the fallback for non-finite values", () => {
     expect(formatPercent(null, { fallback: "Not measured" })).toBe("Not measured");
+  });
+
+  it("signs the value when signed", () => {
+    expect(formatPercent(12.34, { signed: true, minimumFractionDigits: 1, maximumFractionDigits: 1 })).toBe("+12.3%");
+    expect(formatPercent(-5, { signed: true, minimumFractionDigits: 1, maximumFractionDigits: 1 })).toBe("-5.0%");
+    expect(formatPercent(0, { signed: true })).toBe("0%");
   });
 });
 
@@ -70,6 +115,12 @@ describe("formatRatioAsPercent", () => {
     expect(formatRatioAsPercent(0.12345, { maximumFractionDigits: 1 })).toBe("12.3%");
     expect(formatRatioAsPercent(null, { fallback: "Unavailable" })).toBe("Unavailable");
     expect(formatRatioAsPercent(Number.NaN, { fallback: "Unavailable" })).toBe("Unavailable");
+  });
+
+  it("signs the scaled value when signed", () => {
+    expect(formatRatioAsPercent(0.1234, { signed: true, minimumFractionDigits: 2 })).toBe("+12.34%");
+    expect(formatRatioAsPercent(-0.05, { signed: true, minimumFractionDigits: 2 })).toBe("-5.00%");
+    expect(formatRatioAsPercent(0, { signed: true, minimumFractionDigits: 2 })).toBe("0.00%");
   });
 });
 
@@ -161,6 +212,32 @@ describe("formatAmountWithCode", () => {
   it("renders the fallback for non-finite values", () => {
     expect(formatAmountWithCode(Number.NaN, "USD", { fallback: "-" })).toBe("-");
   });
+
+  it("signs the amount when signed, leaving zero unsigned", () => {
+    expect(formatAmountWithCode(1234.5, "EUR", { signed: true, minimumFractionDigits: 0 })).toBe("+1,234.5 EUR");
+    expect(formatAmountWithCode(-12, "EUR", { signed: true, minimumFractionDigits: 0 })).toBe("-12 EUR");
+    expect(formatAmountWithCode(0, "EUR", { signed: true, minimumFractionDigits: 0 })).toBe("0 EUR");
+  });
+});
+
+describe("formatCurrencyWithCode", () => {
+  it.each([
+    [100, "EUR", false, "€100 EUR"],
+    [-100, "GBP", false, "-£100 GBP"],
+    [100, " eur ", true, "+€100.00 EUR"],
+    [-100, "EUR", true, "-€100.00 EUR"],
+    [0, "EUR", true, "€0 EUR"],
+    [100, "USD", false, "$100 USD"],
+    [100, "AED", false, "AED\u00a0100"],
+    [-100, "AED", true, "-AED\u00a0100.00"],
+    [100, "??", false, "?? 100"],
+    [-0, "USD", true, "$0 USD"],
+    [-0, "EUR", false, "€0 EUR"],
+    [100, "", false, "$100"],
+    [Number.NaN, "EUR", true, "— EUR"]
+  ])("formats %s in %s (signed: %s)", (value, currency, signed, expected) => {
+    expect(formatCurrencyWithCode(value, currency, { signed })).toBe(expected);
+  });
 });
 
 describe("pluralizeCount", () => {
@@ -189,6 +266,12 @@ describe("formatCount", () => {
     expect(formatCount(Number.NaN)).toBe("—");
     expect(formatCount(null, { fallback: "Unavailable" })).toBe("Unavailable");
   });
+
+  it("signs the count when signed", () => {
+    expect(formatCount(1234, { signed: true })).toBe("+1,234");
+    expect(formatCount(-3, { signed: true })).toBe("-3");
+    expect(formatCount(0, { signed: true })).toBe("0");
+  });
 });
 
 describe("formatMoney", () => {
@@ -205,6 +288,48 @@ describe("formatMoney", () => {
     expect(formatMoney(3100, { context: "trading", signed: true })).toBe("+$3,100.00");
     expect(formatMoney(3100.4, { context: "summary", signed: true })).toBe("+$3,100");
     expect(formatMoney(undefined)).toBe("—");
+  });
+
+  it("formats decimal strings exactly from their digits, never through a float", () => {
+    // 12345678901234.565 has no exact binary float; parseFloat would round it to ...234.56.
+    expect(formatMoney("12345678901234.565")).toBe("$12,345,678,901,234.57");
+    expect(formatMoney("1.005")).toBe("$1.01");
+    expect(formatMoney("-1234.5", { context: "accounting" })).toBe("($1,234.50)");
+    expect(formatMoney("-0.0125", { decimals: 4 })).toBe("-$0.0125");
+    expect(formatMoney("3100.40", { context: "summary", signed: true })).toBe("+$3,100");
+    expect(formatMoney("1500", { currency: "JPY" })).toBe("¥1,500");
+    expect(formatMoney("99999999999999999999.995", { currency: null })).toBe("100,000,000,000,000,000,000.00");
+  });
+
+  it("reads money-ish strings and falls back for text that is not a number", () => {
+    expect(formatMoney("(1,234.00)")).toBe("-$1,234.00");
+    expect(formatMoney("1,234.00-", { context: "accounting", currency: "EUR" })).toBe("(€1,234.00)");
+    expect(formatMoney("not a number")).toBe("—");
+    expect(formatMoney("", { fallback: "Not recorded" })).toBe("Not recorded");
+    expect(formatMoney(Number.NaN)).toBe("—");
+  });
+
+  it("matches Intl for numbers, including ties and currencies Intl spells with a code", () => {
+    expect(formatMoney(1.005)).toBe("$1.01");
+    expect(formatMoney(2.675)).toBe("$2.68");
+    expect(formatMoney(1234.5, { currency: "CAD" })).toBe("CA$1,234.50");
+    expect(formatMoney(1234.5, { currency: "CHF" })).toBe("CHF 1,234.50");
+    expect(formatMoney(5, { currency: "US-D" })).toBe("US-D 5.00");
+  });
+
+  it("covers the statement options: parentheses, zero dash, explicit sign and U+2212 minus", () => {
+    expect(formatMoney("-42.5", { convention: "statement", currency: null })).toBe("−42.50");
+    expect(formatMoney("-1234", { convention: "statement", currency: "USD", parens: true })).toBe("($1,234.00)");
+    expect(formatMoney("5", { convention: "statement", currency: "ZZZ" })).toBe("ZZZ 5.00");
+    expect(formatMoney("0.00", { zeroDash: true })).toBe("—");
+    expect(formatMoney("18.4", { convention: "statement", currency: null, signed: true })).toBe("+18.40");
+    expect(formatMoney(-12.5, { context: "accounting", currency: null, parens: false })).toBe("-12.50");
+  });
+
+  it("shows a value that rounds to zero unsigned", () => {
+    expect(formatMoney("-0.001")).toBe("$0.00");
+    expect(formatMoney(0.001, { signed: true })).toBe("$0.00");
+    expect(formatMoney("-0.004", { context: "accounting" })).toBe("$0.00");
   });
 });
 

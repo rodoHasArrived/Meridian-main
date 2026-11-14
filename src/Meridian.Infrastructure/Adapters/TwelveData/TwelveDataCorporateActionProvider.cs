@@ -50,15 +50,18 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         ILogger<TwelveDataCorporateActionProvider> logger,
         ICredentialContext? credentials = null,
         RateLimiterRegistry? rateLimiterRegistry = null,
-        TwelveDataQuotaConfig? quotaConfig = null)
+        TwelveDataQuotaConfig? quotaConfig = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _credentials = credentials;
+        runtimeOptions ??= BackfillProviderRuntimeOptions.FromConfig(
+            configuration.GetSection("Backfill:Providers").Get<Meridian.Core.Config.BackfillProvidersConfig>(), "twelvedata");
         _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _quotaConfig = quotaConfig ?? configuration.GetSection("ProviderQuotas:TwelveData").Get<TwelveDataQuotaConfig>() ?? new();
-        _quotaBudget = ProviderQuotaBudgets.TwelveData(_quotaConfig);
+        _quotaBudget = ProviderQuotaBudgets.TwelveData(_quotaConfig, runtimeOptions);
     }
 
     public string ProviderId => "twelvedata";

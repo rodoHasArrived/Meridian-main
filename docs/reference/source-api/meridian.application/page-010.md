@@ -6,6 +6,55 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterRevisionFieldValue
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionFieldValue</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:83](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L83).
+
+The exact overlay VALUE a field-edit revision governs — null models a staged CLEAR. Wrapping the nullable value distinguishes &quot;the edit recorded a clear&quot; from &quot;no value was recorded at all&quot; (legacy revisions predating value persistence), which discard-time restoration must tell apart: a recorded clear restores by removing the key, while an unrecorded value is unrecoverable and falls back to the fail-closed sibling handling.
+
+```csharp
+public sealed record SecurityMasterRevisionFieldValue(string? Value);
+```
+
+## SecurityMasterRevisionRecord
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:93](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L93).
+
+Durable record of a passport revision&#x27;s governed lifecycle state.
+
+```csharp
+public sealed record SecurityMasterRevisionRecord(Guid RevisionId, Guid SecurityId, SecurityMasterRevisionStateDto State, string Actor, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, Guid? WorkflowId = null, string? FieldPath = null, DateTimeOffset? FieldEffectiveFrom = null, string? FieldJustification = null, string? FundProfileId = null, string? FieldValue = null, bool FieldValueRecorded = false, long? BaseVersion = null, string? FieldBaseSnapshot = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool FieldBaseRecorded =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:113](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L113) | True when the revision recorded the canonical base its proposal was drafted against. |
+
+## SecurityMasterRevisionStateException
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionStateException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:120](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L120).
+
+Raised when a revision lifecycle transition is attempted out of order — e.g. publishing a revision that was never approved, or approving one that was never submitted. Endpoints map this to HTTP 409.
+
+```csharp
+public sealed class SecurityMasterRevisionStateException : Exception
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterRevisionStateException(Guid revisionId, string detail) : base($&quot;Security Master revision &#x27;{revisionId:D}&#x27; cannot transition: {detail}&quot;);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:122](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L122) |  |
+| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:128](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L128) |  |
+
 ## SecurityMasterService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterService</code>. Kind: `class`.
@@ -1052,71 +1101,3 @@ Result of a daily summary send operation.
 ```csharp
 public readonly record struct DailySummaryResult(bool Success, DailySummary Summary, IReadOnlyList<WebhookDeliveryResult> DeliveryResults, DateTimeOffset SentAt, string? ErrorMessage);
 ```
-
-## DailySummaryWebhook
-
-Qualified name: <code>Meridian.Application.Services.DailySummaryWebhook</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:27](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L27).
-
-Sends end-of-day summary digests via webhook to external services. Supports Slack, Discord, Microsoft Teams, and generic JSON webhooks.
-
-```csharp
-public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event Action&lt;DailySummaryResult&gt;? OnSummarySent;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:47](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L47) | Event raised when a summary is sent successfully. |
-| <code>public event Action&lt;DailySummaryResult&gt;? OnSummaryFailed;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:52](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L52) | Event raised when a summary fails to send. |
-| <code>public DailySummaryWebhook(DailySummaryWebhookConfig config, TradingCalendar? tradingCalendar = null, TimeProvider? timeProvider = null) : this(config, tradingCalendar, timeProvider, null);</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:54](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L54) |  |
-| <code>public void RegisterStatisticsProviders(Func&lt;PipelineStatistics&gt;? pipelineStats = null, Func&lt;IReadOnlyList&lt;StaleDataAlert&gt;&gt;? staleSymbols = null, Func&lt;SystemHealthSnapshot&gt;? healthSnapshot = null);</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:88](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L88) | Registers statistics providers for inclusion in the summary. |
-| <code>public async Task&lt;DailySummaryResult&gt; SendSummaryAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:101](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L101) | Sends a daily summary immediately to all configured webhooks. |
-| <code>public async Task&lt;IReadOnlyList&lt;WebhookDeliveryResult&gt;&gt; SendMessageAsync(string message, string? title = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:159](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L159) | Sends a custom message to all configured webhooks. |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:606](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L606) |  |
-
-## DailySummaryWebhookConfig
-
-Qualified name: <code>Meridian.Application.Services.DailySummaryWebhookConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:638](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L638).
-
-Configuration for daily summary webhooks.
-
-```csharp
-public sealed record DailySummaryWebhookConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WebhookConfig[]? Webhooks { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:643](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L643) | List of webhook endpoints to send summaries to. |
-| <code>public bool EnableScheduledSummary { get; init; } = true;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:648](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L648) | Whether to enable scheduled daily summaries. |
-| <code>public string ScheduledTime { get; init; } = &quot;16:30&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:654](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L654) | Time to send the daily summary (ET timezone). Format: &quot;HH:mm&quot; Default: &quot;16:30&quot; (4:30 PM ET, after market close) |
-| <code>public int RetryCount { get; init; } = 3;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:659](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L659) | Number of retry attempts for failed deliveries. |
-| <code>public int TimeoutSeconds { get; init; } = 30;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:664](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L664) | HTTP request timeout in seconds. |
-
-## DataSourceSelection
-
-Qualified name: <code>Meridian.Application.Services.DataSourceSelection</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:340](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L340).
-
-Data source selection from wizard.
-
-```csharp
-public sealed class DataSourceSelection
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DataSourceKind DataSource { get; set; } = DataSourceKind.IB;</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:342](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L342) |  |
-| <code>public AlpacaOptions? Alpaca { get; set; }</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:343](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L343) |  |
-| <code>public PolygonOptions? Polygon { get; set; }</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:344](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L344) |  |
-| <code>public IBOptions? IB { get; set; }</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:345](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L345) |  |
-| <code>public IBClientPortalOptions? IBClientPortal { get; set; }</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:346](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L346) |  |

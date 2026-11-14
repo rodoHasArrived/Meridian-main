@@ -629,6 +629,24 @@ Declared public members:
 | <code>public static IServiceCollection AddFundScopeTenantServices(this IServiceCollection services);</code> | [src/Meridian.Application/Composition/TenantScopeServiceRegistration.cs:14](../../../../src/Meridian.Application/Composition/TenantScopeServiceRegistration.cs#L14) |  |
 | <code>public static IServiceCollection AddFundScopeTenantServices&lt;TAccessor&gt;(this IServiceCollection services) where TAccessor : class, IFundScopeTenantAccessor;</code> | [src/Meridian.Application/Composition/TenantScopeServiceRegistration.cs:65](../../../../src/Meridian.Application/Composition/TenantScopeServiceRegistration.cs#L65) | Replaces the worker fallback with the host adapter, preserving explicit registrations. |
 
+## BackfillRoutingLint
+
+Qualified name: <code>Meridian.Application.Config.BackfillRoutingLint</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Config/BackfillRoutingLint.cs:6](../../../../src/Meridian.Application/Config/BackfillRoutingLint.cs#L6).
+
+Pure configuration lint. Does not read secrets or claim vendor coverage or runtime vault availability.
+
+```csharp
+public static class BackfillRoutingLint
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;string&gt; Evaluate(AppConfig config);</code> | [src/Meridian.Application/Config/BackfillRoutingLint.cs:8](../../../../src/Meridian.Application/Config/BackfillRoutingLint.cs#L8) |  |
+
 ## ConfigurationPipeline
 
 Qualified name: <code>Meridian.Application.Config.ConfigurationPipeline</code>. Kind: `class`.
@@ -653,7 +671,7 @@ Declared public members:
 | <code>public ValidatedConfig FromHotReload(AppConfig config, string configPath, PipelineOptions? options = null);</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:134](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L134) | Processes configuration from hot reload. |
 | <code>public ConfigWatcher StartHotReload(string configPath, Action&lt;ValidatedConfig&gt; onConfigChanged, Action&lt;Exception&gt;? onError = null, PipelineOptions? options = null);</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:148](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L148) | Starts watching a configuration file for changes. The callback receives a ValidatedConfig that has been processed through the full pipeline. |
 | <code>public void StopHotReload();</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:178](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L178) | Stops hot reload monitoring. |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:455](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L455) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:462](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L462) |  |
 
 ## ConfigValidatorCli
 
@@ -822,7 +840,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Config.PipelineOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:465](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L465).
+Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:472](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L472).
 
 Options for controlling the configuration pipeline behavior.
 
@@ -834,18 +852,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool ApplySelfHealing { get; init; } = true;</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:470](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L470) | Whether to apply self-healing fixes to the configuration. |
-| <code>public bool ValidateConfig { get; init; } = true;</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:475](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L475) | Whether to validate the configuration. |
-| <code>public SelfHealingStrictness HealingStrictness { get; init; } = SelfHealingStrictness.Development;</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:485](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L485) | Controls how aggressively self-healing behaviours are applied. SelfHealingStrictness.Development (default) applies all fixes and logs significant ones as warnings. SelfHealingStrictness.Production applies only cosmetic SelfHealingSeverity.AutoFix changes and refuses SelfHealingSeverity.Warn-level fixes with a startup error so that operators must correct the configuration manually. |
-| <code>public static PipelineOptions Default { get; } = new () { HealingStrictness = ParseStrictness(Environment.GetEnvironmentVariable(&quot;MDC_CONFIG_STRICTNESS&quot;)) };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:491](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L491) | Default options — self-healing and validation enabled, strictness from MDC_CONFIG_STRICTNESS environment variable (defaults to Development). |
-| <code>public static PipelineOptions Strict { get; } = new () { ApplySelfHealing = false, ValidateConfig = true };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:499](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L499) | Options for strict validation without self-healing. |
-| <code>public static PipelineOptions Lenient { get; } = new () { ApplySelfHealing = false, ValidateConfig = false };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:508](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L508) | Options for lenient loading (no validation, no self-healing). |
+| <code>public bool ApplySelfHealing { get; init; } = true;</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:477](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L477) | Whether to apply self-healing fixes to the configuration. |
+| <code>public bool ValidateConfig { get; init; } = true;</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:482](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L482) | Whether to validate the configuration. |
+| <code>public SelfHealingStrictness HealingStrictness { get; init; } = SelfHealingStrictness.Development;</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:492](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L492) | Controls how aggressively self-healing behaviours are applied. SelfHealingStrictness.Development (default) applies all fixes and logs significant ones as warnings. SelfHealingStrictness.Production applies only cosmetic SelfHealingSeverity.AutoFix changes and refuses SelfHealingSeverity.Warn-level fixes with a startup error so that operators must correct the configuration manually. |
+| <code>public static PipelineOptions Default { get; } = new () { HealingStrictness = ParseStrictness(Environment.GetEnvironmentVariable(&quot;MDC_CONFIG_STRICTNESS&quot;)) };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:498](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L498) | Default options — self-healing and validation enabled, strictness from MDC_CONFIG_STRICTNESS environment variable (defaults to Development). |
+| <code>public static PipelineOptions Strict { get; } = new () { ApplySelfHealing = false, ValidateConfig = true };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:506](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L506) | Options for strict validation without self-healing. |
+| <code>public static PipelineOptions Lenient { get; } = new () { ApplySelfHealing = false, ValidateConfig = false };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:515](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L515) | Options for lenient loading (no validation, no self-healing). |
 
 ## SelfHealingFix
 
 Qualified name: <code>Meridian.Application.Config.SelfHealingFix</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:577](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L577).
+Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:584](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L584).
 
 Describes a single self-healing change that was proposed by ConfigurationPipeline.
 
@@ -857,7 +875,7 @@ public sealed record SelfHealingFix(string Description, SelfHealingSeverity Seve
 
 Qualified name: <code>Meridian.Application.Config.SelfHealingSeverity</code>. Kind: `enum`.
 
-Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:553](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L553).
+Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:560](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L560).
 
 Indicates how impactful a self-healing fix is, which determines how it is handled under different SelfHealingStrictness levels.
 
@@ -869,14 +887,14 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>AutoFix = 0</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:560](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L560) | Safe, cosmetic correction (e.g., clamping an out-of-range value, normalising a format string, resolving credentials from environment variables). Applied silently in all environments. |
-| <code>Warn = 1</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:568](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L568) | Significant behavioural change (e.g., switching the active data provider, adding a default symbol set). Applied with a Warning-level log entry in SelfHealingStrictness.Development; refused with a startup error in SelfHealingStrictness.Production. |
+| <code>AutoFix = 0</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:567](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L567) | Safe, cosmetic correction (e.g., clamping an out-of-range value, normalising a format string, resolving credentials from environment variables). Applied silently in all environments. |
+| <code>Warn = 1</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:575](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L575) | Significant behavioural change (e.g., switching the active data provider, adding a default symbol set). Applied with a Warning-level log entry in SelfHealingStrictness.Development; refused with a startup error in SelfHealingStrictness.Production. |
 
 ## SelfHealingStrictness
 
 Qualified name: <code>Meridian.Application.Config.SelfHealingStrictness</code>. Kind: `enum`.
 
-Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:531](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L531).
+Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:538](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L538).
 
 Controls how self-healing reacts to significant configuration issues.
 
@@ -888,8 +906,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Development = 0</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:538](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L538) | All self-healing fixes are applied. SelfHealingSeverity.Warn-level changes are applied but logged as Warning. Suitable for local development and CI environments where operator attention is not required for every startup. |
-| <code>Production = 1</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:546](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L546) | Only safe cosmetic fixes (SelfHealingSeverity.AutoFix) are applied silently. SelfHealingSeverity.Warn-level fixes are refused and surfaced as validation errors so that the process cannot start until a human corrects the configuration. Use MDC_CONFIG_STRICTNESS=production to enable. |
+| <code>Development = 0</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:545](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L545) | All self-healing fixes are applied. SelfHealingSeverity.Warn-level changes are applied but logged as Warning. Suitable for local development and CI environments where operator attention is not required for every startup. |
+| <code>Production = 1</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:553](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L553) | Only safe cosmetic fixes (SelfHealingSeverity.AutoFix) are applied silently. SelfHealingSeverity.Warn-level fixes are refused and surfaced as validation errors so that the process cannot start until a human corrects the configuration. Use MDC_CONFIG_STRICTNESS=production to enable. |
 
 ## CompositeDataQualityGap
 
@@ -985,23 +1003,3 @@ Declared public members:
 | <code>public Task&lt;IReadOnlyList&lt;LedgerJournalEntryWrite&gt;&gt; AccrueAsync(Guid loanId, LoanContractDetailDto contract, PostDailyAccrualRequest request, DailyAccrualEntryDto accrual, Guid sourceEventId, DirectLendingEventWriteMetadata metadata, CancellationToken ct = default, decimal prepaidInterestConsumed = 0m);</code> | [src/Meridian.Application/DirectLending/AccrualLedgerService.cs:20](../../../../src/Meridian.Application/DirectLending/AccrualLedgerService.cs#L20) |  |
 | <code>public Task&lt;IReadOnlyList&lt;LedgerJournalEntryWrite&gt;&gt; ReverseAccrualAsync(Guid loanId, LoanContractDetailDto contract, DailyAccrualEntryDto accrual, Guid sourceEventId, DirectLendingEventWriteMetadata metadata, CancellationToken ct = default, LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null, decimal prepaidInterestConsumed = 0m);</code> | [src/Meridian.Application/DirectLending/AccrualLedgerService.cs:56](../../../../src/Meridian.Application/DirectLending/AccrualLedgerService.cs#L56) |  |
 | <code>public Task&lt;IReadOnlyList&lt;LedgerJournalEntryWrite&gt;&gt; CapitalizePikAsync(Guid loanId, LoanContractDetailDto contract, PikCapitalizationDto capitalization, Guid sourceEventId, DirectLendingEventWriteMetadata metadata, CancellationToken ct = default);</code> | [src/Meridian.Application/DirectLending/AccrualLedgerService.cs:95](../../../../src/Meridian.Application/DirectLending/AccrualLedgerService.cs#L95) |  |
-
-## CommittedCommandMatch
-
-Qualified name: <code>Meridian.Application.DirectLending.CommittedCommandMatch</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:477](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L477).
-
-Outcome of DirectLendingServiceSupport.FindCommittedCommand.
-
-```csharp
-public enum CommittedCommandMatch
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None</code> | [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:480](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L480) | The command id is not recorded: process the command. |
-| <code>Replay</code> | [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:483](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L483) | The same request already committed: return the committed state. |
-| <code>Conflict</code> | [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:486](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L486) | The command id was used for a different mutation or different inputs. |

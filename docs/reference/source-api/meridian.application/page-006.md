@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PersistentDedupLedger
+
+Qualified name: <code>Meridian.Application.Pipeline.PersistentDedupLedger</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:30](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L30).
+
+Persistent deduplication ledger that survives restarts. Uses a JSONL-backed rolling log with in-memory bloom-filter-like cache. Keyed by (provider, symbol, eventIdentity) with configurable TTL.
+
+```csharp
+public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public long TotalChecked =&gt; …;</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:92](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L92) | Total events checked for duplicates. |
+| <code>public long TotalDuplicates =&gt; …;</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:98](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L98) | Total deliveries suppressed by a committed ledger entry. Unresolved pending claims are deferrals, not detections, and are never counted here. |
+| <code>public PersistentDedupLedger(string ledgerDirectory, TimeSpan? entryTtl = null, int maxInMemoryEntries = 500_000, int compactionMinLines = DefaultCompactionMinLines, TimeProvider? timeProvider = null);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:100](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L100) |  |
+| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:159](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L159) | Loads persisted dedup state from disk on startup. |
+| <code>public void Initialize();</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:199](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L199) | Synchronous counterpart of InitializeAsync for composition code that cannot await, such as a dependency-injection factory. It reads the ledger with synchronous file I/O instead of blocking on the asynchronous load. Loads exactly the same state. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public async ValueTask&lt;bool&gt; IsDuplicateAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:306](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L306) | Checks whether an event is a duplicate and records it if new. Returns true if the event is a DUPLICATE (should be skipped). |
+| <code>public ValueTask&lt;DedupReservationResult&gt; TryReserveAsync(MarketEvent evt, DedupLookupScope scope, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:425](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L425) |  |
+| <code>public async Task CommitDurableAsync(IReadOnlyList&lt;DedupReservation&gt; reservations, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:483](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L483) |  |
+| <code>public bool Release(in DedupReservation reservation);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:546](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L546) |  |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:948](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L948) | Flushes the ledger to disk. |
+| <code>public async Task CompactAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:970](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L970) | Compacts the ledger file by rewriting only non-expired entries. The ledger also does this itself as the file grows; see CompactIfDueLockedAsync. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:1071](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L1071) |  |
+
 ## ValidationResult
 
 Qualified name: <code>Meridian.Application.Pipeline.ValidationResult</code>. Kind: `record`.
@@ -26,11 +55,29 @@ Declared public members:
 | <code>public static ValidationResult Failed(params string[] errors) =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:44](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L44) | Creates a failed validation result with one or more error messages. |
 | <code>public static ValidationResult Failed(IReadOnlyList&lt;string&gt; errors) =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:51](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L51) | Creates a failed validation result from a list of error messages. |
 
+## BackfillRoutingPreview
+
+Qualified name: <code>Meridian.Application.ProviderRouting.BackfillRoutingPreview</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/BackfillRoutingPreview.cs:9](../../../../src/Meridian.Application/ProviderRouting/BackfillRoutingPreview.cs#L9).
+
+Construction-only preview. Does not fetch data, consume vendor quota, save config or install providers.
+
+```csharp
+public static class BackfillRoutingPreview
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RoutePreviewResponse Preview(AppConfig current, RoutePreviewRequest request, Func&lt;AppConfig, IReadOnlyList&lt;IHistoricalDataProvider&gt;&gt; createProviders, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BackfillRoutingPreview.cs:11](../../../../src/Meridian.Application/ProviderRouting/BackfillRoutingPreview.cs#L11) |  |
+
 ## BestOfBreedProviderSelector
 
 Qualified name: <code>Meridian.Application.ProviderRouting.BestOfBreedProviderSelector</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:21](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L21).
+Source: [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:24](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L24).
 
 Selects provider routes using configured capability, preference, and availability evidence.
 
@@ -42,15 +89,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BestOfBreedProviderSelector(ProviderRoutingService routingService, IProviderConnectionHealthSource healthSource, ConfigStore store, IDataQualityService? dataQualityService = null);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:34](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L34) |  |
-| <code>public Task&lt;ProviderRouteResult&gt; SelectAsync(ProviderRouteContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:46](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L46) |  |
-| <code>public Task&lt;ProviderRouteResult&gt; SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:49](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L49) |  |
+| <code>public BestOfBreedProviderSelector(ProviderRoutingService routingService, IProviderConnectionHealthSource healthSource, ConfigStore store, IDataQualityService? dataQualityService = null);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:37](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L37) |  |
+| <code>public Task&lt;ProviderRouteResult&gt; SelectAsync(ProviderRouteContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:49](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L49) |  |
+| <code>public Task&lt;ProviderRouteResult&gt; SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:52](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L52) |  |
+| <code>public Task&lt;ProviderRouteResult&gt; PreviewForTenantAsync(ProviderRouteContext context, string tenantId, ProviderRoutingProposedConfig proposed, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:58](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L58) |  |
 
 ## IBestOfBreedProviderSelector
 
 Qualified name: <code>Meridian.Application.ProviderRouting.IBestOfBreedProviderSelector</code>. Kind: `interface`.
 
-Source: [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:11](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L11).
+Source: [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:12](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L12).
 
 Selects a provider route for a request, including tenant-scoped routing.
 
@@ -62,14 +110,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;ProviderRouteResult&gt; SelectAsync(ProviderRouteContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:13](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L13) |  |
-| <code>Task&lt;ProviderRouteResult&gt; SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:14](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L14) |  |
+| <code>Task&lt;ProviderRouteResult&gt; SelectAsync(ProviderRouteContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:14](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L14) |  |
+| <code>Task&lt;ProviderRouteResult&gt; SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:15](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L15) |  |
+| <code>Task&lt;ProviderRouteResult&gt; PreviewForTenantAsync(ProviderRouteContext context, string tenantId, ProviderRoutingProposedConfig proposed, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:17](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L17) |  |
 
 ## IProviderFamilyCatalogService
 
 Qualified name: <code>Meridian.Application.ProviderRouting.IProviderFamilyCatalogService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:541](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L541).
+Source: [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:552](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L552).
 
 Exposes the provider-family adapters available to routing.
 
@@ -81,8 +130,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>IReadOnlyList&lt;IProviderFamilyAdapter&gt; GetFamilies();</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:543](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L543) |  |
-| <code>IProviderFamilyAdapter? GetFamily(string providerFamilyId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:545](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L545) |  |
+| <code>IReadOnlyList&lt;IProviderFamilyAdapter&gt; GetFamilies();</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:554](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L554) |  |
+| <code>IProviderFamilyAdapter? GetFamily(string providerFamilyId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:556](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L556) |  |
 
 ## IProviderRuntimeCredentialApplier
 
@@ -456,7 +505,26 @@ Declared public members:
 | <code>public ProviderRouteExplainabilityService(IBestOfBreedProviderSelector selector, ProviderRoutingService routingService);</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:298](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L298) |  |
 | <code>public async Task&lt;RoutePreviewResponse&gt; PreviewAsync(RoutePreviewRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:306](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L306) |  |
 | <code>public async Task&lt;RoutePreviewResponse&gt; PreviewForTenantAsync(RoutePreviewRequest request, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:312](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L312) |  |
-| <code>public Task&lt;IReadOnlyList&lt;RoutePreviewResponse&gt;&gt; GetHistoryAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:318](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L318) |  |
+| <code>public Task&lt;IReadOnlyList&lt;RoutePreviewResponse&gt;&gt; GetHistoryAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:328](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L328) |  |
+
+## ProviderRoutingPreviewConfig
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRoutingPreviewConfig</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderRoutingPreviewConfig.cs:7](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingPreviewConfig.cs#L7).
+
+Copies only bounded operational settings; never merges arbitrary JSON into host configuration.
+
+```csharp
+public static class ProviderRoutingPreviewConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static AppConfig ApplyBindings(AppConfig config, string tenantId, ProviderRoutingProposedConfig proposed);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingPreviewConfig.cs:9](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingPreviewConfig.cs#L9) |  |
+| <code>public static AppConfig ApplyBackfill(AppConfig config, ProviderRoutingProposedConfig? proposed);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingPreviewConfig.cs:38](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingPreviewConfig.cs#L38) |  |
 
 ## ProviderRoutingService
 
@@ -477,7 +545,8 @@ Declared public members:
 | <code>public ProviderRoutingService(UI.ConfigStore store, IProviderConnectionHealthSource healthSource, IProviderFamilyCatalogService catalog, KernelObservabilityService? kernelObservability = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:25](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L25) |  |
 | <code>public ValueTask&lt;ProviderRouteResult&gt; RouteAsync(ProviderRouteContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:37](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L37) |  |
 | <code>public ValueTask&lt;ProviderRouteResult&gt; RouteForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:41](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L41) | Routes using only connections retained for the authorized tenant. |
-| <code>public IReadOnlyList&lt;ProviderRouteResult&gt; GetRouteHistory() =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:292](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L292) |  |
+| <code>public ValueTask&lt;ProviderRouteResult&gt; PreviewForTenantAsync(ProviderRouteContext context, string tenantId, ProviderRoutingProposedConfig proposed, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:48](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L48) | Evaluates a cloned, restricted config without publishing a runtime snapshot or route history. |
+| <code>public IReadOnlyList&lt;ProviderRouteResult&gt; GetRouteHistory() =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:303](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L303) |  |
 
 ## ProviderRuntimeCredentialApplicationTracker
 
@@ -990,76 +1059,3 @@ Declared public members:
 | <code>public long BytesDownloaded { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:238](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L238) |  |
 | <code>public double AverageLatencyMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:239](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L239) |  |
 | <code>public bool WasPrimary { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:240](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L240) |  |
-
-## ScheduledBackfillOptions
-
-Qualified name: <code>Meridian.Application.Scheduling.ScheduledBackfillOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:643](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L643).
-
-Configuration options for the scheduled backfill service.
-
-```csharp
-public sealed record ScheduledBackfillOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TimeSpan ScheduleCheckInterval { get; init; } = TimeSpan.FromMinutes(1);</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:648](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L648) | How often to check for due schedules. |
-| <code>public TimeSpan MaxExecutionDuration { get; init; } = TimeSpan.FromHours(6);</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:653](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L653) | Maximum duration for a single execution. |
-| <code>public bool CatchUpMissedSchedules { get; init; } = true;</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:658](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L658) | Whether to catch up missed schedules on startup. |
-| <code>public TimeSpan CatchUpWindow { get; init; } = TimeSpan.FromDays(1);</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:663](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L663) | How far back to look for missed schedules. |
-| <code>public int MaxConcurrentExecutions { get; init; } = 1;</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:668](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L668) | Maximum concurrent scheduled executions. |
-| <code>public bool PauseDuringMarketHours { get; init; } = false;</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:673](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L673) | Whether to pause executions during market hours. |
-| <code>public TimeOnly MarketOpenTime { get; init; } = new (9, 30);</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:678](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L678) | Market open time (Eastern Time). |
-| <code>public TimeOnly MarketCloseTime { get; init; } = new (16, 0);</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:683](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L683) | Market close time (Eastern Time). |
-
-## ScheduledBackfillService
-
-Qualified name: <code>Meridian.Application.Scheduling.ScheduledBackfillService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:12](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L12).
-
-Background service that monitors backfill schedules and triggers executions at scheduled times. Implements automatic gap-fill, catch-up for missed schedules, and job queue management.
-
-```csharp
-public sealed class ScheduledBackfillService : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event EventHandler&lt;BackfillExecutionLog&gt;? ExecutionStarted;</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:34](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L34) | Event raised when a scheduled execution starts. |
-| <code>public event EventHandler&lt;BackfillExecutionLog&gt;? ExecutionCompleted;</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:39](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L39) | Event raised when a scheduled execution completes. |
-| <code>public ScheduledBackfillService(ILogger&lt;ScheduledBackfillService&gt; logger, BackfillScheduleManager scheduleManager, BackfillJobManager jobManager, BackfillWorkerService workerService, DataGapAnalyzer gapAnalyzer, IScheduledWorkOwnershipService? ownershipService = null, ScheduledBackfillOptions? options = null, IEnumerable&lt;string&gt;? defaultSymbols = null, AutoGapRemediationService? autoGapRemediationService = null);</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:41](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L41) |  |
-| <code>public bool IsRunning =&gt; …;</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:66](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L66) | Whether the service is running. |
-| <code>public int QueuedExecutions { get; }</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:71](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L71) | Number of executions waiting in queue. |
-| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:85](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L85) | Start the scheduled backfill service. |
-| <code>public async Task StopAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:123](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L123) | Stop the scheduled backfill service. |
-| <code>public async Task&lt;BackfillExecutionLog&gt; TriggerManualExecutionAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:155](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L155) | Manually trigger a schedule execution. |
-| <code>public Task&lt;BackfillExecutionLog&gt; RunImmediateGapFillAsync(IEnumerable&lt;string&gt; symbols, int lookbackDays = 30, BackfillPriority priority = BackfillPriority.High, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:191](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L191) | Run an immediate gap-fill for specific symbols. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:630](../../../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs#L630) |  |
-
-## ScheduledBackfillType
-
-Qualified name: <code>Meridian.Application.Scheduling.ScheduledBackfillType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Scheduling/BackfillSchedule.cs:199](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L199).
-
-Type of scheduled backfill operation.
-
-```csharp
-public enum ScheduledBackfillType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>GapFill</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:204](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L204) | Only fill gaps in existing data. |
-| <code>FullBackfill</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:209](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L209) | Full backfill of the lookback period (may overwrite existing). |
-| <code>RollingWindow</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:214](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L214) | Rolling window - always fetch last N days. |
-| <code>EndOfDay</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:219](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L219) | End-of-day update - fetch only yesterday&#x27;s data. |

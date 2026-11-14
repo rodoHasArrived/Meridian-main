@@ -47,10 +47,11 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
+import { describeFundScopeNarrowing, narrowHouseholdPortfolioToFundScope } from "@/lib/operating-scope/fund-scope-narrowing";
 import { getPositionSideOptions, selectPortfolioPositionRows } from "@/lib/portfolio-positions-table";
 import { usePortfolioPositionsTable } from "@/hooks/use-portfolio-positions-table";
 import { PortfolioPositionsToolbar } from "@/screens/portfolio-positions-toolbar";
-import { readinessToneToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { bondWorkflowRoute, holdingBondWorkflowRoute } from "@/lib/fixed-income-navigation";
 import {
@@ -83,6 +84,7 @@ import { resolveFigureEvidence, resolveFigureScope, useWorkspaceFigureContext } 
 import { FigureDifferenceNote } from "@/components/meridian/figure-difference-note";
 import { buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
 import { withPortfolioMarkEvidence } from "@/screens/portfolio-screen.headline-evidence";
+import { toSeverity } from "@/design-system/status-styles";
 
 interface PortfolioScreenProps {
   portfolio?: PortfolioWorkspaceResponse | null;
@@ -382,13 +384,28 @@ export function PortfolioScreen({
   const [selectedRunDrillIn, setSelectedRunDrillIn] = useState<PortfolioRunDrillInData | null>(null);
   const [portfolioExplorer, setPortfolioExplorer] = useState<FinancialRecordExplorerDto | null>(null);
   const [brokerageInspector, setBrokerageInspector] = useState<"account" | "position">("account");
+  // On the brokerage route the household is narrowed to the scope's fund (or entity) when the
+  // organization graph places its accounts; accounts it does not place are counted, never hidden
+  // silently. Other Portfolio routes keep the whole household (the bar shows the fund retained).
+  const fundScope = useFundScopeNarrowingContext();
+  const brokerageFundScope = useMemo(() => {
+    if (!showBrokerageSync || !fundScope) return null;
+    const narrowed = narrowHouseholdPortfolioToFundScope(
+      brokeragePortfolio,
+      fundScope.structure,
+      { entityId: fundScope.entityId, fundId: fundScope.fundId },
+      fundScope.loading
+    );
+    return { ...narrowed, note: describeFundScopeNarrowing(narrowed.accounts, "brokerage accounts", fundScope.names) };
+  }, [showBrokerageSync, fundScope, brokeragePortfolio]);
+  const scopedBrokeragePortfolio = brokerageFundScope ? brokerageFundScope.portfolio : brokeragePortfolio;
   const vm = usePortfolioScreenViewModel({
     portfolio,
     trading,
     strategy,
     accounting,
     brokerageConnection,
-    brokeragePortfolio,
+    brokeragePortfolio: scopedBrokeragePortfolio,
     multiAssetCoverage,
     selectedRunDrillIn,
     pathname: location.pathname
@@ -1014,7 +1031,7 @@ export function PortfolioScreen({
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <h3 className="text-base font-semibold text-foreground">{vm.brokerageTrustSnapshot.title}</h3>
                   <SeverityBadge
-                    status={readinessToneToSeverityStatus(vm.brokerageTrustSnapshot.statusTone)}
+                    status={toSeverity(vm.brokerageTrustSnapshot.statusTone)}
                     label={vm.brokerageTrustSnapshot.statusLabel}
                   />
                 </div>
@@ -1028,6 +1045,17 @@ export function PortfolioScreen({
             </div>
             <DetailFields fields={vm.brokerageTrustSnapshot.fields} columns="auto" className="mt-3" />
           </section>
+
+          {brokerageFundScope?.note ? (
+            <p
+              role="status"
+              aria-label="Brokerage fund scope"
+              data-narrowing={brokerageFundScope.accounts.status}
+              className="text-xs text-muted-foreground"
+            >
+              {brokerageFundScope.note}
+            </p>
+          ) : null}
 
           <div
             className="flex flex-wrap items-center gap-2"
@@ -1081,7 +1109,9 @@ export function PortfolioScreen({
                 } as Record<string, string>)[column.id] }))}
                 rows={vm.brokerageAccountRows} getRowId={row => row.id}
                 getSearchText={row => `${row.label} ${row.kind} ${row.health}`}
-                completePopulation sourceDescription="Complete authorized brokerage household account snapshot; values retain source denomination."
+                completePopulation sourceDescription={brokerageFundScope?.accounts.status === "applied"
+                  ? "Authorized brokerage household accounts under the scope's fund or entity; values retain source denomination."
+                  : "Complete authorized brokerage household account snapshot; values retain source denomination."}
                 getRowAriaLabel={row => row.ariaLabel} getRowSelectAriaLabel={row => row.selectAriaLabel}
                 getRowAriaControls={() => "portfolio-brokerage-active-detail"}
                 getRowAriaExpanded={row => brokerageInspector === "account" && row.expanded}
@@ -1099,7 +1129,9 @@ export function PortfolioScreen({
                 } as Record<string, string>)[column.id] })).sort((left, right) => Number(right.id === "symbol") - Number(left.id === "symbol"))}
                 rows={vm.brokeragePositionRows} getRowId={row => row.id}
                 getSearchText={row => `${row.symbol} ${row.accountLabel} ${row.assetClass}`}
-                completePopulation sourceDescription="All authorized household positions matching the selected account; values retain source denomination."
+                completePopulation sourceDescription={brokerageFundScope?.accounts.status === "applied"
+                  ? "Authorized household positions in accounts under the scope's fund or entity, matching the selected account; values retain source denomination."
+                  : "All authorized household positions matching the selected account; values retain source denomination."}
                 exportContext={{ "Account filter": vm.selectedBrokerageAccount.title }}
                 getRowAriaLabel={row => row.ariaLabel} getRowSelectAriaLabel={row => row.selectAriaLabel}
                 getRowAriaControls={() => "portfolio-brokerage-active-detail"}

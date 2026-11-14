@@ -15,7 +15,7 @@ import {
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { ACTIVATION_OUTCOME_KEYS, recordActivationOutcome } from "@/lib/first-run/activation";
-import { formatCount as formatCountValue } from "@/lib/format";
+import { formatCount as formatCountValue, formatCurrency, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
 import { formatReportPackRecipientList } from "@/lib/reporting-distributions";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { EXPORT_API_ENDPOINTS } from "@/lib/workstation-endpoints";
@@ -101,10 +101,7 @@ import { accountingBasisDisplayName, buildBasisBridgeViewState } from "./account
 import {
   formatBytes,
   formatCount,
-  formatCurrency,
-  formatCurrencyForCode,
   formatDateTimeLabel,
-  formatSignedCurrency,
   toDomId
 } from "./accounting-screen.formatting";
 import { areReconciliationBreakQueuesEquivalent, replaceBreakQueueItem } from "./accounting-screen.reconciliation-queue-utils";
@@ -3151,7 +3148,7 @@ export function useAccountingReconciliationViewModel(
       const impactRows = transactionLabPreview?.trialBalanceImpact.map((row, index) => ({
         id: `${row.accountName}-${index}`,
         label: row.accountName,
-        value: formatSignedCurrency(row.balanceDelta),
+        value: formatSignedCurrency(row.balanceDelta, { minimumFractionDigits: 2, zeroLabel: "$0" }),
         tone: row.balanceDelta > 0 ? "success" as const : row.balanceDelta < 0 ? "danger" as const : "default" as const
       })) ?? [];
 
@@ -3166,7 +3163,7 @@ export function useAccountingReconciliationViewModel(
           ? formatCount(transactionLabPreview.journalPreview.lines.length, "line")
           : "Pending projection",
         ledgerImpactLabel: hasPreview && transactionLabPreview
-          ? formatSignedCurrency(transactionLabPreview.ledgerImpact.netBalanceDelta)
+          ? formatSignedCurrency(transactionLabPreview.ledgerImpact.netBalanceDelta, { minimumFractionDigits: 2, zeroLabel: "$0" })
           : "Pending projection",
         reconciliationLabel: hasPreview && transactionLabPreview
           ? transactionLabPreview.reconciliationExpectation.expectedState
@@ -3314,7 +3311,7 @@ export function buildAccountingCashFlowViewState(
     routePath,
     statusLabel,
     statusTone,
-    statusAriaLabel: `Cash-flow status ${statusLabel}. Net variance ${formatCurrency(cashFlow.netVariance)}.`,
+    statusAriaLabel: `Cash-flow status ${statusLabel}. Net variance ${formatPrefixedCurrency(cashFlow.netVariance)}.`,
     ariaLabel: `Cash-flow evidence for ${contextLabel} at ${routePath}`,
     rowGroupLabel: "Cash-flow evidence rows",
     rows,
@@ -3660,7 +3657,7 @@ function buildLedgerJournalEvidenceRow(
   currency: string | null = null
 ): AccountingLedgerJournalEvidenceRowViewModel {
   const dimensionLabels = buildLedgerDimensionLabels(line);
-  const money = (value: number) => (currency ? formatCurrencyForCode(value, currency) : formatCurrency(value));
+  const money = (value: number) => (currency ? formatCurrency(value, { currency, minimumFractionDigits: 0 }) : formatPrefixedCurrency(value));
   const amountLabel = `${money(line.totalDebits)} debit / ${money(line.totalCredits)} credit`;
   const lineCountLabel = line.lineCount === 1 ? "1 line" : `${formatCountValue(line.lineCount)} lines`;
 
@@ -3719,7 +3716,7 @@ function buildTrialBalanceRow(
   const basisLabel = `${basisName} basis`;
   const policyLabel = `${line.accountingPolicyId}/${line.accountingPolicyVersion}`;
   // Posted balances are in the book's base currency; the bare formatter prefixes a dollar sign.
-  const balanceLabel = currency ? formatCurrencyForCode(line.balance, currency) : formatCurrency(line.balance);
+  const balanceLabel = currency ? formatCurrency(line.balance, { currency, minimumFractionDigits: 0 }) : formatPrefixedCurrency(line.balance);
   const entryCountLabel = formatCountValue(line.entryCount);
   const securityLabel = line.security?.primaryIdentifier?.trim() || line.symbol?.trim() || line.security?.displayName.trim() || null;
   const dimensionLabels = buildLedgerDimensionLabels(line);
@@ -3996,13 +3993,13 @@ function buildLedgerLineRows(
     rowId: `${line.rowId}-journal-${index}`,
     journalEntryId,
     description: `${line.accountLabel} ${line.accountTypeLabel.toLocaleLowerCase()} activity`,
-    debitLabel: formatCurrency(debit),
-    creditLabel: formatCurrency(credit),
+    debitLabel: formatPrefixedCurrency(debit),
+    creditLabel: formatPrefixedCurrency(credit),
     balanceLabel: line.balanceLabel,
     evidenceLabel,
     evidenceHref,
     approvalHref,
-    ariaLabel: `${line.accountLabel} journal ${journalEntryId}. Debit ${formatCurrency(debit)}. Credit ${formatCurrency(credit)}. Balance ${line.balanceLabel}. ${evidenceLabel}.`
+    ariaLabel: `${line.accountLabel} journal ${journalEntryId}. Debit ${formatPrefixedCurrency(debit)}. Credit ${formatPrefixedCurrency(credit)}. Balance ${line.balanceLabel}. ${evidenceLabel}.`
   }));
 }
 
@@ -4261,7 +4258,7 @@ function buildCashFlowRow(
   value: number,
   tone: CashFlowEvidenceTone
 ): AccountingCashFlowRowViewModel {
-  const formattedValue = formatCurrency(value);
+  const formattedValue = formatPrefixedCurrency(value);
   return {
     id,
     label,

@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SubscriptionRequestValidation
+
+Qualified name: <code>Meridian.Infrastructure.Shared.SubscriptionRequestValidation</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:37](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L37).
+
+```csharp
+public sealed record SubscriptionRequestValidation(bool IsValid, bool IsDuplicate, string? NormalizedSymbol, string? NormalizedKind, int? ExistingSubscriptionId, string? FailureReason)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SubscriptionRequestValidation Invalid(string failureReason) =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:45](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L45) |  |
+| <code>public static SubscriptionRequestValidation Valid(string normalizedSymbol, string normalizedKind, bool isDuplicate, int? existingSubscriptionId) =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:48](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L48) |  |
+
+## SubscriptionSnapshot
+
+Qualified name: <code>Meridian.Infrastructure.Shared.SubscriptionSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:424](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L424).
+
+Snapshot of subscription state for serialization or logging.
+
+```csharp
+public sealed record SubscriptionSnapshot(int TotalSubscriptions, int FailedSubscriptions, int RecoveringSubscriptions, IReadOnlyDictionary<string, IReadOnlyList<string>> SymbolsByKind, IReadOnlyList<Subscription> Subscriptions);
+```
+
 ## SubscriptionStatus
 
 Qualified name: <code>Meridian.Infrastructure.Shared.SubscriptionStatus</code>. Kind: `enum`.

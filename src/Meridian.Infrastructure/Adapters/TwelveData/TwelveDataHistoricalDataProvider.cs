@@ -58,7 +58,7 @@ public sealed partial class TwelveDataHistoricalDataProvider : BaseHistoricalDat
 
 
 
-    public override int Priority => 22;
+    public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.TwelveDataPriority;
     public override TimeSpan RateLimitDelay => _quotaBudget?.MinimumDelay ?? TimeSpan.FromMilliseconds(7500);
     public override int MaxRequestsPerWindow => _quotaBudget?.Maximum ?? 8;
     public override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
@@ -68,13 +68,14 @@ public sealed partial class TwelveDataHistoricalDataProvider : BaseHistoricalDat
 
 
     public TwelveDataHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, RateLimiterRegistry? rateLimiterRegistry = null,
-        TwelveDataQuotaConfig? quotaConfig = null)
-        : base(httpClient, log, timeProvider: rateLimiterRegistry?.TimeProvider)
+        TwelveDataQuotaConfig? quotaConfig = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(httpClient, log, timeProvider: rateLimiterRegistry?.TimeProvider, runtimeOptions: runtimeOptions)
     {
         _apiKey = apiKey ?? Environment.GetEnvironmentVariable("TWELVEDATA_API_KEY");
         _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
         _timeProvider = _rateLimiterRegistry.TimeProvider;
-        _quotaBudget = ProviderQuotaBudgets.TwelveData(quotaConfig);
+        _quotaBudget = ProviderQuotaBudgets.TwelveData(quotaConfig, runtimeOptions);
     }
 
     public override Task<bool> IsAvailableAsync(CancellationToken ct = default)

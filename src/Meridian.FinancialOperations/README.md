@@ -148,6 +148,9 @@ A short-correction reversal must invert the posted journal line for line:
 `ShortCorrectionGuard.IsExactInverse` consumes each reversal line at most once, so duplicate
 economic lines need distinct inverses and one reversal line cannot satisfy two posted lines.
 
+The camt.053 and BAI2 connectors emit the closing booked balance by default; only an explicit
+`StatementBalanceRole.Opening` (used by shadow onboarding) emits the opening balance instead.
+
 All six shipped statement connectors capture executed mapping semantics at parse time. Display labels and review notes do not change that fingerprint; fields, activity mappings, culture, date formats and CSV options do. The retained import supplies comparison proof on replay. Legacy artifact upgrade verifies the original shape and adopts retained bytes without inventing mapping evidence.
 
 Configured reconciliation assignment ranks every available tolerated dimension by its own allowed variance: quantities, cash or market value, observed price, and settlement distance. Missing one-sided prices remain unavailable. Rule-list precedence and retained applied-rule evidence are unchanged.
@@ -259,6 +262,17 @@ Missing observations cannot resolve a previous difference. Corrective captures a
 date; readiness uses the latest capture for every required date, while earlier results remain
 replayable. Independent reviewer decisions bind the current data revision. Frozen packets include
 blocked states and complete retained history; they confer no accounting authority.
+
+The `OnboardingWorkspaceService.Shadow` partial adds shadow-mode onboarding (W11-SHADOW-001). An owner
+designates the workspace's ledger book as a shadow book. Incumbent opening balances are imported
+through `OpeningBalances/OnboardingOpeningSources.cs` (camt.053 OPBD / BAI2 010 via
+`StatementBalanceRole.Opening`, an administrator opening-pack CSV, or a retained GL trial balance)
+into a separate opening comparison lineage. Explanations clear a difference only for its exact
+amounts; `MeridianError` never clears and `Timing` lapses after its reversal date. A parallel-run
+certificate requires reconciled opening balances, every required period clean and independent
+review. Only an independent designated reviewer can promote, with a certificate that still matches
+the current revision, and every step is recorded in a hash-chained audit trail.
+`OnboardingBookOfRecordGuard` implements `IBookOfRecordGuard` over retained workspaces.
 
 `AccountingSystemIntegrationService.Onboarding` adds a read-only capture seam over an already
 retained import and explicitly selected certified mapping. Existing GL reconciliation runs against

@@ -35,7 +35,7 @@ public sealed class AlphaVantageSymbolSearchProvider : BaseSymbolSearchProvider
         : _rateLimiterRegistry.GetOrCreate(Name, ApiKey, "api-requests", _quotaBudget!);
     public override string Name => "alphavantage";
     public override string DisplayName => "Alpha Vantage";
-    public override int Priority => 25;
+    public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.AlphaVantagePriority;
 
     protected override string HttpClientName => HttpClientNames.AlphaVantageSymbolSearch;
     protected override string BaseUrl => "https://www.alphavantage.co/query";
@@ -72,11 +72,12 @@ public sealed class AlphaVantageSymbolSearchProvider : BaseSymbolSearchProvider
         HttpClient? httpClient = null,
         ILogger? log = null,
         RateLimiterRegistry? rateLimiterRegistry = null,
-        AlphaVantageQuotaConfig? quotaConfig = null)
-        : base(apiKey, httpClient, log, rateLimiterRegistry?.TimeProvider)
+        AlphaVantageQuotaConfig? quotaConfig = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(apiKey, httpClient, log, rateLimiterRegistry?.TimeProvider, runtimeOptions)
     {
         _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
-        _quotaBudget = ProviderQuotaBudgets.AlphaVantage(quotaConfig);
+        _quotaBudget = ProviderQuotaBudgets.AlphaVantage(quotaConfig, runtimeOptions);
     }
 
     protected override string BuildSearchUrl(string query, string? assetType, string? exchange)

@@ -125,8 +125,15 @@ Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:71](../../../../src/Meri
 Metadata about the engine and normalization path that produced a backtest result.
 
 ```csharp
-public sealed record BacktestEngineMetadata(string EngineId, string? ExternalRunId = null, string ResultKind = BacktestResultKinds.Full, IReadOnlyList<string>? CoverageWarnings = null);
+public sealed record BacktestEngineMetadata(string EngineId, string? ExternalRunId = null, string ResultKind = BacktestResultKinds.Full, IReadOnlyList<string>? CoverageWarnings = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:78](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L78) | Null retains legacy/unassessed coverage; unavailable financing is never a measured zero. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:83](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L83) | The actual run-attributed margin interest, or null when no complete allocation is available. When unavailable, Metrics.TotalMarginInterest is only a compatibility placeholder and GrossPnl is provisional. |
 
 ## BacktestEngineMode
 
@@ -145,6 +152,23 @@ Enum declarations:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Managed = 0</code> | [src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs:8](../../../../src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs#L8) |  |
+
+## BacktestFinancingCoverageStatuses
+
+Qualified name: <code>Meridian.Backtesting.Sdk.BacktestFinancingCoverageStatuses</code>. Kind: `class`.
+
+Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:86](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L86).
+
+```csharp
+public static class BacktestFinancingCoverageStatuses
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Available = &quot;Available&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:88](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L88) |  |
+| <code>public const string Unavailable = &quot;Unavailable&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:89](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L89) |  |
 
 ## BacktestLedgerIntegrityValidator
 
@@ -213,7 +237,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Backtesting.Sdk.BacktestResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:85](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L85).
+Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:100](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L100).
 
 Complete result of a finished backtest run.
 
@@ -225,13 +249,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;LedgerIntegrityBreak&gt; LedgerIntegrityBreaks { get; init; } = [];</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:101](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L101) | Day-end accounting differences retained for inspection; empty for a reconciled run. |
+| <code>public IReadOnlyList&lt;LedgerIntegrityBreak&gt; LedgerIntegrityBreaks { get; init; } = [];</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:116](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L116) | Day-end accounting differences retained for inspection; empty for a reconciled run. |
 
 ## BacktestResultKinds
 
 Qualified name: <code>Meridian.Backtesting.Sdk.BacktestResultKinds</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:78](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L78).
+Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:93](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L93).
 
 Canonical result coverage categories shared by native and external backtest engines.
 
@@ -243,8 +267,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string Full = &quot;Full&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:80](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L80) |  |
-| <code>public const string SummaryOnly = &quot;SummaryOnly&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:81](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L81) |  |
+| <code>public const string Full = &quot;Full&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:95](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L95) |  |
+| <code>public const string SummaryOnly = &quot;SummaryOnly&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:96](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L96) |  |
 
 ## BacktestStage
 
@@ -391,7 +415,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static BacktestResult FromNative(BacktestResult result, string engineId = &quot;MeridianNative&quot;);</code> | [src/Meridian.Backtesting.Sdk/CanonicalBacktestResultNormalizer.cs:16](../../../../src/Meridian.Backtesting.Sdk/CanonicalBacktestResultNormalizer.cs#L16) |  |
-| <code>public static BacktestResult FromLeanResult(JsonElement root, string backtestId, string algorithmName, DateTimeOffset? ingestedAt = null);</code> | [src/Meridian.Backtesting.Sdk/CanonicalBacktestResultNormalizer.cs:31](../../../../src/Meridian.Backtesting.Sdk/CanonicalBacktestResultNormalizer.cs#L31) |  |
+| <code>public static BacktestResult FromLeanResult(JsonElement root, string backtestId, string algorithmName, DateTimeOffset? ingestedAt = null);</code> | [src/Meridian.Backtesting.Sdk/CanonicalBacktestResultNormalizer.cs:35](../../../../src/Meridian.Backtesting.Sdk/CanonicalBacktestResultNormalizer.cs#L35) |  |
 
 ## CanonicalOpenLotAdapter
 
@@ -897,15 +921,3 @@ Declared public members:
 | <code>public long RemainingQuantity =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Order.cs:121](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L121) | Absolute quantity that still needs to be executed. |
 | <code>public bool IsComplete =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Order.cs:124](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L124) | True when the order has no remaining quantity to execute. |
 | <code>public long RemainingSignedQuantity =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Order.cs:127](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L127) | Signed quantity still open, retaining the original side of the order. |
-
-## OrderRequest
-
-Qualified name: <code>Meridian.Backtesting.Sdk.OrderRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Backtesting.Sdk/Order.cs:74](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L74).
-
-Provider-independent order request accepted by the backtest context. The simulator interprets the common fields directly and preserves any provider-specific extensions in ProviderParameters. Setting TakeProfitPrice and/or StopLossPrice creates contingent exit orders after the entry order fills.
-
-```csharp
-public sealed record OrderRequest(string Symbol, long Quantity, OrderType Type, decimal? LimitPrice = null, decimal? StopPrice = null, decimal? TakeProfitPrice = null, decimal? StopLossPrice = null, TimeInForce TimeInForce = TimeInForce.Day, ExecutionModel ExecutionModel = ExecutionModel.Auto, bool AllowPartialFills = true, IReadOnlyDictionary<string, string>? ProviderParameters = null, string? AccountId = null);
-```

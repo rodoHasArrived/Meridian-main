@@ -36,6 +36,14 @@ public interface IAssetAccountingEventProjectionStore
         long eventVersion,
         CancellationToken ct = default);
 
+    /// <summary>Reads the latest retained lifecycle version of every source-event version in one exact book and period.</summary>
+    Task<IReadOnlyList<AssetAccountingEventProjectionRecord>> ListByBookPeriodAsync(
+        Guid ledgerBookId,
+        Guid periodId,
+        CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<AssetAccountingEventProjectionRecord>>(
+            new NotSupportedException("This store cannot enumerate the complete scoped asset-event population."));
+
     Task<AssetAccountingEventAppendResult> AppendAsync(
         AssetAccountingEventSpineDto projection,
         long expectedSpineVersion,

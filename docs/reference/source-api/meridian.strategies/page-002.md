@@ -688,6 +688,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>ReconciliationPortfolioInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:53](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L53) |  |
 
+## IStrategyRunLedgerSource
+
+Qualified name: <code>Meridian.Strategies.Services.IStrategyRunLedgerSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs:8](../../../../src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs#L8).
+
+Reads posted journals for an independently authorized run and accounting scope. A missing source is unavailable, never an inferred empty book.
+
+```csharp
+public interface IStrategyRunLedgerSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyLedger?&gt; ReadAsync(StrategyRunEntry run, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs:10](../../../../src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs#L10) |  |
+
 ## JsonlReconciliationGovernanceAuditStore
 
 Qualified name: <code>Meridian.Strategies.Services.JsonlReconciliationGovernanceAuditStore</code>. Kind: `class`.
@@ -728,9 +746,11 @@ Declared public members:
 | <code>public LedgerReadService(ISecurityReferenceLookup securityReferenceLookup);</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:21](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L21) |  |
 | <code>public LedgerSummary? BuildSummary(StrategyRunEntry entry) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:26](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L26) |  |
 | <code>public LedgerSummary? BuildSummary(StrategyRunEntry entry, DateTimeOffset asOf) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:29](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L29) |  |
-| <code>public async Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:32](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L32) |  |
-| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:35](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L35) |  |
-| <code>public IReadOnlyList&lt;StrategyRunContinuityWarning&gt; BuildContinuityWarnings(string runId, LedgerSummary? summary);</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:69](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L69) |  |
+| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:32](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L32) |  |
+| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct, IReadOnlyLedger? postedLedger) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:35](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L35) |  |
+| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:39](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L39) |  |
+| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf, CancellationToken ct, IReadOnlyLedger? postedLedger) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:42](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L42) |  |
+| <code>public IReadOnlyList&lt;StrategyRunContinuityWarning&gt; BuildContinuityWarnings(string runId, LedgerSummary? summary);</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:78](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L78) |  |
 
 ## NetSymbolPosition
 
@@ -1025,13 +1045,3 @@ Declared public members:
 | <code>public static ReconciliationCaseLifecycleState ParseLifecycleState(string token) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:58](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L58) |  |
 | <code>public static ReconciliationBreakQueueStatus ParseQueueStatus(string token) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:74](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L74) |  |
 | <code>public static ReconciliationBreakQueueTransitionErrorCode ParseErrorCode(string token) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:84](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L84) |  |
-
-## ReconciliationCashMovementInput
-
-Qualified name: <code>Meridian.Strategies.Services.ReconciliationCashMovementInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:23](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L23).
-
-```csharp
-public sealed record ReconciliationCashMovementInput(string MovementId, decimal Amount, DateTimeOffset? AsOf, bool IsVoided, string Source, BankTransactionDto? BankTransaction = null);
-```

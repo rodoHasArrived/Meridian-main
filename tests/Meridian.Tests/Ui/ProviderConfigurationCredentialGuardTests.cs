@@ -43,13 +43,15 @@ public sealed class ProviderConfigurationCredentialGuardTests : IDisposable
     [InlineData("/api/config/alpaca")]
     [InlineData("/api/config/datasources")]
     [InlineData("/api/config/data-sources")]
-    public async Task Development_RetainsExistingCredentialConfigurationCompatibility(string route)
+    public async Task DevelopmentEditors_RefuseNewPlaintextCredentialsWithoutChangingConfiguration(string route)
     {
         await using var app = await CreateAppAsync("development");
+        var before = await File.ReadAllBytesAsync(ConfigPath);
         using var response = await app.GetTestClient().PostAsJsonAsync(route, Request(route, "alpaca-key"));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        (await File.ReadAllTextAsync(ConfigPath)).Should().Contain("synthetic-submitted-key");
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await response.Content.ReadAsStringAsync()).Should().NotContain("synthetic-submitted-key");
+        (await File.ReadAllBytesAsync(ConfigPath)).Should().Equal(before);
     }
 
     [Theory]
@@ -150,6 +152,8 @@ public sealed class ProviderConfigurationCredentialGuardTests : IDisposable
         }
         await saving;
         (await File.ReadAllTextAsync(ConfigPath)).Should().NotContain("synthetic-late-secret");
+        store.GetChangeStatus().Changes.Should().BeEmpty();
+        store.GetChangeStatus().PendingChanges.Should().BeEmpty();
     }
 
     private string ConfigPath => Path.Combine(_root, "appsettings.json");

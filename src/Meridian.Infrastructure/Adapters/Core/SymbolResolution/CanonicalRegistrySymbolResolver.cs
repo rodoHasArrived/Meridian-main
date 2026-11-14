@@ -14,6 +14,7 @@ public sealed class CanonicalRegistrySymbolResolver : ISymbolResolver, IDisposab
     private readonly ICanonicalSymbolRegistry _registry;
     private readonly ISymbolResolver? _inner;
     private readonly SymbolResolutionMode _mode;
+    private readonly IReadOnlyDictionary<string, SymbolResolutionMode> _providerModes;
     private readonly Action<SymbolResolutionMismatch>? _mismatchObserver;
     private readonly ILogger _log;
     private bool _disposed;
@@ -23,14 +24,20 @@ public sealed class CanonicalRegistrySymbolResolver : ISymbolResolver, IDisposab
         ISymbolResolver? inner = null,
         ILogger? log = null,
         SymbolResolutionMode mode = SymbolResolutionMode.Canonical,
-        Action<SymbolResolutionMismatch>? mismatchObserver = null)
+        Action<SymbolResolutionMismatch>? mismatchObserver = null,
+        IReadOnlyDictionary<string, SymbolResolutionMode>? providerModes = null)
     {
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         _inner = inner;
         _mode = mode;
+        _providerModes = (providerModes ?? new Dictionary<string, SymbolResolutionMode>())
+            .ToDictionary(pair => NormalizeModeProvider(pair.Key), pair => pair.Value, StringComparer.OrdinalIgnoreCase);
         _mismatchObserver = mismatchObserver;
         _log = log ?? LoggingSetup.ForContext<CanonicalRegistrySymbolResolver>();
     }
+
+    public SymbolResolutionMode GetProviderMode(string provider)
+        => _providerModes.TryGetValue(NormalizeModeProvider(provider), out var mode) ? mode : _mode;
 
     public string Name => _inner is null ? "canonical-registry" : $"canonical-registry+{_inner.Name}";
 
@@ -67,7 +74,8 @@ public sealed class CanonicalRegistrySymbolResolver : ISymbolResolver, IDisposab
             return null;
 
         var trimmed = symbol.Trim();
-        if (_mode == SymbolResolutionMode.Legacy)
+        var mode = GetProviderMode(toProvider);
+        if (mode == SymbolResolutionMode.Legacy)
             return await ResolveLegacyAsync(trimmed, fromProvider, toProvider, ct).ConfigureAwait(false);
 
         var canonicalResult = await ResolveCanonicalMappingAsync(
@@ -76,7 +84,7 @@ public sealed class CanonicalRegistrySymbolResolver : ISymbolResolver, IDisposab
             toProvider,
             ct).ConfigureAwait(false);
 
-        if (_mode == SymbolResolutionMode.Canonical)
+        if (mode == SymbolResolutionMode.Canonical)
         {
             return canonicalResult
                 ?? await ResolveLegacyAsync(trimmed, fromProvider, toProvider, ct).ConfigureAwait(false);
@@ -216,6 +224,9 @@ public sealed class CanonicalRegistrySymbolResolver : ISymbolResolver, IDisposab
 
         return resolution;
     }
+
+    private static string NormalizeModeProvider(string provider)
+        => NormalizeProvider(provider) is "interactive-brokers" or "interactivebrokers" ? "ib" : NormalizeProvider(provider);
 
     private static string NormalizeProvider(string provider)
         => string.IsNullOrWhiteSpace(provider) ? string.Empty : provider.Trim().ToLowerInvariant();

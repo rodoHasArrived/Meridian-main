@@ -6,6 +6,7 @@ using Meridian.Execution.Interfaces;
 using Meridian.Execution.Margin;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Events;
 using Meridian.Ledger;
 using static Meridian.Contracts.Text.TextPrimitives;
 
@@ -25,6 +26,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
     public Guid BookId { get; } = Guid.NewGuid();
 
     private readonly Meridian.Ledger.Ledger? _ledger;
+    private readonly Dictionary<Guid, PaperFinancingCharge> _financingCharges = [];
     private readonly IChartOfAccounts _chartOfAccounts = StandardChartOfAccounts.Instance;
     private readonly bool _scopeLedgerAccounts;
     private readonly ILivePositionCorporateActionAdjuster? _corporateActionAdjuster;
@@ -446,69 +448,6 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         string accountId,
         IReadOnlyDictionary<string, decimal> prices)
         => CheckMarginStatus(accountId, prices).PortfolioRequirement;
-
-    /// <summary>
-    /// Accrues interest on any outstanding margin loans in all margin accounts.
-    /// </summary>
-    /// <remarks>
-    /// Call this once per interest period (e.g. daily).  The charge is paid from the
-    /// account's <c>Cash</c> balance and posted as margin interest expense; the loan
-    /// principal (<c>MarginBorrowed</c>) is unchanged. Equity therefore falls by exactly
-    /// the interest, once — growing the loan as well would charge it a second time, both
-    /// in <see cref="PortfolioValue"/> and again when the sale repays the inflated loan.
-    /// This matches the backtest engine, which also settles margin interest from cash.
-    /// </remarks>
-    /// <param name="annualRate">Annual interest rate expressed as a decimal (e.g. 0.065 = 6.5 %).</param>
-    /// <param name="days">Number of days to accrue interest for. Defaults to 1 (daily).</param>
-    /// <param name="asOf">Timestamp for the ledger posting. Defaults to the current UTC time.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    ///     Thrown when <paramref name="annualRate"/> is negative or <paramref name="days"/> is less than 1.
-    /// </exception>
-    public void AccrueMarginInterest(decimal annualRate, int days = 1, DateTimeOffset? asOf = null)
-    {
-        if (annualRate < 0m)
-            throw new ArgumentOutOfRangeException(nameof(annualRate), "Annual rate must be non-negative.");
-        if (days < 1)
-            throw new ArgumentOutOfRangeException(nameof(days), "Days must be at least 1.");
-
-        if (annualRate == 0m)
-            return;
-
-        var dailyRate = annualRate / 365m;
-        var periodRate = dailyRate * days;
-
-        var ts = asOf ?? DateTimeOffset.UtcNow;
-
-        lock (_lock)
-        {
-            foreach (var account in _accounts.Values)
-            {
-                if (account.MarginModel is null)
-                    continue; // cash account
-
-                var accountInterest = 0m;
-                foreach (var pos in account.Positions.Values)
-                {
-                    if (pos.MarginBorrowed <= 0m)
-                        continue;
-
-                    accountInterest += pos.MarginBorrowed * periodRate;
-                }
-
-                if (accountInterest == 0m)
-                    continue;
-
-                // Paid from cash once; the loan principal stays where it is.
-                account.Cash -= accountInterest;
-
-                _ledger?.PostLines(ts, $"Margin interest — {account.AccountId}",
-                [
-                    (_chartOfAccounts.Resolve(LedgerAccountRole.MarginInterestExpense, LedgerScope(account)), accountInterest, 0m),
-                    (_chartOfAccounts.Resolve(LedgerAccountRole.Cash, LedgerScope(account)), 0m, accountInterest),
-                ]);
-            }
-        }
-    }
 
     // ─── Fill application ────────────────────────────────────────────────────
 

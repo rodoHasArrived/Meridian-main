@@ -6,9 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { StatusBanner } from "@/components/ui/status-banner";
 import { EmptyState } from "@/components/data/empty-state";
 import { useOpenScopePicker } from "@/lib/operating-scope/scope-picker-context";
+import { InlineFundAccountPicker } from "@/components/meridian/inline-fund-account-picker";
+import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatTimestamp } from "@/lib/format";
 import type { TradingBrokerageRecoveryRun, TradingExecutionReconciliationBreak, TradingOperatorReadiness } from "@/types";
 
 type RecoveryBreak = TradingExecutionReconciliationBreak & { rowId: string };
@@ -27,9 +29,15 @@ const runColumns: DenseDataTableColumn<TradingBrokerageRecoveryRun>[] = [
   { id: "impact", label: "Recovery impact", render: (row) => <span className="whitespace-normal">{row.detail}</span> }
 ];
 
+const ACCOUNT_SETUP_TITLE = "Choose a fund account";
+const ACCOUNT_SETUP_DETAIL = "Recovery evidence is per account: its broker portfolio, retained orders and affected strategy runs load once a fund account is in scope. Live trading stays off until then.";
+const ACCOUNT_SETUP_ROW_TITLE = "No fund account in scope";
+const ACCOUNT_SETUP_ROW_DETAIL = "brokerage recovery is checked per account; live trading stays off until one is chosen.";
+const FUND_ACCOUNT_GUID_MESSAGE = "Not a fund account id. Trading accepts a fund account GUID, for example 11111111-2222-3333-4444-555555555555.";
+
 function timestamp(value: string | null | undefined) {
   if (!value || !Number.isFinite(Date.parse(value))) return "Unavailable";
-  return `${new Date(value).toISOString().replace("T", " ").replace(/\.\d{3}Z$/, " UTC")}`;
+  return formatTimestamp(value, { precision: "second" });
 }
 
 export function BrokerageRecoveryPanel({ readiness, fundAccountId, brokerageEnvironment, busy, error, onRecover, variant = "full", reviewHref }: {
@@ -87,6 +95,19 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, brokerageEnvi
       : !recovery ? "Current account recovery evidence is unavailable. Synchronize and reconcile before trading."
         : recovery.detail;
 
+  const accountEmptyState = (
+    <EmptyState
+      icon="inbox"
+      title={ACCOUNT_SETUP_TITLE}
+      detail={ACCOUNT_SETUP_DETAIL}
+      action={openScopePicker ? "Choose account" : undefined}
+      onAction={openScopePicker ?? undefined}
+      role={needsAccountSetup ? "status" : undefined}
+      ariaLabel={needsAccountSetup ? "Brokerage recovery readiness" : undefined}
+      compact
+    />
+  );
+
   if (variant === "row") {
     if (!blocked) {
       return null;
@@ -104,6 +125,8 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, brokerageEnvi
     if (needsAccountSetup) {
       // Setup, not a failure: neutral border, no alert icon, and choosing the account as the one
       // next step when the shell can open the scope picker.
+      // In the shell the account is chosen right in the row (the inline account picker); outside
+      // it, the row explains and opens the scope picker or the full panel.
       return (
         <section
           role="region"
@@ -111,12 +134,26 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, brokerageEnvi
           aria-busy={busy}
           className="flex min-w-0 items-center gap-3 rounded-[2px] border border-l-[3px] border-border bg-card px-3 py-2 text-xs"
         >
-          <p role="status" aria-label="Brokerage recovery readiness" aria-live="polite" className="min-w-0 flex-1 text-muted-foreground">
-            No fund account in scope · brokerage recovery is checked per account; live trading stays off until one is chosen.
-          </p>
-          {openScopePicker ? (
-            <Button size="sm" variant="outline" onClick={openScopePicker}>Choose account</Button>
-          ) : reviewLink}
+          <InlineFundAccountPicker
+            variant="row"
+            className="flex-1"
+            title={ACCOUNT_SETUP_ROW_TITLE}
+            detail={ACCOUNT_SETUP_ROW_DETAIL}
+            normalize={normalizeFundAccountGuid}
+            invalidMessage={FUND_ACCOUNT_GUID_MESSAGE}
+            role="status"
+            ariaLabel="Brokerage recovery readiness"
+            fallback={(
+              <>
+                <p role="status" aria-label="Brokerage recovery readiness" aria-live="polite" className="min-w-0 flex-1 text-muted-foreground">
+                  {ACCOUNT_SETUP_ROW_TITLE} · {ACCOUNT_SETUP_ROW_DETAIL}
+                </p>
+                {openScopePicker ? (
+                  <Button size="sm" variant="outline" onClick={openScopePicker}>Choose account</Button>
+                ) : reviewLink}
+              </>
+            )}
+          />
         </section>
       );
     }
@@ -166,17 +203,20 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, brokerageEnvi
         )}
         {reasons.length > 0 ? <ul aria-label="Recovery blockers" className="list-disc space-y-1 pl-5 text-xs text-danger">{reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul> : null}
         {!fundAccountId ? (
-          // One explanation and one next step, instead of a grid of "Unavailable" facts.
-          <EmptyState
-            icon="inbox"
-            title="Choose a fund account"
-            detail="Recovery evidence is per account: its broker portfolio, retained orders and affected strategy runs load once a fund account is in scope. Live trading stays off until then."
-            action={openScopePicker ? "Choose account" : undefined}
-            onAction={openScopePicker ?? undefined}
-            role={needsAccountSetup ? "status" : undefined}
-            ariaLabel={needsAccountSetup ? "Brokerage recovery readiness" : undefined}
-            compact
-          />
+          // One explanation and one next step, instead of a grid of "Unavailable" facts. For
+          // setup (a non-live environment) the step is taken inline; a live, unreported or failed
+          // environment keeps the blocking banner above and only explains.
+          needsAccountSetup ? (
+            <InlineFundAccountPicker
+              title={ACCOUNT_SETUP_TITLE}
+              detail={ACCOUNT_SETUP_DETAIL}
+              normalize={normalizeFundAccountGuid}
+              invalidMessage={FUND_ACCOUNT_GUID_MESSAGE}
+              role="status"
+              ariaLabel="Brokerage recovery readiness"
+              fallback={accountEmptyState}
+            />
+          ) : accountEmptyState
         ) : !recovery && !busy && !error ? null : (
         <TechnicalDetails label="Brokerage recovery evidence">
         <dl className="grid gap-x-5 gap-y-3 text-xs sm:grid-cols-2 xl:grid-cols-4">

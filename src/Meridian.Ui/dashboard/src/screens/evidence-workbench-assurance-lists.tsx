@@ -1,11 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TechnicalDetails } from "@/components/ui/technical-details";
-import { readinessToneToBadgeVariant } from "@/lib/shared-tone-mappings";
 import type {
   EvidenceSlaAssessmentRowViewModel,
   EvidenceStatusTone
 } from "@/screens/evidence-workbench-screen.view-model";
+import { statusBadgeVariant } from "@/design-system/status-styles";
 
 export function EvidenceSlaRows({ rows }: { rows: EvidenceSlaAssessmentRowViewModel[] }) {
   if (rows.length === 0) {
@@ -26,7 +26,7 @@ export function EvidenceSlaRows({ rows }: { rows: EvidenceSlaAssessmentRowViewMo
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="font-semibold text-foreground">{row.policyLabel}</span>
-            <Badge variant={readinessToneToBadgeVariant(row.tone)}>{row.breached ? "Breached" : "Fresh"}</Badge>
+            <Badge variant={statusBadgeVariant(row.tone)}>{row.breached ? "Breached" : "Fresh"}</Badge>
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
             <Badge variant="outline">{row.evidenceKindLabel}</Badge>
@@ -70,7 +70,7 @@ export function EvidenceList({
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="text-base">{title}</CardTitle>
-          <Badge variant={readinessToneToBadgeVariant(tone)}>{items.length}</Badge>
+          <Badge variant={statusBadgeVariant(tone)}>{items.length}</Badge>
         </div>
       </CardHeader>
       <CardContent>

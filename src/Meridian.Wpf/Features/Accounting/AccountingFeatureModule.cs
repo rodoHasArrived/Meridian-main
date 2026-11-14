@@ -273,7 +273,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IClosePublicationReadinessGuard>(sp => new ClosePublicationReadinessGuard(
             () => sp.GetService<IFinancialOperationsCommandCenterReadService>(),
             sp.GetService<IWorkstationTenantContextAccessor>(),
-            () => sp.GetService<IOperationsReportPackAuthority>()));
+            () => sp.GetService<IOperationsReportPackAuthority>(),
+            () => sp.GetService<IBookOfRecordGuard>()));
         services.TryAddSingleton<IFinancialOperationsCommandCenterReadService>(sp =>
             new FinancialOperationsCommandCenterReadService(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),

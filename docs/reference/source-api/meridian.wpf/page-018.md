@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NotificationCenterPage
+
+Qualified name: <code>Meridian.Wpf.Views.NotificationCenterPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/NotificationCenterPage.xaml.cs:19](../../../../src/Meridian.Wpf/Views/NotificationCenterPage.xaml.cs#L19).
+
+Notification Center page for viewing and managing all application notifications. Code-behind handles only: DI wiring, alert group card building (uses FindResource), playbook display, and snooze/suppress actions.
+
+```csharp
+public partial class NotificationCenterPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public NotificationCenterPage(WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/NotificationCenterPage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/NotificationCenterPage.xaml.cs#L25) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:96](../../../../src/Meridian.Wpf/Views/Pages.cs#L96).
+
+```csharp
+public partial class NotificationCenterPage : Page
+```
+
+## OperationsContinuityPage
+
+Qualified name: <code>Meridian.Wpf.Views.OperationsContinuityPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs#L11).
+
+Provides the desktop page to review continuity workflows, gates, close calendar, and governed approval policy.
+
+```csharp
+public partial class OperationsContinuityPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperationsContinuityPage(OperationsContinuityViewModel viewModel);</code> | [src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs#L15) |  |
+
 ## OperationsRecordReleasePage
 
 Qualified name: <code>Meridian.Wpf.Views.OperationsRecordReleasePage</code>. Kind: `class`.
@@ -876,7 +918,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.SplitPaneHostControl</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:13](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L13).
+Source: [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:15](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L15).
 
 Hosts navigation frames in the selected pane layout and tracks the active pane.
 
@@ -888,13 +930,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string PageTagFormat = &quot;Meridian.PageTag&quot;;</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:16](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L16) |  |
-| <code>public event EventHandler&lt;PaneDropEventArgs&gt;? PaneDropRequested;</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:21](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L21) | Raised when a page-tag string is dropped onto this host. |
-| <code>public PaneLayout Layout { get; set; }</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:23](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L23) |  |
-| <code>public static readonly DependencyProperty LayoutProperty = DependencyProperty.Register(nameof(Layout), typeof(PaneLayout), typeof(SplitPaneHostControl), new PropertyMetadata(PaneLayouts.Single, OnLayoutChanged));</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:29](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L29) |  |
-| <code>public int ActivePaneIndex { get; set; }</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:34](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L34) |  |
-| <code>public SplitPaneHostControl();</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:36](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L36) |  |
-| <code>public Frame? GetPaneFrame(int index) =&gt; …;</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:42](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L42) |  |
+| <code>public const string PageTagFormat = &quot;Meridian.PageTag&quot;;</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:18](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L18) |  |
+| <code>public event EventHandler&lt;PaneDropEventArgs&gt;? PaneDropRequested;</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:23](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L23) | Raised when a page-tag string is dropped onto this host. |
+| <code>public PaneLayout Layout { get; set; }</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:25](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L25) |  |
+| <code>public static readonly DependencyProperty LayoutProperty = DependencyProperty.Register(nameof(Layout), typeof(PaneLayout), typeof(SplitPaneHostControl), new PropertyMetadata(PaneLayouts.Single, OnLayoutChanged));</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:31](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L31) |  |
+| <code>public int ActivePaneIndex { get; set; }</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:36](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L36) |  |
+| <code>public SplitPaneHostControl();</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:38](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L38) |  |
+| <code>public Frame? GetPaneFrame(int index) =&gt; …;</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:44](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L44) |  |
 
 ## StartupWindow
 
@@ -1034,52 +1076,3 @@ Binds derived pages to the strategy workspace shell definition.
 ```csharp
 public class StrategyWorkspaceShellPageBase : WorkspaceShellPageBase<StrategyWorkspaceShellStateProvider, StrategyWorkspaceShellViewModel>
 ```
-
-## SymbolMappingPage
-
-Qualified name: <code>Meridian.Wpf.Views.SymbolMappingPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:17](../../../../src/Meridian.Wpf/Views/Pages.cs#L17).
-
-```csharp
-public partial class SymbolMappingPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs#L14).
-
-Symbol mapping page for managing provider-specific symbol translations, testing mappings, and importing/exporting CSV mapping files.
-
-```csharp
-public partial class SymbolMappingPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SymbolMappingPage() : this(new SymbolMappingViewModel());</code> | [src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs:19](../../../../src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs#L19) |  |
-| <code>public SymbolMappingPage(SymbolMappingViewModel viewModel);</code> | [src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs:24](../../../../src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs#L24) |  |
-
-## SymbolsPage
-
-Qualified name: <code>Meridian.Wpf.Views.SymbolsPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:16](../../../../src/Meridian.Wpf/Views/Pages.cs#L16).
-
-```csharp
-public partial class SymbolsPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/SymbolsPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/SymbolsPage.xaml.cs#L17).
-
-Symbol subscription management page — thin code-behind. All state, business logic, watchlist event handling, and backend sync live in SymbolsPageViewModel.
-
-```csharp
-public partial class SymbolsPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SymbolsPage(WpfServices.ConfigService configService, WpfServices.WatchlistService watchlistService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService, WpfServices.NavigationService navigationService);</code> | [src/Meridian.Wpf/Views/SymbolsPage.xaml.cs:27](../../../../src/Meridian.Wpf/Views/SymbolsPage.xaml.cs#L27) |  |

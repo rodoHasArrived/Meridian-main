@@ -5,7 +5,7 @@ import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { formatRelativeAge as formatRelative } from "@/lib/time";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type { MetricSnapshot, QuotesSnapshotItem, QuotesSnapshotResponse, SymbolRecord, SymbolStatistics } from "@/types";
-import { formatCount as formatCountValue, formatNumber } from "@/lib/format";
+import { formatCount as formatCountValue, formatDecimal, formatNumber } from "@/lib/format";
 
 export type WatchlistBadgeVariant = "default" | "outline" | "success" | "warning" | "danger" | "paper" | "live" | "research";
 export type WatchlistListState = "loading" | "error" | "empty" | "ready";
@@ -1385,10 +1385,10 @@ function formatSpread(spread: number | null | undefined, mid: number | null | un
 
   if (mid && mid > 0) {
     const basisPoints = (spread / mid) * 10_000;
-    return `${spread.toFixed(2)} (${basisPoints.toFixed(1)} bps)`;
+    return `${formatDecimal(spread, 2)} (${formatDecimal(basisPoints, 1)} bps)`;
   }
 
-  return spread.toFixed(2);
+  return formatDecimal(spread, 2);
 }
 
 function formatChange(value: number | null | undefined): string {

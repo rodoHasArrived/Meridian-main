@@ -1,6 +1,12 @@
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using Meridian.Wpf.Models;
+using WpfNavigatingCancelEventArgs = System.Windows.Navigation.NavigatingCancelEventArgs;
+using WpfNavigationEventArgs = System.Windows.Navigation.NavigationEventArgs;
+using WpfNavigationMode = System.Windows.Navigation.NavigationMode;
+using WpfNavigationService = Meridian.Wpf.Services.NavigationService;
+using ShellNavigationEventArgs = Meridian.Ui.Services.Contracts.NavigationEventArgs;
 
 namespace Meridian.Wpf.Views;
 
@@ -10,6 +16,68 @@ public partial class MainPage
 {
     private SplitPaneHostControl? _splitPaneHost;
     private bool _splitPaneEventsHooked;
+    private int? _pendingNavigationPaneIndex;
+    private bool _restoringFrameHistory;
+
+    private void DetachFrameNavigationHandlers()
+    {
+        if (_lastShellNavigationFrame is { } frame)
+        {
+            frame.Navigating -= OnShellFrameNavigating;
+            frame.Navigated -= OnShellFrameNavigated;
+        }
+
+        _lastShellNavigationFrame = null;
+        _restoringFrameHistory = false;
+    }
+
+    private bool IsCurrentShellNavigationFrame(object navigator)
+        => navigator is Frame frame &&
+           ReferenceEquals(frame, _lastShellNavigationFrame) &&
+           _navigationService.IsNavigationFrame(frame, WorkspaceChromePresentationMode.Docked) &&
+           (ReferenceEquals(frame, ContentFrame) ||
+            ReferenceEquals(frame, _splitPaneHost?.GetPaneFrame(_viewModel.PaneHost.ActivePaneIndex)));
+
+    private void OnShellFrameNavigating(object sender, WpfNavigatingCancelEventArgs e)
+    {
+        if (IsCurrentShellNavigationFrame(e.Navigator))
+        {
+            _restoringFrameHistory = e.NavigationMode is WpfNavigationMode.Back or WpfNavigationMode.Forward;
+        }
+    }
+
+    private void OnShellFrameNavigated(object sender, WpfNavigationEventArgs e)
+    {
+        if (!IsCurrentShellNavigationFrame(e.Navigator))
+        {
+            return;
+        }
+
+        var restoringHistory = _restoringFrameHistory;
+        _restoringFrameHistory = false;
+        if (!restoringHistory ||
+            WpfNavigationService.GetContentPageTag(e.Content) is not { } pageTag)
+        {
+            return;
+        }
+
+        // Retain the landed instance and its parameters; synchronizing shell state must not navigate.
+        var activePaneIndex = _viewModel.PaneHost.ActivePaneIndex;
+        var previousPendingPaneIndex = _pendingNavigationPaneIndex;
+        _pendingNavigationPaneIndex = activePaneIndex;
+        try
+        {
+            _viewModel.OnNavigated(this, new ShellNavigationEventArgs { PageTag = pageTag, Parameter = e.ExtraData });
+            if (IsWorkspaceHomePage(pageTag) && !ReferenceEquals(e.Navigator, ContentFrame))
+            {
+                _viewModel.PaneHost.AssignPageToPane(pageTag, activePaneIndex);
+            }
+        }
+        finally
+        {
+            _pendingNavigationPaneIndex = previousPendingPaneIndex;
+        }
+    }
 
     private void OnSplitPaneHostLoaded(object sender, RoutedEventArgs e)
     {
@@ -44,12 +112,6 @@ public partial class MainPage
             e.Action);
         SyncSplitPaneContent();
 
-        var activePane = _splitPaneHost?.GetPaneFrame(result.ActivePaneIndex);
-        if (activePane is not null)
-        {
-            _shellNavigationCoordinator.InitializeNavigationFrame(activePane);
-        }
-
         _viewModel.NavigateToPageCommand.Execute(result.PageTag);
     }
 
@@ -78,13 +140,24 @@ public partial class MainPage
                 continue;
             }
 
-            frame.Content = _shellNavigationCoordinator.CreatePaneContent(state);
+            AutomationProperties.SetItemType(frame,
+                state.PaneIndex == _viewModel.PaneHost.ActivePaneIndex ? "ActiveWorkspacePane" : "WorkspacePane");
+            if (state.PaneIndex != _pendingNavigationPaneIndex && !string.Equals(
+                    WpfNavigationService.GetContentPageTag(frame.Content),
+                    state.CanonicalPageTag,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                frame.Content = _shellNavigationCoordinator.CreatePaneContent(state);
+            }
         }
 
-        var activePane = _splitPaneHost.GetPaneFrame(_viewModel.PaneHost.ActivePaneIndex);
-        if (activePane is not null)
+        var canonicalPageTag = ShellNavigationCatalog.GetCanonicalPageTag(_viewModel.CurrentPageTag);
+        var targetFrame = IsWorkspaceHomePage(canonicalPageTag)
+            ? _splitPaneHost.GetPaneFrame(_viewModel.PaneHost.ActivePaneIndex)
+            : ContentFrame;
+        if (targetFrame is not null && OwnsNavigationFrame())
         {
-            _shellNavigationCoordinator.InitializeNavigationFrame(activePane);
+            BindNavigationFrame(targetFrame);
         }
     }
 }

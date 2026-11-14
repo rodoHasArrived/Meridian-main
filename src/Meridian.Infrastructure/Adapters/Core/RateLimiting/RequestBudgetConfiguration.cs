@@ -52,28 +52,47 @@ public sealed record RequestBudgetStatus(
 /// <summary>One account profile is used across history, search and corporate actions.</summary>
 public static class ProviderQuotaBudgets
 {
-    public static RequestBudgetConfiguration TwelveData(TwelveDataQuotaConfig? profile = null)
+    public static RequestBudgetConfiguration TwelveData(TwelveDataQuotaConfig? profile = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
     {
         profile ??= new();
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(profile.CreditsPerMinute, 0);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(profile.DailyCredits, 0);
         var budget = new RequestBudgetConfiguration(profile.CreditsPerMinute, TimeSpan.FromMinutes(1),
-            MinimumDelay(profile.CreditsPerMinute), profile.NoDailyLimit ? null : profile.DailyCredits, DailyQuotaResetMode.UtcMidnight, "credits");
+            MinimumDelay(profile.CreditsPerMinute, runtimeOptions, "twelvedata"),
+            profile.NoDailyLimit ? null : profile.DailyCredits, DailyQuotaResetMode.UtcMidnight, "credits");
         budget.Validate();
         return budget;
     }
 
-    public static RequestBudgetConfiguration AlphaVantage(AlphaVantageQuotaConfig? profile = null)
+    public static RequestBudgetConfiguration AlphaVantage(AlphaVantageQuotaConfig? profile = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
     {
         profile ??= new();
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(profile.RequestsPerMinute, 0);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(profile.DailyRequests, 0);
         var budget = new RequestBudgetConfiguration(profile.RequestsPerMinute, TimeSpan.FromMinutes(1),
-            MinimumDelay(profile.RequestsPerMinute), profile.NoDailyLimit ? null : profile.DailyRequests);
+            MinimumDelay(profile.RequestsPerMinute, runtimeOptions, "alphavantage"),
+            profile.NoDailyLimit ? null : profile.DailyRequests);
         budget.Validate();
         return budget;
     }
 
-    private static TimeSpan MinimumDelay(int perMinute)
-        => TimeSpan.FromMilliseconds(Math.Ceiling(TimeSpan.FromMinutes(1).TotalMilliseconds / perMinute));
+    private static TimeSpan MinimumDelay(int perMinute, BackfillProviderRuntimeOptions? runtimeOptions, string providerId)
+    {
+        var defaults = BackfillProviderRuntimeOptions.FromConfig(null, providerId);
+        runtimeOptions ??= defaults;
+        if (runtimeOptions.Requests is < 1 || runtimeOptions.Window is { } window && window <= TimeSpan.Zero
+            || runtimeOptions.Requests.HasValue != runtimeOptions.Window.HasValue)
+            throw new ArgumentException("A request pacing limit must declare both a positive request count and window.", nameof(runtimeOptions));
+
+        // The editor bounds physical requests; the vendor account bounds requests or weighted
+        // credits. Preserve both using the stricter spacing on the one shared atomic budget.
+        // Treating a request cap as credit capacity would refuse an entitled 20-credit endpoint.
+        var requestWindow = runtimeOptions.Window ?? defaults.Window!.Value;
+        var requests = runtimeOptions.Requests ?? defaults.Requests!.Value;
+        var vendorDelay = TimeSpan.FromMinutes(1).TotalMilliseconds / perMinute;
+        var requestDelay = requestWindow.TotalMilliseconds / requests;
+        return TimeSpan.FromMilliseconds(Math.Ceiling(Math.Max(vendorDelay, requestDelay)));
+    }
 }

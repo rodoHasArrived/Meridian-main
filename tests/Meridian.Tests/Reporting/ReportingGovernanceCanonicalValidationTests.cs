@@ -82,6 +82,45 @@ public sealed class ReportingGovernanceCanonicalValidationTests
     }
 
     [Fact]
+    public async Task Release_RefusesAShadowLedgerBook_BeforeAnyReleaseStateIsEvaluated()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var shadow = new RecordingBookOfRecordGuard(isBookOfRecord: false);
+        var scenario = NewScenario(bookId: ledgerBookId.ToString("D"), bookOfRecordGuard: shadow);
+        var run = await scenario.Service.CreateRunAsync(scenario.Request, scenario.Creator);
+
+        Func<Task> release = async () => await scenario.Service.ReleaseAsync(run.RunId, run.Version, ShadowReleaseEvidence(), scenario.Releaser);
+
+        (await release.Should().ThrowAsync<ReportingGovernanceException>())
+            .WithMessage("*cannot be released as the book of record*")
+            .WithInnerException<ShadowBookNotBookOfRecordException>();
+        shadow.Requests.Should().Equal([("tenant-a", (string?)"company-a", ledgerBookId)]);
+
+        var authoritative = new RecordingBookOfRecordGuard(isBookOfRecord: true);
+        var bookOfRecord = NewScenario(bookId: ledgerBookId.ToString("D"), bookOfRecordGuard: authoritative);
+        var other = await bookOfRecord.Service.CreateRunAsync(bookOfRecord.Request, bookOfRecord.Creator);
+        Func<Task> notApproved = async () => await bookOfRecord.Service.ReleaseAsync(other.RunId, other.Version, ShadowReleaseEvidence(), bookOfRecord.Releaser);
+        (await notApproved.Should().ThrowAsync<ReportingGovernanceException>())
+            .Which.Message.Should().NotContain("book of record", "an authoritative book reaches the ordinary release-state checks");
+        authoritative.Requests.Should().ContainSingle();
+    }
+
+    private static ReportingReleaseEvidence ShadowReleaseEvidence() => new(
+        "manifest-shadow", new string('4', 64), [new ReportingArtifactReference("artifact-shadow", new string('3', 64), 128)], ["evidence-shadow"]);
+
+    private sealed class RecordingBookOfRecordGuard(bool isBookOfRecord) : IBookOfRecordGuard
+    {
+        public List<(string Tenant, string? Company, Guid Book)> Requests { get; } = [];
+
+        public Task<BookOfRecordStatusDto> GetStatusAsync(string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default)
+        {
+            Requests.Add((tenantId, companyId, ledgerBookId));
+            return Task.FromResult(new BookOfRecordStatusDto(ledgerBookId, isBookOfRecord, null, null,
+                isBookOfRecord ? "Authoritative." : "The ledger book is a shadow book in parallel run."));
+        }
+    }
+
+    [Fact]
     public async Task GovernedLifecycle_AllowsReadinessEvaluationBeforeLaterCertifiedSnapshotCapture()
     {
         var scenario = NewScenario(snapshotCapturedAtUtc: Now.AddMinutes(-1));
@@ -1070,14 +1109,16 @@ public sealed class ReportingGovernanceCanonicalValidationTests
     private static Scenario NewScenario(
         DateTimeOffset? snapshotCapturedAtUtc = null,
         ReportingFinalityDto finality = ReportingFinalityDto.Final,
-        ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf)
+        ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf,
+        string bookId = "book-a",
+        IBookOfRecordGuard? bookOfRecordGuard = null)
     {
         var scope = new ReportingOperationalScope(
             "tenant-a",
             "organization-a",
             "company-a",
             "fund-a",
-            "book-a",
+            bookId,
             "period-a");
         var parametersJson = CanonicalParametersJson(scope, finality, outputFormat);
         var parametersHash = Convert.ToHexString(SHA256.HashData(
@@ -1122,7 +1163,8 @@ public sealed class ReportingGovernanceCanonicalValidationTests
                 "restatement" => "restatement-1",
                 "report-audit" => $"audit-{Guid.NewGuid():N}",
                 _ => $"{prefix}-{Guid.NewGuid():N}"
-            });
+            },
+            bookOfRecordGuard);
         return new Scenario(
             request,
             service,

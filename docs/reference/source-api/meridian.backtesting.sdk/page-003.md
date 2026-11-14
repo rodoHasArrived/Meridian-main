@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TimeInForce
+
+Qualified name: <code>Meridian.Backtesting.Sdk.TimeInForce</code>. Kind: `enum`.
+
+Source: [src/Meridian.Backtesting.Sdk/Order.cs:13](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L13).
+
+Controls how long an order should remain eligible for execution.
+
+```csharp
+public enum TimeInForce
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Day</code> | [src/Meridian.Backtesting.Sdk/Order.cs:15](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L15) |  |
+| <code>GoodTilCancelled</code> | [src/Meridian.Backtesting.Sdk/Order.cs:16](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L16) |  |
+| <code>ImmediateOrCancel</code> | [src/Meridian.Backtesting.Sdk/Order.cs:17](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L17) |  |
+| <code>FillOrKill</code> | [src/Meridian.Backtesting.Sdk/Order.cs:18](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L18) |  |
+
 ## TradeCashFlow
 
 Qualified name: <code>Meridian.Backtesting.Sdk.TradeCashFlow</code>. Kind: `record`.

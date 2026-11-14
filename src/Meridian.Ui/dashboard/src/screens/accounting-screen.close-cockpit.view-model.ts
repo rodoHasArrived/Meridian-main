@@ -23,7 +23,6 @@ import {
 } from "./accounting-screen.task-mode-view-model";
 import {
   formatCount,
-  formatCurrencyWithCode,
   formatDateOnly,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
@@ -98,7 +97,7 @@ import type {
   UpsertClosePeriodPlanConfigurationRequest,
   AccountingCertificationState,
 } from "@/types";
-import { formatCount as formatCountValue } from "@/lib/format";
+import { formatCount as formatCountValue, formatCurrencyWithCode } from "@/lib/format";
 
 const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageServices = {
   getClosePlan: (workflowId) => getLedgerCloseManagementPeriodPlan(workflowId),
@@ -2083,7 +2082,7 @@ function buildClosePostingGateViewModel(closePlan: ClosePeriodPlan): AccountingC
       ? `${balance.accountName} (${balance.symbol.trim()})`
       : balance.accountName,
     accountTypeLabel: balance.accountType,
-    balanceLabel: formatCurrencyWithCode(balance.balance, currency, true),
+    balanceLabel: formatCurrencyWithCode(balance.balance, currency, { signed: true }),
     scopeLabel: formatClosePostingBalanceScope(balance.dimensions),
     financialAccountLabel: balance.financialAccountId?.trim() || "No financial-account id"
   }));
@@ -2094,7 +2093,7 @@ function buildClosePostingGateViewModel(closePlan: ClosePeriodPlan): AccountingC
     statusLabel,
     statusTone,
     isReadyForLock: isClosePostingGateReadyForHardLock(gate),
-    netIncomeRollLabel: formatCurrencyWithCode(gate.netIncomeRoll, currency, true),
+    netIncomeRollLabel: formatCurrencyWithCode(gate.netIncomeRoll, currency, { signed: true }),
     temporaryAccountBalanceLabel: formatCount(gate.temporaryAccountBalanceCount, "temporary-account balance"),
     detail: gate.detail,
     draftLabel: gate.draftJournalEntryId
@@ -2295,7 +2294,7 @@ function buildLateAdjustmentRow(
   return {
     requestId: adjustment.requestId,
     journalEntryId: adjustment.journalEntryId,
-    amountLabel: formatCurrencyWithCode(adjustment.amount, adjustment.currency, true),
+    amountLabel: formatCurrencyWithCode(adjustment.amount, adjustment.currency, { signed: true }),
     requestedByLabel: `${adjustment.requestedBy} on ${formatDateTimeLabel(adjustment.requestedAtUtc)}`,
     statusLabel: adjustment.approvalState,
     decisionLabel: adjustment.decidedBy
@@ -2334,11 +2333,7 @@ function buildAccountingReportPackageRow(
     certificationTone: accountingCertificationTone(certificationState),
     navLabel: formatCurrencyWithCode(bundle.navPackage.nav, bundle.navPackage.currency),
     investorStatementLabel: formatCount(bundle.investorCapitalStatements.length, "investor statement"),
-    realizedGainLossLabel: formatCurrencyWithCode(
-      bundle.realizedGainLoss.realizedGainLoss,
-      bundle.realizedGainLoss.currency,
-      true
-    ),
+    realizedGainLossLabel: formatCurrencyWithCode(bundle.realizedGainLoss.realizedGainLoss, bundle.realizedGainLoss.currency, { signed: true }),
     restatementLabel: restatement
       ? `${restatement.reasonCode} | ${restatement.approvalState}`
       : "No restatement",

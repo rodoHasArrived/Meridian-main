@@ -17,6 +17,40 @@ public sealed class WeightedProviderQuotaTests
     private static readonly TwelveDataQuotaConfig Paid = new(55, FundamentalsEntitled: true, NoDailyLimit: true);
     private static readonly TimeSpan PaidDelay = ProviderQuotaBudgets.TwelveData(Paid).MinimumDelay;
 
+    [Theory]
+    [InlineData(2, 30000)]
+    [InlineData(8, 7500)]
+    [InlineData(100, 1091)]
+    public void RequestPacing_ComposesWithWeightedCreditCapacityWithoutChangingAccountLimits(int requests, int milliseconds)
+    {
+        var runtime = new BackfillProviderRuntimeOptions(7, requests, TimeSpan.FromMinutes(1));
+        var budget = ProviderQuotaBudgets.TwelveData(Paid with { DailyCredits = 800, NoDailyLimit = false }, runtime);
+
+        Assert.Equal(55, budget.Maximum);
+        Assert.Equal(800, budget.DailyMaximum);
+        Assert.Equal("credits", budget.Unit);
+        Assert.Equal(TimeSpan.FromMilliseconds(milliseconds), budget.MinimumDelay);
+    }
+
+    [Fact]
+    public void IncompleteRequestPacingDeclaration_IsRefusedRatherThanDroppingTheDeclaredControl()
+    {
+        Assert.Throws<ArgumentException>(() => ProviderQuotaBudgets.TwelveData(Paid, new(7, Requests: 2)));
+        Assert.Throws<ArgumentException>(() => ProviderQuotaBudgets.TwelveData(Paid, new(7, Window: TimeSpan.FromMinutes(1))));
+    }
+
+    [Fact]
+    public void SharedAccount_RejectsCapabilitiesWithDifferentRequestPacingProfiles()
+    {
+        using var registry = new RateLimiterRegistry();
+        var ordinary = ProviderQuotaBudgets.TwelveData(Paid);
+        var slower = ProviderQuotaBudgets.TwelveData(Paid, new(7, 2, TimeSpan.FromMinutes(1)));
+        registry.GetOrCreate("twelvedata", "synthetic-key", "api-requests", ordinary);
+
+        Assert.Throws<InvalidOperationException>(() =>
+            registry.GetOrCreate("twelvedata", "synthetic-key", "api-requests", slower));
+    }
+
     [Fact]
     public void ConfigurationSchema_RetainsConditionallyOmittedQuotaAndOwnershipInputsButExcludesAlwaysIgnoredAliases()
     {
@@ -76,9 +110,11 @@ public sealed class WeightedProviderQuotaTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task TypedFactoryAndDirectConfiguration_UseTheSameEffectivePaidAccountBudget(bool throughFactory)
+    [InlineData(false, 8)]
+    [InlineData(false, 2)]
+    [InlineData(true, 8)]
+    [InlineData(true, 2)]
+    public async Task TypedFactoryAndDirectConfiguration_UseTheSameEffectivePaidAccountBudget(bool throughFactory, int requests)
     {
         var clock = new RequestBudgetTimeProvider();
         using var registry = new RateLimiterRegistry(timeProvider: clock);
@@ -87,18 +123,29 @@ public sealed class WeightedProviderQuotaTests
         {
             ["ProviderQuotas:TwelveData:CreditsPerMinute"] = throughFactory ? "8" : "55",
             ["ProviderQuotas:TwelveData:NoDailyLimit"] = throughFactory ? "false" : "true",
-            ["ProviderQuotas:TwelveData:FundamentalsEntitled"] = throughFactory ? "false" : "true"
+            ["ProviderQuotas:TwelveData:FundamentalsEntitled"] = throughFactory ? "false" : "true",
+            ["Backfill:Providers:TwelveData:Priority"] = "7",
+            ["Backfill:Providers:TwelveData:RateLimitPerMinute"] = throughFactory ? (requests == 8 ? "2" : "8") : requests.ToString(System.Globalization.CultureInfo.InvariantCulture)
         }).Build();
+        var runtime = new BackfillProviderRuntimeOptions(7, requests, TimeSpan.FromMinutes(1));
+        var composedBudget = ProviderQuotaBudgets.TwelveData(Paid, runtime);
         ICorporateActionProvider provider;
         TwelveDataHistoricalDataProvider? history = null;
+        TwelveDataSymbolSearchProvider? search = null;
         ServiceProvider? services = null;
         if (throughFactory)
         {
             services = new ServiceCollection().AddLogging().AddSingleton<IConfiguration>(configuration)
                 .AddSingleton(registry).AddSingleton<IHttpClientFactory>(handler).BuildServiceProvider();
-            var factory = new ProviderFactory(new AppConfig { ProviderQuotas = new(Paid) }, new Resolver(), services: services);
+            var factory = new ProviderFactory(new AppConfig(Backfill: new(Providers: new(
+                TwelveData: new(Priority: 7, RateLimitPerMinute: requests))))
+            { ProviderQuotas = new(Paid) }, new Resolver(), services: services);
             history = Assert.IsType<TwelveDataHistoricalDataProvider>(factory.CreateTwelveDataBackfillProvider());
             Assert.Equal(55, history.MaxRequestsPerWindow);
+            Assert.Equal(7, history.Priority);
+            Assert.Equal(composedBudget.MinimumDelay, history.RateLimitDelay);
+            search = Assert.IsType<TwelveDataSymbolSearchProvider>(factory.CreateTwelveDataSearchProvider());
+            Assert.Equal(7, search.Priority);
             provider = factory.CreateCorporateActionProvider<TwelveDataCorporateActionProvider, TwelveDataHistoricalDataProvider>();
         }
         else
@@ -110,17 +157,29 @@ public sealed class WeightedProviderQuotaTests
         {
             var pending = provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid());
             Assert.Single(handler.Requests);
-            clock.Advance(PaidDelay);
+            clock.Advance(composedBudget.MinimumDelay - TimeSpan.FromMilliseconds(1));
+            Assert.Single(handler.Requests);
+            Assert.False(pending.IsCompleted);
+            clock.Advance(TimeSpan.FromMilliseconds(1));
             Assert.Equal(CorporateActionFetchStatus.Complete, (await pending.WaitAsync(TimeSpan.FromSeconds(5))).Status);
-            var budget = registry.GetOrCreate("twelvedata", "synthetic-key", "api-requests", ProviderQuotaBudgets.TwelveData(Paid));
+            var budget = registry.GetOrCreate("twelvedata", "synthetic-key", "api-requests", composedBudget);
             Assert.Equal(40, budget.GetBudgetStatus().UnitsInWindow);
             Assert.Null(budget.GetBudgetStatus().DailyMaximum);
+            var retainedAfterSearch = requests == 2 ? 21 : 41;
+            if (search is not null)
+            {
+                var searching = search.SearchAsync("AAPL", 10, CancellationToken.None);
+                clock.Advance(composedBudget.MinimumDelay);
+                Assert.Empty(await searching.WaitAsync(TimeSpan.FromSeconds(5)));
+                Assert.Equal(retainedAfterSearch, budget.GetBudgetStatus().UnitsInWindow);
+            }
             if (history is not null)
-                Assert.Equal(40, history.GetRateLimitDiagnosticsSnapshot().RequestsInWindow);
+                Assert.Equal(retainedAfterSearch, history.GetRateLimitDiagnosticsSnapshot().RequestsInWindow);
         }
         finally
         {
             history?.Dispose();
+            search?.Dispose();
             services?.Dispose();
         }
     }
@@ -324,15 +383,23 @@ public sealed class WeightedProviderQuotaTests
         Assert.Equal(1, budget.GetBudgetStatus().DailyUnitsUsed);
     }
 
-    [Fact]
-    public async Task AlphaVantageCapabilitiesAndReplacementInstances_ShareBothAccountLimits()
+    [Theory]
+    [InlineData(5, 12000, 3)]
+    [InlineData(2, 30000, 2)]
+    public async Task AlphaVantageCapabilitiesAndReplacementInstances_ShareBothAccountLimits(int requests, int delayMilliseconds, int retainedInWindow)
     {
         var clock = new RequestBudgetTimeProvider();
         using var registry = new RateLimiterRegistry(timeProvider: clock);
         using var handler = new RecordingHandler();
-        using var history = new AlphaVantageHistoricalDataProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
-        using var search = new AlphaVantageSymbolSearchProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
-        var actions = new AlphaVantageCorporateActionProvider(handler, new ConfigurationBuilder().Build(),
+        var runtime = new BackfillProviderRuntimeOptions(7, requests, TimeSpan.FromMinutes(1));
+        var delay = TimeSpan.FromMilliseconds(delayMilliseconds);
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Backfill:Providers:AlphaVantage:RateLimitPerMinute"] = requests.ToString(System.Globalization.CultureInfo.InvariantCulture)
+        }).Build();
+        using var history = new AlphaVantageHistoricalDataProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry, runtimeOptions: runtime);
+        using var search = new AlphaVantageSymbolSearchProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry, runtimeOptions: runtime);
+        var actions = new AlphaVantageCorporateActionProvider(handler, configuration,
             NullLogger<AlphaVantageCorporateActionProvider>.Instance, new Credentials("synthetic-key"), registry);
         var work = Task.WhenAll(
             history.GetDailyBarsAsync("AAPL", new(2026, 1, 1), new(2026, 1, 2)),
@@ -341,18 +408,18 @@ public sealed class WeightedProviderQuotaTests
         for (var count = 1; count < 3; count++)
         {
             var expected = count;
-            await RequestBudgetTimeProvider.WaitUntilAsync(() => handler.Requests.Count == expected && clock.HasTimerDueWithin(TimeSpan.FromSeconds(12)));
-            clock.Advance(TimeSpan.FromSeconds(12));
+            await RequestBudgetTimeProvider.WaitUntilAsync(() => handler.Requests.Count == expected && clock.HasTimerDueWithin(delay));
+            clock.Advance(delay);
         }
         await work.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.Equal(3, handler.Requests.Count);
         Assert.Contains(handler.Requests, uri => uri.Query.Contains("function=SYMBOL_SEARCH", StringComparison.Ordinal));
         Assert.Equal(2, handler.Requests.Count(uri => uri.Query.Contains("function=TIME_SERIES_DAILY_ADJUSTED", StringComparison.Ordinal)));
         history.Dispose();
-        using var replacement = new AlphaVantageHistoricalDataProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
+        using var replacement = new AlphaVantageHistoricalDataProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry, runtimeOptions: runtime);
         var status = replacement.GetRateLimitDiagnosticsSnapshot();
         Assert.Equal("requests", status.QuotaUnit);
-        Assert.Equal(3, status.RequestsInWindow);
+        Assert.Equal(retainedInWindow, status.RequestsInWindow);
         Assert.Equal(3, status.DailyUnitsUsed);
         Assert.Equal(25, status.DailyMaximum);
         Assert.Equal("rolling-24-hours", status.DailyResetPolicy);

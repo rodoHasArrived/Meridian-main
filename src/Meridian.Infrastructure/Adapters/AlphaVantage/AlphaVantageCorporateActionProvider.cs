@@ -49,14 +49,18 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
         ILogger<AlphaVantageCorporateActionProvider> logger,
         ICredentialContext? credentials = null,
         RateLimiterRegistry? rateLimiterRegistry = null,
-        AlphaVantageQuotaConfig? quotaConfig = null)
+        AlphaVantageQuotaConfig? quotaConfig = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _credentials = credentials;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
-        _quotaBudget = ProviderQuotaBudgets.AlphaVantage(quotaConfig ?? configuration.GetSection("ProviderQuotas:AlphaVantage").Get<AlphaVantageQuotaConfig>());
+        runtimeOptions ??= BackfillProviderRuntimeOptions.FromConfig(
+            configuration.GetSection("Backfill:Providers").Get<Meridian.Core.Config.BackfillProvidersConfig>(), "alphavantage");
+        _quotaBudget = ProviderQuotaBudgets.AlphaVantage(
+            quotaConfig ?? configuration.GetSection("ProviderQuotas:AlphaVantage").Get<AlphaVantageQuotaConfig>(), runtimeOptions);
     }
 
     public string ProviderId => "alphavantage";

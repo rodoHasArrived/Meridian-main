@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataFeatureModule
+
+Qualified name: <code>Meridian.Wpf.Features.Data.DataFeatureModule</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:33](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L33).
+
+Registers data desktop services and contributes the feature&#x27;s navigation pages and workspace metadata.
+
+```csharp
+public sealed class DataFeatureModule : IDesktopFeatureModule
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public void Register(IServiceCollection services);</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:70](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L70) |  |
+| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:157](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L157) |  |
+| <code>public IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; DeclareCapabilities() =&gt; …;</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:159](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L159) |  |
+| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:162](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L162) |  |
+
 ## DataWorkspaceShellActionKind
 
 Qualified name: <code>Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellActionKind</code>. Kind: `enum`.
@@ -1009,7 +1030,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public MainWindow(MainWindowViewModel viewModel, WpfServices.NavigationService navigationService, WpfServices.KeyboardShortcutService keyboardShortcutService, WpfServices.NotificationService notificationService, WpfServices.FundContextService fundContextService, WpfServices.WorkstationOperatingContextService operatingContextService, DesktopShellCoordinator shellCoordinator, DesktopShellSessionService sessionService, DesktopLaunchRouter launchRouter, FileDropRouter fileDropRouter, IWindowStateStore windowStateStore);</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:59](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L59) |  |
-| <code>public void ForceStartupWindowRecovery();</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:980](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L980) |  |
+| <code>public void ForceStartupWindowRecovery();</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:985](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L985) |  |
 
 ## AccountingSubarea
 
@@ -1168,24 +1189,3 @@ Declared public members:
 | <code>public SolidColorBrush StatusColor { get; set; } = new (Colors.Gray);</code> | [src/Meridian.Wpf/Models/ProviderHealthModels.cs:31](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L31) |  |
 | <code>public string RateLimitText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/ProviderHealthModels.cs:32](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L32) |  |
 | <code>public string LastUsedText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/ProviderHealthModels.cs:33](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L33) |  |
-
-## BacktestDisplayItem
-
-Qualified name: <code>Meridian.Wpf.Models.BacktestDisplayItem</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/LeanModels.cs:6](../../../../src/Meridian.Wpf/Models/LeanModels.cs#L6).
-
-Backtest summary row displayed in the Recent Backtests side panel.
-
-```csharp
-public sealed class BacktestDisplayItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string AlgorithmName { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/LeanModels.cs:8](../../../../src/Meridian.Wpf/Models/LeanModels.cs#L8) |  |
-| <code>public string DateText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/LeanModels.cs:9](../../../../src/Meridian.Wpf/Models/LeanModels.cs#L9) |  |
-| <code>public string ReturnText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/LeanModels.cs:10](../../../../src/Meridian.Wpf/Models/LeanModels.cs#L10) |  |
-| <code>public Brush ReturnBrush { get; set; } = Brushes.White;</code> | [src/Meridian.Wpf/Models/LeanModels.cs:11](../../../../src/Meridian.Wpf/Models/LeanModels.cs#L11) |  |

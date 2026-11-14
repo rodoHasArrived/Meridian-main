@@ -47,7 +47,7 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
     public override string Description => "US equities with unique intraday historical data support. Default free profile: 25 requests/day.";
     protected override string HttpClientName => HttpClientNames.AlphaVantageHistorical;
 
-    public override int Priority => 25; // Lower priority due to very limited free tier
+    public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.AlphaVantagePriority; // Lower priority due to very limited free tier
     public override TimeSpan RateLimitDelay => _quotaBudget?.MinimumDelay ?? TimeSpan.FromSeconds(12);
     public override int MaxRequestsPerWindow => _quotaBudget?.Maximum ?? 5;
     public override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
@@ -66,12 +66,13 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
     public static IReadOnlyList<string> SupportedIntervals => new[] { "1min", "5min", "15min", "30min", "60min" };
 
     public AlphaVantageHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null,
-        RateLimiterRegistry? rateLimiterRegistry = null, AlphaVantageQuotaConfig? quotaConfig = null)
-        : base(httpClient, log, timeProvider: rateLimiterRegistry?.TimeProvider)
+        RateLimiterRegistry? rateLimiterRegistry = null, AlphaVantageQuotaConfig? quotaConfig = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(httpClient, log, timeProvider: rateLimiterRegistry?.TimeProvider, runtimeOptions: runtimeOptions)
     {
         _apiKey = apiKey ?? Environment.GetEnvironmentVariable("ALPHA_VANTAGE_API_KEY");
         _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
-        _quotaBudget = ProviderQuotaBudgets.AlphaVantage(quotaConfig);
+        _quotaBudget = ProviderQuotaBudgets.AlphaVantage(quotaConfig, runtimeOptions);
 
         // Add custom User-Agent
         if (!Http.DefaultRequestHeaders.Contains("User-Agent"))

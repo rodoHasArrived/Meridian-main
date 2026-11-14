@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { isApiError } from "@/lib/api-errors";
-import { formatUtcTimestamp } from "@/lib/format";
+import { TimeText } from "@/components/ui/time-text";
 import {
   attestCashDividend, CASH_DIVIDEND_ATTESTATION_CONFIRMATION, CASH_DIVIDEND_ATTESTATION_POLICY,
   changeCashDividendBookDeclaration, getCashDividendAttestationWorkspace, postAttestedCashDividend,
@@ -193,7 +193,7 @@ function CashDividendControls({ caseId, scope, onCommitted }: {
             || !declaration?.enabled && (!canEnableDeclaration || !declareConfirmed || !bindingConfirmed)}>{declaration?.enabled ? "Withdraw cash-dividend declaration" : "Enable cash-dividend declaration for this book"}</Button>
         </form>
         <ul className="mt-2 space-y-2 text-sm" aria-label="Cash-dividend declaration history">{(workspace.declarationHistory ?? []).map(entry =>
-          <li key={entry.revision}>Revision {entry.revision}: {entry.enabled ? "Enabled" : "Withdrawn"} by {entry.changedBy} at <time dateTime={entry.recordedAtUtc}>{formatUtcTimestamp(new Date(entry.recordedAtUtc))}</time>. {entry.reason}</li>)}</ul>
+          <li key={entry.revision}>Revision {entry.revision}: {entry.enabled ? "Enabled" : "Withdrawn"} by {entry.changedBy} at <TimeText value={entry.recordedAtUtc} />. {entry.reason}</li>)}</ul>
       </details>
       {preview ? <details className="rounded-md border border-border/70 p-2" open>
         <summary className="cursor-pointer text-sm font-semibold">Exact cash-dividend projection</summary>
@@ -223,9 +223,9 @@ function CashDividendControls({ caseId, scope, onCommitted }: {
       {attestation ? <div role="region" className="space-y-2 rounded-md border border-border/70 bg-background/50 p-3 text-sm" aria-label="Retained cash-dividend attestation">
         <p className="font-semibold">{attestation.decisionKind === "PreparerAttestation" && attestation.disclosure === PREPARER_ATTESTATION_DISCLOSURE
           ? PREPARER_ATTESTATION_DISCLOSURE : "Review classification unavailable"}</p>
-        <p className="break-words">{attestation.attestedBy} at <time dateTime={attestation.attestedAtUtc}>{formatUtcTimestamp(new Date(attestation.attestedAtUtc))}</time>. {attestation.reason}</p>
+        <p className="break-words">{attestation.attestedBy} at <TimeText value={attestation.attestedAtUtc} />. {attestation.reason}</p>
         <p className="break-all font-mono text-xs">Attestation {attestation.attestationId} · projection {attestation.projectionId}</p>
-        {attestation.voidedAtUtc ? <p>Voided at <time dateTime={attestation.voidedAtUtc}>{formatUtcTimestamp(new Date(attestation.voidedAtUtc))}</time>. The original decision remains retained.</p> : null}
+        {attestation.voidedAtUtc ? <p>Voided at <TimeText value={attestation.voidedAtUtc} />. The original decision remains retained.</p> : null}
       </div> : null}
       <form className="space-y-2" onSubmit={event => {
         event.preventDefault();
@@ -240,7 +240,7 @@ function CashDividendControls({ caseId, scope, onCommitted }: {
         <Button type="submit" size="sm" variant="outline" disabled={!canPost || !postReason.trim() || !postConfirmed}>Post attested cash-dividend journal</Button>
       </form>
       {workspace.posting ? <div role="region" className="space-y-1 text-sm" aria-label="Attested cash-dividend posting receipt">
-        <p>Journal {workspace.posting.journalEntryId} · {workspace.posting.postingStatus} by {workspace.posting.postedBy} at <time dateTime={workspace.posting.postedAtUtc}>{formatUtcTimestamp(new Date(workspace.posting.postedAtUtc))}</time>.</p>
+        <p>Journal {workspace.posting.journalEntryId} · {workspace.posting.postingStatus} by {workspace.posting.postedBy} at <TimeText value={workspace.posting.postedAtUtc} />.</p>
         <p>{PREPARER_ATTESTATION_DISCLOSURE}</p>
       </div> : null}
     </> : null}

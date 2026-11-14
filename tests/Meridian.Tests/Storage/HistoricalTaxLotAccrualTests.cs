@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Ledger;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Storage.Ledger;
 
 namespace Meridian.Tests.Storage;
@@ -110,6 +111,56 @@ public sealed class HistoricalTaxLotAccrualTests
         HistoricalTaxLotAccrual.Project(lot, history, new(2026, 5, 15), new(2026, 5, 31)).Should().BeEmpty();
         HistoricalTaxLotAccrual.Project(lot, history, new(2026, 5, 14), new(2026, 5, 14))
             .Should().ContainSingle().Which.AccrualFace.Should().Be(1_000m);
+    }
+
+    [Theory]
+    [InlineData(AtomicTaxLotMutationKind.CapitalReturn)]
+    [InlineData(AtomicTaxLotMutationKind.BasisRedistribution)]
+    [InlineData(AtomicTaxLotMutationKind.Amortization)]
+    public void Project_BasisRestatementIsUnavailableEvenWhenLaterReliefMasksItsReason(AtomicTaxLotMutationKind kind)
+    {
+        var (original, source) = Scenario();
+        var restatementDate = new DateOnly(2026, 5, 20);
+        var restatement = source[0] with
+        {
+            MutationBatchId = Guid.NewGuid(),
+            Kind = kind,
+            Before = 10m,
+            Delta = 0m,
+            After = 10m,
+            ExpectedVersion = 1,
+            ResultVersion = 2,
+            EffectiveDate = restatementDate
+        };
+        var disposal = source[1] with { EffectiveDate = restatementDate.AddDays(1), ExpectedVersion = 2, ResultVersion = 3 };
+        var lot = original with
+        {
+            OpenQuantity = 6m,
+            CurrentFactor = null,
+            Version = 3,
+            LastMutationBatchId = disposal.MutationBatchId,
+            BasisAdjustment = new(disposal.MutationBatchId, OpenLotBasisAdjustmentReasons.DisposalRelief, 6m, 600m, 600m)
+        };
+        DatedTaxLotQuantityMutation[] history = [source[0], restatement, disposal];
+
+        // A later restatement does not rewrite the purchase quote earned before its effective date.
+        HistoricalTaxLotAccrual.Project(lot, history, restatementDate.AddDays(-1), restatementDate.AddDays(-1))
+            .Should().ContainSingle().Which.Lot.PricePercentOfPar.Should().Be(110m);
+        var nextWindow = () => HistoricalTaxLotAccrual.Project(lot, history, restatementDate, restatementDate.AddDays(1));
+        nextWindow.Should().Throw<LedgerValidationException>().WithMessage("*historical basis restatement*");
+    }
+
+    [Fact]
+    public void Project_MissingZeroQuantityMutationCannotBeHiddenByAVersionGap()
+    {
+        var (lot, history) = Scenario();
+        history[1] = history[1] with { ExpectedVersion = 2, ResultVersion = 3 };
+        history[2] = history[2] with { ExpectedVersion = 3, ResultVersion = 4 };
+        history[3] = history[3] with { ExpectedVersion = 4, ResultVersion = 5 };
+        lot = lot with { Version = 5 };
+
+        var act = () => HistoricalTaxLotAccrual.Project(lot, history, new(2026, 5, 14), new(2026, 5, 31));
+        act.Should().Throw<LedgerValidationException>().WithMessage("*complete consecutive*history*");
     }
 
     private static (LedgerTaxLotRecord Lot, DatedTaxLotQuantityMutation[] History) Scenario()

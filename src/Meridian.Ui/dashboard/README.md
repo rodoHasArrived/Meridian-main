@@ -11,6 +11,36 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui/dashboard
 
+The Providers route also includes on-demand backfill tier/priority controls, a read-only routing
+preview, validation profiles and bounded quota history. Tier defaults and ceilings come from the
+server catalog; choosing a paid tier declares the operator's subscription and does not verify it.
+Numeric priority and Move up provide keyboard alternatives to dragging. Preview accepts symbol,
+daily date range and proposed priority/availability without saving or fetching prices; unavailable
+vendors, fabricated selections and unverified coverage remain explicit. Validation relaxation
+requires a reason and exposes retained change history. Quota history distinguishes an observed
+throttle from the next provider attempted and discloses process-lifetime retention.
+
+Settings and Providers share the setting-activation banner. Save receipts distinguish `Live`,
+`ReconnectProvider` and `RestartHost`; pending field names remain inspectable until host activation.
+No control in these panels edits credentials, deployment tenancy, storage paths, provenance stamps,
+IB pacing or live execution. Focused tests use the corresponding `data-screen.*` panel suites and
+`settings-change-impact.test.tsx`; browser acceptance uses synthetic responses, never live credentials.
+
+Canonical symbol registry includes an on-demand mapping editor over the shared CRUD and CSV
+import routes. Operators can correct provider aliases, inspect retained Compare mismatches and
+stage Compare → Canonical independently for IB, Alpaca, Polygon and Yahoo. Promotion requires
+review, a recorded reason and explicit acknowledgements that existing archives are not rewritten
+and raw/adjusted series remain separate. Active and saved mode are displayed separately; mode
+changes require host restart. Authoritative failures disable writes while preserving the draft.
+Focused coverage: `data-screen.symbol-mapping-editor.test.tsx` and existing canonical registry tests.
+
+The Data provider workspace includes an on-demand streaming failover editor. It reads authoritative
+saved settings, distinguishes unavailable runtime state, and refreshes the active provider after a
+committed switch/reset. Settings and rule create/edit/delete use shared guarded API saves and show
+pending host restart; relaxed rule thresholds require an audited reason. Focused coverage lives in
+`data-screen.failover.test.tsx` and the shared `FailoverEndpointTests`.
+Deleting a rule also requires an explicit operator reason and retains the removed protection snapshot.
+
 ## Fixed-income workflow access
 
 Asset detail and selected bond holdings link to the existing Security Master analytics and
@@ -508,8 +538,14 @@ The browser shell renders `WorkspaceHeader` as one row above every route:
 - **Left:** the breadcrumb, ending in the page name as the page's only `h1` (`Trading > Orders`;
   a workspace root reads `Trading`, the front door reads `Today`). The masthead shows only
   `Meridian` and announces the workspace to assistive technology, so the location is stated once.
-- **Centre:** the operating-scope chip. It shows the scope values (`All funds` when nothing is
-  set; dimensions the current screen does not apply are muted) and opens the scope picker.
+- **Centre:** the permanent operating-scope bar (`components/meridian/operating-scope-bar.tsx`),
+  `Scope  Entity … › Fund … › Account … › Period …`, with Subject, Run and Provider inserted
+  before Period when set. An unset Entity, Fund or Account reads `All authorized` and an unset
+  Period reads `All periods` (never "None"); set dimensions the current screen does not apply are
+  muted and described as retained. Entity and fund ids print as names when the organization graph
+  has loaded (`valueLabels`), otherwise as ids. It shows on every route and opens the scope picker.
+  The empty scope as a whole reads `All authorized scopes` (`OPERATING_SCOPE_EMPTY_SUMMARY`), the
+  same words Today prints.
 - **Right:** Refresh, `Views` (saved-layout and save-current-view controls) and an overflow menu
   holding Copy link and the workspace's About text.
 
@@ -523,17 +559,88 @@ under the scope controls; following one of its links closes the picker. Live, si
 unknown-provenance and degraded warnings remain outside disclosures.
 
 The scope picker stages all changes, including Clear scope, until Apply scope. Cancel and Escape
-leave the active URL and stored scope unchanged. Run and date dimensions remain inspectable;
+leave the active URL and stored scope unchanged. The run dimension remains inspectable (read-only);
 applicability text distinguishes dimensions applied here from those retained for other screens.
+
+Entity and fund (P4) are scope dimensions carried as the `entityId` and `fundId` URL parameters
+(`app-shell.operating-scope.ts`), in browser storage, recent scopes, saved layouts, Copy link and
+the operator's server-side default scope. They are written into every route's URL because they head
+the scope hierarchy, but they are applied only where a screen reads them: Accounting reads
+`entityId` (close scope, intercompany and payment-approval panels), and the screens below narrow
+their fund-account rows by entity and fund. Elsewhere a set fund shows as retained. The picker's entity, fund and account options come from
+`GET /api/workstation/scope-options` (`lib/operating-scope/structure-options.ts`, loaded by
+`use-scope-structure.ts` when the picker first opens or the scope names an entity or fund). That
+read is open to every authenticated operator and lists only the entities, funds and accounts the
+caller's own scoped grants let it read (see the Ui.Shared README, "Operating-scope options"); a
+fund or entity the caller may not see is withheld as a null relationship. A host without that route
+answers 404 and the picker reads the organization graph `GET /api/fund-structure/graph?activeOnly=true`
+instead (same field names, gated to fund-structure permissions). Either way it lists entities, funds
+with the entities they hold, and accounts with their fund and entity; household brokerage accounts
+the payload does not list are added without a relationship. Choosing an entity narrows the funds to
+those holding it and the accounts to those booked to it; choosing a fund narrows the accounts to its
+own; an account with no recorded (or no visible) fund or entity is left out of a narrowed list and
+counted, and a fund or account known to sit outside a new entity or fund is cleared with a status
+note. A permission-limited operator (for example trading-only) gets its accounts and empty entity
+and fund lists; those fields then take typed ids and the picker says "No entities or funds are
+visible to you". When the read fails, the entity and fund fields take typed ids, nothing is
+narrowed, and the picker says the lists could not be loaded.
+
+Screens that narrow by fund apply the same rule to rows keyed by fund account
+(`lib/operating-scope/fund-scope-narrowing.ts`, fed by the shell's `FundScopeNarrowingProvider` in
+`lib/operating-scope/fund-scope-context.tsx`). A row is kept when the graph places its account under
+the chosen fund (or, with only an entity chosen, under that entity). A row whose account the graph
+does not place is left out and counted in a status note ("Narrowed to fund Growth Fund I: showing 3
+of 5 brokerage accounts. 1 with no recorded fund not shown."), never hidden silently. Without the
+structure read (loading, or the read failed) nothing is narrowed and the note says why. Server
+payloads are unchanged; the narrowing is client-side. Current screens (`FUND_SCOPE_NARROWED_ROUTES`):
+
+- Portfolio > Brokerage sync (`/portfolio/brokerage-sync`): household accounts and positions, with
+  household totals re-summed over the accounts kept. Other Portfolio routes keep the whole household.
+- Accounting > Close calendar (`/accounting/close-calendar`): the close-workflow queue and its counts.
+
+On those routes, and only once the graph has loaded, `operatingScopeDimensionsForRoute(route,
+{ fundStructureReady })` counts Entity and Fund as in effect, so the bar shows them applied and the
+figures-strip scope names them. Everywhere else a set fund stays retained (muted).
+
+The inline account picker (`components/meridian/inline-fund-account-picker.tsx`, used on Trading's
+brokerage-recovery step) narrows its suggestions exactly as the scope picker narrows its account
+list, prints the same "Showing N accounts under the chosen fund" help, and flags a typed or scoped
+account the graph places outside the chosen fund or entity. The operator can still use it.
+
+The picker's Period control sets the window: `All periods`, `Today`, `MTD`, `QTD`, `YTD`,
+`Last month` (computed on the operator's calendar day through `LocalDate`,
+`lib/operating-scope/period.ts`), `Custom range` on the shared `DateRangePicker`, or `As of` a single
+date. Every choice replaces the whole window (`from`, `to`, `date`, `asOf`); a date set by an
+originating workflow is shown as such until replaced. The bar prints the window as
+`Period 2026-11-01 to 2026-11-14` (a same-day range prints the day once).
 Navigating to another workflow disposes nested view-control dialogs and their keyboard listeners
 before the disclosure closes; screen-local table URL updates retain the current control session.
 Symbol suggestions support arrow keys, Enter, Escape, search progress, no matches and Retry.
 Escape dismisses suggestions before closing the dialog. Navigation reveals the active destination
-after route changes while respecting manual collapse until the next navigation.
+after route changes while respecting manual collapse until the next navigation. Applying a scope
+replaces the route's scope query parameters (`appendOperatingScopeToRoute`), so the URL, Copy link
+and every scope-carrying link hold it.
+
+Every figures strip (`StatStrip`) prints the scope it was counted over without per-screen wiring
+(`lib/operating-scope/figure-scope.ts`): a screen's own `scope` prop wins; otherwise the fund
+account the supplying payload was loaded for (`Account …`, or `All authorized accounts`), then
+`All authorized scopes` for a payload the shell loads without a scope filter (the selection does
+not narrow those figures, so they do not borrow it), then the scope the shell applies on the route
+(`OperatingScopeLabelProvider`). Figures that state their own scope keep it. Screens that need one
+fund account use `InlineFundAccountPicker`, which sets only the fund-account dimension through the
+shell (`FundAccountScopeSelectionProvider`); Trading uses it in place of its "Choose a fund
+account" empty state in a non-live environment, on the overview and in the one-line row on Orders
+and the other Trading routes. Live, unknown and failed brokerage states keep blocking.
 
 Focused regression coverage includes `app.test.tsx`, `workspace-header.test.tsx`,
-`workspace-views-menu.test.tsx`, `workflow-continuity-dock.test.tsx`, `scope-picker.test.tsx`,
-`workspace-nav.test.tsx`, and `layout-switcher.test.tsx`.
+`workspace-views-menu.test.tsx`, `workflow-context-disclosure.test.tsx`, `scope-picker.test.tsx`,
+`operating-scope-bar.test.tsx`, `app-shell.operating-scope.test.ts`, the
+`lib/operating-scope/*.test.ts` suites (structure options, period presets, persistence, recent
+scopes), `workspace-nav.test.tsx`, and `layout-switcher.test.tsx`.
+
+Shared contract change (additive): `OperatingScopeValuesDto` (the operator's default scope) gained
+optional `EntityId` and `FundId` members, appended last, so the server keeps entity and fund in a
+saved default; the dashboard mirror is `types/operator-scope-preference.ts`. No endpoint was added.
 
 React, React DOM, and their type packages are upgraded together. Runtime support uses the floating
 Node major in `.nvmrc` and the minimum declared in this dashboard's `engines.node`; both prerequisite
@@ -716,15 +823,37 @@ not been recorded.
   blocked, info), the same set WPF uses. `SeverityBadge` and `DesignSystemStatus` are aliases of
   it. Labels of one or two words are tracked caps; longer labels render in sentence case. Product
   maturity appears in the workspace About disclosure and the navigation tooltip, not as a badge.
-  The `adHocStatusBadges` ratchet counts hand-styled chips.
-- **Formatting.** `@/lib/format` is the only module that calls Intl. It provides `formatCount`,
-  `formatMoney` (`accounting` puts negatives in parentheses at the currency's minor units,
-  `trading` uses a minus sign at instrument precision, `summary` shows whole units),
-  `formatQuantity`, and `formatUtcTimestamp`/`formatUtcDate`/`formatUtcMonthYear`, which always
-  include the year. Screens show times in UTC, not on the operator's local clock;
-  `formatDateTime` covers any other date layout through a pinned-locale `Intl.DateTimeFormat`.
-  ESLint blocks `Intl.*` and `toLocale*String` in every non-test file under `src/screens/`, and
-  the `directIntlFormatting` baseline is empty.
+  The `adHocStatusBadges` ratchet counts hand-styled chips. `@/design-system/status-styles` is
+  the only status-to-look mapping: `toSeverity` reads any status, tone or badge variant onto the
+  five severities, and `statusBadgeVariant`, `statusPanelClass`, `statusTextClass` and
+  `statusMetricTone` give each severity one style. Screens do not keep local tone maps.
+- **Formatting.** `@/lib/format` is the formatting module screens call instead of Intl. It
+  provides `formatCount`, `formatMoney` (`accounting` puts negatives in parentheses at the
+  currency's minor units, `trading` uses a minus sign at instrument precision, `summary` shows
+  whole units), `formatQuantity`, and the timestamp helpers below. `formatDateTime` covers any
+  other date layout through a pinned-locale `Intl.DateTimeFormat`. ESLint blocks `Intl.*` and
+  `toLocale*String` in every non-test file under `src/screens/`, and the `directIntlFormatting`
+  baseline is empty.
+- **Timestamps.** One format for an instant: `formatTimestamp(value)` renders
+  `Jun 30, 2026, 18:05 UTC` (month, day, year, 24-hour clock, zone label) in the operator's
+  display time zone. The zone is UTC until the operator picks another IANA zone under Settings >
+  Preferences > Appearance (`getDisplayTimeZone`/`setDisplayTimeZone`, persisted per browser in
+  localStorage; an unknown or blocked value falls back to UTC). In a picked zone the label is the
+  runtime's short name, e.g. `Jun 30, 2026, 14:05 EDT` or `Jul 1, 2026, 03:05 GMT+9`.
+  - `precision: "second" | "millisecond"` adds to the same layout:
+    `formatTimestamp(value, { precision: "second" })` gives `Jun 30, 2026, 18:05:07 UTC` (price
+    alerts, journal tax results, brokerage recovery) and `"millisecond"` gives
+    `Jun 30, 2026, 18:05:07.042 UTC` (live-quote ticks). The default is `"minute"`. There are no
+    screen-local time formatters left; reporting schedule times use the default form too.
+  - `formatRelativeTime(value, now)` gives `30s ago`, `5m ago`, `3d ago` or `in 2h`. Triage and
+    Today queue ages use it through `TriageAge` (`components/meridian/operator-triage-queue.tsx`).
+  - `<TimeText value display="absolute|relative" precision>` from `@/components/ui/time-text`
+    renders one form inside `<time dateTime>` with the other in `title`, and re-renders when the
+    zone changes. Plain-string call sites pick up a new zone on their next render.
+  - `formatUtcTimestamp` (which takes the same `precision`), `formatUtcDate` and
+    `formatUtcMonthYear` stay fixed to UTC for labels defined on the UTC clock (a UTC cut-off). An
+    operator-facing time, including a retained record time such as the close-checklist "Recorded
+    at" column, uses `formatTimestamp` or `<TimeText>`; its zone label keeps the header honest.
 - **Calendar dates.** A trade, ex-, due, effective, or period date is carried as a `YYYY-MM-DD`
   string through `@/lib/local-date` (`LocalDate`, the native port of the Design System 4.3 carrier)
   and rendered with `LocalDateText` from `@/components/ui/local-date-text`, which emits
@@ -734,17 +863,35 @@ not been recorded.
 - **Number style.** One style for a financial figure, wherever it appears:
   - *Signed P&L*: `formatPnl` puts an explicit sign on every non-zero amount with thousands
     separators and fixed decimals (`+$1,234.56`, `-$1,234.56`, `$0.00`); `pnlToneForValue`
-    gives the matching green/red tone, so sign and color never disagree.
+    gives the matching green/red tone, so sign and color never disagree. Other signed deltas
+    pass `signed: true` to `formatNumber`, `formatPercent`, `formatRatioAsPercent`,
+    `formatCount`, `formatAmountWithCode` or `formatMoney` (`+12.5%`, `-3`, `0`) instead of
+    prepending a sign in the screen.
   - *Spelling*: profit and loss is "P&L" in every label. `normalizeFinancialLabel` rewrites
     "PnL", "P/L" and "P & L"; the stat strip, metric card, record explorer and proof drawer
     apply it to labels that arrive from a read model.
   - *Currency*: pass the ISO code whenever more than one currency is in scope
-    (`formatMoney(value, { currency })`, or `formatAmountWithCode` for a code suffix).
+    (`formatMoney(value, { currency })`, `formatAmountWithCode` for a code suffix, or
+    `formatCurrencyWithCode` for a symbol amount that keeps the code, e.g. `€100 EUR`).
   - *Decimals*: currency minor units for money, instrument precision for prices and
     quantities (`formatMoney`'s `decimals`, `formatQuantity`), whole units for a headline
     figure. Figures render in tabular numerals.
-  - *Enforcement*: two ratchets hold what is left to migrate. `handRolledNumberFormatting`
-    counts `.toFixed(` in screens, which skips separators and the sign convention;
+  - *Exact amounts*: `formatMoney` accepts a number or a decimal string. Both go through the
+    exact-decimal core in `@/lib/exact-decimal` (`parseExactDecimal`, `toNumber`, `sumAmounts`),
+    which rounds half away from zero and groups digits, so a server amount is never rounded
+    through a float: `formatMoney("12345678901234.565")` is `$12,345,678,901,234.57`. An amount
+    that rounds to zero is shown unsigned.
+  - *One money formatter, two conventions*: `convention: "screen"` (the default) uses Intl
+    symbols (`$`, `€`, `CA$`) and `-`. `convention: "statement"` uses the statement symbol
+    table (`currencySymbol`) and U+2212 `−`, for ledgers, statements and journal grids. `parens`,
+    `zeroDash` and `signed` work under either convention. `@/components/accounting/money` is a
+    thin statement-convention wrapper: two decimals, no symbol unless a currency is given, and
+    unparseable text passed through as is.
+  - *Enforcement*: two ratchets keep screens on `@/lib/format`, and both baselines are empty,
+    so a new occurrence fails the ratchet test. `handRolledNumberFormatting` counts `.toFixed(`
+    in screens, which skips separators and the sign convention: a displayed figure with fixed
+    decimals uses `formatDecimal(value, digits)` (or `formatPercent`, `formatRatioAsPercent`,
+    `formatMoney`), and an SVG coordinate or CSS length uses the ungrouped `formatFixed`.
     `localMoneyFormatters` counts money and P&L formatters defined in a screen instead of
     imported from `@/lib/format`.
 - **Headline figures.** `StatStrip` and `MetricCard` apply the rules in `@/lib/metric-trust`
@@ -770,9 +917,9 @@ not been recorded.
   - *Change*: a bare change (`+8%`, `0%`, `+2`) is shown only with the `baseline` it is
     measured against (`+8% vs prior session`) and is dropped otherwise. A change that names
     its comparison (`3 new since your last visit`) and descriptive captions pass through.
-  - *Basis*: a strip prints the basis its figures share once, and "Not declared by source"
-    when the source declares none (`metricBasisValue`). Cards omit an undeclared basis; the
-    figure passport says "Basis not declared by source" (`metricBasisLabel`).
+  - *Basis*: a strip prints the basis its figures share once, and nothing when no figure
+    declares a basis or an as-of time (`hasMetricBasisDetail`). Cards omit an undeclared basis;
+    the figure passport says "Basis not declared by source" (`metricBasisLabel`).
   - *Freshness*: `freshness: "stale" | "unverified"` mutes the figure, adds a clock, marks
     the strip "Stale figures"/"Unverified figures" and explains the age on hover and to
     assistive technology. Staleness is decided per payload: a payload whose own reload failed
@@ -879,9 +1026,9 @@ not been recorded.
   every status fact, and one shell attention state (`src/app-shell.attention.ts`) feeds the
   masthead attention pill, every page status row, Today's status row and the status bar. The
   same input therefore gives the same status on each surface; see "Status signals" below. The
-  status bar's Sync item reports the workstation's own read of the API, and when the attention
-  state needs review or is blocked the bar repeats the pill's worst issue as an Attention item, so
-  a green Sync is never its whole answer under a masthead warning. The Daily Control Tower's
+  status bar's Sync item reports the workstation's own read of the API. The masthead pill is the
+  one shell place that names the worst issue: the status bar and page status rows do not repeat
+  it (UX consolidation P1). The Daily Control Tower's
   Evidence line names only the event correlated with the leading decision's queue row; with none
   it says so and cites the latest event as workstation context.
 - **Page freshness in the status bar.** The shell attention state covers shell-wide sources; the
@@ -897,8 +1044,8 @@ not been recorded.
   fresh browser. The scope picker offers the last five applied scopes (per browser) and the
   operator's default scope from `/api/workstation/operator/scope-preference`; choosing either only
   loads the draft, and Apply stays the one action that changes scope. The default is applied only
-  when a session opens with no scope in its link or browser. The continuity dock shows each
-  dimension as a chip on every workspace, marked applied or retained.
+  when a session opens with no scope in its link or browser. The header `OperatingScopeBar` shows
+  each dimension as a segment on every workspace, marked applied or retained.
 - **Saved views.** The positions, break queue and ledger tables keep their filters, sort and
   hidden columns in the URL: positions in the `view` envelope, breaks in `reconciliationSearch`,
   `reconciliationStatus`, `reconciliationSort` and `reconciliationColumns`, the ledger in
@@ -1050,7 +1197,10 @@ and local command search. Purpose descriptions and search-only aliases expose in
 cash forecast, statement import, historical prices, and running reports. Local destinations remain
 searchable when remote command or entity search is unavailable; unwired routes stay excluded.
 Accounting onboarding searches open the existing External GL surface, which hosts the bounded
-onboarding workspace and its retained comparison and readiness evidence.
+onboarding workspace and its retained comparison and readiness evidence. Its shadow-mode section
+(`accounting-screen.onboarding-shadow-panel.tsx`) covers shadow-book designation, incumbent
+opening-balance upload and report, per-period agreement, difference explanations, the parallel-run
+certificate and promotion; tables use the shared `DenseDataTable`.
 From 1200px the masthead is one 48px row: the environment badge leads with the never-shrinking
 session environment and adds the data qualifier only when the data is not confirmed real
 (`PAPER · SEEDED`; LIVE uses the alarm-red `--live-env` token and follows the resolved session, not
@@ -1074,11 +1224,12 @@ disagree:
 - **Page status row** (`OperationalTrustSummary`, rendered by `StatusRow`): one line that reads
   `All sources current` or names only the facts that are not ready
   (`Scope: none selected`, `Freshness: 187d stale`). The per-fact breakdown, with detail and
-  recovery actions, is behind `Details`. The row also folds in shell source issues (provider
-  posture, unverified provenance, workspace data that did not load, degraded host), so a page
-  cannot read `All sources current` while the pill warns about the same sources.
-- **Status bar** (footer): Sync, plus the pill's worst issue when the state needs review or is
-  blocked, with a count of the rest (`+5 more issues`).
+  recovery actions, is behind `Details`. Shell source issues (provider posture, unverified
+  provenance, workspace data that did not load, degraded host) are the pill's to name: the row
+  lists them only under `Details` (`contextFacts`), and when the page's own facts are ready it
+  reads `This page's sources are current · N workspace issues in the trust strip`, so it never
+  says `All sources current` under a warning pill and never repeats the pill's items.
+- **Status bar** (footer): Sync and the page's Freshness only; it never repeats the pill's issue.
 
 Rules worth knowing when adding a signal:
 
@@ -1104,8 +1255,8 @@ and nothing once evidence reconciles. With no fund account in scope and a broker
 is known and not live, the panel and row are a neutral setup state with a "Choose account" action;
 a live, unknown or failed state keeps the blocked row. The sidebar pins `Today` (the Daily Control
 Tower) above the seven workspaces and shows per-workspace attention counts from
-`selectDailyControlTowerQueueItems`, the same selection the Control Tower lists as its Finance queue
-(above the Operator inbox); each count is part of its link's accessible name, the badge sits beside
+`selectDailyControlTowerQueueItems`, the same selection the Control Tower lists as the workspace-signal
+rows of its one Today queue grid (shared inbox rows in that grid are not counted); each count is part of its link's accessible name, the badge sits beside
 the link so the visible label stays in the name, and the link's tooltip names the unit
 (`3 items from Accounting in Today's finance queue`).
 
@@ -1204,8 +1355,9 @@ The contract standardizes:
 
 Current dense-row detail consumers covered by regression tests include Portfolio positions,
 Portfolio run evidence, Trading recent fills, Data backfill queue rows, Data export rows, and
-Security Master lots. The Daily Control Tower finance queue uses the same table/inspector contract,
-including row selection, focus handoff, and Escape return behavior.
+Security Master lots. The Daily Control Tower's Today queue uses the same table/inspector contract,
+including row selection, focus handoff, and Escape return behavior: a workspace-signal row opens its
+evidence rail and a shared-inbox row opens its triage rail.
 
 The Data backfill workstream reads `/api/backfill/executions` as the durable remediation evidence
 source. Its remediation SLA queue keeps server-owned tier, deadline, status, provider, workflow,
@@ -2230,12 +2382,13 @@ command-center source, then enriches rows with existing provider connection, rou
 workspace evidence. React renders provider health, broken credential state, degradation/fallback
 evidence, credential field metadata, allowed environments, and the next recovery action from that
 shared model instead of recalculating provider readiness locally.
-The app shell workflow-continuity dock now also projects the design-document primary operator
-workflow as a browser-wide strip: `Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, and
-`Report`. Route-specific trails such as Market Data To Paper, Research To Paper, or Accounting Closeout remain intact,
-while the primary strip anchors every workspace to the financial-operations flow.
-Accounting Closeout keeps the design-document Financial Operations lane in the app-shell continuity
-dock with Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence,
+The app shell workflow-continuity view model, shown by `WorkflowContextDisclosure`, also projects
+the design-document primary operator workflow as a browser-wide strip: `Import`, `Validate`,
+`Reconcile`, `Investigate`, `Approve`, and `Report`. Route-specific trails such as Market Data To
+Paper, Research To Paper, or Accounting Closeout remain intact, while the primary strip anchors
+every workspace to the financial-operations flow.
+Accounting Closeout keeps the design-document Financial Operations lane in the app-shell workflow
+context with Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence,
 and Close Support while the browser `AccountingScreen` focuses on the owned ledger, reconciliation,
 approvals, exceptions, security coverage, and reporting evidence panels. Retained `Governance*` view-model, DTO,
 endpoint, and test fixture names are compatibility seams only; new browser component routing should
@@ -2375,8 +2528,13 @@ of workflow continuity, trust posture, linked context, and timestamped evidence.
 is a shell-level Home location rather than an eighth workspace: none of the seven root workspace
 items is marked current (the pinned sidebar `Today` entry is), the breadcrumb heading reads
 `Today`, and the operating-context copy identifies the Daily Control Tower instead
-of falling back to Trading. It lists the combined finance queue (the items the sidebar badges
-count) and, below it, the operator triage inbox from the shared host; each states what it counts.
+of falling back to Trading. It lists one queue grid (`buildTodayQueueRows`) that interleaves the
+workspace signals (the items the sidebar badges count) with the operator triage inbox from the
+shared host. Rows sort by severity, then oldest first (rows with no observed time go after dated
+rows), then each source's own rank, with workspace signals first on a tie. A Source column and a
+Source filter with per-source counts keep the two populations distinct. The inbox's read, filters,
+bulk selection and in-flight or unconfirmed command live in `useOperatorTriageInbox`, above the
+filter, so filtering inbox rows out never drops a pending command or its "Retry same command".
 The landing model
 now prioritizes the finance sequence Today, Exceptions, Close, Reconciliation, Ledger, Reports,
 Evidence, and Data Health before non-finance surfaces. Decision drivers emphasize the finance
@@ -2426,11 +2584,12 @@ panel, and trust strip live in `app-shell.command-palette.ts`, `app-shell.route-
 evidence-path steps, bootstrap recovery copy, failed-workspace items, build/mode posture, source
 posture, and provider posture out of the route coordinator while preserving the same app-shell
 view-state contract for React.
-The rendered workflow-continuity dock lives in
-`components/meridian/workflow-continuity-dock.tsx` with its stylesheet in
-`src/styles/workflow-continuity-dock.css`, leaving `app.tsx` to compose routes, shell chrome, route
-recovery, and the global workstation stylesheet while the dock owns its accessible links,
-operating-scope chips, and primary-operator-flow disclosure.
+The shell header shows the operating scope as `OperatingScopeBar`; the on-demand workflow detail
+(current workflow, decision and step links) is `WorkflowContextDisclosure` in
+`components/meridian/workflow-context-disclosure.tsx`, styled by
+`src/styles/workflow-context-disclosure.css` and shown inside the scope picker. The former
+`WorkflowContinuityDock`, which combined scope chips and that disclosure in one header control, was
+removed once the scope bar replaced it.
 Workspace navigation rail and drawer styles live in `src/styles/workspace-nav.css`, imported by
 `components/meridian/workspace-nav.tsx`, so root-workspace routing, preserved operating-scope chips,
 expand/collapse controls, status badges, and responsive drawer variants stay with the navigation

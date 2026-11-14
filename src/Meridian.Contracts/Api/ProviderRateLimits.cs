@@ -86,7 +86,7 @@ public sealed record ProviderRateLimitCapabilitiesDto(
     [property: JsonPropertyName("supportedMarkets")] IReadOnlyList<string> SupportedMarkets);
 
 /// <summary>
-/// Honest response for the legacy history route. Runtime rate-limit history is not retained.
+/// Bounded process-lifetime rate-limit history; older events may have been evicted.
 /// </summary>
 public sealed record ProviderRateLimitHistoryResponse(
     [property: JsonPropertyName("provider")] string Provider,
@@ -97,11 +97,14 @@ public sealed record ProviderRateLimitHistoryResponse(
     [property: JsonPropertyName("message")] string Message);
 
 /// <summary>
-/// Reserved bounded-history event contract for a future durable implementation.
+/// A rate-limit observation or subsequent provider rotation.
 /// </summary>
 public sealed record ProviderRateLimitEventDto(
     [property: JsonPropertyName("timestamp")] DateTimeOffset Timestamp,
     [property: JsonPropertyName("requestsUsed")] int RequestsUsed,
     [property: JsonPropertyName("usageRatio")] double UsageRatio,
     [property: JsonPropertyName("wasRateLimited")] bool WasRateLimited,
-    [property: JsonPropertyName("resetAt")] DateTimeOffset? ResetAt);
+    [property: JsonPropertyName("resetAt")] DateTimeOffset? ResetAt,
+    [property: JsonPropertyName("eventType")] string EventType = "rate-limited",
+    [property: JsonPropertyName("nextProvider")] string? NextProvider = null,
+    [property: JsonPropertyName("httpStatus")] int? HttpStatus = null);

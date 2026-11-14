@@ -40,10 +40,12 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
     public override string Description => "Alternative and financial datasets from Nasdaq Data Link (formerly Quandl).";
     protected override string HttpClientName => HttpClientNames.NasdaqDataLinkHistorical;
 
-    public override int Priority => 30;
-    public override TimeSpan RateLimitDelay => TimeSpan.FromMilliseconds(100);
-    public override int MaxRequestsPerWindow => 50;
-    public override TimeSpan RateLimitWindow => TimeSpan.FromDays(1);
+    public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.NasdaqPriority;
+    public override TimeSpan RateLimitDelay => RuntimeOptions?.Requests is { } requests
+        ? TimeSpan.FromTicks((RuntimeOptions.Window ?? RateLimitWindow).Ticks / requests)
+        : TimeSpan.FromMilliseconds(100);
+    public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? 50;
+    public override TimeSpan RateLimitWindow => RuntimeOptions?.Window ?? TimeSpan.FromDays(1);
 
     /// <summary>
     /// Nasdaq Data Link supports adjusted bars with corporate actions.
@@ -61,8 +63,9 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
         string? apiKey = null,
         string database = "WIKI",
         HttpClient? httpClient = null,
-        ILogger? log = null)
-        : base(httpClient, log)
+        ILogger? log = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(httpClient, log, runtimeOptions: runtimeOptions)
     {
         _apiKey = apiKey;
         _database = database;

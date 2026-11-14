@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceShellSlotContributionRequest
+
+Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellSlotContributionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:35](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L35).
+
+```csharp
+public sealed record WorkspaceShellSlotContributionRequest(string WorkspaceId, string PageTag, string? FundAccountId = null, string? ActiveWorkItemId = null);
+```
+
 ## WorkspaceShellState
 
 Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellState</code>. Kind: `record`.
@@ -692,29 +702,31 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ConfigService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:56](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L56) |  |
-| <code>public bool IsInitialized =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:58](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L58) |  |
-| <code>public Exception? LastLoadError =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:60](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L60) |  |
-| <code>public override string ConfigPath =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:62](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L62) |  |
-| <code>public string ResolveDataRoot(AppConfigDto? config = null) =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:64](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L64) |  |
-| <code>public string ConfiguredDataRoot =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:75](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L75) | The asynchronously loaded root used by synchronous DI factories. Startup primes this before constructing the host, so resolving a desktop service never reads configuration. |
-| <code>public async Task InitializeAsync();</code> | [src/Meridian.Wpf/Services/ConfigService.cs:78](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L78) |  |
-| <code>public async Task&lt;ConfigServiceValidationResult&gt; ValidateConfigAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ConfigService.cs:93](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L93) | Validates the current configuration (WPF-specific result type). |
-| <code>public Task&lt;DataSourcesConfigDto&gt; GetDataSourcesConfigAsync() =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:107](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L107) | Gets the data sources configuration (WPF-specific alias). |
-| <code>public Task&lt;DataSourcesConfigDto&gt; GetDataSourcesAsync() =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:113](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L113) | Gets the data sources configuration. Convenience alias for WPF views. |
-| <code>public Task&lt;SymbolConfigDto[]&gt; GetSymbolsAsync() =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:119](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L119) | Gets configured symbols. Convenience alias for WPF views. |
-| <code>public Task SaveDataSourcesAsync(DataSourcesConfigDto dataSources, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:125](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L125) | Saves the full data sources configuration. Replaces all sources. |
-| <code>public new Task AddOrUpdateDataSourceAsync(DataSourceConfigDto source, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:131](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L131) | Adds a new data source or updates an existing one (matched by DataSourceConfigDto.Id). |
-| <code>public new Task DeleteDataSourceAsync(string id, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:149](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L149) | Deletes the data source with the specified id. |
-| <code>public new Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:164](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L164) | Sets the default real-time or historical data source. |
-| <code>public new Task UpdateFailoverSettingsAsync(bool enabled, int timeoutSeconds, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:178](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L178) | Updates the failover settings (enabled flag and timeout). |
-| <code>public async Task&lt;string?&gt; GetActiveDataSourceAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ConfigService.cs:189](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L189) | Returns null when no active source is set. |
-| <code>public async Task ReloadConfigAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ConfigService.cs:199](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L199) | Reloads the configuration from disk. Call after an external edit to the config file. |
-| <code>public async Task&lt;AppConfigDto&gt; LoadConfigFromDiskAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:208](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L208) | Loads the full configuration DTO from disk. |
-| <code>public Task WriteConfigAsync(AppConfigDto config, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ConfigService.cs:214](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L214) | Writes the full configuration DTO to disk. |
-| <code>public async Task&lt;InlineValidationResult&gt; ValidateProviderInlineAsync(string providerId, BackfillProviderOptionsDto options, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ConfigService.cs:232](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L232) | Validates a single provider&#x27;s options inline (for real-time field validation). Returns a list of validation messages (empty if valid). |
-| <code>public new async Task SetBackfillProviderOptionsAsync(string providerId, BackfillProviderOptionsDto options, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ConfigService.cs:282](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L282) | Adds or updates a single backfill provider configuration entry. Records the change in the audit trail. |
-| <code>public async Task ResetBackfillProviderOptionsAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ConfigService.cs:296](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L296) | Resets a provider&#x27;s configuration back to defaults. |
+| <code>public event EventHandler? ConfigurationSaved;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:57](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L57) |  |
+| <code>public bool HasUnverifiedLocalChanges =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:60](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L60) | Local file writes have no authoritative host activation receipt. |
+| <code>public static ConfigService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:62](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L62) |  |
+| <code>public bool IsInitialized =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:64](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L64) |  |
+| <code>public Exception? LastLoadError =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:66](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L66) |  |
+| <code>public override string ConfigPath =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:68](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L68) |  |
+| <code>public string ResolveDataRoot(AppConfigDto? config = null) =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:70](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L70) |  |
+| <code>public string ConfiguredDataRoot =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:81](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L81) | The asynchronously loaded root used by synchronous DI factories. Startup primes this before constructing the host, so resolving a desktop service never reads configuration. |
+| <code>public async Task InitializeAsync();</code> | [src/Meridian.Wpf/Services/ConfigService.cs:84](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L84) |  |
+| <code>public async Task&lt;ConfigServiceValidationResult&gt; ValidateConfigAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ConfigService.cs:100](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L100) | Validates the current configuration (WPF-specific result type). |
+| <code>public Task&lt;DataSourcesConfigDto&gt; GetDataSourcesConfigAsync() =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:114](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L114) | Gets the data sources configuration (WPF-specific alias). |
+| <code>public Task&lt;DataSourcesConfigDto&gt; GetDataSourcesAsync() =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:120](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L120) | Gets the data sources configuration. Convenience alias for WPF views. |
+| <code>public Task&lt;SymbolConfigDto[]&gt; GetSymbolsAsync() =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:126](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L126) | Gets configured symbols. Convenience alias for WPF views. |
+| <code>public Task SaveDataSourcesAsync(DataSourcesConfigDto dataSources, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:132](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L132) | Saves the full data sources configuration. Replaces all sources. |
+| <code>public new Task AddOrUpdateDataSourceAsync(DataSourceConfigDto source, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:138](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L138) | Adds a new data source or updates an existing one (matched by DataSourceConfigDto.Id). |
+| <code>public new Task DeleteDataSourceAsync(string id, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:156](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L156) | Deletes the data source with the specified id. |
+| <code>public new Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:171](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L171) | Sets the default real-time or historical data source. |
+| <code>public new Task UpdateFailoverSettingsAsync(bool enabled, int timeoutSeconds, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:185](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L185) | Updates the failover settings (enabled flag and timeout). |
+| <code>public async Task&lt;string?&gt; GetActiveDataSourceAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ConfigService.cs:196](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L196) | Returns null when no active source is set. |
+| <code>public async Task ReloadConfigAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ConfigService.cs:206](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L206) | Reloads the configuration from disk. Call after an external edit to the config file. |
+| <code>public async Task&lt;AppConfigDto&gt; LoadConfigFromDiskAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:215](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L215) | Loads the full configuration DTO from disk. |
+| <code>public Task WriteConfigAsync(AppConfigDto config, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ConfigService.cs:221](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L221) | Writes the full configuration DTO to disk. |
+| <code>public async Task&lt;InlineValidationResult&gt; ValidateProviderInlineAsync(string providerId, BackfillProviderOptionsDto options, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ConfigService.cs:239](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L239) | Validates a single provider&#x27;s options inline (for real-time field validation). Returns a list of validation messages (empty if valid). |
+| <code>public new async Task SetBackfillProviderOptionsAsync(string providerId, BackfillProviderOptionsDto options, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ConfigService.cs:289](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L289) | Adds or updates a single backfill provider configuration entry. Records the change in the audit trail. |
+| <code>public async Task ResetBackfillProviderOptionsAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ConfigService.cs:303](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L303) | Resets a provider&#x27;s configuration back to defaults. |
 
 ## ConfigServiceValidationResult
 
@@ -1215,13 +1227,3 @@ Declared public members:
 | <code>public void StartTour();</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:52](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L52) |  |
 | <code>public void MoveNext();</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:61](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L61) |  |
 | <code>public void EndTour();</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:73](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L73) |  |
-
-## DemoTourStep
-
-Qualified name: <code>Meridian.Wpf.Services.DemoTourStep</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Services/DemoTourService.cs:88](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L88).
-
-```csharp
-public sealed record DemoTourStep(int Sequence, string Title, string PageTag, string Description);
-```

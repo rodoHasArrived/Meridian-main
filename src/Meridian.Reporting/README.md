@@ -177,6 +177,11 @@ it does not rebuild partners-capital tables through a parallel renderer. Release
 treat the `ClientPackage` primary pair atomically: neither a missing, duplicated, PDF-only, nor
 XLSX-only subset is releasable or deliverable.
 
+`ReportingGovernanceService.ReleaseAsync` optionally consults `IBookOfRecordGuard` before any release
+state check. A run whose `BookId` is a ledger book in shadow-mode onboarding (W11-SHADOW-001), or
+a withdrawn shadow trial, is refused with a `ReportingGovernanceException`, which the endpoint maps
+to 409. A host without the guard registered is unaffected.
+
 The Statement Reconciliation Report endpoint is an intake adapter owned by UI Shared. It resolves
 durable account/fund/book/open-period scope, retains statement and Evidence Vault evidence, starts
 or reuses the exact Operations Continuity workflow, and publishes statement obligations into the

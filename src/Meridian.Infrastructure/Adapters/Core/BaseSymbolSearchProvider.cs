@@ -30,6 +30,7 @@ namespace Meridian.Infrastructure.Adapters.Core;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider, IDisposable
 {
+    protected readonly BackfillProviderRuntimeOptions? RuntimeOptions;
     protected readonly HttpClient Http;
     protected readonly RateLimiter RateLimiter;
     protected virtual RateLimiter RequestRateLimiter => RateLimiter;
@@ -114,8 +115,9 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// <param name="apiKey">Optional API key (loads from environment if not provided).</param>
     /// <param name="httpClient">Optional HTTP client (uses factory if not provided).</param>
     /// <param name="log">Optional logger.</param>
-    protected BaseSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, TimeProvider? timeProvider = null)
+    protected BaseSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, TimeProvider? timeProvider = null, BackfillProviderRuntimeOptions? runtimeOptions = null)
     {
+        RuntimeOptions = runtimeOptions;
         Log = log ?? LoggingSetup.ForContext(GetType());
         _timeProvider = timeProvider ?? TimeProvider.System;
 

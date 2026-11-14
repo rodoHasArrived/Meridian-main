@@ -1,5 +1,6 @@
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
+using Meridian.Core.Config;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 
@@ -15,12 +16,13 @@ public static class ProviderDataQualityValidator
         string providerName,
         MarketTradeUpdate update,
         DateTimeOffset? now = null,
-        TimeSpan? staleThreshold = null)
+        TimeSpan? staleThreshold = null,
+        ProviderValidationProfile? profile = null)
     {
         ArgumentNullException.ThrowIfNull(update);
 
         var issues = new List<ProviderDataQualityIssue>(capacity: 2);
-        ValidateCommon(providerName, update.Symbol, update.Timestamp, now, staleThreshold, issues);
+        ValidateCommon(providerName, update.Symbol, update.Timestamp, now, staleThreshold, issues, profile: profile);
 
         if (update.Price < 0)
         {
@@ -49,12 +51,13 @@ public static class ProviderDataQualityValidator
         string providerName,
         MarketQuoteUpdate update,
         DateTimeOffset? now = null,
-        TimeSpan? staleThreshold = null)
+        TimeSpan? staleThreshold = null,
+        ProviderValidationProfile? profile = null)
     {
         ArgumentNullException.ThrowIfNull(update);
 
         var issues = new List<ProviderDataQualityIssue>(capacity: 2);
-        ValidateCommon(providerName, update.Symbol, update.Timestamp, now, staleThreshold, issues);
+        ValidateCommon(providerName, update.Symbol, update.Timestamp, now, staleThreshold, issues, profile: profile);
 
         if (update.BidPrice < 0)
         {
@@ -113,15 +116,18 @@ public static class ProviderDataQualityValidator
         string providerName,
         AggregateBar update,
         DateTimeOffset? now = null,
-        TimeSpan? staleThreshold = null)
+        TimeSpan? staleThreshold = null,
+        ProviderValidationProfile? profile = null)
     {
         ArgumentNullException.ThrowIfNull(update);
 
         // AggregateBar enforces price, volume and window ordering invariants at construction.
         // Source window boundaries also need the same clock checks as trades and quotes.
         var issues = new List<ProviderDataQualityIssue>(capacity: 2);
-        ValidateCommon(providerName, update.Symbol, update.StartTime, now, staleThreshold, issues, "startTime");
-        ValidateTimestamp(providerName, update.Symbol, update.EndTime, now, staleThreshold, issues, "endTime");
+        // Window duration is not delivery latency; only the completed end owns that check.
+        ValidateCommon(providerName, update.Symbol, update.StartTime, now, staleThreshold, issues, "startTime", profile,
+            enforceLatency: false);
+        ValidateTimestamp(providerName, update.Symbol, update.EndTime, now, staleThreshold, issues, "endTime", profile);
         return issues.Count == 0 ? Array.Empty<ProviderDataQualityIssue>() : issues;
     }
 
@@ -132,7 +138,9 @@ public static class ProviderDataQualityValidator
         DateTimeOffset? now,
         TimeSpan? staleThreshold,
         List<ProviderDataQualityIssue> issues,
-        string timestampField = "timestamp")
+        string timestampField = "timestamp",
+        ProviderValidationProfile? profile = null,
+        bool enforceLatency = true)
     {
         if (string.IsNullOrWhiteSpace(symbol))
         {
@@ -144,7 +152,7 @@ public static class ProviderDataQualityValidator
                 "Drop the event and inspect provider symbol mapping."));
         }
 
-        ValidateTimestamp(providerName, symbol, timestamp, now, staleThreshold, issues, timestampField);
+        ValidateTimestamp(providerName, symbol, timestamp, now, staleThreshold, issues, timestampField, profile, enforceLatency);
     }
 
     private static void ValidateTimestamp(
@@ -154,7 +162,9 @@ public static class ProviderDataQualityValidator
         DateTimeOffset? now,
         TimeSpan? staleThreshold,
         List<ProviderDataQualityIssue> issues,
-        string fieldPath)
+        string fieldPath,
+        ProviderValidationProfile? profile = null,
+        bool enforceLatency = true)
     {
         if (timestamp == default)
         {
@@ -168,7 +178,7 @@ public static class ProviderDataQualityValidator
         }
 
         var referenceTime = now ?? DateTimeOffset.UtcNow;
-        if (timestamp > referenceTime.Add(DefaultFutureSkew))
+        if (timestamp > referenceTime.Add(profile is null ? DefaultFutureSkew : TimeSpan.FromSeconds(profile.FutureSkewSeconds)))
         {
             issues.Add(ProviderDataQualityIssue.Error(
                 providerName,
@@ -176,6 +186,14 @@ public static class ProviderDataQualityValidator
                 symbol,
                 "Timestamp is too far in the future.",
                 "Drop the event and inspect provider clock, timezone, or timestamp unit mapping."));
+        }
+
+        staleThreshold ??= profile?.StaleThresholdSeconds is { } seconds ? TimeSpan.FromSeconds(seconds) : null;
+        if (enforceLatency && profile is { MaxLatencyMs: > 0 } && (referenceTime - timestamp).TotalMilliseconds > profile.MaxLatencyMs)
+        {
+            issues.Add(ProviderDataQualityIssue.Error(providerName, fieldPath, symbol,
+                "Provider event latency exceeds the configured validation profile.",
+                "Inspect provider latency and subscription recovery state."));
         }
 
         if (staleThreshold is { } threshold && referenceTime - timestamp > threshold)

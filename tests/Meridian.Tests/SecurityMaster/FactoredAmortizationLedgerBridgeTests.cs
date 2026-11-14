@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Ledger;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
@@ -75,7 +76,8 @@ public sealed class FactoredAmortizationLedgerBridgeTests
     {
         var bought = Start.AddDays(7);
         var lot = new FaceValueLot("late", Security, bought, 6_000m, 1m, bookedFactor: 0.6m, parBasis: 1m);
-        var history = Enumerable.Range(7, 4).Select(day => new FaceValueAccrualHolding(Start.AddDays(day), lot, 1m, 0.6m)).ToArray();
+        var history = Enumerable.Range(7, 4).Select(day => new FaceValueAccrualHolding(Start.AddDays(day), lot, 1m, 0.6m,
+            AmortizationMethod: BondAmortizationMethod.StraightLine)).ToArray();
         var ledger = new DomainLedger();
         await Bridge(Projection()).PostProjectedCashFlowsAsync(Security, Ticker, ledger, Context(history, Start, End));
         ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(18m);
@@ -140,7 +142,8 @@ public sealed class FactoredAmortizationLedgerBridgeTests
         projection = projection with { Schedule = [row], TermsUsed = projection.TermsUsed! with { PrincipalFace = 3m } };
         var history = Enumerable.Range(0, 11).Select(offset => new FaceValueAccrualHolding(Start.AddDays(offset),
             new FaceValueLot("thirds", Security, Start.AddDays(-1), 3m, 100m,
-                currentFactor: offset < 5 ? 1m : ratio), 1m, offset <= 5 ? 1m : ratio)).ToArray();
+                currentFactor: offset < 5 ? 1m : ratio), 1m, offset <= 5 ? 1m : ratio,
+                AmortizationMethod: BondAmortizationMethod.StraightLine)).ToArray();
         var ledger = new DomainLedger();
         await Bridge(projection).PostProjectedCashFlowsAsync(Security, Ticker, ledger, Context(history, Start, End));
         ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(0.25m);
@@ -160,6 +163,50 @@ public sealed class FactoredAmortizationLedgerBridgeTests
         source.ReceivedCalls().Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData(BondAmortizationMethod.NoAmortization, 0)]
+    [InlineData(BondAmortizationMethod.StraightLine, 709.09)]
+    public async Task RetainedPolicy_PreservesCouponsAndControlsPremiumAcrossConsecutiveWindows(
+        BondAmortizationMethod method, decimal expectedPremium)
+    {
+        var history = History(100).Select(holding => holding with
+        {
+            Lot = new FaceValueLot(holding.Lot.LotId, Security, holding.Lot.AcquiredDate,
+                holding.Lot.OriginalFace, 110m, holding.Lot.BookedFactor, 100m, holding.Lot.CurrentFactor),
+            AmortizationMethod = method
+        }).ToArray();
+        var bridge = Bridge(Projection());
+        var full = new DomainLedger();
+        await bridge.PostProjectedCashFlowsAsync(Security, Ticker, full, Context(history, Start, End));
+        var daily = new DomainLedger();
+        for (var day = Start; day <= End; day = day.AddDays(1))
+            await bridge.PostProjectedCashFlowsAsync(Security, Ticker, daily,
+                Context(history.Where(holding => holding.Date <= day).ToArray(), day, day));
+
+        // Premium is 800 for six of eleven lifetime days, then 600 for five days.
+        full.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-expectedPremium);
+        full.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(70m);
+        daily.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-expectedPremium);
+        daily.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(70m);
+        full.Journal.Should().OnlyContain(entry => entry.IsBalanced);
+        daily.Journal.Should().OnlyContain(entry => entry.IsBalanced);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(BondAmortizationMethod.ConstantYield)]
+    [InlineData(BondAmortizationMethod.AuctionRate)]
+    [InlineData(BondAmortizationMethod.PurchasedCreditImpaired)]
+    public async Task MissingOrUnsupportedRetainedPolicy_PostsNothing(BondAmortizationMethod? method)
+    {
+        var history = History(100).Select(holding => holding with { AmortizationMethod = method }).ToArray();
+        var ledger = new DomainLedger();
+        var act = () => Bridge(Projection()).PostProjectedCashFlowsAsync(Security, Ticker, ledger, Context(history, Start, End));
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*explicit supported lot amortization policy*");
+        ledger.Journal.Should().BeEmpty();
+    }
+
     private static AmortizationLedgerPostingContext Context(IReadOnlyList<FaceValueAccrualHolding> history, DateOnly from, DateOnly through)
         => new(AccrualWindow: new(from, through), AccrualHoldings: history);
 
@@ -170,7 +217,8 @@ public sealed class FactoredAmortizationLedgerBridgeTests
             var factor = offset <= 5 ? 0.8m : 0.6m;
             var lot = new FaceValueLot("pool", Security, Start.AddDays(-1), 8_000m, parBasis,
                 bookedFactor: 0.8m, parBasis: parBasis, currentFactor: offset < 5 ? 0.8m : 0.6m);
-            return new FaceValueAccrualHolding(day, lot, partialSale && offset >= 8 ? 0.5m : 1m, factor);
+            return new FaceValueAccrualHolding(day, lot, partialSale && offset >= 8 ? 0.5m : 1m, factor,
+                AmortizationMethod: BondAmortizationMethod.StraightLine);
         }).ToArray();
 
     private static StructuredCashFlowProjectionDto Projection(decimal scale = 1m)

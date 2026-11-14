@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 301,
-    "warning": 301
+    "total": 303,
+    "warning": 303
   },
   "failed": false,
   "findings": [
@@ -864,6 +864,16 @@
       },
       "message": "Business table ledger.period_close_events does not have a table comment.",
       "object": "ledger.period_close_events",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "period_close_snapshots"
+      },
+      "message": "Business table ledger.period_close_snapshots does not have a table comment.",
+      "object": "ledger.period_close_snapshots",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -2440,6 +2450,20 @@
     {
       "details": {
         "columns": [
+          "ledger_book_id"
+        ],
+        "constraint": "period_close_snapshots_ledger_book_id_fkey",
+        "schema": "ledger",
+        "table": "period_close_snapshots"
+      },
+      "message": "Foreign key ledger.period_close_snapshots.period_close_snapshots_ledger_book_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.period_close_snapshots.period_close_snapshots_ledger_book_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "corrects_mutation_batch_id"
         ],
         "constraint": "tax_lot_mutations_corrects_mutation_batch_id_fkey",
@@ -3356,5 +3380,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "79adba8c6a3f21b9e5377a1169a998853e4a64b6ea2259ccd6ebd33d668700b9"
+  "fingerprint": "1410215f43cc136072e2119088d25703f41b7c1b40812c05971c1d77f4e5631c"
 }

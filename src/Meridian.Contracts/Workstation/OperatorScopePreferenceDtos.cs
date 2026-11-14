@@ -3,6 +3,8 @@ namespace Meridian.Contracts.Workstation;
 /// <summary>
 /// The operating-scope dimensions the workstation carries across workspaces, as the browser's
 /// operating-scope URL parameters and the WPF scope selector name them. Every value is optional.
+/// <see cref="EntityId"/> and <see cref="FundId"/> (the fund-structure legal entity and fund ids)
+/// were added after the original eight and sit last, so positional construction is unchanged.
 /// </summary>
 public sealed record OperatingScopeValuesDto(
     string? Symbol = null,
@@ -12,7 +14,9 @@ public sealed record OperatingScopeValuesDto(
     string? From = null,
     string? To = null,
     string? Date = null,
-    string? AsOf = null);
+    string? AsOf = null,
+    string? EntityId = null,
+    string? FundId = null);
 
 /// <summary>
 /// The signed-in operator's default operating scope (C1): applied when a session opens with no

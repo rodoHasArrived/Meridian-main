@@ -6,6 +6,74 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostgresSecurityMasterConflictService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.PostgresSecurityMasterConflictService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:17](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L17).
+
+Durable, Postgres-backed golden-record conflict store. Conflict detection reuses the shared SecurityMasterConflictDetection logic; detected conflicts and their resolution state are persisted so a resolution and its chosen winner survive process recycles and are visible across every instance — the audit guarantee the in-memory store could not provide.
+
+```csharp
+public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConflictService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresSecurityMasterConflictService(ISecurityMasterStore store, SecurityMasterOptions options, ILogger&lt;PostgresSecurityMasterConflictService&gt; logger, Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:26](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L26) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecurityMasterConflict&gt;&gt; GetOpenConflictsAsync(CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:40](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L40) |  |
+| <code>public async Task&lt;SecurityMasterConflict?&gt; GetConflictAsync(Guid conflictId, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:132](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L132) |  |
+| <code>public async Task&lt;SecurityMasterConflict?&gt; ResolveAsync(ResolveConflictRequest request, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:148](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L148) |  |
+| <code>public async Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:537](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L537) |  |
+| <code>public async Task RecordConflictsForProjectionsAsync(IReadOnlyList&lt;SecurityProjectionRecord&gt; projections, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:540](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L540) |  |
+| <code>public async Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:636](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L636) |  |
+| <code>public async Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:681](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L681) |  |
+
+## PostgresSecurityMasterRevisionStore
+
+Qualified name: <code>Meridian.Application.SecurityMaster.PostgresSecurityMasterRevisionStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:16](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L16).
+
+Durable, Postgres-backed revision-lifecycle store. This is the authority a publish consults to confirm a revision was actually approved through the governed gate, so the guarantee must survive process recycles: an arbitrary revision id can never trigger downstream publish side effects, even across restarts or multiple instances. State transitions are compare-and-set at the database so concurrent or out-of-order lifecycle calls are rejected rather than silently advancing the revision.
+
+```csharp
+public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisionStore, ISecurityMasterMutationParticipant
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterOptions MutationOptions =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:27](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L27) |  |
+| <code>public PostgresSecurityMasterRevisionStore(SecurityMasterOptions options);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:29](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L29) |  |
+| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:34](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L34) |  |
+| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId = null, SecurityMasterRevisionFieldValue? fieldValue = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:38](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L38) |  |
+| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId, SecurityMasterRevisionFieldValue? fieldValue, SecurityMasterRevisionFieldBase fieldBase, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:50](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L50) |  |
+| <code>public async Task&lt;SecurityMasterRevisionRecord?&gt; GetAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:127](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L127) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListBySecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:144](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L144) |  |
+| <code>public async Task&lt;SecurityMasterRevisionRecord&gt; TransitionAsync(Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next, string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:168](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L168) |  |
+
+## IUflProjectionRebuilder
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Rebuild.IUflProjectionRebuilder</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/Rebuild/IUflProjectionRebuilder.cs:6](../../../../src/Meridian.Application/SecurityMaster/Rebuild/IUflProjectionRebuilder.cs#L6).
+
+Rebuilds UFL projections for a requested asset class.
+
+```csharp
+public interface IUflProjectionRebuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task RebuildAsync(string assetClass, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/IUflProjectionRebuilder.cs:13](../../../../src/Meridian.Application/SecurityMaster/Rebuild/IUflProjectionRebuilder.cs#L13) | Requests a UFL rebuild scoped to the provided asset class: only that class&#x27;s securities are re-folded from the event stream and upserted into the projection store and cache, so the rebuild cost stays bounded by the class&#x27;s population as the class count grows. |
+
 ## NullUflProjectionRebuilder
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Rebuild.NullUflProjectionRebuilder</code>. Kind: `class`.
@@ -202,7 +270,7 @@ Declared public members:
 | <code>public SecurityMasterAmortizationLedgerBridge(ISecurityMasterCashFlowService cashFlowService, ILogger&lt;SecurityMasterAmortizationLedgerBridge&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:108](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L108) |  |
 | <code>public async Task&lt;int&gt; PostProjectedCashFlowsAsync(Guid securityId, string ticker, DomainLedger ledger, AmortizationLedgerPostingContext? context = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:117](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L117) |  |
 
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.RetainedAccrual.cs:7](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.RetainedAccrual.cs#L7).
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.RetainedAccrual.cs:8](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.RetainedAccrual.cs#L8).
 
 ```csharp
 public sealed partial class SecurityMasterAmortizationLedgerBridge
@@ -934,52 +1002,3 @@ The canonical state a field-edit proposal was drafted against: the security vers
 ```csharp
 public sealed record SecurityMasterRevisionFieldBase(long BaseVersion, string FieldSnapshot);
 ```
-
-## SecurityMasterRevisionFieldValue
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionFieldValue</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:83](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L83).
-
-The exact overlay VALUE a field-edit revision governs — null models a staged CLEAR. Wrapping the nullable value distinguishes &quot;the edit recorded a clear&quot; from &quot;no value was recorded at all&quot; (legacy revisions predating value persistence), which discard-time restoration must tell apart: a recorded clear restores by removing the key, while an unrecorded value is unrecoverable and falls back to the fail-closed sibling handling.
-
-```csharp
-public sealed record SecurityMasterRevisionFieldValue(string? Value);
-```
-
-## SecurityMasterRevisionRecord
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:93](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L93).
-
-Durable record of a passport revision&#x27;s governed lifecycle state.
-
-```csharp
-public sealed record SecurityMasterRevisionRecord(Guid RevisionId, Guid SecurityId, SecurityMasterRevisionStateDto State, string Actor, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, Guid? WorkflowId = null, string? FieldPath = null, DateTimeOffset? FieldEffectiveFrom = null, string? FieldJustification = null, string? FundProfileId = null, string? FieldValue = null, bool FieldValueRecorded = false, long? BaseVersion = null, string? FieldBaseSnapshot = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool FieldBaseRecorded =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:113](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L113) | True when the revision recorded the canonical base its proposal was drafted against. |
-
-## SecurityMasterRevisionStateException
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionStateException</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:120](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L120).
-
-Raised when a revision lifecycle transition is attempted out of order — e.g. publishing a revision that was never approved, or approving one that was never submitted. Endpoints map this to HTTP 409.
-
-```csharp
-public sealed class SecurityMasterRevisionStateException : Exception
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterRevisionStateException(Guid revisionId, string detail) : base($&quot;Security Master revision &#x27;{revisionId:D}&#x27; cannot transition: {detail}&quot;);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:122](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L122) |  |
-| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:128](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L128) |  |

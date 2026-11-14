@@ -46,10 +46,12 @@ public sealed partial class ProviderFactory
         // search, even when a caller supplied an AppConfig separately from host IConfiguration.
         if (typeof(TProvider) == typeof(TwelveDataCorporateActionProvider))
             return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials,
-                _config.ProviderQuotas?.TwelveData ?? new TwelveDataQuotaConfig());
+                _config.ProviderQuotas?.TwelveData ?? new TwelveDataQuotaConfig(),
+                BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "twelvedata"));
         if (typeof(TProvider) == typeof(AlphaVantageCorporateActionProvider))
             return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials,
-                _config.ProviderQuotas?.AlphaVantage ?? new AlphaVantageQuotaConfig());
+                _config.ProviderQuotas?.AlphaVantage ?? new AlphaVantageQuotaConfig(),
+                BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "alphavantage"));
         return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials);
     }
 
@@ -123,7 +125,7 @@ public sealed partial class ProviderFactory
     internal IMarketDataClient CreateAlpacaStreamingClient() => new AlpacaMarketDataClient(
         Services.GetRequiredService<TradeDataCollector>(),
         Services.GetRequiredService<QuoteCollector>(),
-        ResolveAlpacaOptions());
+        ResolveAlpacaOptions(), ProviderValidationProfile.Resolve(_config.Backfill, "alpaca"));
 
     private AlpacaOptions ResolveAlpacaOptions() => ResolveAlpacaOptions(out _);
 
@@ -160,7 +162,8 @@ public sealed partial class ProviderFactory
             Services.GetRequiredService<TradeDataCollector>(),
             Services.GetRequiredService<QuoteCollector>(),
             options: (_config.Polygon ?? new PolygonOptions()) with { ApiKey = credentials.Get("POLYGON_API_KEY") ?? string.Empty },
-            reconnectionMetrics: Services.GetService<IReconnectionMetrics>());
+            reconnectionMetrics: Services.GetService<IReconnectionMetrics>(),
+            validationProfile: ProviderValidationProfile.Resolve(_config.Backfill, "polygon"));
     }
 
     internal IMarketDataClient CreateNyseStreamingClient()
@@ -177,7 +180,8 @@ public sealed partial class ProviderFactory
     internal IMarketDataClient CreateRobinhoodStreamingClient() => new RobinhoodMarketDataClient(
         Services.GetRequiredService<IHttpClientFactory>(),
         Services.GetRequiredService<QuoteCollector>(),
-        Services.GetRequiredService<ILogger<RobinhoodMarketDataClient>>(), GetRobinhoodAccessToken());
+        Services.GetRequiredService<ILogger<RobinhoodMarketDataClient>>(), GetRobinhoodAccessToken(),
+        ProviderValidationProfile.Resolve(_config.Backfill, "robinhood"));
 
     internal IMarketDataClient CreateSyntheticStreamingClient() => new SyntheticMarketDataClient(
         Services.GetRequiredService<IMarketEventPublisher>(), _config.Synthetic);

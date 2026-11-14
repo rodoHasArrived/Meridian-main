@@ -1,5 +1,5 @@
 import type { FamilyOwnershipGraph, FamilyAssetSummary, PrivateAssetSummary, CapitalCommitment, CapitalActivity } from "@/types/family-office.types";
-import { formatCompactCurrency as formatCurrency, formatNumber, pluralizeCount } from "@/lib/format";
+import { formatCompactCurrency as formatCurrency, formatNumber, formatPercent as formatPercentValue, pluralizeCount } from "@/lib/format";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 
 export type FamilyOfficeTone = "default" | "success" | "warning" | "danger";
@@ -542,7 +542,7 @@ function formatPercent(value: number | null): string {
     return "Unmapped";
   }
 
-  return Number.isInteger(value) ? `${value}%` : `${value.toFixed(1)}%`;
+  return Number.isInteger(value) ? `${value}%` : formatPercentValue(value, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
 function formatCountLabel(count: number, singular: string, plural = `${singular}s`): string {

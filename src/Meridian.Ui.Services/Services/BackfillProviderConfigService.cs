@@ -42,130 +42,8 @@ public sealed class BackfillProviderConfigService : IBackfillProviderConfigAudit
     /// </summary>
     public Task<List<BackfillProviderMetadataDto>> GetProviderMetadataAsync(CancellationToken ct = default)
     {
-        // Return well-known provider metadata. In a full implementation this would
-        // come from the backend via /api/backfill/providers/metadata, but for desktop
-        // offline-first use we provide defaults that work without a running server.
-        var metadata = new List<BackfillProviderMetadataDto>
-        {
-            new()
-            {
-                ProviderId = "alpaca",
-                DisplayName = "Alpaca",
-                Description = "Bars, trades, and quotes via REST API. Free IEX tier available.",
-                DataTypes = ["Bars", "Trades", "Quotes"],
-                SupportedGranularities = ["Daily"],
-                RequiresApiKey = true,
-                FreeTier = true,
-                DefaultPriority = 5,
-                DefaultRateLimitPerMinute = 200,
-                FeatureFlags = new Dictionary<string, bool>
-                {
-                    ["supportsCrypto"] = true,
-                    ["supportsExtendedHours"] = true,
-                },
-            },
-            new()
-            {
-                ProviderId = "polygon",
-                DisplayName = "Polygon",
-                Description = "Full market data including aggregates. Tiered subscription plans.",
-                DataTypes = ["Bars", "Trades", "Quotes", "Aggregates"],
-                RequiresApiKey = true,
-                FreeTier = false,
-                DefaultPriority = 12,
-                DefaultRateLimitPerMinute = 5,
-                FeatureFlags = new Dictionary<string, bool>
-                {
-                    ["supportsAggregates"] = true,
-                    ["supportsSnapshots"] = true,
-                },
-            },
-            new()
-            {
-                ProviderId = "tiingo",
-                DisplayName = "Tiingo",
-                Description = "Daily bars and end-of-day data. Free tier available.",
-                DataTypes = ["Daily bars"],
-                SupportedGranularities = ["Daily"],
-                RequiresApiKey = true,
-                FreeTier = true,
-                DefaultPriority = 15,
-                DefaultRateLimitPerHour = 500,
-                FeatureFlags = new Dictionary<string, bool>
-                {
-                    ["supportsCrypto"] = true,
-                },
-            },
-            new()
-            {
-                ProviderId = "finnhub",
-                DisplayName = "Finnhub",
-                Description = "Daily bars with international coverage. Free tier available.",
-                DataTypes = ["Daily bars"],
-                SupportedGranularities = ["Daily"],
-                RequiresApiKey = true,
-                FreeTier = true,
-                DefaultPriority = 20,
-                DefaultRateLimitPerMinute = 60,
-                FeatureFlags = new Dictionary<string, bool>
-                {
-                    ["supportsInternational"] = true,
-                },
-            },
-            new()
-            {
-                ProviderId = "stooq",
-                DisplayName = "Stooq",
-                Description = "Free daily bar data. No API key required.",
-                DataTypes = ["Daily bars"],
-                SupportedGranularities = ["Daily"],
-                RequiresApiKey = false,
-                FreeTier = true,
-                DefaultPriority = 25,
-            },
-            new()
-            {
-                ProviderId = "yahoo",
-                DisplayName = "Yahoo Finance",
-                Description = "Unofficial daily and regular-hours intraday bar data. No API key required.",
-                DataTypes = ["Daily bars", "Intraday bars", "Aggregates"],
-                SupportedGranularities = ["Daily", "1Min", "5Min", "15Min", "30Min", "Hourly", "4Hour"],
-                RequiresApiKey = false,
-                FreeTier = true,
-                DefaultPriority = 30,
-                FeatureFlags = new Dictionary<string, bool>
-                {
-                    ["unofficial"] = true,
-                    ["supportsIntraday"] = true,
-                },
-            },
-            new()
-            {
-                ProviderId = "alphavantage",
-                DisplayName = "Alpha Vantage",
-                Description = "Daily and intraday bars with strict rate limits. Free tier available.",
-                DataTypes = ["Daily bars", "Intraday bars"],
-                SupportedGranularities = ["Daily", "1Min", "5Min", "15Min", "30Min", "Hourly"],
-                RequiresApiKey = true,
-                FreeTier = true,
-                DefaultPriority = 35,
-                DefaultRateLimitPerMinute = 5,
-                DefaultRateLimitPerHour = 500,
-            },
-            new()
-            {
-                ProviderId = "nasdaqdatalink",
-                DisplayName = "Nasdaq Data Link",
-                Description = "Various market data sets. Subscription required for most datasets.",
-                DataTypes = ["Various"],
-                SupportedGranularities = ["Daily"],
-                RequiresApiKey = true,
-                FreeTier = false,
-                DefaultPriority = 40,
-            },
-        };
-
-        return Task.FromResult(metadata);
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(Meridian.Core.Config.BackfillProviderCatalog.Describe().ToList());
     }
 
     /// <summary>
@@ -233,7 +111,7 @@ public sealed class BackfillProviderConfigService : IBackfillProviderConfigAudit
         CancellationToken ct = default)
     {
         var allStatuses = await GetProviderStatusesAsync(config, ct);
-        return allStatuses.Where(s => s.Options.Enabled).ToList();
+        return allStatuses.Where(s => s.Options.Enabled && s.Metadata.ProviderId != "openfigi").ToList();
     }
 
     /// <summary>
@@ -416,6 +294,8 @@ public sealed class BackfillProviderConfigService : IBackfillProviderConfigAudit
             "yahoo" => config.Yahoo,
             "alphavantage" => config.AlphaVantage,
             "nasdaqdatalink" => config.NasdaqDataLink,
+            "twelvedata" => config.TwelveData,
+            "openfigi" => config.OpenFigi,
             _ => null,
         };
     }
@@ -474,6 +354,8 @@ public sealed class BackfillProviderConfigService : IBackfillProviderConfigAudit
             var changes = new List<string>();
             if (prev.Enabled != next.Enabled)
                 changes.Add(next.Enabled ? "Enabled" : "Disabled");
+            if (prev.TierId != next.TierId)
+                changes.Add($"Tier: {prev.TierId} → {next.TierId}");
             if (prev.Priority != next.Priority)
                 changes.Add($"Priority: {prev.Priority ?? 0} → {next.Priority ?? 0}");
             if (prev.RateLimitPerMinute != next.RateLimitPerMinute)

@@ -607,15 +607,20 @@ public partial class MainWindow : Window
         {
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
             {
-                _ = _navigationService.NavigateTo(restorePlan.DeferredPageTag);
+                _ = NavigateToShellPage(restorePlan.DeferredPageTag);
             });
         }
 
         if (!string.IsNullOrWhiteSpace(restorePlan.TargetPageTag))
         {
-            _navigationService.NavigateTo(restorePlan.TargetPageTag);
+            _ = NavigateToShellPage(restorePlan.TargetPageTag);
         }
     }
+
+    private bool NavigateToShellPage(string pageTag)
+        => RootFrame.Content is MainPage mainPage
+            ? mainPage.NavigateToLaunchPage(pageTag)
+            : _navigationService.NavigateTo(pageTag);
 
     /// <summary>
     /// Saves the current workspace session state for next launch.

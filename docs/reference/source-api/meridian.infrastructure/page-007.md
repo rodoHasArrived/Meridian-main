@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataSourceOptions
+
+Qualified name: <code>Meridian.Infrastructure.DataSources.DataSourceOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:600](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L600).
+
+Configuration options for a data source.
+
+```csharp
+public sealed record DataSourceOptions(int Priority = 100, RetryPolicyOptions? RetryPolicy = null, RateLimitOptions? RateLimits = null, HealthCheckOptions? HealthCheck = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RetryPolicyOptions RetryPolicy { get; } = RetryPolicy?? new RetryPolicyOptions();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:607](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L607) |  |
+| <code>public RateLimitOptions RateLimits { get; } = RateLimits?? new RateLimitOptions();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:608](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L608) |  |
+| <code>public HealthCheckOptions HealthCheck { get; } = HealthCheck?? new HealthCheckOptions();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:609](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L609) |  |
+| <code>public static DataSourceOptions Default =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:614](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L614) | Creates default options. |
+
+## DefaultsConfig
+
+Qualified name: <code>Meridian.Infrastructure.DataSources.DefaultsConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:125](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L125).
+
+Default settings applied to all data sources.
+
+```csharp
+public sealed record DefaultsConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RetryPolicyConfig RetryPolicy { get; init; } = new ();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:130](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L130) | Default retry policy for all sources. |
+| <code>public HealthCheckConfig HealthCheck { get; init; } = new ();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:135](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L135) | Default health check settings. |
+| <code>public RateLimitConfig RateLimits { get; init; } = new ();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:140](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L140) | Default rate limit settings. |
+
 ## FailoverConfig
 
 Qualified name: <code>Meridian.Infrastructure.DataSources.FailoverConfig</code>. Kind: `record`.
@@ -1085,32 +1126,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;Subscription&gt; Clear();</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:349](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L349) | Clears all subscriptions. Useful for reconnection scenarios. |
 | <code>public SubscriptionSnapshot GetSnapshot();</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:364](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L364) | Gets a snapshot of the current subscription state for serialization or logging. |
 | <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:380](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L380) |  |
-
-## SubscriptionRequestValidation
-
-Qualified name: <code>Meridian.Infrastructure.Shared.SubscriptionRequestValidation</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:37](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L37).
-
-```csharp
-public sealed record SubscriptionRequestValidation(bool IsValid, bool IsDuplicate, string? NormalizedSymbol, string? NormalizedKind, int? ExistingSubscriptionId, string? FailureReason)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SubscriptionRequestValidation Invalid(string failureReason) =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:45](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L45) |  |
-| <code>public static SubscriptionRequestValidation Valid(string normalizedSymbol, string normalizedKind, bool isDuplicate, int? existingSubscriptionId) =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:48](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L48) |  |
-
-## SubscriptionSnapshot
-
-Qualified name: <code>Meridian.Infrastructure.Shared.SubscriptionSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:424](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L424).
-
-Snapshot of subscription state for serialization or logging.
-
-```csharp
-public sealed record SubscriptionSnapshot(int TotalSubscriptions, int FailedSubscriptions, int RecoveringSubscriptions, IReadOnlyDictionary<string, IReadOnlyList<string>> SymbolsByKind, IReadOnlyList<Subscription> Subscriptions);
-```

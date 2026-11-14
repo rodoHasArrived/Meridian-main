@@ -12,7 +12,7 @@ import type {
   CorporateActionProcessingCaseDto,
   CorporateActionProposalEntry
 } from "@/types";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp } from "@/lib/format";
 
 export type CorporateActionInboxFetcher = typeof getCorporateActionInbox;
 export type CorporateActionInboxAccepter = typeof acceptCorporateActionInboxProposal;
@@ -394,7 +394,7 @@ export function buildCorporateActionInboxModel(
   });
 
   return {
-    lastIngestLabel: response.lastIngestAt ? formatUtcTimestamp(new Date(response.lastIngestAt)) : "never",
+    lastIngestLabel: response.lastIngestAt ? formatTimestamp(new Date(response.lastIngestAt)) : "never",
     stagedCount: response.stagedCount,
     appliedLastRun: response.appliedLastRun,
     duplicatesSkippedLastRun: response.duplicatesSkippedLastRun,

@@ -6,6 +6,65 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FaceValueLotExtensions
+
+Qualified name: <code>Meridian.Application.SecurityMaster.FaceValueLotExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/FaceValueLotExtensions.cs:15](../../../../src/Meridian.Application/SecurityMaster/FaceValueLotExtensions.cs#L15).
+
+Adapts the canonical FaceValueLot aggregate to the LedgerTaxLot shape the relief and amortization engines consume. This is the single seam where the engines&#x27; price-per-100 lot convention is applied: whatever FaceValueLot.ParBasis the lot was quoted in, the adapter normalizes quantity and unit cost so cost basis and premium/discount are preserved exactly — a per-unit-priced lot can no longer silently mis-amortize through math that assumes prices per 100.
+
+```csharp
+public static class FaceValueLotExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const decimal LedgerLotParBasis = LedgerTaxLotFaceValueTerms.LedgerLotParBasis;</code> | [src/Meridian.Application/SecurityMaster/FaceValueLotExtensions.cs:22](../../../../src/Meridian.Application/SecurityMaster/FaceValueLotExtensions.cs#L22) | The par basis the ledger engines&#x27; lot math assumes (price per 100, quantity = face / 100). Sourced from the lot-of-record seam so the in-memory and persisted sides of the convention cannot drift apart. |
+| <code>public static LedgerTaxLot ToLedgerTaxLot(this FaceValueLot lot);</code> | [src/Meridian.Application/SecurityMaster/FaceValueLotExtensions.cs:24](../../../../src/Meridian.Application/SecurityMaster/FaceValueLotExtensions.cs#L24) |  |
+| <code>public static IReadOnlyList&lt;LedgerTaxLot&gt; ToLedgerTaxLots(this IEnumerable&lt;FaceValueLot&gt; lots);</code> | [src/Meridian.Application/SecurityMaster/FaceValueLotExtensions.cs:44](../../../../src/Meridian.Application/SecurityMaster/FaceValueLotExtensions.cs#L44) |  |
+
+## FileSecurityCashFlowReceiptStore
+
+Qualified name: <code>Meridian.Application.SecurityMaster.FileSecurityCashFlowReceiptStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/FileSecurityCashFlowReceiptStore.cs:8](../../../../src/Meridian.Application/SecurityMaster/FileSecurityCashFlowReceiptStore.cs#L8).
+
+Content-addressed calculation evidence committed through the durable atomic writer.
+
+```csharp
+public sealed class FileSecurityCashFlowReceiptStore : ISecurityCashFlowReceiptStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileSecurityCashFlowReceiptStore(string directory);</code> | [src/Meridian.Application/SecurityMaster/FileSecurityCashFlowReceiptStore.cs:13](../../../../src/Meridian.Application/SecurityMaster/FileSecurityCashFlowReceiptStore.cs#L13) |  |
+| <code>public async Task RetainAsync(SecurityCashFlowCalculationReceipt receipt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/FileSecurityCashFlowReceiptStore.cs:19](../../../../src/Meridian.Application/SecurityMaster/FileSecurityCashFlowReceiptStore.cs#L19) |  |
+| <code>public async Task&lt;SecurityCashFlowCalculationReceipt?&gt; GetAsync(string contentSha256, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/FileSecurityCashFlowReceiptStore.cs:40](../../../../src/Meridian.Application/SecurityMaster/FileSecurityCashFlowReceiptStore.cs#L40) |  |
+
+## GovernedTermAmendmentPolicy
+
+Qualified name: <code>Meridian.Application.SecurityMaster.GovernedTermAmendmentPolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:26](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L26).
+
+```csharp
+public sealed class GovernedTermAmendmentPolicy : IGovernedTermAmendmentPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string RefusalTitle = &quot;Direct term amendments are disabled by governance policy.&quot;;</code> | [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:29](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L29) | Problem title used when a direct amendment is refused. |
+| <code>public const string RefusalDetail = &quot;This deployment requires term corrections to pass maker-checker: stage the edit through the &quot; + &quot;Security Master workbench field-edit route and publish it through the governed &quot; + &quot;Draft → Submitted → Approved → Published lifecycle instead of amending terms directly.&quot;;</code> | [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:32](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L32) | Guidance used when a direct amendment is refused. |
+| <code>public GovernedTermAmendmentPolicy(ISecurityMasterGovernanceRequirements requirements);</code> | [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:39](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L39) |  |
+| <code>public string? RefusalReason =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:45](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L45) |  |
+
 ## GovernedTermAmendmentRequiredException
 
 Qualified name: <code>Meridian.Application.SecurityMaster.GovernedTermAmendmentRequiredException</code>. Kind: `class`.
@@ -947,71 +1006,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public PeriodAwareRestatementResolver(ILedgerPeriodLockReader lockReader, IRestatementCandidateResolver candidateResolver, ILogger&lt;PeriodAwareRestatementResolver&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:124](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L124) |  |
 | <code>public async Task&lt;SecurityMasterRestatementDecision&gt; ResolveAsync(SecurityMasterRevisionPublishedEvent publishedEvent, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:134](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L134) |  |
-
-## PostgresSecurityMasterConflictService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.PostgresSecurityMasterConflictService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:17](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L17).
-
-Durable, Postgres-backed golden-record conflict store. Conflict detection reuses the shared SecurityMasterConflictDetection logic; detected conflicts and their resolution state are persisted so a resolution and its chosen winner survive process recycles and are visible across every instance — the audit guarantee the in-memory store could not provide.
-
-```csharp
-public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConflictService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresSecurityMasterConflictService(ISecurityMasterStore store, SecurityMasterOptions options, ILogger&lt;PostgresSecurityMasterConflictService&gt; logger, Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:26](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L26) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SecurityMasterConflict&gt;&gt; GetOpenConflictsAsync(CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:40](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L40) |  |
-| <code>public async Task&lt;SecurityMasterConflict?&gt; GetConflictAsync(Guid conflictId, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:132](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L132) |  |
-| <code>public async Task&lt;SecurityMasterConflict?&gt; ResolveAsync(ResolveConflictRequest request, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:148](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L148) |  |
-| <code>public async Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:537](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L537) |  |
-| <code>public async Task RecordConflictsForProjectionsAsync(IReadOnlyList&lt;SecurityProjectionRecord&gt; projections, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:540](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L540) |  |
-| <code>public async Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:636](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L636) |  |
-| <code>public async Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs:681](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterConflictService.cs#L681) |  |
-
-## PostgresSecurityMasterRevisionStore
-
-Qualified name: <code>Meridian.Application.SecurityMaster.PostgresSecurityMasterRevisionStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:16](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L16).
-
-Durable, Postgres-backed revision-lifecycle store. This is the authority a publish consults to confirm a revision was actually approved through the governed gate, so the guarantee must survive process recycles: an arbitrary revision id can never trigger downstream publish side effects, even across restarts or multiple instances. State transitions are compare-and-set at the database so concurrent or out-of-order lifecycle calls are rejected rather than silently advancing the revision.
-
-```csharp
-public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisionStore, ISecurityMasterMutationParticipant
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterOptions MutationOptions =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:27](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L27) |  |
-| <code>public PostgresSecurityMasterRevisionStore(SecurityMasterOptions options);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:29](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L29) |  |
-| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:34](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L34) |  |
-| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId = null, SecurityMasterRevisionFieldValue? fieldValue = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:38](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L38) |  |
-| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId, SecurityMasterRevisionFieldValue? fieldValue, SecurityMasterRevisionFieldBase fieldBase, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:50](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L50) |  |
-| <code>public async Task&lt;SecurityMasterRevisionRecord?&gt; GetAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:127](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L127) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListBySecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:144](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L144) |  |
-| <code>public async Task&lt;SecurityMasterRevisionRecord&gt; TransitionAsync(Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next, string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs:168](../../../../src/Meridian.Application/SecurityMaster/PostgresSecurityMasterRevisionStore.cs#L168) |  |
-
-## IUflProjectionRebuilder
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Rebuild.IUflProjectionRebuilder</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/Rebuild/IUflProjectionRebuilder.cs:6](../../../../src/Meridian.Application/SecurityMaster/Rebuild/IUflProjectionRebuilder.cs#L6).
-
-Rebuilds UFL projections for a requested asset class.
-
-```csharp
-public interface IUflProjectionRebuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task RebuildAsync(string assetClass, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/IUflProjectionRebuilder.cs:13](../../../../src/Meridian.Application/SecurityMaster/Rebuild/IUflProjectionRebuilder.cs#L13) | Requests a UFL rebuild scoped to the provided asset class: only that class&#x27;s securities are re-folded from the event stream and upserted into the projection store and cache, so the rebuild cost stays bounded by the class&#x27;s population as the class count grows. |

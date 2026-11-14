@@ -60,10 +60,14 @@ public record FailoverRuleRequest(
     int FailoverThreshold = 3,
     int RecoveryThreshold = 5,
     double DataQualityThreshold = 0,
-    double MaxLatencyMs = 0);
+    double MaxLatencyMs = 0,
+    string? Reason = null);
 
 /// <summary>Request to force a failover to a specific provider.</summary>
 public record ForceFailoverRequest(string TargetProviderId);
+
+/// <summary>Operator evidence required when removing a failover rule and its validation protections.</summary>
+public sealed record FailoverRuleDeleteRequest(string? Reason);
 
 /// <summary>Request to run a backfill operation.</summary>
 public record BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? From, DateOnly? To, string? Granularity = null);
@@ -152,7 +156,8 @@ public record FailoverConfigResponse(
     int HealthCheckIntervalSeconds,
     bool AutoRecover,
     int FailoverTimeoutSeconds,
-    FailoverRuleResponse[] Rules);
+    FailoverRuleResponse[] Rules,
+    bool RuntimeAvailable = true);
 
 /// <summary>Response containing a failover rule.</summary>
 public record FailoverRuleResponse(

@@ -764,7 +764,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private bool IsCurrentWorkspace(string workspaceId)
         => string.Equals(_currentWorkspace, workspaceId, StringComparison.OrdinalIgnoreCase);
 
-    private void OnNavigated(object? sender, NavigationEventArgs e)
+    internal void OnNavigated(object? sender, NavigationEventArgs e)
     {
         _suppressNavigation = true;
         try

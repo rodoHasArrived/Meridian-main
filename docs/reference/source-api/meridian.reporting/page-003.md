@@ -27,7 +27,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Reporting.ReportingGovernanceAuditChain</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingGovernanceService.cs:880](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L880).
+Source: [src/Meridian.Reporting/ReportingGovernanceService.cs:911](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L911).
 
 Deterministic SHA-256 chaining for reporting lifecycle audit evidence.
 
@@ -39,7 +39,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static bool Verify(IReadOnlyList&lt;ReportingGovernanceAuditEntry&gt; entries);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:882](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L882) |  |
+| <code>public static bool Verify(IReadOnlyList&lt;ReportingGovernanceAuditEntry&gt; entries);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:913](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L913) |  |
 
 ## ReportingGovernanceAuditEntry
 
@@ -266,7 +266,7 @@ public sealed record ReportingGovernanceRawAuditEnvelope(long AggregateVersion, 
 
 Qualified name: <code>Meridian.Reporting.ReportingGovernanceService</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingGovernanceService.cs:12](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L12).
+Source: [src/Meridian.Reporting/ReportingGovernanceService.cs:13](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L13).
 
 Owns the canonical reporting lifecycle. Rendering/execution and governance are intentionally separate state machines, and every governed change is optimistic, transactional, and audited.
 
@@ -278,18 +278,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingGovernanceService(IReportingGovernanceRepository repository, TimeProvider? timeProvider = null, Func&lt;string, string&gt;? idFactory = null);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:18](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L18) |  |
-| <code>public ValueTask&lt;GovernedReportingRun&gt; CreateRunAsync(ReportingRunCreationRequest request, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:28](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L28) |  |
-| <code>public ValueTask&lt;GovernedReportingRun&gt; BeginExecutionAsync(string runId, long expectedVersion, ReportingAuthorityScope authority, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:110](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L110) |  |
-| <code>public ValueTask&lt;GovernedReportingRun&gt; CompleteExecutionAsync(string runId, long expectedVersion, ReportingAuthorityScope authority, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:135](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L135) |  |
-| <code>public ValueTask&lt;GovernedReportingRun&gt; FailExecutionAsync(string runId, long expectedVersion, string failureReason, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:160](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L160) |  |
-| <code>public ValueTask&lt;GovernedReportingRun&gt; CancelExecutionAsync(string runId, long expectedVersion, string reason, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:190](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L190) |  |
-| <code>public ValueTask&lt;GovernedReportingRun&gt; ValidateAsync(string runId, long expectedVersion, ReportingReadinessReceipt readiness, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:220](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L220) |  |
-| <code>public ValueTask&lt;GovernedReportingRun&gt; SubmitAsync(string runId, long expectedVersion, ReportingAuthorityScope authority, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:256](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L256) |  |
-| <code>public ValueTask&lt;GovernedReportingRun&gt; ApproveAsync(string runId, long expectedVersion, string decisionNote, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:283](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L283) |  |
-| <code>public ValueTask&lt;GovernedReportingRun&gt; ReleaseAsync(string runId, long expectedVersion, ReportingReleaseEvidence evidence, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:332](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L332) |  |
-| <code>public ValueTask&lt;ReportingRestatementRequest&gt; RequestRestatementAsync(ReportingRestatementRequestCommand command, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:391](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L391) |  |
-| <code>public ValueTask&lt;ReportingRestatementApprovalResult&gt; ApproveRestatementAsync(ReportingRestatementApprovalCommand command, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:471](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L471) |  |
+| <code>public ReportingGovernanceService(IReportingGovernanceRepository repository, TimeProvider? timeProvider = null, Func&lt;string, string&gt;? idFactory = null, IBookOfRecordGuard? bookOfRecordGuard = null);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:20](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L20) |  |
+| <code>public ValueTask&lt;GovernedReportingRun&gt; CreateRunAsync(ReportingRunCreationRequest request, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:32](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L32) |  |
+| <code>public ValueTask&lt;GovernedReportingRun&gt; BeginExecutionAsync(string runId, long expectedVersion, ReportingAuthorityScope authority, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:114](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L114) |  |
+| <code>public ValueTask&lt;GovernedReportingRun&gt; CompleteExecutionAsync(string runId, long expectedVersion, ReportingAuthorityScope authority, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:139](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L139) |  |
+| <code>public ValueTask&lt;GovernedReportingRun&gt; FailExecutionAsync(string runId, long expectedVersion, string failureReason, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:164](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L164) |  |
+| <code>public ValueTask&lt;GovernedReportingRun&gt; CancelExecutionAsync(string runId, long expectedVersion, string reason, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:194](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L194) |  |
+| <code>public ValueTask&lt;GovernedReportingRun&gt; ValidateAsync(string runId, long expectedVersion, ReportingReadinessReceipt readiness, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:224](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L224) |  |
+| <code>public ValueTask&lt;GovernedReportingRun&gt; SubmitAsync(string runId, long expectedVersion, ReportingAuthorityScope authority, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:260](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L260) |  |
+| <code>public ValueTask&lt;GovernedReportingRun&gt; ApproveAsync(string runId, long expectedVersion, string decisionNote, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:287](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L287) |  |
+| <code>public ValueTask&lt;GovernedReportingRun&gt; ReleaseAsync(string runId, long expectedVersion, ReportingReleaseEvidence evidence, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:336](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L336) |  |
+| <code>public ValueTask&lt;ReportingRestatementRequest&gt; RequestRestatementAsync(ReportingRestatementRequestCommand command, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:409](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L409) |  |
+| <code>public ValueTask&lt;ReportingRestatementApprovalResult&gt; ApproveRestatementAsync(ReportingRestatementApprovalCommand command, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingGovernanceService.cs:489](../../../../src/Meridian.Reporting/ReportingGovernanceService.cs#L489) |  |
 
 ## ReportingHttpRelayMessage
 

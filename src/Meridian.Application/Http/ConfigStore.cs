@@ -111,6 +111,12 @@ public sealed class ConfigStore
     /// </summary>
     public AppConfig Load() => LoadConfig(ConfigPath);
 
+    /// <summary>Saved setting impacts and host-lifetime pending activation; contains no setting values.</summary>
+    public ConfigurationChangeStatus GetChangeStatus() => ConfigurationChangeTracker.ForPath(ConfigPath).Status;
+
+    /// <summary>Conservative activation requirement for a configuration field, also exposed by effective settings.</summary>
+    public static ConfigurationChangeImpact GetSettingImpact(string path) => ConfigurationChangeTracker.Classify(path);
+
     /// <summary>Loads existing configuration without substituting defaults when authoritative state cannot be read.</summary>
     public AppConfig LoadRequired()
     {
@@ -158,7 +164,11 @@ public sealed class ConfigStore
         var (next, result) = update(current);
         ct.ThrowIfCancellationRequested();
         if (!ReferenceEquals(current, next))
-            await SaveCoreAsync(next, ct).ConfigureAwait(false);
+        {
+            var snapshot = ProviderConfigurationCredentialGuard.Prepare(next, _ownershipPolicy);
+            await SaveCoreAsync(snapshot, ct).ConfigureAwait(false);
+            ConfigurationChangeTracker.ForPath(ConfigPath).Record(current, snapshot);
+        }
         return result;
     }
 
@@ -197,7 +207,9 @@ public sealed class ConfigStore
     {
         var snapshot = ProviderConfigurationCredentialGuard.Prepare(cfg, _ownershipPolicy);
         using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
+        var current = LoadForUpdate();
         await SaveCoreAsync(snapshot, ct).ConfigureAwait(false);
+        ConfigurationChangeTracker.ForPath(ConfigPath).Record(current, snapshot);
     }
 
     private async Task SaveCoreAsync(AppConfig cfg, CancellationToken ct)

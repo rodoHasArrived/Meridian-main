@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 5 of 6
 
-Objects 321-400 of 430. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 432. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -500,6 +500,23 @@ classDiagram
         +string PeriodId
         +string? Purpose
     }
+    class Meridian_Contracts_Ledger_PriorPeriodAdjustmentCorrectionDto["PriorPeriodAdjustmentCorrectionDto"] {
+        +Guid JournalEntryId
+        +string Reason
+        +bool ReverseSides
+    }
+    class Meridian_Contracts_Ledger_PriorPeriodAdjustmentSourceDto["PriorPeriodAdjustmentSourceDto"] {
+        +DateOnly AccountingDate
+        +PriorPeriodAdjustmentCorrectionDto? Correction
+        +IReadOnlyList~ManualJournalEntryLineDto~ ExpectedLines
+        +string IntentId
+        +DateOnly OriginalEffectiveDate
+        +string Reason
+        +bool ReversePeriodEndMark
+        +Guid SourceJournalEntryId
+        +Guid SourcePeriodId
+        +Guid TargetPeriodId
+    }
     class Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto["PrivateCapitalActivityProjectionDto"] {
         +int ApprovalQueueCount
         +int CapitalAccountCount
@@ -761,33 +778,6 @@ classDiagram
         +string PlanHash
         +PrivateCapitalScopeDto Scope
     }
-    class Meridian_Contracts_Ledger_PrivateCapitalPostingReceiptDto["PrivateCapitalPostingReceiptDto"] {
-        +decimal Amount
-        +string? BankLineId
-        +string CallId
-        +string CommitmentId
-        +DateOnly EffectiveDate
-        +string? FundingReceiptId
-        +string InstallmentId
-        +Guid JournalEntryId
-        +string Kind
-        +string PostingId
-        +PrivateCapitalScopeDto Scope
-    }
-    class Meridian_Contracts_Ledger_PrivateCapitalReportOutputDto["PrivateCapitalReportOutputDto"] {
-        +string? ApprovalRoute
-        +ManualJournalEntryStatusDto ApprovalState
-        +string CapitalAccountId
-        +string? CapitalAccountSubledgerRoute
-        +string Currency
-        +string DisplayName
-        +DateOnly EffectiveDate
-        +int EvidenceLinkCount
-        +IReadOnlyList~string~ EvidenceLinks
-        +string? EvidenceRoute
-        +string FundEventId
-        +string? FundEventRecordRoute
-    }
     Meridian_Contracts_Ledger_LedgerPeriodQuery --> Meridian_Contracts_Ledger_LedgerPeriodStatusDto
     Meridian_Contracts_Ledger_LedgerPeriodSummaryDto --> Meridian_Contracts_Ledger_LedgerPeriodSignoffStatusDto
     Meridian_Contracts_Ledger_LedgerPeriodSummaryDto --> Meridian_Contracts_Ledger_LedgerPeriodTrialBalanceLineDto
@@ -799,6 +789,7 @@ classDiagram
     Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_ManualJournalEntryStatusDto
     Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_ManualJournalEntryTypeDto
     Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_PostedPostingRuleJournalCandidateResultDto
+    Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_PriorPeriodAdjustmentSourceDto
     Meridian_Contracts_Ledger_ManualJournalEntryLineDto --> Meridian_Contracts_Ledger_ManualJournalLineCurrencyDto
     Meridian_Contracts_Ledger_ManualJournalEntryWorkbenchDto --> Meridian_Contracts_Ledger_ManualJournalEntryDraftDto
     Meridian_Contracts_Ledger_ManualJournalEntryWorkbenchDto --> Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto
@@ -822,6 +813,8 @@ classDiagram
     Meridian_Contracts_Ledger_PostedPostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto
     Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_LedgerPostingKindDto
     Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateIssueDto
+    Meridian_Contracts_Ledger_PriorPeriodAdjustmentSourceDto --> Meridian_Contracts_Ledger_ManualJournalEntryLineDto
+    Meridian_Contracts_Ledger_PriorPeriodAdjustmentSourceDto --> Meridian_Contracts_Ledger_PriorPeriodAdjustmentCorrectionDto
     Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PaymentIntentWorkflowDto
     Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountActivityDto
     Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerDto
@@ -829,7 +822,6 @@ classDiagram
     Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PrivateCapitalFundEventDto
     Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto
     Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PrivateCapitalLedgerImpactDto
-    Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PrivateCapitalReportOutputDto
     Meridian_Contracts_Ledger_PrivateCapitalCallDto --> Meridian_Contracts_Ledger_PrivateCapitalCallLineDto
     Meridian_Contracts_Ledger_PrivateCapitalCallPreviewDto --> Meridian_Contracts_Ledger_PrivateCapitalCallDto
     Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerDto --> Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountActivityDto
@@ -839,7 +831,6 @@ classDiagram
     Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerDto --> Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto
     Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerDto --> Meridian_Contracts_Ledger_PrivateCapitalLedgerImpactDto
     Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerDto --> Meridian_Contracts_Ledger_PrivateCapitalPaymentIntentEvidenceDto
-    Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerDto --> Meridian_Contracts_Ledger_PrivateCapitalReportOutputDto
     Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerEntryDto --> Meridian_Contracts_Ledger_ManualJournalEntryStatusDto
     Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerEntryDto --> Meridian_Contracts_Ledger_ManualJournalEntryTypeDto
     Meridian_Contracts_Ledger_PrivateCapitalCommitmentDto --> Meridian_Contracts_Ledger_PrivateCapitalCommitmentApprovalStatus
@@ -856,10 +847,8 @@ classDiagram
     Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto --> Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerReadinessDto
     Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto --> Meridian_Contracts_Ledger_PrivateCapitalLedgerImpactDto
     Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto --> Meridian_Contracts_Ledger_PrivateCapitalPaymentIntentEvidenceDto
-    Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto --> Meridian_Contracts_Ledger_PrivateCapitalReportOutputDto
     Meridian_Contracts_Ledger_PrivateCapitalLedgerImpactDto --> Meridian_Contracts_Ledger_ManualJournalEntryStatusDto
     Meridian_Contracts_Ledger_PrivateCapitalLedgerImpactDto --> Meridian_Contracts_Ledger_PrivateCapitalLedgerLineImpactDto
     Meridian_Contracts_Ledger_PrivateCapitalPaymentIntentEvidenceDto --> Meridian_Contracts_Ledger_PaymentIntentCashDirectionDto
     Meridian_Contracts_Ledger_PrivateCapitalPaymentIntentEvidenceDto --> Meridian_Contracts_Ledger_PrivateCapitalPaymentIntentEvidenceStatusDto
-    Meridian_Contracts_Ledger_PrivateCapitalReportOutputDto --> Meridian_Contracts_Ledger_ManualJournalEntryStatusDto
 ```

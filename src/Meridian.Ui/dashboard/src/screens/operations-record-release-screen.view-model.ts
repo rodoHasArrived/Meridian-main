@@ -163,7 +163,7 @@ export function buildOperationsRecordReleaseViewModel({
     tone,
     badgeVariant: toneToBadgeVariant(tone),
     rootAreaSummary: "Root navigation remains Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings.",
-    routePathLabel: `${WORKSTATION_ROUTE_CATALOG.dataProviders} -> ${WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity} -> ${WORKSTATION_ROUTE_CATALOG.reportingReportPacks}`,
+    routePathLabel: `${WORKSTATION_ROUTE_CATALOG.dataProviders} → ${WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity} → ${WORKSTATION_ROUTE_CATALOG.reportingReportPacks}`,
     metrics: [
       {
         id: "source",

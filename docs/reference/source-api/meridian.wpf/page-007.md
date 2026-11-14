@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DemoTourStep
+
+Qualified name: <code>Meridian.Wpf.Services.DemoTourStep</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Services/DemoTourService.cs:88](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L88).
+
+```csharp
+public sealed record DemoTourStep(int Sequence, string Title, string PageTag, string Description);
+```
+
 ## DesktopAuthenticationSession
 
 Qualified name: <code>Meridian.Wpf.Services.DesktopAuthenticationSession</code>. Kind: `class`.
@@ -1083,24 +1093,3 @@ Declared public members:
 | <code>Task&lt;ApiResponse&lt;SinglePrincipalAttestationSubjectSnapshotDto&gt;&gt; InspectDraftCheckAsync(Guid securityId, Guid runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:10](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L10) |  |
 | <code>Task&lt;ApiResponse&lt;PreparerAttestationReceiptDto&gt;&gt; RecordDraftCheckAsync(RecordPreparerAttestationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:12](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L12) |  |
 | <code>Task&lt;ApiResponse&lt;PreparerAttestationRevocationDto&gt;&gt; RevokeDraftCheckAsync(RevokePreparerAttestationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:14](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L14) |  |
-
-## IQuantScriptLayoutService
-
-Qualified name: <code>Meridian.Wpf.Services.IQuantScriptLayoutService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs:6](../../../../src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs#L6).
-
-Persists and restores the QuantScript page layout (chart/editor row heights and active tab).
-
-```csharp
-public interface IQuantScriptLayoutService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>(double ChartHeight, double EditorHeight) LoadRowHeights();</code> | [src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs:8](../../../../src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs#L8) |  |
-| <code>void SaveRowHeights(double chartHeight, double editorHeight);</code> | [src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs:9](../../../../src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs#L9) |  |
-| <code>int LoadLastActiveTab();</code> | [src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs:10](../../../../src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs#L10) |  |
-| <code>void SaveLastActiveTab(int tabIndex);</code> | [src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs:11](../../../../src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs#L11) |  |

@@ -6,6 +6,76 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DerivativesConfig
+
+Qualified name: <code>Meridian.Core.Config.DerivativesConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/DerivativesConfig.cs:6](../../../../src/Meridian.Core/Config/DerivativesConfig.cs#L6).
+
+Domain configuration for derivatives (options) data collection.
+
+```csharp
+public sealed record DerivativesConfig(bool Enabled = false, string[]? Underlyings = null, int MaxDaysToExpiration = 90, int StrikeRange = 20, bool CaptureGreeks = true, bool CaptureChainSnapshots = false, int ChainSnapshotIntervalSeconds = 300, bool CaptureOpenInterest = true, string[]? ExpirationFilter = null, IndexOptionsConfig? IndexOptions = null);
+```
+
+## DomainCutoverModeConfig
+
+Qualified name: <code>Meridian.Core.Config.DomainCutoverModeConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/AppConfig.cs:222](../../../../src/Meridian.Core/Config/AppConfig.cs#L222).
+
+Serializable cutover mode for a single fund operations domain.
+
+```csharp
+public sealed record DomainCutoverModeConfig(bool ShadowWritesEnabled = true, string ReadMode = "LegacyInMemory");
+```
+
+## EnvironmentOverrideInfo
+
+Qualified name: <code>Meridian.Core.Config.EnvironmentOverrideInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Config/ConfigEnvironmentOverride.cs:507](../../../../src/Meridian.Core/Config/ConfigEnvironmentOverride.cs#L507).
+
+Information about an environment variable override.
+
+```csharp
+public sealed class EnvironmentOverrideInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string EnvironmentVariable { get; set; } = &quot;&quot;;</code> | [src/Meridian.Core/Config/ConfigEnvironmentOverride.cs:509](../../../../src/Meridian.Core/Config/ConfigEnvironmentOverride.cs#L509) |  |
+| <code>public string ConfigPath { get; set; } = &quot;&quot;;</code> | [src/Meridian.Core/Config/ConfigEnvironmentOverride.cs:510](../../../../src/Meridian.Core/Config/ConfigEnvironmentOverride.cs#L510) |  |
+| <code>public string? CurrentValue { get; set; }</code> | [src/Meridian.Core/Config/ConfigEnvironmentOverride.cs:511](../../../../src/Meridian.Core/Config/ConfigEnvironmentOverride.cs#L511) |  |
+| <code>public bool IsSet { get; set; }</code> | [src/Meridian.Core/Config/ConfigEnvironmentOverride.cs:512](../../../../src/Meridian.Core/Config/ConfigEnvironmentOverride.cs#L512) |  |
+| <code>public bool IsSensitive { get; set; }</code> | [src/Meridian.Core/Config/ConfigEnvironmentOverride.cs:513](../../../../src/Meridian.Core/Config/ConfigEnvironmentOverride.cs#L513) |  |
+
+## FailoverRuleConfig
+
+Qualified name: <code>Meridian.Core.Config.FailoverRuleConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/DataSourceConfig.cs:261](../../../../src/Meridian.Core/Config/DataSourceConfig.cs#L261).
+
+Configuration for a failover rule.
+
+```csharp
+public sealed record FailoverRuleConfig(string Id, string PrimaryProviderId, string[] BackupProviderIds, int FailoverThreshold = 3, int RecoveryThreshold = 5, double DataQualityThreshold = 0, double MaxLatencyMs = 0);
+```
+
+## FailoverRuleThresholdAudit
+
+Qualified name: <code>Meridian.Core.Config.FailoverRuleThresholdAudit</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/DataSourceConfig.cs:248](../../../../src/Meridian.Core/Config/DataSourceConfig.cs#L248).
+
+Immutable operator evidence for a failover validation-threshold relaxation.
+
+```csharp
+public sealed record FailoverRuleThresholdAudit(string RuleId, string Actor, string Reason, DateTimeOffset ChangedAtUtc, double PreviousDataQualityThreshold, double DataQualityThreshold, double PreviousMaxLatencyMs, double MaxLatencyMs, int PreviousFailoverThreshold, int FailoverThreshold, int PreviousRecoveryThreshold, int RecoveryThreshold, string Operation = "ThresholdRelaxation", string? PrimaryProviderId = null, string[]? BackupProviderIds = null);
+```
+
 ## FeatureCapabilityCatalog
 
 Qualified name: <code>Meridian.Core.Config.FeatureCapabilityCatalog</code>. Kind: `class`.
@@ -78,19 +148,19 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.FinnhubConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:276](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L276).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:285](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L285).
 
 Finnhub provider configuration. Generous free tier with company fundamentals, earnings, and news. Free tier: 60 API calls/minute.
 
 ```csharp
-public sealed record FinnhubConfig(bool Enabled = true, string? ApiKey = null, int Priority = 18, int RateLimitPerMinute = 60);
+public sealed record FinnhubConfig(bool Enabled = true, string? ApiKey = null, int Priority = BackfillProviderCatalog.FinnhubPriority, int RateLimitPerMinute = BackfillProviderCatalog.FinnhubPerMinute, string TierId = "free");
 ```
 
 ## FredConfig
 
 Qualified name: <code>Meridian.Core.Config.FredConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:291](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L291).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:301](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L301).
 
 FRED (Federal Reserve Economic Data) provider configuration. Maps economic time-series observations into synthetic daily bars for Meridian backfill workflows.
 
@@ -251,24 +321,24 @@ public sealed record IndexOptionsConfig(bool Enabled = false, string[]? Indices 
 
 Qualified name: <code>Meridian.Core.Config.NasdaqDataLinkConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:166](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L166).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:170](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L170).
 
 Nasdaq Data Link (Quandl) provider configuration.
 
 ```csharp
-public sealed record NasdaqDataLinkConfig(bool Enabled = true, string? ApiKey = null, string Database = "WIKI", int Priority = 30);
+public sealed record NasdaqDataLinkConfig(bool Enabled = true, string? ApiKey = null, string Database = "WIKI", int Priority = BackfillProviderCatalog.NasdaqPriority);
 ```
 
 ## OpenFigiConfig
 
 Qualified name: <code>Meridian.Core.Config.OpenFigiConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:191](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L191).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:195](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L195).
 
 OpenFIGI symbol resolver configuration.
 
 ```csharp
-public sealed record OpenFigiConfig(bool Enabled = true, string? ApiKey = null, bool CacheResults = true);
+public sealed record OpenFigiConfig(bool Enabled = true, string? ApiKey = null, bool CacheResults = true, string TierId = "free", int? RateLimitPerMinute = null);
 ```
 
 ## PipelineRuntimeConfig
@@ -287,12 +357,12 @@ public sealed record PipelineRuntimeConfig(int? FinalFlushTimeoutSeconds = null,
 
 Qualified name: <code>Meridian.Core.Config.PolygonConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:242](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L242).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:250](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L250).
 
 Polygon.io provider configuration. High-quality OHLCV aggregates with reference data. Free tier: 5 API calls/minute, 2 years history.
 
 ```csharp
-public sealed record PolygonConfig(bool Enabled = true, string? ApiKey = null, int Priority = 12, int RateLimitPerMinute = 5);
+public sealed record PolygonConfig(bool Enabled = true, string? ApiKey = null, int Priority = BackfillProviderCatalog.PolygonPriority, int RateLimitPerMinute = BackfillProviderCatalog.PolygonPerMinute, string TierId = "free");
 ```
 
 ## PolygonOptions
@@ -465,11 +535,44 @@ A host-selected provider connection; never a credential value or provider-wide f
 public sealed record ProviderRuntimeCredentialBinding(string ProviderId, string TenantId, string ConnectionId, string? ExternalAccountId = null, string? Environment = null, string? SelectionId = null);
 ```
 
+## ProviderValidationProfile
+
+Qualified name: <code>Meridian.Core.Config.ProviderValidationProfile</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/ProviderValidationProfile.cs:4](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L4).
+
+Provider-specific, non-secret validation tolerances. Zero latency disables that check.
+
+```csharp
+public sealed record ProviderValidationProfile(int StaleToleranceDays = 10, int FutureSkewSeconds = 300, int? StaleThresholdSeconds = null, double MaxLatencyMs = 0)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ProviderValidationProfile Default { get; } = new ();</code> | [src/Meridian.Core/Config/ProviderValidationProfile.cs:10](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L10) |  |
+| <code>public void Validate();</code> | [src/Meridian.Core/Config/ProviderValidationProfile.cs:12](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L12) |  |
+| <code>public bool Loosens(ProviderValidationProfile previous) =&gt; …;</code> | [src/Meridian.Core/Config/ProviderValidationProfile.cs:20](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L20) |  |
+| <code>public static ProviderValidationProfile Resolve(BackfillConfig? config, string providerName) =&gt; …;</code> | [src/Meridian.Core/Config/ProviderValidationProfile.cs:26](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L26) |  |
+
+## ProviderValidationProfileAudit
+
+Qualified name: <code>Meridian.Core.Config.ProviderValidationProfileAudit</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/ProviderValidationProfile.cs:32](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L32).
+
+Before/after evidence saved atomically with each profile change.
+
+```csharp
+public sealed record ProviderValidationProfileAudit(Guid Id, string Provider, DateTimeOffset ChangedAt, string Actor, string? Reason, bool Loosened, ProviderValidationProfile Before, ProviderValidationProfile After);
+```
+
 ## RobinhoodConfig
 
 Qualified name: <code>Meridian.Core.Config.RobinhoodConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:306](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L306).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:316](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L316).
 
 Robinhood historical data provider configuration. Uses the unofficial Robinhood API; requires a personal access token. No official public API exists — set ROBINHOOD_ACCESS_TOKEN via environment variable.
 
@@ -481,7 +584,7 @@ public sealed record RobinhoodConfig(bool Enabled = false, int Priority = 35, in
 
 Qualified name: <code>Meridian.Core.Config.ScheduledBackfillConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:100](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L100).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:102](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L102).
 
 Configuration for scheduled backfill operations.
 
@@ -573,12 +676,12 @@ public sealed record SourceRegistryConfig(string? PersistencePath = null);
 
 Qualified name: <code>Meridian.Core.Config.StooqConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:179](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L179).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:183](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L183).
 
 Stooq provider configuration.
 
 ```csharp
-public sealed record StooqConfig(bool Enabled = true, int Priority = 20, string DefaultMarket = "us");
+public sealed record StooqConfig(bool Enabled = true, int Priority = BackfillProviderCatalog.StooqPriority, string DefaultMarket = "us");
 ```
 
 ## StorageConfig
@@ -633,126 +736,10 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.SymbolMappingConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/DataSourceConfig.cs:313](../../../../src/Meridian.Core/Config/DataSourceConfig.cs#L313).
+Source: [src/Meridian.Core/Config/DataSourceConfig.cs:330](../../../../src/Meridian.Core/Config/DataSourceConfig.cs#L330).
 
 Configuration for a single symbol mapping.
 
 ```csharp
 public sealed record SymbolMappingConfig(string CanonicalSymbol, string? IbSymbol = null, string? AlpacaSymbol = null, string? PolygonSymbol = null, string? YahooSymbol = null, string? Name = null, string? Figi = null);
 ```
-
-## SymbolMappingsConfig
-
-Qualified name: <code>Meridian.Core.Config.SymbolMappingsConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/DataSourceConfig.cs:287](../../../../src/Meridian.Core/Config/DataSourceConfig.cs#L287).
-
-Configuration for symbol mappings.
-
-```csharp
-public sealed record SymbolMappingsConfig(string? PersistencePath = null, SymbolMappingConfig[]? Mappings = null, SymbolResolutionMode ResolutionMode = SymbolResolutionMode.Compare, bool ReportMismatches = true);
-```
-
-## SyntheticMarketDataConfig
-
-Qualified name: <code>Meridian.Core.Config.SyntheticMarketDataConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/SyntheticMarketDataConfig.cs:7](../../../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs#L7).
-
-Configuration for the built-in synthetic market data provider used for local development, offline integration testing, and historical replay without live credentials.
-
-```csharp
-public sealed record SyntheticMarketDataConfig(bool Enabled = false, int Seed = 1729, int Priority = 1, int EventsPerSecond = 8, int HistoricalTradeDensityPerDay = 120, int HistoricalQuoteDensityPerDay = 180, int DefaultDepthLevels = 10, bool IncludeCorporateActions = true, bool IncludeReferenceData = true, string[]? UniverseSymbols = null, DateOnly? DefaultHistoryStart = null, DateOnly? DefaultHistoryEnd = null, SyntheticScenarioConfig? Scenario = null);
-```
-
-## SyntheticScenarioConfig
-
-Qualified name: <code>Meridian.Core.Config.SyntheticScenarioConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/SyntheticMarketDataConfig.cs:23](../../../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs#L23).
-
-```csharp
-public sealed record SyntheticScenarioConfig(bool Enabled = false, int ThrottleEveryNCalls = 0, int TimeoutEveryNCalls = 0, int DegradeEveryNEvents = 0, int ReplayBarsLimit = 0, int BackfillBarsLimit = 0, int ThrottleDelayMs = 150, bool ApplyToHistorical = true, bool ApplyToStreaming = true);
-```
-
-## TiingoConfig
-
-Qualified name: <code>Meridian.Core.Config.TiingoConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:226](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L226).
-
-Tiingo provider configuration. Best for: High-quality dividend-adjusted OHLCV with corporate actions. Free tier: 1,000 requests/day, 50 requests/hour.
-
-```csharp
-public sealed record TiingoConfig(bool Enabled = true, string? ApiToken = null, int Priority = 15, int RateLimitPerHour = 50);
-```
-
-## TracingConfig
-
-Qualified name: <code>Meridian.Core.Config.TracingConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/TracingConfig.cs:7](../../../../src/Meridian.Core/Config/TracingConfig.cs#L7).
-
-Restart-required, opt-in distributed tracing settings. Exporters remain disabled unless explicitly selected; an OTLP destination is required when OTLP export is enabled.
-
-```csharp
-public sealed record TracingConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Enabled { get; init; }</code> | [src/Meridian.Core/Config/TracingConfig.cs:9](../../../../src/Meridian.Core/Config/TracingConfig.cs#L9) |  |
-| <code>public string ServiceName { get; init; } = &quot;Meridian&quot;;</code> | [src/Meridian.Core/Config/TracingConfig.cs:10](../../../../src/Meridian.Core/Config/TracingConfig.cs#L10) |  |
-| <code>public string ServiceVersion { get; init; } = &quot;1.0.0&quot;;</code> | [src/Meridian.Core/Config/TracingConfig.cs:11](../../../../src/Meridian.Core/Config/TracingConfig.cs#L11) |  |
-| <code>public string Environment { get; init; } = &quot;development&quot;;</code> | [src/Meridian.Core/Config/TracingConfig.cs:12](../../../../src/Meridian.Core/Config/TracingConfig.cs#L12) |  |
-| <code>public bool EnableConsoleExporter { get; init; }</code> | [src/Meridian.Core/Config/TracingConfig.cs:13](../../../../src/Meridian.Core/Config/TracingConfig.cs#L13) |  |
-| <code>public bool EnableOtlpExporter { get; init; }</code> | [src/Meridian.Core/Config/TracingConfig.cs:14](../../../../src/Meridian.Core/Config/TracingConfig.cs#L14) |  |
-| <code>public string? OtlpEndpoint { get; init; }</code> | [src/Meridian.Core/Config/TracingConfig.cs:15](../../../../src/Meridian.Core/Config/TracingConfig.cs#L15) |  |
-| <code>public string? OtlpHeaders { get; init; }</code> | [src/Meridian.Core/Config/TracingConfig.cs:16](../../../../src/Meridian.Core/Config/TracingConfig.cs#L16) |  |
-| <code>public double SamplingRatio { get; init; } = 1.0;</code> | [src/Meridian.Core/Config/TracingConfig.cs:17](../../../../src/Meridian.Core/Config/TracingConfig.cs#L17) |  |
-| <code>public int FlushTimeoutMilliseconds { get; init; } = 5000;</code> | [src/Meridian.Core/Config/TracingConfig.cs:18](../../../../src/Meridian.Core/Config/TracingConfig.cs#L18) |  |
-
-## TwelveDataQuotaConfig
-
-Qualified name: <code>Meridian.Core.Config.TwelveDataQuotaConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/ProviderQuotasConfig.cs:13](../../../../src/Meridian.Core/Config/ProviderQuotasConfig.cs#L13).
-
-Twelve Data Basic defaults. Daily credits reset at midnight UTC. A paid account must explicitly declare its limits and fundamentals entitlement; numeric capacity alone grants none. NoDailyLimit explicitly declares an account without a daily credit cap.
-
-```csharp
-public sealed record TwelveDataQuotaConfig(int CreditsPerMinute = 8, int DailyCredits = 800, bool FundamentalsEntitled = false, bool NoDailyLimit = false);
-```
-
-## ValidatedConfig
-
-Qualified name: <code>Meridian.Core.Config.ValidatedConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/ValidatedConfig.cs:17](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L17).
-
-Represents a validated, normalized configuration that has passed through the full configuration pipeline. This is the single output type from all configuration entry points (wizard, auto-config, file load, hot reload).
-
-```csharp
-public sealed record ValidatedConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required AppConfig Config { get; init; }</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:22](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L22) | The normalized and validated configuration. |
-| <code>public required bool IsValid { get; init; }</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:27](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L27) | Whether the configuration passed validation. |
-| <code>public string? SourcePath { get; init; }</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:32](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L32) | The source path of the configuration file (if loaded from file). |
-| <code>public IReadOnlyList&lt;string&gt; ValidationErrors { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:37](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L37) | Validation errors, if any. |
-| <code>public IReadOnlyList&lt;string&gt; AppliedFixes { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:42](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L42) | Self-healing fixes that were applied to the configuration. |
-| <code>public IReadOnlyList&lt;string&gt; BlockedFixes { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:49](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L49) | Self-healing fixes that were not applied because production-strictness mode refused them (MDC_CONFIG_STRICTNESS=production). Each entry is an actionable description of the required manual correction. |
-| <code>public IReadOnlyList&lt;string&gt; Warnings { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:54](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L54) | Warnings that should be surfaced to the user but don&#x27;t prevent operation. |
-| <code>public string? EnvironmentName { get; init; }</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:59](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L59) | The environment name used for overlays (e.g., &quot;Production&quot;, &quot;Development&quot;). |
-| <code>public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:64](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L64) | When the configuration was loaded/validated. |
-| <code>public ConfigurationOrigin Source { get; init; } = ConfigurationOrigin.File;</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:69](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L69) | How the configuration was sourced. |
-| <code>public static ValidatedConfig FromConfig(AppConfig config, bool isValid, string? sourcePath = null, IReadOnlyList&lt;string&gt;? validationErrors = null, IReadOnlyList&lt;string&gt;? appliedFixes = null, IReadOnlyList&lt;string&gt;? warnings = null, string? environmentName = null, ConfigurationOrigin source = ConfigurationOrigin.File, IReadOnlyList&lt;string&gt;? blockedFixes = null);</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:74](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L74) | Creates a validated config from a raw AppConfig after running it through validation. |
-| <code>public static ValidatedConfig Failed(AppConfig? config, IReadOnlyList&lt;string&gt; errors, string? sourcePath = null, ConfigurationOrigin source = ConfigurationOrigin.File);</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:103](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L103) | Creates a ValidatedConfig representing a failure state. |
-| <code>public static ValidatedConfig Default() =&gt; …;</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:123](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L123) | Creates a ValidatedConfig with default/empty configuration. |
-| <code>public static implicit operator AppConfig(ValidatedConfig validated) =&gt; …;</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:134](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L134) | Implicit conversion to AppConfig for backwards compatibility. |

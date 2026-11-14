@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundReconciliationWorkbenchSnapshot
+
+Qualified name: <code>Meridian.Wpf.Models.FundReconciliationWorkbenchSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:52](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L52).
+
+```csharp
+public sealed record FundReconciliationWorkbenchSnapshot(ReconciliationSummary Summary, ReconciliationCalibrationSummaryDto? CalibrationSummary, IReadOnlyList<FundReconciliationCalibrationProfileRow> CalibrationProfiles, IReadOnlyList<FundReconciliationBreakQueueRow> BreakQueueItems, IReadOnlyList<FundReconciliationRunRow> RunRows, DateTimeOffset RefreshedAt, int InReviewBreakCount, FundReconciliationReadAvailability ReadAvailability, int KnownRunCount, int MissingRunCount, int UnavailableRunCount, bool BreakQueueReadAvailable, bool CalibrationReadAvailable);
+```
+
 ## GapAnalysisItem
 
 Qualified name: <code>Meridian.Wpf.Models.GapAnalysisItem</code>. Kind: `class`.
@@ -1053,19 +1063,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IReadOnlyList&lt;WorkspaceShellDescriptor&gt; Workspaces =&gt; …;</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.Workspaces.cs:13](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Workspaces.cs#L13) |  |
-
-## ShellNavigationItem
-
-Qualified name: <code>Meridian.Wpf.Models.ShellNavigationItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/ShellNavigationModels.cs:70](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L70).
-
-```csharp
-public sealed record ShellNavigationItem(string PageTag, string Title, string Subtitle, string WorkspaceTitle, string SectionLabel, string Glyph, string VisibilityLabel)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string MetaLine { get; }</code> | [src/Meridian.Wpf/Models/ShellNavigationModels.cs:79](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L79) |  |

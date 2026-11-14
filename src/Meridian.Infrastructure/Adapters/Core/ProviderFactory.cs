@@ -271,34 +271,36 @@ public sealed partial class ProviderFactory
             EnabledByDefault(cfg?.Enabled),
             "POLYGON_API_KEY",
             cfg?.ApiKey,
-            apiKey => new PolygonHistoricalDataProvider(apiKey: apiKey, log: _log));
+            apiKey => new PolygonHistoricalDataProvider(apiKey: apiKey, log: _log, runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "polygon")));
 
     internal IHistoricalDataProvider? CreateTiingoBackfillProvider(TiingoBackfillConfig? cfg)
         => CreateCredentialGatedBackfillProvider<TiingoHistoricalDataProvider>(
             EnabledByDefault(cfg?.Enabled),
             "TIINGO_API_TOKEN",
             cfg?.ApiToken,
-            token => new TiingoHistoricalDataProvider(apiToken: token, log: _log));
+            token => new TiingoHistoricalDataProvider(apiToken: token, log: _log, runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "tiingo")));
 
     internal IHistoricalDataProvider? CreateTwelveDataBackfillProvider()
         => CreateCredentialGatedBackfillProvider<TwelveDataHistoricalDataProvider>(
-            enabled: true,
+            enabled: _config.Backfill?.Providers?.TwelveData?.Enabled ?? true,
             "TWELVEDATA_API_KEY",
             configuredValue: null,
-            apiKey => new TwelveDataHistoricalDataProvider(apiKey: apiKey, log: _log, rateLimiterRegistry: _quotaRegistry, quotaConfig: _config.ProviderQuotas?.TwelveData));
+            apiKey => new TwelveDataHistoricalDataProvider(apiKey: apiKey, log: _log, rateLimiterRegistry: _quotaRegistry,
+                quotaConfig: _config.ProviderQuotas?.TwelveData,
+                runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "twelvedata")));
 
     internal IHistoricalDataProvider? CreateFinnhubBackfillProvider(FinnhubBackfillConfig? cfg)
         => CreateCredentialGatedBackfillProvider<FinnhubHistoricalDataProvider>(
             EnabledByDefault(cfg?.Enabled),
             "FINNHUB_API_KEY",
             cfg?.ApiKey,
-            apiKey => new FinnhubHistoricalDataProvider(apiKey: apiKey, log: _log));
+            apiKey => new FinnhubHistoricalDataProvider(apiKey: apiKey, log: _log, runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "finnhub")));
 
     internal IHistoricalDataProvider? CreateStooqBackfillProvider(StooqBackfillConfig? cfg)
     {
         if (!EnabledByDefault(cfg?.Enabled))
             return null;
-        return new StooqHistoricalDataProvider(log: _log);
+        return new StooqHistoricalDataProvider(log: _log, runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "stooq"));
     }
 
     internal IHistoricalDataProvider? CreateAlphaVantageBackfillProvider(AlphaVantageBackfillConfig? cfg)
@@ -307,7 +309,9 @@ public sealed partial class ProviderFactory
             EnabledWhenOptedIn(cfg?.Enabled),
             "ALPHA_VANTAGE_API_KEY",
             cfg?.ApiKey,
-            apiKey => new AlphaVantageHistoricalDataProvider(apiKey: apiKey, log: _log, rateLimiterRegistry: _quotaRegistry, quotaConfig: _config.ProviderQuotas?.AlphaVantage));
+            apiKey => new AlphaVantageHistoricalDataProvider(apiKey: apiKey, log: _log, rateLimiterRegistry: _quotaRegistry,
+                quotaConfig: _config.ProviderQuotas?.AlphaVantage,
+                runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "alphavantage")));
 
     internal IHistoricalDataProvider? CreateNasdaqBackfillProvider(NasdaqBackfillConfig? cfg)
     {
@@ -322,7 +326,8 @@ public sealed partial class ProviderFactory
         return new NasdaqDataLinkHistoricalDataProvider(
             apiKey: apiKey,
             database: cfg?.Database ?? "WIKI",
-            log: _log);
+            log: _log,
+            runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "nasdaqdatalink"));
     }
 
     internal IHistoricalDataProvider? CreateRobinhoodBackfillProvider(RobinhoodConfig? cfg)
@@ -382,14 +387,18 @@ public sealed partial class ProviderFactory
             EnabledWhenOptedIn(cfg?.Enabled),
             "ALPHA_VANTAGE_API_KEY",
             cfg?.ApiKey,
-            apiKey => new AlphaVantageSymbolSearchProvider(apiKey, httpClient: null, log: _log, rateLimiterRegistry: _quotaRegistry, quotaConfig: _config.ProviderQuotas?.AlphaVantage));
+            apiKey => new AlphaVantageSymbolSearchProvider(apiKey, httpClient: null, log: _log, rateLimiterRegistry: _quotaRegistry,
+                quotaConfig: _config.ProviderQuotas?.AlphaVantage,
+                runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "alphavantage")));
 
     internal ISymbolSearchProvider? CreateTwelveDataSearchProvider()
         => CreateCredentialGatedSearchProvider<TwelveDataHistoricalDataProvider>(
-            enabled: true,
+            enabled: _config.Backfill?.Providers?.TwelveData?.Enabled ?? true,
             "TWELVEDATA_API_KEY",
             configuredValue: null,
-            apiKey => new TwelveDataSymbolSearchProvider(apiKey, httpClient: null, log: _log, rateLimiterRegistry: _quotaRegistry, quotaConfig: _config.ProviderQuotas?.TwelveData));
+            apiKey => new TwelveDataSymbolSearchProvider(apiKey, httpClient: null, log: _log, rateLimiterRegistry: _quotaRegistry,
+                quotaConfig: _config.ProviderQuotas?.TwelveData,
+                runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "twelvedata")));
 
     internal ISymbolSearchProvider? CreateNasdaqSearchProvider(NasdaqBackfillConfig? cfg)
         => CreateCredentialGatedSearchProvider<NasdaqDataLinkHistoricalDataProvider>(
@@ -418,7 +427,8 @@ public sealed partial class ProviderFactory
             providers,
             enableSymbolResolution ? _symbolResolver : null,
             enableCrossValidation: false,
-            log: _log);
+            log: _log,
+            validationProfiles: _config.Backfill?.ValidationProfiles);
     }
 
     /// <summary>

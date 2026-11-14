@@ -6,6 +6,55 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolMappingPage
+
+Qualified name: <code>Meridian.Wpf.Views.SymbolMappingPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:17](../../../../src/Meridian.Wpf/Views/Pages.cs#L17).
+
+```csharp
+public partial class SymbolMappingPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs#L14).
+
+Symbol mapping page for managing provider-specific symbol translations, testing mappings, and importing/exporting CSV mapping files.
+
+```csharp
+public partial class SymbolMappingPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolMappingPage() : this(new SymbolMappingViewModel());</code> | [src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs:19](../../../../src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs#L19) |  |
+| <code>public SymbolMappingPage(SymbolMappingViewModel viewModel);</code> | [src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs:24](../../../../src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs#L24) |  |
+
+## SymbolsPage
+
+Qualified name: <code>Meridian.Wpf.Views.SymbolsPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:16](../../../../src/Meridian.Wpf/Views/Pages.cs#L16).
+
+```csharp
+public partial class SymbolsPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/SymbolsPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/SymbolsPage.xaml.cs#L17).
+
+Symbol subscription management page — thin code-behind. All state, business logic, watchlist event handling, and backend sync live in SymbolsPageViewModel.
+
+```csharp
+public partial class SymbolsPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolsPage(WpfServices.ConfigService configService, WpfServices.WatchlistService watchlistService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService, WpfServices.NavigationService navigationService);</code> | [src/Meridian.Wpf/Views/SymbolsPage.xaml.cs:27](../../../../src/Meridian.Wpf/Views/SymbolsPage.xaml.cs#L27) |  |
+
 ## SymbolStoragePage
 
 Qualified name: <code>Meridian.Wpf.Views.SymbolStoragePage</code>. Kind: `class`.
@@ -1095,28 +1144,4 @@ Provides an items-control surface for diagnostic checklist entries.
 
 ```csharp
 public sealed class DiagnosticsChecklistControl : ItemsControl
-```
-
-## ProviderSelectorControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Diagnostics.ProviderSelectorControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs:18](../../../../src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs#L18).
-
-Provides a combo-box surface for selecting a provider.
-
-```csharp
-public sealed class ProviderSelectorControl : ComboBox
-```
-
-## RoutingMatrixControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Diagnostics.RoutingMatrixControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs:33](../../../../src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs#L33).
-
-Provides a data-grid surface for workflow routing rows.
-
-```csharp
-public sealed class RoutingMatrixControl : DataGrid
 ```

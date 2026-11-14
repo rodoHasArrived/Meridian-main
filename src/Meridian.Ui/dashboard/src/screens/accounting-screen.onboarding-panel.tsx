@@ -11,6 +11,7 @@ import type {
   OnboardingComparison, OnboardingCriteria, OnboardingDifference, OnboardingReadinessPacket, OnboardingSourceSelection, OnboardingWorkspace
 } from "@/types/accounting-onboarding";
 import { Checkbox } from "@/components/ui/checkbox";
+import { OnboardingShadowPanel } from "./accounting-screen.onboarding-shadow-panel";
 
 const split = (value: FormDataEntryValue | null) => String(value ?? "").split(/[,\n]/).map(item => item.trim()).filter(Boolean);
 const field = (data: FormData, name: string) => String(data.get(name) ?? "").trim();
@@ -182,6 +183,7 @@ function WorkspaceDetail({ workspace, onChanged }: { workspace: OnboardingWorksp
     </TechnicalDetails> : null}
     {error ? <StatusBanner tone="danger" role="alert" title="Onboarding action failed" detail={error} /> : null}
     {message ? <p role="status" className="text-sm">{message}</p> : null}
+    <OnboardingShadowPanel workspace={workspace} onChanged={onChanged} />
     <TechnicalDetails label="Coverage and review criteria" description="The onboarding owner can revise criteria. Earlier comparisons and frozen packets keep their original criteria; new work requires review of the current revision.">
       <form aria-label="Update onboarding criteria" key={workspace.dataRevision} className="space-y-3" onSubmit={event => { event.preventDefault(); const criteria = criteriaFrom(new FormData(event.currentTarget)); void mutate(signal => api.updateOnboardingCriteria(workspace.workspaceId, workspace.version, criteria, { signal }), "Criteria revision retained."); }}>
         <CriteriaFields criteria={workspace.criteria} />

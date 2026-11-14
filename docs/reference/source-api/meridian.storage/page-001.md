@@ -598,7 +598,8 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;AssetAccountingEventProjectionRecord?&gt; GetAsync(Guid eventId, long eventVersion, long spineVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs:28](../../../../src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs#L28) |  |
 | <code>Task&lt;AssetAccountingEventProjectionRecord?&gt; GetLatestAsync(Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs:34](../../../../src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs#L34) |  |
-| <code>Task&lt;AssetAccountingEventAppendResult&gt; AppendAsync(AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedBookPositionVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs:39](../../../../src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs#L39) |  |
+| <code>Task&lt;IReadOnlyList&lt;AssetAccountingEventProjectionRecord&gt;&gt; ListByBookPeriodAsync(Guid ledgerBookId, Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs:40](../../../../src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs#L40) | Reads the latest retained lifecycle version of every source-event version in one exact book and period. |
+| <code>Task&lt;AssetAccountingEventAppendResult&gt; AppendAsync(AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedBookPositionVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs:47](../../../../src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs#L47) |  |
 
 ## IAssetOperationsProjectionStore
 
@@ -656,7 +657,8 @@ Declared public members:
 | --- | --- | --- |
 | <code>public Task&lt;AssetAccountingEventProjectionRecord?&gt; GetAsync(Guid eventId, long eventVersion, long spineVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/InMemoryAssetOperationsProjectionStore.AssetAccountingEvents.cs:10](../../../../src/Meridian.Storage/AssetOperations/InMemoryAssetOperationsProjectionStore.AssetAccountingEvents.cs#L10) |  |
 | <code>public Task&lt;AssetAccountingEventProjectionRecord?&gt; GetLatestAsync(Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/InMemoryAssetOperationsProjectionStore.AssetAccountingEvents.cs:29](../../../../src/Meridian.Storage/AssetOperations/InMemoryAssetOperationsProjectionStore.AssetAccountingEvents.cs#L29) |  |
-| <code>public async Task&lt;AssetAccountingEventAppendResult&gt; AppendAsync(AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedBookPositionVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/InMemoryAssetOperationsProjectionStore.AssetAccountingEvents.cs:52](../../../../src/Meridian.Storage/AssetOperations/InMemoryAssetOperationsProjectionStore.AssetAccountingEvents.cs#L52) |  |
+| <code>public Task&lt;IReadOnlyList&lt;AssetAccountingEventProjectionRecord&gt;&gt; ListByBookPeriodAsync(Guid ledgerBookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/InMemoryAssetOperationsProjectionStore.AssetAccountingEvents.cs:52](../../../../src/Meridian.Storage/AssetOperations/InMemoryAssetOperationsProjectionStore.AssetAccountingEvents.cs#L52) |  |
+| <code>public async Task&lt;AssetAccountingEventAppendResult&gt; AppendAsync(AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedBookPositionVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/InMemoryAssetOperationsProjectionStore.AssetAccountingEvents.cs:70](../../../../src/Meridian.Storage/AssetOperations/InMemoryAssetOperationsProjectionStore.AssetAccountingEvents.cs#L70) |  |
 
 Source: [src/Meridian.Storage/AssetOperations/InMemoryAssetOperationsProjectionStore.cs:9](../../../../src/Meridian.Storage/AssetOperations/InMemoryAssetOperationsProjectionStore.cs#L9).
 
@@ -712,7 +714,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.AssetOperations.ITransactionalAssetAccountingEventProjectionStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs:47](../../../../src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs#L47).
+Source: [src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs:55](../../../../src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs#L55).
 
 Native cash-dividend lifecycle appends sharing the journal and case transaction.
 
@@ -724,8 +726,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;AssetAccountingEventProjectionRecord?&gt; GetLatestAsync(Npgsql.NpgsqlConnection connection, Npgsql.NpgsqlTransaction transaction, Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs:49](../../../../src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs#L49) |  |
-| <code>Task&lt;AssetAccountingEventAppendResult&gt; AppendAsync(Npgsql.NpgsqlConnection connection, Npgsql.NpgsqlTransaction transaction, AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedBookPositionVersion, Meridian.Storage.SecurityMaster.CorporateActionCashDividendPostingLease lease, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs:52](../../../../src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs#L52) |  |
+| <code>Task&lt;AssetAccountingEventProjectionRecord?&gt; GetLatestAsync(Npgsql.NpgsqlConnection connection, Npgsql.NpgsqlTransaction transaction, Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs:57](../../../../src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs#L57) |  |
+| <code>Task&lt;AssetAccountingEventAppendResult&gt; AppendAsync(Npgsql.NpgsqlConnection connection, Npgsql.NpgsqlTransaction transaction, AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedBookPositionVersion, Meridian.Storage.SecurityMaster.CorporateActionCashDividendPostingLease lease, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs:60](../../../../src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs#L60) |  |
 
 ## PostgresAssetOperationsProjectionStore
 
@@ -743,7 +745,8 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;AssetAccountingEventProjectionRecord?&gt; GetAsync(Guid eventId, long eventVersion, long spineVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:12](../../../../src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs#L12) |  |
 | <code>public async Task&lt;AssetAccountingEventProjectionRecord?&gt; GetLatestAsync(Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:31](../../../../src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs#L31) |  |
-| <code>public async Task&lt;AssetAccountingEventAppendResult&gt; AppendAsync(AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedBookPositionVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:47](../../../../src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs#L47) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AssetAccountingEventProjectionRecord&gt;&gt; ListByBookPeriodAsync(Guid ledgerBookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:47](../../../../src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs#L47) |  |
+| <code>public async Task&lt;AssetAccountingEventAppendResult&gt; AppendAsync(AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedBookPositionVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:79](../../../../src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs#L79) |  |
 
 Source: [src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.CashDividendAttestation.cs:9](../../../../src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.CashDividendAttestation.cs#L9).
 

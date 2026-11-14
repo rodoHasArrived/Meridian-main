@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getHistoricalBars } from "@/lib/api";
+import { formatTimestamp } from "@/lib/format";
 import type { HistoricalBarPoint, HistoricalBarsResponse } from "@/types";
 import {
   CANDLESTICK_BOLLINGER_MULTIPLIER,
@@ -1168,7 +1169,7 @@ function buildRsiPanel({
 function formatBarTimeLabel(start: string): string {
   const date = new Date(start);
   if (Number.isNaN(date.getTime())) return start;
-  return date.toLocaleString();
+  return formatTimestamp(date);
 }
 
 function formatChangeWithPct(change: number | null, pct: number | null): string {

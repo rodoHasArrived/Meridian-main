@@ -6,6 +6,126 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateScheduleRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.CreateScheduleRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs:78](../../../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs#L78).
+
+Request to create or update a schedule.
+
+```csharp
+public sealed record CreateScheduleRequest(string Name, string[] Symbols, ScheduleAction Action, ScheduleTiming Timing, string? Description = null);
+```
+
+## CreateWatchlistRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.CreateWatchlistRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/Watchlist.cs:45](../../../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs#L45).
+
+Request to create a new watchlist.
+
+```csharp
+public sealed record CreateWatchlistRequest(string Name, string? Description = null, string[]? Symbols = null, string? Color = null, bool IsActive = true, WatchlistDefaults? Defaults = null);
+```
+
+## CsvColumns
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.CsvColumns</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:74](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L74).
+
+CSV column mappings for import/export.
+
+```csharp
+public static class CsvColumns
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Symbol = &quot;Symbol&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:76](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L76) |  |
+| <code>public const string SubscribeTrades = &quot;SubscribeTrades&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:77](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L77) |  |
+| <code>public const string SubscribeDepth = &quot;SubscribeDepth&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:78](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L78) |  |
+| <code>public const string DepthLevels = &quot;DepthLevels&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:79](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L79) |  |
+| <code>public const string SecurityType = &quot;SecurityType&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:80](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L80) |  |
+| <code>public const string Exchange = &quot;Exchange&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:81](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L81) |  |
+| <code>public const string Currency = &quot;Currency&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:82](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L82) |  |
+| <code>public const string PrimaryExchange = &quot;PrimaryExchange&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:83](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L83) |  |
+| <code>public const string LocalSymbol = &quot;LocalSymbol&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:84](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L84) |  |
+| <code>public const string TradingClass = &quot;TradingClass&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:85](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L85) |  |
+| <code>public const string ConId = &quot;ConId&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:86](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L86) |  |
+| <code>public const string Name = &quot;Name&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:89](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L89) |  |
+| <code>public const string Sector = &quot;Sector&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:90](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L90) |  |
+| <code>public const string Industry = &quot;Industry&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:91](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L91) |  |
+| <code>public const string MarketCap = &quot;MarketCap&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:92](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L92) |  |
+| <code>public static readonly string[] Required = { Symbol };</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:94](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L94) |  |
+| <code>public static readonly string[] Standard = { Symbol, SubscribeTrades, SubscribeDepth, DepthLevels, SecurityType, Exchange, Currency, PrimaryExchange };</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:96](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L96) |  |
+| <code>public static readonly string[] Full = { Symbol, SubscribeTrades, SubscribeDepth, DepthLevels, SecurityType, Exchange, Currency, PrimaryExchange, LocalSymbol, TradingClass, ConId };</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:102](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L102) |  |
+| <code>public static readonly string[] WithMetadata = { Symbol, Name, Sector, Industry, MarketCap, SubscribeTrades, SubscribeDepth, DepthLevels, SecurityType, Exchange, Currency, PrimaryExchange };</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:109](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L109) |  |
+
+## FigiLookupRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.FigiLookupRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:212](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L212).
+
+Bulk OpenFIGI lookup request item.
+
+```csharp
+public sealed record FigiLookupRequest(string IdType, string IdValue, string? ExchCode = null, string? MarketSecDes = null);
+```
+
+## FigiMapping
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.FigiMapping</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:180](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L180).
+
+OpenFIGI mapping result.
+
+```csharp
+public sealed record FigiMapping(string Figi, string? CompositeFigi = null, string? SecurityType = null, string? MarketSector = null, string? Ticker = null, string? Name = null, string? ExchangeCode = null, string? ShareClassFigi = null, string? SecurityDescription = null);
+```
+
+## ImportDefaults
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.ImportDefaults</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:49](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L49).
+
+Default values for imported symbols.
+
+```csharp
+public sealed record ImportDefaults(bool SubscribeTrades = true, bool SubscribeDepth = true, int DepthLevels = 10, string SecurityType = "STK", string Exchange = "SMART", string Currency = "USD");
+```
+
+## ImportError
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.ImportError</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:23](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L23).
+
+Error encountered during import.
+
+```csharp
+public sealed record ImportError(int LineNumber, string? Symbol, string Message);
+```
+
+## IndexComponent
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexComponent</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:21](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L21).
+
+Individual component of an index.
+
+```csharp
+public sealed record IndexComponent(string Symbol, string Name, decimal? Weight = null, string? Sector = null);
+```
+
 ## IndexComponents
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexComponents</code>. Kind: `record`.
@@ -81,7 +201,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.ManualPortfolioEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:107](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L107).
+Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:109](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L109).
 
 Manual portfolio entry for direct import without broker API.
 
@@ -124,6 +244,18 @@ Result of a metadata filter operation.
 public sealed record MetadataFilterResult(SymbolMetadata[] Symbols, int TotalCount, SymbolMetadataFilter AppliedFilter);
 ```
 
+## PortfolioImportAccountingScope
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.PortfolioImportAccountingScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:4](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L4).
+
+Explicit, retained ownership and date for an opening-balance draft.
+
+```csharp
+public sealed record PortfolioImportAccountingScope(string TenantId, string CompanyId, string FundProfileId, Guid FinancialAccountId, Guid LedgerBookId, Guid PeriodId, DateOnly EffectiveDate, string Actor, Guid? EntityId = null);
+```
+
 ## PortfolioImportOptions
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.PortfolioImportOptions</code>. Kind: `record`.
@@ -133,7 +265,7 @@ Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:59](../../../
 Options for portfolio import.
 
 ```csharp
-public sealed record PortfolioImportOptions(decimal? MinPositionValue = null, decimal? MinQuantity = null, string[]? AssetClasses = null, string[]? ExcludeSymbols = null, bool LongOnly = false, bool CreateWatchlist = false, string? WatchlistName = null, bool SubscribeTrades = true, bool SubscribeDepth = true, bool SkipExisting = true);
+public sealed record PortfolioImportOptions(decimal? MinPositionValue = null, decimal? MinQuantity = null, string[]? AssetClasses = null, string[]? ExcludeSymbols = null, bool LongOnly = false, bool CreateWatchlist = false, string? WatchlistName = null, bool SubscribeTrades = true, bool SubscribeDepth = true, bool SkipExisting = true, string? BrokerAccountId = null);
 ```
 
 ## PortfolioImportRequest
@@ -152,13 +284,54 @@ public sealed record PortfolioImportRequest(string Broker, PortfolioImportOption
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.PortfolioImportResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:84](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L84).
+Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:86](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L86).
 
 Result of portfolio import.
 
 ```csharp
 public sealed record PortfolioImportResult(bool Success, string Broker, int ImportedCount, int SkippedCount, int FailedCount, string[] ImportedSymbols, string[] Errors, string? WatchlistId = null, PortfolioSummary? Portfolio = null);
 ```
+
+## PortfolioImportRun
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.PortfolioImportRun</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:17](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L17).
+
+A completed import means the requested draft is queued, never approved or posted.
+
+```csharp
+public sealed record PortfolioImportRun(PortfolioImportRunRequest Request, string CommandHash, PortfolioImportRunStatus Status, DateTimeOffset StartedAtUtc, DateTimeOffset UpdatedAtUtc, PortfolioSummary? Snapshot = null, string? SnapshotHash = null, PortfolioImportResult? Subscriptions = null, string? WatchlistId = null, Guid? OpeningJournalEntryId = null, string? Error = null, IReadOnlyList<string>? PlannedSymbols = null);
+```
+
+## PortfolioImportRunRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.PortfolioImportRunRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:9](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L9).
+
+```csharp
+public sealed record PortfolioImportRunRequest(Guid RunId, string Broker, PortfolioImportOptions Options, PortfolioImportAccountingScope Scope, bool PrepareOpeningBalances = false);
+```
+
+## PortfolioImportRunStatus
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.PortfolioImportRunStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:14](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L14).
+
+```csharp
+public enum PortfolioImportRunStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Running</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:14](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L14) |  |
+| <code>Succeeded</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:14](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L14) |  |
+| <code>Partial</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:14](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L14) |  |
+| <code>Failed</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:14](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L14) |  |
 
 ## PortfolioPosition
 

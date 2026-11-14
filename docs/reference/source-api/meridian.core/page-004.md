@@ -6,6 +6,190 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MigrationDiagnostics
+
+Qualified name: <code>Meridian.Core.Monitoring.MigrationDiagnostics</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:22](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L22).
+
+Temporary observability counters for the provider-registry migration. Tracks factory hit counts, reconnect attempts, and resubscription outcomes so that behavioral parity can be verified during migration phases. Part of Phase 0 — Baseline &amp; Safety Rails (refactor-map Step 0.2). These counters are intentionally additive: they do not alter runtime behavior and can be removed once the migration is complete (Phase 7). NOTE: This class lives in the Core project (not Application) so that Infrastructure can reference it without creating a circular dependency. The namespace is Core-owned because these counters are shared runtime primitives, not Application orchestration services.
+
+```csharp
+public static class MigrationDiagnostics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static long StreamingFactoryHits =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:37](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L37) |  |
+| <code>public static long BackfillFactoryHits =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:38](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L38) |  |
+| <code>public static long SymbolSearchFactoryHits =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:39](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L39) |  |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncStreamingFactoryHit(string dataSourceKind);</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:42](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L42) |  |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncBackfillFactoryHit() =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:49](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L49) |  |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncSymbolSearchFactoryHit() =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:52](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L52) |  |
+| <code>public static long GetStreamingFactoryHitsByKind(string dataSourceKind);</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:57](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L57) | Gets the streaming factory hit count for a specific data source kind. |
+| <code>public static long ReconnectAttempts =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:79](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L79) |  |
+| <code>public static long ReconnectSuccesses =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:80](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L80) |  |
+| <code>public static long ReconnectFailures =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:81](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L81) |  |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncReconnectAttempt(string provider);</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:84](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L84) |  |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncReconnectSuccess(string provider);</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:91](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L91) |  |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncReconnectFailure(string provider);</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:98](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L98) |  |
+| <code>public static long GetReconnectAttemptsByProvider(string provider);</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:106](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L106) | Gets the reconnect attempt count for a specific provider. |
+| <code>public static long GetReconnectSuccessesByProvider(string provider);</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:114](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L114) | Gets the reconnect success count for a specific provider. |
+| <code>public static long ResubscribeAttempts =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:130](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L130) |  |
+| <code>public static long ResubscribeSuccesses =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:131](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L131) |  |
+| <code>public static long ResubscribeFailures =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:132](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L132) |  |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncResubscribeAttempt() =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:135](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L135) |  |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncResubscribeSuccess() =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:138](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L138) |  |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncResubscribeFailure() =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:141](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L141) |  |
+| <code>public static long ProvidersRegistered =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:151](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L151) |  |
+| <code>public static long StreamingFactoriesRegistered =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:152](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L152) |  |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncProviderRegistered() =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:155](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L155) |  |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncStreamingFactoryRegistered() =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:158](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L158) |  |
+| <code>public static MigrationDiagnosticsSnapshot GetSnapshot();</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:165](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L165) | Gets a point-in-time snapshot of all migration diagnostics counters. |
+| <code>public static void Reset();</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:189](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L189) | Resets all counters to zero. Intended for test isolation only. |
+
+## MigrationDiagnosticsSnapshot
+
+Qualified name: <code>Meridian.Core.Monitoring.MigrationDiagnosticsSnapshot</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:215](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L215).
+
+Immutable snapshot of migration diagnostics counters at a point in time.
+
+```csharp
+public readonly record struct MigrationDiagnosticsSnapshot(long StreamingFactoryHits, long BackfillFactoryHits, long SymbolSearchFactoryHits, IReadOnlyDictionary<string, long> StreamingFactoryHitsByKind, long ReconnectAttempts, long ReconnectSuccesses, long ReconnectFailures, IReadOnlyDictionary<string, long> ReconnectAttemptsByProvider, IReadOnlyDictionary<string, long> ReconnectSuccessesByProvider, long ResubscribeAttempts, long ResubscribeSuccesses, long ResubscribeFailures, long ProvidersRegistered, long StreamingFactoriesRegistered, DateTimeOffset Timestamp);
+```
+
+## NullReconnectionMetrics
+
+Qualified name: <code>Meridian.Core.Monitoring.NullReconnectionMetrics</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Monitoring/IReconnectionMetrics.cs:24](../../../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs#L24).
+
+No-op implementation used when no metrics sink is configured.
+
+```csharp
+public sealed class NullReconnectionMetrics : IReconnectionMetrics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly NullReconnectionMetrics Instance = new ();</code> | [src/Meridian.Core/Monitoring/IReconnectionMetrics.cs:26](../../../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs#L26) |  |
+| <code>public void RecordAttempt(string provider, bool success);</code> | [src/Meridian.Core/Monitoring/IReconnectionMetrics.cs:28](../../../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs#L28) |  |
+
+## ConnectionWarmUp
+
+Qualified name: <code>Meridian.Core.Performance.ConnectionWarmUp</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:12](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L12).
+
+Connection warm-up utilities for establishing and priming network connections before critical market hours to minimize latency variance.
+
+```csharp
+public sealed class ConnectionWarmUp
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WarmUpStatistics? LastWarmUpStats { get; private set; }</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:21](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L21) | Statistics from the last warm-up operation. |
+| <code>public ConnectionWarmUp(TimeSpan? warmUpInterval = null, int warmUpIterations = 10);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:23](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L23) |  |
+| <code>public bool ShouldWarmUp();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:32](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L32) | Determines if a warm-up cycle should be performed based on elapsed time. |
+| <code>public async Task&lt;WarmUpStatistics&gt; ExecuteWarmUpAsync(Func&lt;CancellationToken, Task&gt; warmUpAction, CancellationToken ct = default);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:47](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L47) | Executes a warm-up cycle using the provided action. Measures latency statistics for monitoring. |
+| <code>public async Task&lt;WarmUpStatistics&gt; ExecuteWarmUpAsync(Action warmUpAction, CancellationToken ct = default);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:103](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L103) | Executes a synchronous warm-up cycle using the provided action. The action is executed synchronously, but delays between iterations use async Task.Delay. |
+
+## ExponentialBackoffRetry
+
+Qualified name: <code>Meridian.Core.Performance.ExponentialBackoffRetry</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:182](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L182).
+
+Exponential backoff retry logic for connection management.
+
+```csharp
+public sealed class ExponentialBackoffRetry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int CurrentRetryCount =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:192](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L192) |  |
+| <code>public bool CanRetry =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:193](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L193) |  |
+| <code>public ExponentialBackoffRetry(TimeSpan? initialDelay = null, TimeSpan? maxDelay = null, int maxRetries = - 1, double multiplier = 2.0, double jitterFactor = 0.1);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:195](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L195) |  |
+| <code>public TimeSpan GetNextDelay();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:212](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L212) | Gets the next delay duration and increments the retry counter. |
+| <code>public async Task WaitAsync(CancellationToken ct = default);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:228](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L228) | Waits for the next retry delay. |
+| <code>public void Reset();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:237](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L237) | Resets the retry counter and delay to initial values. |
+
+## HeartbeatMonitor
+
+Qualified name: <code>Meridian.Core.Performance.HeartbeatMonitor</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:246](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L246).
+
+Heartbeat monitor for detecting connection health and latency issues.
+
+```csharp
+public sealed class HeartbeatMonitor : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsRunning =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:262](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L262) |  |
+| <code>public long ConsecutiveFailures =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:263](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L263) |  |
+| <code>public long TotalHeartbeats =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:264](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L264) |  |
+| <code>public long TotalFailures =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:265](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L265) |  |
+| <code>public double LastLatencyUs =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:266](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L266) |  |
+| <code>public TimeSpan TimeSinceLastSuccess { get; }</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:268](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L268) |  |
+| <code>public bool IsHealthy =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:280](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L280) |  |
+| <code>public event EventHandler&lt;HeartbeatResult&gt;? HeartbeatCompleted;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:282](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L282) |  |
+| <code>public event EventHandler? ConnectionUnhealthy;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:283](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L283) |  |
+| <code>public HeartbeatMonitor(Func&lt;CancellationToken, Task&lt;bool&gt;&gt; heartbeatFunc, TimeSpan? interval = null, TimeSpan? timeout = null, Action&lt;HeartbeatResult&gt;? onHeartbeat = null);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:285](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L285) |  |
+| <code>public void Start();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:297](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L297) |  |
+| <code>public async Task StopAsync(CancellationToken ct = default);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:306](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L306) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:393](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L393) |  |
+
+## HeartbeatResult
+
+Qualified name: <code>Meridian.Core.Performance.HeartbeatResult</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:403](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L403).
+
+Result of a heartbeat check.
+
+```csharp
+public readonly record struct HeartbeatResult(bool Success, double LatencyUs, DateTimeOffset Timestamp);
+```
+
+## HighResolutionTimestamp
+
+Qualified name: <code>Meridian.Core.Performance.HighResolutionTimestamp</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:236](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L236).
+
+High-performance timestamp utilities.
+
+```csharp
+public static class HighResolutionTimestamp
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static long GetTimestamp() =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:246](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L246) | Gets a high-resolution timestamp in ticks. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static double GetElapsedMicroseconds(long startTimestamp);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:252](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L252) | Gets elapsed time since the specified timestamp in microseconds. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static double GetElapsedNanoseconds(long startTimestamp);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:262](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L262) | Gets elapsed time since the specified timestamp in nanoseconds. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static DateTimeOffset ToDateTimeOffset(long timestamp);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:273](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L273) | Converts a high-resolution timestamp to a DateTimeOffset. More accurate than DateTimeOffset.UtcNow for relative timing. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static DateTimeOffset GetCurrentTime();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:283](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L283) | Gets the current time with high resolution. |
+
 ## RawQuoteEvent
 
 Qualified name: <code>Meridian.Core.Performance.RawQuoteEvent</code>. Kind: `struct`.
@@ -697,7 +881,7 @@ public sealed record BatchUpdateRequest(string[] Symbols, string? SecurityType =
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.BrokerType</code>. Kind: `enum`.
 
-Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:118](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L118).
+Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:120](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L120).
 
 Supported broker types.
 
@@ -709,9 +893,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Alpaca</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:120](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L120) |  |
-| <code>InteractiveBrokers</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:122](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L122) |  |
-| <code>Manual</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:124](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L124) |  |
+| <code>Alpaca</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:122](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L122) |  |
+| <code>InteractiveBrokers</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:124](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L124) |  |
+| <code>Manual</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:126](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L126) |  |
 
 ## BulkExportOptions
 
@@ -768,123 +952,3 @@ Enum declarations:
 | <code>Closed = 0</code> | [src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs:179](../../../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs#L179) | Circuit is closed, allowing operations. |
 | <code>Open = 1</code> | [src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs:182](../../../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs#L182) | Circuit is open, rejecting operations. |
 | <code>HalfOpen = 2</code> | [src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs:185](../../../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs#L185) | Circuit is half-open, testing recovery. |
-
-## CreateScheduleRequest
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.CreateScheduleRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs:78](../../../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs#L78).
-
-Request to create or update a schedule.
-
-```csharp
-public sealed record CreateScheduleRequest(string Name, string[] Symbols, ScheduleAction Action, ScheduleTiming Timing, string? Description = null);
-```
-
-## CreateWatchlistRequest
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.CreateWatchlistRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/Watchlist.cs:45](../../../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs#L45).
-
-Request to create a new watchlist.
-
-```csharp
-public sealed record CreateWatchlistRequest(string Name, string? Description = null, string[]? Symbols = null, string? Color = null, bool IsActive = true, WatchlistDefaults? Defaults = null);
-```
-
-## CsvColumns
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.CsvColumns</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:74](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L74).
-
-CSV column mappings for import/export.
-
-```csharp
-public static class CsvColumns
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Symbol = &quot;Symbol&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:76](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L76) |  |
-| <code>public const string SubscribeTrades = &quot;SubscribeTrades&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:77](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L77) |  |
-| <code>public const string SubscribeDepth = &quot;SubscribeDepth&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:78](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L78) |  |
-| <code>public const string DepthLevels = &quot;DepthLevels&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:79](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L79) |  |
-| <code>public const string SecurityType = &quot;SecurityType&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:80](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L80) |  |
-| <code>public const string Exchange = &quot;Exchange&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:81](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L81) |  |
-| <code>public const string Currency = &quot;Currency&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:82](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L82) |  |
-| <code>public const string PrimaryExchange = &quot;PrimaryExchange&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:83](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L83) |  |
-| <code>public const string LocalSymbol = &quot;LocalSymbol&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:84](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L84) |  |
-| <code>public const string TradingClass = &quot;TradingClass&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:85](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L85) |  |
-| <code>public const string ConId = &quot;ConId&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:86](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L86) |  |
-| <code>public const string Name = &quot;Name&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:89](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L89) |  |
-| <code>public const string Sector = &quot;Sector&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:90](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L90) |  |
-| <code>public const string Industry = &quot;Industry&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:91](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L91) |  |
-| <code>public const string MarketCap = &quot;MarketCap&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:92](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L92) |  |
-| <code>public static readonly string[] Required = { Symbol };</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:94](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L94) |  |
-| <code>public static readonly string[] Standard = { Symbol, SubscribeTrades, SubscribeDepth, DepthLevels, SecurityType, Exchange, Currency, PrimaryExchange };</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:96](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L96) |  |
-| <code>public static readonly string[] Full = { Symbol, SubscribeTrades, SubscribeDepth, DepthLevels, SecurityType, Exchange, Currency, PrimaryExchange, LocalSymbol, TradingClass, ConId };</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:102](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L102) |  |
-| <code>public static readonly string[] WithMetadata = { Symbol, Name, Sector, Industry, MarketCap, SubscribeTrades, SubscribeDepth, DepthLevels, SecurityType, Exchange, Currency, PrimaryExchange };</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:109](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L109) |  |
-
-## FigiLookupRequest
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.FigiLookupRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:212](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L212).
-
-Bulk OpenFIGI lookup request item.
-
-```csharp
-public sealed record FigiLookupRequest(string IdType, string IdValue, string? ExchCode = null, string? MarketSecDes = null);
-```
-
-## FigiMapping
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.FigiMapping</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:180](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L180).
-
-OpenFIGI mapping result.
-
-```csharp
-public sealed record FigiMapping(string Figi, string? CompositeFigi = null, string? SecurityType = null, string? MarketSector = null, string? Ticker = null, string? Name = null, string? ExchangeCode = null, string? ShareClassFigi = null, string? SecurityDescription = null);
-```
-
-## ImportDefaults
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.ImportDefaults</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:49](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L49).
-
-Default values for imported symbols.
-
-```csharp
-public sealed record ImportDefaults(bool SubscribeTrades = true, bool SubscribeDepth = true, int DepthLevels = 10, string SecurityType = "STK", string Exchange = "SMART", string Currency = "USD");
-```
-
-## ImportError
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.ImportError</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:23](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L23).
-
-Error encountered during import.
-
-```csharp
-public sealed record ImportError(int LineNumber, string? Symbol, string Message);
-```
-
-## IndexComponent
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexComponent</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:21](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L21).
-
-Individual component of an index.
-
-```csharp
-public sealed record IndexComponent(string Symbol, string Name, decimal? Weight = null, string? Sector = null);
-```

@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { SymbolMappingEditor } from "@/screens/data-screen.symbol-mapping-editor";
 import { RefreshCcw, Search } from "lucide-react";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +12,7 @@ import {
   type CanonicalSymbolRegistryFetcher,
   type CanonicalSymbolRegistryRow
 } from "@/screens/data-screen.canonical-symbols.view-model";
-import { formatCount, formatUtcTimestamp } from "@/lib/format";
+import { formatCount, formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
 
 const badgeVariantByTone: Record<CanonicalSymbolModeTone, BadgeProps["variant"]> = {
   success: "success",
@@ -27,7 +29,7 @@ const bannerToneByModeTone: Record<CanonicalSymbolModeTone, StatusBannerTone> = 
 };
 
 function formatTimestamp(value: string | null): string {
-  return value ? formatUtcTimestamp(new Date(value)) : "No mismatch observed";
+  return value ? formatDisplayTimestamp(new Date(value)) : "No mismatch observed";
 }
 
 function symbolSubtitle(symbol: CanonicalSymbolRegistryRow): string {
@@ -98,6 +100,7 @@ export function CanonicalSymbolRegistryRegion({
 }: {
   fetchRegistry?: CanonicalSymbolRegistryFetcher;
 }) {
+  const [editing, setEditing] = useState(false);
   const panel = useCanonicalSymbolRegistryPanel(fetchRegistry);
   const model = panel.model;
 
@@ -128,6 +131,10 @@ export function CanonicalSymbolRegistryRegion({
           </div>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 grid gap-3">
+            <div><Button type="button" variant="outline" size="sm" aria-expanded={editing} onClick={() => setEditing(value => !value)}>{editing ? "Close mapping editor" : "Edit mappings and rollout"}</Button></div>
+            {editing ? <SymbolMappingEditor onChanged={() => void panel.refresh()} /> : null}
+          </div>
           {panel.error ? (
             <StatusBanner tone="danger" title="Canonical symbol registry unavailable" detail={panel.error} />
           ) : !model ? (

@@ -66,7 +66,7 @@ describe("provider accounting view model", () => {
         connectionPosture: "Unknown — reachability unavailable; no runtime diagnostics."
       })
     ]);
-    expect(panel.historyPosture).toContain("not retained");
+    expect(panel.historyPosture).toContain("cleared on host restart");
   });
 
   it("distinguishes explicit disconnection from unavailable reachability", () => {

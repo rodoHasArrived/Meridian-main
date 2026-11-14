@@ -972,7 +972,7 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.workflowTaskPanel?.restatementReview.changedLines).toEqual([
       expect.objectContaining({
         lineKey: "nav.total",
-        valueBridge: "1250000 -> 1249500",
+        valueBridge: "1250000 → 1249500",
         evidenceLabel: "1 evidence link",
         evidenceHref: "/reporting/evidence?subject=pricing"
       })
@@ -987,7 +987,7 @@ describe("useReportingScreenViewModel", () => {
       title: "Publication review",
       statusLabel: "Restated",
       statusVariant: "success",
-      summaryText: "Publication signed off by Reporting ops on May 28, 3:20 PM UTC.",
+      summaryText: "Publication signed off by Reporting ops on May 28, 2026, 15:20 UTC.",
       evidenceSummary: "1 evidence link / 1 provenance line",
       hasLineProvenance: true
     });

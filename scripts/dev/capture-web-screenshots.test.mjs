@@ -698,6 +698,17 @@ test("a status bar that contradicts the page's freshness is reported", () => {
   assert.deepEqual(findCaptureContentIssues("Portfolio", { statusContradictions: [] }), []);
 });
 
+test("a clipped status badge is reported once per badge text", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Reconciliation", { truncatedBadges: ["Open", "Open", "Defaults or saved preferences active"] }),
+    [
+      { kind: "truncated-badge", excerpt: "Open" },
+      { kind: "truncated-badge", excerpt: "Defaults or saved preferences active" }
+    ]
+  );
+  assert.deepEqual(findCaptureContentIssues("Reconciliation", { truncatedBadges: [] }), []);
+});
+
 test("a Latency term followed by a clock time or Never is reported", () => {
   assert.deepEqual(
     findCaptureContentIssues("Plaid\nLatency\nNever\nAlpaca paper\nLatency\nJul 13, 06:55 PM UTC\nYahoo Finance\nLatency\nnever"),
@@ -754,7 +765,7 @@ test("the latency and placeholder rules are known kinds that a capture excuses o
   const message = describeCaptureContentIssues("web-data-workspace", [{ kind: "latency-not-duration", excerpt: "Latency: Never" }]);
   assert.match(message, /latency-not-duration "Latency: Never"/);
   assert.match(message, /show latency only as a duration/);
-  assert.match(message, /Not declared by source/);
+  assert.match(message, /leave an undeclared basis off the strip/);
   assert.match(message, /missing fixture/);
 });
 

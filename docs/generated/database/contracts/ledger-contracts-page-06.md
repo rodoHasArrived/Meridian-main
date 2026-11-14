@@ -2,11 +2,38 @@
 
 # `ledger-contracts` data objects - page 6 of 6
 
-Objects 401-430 of 430. References crossing pages remain available in the dependency manifest.
+Objects 401-432 of 432. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_PrivateCapitalPostingReceiptDto["PrivateCapitalPostingReceiptDto"] {
+        +decimal Amount
+        +string? BankLineId
+        +string CallId
+        +string CommitmentId
+        +DateOnly EffectiveDate
+        +string? FundingReceiptId
+        +string InstallmentId
+        +Guid JournalEntryId
+        +string Kind
+        +string PostingId
+        +PrivateCapitalScopeDto Scope
+    }
+    class Meridian_Contracts_Ledger_PrivateCapitalReportOutputDto["PrivateCapitalReportOutputDto"] {
+        +string? ApprovalRoute
+        +ManualJournalEntryStatusDto ApprovalState
+        +string CapitalAccountId
+        +string? CapitalAccountSubledgerRoute
+        +string Currency
+        +string DisplayName
+        +DateOnly EffectiveDate
+        +int EvidenceLinkCount
+        +IReadOnlyList~string~ EvidenceLinks
+        +string? EvidenceRoute
+        +string FundEventId
+        +string? FundEventRecordRoute
+    }
     class Meridian_Contracts_Ledger_PrivateCapitalScopeDto["PrivateCapitalScopeDto"] {
         +string CompanyId
         +string Currency
@@ -309,6 +336,8 @@ classDiagram
         +bool PeriodIsLocked
         +string? TenantId
     }
+    Meridian_Contracts_Ledger_PrivateCapitalPostingReceiptDto --> Meridian_Contracts_Ledger_PrivateCapitalScopeDto
+    Meridian_Contracts_Ledger_PrivateCapitalWorkbenchDto --> Meridian_Contracts_Ledger_PrivateCapitalPostingReceiptDto
     Meridian_Contracts_Ledger_PrivateCapitalWorkbenchDto --> Meridian_Contracts_Ledger_PrivateCapitalScopeDto
     Meridian_Contracts_Ledger_ReportExportArtifactDto --> Meridian_Contracts_Ledger_ReportDimensionScopeDto
     Meridian_Contracts_Ledger_ReportExportArtifactManifestDto --> Meridian_Contracts_Ledger_ReportDimensionScopeDto
