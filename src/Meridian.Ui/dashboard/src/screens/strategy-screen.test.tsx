@@ -9,10 +9,10 @@ import type { PromotionEvaluationResult, PromotionRecord, StrategyRunReviewPacke
 
 const twoRuns: StrategyWorkspaceResponse = {
   metrics: [
-    { id: "1", label: "Runs", value: "24", delta: "+8%", tone: "success" },
-    { id: "2", label: "Queued", value: "3", delta: "0%", tone: "default" },
-    { id: "3", label: "Needs Review", value: "2", delta: "-1%", tone: "warning" },
-    { id: "4", label: "Promotions", value: "5", delta: "+2%", tone: "default" }
+    { id: "runs", label: "Runs", value: "24", delta: "+8%", tone: "success" },
+    { id: "queued", label: "Queued", value: "3", delta: "0%", tone: "default" },
+    { id: "review", label: "Needs Review", value: "2", delta: "-1%", tone: "warning" },
+    { id: "promotions", label: "Promotions", value: "5", delta: "+2%", tone: "default" }
   ],
   runs: [
     {

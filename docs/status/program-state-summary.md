@@ -2,7 +2,17 @@
 
 This file is generated from `docs/roadmap/data/program-state.yml` and `docs/roadmap/data/roadmap-items.yml`.
 
-Snapshot date: 2026-10-28
+Snapshot date: 2026-11-12
+
+## Active Scope
+
+accepted: 9; done: 17; in_progress: 9; planned: 2.
+
+Work queue (priority only; adds no dependency): W10-LOT-002 → W10-MARK-001 → W10-SEAM-001 → W10-RECON-001.
+
+Decisions: DEC-SINGLE-PRINCIPAL-001, DEC-TRADING-STRATEGY-DIRECTION-001, DEC-W9-ACCEPTANCE-001, DEC-W9-ACCEPTANCE-002, DEC-W9-ACCEPTANCE-003, DEC-W9-ACCEPTANCE-004, DEC-W9-ACCEPTANCE-005, DEC-W9-ACCEPTANCE-006, DEC-W9-ACCEPTANCE-007, DEC-W9-DONE-001.
+
+Bounded roadmap acceptance does not certify a release. Current item statuses appear below.
 
 | ID | Wave | Title | Workspaces | Status | Health | Priority | Owner Lane | Evidence Posture | Last Reviewed |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -35,30 +45,38 @@ Snapshot date: 2026-10-28
 | W9-INGEST-009 | W9 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | Accounting; Data | accepted | green | high | Accounting and Ledger | complete | 2026-10-18 |
 | W9-ASSET-010 | W9 | Asset Accounting Event Spine and atomic lot posting | Accounting; Portfolio; Reporting | done | green | critical | Accounting and Ledger | complete | 2026-07-28 |
 | W9-CORPACT-011 | W9 | Durable corporate action case processing and accounting projection | Accounting; Portfolio; Data | accepted | green | high | Accounting and Ledger | complete | 2026-10-19 |
+| W10-BOND-001 | W10 | Bond analytics, declared-schedule migration and contractual cash-flow projection | Accounting; Portfolio | in_progress | green | medium | Accounting and Ledger | in_progress | 2026-10-31 |
 | W10-DEBT-001 | W10 | God-file burn-down against the file-size ratchet | - | planned | green | medium | Workstation Shell and UX | planned_evidence | 2026-08-29 |
 | W10-MARK-001 | W10 | Fail-closed stale-mark policy and mark-age surfacing | Accounting; Portfolio | in_progress | green | high | Accounting and Ledger | in_progress | 2026-09-23 |
-| W10-RECON-001 | W10 | Durable break lineage identity and run-over-run break diff | Accounting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
+| W10-RECON-001 | W10 | Durable break lineage identity and run-over-run break diff | Accounting | in_progress | yellow | high | Accounting and Ledger | in_progress | 2026-11-10 |
 | W10-PROV-001 | W10 | Ledger-amount evidence subject and shared proof drawer | Accounting; Reporting; Portfolio | in_progress | green | high | Workstation Shell and UX | in_progress | 2026-10-28 |
 | W10-RECON-002 | W10 | Break clustering and bulk-resolution activation | Accounting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
-| W10-JRNL-001 | W10 | Durable recurring journal schedules and draft runner | Accounting | in_progress | green | high | Accounting and Ledger | in_progress | 2026-10-01 |
+| W10-JRNL-001 | W10 | Durable recurring journal schedules and draft runner | Accounting | in_progress | green | high | Accounting and Ledger | in_progress | 2026-11-11 |
 | W10-TAX-001 | W10 | Tax character, wash-sale, and lot-relief operator surface | Accounting; Portfolio | planned | green | high | Accounting and Ledger | planned_evidence | 2026-10-28 |
 | W10-SEAM-001 | W10 | Unified close-readiness projection behind one shared contract | Accounting; Reporting | in_progress | green | high | Workstation Shell and UX | in_progress | 2026-10-28 |
 | W10-RECON-003 | W10 | Unified tolerance model and what-if replay workbench | Accounting; Settings | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-07-31 |
 | W10-RECON-004 | W10 | Operator-taught match rules with promotion gate | Accounting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-07-31 |
 | W10-PERF-001 | W10 | Portfolio and investor return measurement | Portfolio; Reporting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
-| W10-CONSOL-001 | W10 | Intercompany elimination on consolidated ledger views | Accounting; Reporting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-28 |
+| W10-CONSOL-001 | W10 | Intercompany elimination on consolidated ledger views | Accounting; Reporting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-11-13 |
 | W10-LOT-002 | W10 | Security-identified open-lot convergence | Accounting; Portfolio; Reporting | in_progress | green | critical | Accounting and Ledger | in_progress | 2026-10-28 |
 | W11-PASSPORT-001 | W11 | Number Passport contract across amount surfaces | Accounting; Reporting; Portfolio | planned | green | high | Workstation Shell and UX | planned_evidence | 2026-10-16 |
 | W11-COVER-001 | W11 | Verified Coverage measurement and operator surface | Accounting; Reporting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-10-16 |
 | W11-STAKE-001 | W11 | Governed stakeholder verification access on delivered packages | Reporting; Settings | planned | green | medium | Platform Security and Governance | planned_evidence | 2026-10-16 |
-| W11-SHADOW-001 | W11 | Shadow-mode onboarding with opening-balance reconciliation | Data; Accounting | planned | green | medium | Data Confidence and Validation | planned_evidence | 2026-10-16 |
+| W11-SHADOW-001 | W11 | Shadow-mode onboarding with opening-balance reconciliation | Data; Accounting | in_progress | green | medium | Data Confidence and Validation | in_progress | 2026-11-13 |
 | W11-PACK-001 | W11 | Governed contract-pack lifecycle on the Security Master asset-class registry | Data; Accounting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-16 |
 | W11-EXEC-001 | W11 | Trading and Execution bounded-context ownership | Trading; Strategy | planned | green | low | Execution and Fund Accounts | planned_evidence | 2026-10-16 |
 | W12-BOOK-001 | W12 | Accounting book, basis, and FX control workbench | Accounting; Settings | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-17 |
-| W12-CAPITAL-001 | W12 | Governed investor capital and allocation lifecycle | Accounting; Reporting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-17 |
+| W12-CAPITAL-001 | W12 | Governed investor capital and allocation lifecycle | Accounting; Reporting | in_progress | green | medium | Accounting and Ledger | in_progress | 2026-11-10 |
 | W12-CREDIT-001 | W12 | DirectLoan operations and evidence reconciliation | Portfolio; Accounting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-17 |
+| W12-ENTITY-001 | W12 | Effective entity lifecycle and audited book-control migration | Accounting; Portfolio | in_progress | green | high | Accounting and Ledger | in_progress | 2026-11-12 |
 | W12-FINRPT-001 | W12 | Ledger-backed financial statement control pack | Reporting; Accounting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-17 |
+| W12-ICAGREE-001 | W12 | Intercompany accounting profiles and legacy attribution | Accounting; Portfolio | in_progress | green | high | Accounting and Ledger | in_progress | 2026-11-12 |
+| W12-ICINCOME-001 | W12 | Policy-governed intercompany revenue and expense elimination | Accounting; Reporting | in_progress | green | medium | Accounting and Ledger | in_progress | 2026-11-12 |
+| W12-ICPAIR-001 | W12 | Durable reviewed counterpart proposals and aged intercompany breaks | Accounting; Reporting | in_progress | green | high | Accounting and Ledger | in_progress | 2026-11-12 |
 | W12-YEND-001 | W12 | Fiscal year-end close and opening-balance roll-forward | Accounting; Reporting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-17 |
+| W13-OMS-001 | W13 | Governed order management and broker execution workbench | Trading; Portfolio | planned | green | medium | Execution and Fund Accounts | planned_evidence | 2026-10-30 |
+| W13-STRAT-001 | W13 | Governed strategy formulation and execution lifecycle | Strategy; Trading | planned | green | medium | Strategy Analytics | planned_evidence | 2026-10-30 |
+| W14-ATTEST-001 | W14 | Single-principal attestation for governed approvals in the single-operator envelope | Settings; Accounting; Trading | in_progress | yellow | medium | Platform Security and Governance | in_progress | 2026-11-12 |
 
 ## Source Contract
 

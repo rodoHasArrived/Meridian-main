@@ -199,15 +199,18 @@ choice provisions, so the demo and the guided first-run experience walk through 
 The browser workstation is served from one canonical, git-tracked bundle:
 `src/Meridian.Ui/wwwroot/workstation`. A fresh clone already carries it, so the demo reaches a
 populated `/workstation/` screen without Node.js installed, and the host resolves that same tree
-regardless of the directory you launch from. When you change dashboard source, regenerate and
-commit the bundle with:
+regardless of the directory you launch from. For an eligible PR, the configured
+[repair bot](../engineering/generated-merge-recovery.md#hosted-pr-repair) rebuilds the bundle with
+the maintained documentation in one repair commit. For a local preview or the contributor fallback,
+regenerate with:
 
 ```powershell
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
 
 CI runs a freshness gate that fails when the tracked bundle lags `src/Meridian.Ui/dashboard`, so
-the served assets always match the same commit's dashboard source.
+the served assets always match the same commit's dashboard source. The repaired bundle must be
+committed before that gate passes.
 
 When updating a feature branch causes generated bundle, documentation or hash conflicts, use the
 [isolated repair command](../engineering/generated-merge-recovery.md). It prepares pinned merge

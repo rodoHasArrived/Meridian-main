@@ -6,6 +6,8 @@ import { selectCurrentDailyValuationSchedule, useAccountingCloseSources, type Cl
 import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
 import { formatCount } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { KpiProvider } from "@/lib/kpi-context";
+import { workspaceKpiIds } from "@/lib/kpi-registry";
 import { CloseChecklistProgressChart, ReconciliationAgingChart } from "@/components/meridian/workstation-evidence-charts";
 import { CloseChecklistHistoryChart } from "@/components/meridian/close-checklist-history-chart";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -123,7 +125,16 @@ function normalizeOptionalQueryValue(value: string | null): string | undefined {
   return normalized ? normalized : undefined;
 }
 
-export function AccountingScreen({ data, multiAssetCoverage, session = null }: AccountingScreenProps) {
+export function AccountingScreen(props: AccountingScreenProps) {
+  const crossScreenCounts = useSharedCrossScreenCounts();
+  return (
+    <KpiProvider models={{ accounting: props.data, crossScreenCounts }}>
+      <AccountingScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function AccountingScreenContent({ data, multiAssetCoverage, session = null }: AccountingScreenProps) {
   const [curvesOpen, setCurvesOpen] = useState(false);
   const [bondDiscoveryOpen, setBondDiscoveryOpen] = useState(false);
   const { pathname, search, hash } = useLocation();
@@ -760,23 +771,20 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const multiAssetCoveragePanel = buildMultiAssetCoveragePanel(multiAssetCoverage);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       {/* Route heading first ("where am I?"); workspace-wide metrics follow. */}
-      <AccountingWorkbenchContext
+      {workstream !== "reconciliation" ? <AccountingWorkbenchContext
         workspace={workspace}
         workstream={workstream}
         taskMode={taskMode}
-      />
+      /> : null}
 
-      <StatStrip
-        metrics={applyOpenBreakDelta(
-          applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, breakQueue: data.breakQueue, openBreakCount: data.workspace?.openBreaks })),
-          sinceLastVisitDelta(summarizeSinceLastVisit(data.breakQueue ?? [], breakQueueVisit.baseline))
-        )}
-        label="Accounting headline metrics"
-        source="Accounting workspace"
-        figureSource="accounting"
-      />
+      {taskMode.id === "close-cockpit" ? <KpiProvider models={{ accounting: { ...data, metrics: applyOpenBreakDelta(
+        applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, breakQueue: data.breakQueue, openBreakCount: data.workspace?.openBreaks })),
+        sinceLastVisitDelta(summarizeSinceLastVisit(data.breakQueue ?? [], breakQueueVisit.baseline))
+      ) } }}>
+        <StatStrip ids={workspaceKpiIds("accounting", data.metrics)} label="Accounting headline metrics" source="Accounting workspace" figureSource="accounting" />
+      </KpiProvider> : null}
       {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
 
       {workstream === "reconciliation" ? (
@@ -785,7 +793,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
             runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />}
           />
           <TechnicalDetails label="Break aging"><ReconciliationAgingChart breaks={reconciliation.sourceRows} /></TechnicalDetails>
-          <AccountOversightPanel />
+          <TechnicalDetails label="Account oversight"><AccountOversightPanel /></TechnicalDetails>
           <TechnicalDetails id="accounting-history" label="Calibration and history"><CalibrationSummaryPanel view={reconciliation.calibrationView} /></TechnicalDetails>
         </>
       ) : null}
@@ -916,10 +924,6 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {sectionVisibility.showExternalGl ? (
-      <AccountingOnboardingPanel />
-      ) : null}
-
-      {sectionVisibility.showExternalGl ? (
       <AccountingSystemReconciliationPanel
         providers={accountingSystemProviders}
         importDetail={accountingSystemImport}
@@ -938,6 +942,10 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         onCreateExportPackage={() => void createExternalGlExportPackage()}
         onCertifyExportPackage={() => void certifyExternalGlExportPackage()}
       />
+      ) : null}
+
+      {sectionVisibility.showExternalGl ? (
+      <AccountingOnboardingPanel />
       ) : null}
 
       {sectionVisibility.showConfiguration ? (
@@ -1483,6 +1491,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
       {/* --- Security Master panel (shown when security-master workstream is active) --- */}
       {sectionVisibility.showSecurityMaster && (
         <FinancialRecordExplorerShell
+          compact
           explorerLabel="Financial Record Explorer"
           title="Security & Instrument Explorer"
           titleId="accounting-security-master-explorer-title"

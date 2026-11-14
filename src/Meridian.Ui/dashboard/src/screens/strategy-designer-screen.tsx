@@ -1,7 +1,7 @@
 import { ArrowRightLeft, CircleDot, Database, Eye, FlaskConical, GitBranch, Layers, Network, PlayCircle, Save, Search, ShieldCheck, Sparkles, Workflow } from "lucide-react";
 import { StatusBadge } from "@/design-system/status";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { SnapshotMetricTile } from "@/components/meridian/snapshot-metric-tile";
 import { EmptyState as ConcreteEmptyState } from "@/components/data/empty-state";
 import { GateRail, SeverityBadge } from "@/components/operations";
 import { Badge } from "@/components/ui/badge";
@@ -172,7 +172,7 @@ function WorkbenchHero({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {vm.metrics.map((metric) => (
-          <MetricSnapshotCard
+          <SnapshotMetricTile
             key={metric.id}
             id={metric.id}
             label={metric.label}

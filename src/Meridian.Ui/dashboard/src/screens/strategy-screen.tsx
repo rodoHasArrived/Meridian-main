@@ -9,6 +9,8 @@ import { EntityLink } from "@/components/meridian/entity-inspector";
 import { QuantNotebook } from "@/components/meridian/quant-notebook";
 import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { KpiProvider } from "@/lib/kpi-context";
+import { workspaceKpiIds } from "@/lib/kpi-registry";
 import { StrategyRobustness } from "@/components/meridian/strategy-robustness";
 import { tableColumnsWithExport, TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -256,7 +258,15 @@ const strategyRouteViewCopy: Record<StrategyRouteViewId, { title: string; descri
   }
 };
 
-export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
+export function StrategyScreen(props: StrategyScreenProps) {
+  return (
+    <KpiProvider models={{ strategy: props.data }}>
+      <StrategyScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
   const vm = useStrategyRunLibraryViewModel(data);
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
@@ -520,7 +530,9 @@ export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
         </div>
       </section>
 
-      <StatStrip metrics={data.metrics.map(metric => ({ ...metric, basis: metric.basis ?? "Retained strategy run summaries", source: metric.source ?? "Authorized Strategy workspace run population" }))} label="Strategy headline metrics" source="Strategy workspace" figureSource="strategy" />
+      <KpiProvider models={{ strategy: { ...data, metrics: data.metrics.map(metric => ({ ...metric, basis: metric.basis ?? "Retained strategy run summaries", source: metric.source ?? "Authorized Strategy workspace run population" })) } }}>
+        <StatStrip ids={workspaceKpiIds("strategy", data.metrics)} label="Strategy headline metrics" source="Strategy workspace" figureSource="strategy" />
+      </KpiProvider>
       {vm.plotTool.analyticsEvidenceStatus === "Illustrative" ? <p role="status" className="border-l-2 border-warning px-3 py-2 text-xs">Illustrative PlotTool analytics · simulated observations demonstrate the interface and are not retained market evidence.</p> : null}
 
       {routeView === "overview" ? <StrategyOverviewHub vm={vm} /> : null}
