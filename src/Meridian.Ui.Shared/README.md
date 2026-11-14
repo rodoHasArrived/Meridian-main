@@ -180,6 +180,8 @@ Entity timelines, intercompany agreements, role bindings, legacy attribution and
 proposal delivery share host read models and existing journal review APIs. Consolidation projects
 server-authoritative gross/proposed/posted/actual/preview values and separate FX/rounding evidence.
 Browser and WPF consume the same seams; destination permissions remain authoritative.
+An accounting arrangement the tenant registry no longer returns fails only its own proposal in
+counterpart delivery and is classified `AgreementAuthorityUnavailable` in the aged-break list.
 See [intercompany operations](../../docs/operators/intercompany-entity-controls.md).
 
 Entity lifecycle revisions, book-control preflight/activation, and controlled-close authorization

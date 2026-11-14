@@ -13197,11 +13197,13 @@ Meridian-main
 │   │   │   ├── Consolidation
 │   │   │   │   ├── ConsolidationArrangementMatchingTests.cs
 │   │   │   │   ├── ConsolidationFxTests.cs
+│   │   │   │   ├── ConsolidationGovernedPopulationTests.cs
 │   │   │   │   ├── ConsolidationGovernedServiceTests.cs
 │   │   │   │   ├── ConsolidationPerimeterResolverTests.cs
 │   │   │   │   ├── ConsolidationServiceTests.cs
 │   │   │   │   ├── ConsolidationServiceTests.EndpointCapabilities.cs
 │   │   │   │   ├── ConsolidationServiceTests.EvidenceFormats.cs
+│   │   │   │   ├── ConsolidationServiceTests.GovernedRaces.cs
 │   │   │   │   ├── ConsolidationServiceTests.GovernedWorkbench.cs
 │   │   │   │   ├── ConsolidationServiceTests.Header.cs
 │   │   │   │   ├── ConsolidationServiceTests.PolicyPeriod.cs
@@ -14286,6 +14288,7 @@ Meridian-main
 │   │   │   ├── IntercompanyAgreementPostingGuardTests.cs
 │   │   │   ├── IntercompanyAgreementPostingPostgresTests.cs
 │   │   │   ├── IntercompanyProposalPostgresTests.cs
+│   │   │   ├── IntercompanyProposalPostgresTests.Restart.cs
 │   │   │   ├── JsonFileIBDataResultStoreTests.cs
 │   │   │   ├── JsonFileSnapshotStoreTests.cs
 │   │   │   ├── JsonlAppendStreamTests.cs
@@ -14633,6 +14636,9 @@ Meridian-main
 │   │   │   ├── IntercompanyCloseAdvisoryAuthorizationTests.cs
 │   │   │   ├── IntercompanyCloseAdvisoryMembershipTests.cs
 │   │   │   ├── IntercompanyObligationEndpointTests.cs
+│   │   │   ├── IntercompanyProposalBreakAgingTests.cs
+│   │   │   ├── IntercompanyProposalDeliveryRetryTests.cs
+│   │   │   ├── IntercompanyProposalMissingArrangementTests.cs
 │   │   │   ├── IntercompanyProposalResolutionTests.cs
 │   │   │   ├── IntercompanyProposalReversalDeliveryTests.cs
 │   │   │   ├── InvestmentAccountingTransactionLabServiceTests.cs
