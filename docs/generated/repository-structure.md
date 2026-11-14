@@ -8943,6 +8943,7 @@ Meridian-main
 │   │   │   │   │   │   ├── historical-chart.view-model.test.ts
 │   │   │   │   │   │   ├── historical-chart.view-model.ts
 │   │   │   │   │   │   ├── income-movement-waterfall.tsx
+│   │   │   │   │   │   ├── inline-fund-account-picker.tsx
 │   │   │   │   │   │   ├── keyboard-shortcuts-sheet.test.tsx
 │   │   │   │   │   │   ├── keyboard-shortcuts-sheet.tsx
 │   │   │   │   │   │   ├── layout-switcher.test.tsx
@@ -8962,6 +8963,8 @@ Meridian-main
 │   │   │   │   │   │   ├── number-passport.test.ts
 │   │   │   │   │   │   ├── number-passport.tsx
 │   │   │   │   │   │   ├── onboarding-tour.tsx
+│   │   │   │   │   │   ├── operating-scope-bar.test.tsx
+│   │   │   │   │   │   ├── operating-scope-bar.tsx
 │   │   │   │   │   │   ├── operational-trust-summary.test.tsx
 │   │   │   │   │   │   ├── operational-trust-summary.tsx
 │   │   │   │   │   │   ├── operator-triage-queue.test.tsx
@@ -9048,6 +9051,7 @@ Meridian-main
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.virtualization.test.tsx
+│   │   │   │   │   │   ├── use-operator-triage-inbox.ts
 │   │   │   │   │   │   ├── use-workspace-expansion.ts
 │   │   │   │   │   │   ├── workflow-continuity-dock.combined.test.tsx
 │   │   │   │   │   │   ├── workflow-continuity-dock.route-mode.combined.test.tsx
@@ -9191,6 +9195,8 @@ Meridian-main
 │   │   │   │   │       ├── text-area.tsx
 │   │   │   │   │       ├── theme-toggle.test.tsx
 │   │   │   │   │       ├── theme-toggle.tsx
+│   │   │   │   │       ├── time-text.test.tsx
+│   │   │   │   │       ├── time-text.tsx
 │   │   │   │   │       ├── toast.action.test.tsx
 │   │   │   │   │       ├── toast.tsx
 │   │   │   │   │       ├── tooltip.tsx
@@ -9397,12 +9403,14 @@ Meridian-main
 │   │   │   │   │   │   ├── read-state.ts
 │   │   │   │   │   │   └── types.ts
 │   │   │   │   │   ├── operating-scope
+│   │   │   │   │   │   ├── figure-scope.ts
 │   │   │   │   │   │   ├── fund-accounts.test.ts
 │   │   │   │   │   │   ├── fund-accounts.ts
 │   │   │   │   │   │   ├── persistence.test.ts
 │   │   │   │   │   │   ├── persistence.ts
 │   │   │   │   │   │   ├── recent-scopes.test.ts
 │   │   │   │   │   │   ├── recent-scopes.ts
+│   │   │   │   │   │   ├── scope-label-context.tsx
 │   │   │   │   │   │   └── scope-picker-context.tsx
 │   │   │   │   │   ├── perf
 │   │   │   │   │   │   ├── off-thread-compute.test.tsx
@@ -9459,11 +9467,14 @@ Meridian-main
 │   │   │   │   │   ├── dev-fixtures.test.ts
 │   │   │   │   │   ├── dev-fixtures.trading-risk.ts
 │   │   │   │   │   ├── dev-fixtures.ts
+│   │   │   │   │   ├── display-time-zone.ts
+│   │   │   │   │   ├── exact-decimal.ts
 │   │   │   │   │   ├── fixed-income-capabilities.test.ts
 │   │   │   │   │   ├── fixed-income-capabilities.ts
 │   │   │   │   │   ├── fixed-income-navigation.ts
 │   │   │   │   │   ├── focus-classes.ts
 │   │   │   │   │   ├── format.test.ts
+│   │   │   │   │   ├── format.timestamps.test.ts
 │   │   │   │   │   ├── format.ts
 │   │   │   │   │   ├── fund-account-scope.ts
 │   │   │   │   │   ├── identifiers.test.ts
@@ -10049,6 +10060,8 @@ Meridian-main
 │   │   │   │   │   ├── settings-screen.section-primitives.tsx
 │   │   │   │   │   ├── settings-screen.section-state.ts
 │   │   │   │   │   ├── settings-screen.test.tsx
+│   │   │   │   │   ├── settings-screen.time-zone-preference.test.tsx
+│   │   │   │   │   ├── settings-screen.time-zone-preference.tsx
 │   │   │   │   │   ├── settings-screen.tsx
 │   │   │   │   │   ├── settings-screen.view-model.test.ts
 │   │   │   │   │   ├── settings-screen.view-model.ts
