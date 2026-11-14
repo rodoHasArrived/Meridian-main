@@ -139,16 +139,16 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             pageType,
             effectiveParameter,
             presentationMode,
-            workspaceScope?.ServiceProvider);
+            workspaceScope?.ServiceProvider ?? ResolveWorkspaceServiceProvider(canonicalPageTag));
     }
 
     /// <summary>
-    /// Navigates using a workspace-scoped service provider when provided.
+    /// Navigates using the explicit scope or the registered workspace's retained scope.
     /// </summary>
     public bool NavigateTo(string pageTag, object? parameter = null, IServiceScope? workspaceScope = null)
     {
         var previousProvider = _navigationScopeProvider.Value;
-        _navigationScopeProvider.Value = workspaceScope?.ServiceProvider;
+        _navigationScopeProvider.Value = workspaceScope?.ServiceProvider ?? ResolveWorkspaceServiceProvider(pageTag);
         try
         {
             var canonicalPageTag = ShellNavigationCatalog.GetCanonicalPageTag(pageTag);
@@ -165,6 +165,14 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         {
             _navigationScopeProvider.Value = previousProvider;
         }
+    }
+
+    private IServiceProvider? ResolveWorkspaceServiceProvider(string pageTag)
+    {
+        var workspaceId = ShellNavigationCatalog.InferWorkspaceIdForPageTag(pageTag);
+        return string.IsNullOrWhiteSpace(workspaceId)
+            ? null
+            : _serviceProvider?.GetService<WorkspaceService>()?.GetOrCreateWorkspaceScope(workspaceId)?.ServiceProvider;
     }
 
     /// <inheritdoc />
@@ -416,9 +424,10 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             {
                 return serviceProvider.GetService(pageType) ?? ActivatorUtilities.CreateInstance(serviceProvider, pageType);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Unit tests and partial workspace scopes may not load the full app resource graph.
+                LoggingService.Instance.LogError($"Construction of page '{pageTag}' ({pageType.Name}) failed; using compatibility fallback.", ex);
                 return CreateFallbackPage(pageTag, serviceProvider);
             }
         }

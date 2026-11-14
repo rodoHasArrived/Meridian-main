@@ -23,7 +23,7 @@ public sealed class MainPageLaunchNavigationTests
     {
         WpfTestThread.Run(() =>
         {
-            using var facade = new MainPageUiAutomationFacade();
+            using var facade = new MainPageUiAutomationFacade(validateScopes: true);
             var paneHost = InitializePaneHost(facade);
             facade.Page.NavigateToLaunchPage("StrategyShell").Should().BeTrue();
             RunMatUiAutomationFacade.DrainDispatcher();
@@ -37,7 +37,7 @@ public sealed class MainPageLaunchNavigationTests
             facade.ViewModel.PaneHost.GetAssignedPageTag(0).Should().Be(expectedPage.PageTag);
             facade.WorkspaceHomeSurface.Visibility.Should().Be(Visibility.Visible);
             facade.ContentFrame.Visibility.Should().Be(Visibility.Collapsed);
-            visibleFrame.Content.Should().BeOfType(expectedPage.PageType,
+            NavigationHostInspector.ResolveInnermostContent(visibleFrame.Content).Should().BeOfType(expectedPage.PageType,
                 "the shell header alone does not prove which workspace body is displayed");
             AutomationProperties.GetAutomationId(visibleFrame).Should().Be("WorkspacePane0");
             AutomationProperties.GetItemType(visibleFrame).Should().Be("ActiveWorkspacePane");
@@ -50,7 +50,7 @@ public sealed class MainPageLaunchNavigationTests
     {
         WpfTestThread.Run(() =>
         {
-            using var facade = new MainPageUiAutomationFacade();
+            using var facade = new MainPageUiAutomationFacade(validateScopes: true);
             var paneHost = InitializePaneHost(facade);
             facade.ViewModel.PaneHost.SelectLayoutCommand.Execute(PaneLayouts.TradingCockpit);
             RunMatUiAutomationFacade.DrainDispatcher();
@@ -88,7 +88,7 @@ public sealed class MainPageLaunchNavigationTests
     {
         WpfTestThread.Run(() =>
         {
-            using var facade = new MainPageUiAutomationFacade();
+            using var facade = new MainPageUiAutomationFacade(validateScopes: true);
             var paneHost = InitializePaneHost(facade);
 
             facade.Page.NavigateToLaunchPage("AccountingShell").Should().BeTrue();

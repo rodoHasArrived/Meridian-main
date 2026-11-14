@@ -869,6 +869,8 @@ content creation, navigation history, navigation events, and pane-drop results.
 Forwarded `--page` requests and restored operating-context pages render workspace homes, including
 `HomeWorkspace`, in the active split pane and leaf workflows in the main content frame.
 Updating an existing pane preserves its layout and the other pane instances.
+Direct navigation and split-pane content creation resolve scoped presentation services through the
+registered workspace's retained scope when no caller scope is supplied; explicit scopes take precedence.
 Desktop capture readiness compares the shell tag with the visible active frame's `ItemStatus`,
 which is derived from the created page content after navigation rather than from shell labels.
 `MainPageLaunchNavigationTests` covers home/leaf transitions, aliases, rendered identity and retained panes;

@@ -1,11 +1,11 @@
 {
-  "total_files": 1198,
-  "orphaned_count": 396,
+  "total_files": 1199,
+  "orphaned_count": 397,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 310,
   "health_score": 84,
-  "signal_digest": "sha256:2e9326e982cea6bef9c829ade280a551b25de663744c55f209d23cf5355eae88",
+  "signal_digest": "sha256:6c3a3d8c85a9262dc5421d432f6bd0884cca51129e1d3fff2d5ed91b964e4abb",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -347,6 +347,7 @@
     "docs/docfx/api/index.md",
     "docs/engineering/archive-compression-replay-safety.md",
     "docs/engineering/plans/review-remediation-2026-11-12.md",
+    "docs/generated/desktop-user-manual.md",
     "docs/generated/interfaces.md",
     "docs/generated/project-dependencies.md",
     "docs/generated/provider-registry.md",
@@ -2979,6 +2980,13 @@
     },
     {
       "path": "docs/generated/database/schema-catalog.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/generated/desktop-user-manual.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
