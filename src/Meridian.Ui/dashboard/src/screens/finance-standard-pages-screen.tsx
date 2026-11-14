@@ -11,7 +11,7 @@ import {
 import type { LedgerAmountSelection } from "@/types/ledger-amount-proof";
 import { Link, useSearchParams } from "react-router-dom";
 import { formatCurrency, formatMoney, formatUtcDate, formatUtcMonthYear } from "@/lib/format";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, pluralizeCount } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -924,7 +924,7 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
       />
       <div className="text-xs leading-5 text-muted-foreground" aria-label="Close calendar scope">
         <h2 className="sr-only">Close Calendar</h2>
-        {periodId ? presentFinancePeriod(periodId) : "All periods"} · {items.length} workflows · {items.filter((item) => item.blockerCount > 0).length} blocked workflows
+        {periodId ? presentFinancePeriod(periodId) : "All periods"} · {pluralizeCount(items.length, "workflow")} · {pluralizeCount(items.filter((item) => item.blockerCount > 0).length, "blocked workflow")}
       </div>
       {fundScope.note && !loading && !errorText ? (
         <p role="status" aria-label="Close calendar fund scope" data-narrowing={fundScope.status} className="text-xs text-muted-foreground">

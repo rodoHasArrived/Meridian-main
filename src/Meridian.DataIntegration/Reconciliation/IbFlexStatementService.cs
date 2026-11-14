@@ -229,7 +229,8 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
             AccountingScope = normalizedRequest.AccountingScope
         };
 
-        if (!await store.TrySaveImportAsync(import, rows, ct).ConfigureAwait(false))
+        if (!await store.TrySaveImportWithSourceAsync(import, rows,
+            snapshots.Source.Content, snapshots.ParseArtifact.Content, ct).ConfigureAwait(false))
         {
             throw new StatementAlreadyImportedException(duplicateKey);
         }

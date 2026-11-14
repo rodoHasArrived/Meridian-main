@@ -543,6 +543,10 @@ public partial class App : System.Windows.Application
         // ── Temporary legacy registrations not yet feature-owned ─────────────
         services.AddTransient<FundProfileSelectionPage>();
         services.AddTransient<Meridian.Wpf.ViewModels.FundProfileSelectionViewModel>();
+        // Scope picker reads the shared /api/workstation/scope-options seam (browser parity); on a
+        // 404 from an older host it falls back to the in-process fund-structure graph.
+        services.AddSingleton<WpfServices.IWorkstationScopeOptionsApiClient, WpfServices.WorkstationScopeOptionsApiClient>();
+        services.AddTransient<Meridian.Wpf.ViewModels.WorkstationScopeOptionsViewModel>();
 
         // ── Plugin loader service ────────────────────────────────────────────
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();

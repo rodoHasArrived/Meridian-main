@@ -20,6 +20,7 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
         var run = sourceRun;
         var payload = sourcePayload;
         var visited = new HashSet<string>(StringComparer.Ordinal);
+        string? retainedFormat = null;
         while (true)
         {
             ct.ThrowIfCancellationRequested();
@@ -30,18 +31,18 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
 
             if (payload.RequestMetadata.TryGetValue(SourceRecordFormatMetadataKey, out var format))
             {
-                return format is ManualCsvRecordFormat or JsonRecordFormat
-                    ? format
-                    : throw new InvalidOperationException("The retained replay source record format is unsupported.");
+                if (format is not (ManualCsvRecordFormat or JsonRecordFormat))
+                    throw new InvalidOperationException("The retained replay source record format is unsupported.");
+                retainedFormat ??= format;
             }
 
             if (run.SourceSyncRunId is not { } parentId)
             {
-                return IdentifyIngestionRecordFormat(payload);
+                return retainedFormat ?? IdentifyIngestionRecordFormat(payload);
             }
 
-            // Older replays have no format marker. Follow their verified retained ancestry;
-            // neither the selected mapping nor the shape of an individual row establishes format.
+            // Verify every source link even when a newer replay carries a format marker;
+            // a marker cannot establish completeness of an older HTTP capture.
             run = await scopedStore.GetSyncRunAsync(parentId, ct).ConfigureAwait(false)
                 ?? throw new InvalidOperationException("The retained replay source history is unavailable; its record format cannot be inferred.");
             if (!ProviderIntegrationManifestIdentity.Matches(run.OriginalManifestReference, originalReference) ||

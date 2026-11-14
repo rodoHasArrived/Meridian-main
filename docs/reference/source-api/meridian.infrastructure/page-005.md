@@ -6,6 +6,94 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IIBProviderConnectionIdentity
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBProviderConnectionIdentity</code>. Kind: `interface`.
+
+Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:52](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L52).
+
+Exposes the configured physical/logical IB connection identity for provenance.
+
+```csharp
+public interface IIBProviderConnectionIdentity
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string ProviderConnectionId { get; }</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:54](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L54) |  |
+
+## IntradayBar
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IntradayBar</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:544](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L544).
+
+Intraday bar data from IB.
+
+```csharp
+public sealed record IntradayBar(string Symbol, DateTimeOffset Timestamp, decimal Open, decimal High, decimal Low, decimal Close, long Volume, decimal VWAP, int TradeCount, string Source = "ibkr");
+```
+
+## JsonIBDurableResultStore
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.JsonIBDurableResultStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs:66](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs#L66).
+
+Small atomic JSON result store used until an installation supplies a database projection. It is deliberately keyed by tenant + company + provider connection + immutable correlation + request id, so process restarts and shared gateway request-id reuse cannot cross ownership boundaries.
+
+```csharp
+public sealed class JsonIBDurableResultStore : IBDurableResultStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonIBDurableResultStore(string path) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs:72](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs#L72) |  |
+| <code>public void Upsert(IBDataRequestOwnership ownership, string providerConnectionId, string requestCorrelationId, ProviderDataRequestReadModel request, IBDataLineage? lineage);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs:74](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs#L74) |  |
+| <code>public IReadOnlyList&lt;IBDurableResult&gt; Get(string tenantId, string companyId, string? capability = null, string? accountId = null, string? modelAccountId = null);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs:140](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs#L140) |  |
+
+## IBHistoricalDataProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:577](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L577).
+
+Stub IB historical data provider for non-IBAPI builds. Registers in the provider list so users can see IB is available but requires IBAPI.
+
+```csharp
+public sealed class IBHistoricalDataProvider : IHistoricalDataProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IBHistoricalDataProvider();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:581](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L581) |  |
+| <code>public IBHistoricalDataProvider(EnhancedIBConnectionManager connectionManager, int priority = 10, Serilog.ILogger? log = null);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:583](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L583) |  |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:592](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L592) |  |
+| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:593](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L593) |  |
+| <code>public string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:594](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L594) |  |
+| <code>public int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:598](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L598) |  |
+| <code>public TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:599](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L599) |  |
+| <code>public int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:600](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L600) |  |
+| <code>public TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:601](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L601) |  |
+| <code>public HistoricalDataCapabilities Capabilities { get; } = (HistoricalDataCapabilities.BarsOnly with { Intraday = true }).WithMarkets(&quot;US&quot;, &quot;EU&quot;, &quot;APAC&quot;);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:603](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L603) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:607](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L607) |  |
+| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:608](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L608) |  |
+| <code>public string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:609](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L609) |  |
+| <code>public int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:610](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L610) |  |
+| <code>public ProviderCapabilities ProviderCapabilities { get; } = new () { SupportsBackfill = true, SupportsIntraday = true, SupportsAdjustedPrices = true, SupportedMarkets = new[] { &quot;US&quot;, &quot;EU&quot;, &quot;APAC&quot; }, DeclaredMarketDataCapabilities = new[] { new MarketDataCapabilityProfile(MarketDataCapabilityKind.Bars, new[] { &quot;Equity&quot;, &quot;Option&quot;, &quot;Future&quot;, &quot;Forex&quot;, &quot;Bond&quot; }, new[] { &quot;US&quot;, &quot;EU&quot;, &quot;APAC&quot; }, new[] { &quot;SMART&quot; }, &quot;IBKR TWS/Gateway&quot;, &quot;Historical&quot;, &quot;Account and market-data subscription may be required&quot;, 60, TimeSpan.FromMinutes(10), TimeSpan.FromSeconds(15), &quot;IB historical bar timestamp&quot;, &quot;Entitlement-dependent; unavailable without an IBAPI-enabled build&quot;) }, MaxRequestsPerWindow = 60, RateLimitWindow = TimeSpan.FromMinutes(10), MinRequestDelay = TimeSpan.FromSeconds(15) };</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:612](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L612) |  |
+| <code>public ProviderCredentialField[] ProviderCredentialFields =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:627](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L627) |  |
+| <code>public string[] ProviderNotes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:633](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L633) |  |
+| <code>public string[] ProviderWarnings =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:639](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L639) |  |
+| <code>public Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:645](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L645) |  |
+| <code>public Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:651](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L651) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:658](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L658) |  |
+
 ## NasdaqDataLinkCorporateActionProvider
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkCorporateActionProvider</code>. Kind: `class`.
@@ -80,6 +168,18 @@ Declared public members:
 | <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:50](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L50) |  |
 | <code>public NasdaqDataLinkSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null) : base(apiKey, httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:58](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L58) |  |
 
+## NyseCredentialAccessPolicy
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.NYSE.NyseCredentialAccessPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/NYSE/NyseCredentialAccessPolicy.cs:7](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseCredentialAccessPolicy.cs#L7).
+
+Refuses NYSE activation where credential ownership is required but not implemented.
+
+```csharp
+public sealed record NyseCredentialAccessPolicy(bool RequireExplicitOwnership)
+```
+
 ## NYSEDataSource
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource</code>. Kind: `class`.
@@ -106,36 +206,36 @@ Declared public members:
 | <code>public override IReadOnlySet&lt;string&gt; SupportedMarkets =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:133](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L133) |  |
 | <code>public override IReadOnlySet&lt;AssetClass&gt; SupportedAssetClasses =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:134](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L134) |  |
 | <code>public NYSEDataSource(NYSEOptions options, IHttpClientFactory httpClientFactory, DataSourceOptions? sourceOptions = null, ILogger? logger = null) : base(sourceOptions?? DataSourceOptions.Default, logger);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:138](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L138) |  |
-| <code>public override async Task&lt;bool&gt; ValidateCredentialsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:181](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L181) |  |
-| <code>public override async Task&lt;bool&gt; TestConnectivityAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:205](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L205) |  |
-| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:246](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L246) |  |
-| <code>public event Action&lt;WebSocketConnectionDiagnostics&gt;? ConnectionDiagnosticsChanged { add; remove; }</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:251](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L251) | Raised when the underlying WebSocket connection diagnostics change. |
-| <code>public event Action&lt;ReconnectionGap&gt;? ReconnectionGapDetected { add; remove; }</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:261](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L261) | Raised after a reconnection completes, carrying the window during which streaming data may have been missed. |
-| <code>public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:270](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L270) | Returns the live connection diagnostics snapshot from the shared connection manager. |
-| <code>public async Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:291](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L291) |  |
-| <code>public async Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:329](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L329) |  |
-| <code>public IObservable&lt;RealtimeTrade&gt; Trades =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:349](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L349) |  |
-| <code>public int SubscribeTrades(SymbolConfig config);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:351](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L351) |  |
-| <code>public void UnsubscribeTrades(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:364](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L364) |  |
-| <code>public IObservable&lt;RealtimeQuote&gt; Quotes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:380](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L380) |  |
-| <code>public int SubscribeQuotes(SymbolConfig config);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:382](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L382) |  |
-| <code>public void UnsubscribeQuotes(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:395](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L395) |  |
-| <code>public IObservable&lt;RealtimeDepthUpdate&gt; DepthUpdates =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:411](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L411) |  |
-| <code>public int SubscribeMarketDepth(SymbolConfig config);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:413](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L413) |  |
-| <code>public void UnsubscribeMarketDepth(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:431](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L431) |  |
-| <code>public IReadOnlySet&lt;int&gt; ActiveSubscriptions =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:447](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L447) |  |
-| <code>public IReadOnlySet&lt;string&gt; SubscribedSymbols =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:450](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L450) |  |
-| <code>public void UnsubscribeAll();</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:453](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L453) |  |
-| <code>public bool SupportsIntraday =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:473](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L473) |  |
-| <code>public IReadOnlyList&lt;string&gt; SupportedBarIntervals =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:474](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L474) |  |
-| <code>public bool SupportsDividends =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:475](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L475) |  |
-| <code>public bool SupportsSplits =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:476](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L476) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:478](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L478) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:488](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L488) |  |
-| <code>public Task&lt;IReadOnlyList&lt;IntradayBar&gt;&gt; GetIntradayBarsAsync(string symbol, string interval, DateTimeOffset? from = null, DateTimeOffset? to = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:498](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L498) |  |
-| <code>public Task&lt;IReadOnlyList&lt;DividendInfo&gt;&gt; GetDividendsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:509](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L509) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SplitInfo&gt;&gt; GetSplitsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:519](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L519) |  |
-| <code>public void ProcessTestMessage(string json) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:569](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L569) | Test entry point: injects a raw WebSocket JSON payload directly into the processing pipeline, bypassing the live WebSocket connection. Used by NyseMessagePipelineTests. |
+| <code>public override async Task&lt;bool&gt; ValidateCredentialsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:182](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L182) |  |
+| <code>public override async Task&lt;bool&gt; TestConnectivityAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:206](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L206) |  |
+| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:247](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L247) |  |
+| <code>public event Action&lt;WebSocketConnectionDiagnostics&gt;? ConnectionDiagnosticsChanged { add; remove; }</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:252](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L252) | Raised when the underlying WebSocket connection diagnostics change. |
+| <code>public event Action&lt;ReconnectionGap&gt;? ReconnectionGapDetected { add; remove; }</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:262](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L262) | Raised after a reconnection completes, carrying the window during which streaming data may have been missed. |
+| <code>public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:271](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L271) | Returns the live connection diagnostics snapshot from the shared connection manager. |
+| <code>public async Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:292](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L292) |  |
+| <code>public async Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:330](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L330) |  |
+| <code>public IObservable&lt;RealtimeTrade&gt; Trades =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:350](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L350) |  |
+| <code>public int SubscribeTrades(SymbolConfig config);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:352](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L352) |  |
+| <code>public void UnsubscribeTrades(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:365](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L365) |  |
+| <code>public IObservable&lt;RealtimeQuote&gt; Quotes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:381](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L381) |  |
+| <code>public int SubscribeQuotes(SymbolConfig config);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:383](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L383) |  |
+| <code>public void UnsubscribeQuotes(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:396](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L396) |  |
+| <code>public IObservable&lt;RealtimeDepthUpdate&gt; DepthUpdates =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:412](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L412) |  |
+| <code>public int SubscribeMarketDepth(SymbolConfig config);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:414](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L414) |  |
+| <code>public void UnsubscribeMarketDepth(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:432](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L432) |  |
+| <code>public IReadOnlySet&lt;int&gt; ActiveSubscriptions =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:448](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L448) |  |
+| <code>public IReadOnlySet&lt;string&gt; SubscribedSymbols =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:451](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L451) |  |
+| <code>public void UnsubscribeAll();</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:454](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L454) |  |
+| <code>public bool SupportsIntraday =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:474](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L474) |  |
+| <code>public IReadOnlyList&lt;string&gt; SupportedBarIntervals =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:475](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L475) |  |
+| <code>public bool SupportsDividends =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:476](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L476) |  |
+| <code>public bool SupportsSplits =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:477](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L477) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:479](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L479) |  |
+| <code>public Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:489](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L489) |  |
+| <code>public Task&lt;IReadOnlyList&lt;IntradayBar&gt;&gt; GetIntradayBarsAsync(string symbol, string interval, DateTimeOffset? from = null, DateTimeOffset? to = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:499](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L499) |  |
+| <code>public Task&lt;IReadOnlyList&lt;DividendInfo&gt;&gt; GetDividendsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:510](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L510) |  |
+| <code>public Task&lt;IReadOnlyList&lt;SplitInfo&gt;&gt; GetSplitsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:520](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L520) |  |
+| <code>public void ProcessTestMessage(string json) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs:570](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs#L570) | Test entry point: injects a raw WebSocket JSON payload directly into the processing pipeline, bypassing the live WebSocket connection. Used by NyseMessagePipelineTests. |
 
 ## NYSEFeedTier
 
@@ -175,26 +275,26 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public NyseMarketDataClient(TradeDataCollector tradeCollector, MarketDepthCollector depthCollector, QuoteCollector quoteCollector, IHttpClientFactory httpClientFactory, NYSEOptions? options = null);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:37](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L37) |  |
-| <code>public bool IsEnabled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:57](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L57) |  |
-| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:59](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L59) |  |
-| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:61](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L61) |  |
-| <code>public string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:63](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L63) |  |
-| <code>public int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:65](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L65) |  |
-| <code>public ProviderCapabilities ProviderCapabilities { get; } = ProviderCapabilities.Streaming(trades : true, quotes : true, depth : true) with { SupportedMarkets = new[] { &quot;US&quot; } };</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:67](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L67) |  |
-| <code>public ProviderCredentialField[] ProviderCredentialFields =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:75](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L75) |  |
-| <code>public string[] ProviderNotes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:82](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L82) |  |
-| <code>public string[] ProviderWarnings =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:88](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L88) |  |
-| <code>public event Action&lt;WebSocketConnectionDiagnostics&gt;? ConnectionDiagnosticsChanged { add; remove; }</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:94](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L94) |  |
-| <code>public event Action&lt;ReconnectionGap&gt;? ReconnectionGapDetected { add; remove; }</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:101](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L101) |  |
-| <code>public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:108](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L108) |  |
-| <code>public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:112](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L112) |  |
-| <code>public Task ConnectAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:115](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L115) |  |
-| <code>public Task DisconnectAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:118](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L118) |  |
-| <code>public int SubscribeMarketDepth(SymbolConfig cfg) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:121](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L121) |  |
-| <code>public void UnsubscribeMarketDepth(int subscriptionId) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:124](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L124) |  |
-| <code>public int SubscribeTrades(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:127](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L127) |  |
-| <code>public void UnsubscribeTrades(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:135](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L135) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:145](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L145) |  |
+| <code>public bool IsEnabled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:58](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L58) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:60](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L60) |  |
+| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:62](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L62) |  |
+| <code>public string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:64](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L64) |  |
+| <code>public int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:66](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L66) |  |
+| <code>public ProviderCapabilities ProviderCapabilities { get; } = ProviderCapabilities.Streaming(trades : true, quotes : true, depth : true) with { SupportedMarkets = new[] { &quot;US&quot; } };</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:68](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L68) |  |
+| <code>public ProviderCredentialField[] ProviderCredentialFields =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:76](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L76) |  |
+| <code>public string[] ProviderNotes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:83](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L83) |  |
+| <code>public string[] ProviderWarnings =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:89](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L89) |  |
+| <code>public event Action&lt;WebSocketConnectionDiagnostics&gt;? ConnectionDiagnosticsChanged { add; remove; }</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:95](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L95) |  |
+| <code>public event Action&lt;ReconnectionGap&gt;? ReconnectionGapDetected { add; remove; }</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:102](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L102) |  |
+| <code>public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:109](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L109) |  |
+| <code>public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:113](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L113) |  |
+| <code>public Task ConnectAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:116](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L116) |  |
+| <code>public Task DisconnectAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:119](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L119) |  |
+| <code>public int SubscribeMarketDepth(SymbolConfig cfg) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:122](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L122) |  |
+| <code>public void UnsubscribeMarketDepth(int subscriptionId) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:125](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L125) |  |
+| <code>public int SubscribeTrades(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:128](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L128) |  |
+| <code>public void UnsubscribeTrades(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:136](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L136) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs:146](../../../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs#L146) |  |
 
 ## NyseNationalTradesCsvParser
 
@@ -1166,86 +1266,3 @@ Declared public members:
 | <code>public string Currency { get; init; } = &quot;USD&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:320](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L320) |  |
 | <code>public string AccountStatus { get; init; } = &quot;paper-template&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:321](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L321) |  |
 | <code>public IReadOnlyList&lt;BrokerPosition&gt; Positions { get; init; } = Array.Empty&lt;BrokerPosition&gt;();</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:322](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L322) |  |
-
-## TemplateBrokerDegradation
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerDegradation</code>. Kind: `enum`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L213).
-
-```csharp
-public enum TemplateBrokerDegradation
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L213) |  |
-| <code>Elevated</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L213) |  |
-| <code>Critical</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L213) |  |
-
-## TemplateBrokerExecutionExtensions
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerExecutionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:171](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L171).
-
-Provides template execution reconciliation by returning the supplied local execution log.
-
-```csharp
-public sealed class TemplateBrokerExecutionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;IReadOnlyList&lt;ExecutionReport&gt;&gt; ReconcileExecutionsAsync(IReadOnlyList&lt;ExecutionReport&gt; localExecutionLog, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:173](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L173) |  |
-
-## TemplateBrokerHealthPayload
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerHealthPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:208](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L208).
-
-```csharp
-public sealed record TemplateBrokerHealthPayload(bool IsApiReachable, int LatencyMs, TemplateBrokerDegradation DegradationLevel);
-```
-
-## TemplateBrokerHealthReporter
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerHealthReporter</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:133](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L133).
-
-Maps template broker health payloads to canonical broker health status.
-
-```csharp
-public sealed class TemplateBrokerHealthReporter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BrokerHealthStatus MapHealth(TemplateBrokerHealthPayload payload);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:135](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L135) |  |
-
-## TemplateBrokerHttpClient
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerHttpClient</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:47](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L47).
-
-Posts JSON requests and deserializes responses for the template broker adapter.
-
-```csharp
-public sealed class TemplateBrokerHttpClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TemplateBrokerHttpClient(HttpClient httpClient) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L51) |  |
-| <code>public async Task&lt;TResponse&gt; PostJsonAsync&lt;TRequest, TResponse&gt;(string path, TRequest payload, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L53) |  |

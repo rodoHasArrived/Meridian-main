@@ -16,7 +16,7 @@ Object rows introduce the child keys below them. Array-object fields retain thei
 (for example `DataSources.Sources[0].Id`); the index identifies an example, not a fixed runtime slot.
 Sensitive-key values are redacted. Only the tracked sample is read; local configuration and environment values are never read.
 
-Explicit sample keys: **319**. Regenerate with:
+Explicit sample keys: **329**. Regenerate with:
 
 ```bash
 python3 build/scripts/docs/generate-configuration-reference.py
@@ -452,3 +452,18 @@ python3 build/scripts/docs/generate-configuration-reference.py --check
 | `Serilog.WriteTo[1].Args.retainedFileCountLimit` | integer | `30` | — | [line 948](../../config/appsettings.sample.json#L948) |
 | `Serilog.WriteTo[1].Args.fileSizeLimitBytes` | integer | `16777216` | — | [line 949](../../config/appsettings.sample.json#L949) |
 | `Serilog.WriteTo[1].Args.rollOnFileSizeLimit` | boolean | `true` | — | [line 950](../../config/appsettings.sample.json#L950) |
+
+## `ProviderQuotas`
+
+| Key | Sample JSON type | Sample value | Source comment | Source |
+| --- | --- | --- | --- | --- |
+| `ProviderQuotas` | object | `object (2 keys)` | Restart-required vendor account declarations; no credential values belong here. Capabilities sharing a credential share these limits. Set actual paid account limits explicitly. | [line 958](../../config/appsettings.sample.json#L958) |
+| `ProviderQuotas.TwelveData` | object | `object (4 keys)` | Basic: 8 credits/minute and 800 credits per UTC day. Fundamentals endpoints each cost 20. FundamentalsEntitled must be explicit for Grow/Venture access; more capacity alone grants none. Set NoDailyLimit only for an account whose vendor plan has no daily limit. | [line 962](../../config/appsettings.sample.json#L962) |
+| `ProviderQuotas.TwelveData.CreditsPerMinute` | integer | `8` | — | [line 963](../../config/appsettings.sample.json#L963) |
+| `ProviderQuotas.TwelveData.DailyCredits` | integer | `800` | — | [line 964](../../config/appsettings.sample.json#L964) |
+| `ProviderQuotas.TwelveData.FundamentalsEntitled` | boolean | `false` | — | [line 965](../../config/appsettings.sample.json#L965) |
+| `ProviderQuotas.TwelveData.NoDailyLimit` | boolean | `false` | — | [line 966](../../config/appsettings.sample.json#L966) |
+| `ProviderQuotas.AlphaVantage` | object | `object (3 keys)` | Free defaults. The daily limit is conservative rolling 24 hours; no vendor reset is assumed. | [line 969](../../config/appsettings.sample.json#L969) |
+| `ProviderQuotas.AlphaVantage.RequestsPerMinute` | integer | `5` | — | [line 970](../../config/appsettings.sample.json#L970) |
+| `ProviderQuotas.AlphaVantage.DailyRequests` | integer | `25` | — | [line 971](../../config/appsettings.sample.json#L971) |
+| `ProviderQuotas.AlphaVantage.NoDailyLimit` | boolean | `false` | — | [line 972](../../config/appsettings.sample.json#L972) |

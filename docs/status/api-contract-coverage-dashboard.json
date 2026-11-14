@@ -1043,55 +1043,55 @@
     {
       "method": "GET",
       "path": "/api/config/changes",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:44",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:45",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/config",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:50",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:51",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/config/effective",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:77",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:78",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/datasource",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:134",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:135",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/alpaca",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:149",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:150",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/storage",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:161",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:162",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/symbols",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:188",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:189",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/config/derivatives",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:229",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:230",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/derivatives",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:238",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:239",
       "documented": true
     },
     {
@@ -3497,25 +3497,25 @@
     {
       "method": "GET",
       "path": "/api/providers/connections",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:22",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:23",
       "documented": true
     },
     {
       "method": "PUT",
       "path": "/api/providers/{providerId}/credentials",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:68",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:73",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/providers/{providerId}/verify",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:106",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:115",
       "documented": true
     },
     {
       "method": "DELETE",
       "path": "/api/providers/{providerId}/credentials",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:135",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:148",
       "documented": true
     },
     {
@@ -3539,79 +3539,79 @@
     {
       "method": "GET",
       "path": "/api/config/datasources",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:84",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:85",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/datasources",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:103",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:104",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/datasources/defaults",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:235",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:236",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/datasources/failover",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:269",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:270",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/providers/configure",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:302",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:303",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/comparison",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:343",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:348",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/readiness",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:416",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:421",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:428",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:433",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/metrics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:543",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:548",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/catalog",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:625",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:630",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/catalog/{providerId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:664",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:669",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/config/data-sources",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:684",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:689",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/data-sources",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:702",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:707",
       "documented": true
     },
     {
@@ -10230,12 +10230,12 @@
     },
     {
       "name": "WorkstationScopeAccountOptionDto",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:41",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:56",
       "documented": true
     },
     {
       "name": "WorkstationScopeOptionsJsonContext",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:58",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:75",
       "documented": true
     },
     {

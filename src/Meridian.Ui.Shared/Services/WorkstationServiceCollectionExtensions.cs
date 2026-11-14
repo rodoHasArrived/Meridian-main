@@ -116,6 +116,7 @@ public static class WorkstationServiceCollectionExtensions
         });
         services.TryAddSingleton<IBResultQueryService>();
 
+        services.AddProviderCredentialOwnershipPolicy();
         var isProductionComposition = ProductionServiceRegistrationPolicy.IsProductionComposition(services);
         services.AddOperatorTriageStorage(configuration, isProductionComposition);
         services.AddIntercompanyEntityServices(configuration);
@@ -123,7 +124,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ConfigStore>(sp =>
         {
             var core = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>();
-            return new ConfigStore(core.ConfigPath);
+            return new ConfigStore(core.ConfigPath, sp.GetRequiredService<ProviderCredentialOwnershipPolicy>());
         });
 
         // The UI coordinator is a read-model façade over the core coordinator. Reuse the
@@ -328,13 +329,18 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<AlpacaBrokerageConnectionService>();
         services.AddDefaultProviderSetupHandlers();
         services.TryAddSingleton<IProviderSetupRegistry, ProviderSetupRegistry>();
+        services.TryAddSingleton<ProviderRuntimeCredentialMutationGuard>(sp => new(
+            sp.GetRequiredService<ConfigStore>().CoreStore,
+            sp.GetRequiredService<ProviderCredentialOwnershipPolicy>(),
+            sp.GetService<IProviderRuntimeCredentialApplier>(), sp.GetService<ProviderRuntimeCredentialApplicationTracker>()));
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
         services.TryAddSingleton<ProviderReadinessService>();
         // These runtimes do not carry a trusted tenant/connection per import, statement or Plaid item.
         // Keep them legacy-only until that ownership is propagated through their full workflows.
         services.TryAddSingleton<LegacyProviderRuntimeCredentialStore>(sp => new(
-            new Meridian.Application.UI.ConfigStore(sp.GetRequiredService<ConfigStore>().ConfigPath),
-            sp.GetRequiredService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>()));
+            sp.GetRequiredService<ConfigStore>().CoreStore,
+            sp.GetRequiredService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(),
+            sp.GetRequiredService<ProviderCredentialOwnershipPolicy>()));
         services.TryAddKeyedSingleton<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(
             ProviderCredentialStoreServiceKeys.LegacyRuntime, (sp, _) =>
                 sp.GetService<Meridian.Application.UI.ConfigStore>() is null

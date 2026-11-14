@@ -13,7 +13,7 @@ namespace Meridian.Tests.Storage;
 /// <summary>
 /// Tests for the StorageCatalogService.
 /// </summary>
-public sealed class StorageCatalogServiceTests : IDisposable
+public sealed partial class StorageCatalogServiceTests : IDisposable
 {
     private readonly string _testDirectory;
     private readonly StorageCatalogService _service;

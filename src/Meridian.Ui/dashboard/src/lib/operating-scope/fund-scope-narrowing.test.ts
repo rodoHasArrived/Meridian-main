@@ -88,6 +88,62 @@ describe("narrowRowsToFundScope", () => {
   });
 });
 
+// A trading-only operator's scope options: its accounts, with funds and entities it may not see
+// withheld (null id, flag set), beside one account that genuinely has no fund.
+const WITHHELD_STRUCTURE = collectScopeStructureOptions({
+  entities: [],
+  funds: [],
+  accounts: [
+    { accountId: "T-1", displayName: "Trading one", fundId: null, entityId: null, fundWithheld: true, entityWithheld: true },
+    { accountId: "T-2", displayName: "Trading two", fundId: null, entityId: null, fundWithheld: true, entityWithheld: false },
+    { accountId: "T-3", displayName: "Unfiled", fundId: null, entityId: null, fundWithheld: false, entityWithheld: false }
+  ]
+});
+const withheldRows = [
+  { id: "w1", fundAccountId: "T-1" },
+  { id: "w2", fundAccountId: "t-2" },
+  { id: "w3", fundAccountId: "T-3" },
+  { id: "w4", fundAccountId: "H-9" }
+];
+
+describe("narrowing with withheld relationships", () => {
+  it("counts accounts whose fund is withheld apart from ones with no recorded fund", () => {
+    const result = narrowRowsToFundScope(withheldRows, (row) => row.fundAccountId, WITHHELD_STRUCTURE, { fundId: "F-typed" });
+    expect(result.rows).toEqual([]);
+    expect(result.withheldCount).toBe(2);
+    // T-3 (no fund) and H-9 (not in the payload).
+    expect(result.unknownCount).toBe(2);
+    expect(result.outsideCount).toBe(0);
+    expect(describeFundScopeNarrowing(result, "accounts")).toBe(
+      "Narrowed to the chosen fund: showing 0 of 4 accounts. 2 with no recorded fund not shown. 2 whose fund is not visible to you not shown."
+    );
+  });
+
+  it("names both the fund and the entity when an entity is chosen", () => {
+    const result = narrowRowsToFundScope(withheldRows, (row) => row.fundAccountId, WITHHELD_STRUCTURE, { entityId: "E-typed" });
+    expect(result.withheldCount).toBe(2);
+    expect(describeFundScopeNarrowing(result, "accounts")).toBe(
+      "Narrowed to the chosen entity: showing 0 of 4 accounts. 2 with no recorded entity not shown. 2 whose fund or entity is not visible to you not shown."
+    );
+  });
+
+  it("words the account-list help the same way and never flags a withheld account as outside", () => {
+    const result = narrowInlineAccountOptions([], WITHHELD_STRUCTURE, { fundId: "F-typed" });
+    expect(result.constrained.accountsWithWithheldRelationship).toBe(2);
+    expect(result.constrained.accountsWithoutKnownRelationship).toBe(1);
+    expect(result.help).toBe(
+      "Showing 0 accounts under the chosen fund. 1 with no recorded fund not shown. 2 whose fund is not visible to you not shown."
+    );
+    expect(accountKnownOutsideFundScope("T-1", [], WITHHELD_STRUCTURE, { fundId: "F-typed" })).toBe(false);
+  });
+
+  it("does not mention withheld accounts when there are none", () => {
+    const result = narrowRowsToFundScope(rows, accountOf, STRUCTURE, { fundId: "F-1" });
+    expect(result.withheldCount).toBe(0);
+    expect(describeFundScopeNarrowing(result, "accounts")).not.toMatch(/not visible/);
+  });
+});
+
 describe("narrowHouseholdPortfolioToFundScope", () => {
   const account = (fundAccountId: string, equity: number, cash: number): BrokerageHouseholdAccount => ({
     fundAccountId,

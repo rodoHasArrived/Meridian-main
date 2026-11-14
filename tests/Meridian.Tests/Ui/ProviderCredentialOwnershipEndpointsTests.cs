@@ -150,6 +150,32 @@ public sealed class ProviderCredentialOwnershipEndpointsTests : IDisposable
         status.Detail.Should().Contain("restart the host deliberately");
     }
 
+    [Fact]
+    public async Task ProductionCredentialMutation_ReportsMaintenanceConflictBeforeChangingTheBoundVaultRecord()
+    {
+        await using var app = await CreateAppAsync(ownershipPolicy: new(true));
+        var http = app.GetTestClient();
+        (await http.PostAsJsonAsync("/api/provider-routing/connections", new CreateOwnedProviderConnectionRequest(
+            new("owned", "alpaca", "Paper evidence", ExternalAccountId: "account-a"), "paper"))).StatusCode.Should().Be(HttpStatusCode.OK);
+        var scope = new ProviderCredentialScope("tenant-a", "owned", "account-a", "paper");
+        var vault = (IScopedProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        await vault.SaveScopedAsync(new("alpaca", new Dictionary<string, string?>
+        {
+            ["KeyId"] = "bound-key",
+            ["SecretKey"] = "bound-secret"
+        }, "paper"), scope);
+        var generation = (await vault.ReadScopedAsync("alpaca", scope))!.CredentialGeneration;
+        (await http.PutAsJsonAsync("/api/provider-routing/connections/owned/runtime-credentials",
+            new BindProviderRuntimeCredentialRequest("alpaca"))).StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var response = await http.DeleteAsync("/api/providers/alpaca/credentials?connectionId=owned");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        (await response.Content.ReadAsStringAsync()).Should().Contain("ProviderCredentialMaintenanceRequired")
+            .And.Contain("requested change was refused").And.NotContain("bound-secret");
+        (await vault.ReadScopedAsync("alpaca", scope))!.CredentialGeneration.Should().Be(generation);
+    }
+
     private sealed class RecordingApplier : IProviderRuntimeCredentialApplier
     {
         public ProviderRuntimeCredentialApplyOutcome Outcome { get; set; } = ProviderRuntimeCredentialApplyOutcome.PendingRestart;
@@ -164,7 +190,7 @@ public sealed class ProviderCredentialOwnershipEndpointsTests : IDisposable
     }
 
     private async Task<WebApplication> CreateAppAsync(UserPermission permissions = Permissions, bool tenant = true, bool actor = true,
-        IProviderRuntimeCredentialApplier? applier = null)
+        IProviderRuntimeCredentialApplier? applier = null, ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
         Directory.CreateDirectory(_root);
         await Config.SaveAsync(new AppConfig(DataRoot: _root));
@@ -175,6 +201,10 @@ public sealed class ProviderCredentialOwnershipEndpointsTests : IDisposable
         builder.Services.AddSingleton(Config);
         builder.Services.AddSingleton(new ConfigStore(Config.ConfigPath));
         builder.Services.AddSingleton<IProviderCredentialStore>(store);
+        if (ownershipPolicy is not null)
+            builder.Services.AddSingleton(ownershipPolicy);
+        builder.Services.AddSingleton<ProviderRuntimeCredentialApplicationTracker>();
+        builder.Services.AddSingleton<ProviderRuntimeCredentialMutationGuard>();
         builder.Services.AddSingleton<ProviderConnectionService>();
         if (applier is not null)
             builder.Services.AddSingleton(applier);
@@ -196,6 +226,7 @@ public sealed class ProviderCredentialOwnershipEndpointsTests : IDisposable
         });
         app.UseRateLimiter();
         app.MapProviderCredentialOwnershipEndpoints(new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        app.MapProviderConnectionEndpoints(new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
         await app.StartAsync();
         return app;
     }

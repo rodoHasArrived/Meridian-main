@@ -11,6 +11,9 @@ last_reviewed: 2026-11-14
 
 # src/Meridian.Ui.Shared
 
+Provider quota responses preserve the runtime's explicit credits/request unit and daily usage,
+cap and reset-policy evidence. They do not infer fundamentals entitlement from available credits.
+
 `IntercompanyObligationEndpoints` adds an owned-book advisory monitor at
 `/api/ledger/intercompany/obligations` and dates-only native agreement `/{id}/schedule` reads.
 Authenticated scope, retained evidence and existing legal read authority remain server-owned.
@@ -59,6 +62,9 @@ changes to price adjustment or Canonical resolution require an explicit archive/
 change is never presented as an applied provider rebuild. Browser Settings and Data use the same
 status.
 
+Provider edits that require credential ownership validate a frozen snapshot before ordinary
+settings validation. Both data-source aliases return safe HTTP 400 errors for invalid settings.
+
 
 The browser's fixed-income journeys use shared permissioned adapters rather than calculation-only
 entry points. Bond settlement preparation resolves an optional service explicitly (503 when absent)
@@ -85,6 +91,18 @@ Alpaca's fixed-income filter and authoritative error propagation, and exposes mo
 separately for candidate staging. The browser stages the reviewed identity through the existing
 retained asset-information upload; discovery never supplies approved economic terms. Tests use
 synthetic fixtures; live provider behavior remains untested.
+
+Production and packaged/customer workstation credential setup and compatibility routes require
+explicit retained connection ownership. Provider-wide status cannot claim readiness from unassigned
+secrets; selected-connection status and mutations use the scoped vault. Legacy execution/module
+adapters refuse unowned credentials in these compositions, while unflagged development retains its
+legacy compatibility policy. Bound production operator mutations require proven runtime stop/drain;
+the default host returns an actionable maintenance conflict before changing credentials or ownership.
+Owned disabled connections support credential setup and status reads consistently; execution and
+verification still require an enabled connection. Refused maintenance leaves prior runtime status unchanged.
+Provider-owned conditional refresh remains scope/generation checked and can finish during drain.
+See [credential operations](../../docs/operators/provider-credentials.md).
+
 Completed empty bond lookups return `available: true`; failed lookups return HTTP 503 with
 `available: false`, no candidates and a stable `failureReason` describing unavailable credentials,
 transport, malformed payload, incomplete response or throttling.
@@ -95,6 +113,7 @@ Null configuration documents and noncanonical credential environments also repor
 credentials and release the configuration lease before returning.
 The complete lookup has a 20-second deadline and preserves caller cancellation. Expiry reports
 `lookupTimedOut` and releases the configuration lease; blank queries refuse before provider probes.
+
 Visualization services are registered through the existing workstation composition and endpoint
 map. Private-capital observation and broker-assessment imports use dedicated permissions and
 authenticated tenant/company plus entity/account checks. The former verifies retained source
@@ -893,8 +912,11 @@ using the authenticated workstation tenant. Binding failover IDs are limited to 
 connection set. Each service applies ownership against its captured configuration before returning
 bindings or evaluating trust; foreign connections do not trigger health queries. Request headers and
 query parameters cannot select another tenant. Route preview uses the same authenticated tenant
-before candidate selection and failover expansion. Default setup ownership and remaining whole-configuration
-snapshot callers still require integration.
+before candidate selection and failover expansion. Production setup and default-runtime resolution
+require the retained connection, tenant, account and environment; missing or changed ownership cannot
+fall back to provider-wide credentials. Whole-configuration writes use the Application-owned final
+credential guard, including retained sections and backups, while legacy reads remain available for
+explicit migration and purge.
 
 The workstation Data payload (`/api/workstation/data` and `/api/workstation/data-operations`) reads
 routing connections, bindings and trust snapshots through the same tenant-scoped service methods, so
@@ -1175,7 +1197,10 @@ but the payload carries only nodes the caller could already read on an existing 
   (brokerage household and portfolio aggregation); `ViewLedgerReports` / `ManageLedgerReports` →
   entities (entity timeline).
 - A fund's entity ids and an account's fund and entity ids are dropped when they point outside the
-  visible set. A caller holding none of those permissions gets empty lists without the structure
+  visible set. When an account's fund or entity is dropped, the account's `fundWithheld` /
+  `entityWithheld` flag is set instead (additive, default false), so a client can say "not visible
+  to you" rather than "none recorded". The flag discloses only that the account has an active fund
+  or entity; never its id or name. It is always false for `AdminMaintenance`. A caller holding none of those permissions gets empty lists without the structure
   being read. A host without `IFundStructureService` answers 503.
 
 ## Operator surface visits

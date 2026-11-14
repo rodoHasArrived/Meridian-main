@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Meridian.Core.Config;
 using Meridian.Contracts.Configuration;
@@ -236,10 +235,8 @@ public sealed class FirstRunService
     private void CreateDefaultConfiguration()
     {
         // CreateDefaultConfiguration: first-run bootstrap must use the same canonical defaults as Settings reset.
-        var defaultConfig = AppConfigDefaults.CreateDefaultAppConfig();
-        var defaultConfigJson = JsonSerializer.Serialize(defaultConfig, Meridian.Ui.Services.DesktopJsonOptions.PrettyPrint);
-
-        File.WriteAllText(ConfigFilePath, defaultConfigJson);
+        _lastConfigurationRecoveryResult = _configurationRecoveryService.EnsureReadableConfiguration();
+        _lastConfigurationProvisioningResult = _lastConfigurationRecoveryResult.Outcome;
 
         LoggingService.Instance.LogInfo(
             "Created default configuration file",

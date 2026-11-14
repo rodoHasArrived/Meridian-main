@@ -110,6 +110,18 @@ Alpha Vantage provider configuration. Unique capability: Intraday historical dat
 public sealed record AlphaVantageConfig(bool Enabled = true, string? ApiKey = null, int Priority = BackfillProviderCatalog.AlphaVantagePriority, int RateLimitPerMinute = BackfillProviderCatalog.AlphaVantagePerMinute, int RateLimitPerDay = 25);
 ```
 
+## AlphaVantageQuotaConfig
+
+Qualified name: <code>Meridian.Core.Config.AlphaVantageQuotaConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/ProviderQuotasConfig.cs:23](../../../../src/Meridian.Core/Config/ProviderQuotasConfig.cs#L23).
+
+Alpha Vantage conservative free-account limits. The daily cap uses a rolling 24-hour window because the vendor publishes no reset boundary. NoDailyLimit declares an uncapped account.
+
+```csharp
+public sealed record AlphaVantageQuotaConfig(int RequestsPerMinute = 5, int DailyRequests = 25, bool NoDailyLimit = false);
+```
+
 ## AppConfig
 
 Qualified name: <code>Meridian.Core.Config.AppConfig</code>. Kind: `record`.
@@ -126,7 +138,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonExtensionData] public Dictionary&lt;string, System.Text.Json.JsonElement&gt;? AdditionalSections { get; set; }</code> | [src/Meridian.Core/Config/AppConfig.cs:85](../../../../src/Meridian.Core/Config/AppConfig.cs#L85) | Preserves top-level configuration sections this model does not declare (host-level sections such as ApiHost, PaperTrading, Status, and Connectivity) across load/save round-trips, so config mutation paths (data-source/storage/symbol saves) do not silently drop operator-tuned host settings. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public ProviderQuotasConfig? ProviderQuotas { get; init; }</code> | [src/Meridian.Core/Config/AppConfig.cs:80](../../../../src/Meridian.Core/Config/AppConfig.cs#L80) | Restart-required vendor quota and entitlement declarations; contains no credentials. |
+| <code>[JsonExtensionData] public Dictionary&lt;string, System.Text.Json.JsonElement&gt;? AdditionalSections { get; set; }</code> | [src/Meridian.Core/Config/AppConfig.cs:89](../../../../src/Meridian.Core/Config/AppConfig.cs#L89) | Preserves top-level configuration sections this model does not declare (host-level sections such as ApiHost, PaperTrading, Status, and Connectivity) across load/save round-trips, so config mutation paths (data-source/storage/symbol saves) do not silently drop operator-tuned host settings. |
 
 ## AppConfigJsonOptions
 
@@ -862,16 +875,4 @@ Configuration for a default schedule to create on startup.
 
 ```csharp
 public sealed record DefaultScheduleConfig(string Name, string? Preset = null, string? CronExpression = null, string[]? Symbols = null, int LookbackDays = 30, bool Enabled = true);
-```
-
-## DerivativesConfig
-
-Qualified name: <code>Meridian.Core.Config.DerivativesConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/DerivativesConfig.cs:6](../../../../src/Meridian.Core/Config/DerivativesConfig.cs#L6).
-
-Domain configuration for derivatives (options) data collection.
-
-```csharp
-public sealed record DerivativesConfig(bool Enabled = false, string[]? Underlyings = null, int MaxDaysToExpiration = 90, int StrikeRange = 20, bool CaptureGreeks = true, bool CaptureChainSnapshots = false, int ChainSnapshotIntervalSeconds = 300, bool CaptureOpenInterest = true, string[]? ExpirationFilter = null, IndexOptionsConfig? IndexOptions = null);
 ```

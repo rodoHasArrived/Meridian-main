@@ -11,6 +11,11 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Contracts
 
+`Api/ProviderRateLimits.cs` retains the existing counters and adds their explicit `quotaUnit`,
+daily usage/cap and vendor reset policy. Compatibility request-named counters can contain credits;
+clients display their unit rather than assume each HTTP request costs one. Missing daily evidence
+remains unavailable, while an explicit null daily cap means this runtime models no daily cap.
+
 Native intercompany agreement terms add an optional null-omitted `StructuredTerms` companion for
 declared rates, schedules, allocations and guarantee disclosure. New decimals serialize as exact
 strings; omitted companions preserve retained legal command/review hashes. Separate external-review
@@ -463,7 +468,9 @@ with no scope in its link or local storage.
 calling operator may scope to (`GET /api/workstation/scope-options`), with each fund's visible
 entities and each account's fund and entity. Field names match the summaries in
 `OrganizationStructureGraphDto`, so one client parser reads both. A relationship that would name a
-fund or entity the caller may not see is null, and every list may be empty. Its source-generated
+fund or entity the caller may not see is null, and every list may be empty. On an account,
+`FundWithheld`/`EntityWithheld` (appended last, default false) are true when that null hides a
+fund or entity that exists but is not visible to the caller; they never carry its id or name. Its source-generated
 `WorkstationScopeOptionsJsonContext` is registered in the Ui.Shared endpoint JSON options.
 
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser

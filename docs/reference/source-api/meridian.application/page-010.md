@@ -6,6 +6,142 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterProjectionChangeListener
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterProjectionChangeListener</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeListener.cs:26](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeListener.cs#L26).
+
+Keeps this node&#x27;s SecurityMasterProjectionCache coherent with projection writes committed on other nodes. Holds one dedicated PostgreSQL connection that LISTENs on the schema&#x27;s projection channel (see SecurityProjectionChangeNotification.ChannelFor); PostgresSecurityMasterStore issues the matching pg_notify inside every projection-writing transaction, so a notification is delivered only once its change is durable. Each notification is applied by SecurityMasterProjectionChangeHandler.
+
+```csharp
+public sealed class SecurityMasterProjectionChangeListener : BackgroundService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterProjectionChangeListener(SecurityMasterOptions options, SecurityMasterProjectionChangeHandler handler, ILogger&lt;SecurityMasterProjectionChangeListener&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeListener.cs:36](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeListener.cs#L36) |  |
+
+## SecurityMasterProjectionService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterProjectionService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L10).
+
+Builds and refreshes Security Master projections and warms the projection cache.
+
+```csharp
+public sealed class SecurityMasterProjectionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterProjectionService(ISecurityMasterStore store, SecurityMasterProjectionCache cache, SecurityMasterAggregateRebuilder rebuilder, ILogger&lt;SecurityMasterProjectionService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:17](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L17) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; BuildWarmSetAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:29](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L29) |  |
+| <code>public async Task&lt;SecurityProjectionRefreshResult&gt; RefreshSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:56](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L56) | Re-reads one security from the durable store, rebuilds it exactly as a warm would, and applies it to the cache through the version-guarded SecurityMasterProjectionCache.Upsert (so an older read never downgrades a newer cached record). A security the durable store no longer holds is evicted; deactivated securities stay cached with their inactive status, as a full warm leaves them. |
+| <code>public async Task WarmAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:75](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L75) |  |
+
+## SecurityMasterProjectionWarmupService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterProjectionWarmupService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs:21](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs#L21).
+
+Hosted service that warms the in-memory projection cache on startup when SecurityMasterOptions.PreloadProjectionCache is enabled. This eliminates cold-start latency for the first queries after deployment. When SecurityMasterOptions.ProjectionCacheRefreshMinutes is positive, the service also re-warms the cache on that interval (the cache&#x27;s atomic ReplaceAll swap keeps concurrent readers on a complete set throughout). Cross-node coherence is primarily delivered by SecurityMasterProjectionChangeListener (PostgreSQL LISTEN/NOTIFY); the periodic re-warm is the backstop that bounds staleness if a notification is lost or the listener is disabled. Identifier validity boundaries always schedule a reseed, independently of periodic cache warming and notifications, so clock-only activation and expiry reach the live registry.
+
+```csharp
+public sealed class SecurityMasterProjectionWarmupService : IHostedService, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterProjectionWarmupService(SecurityMasterProjectionService projectionService, SecurityMasterOptions options, ILogger&lt;SecurityMasterProjectionWarmupService&gt; logger, SecurityMasterCanonicalSymbolSeedService? seedService = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs:32](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs#L32) |  |
+| <code>public async Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs:52](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs#L52) |  |
+| <code>public async Task StopAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs:175](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs#L175) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs:192](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs#L192) |  |
+
+## SecurityMasterPublishFailedException
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterPublishFailedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs:9](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs#L9).
+
+Raised when one or more revision-published handlers fail during PublishRevisionAsync. The revision is left in its pre-publish (Approved) state so the caller can retry; handlers are idempotent, so a retry re-runs the full ordered fan-out. This gives callers a failure signal instead of a publish that silently dropped a required side effect.
+
+```csharp
+public sealed class SecurityMasterPublishFailedException : Exception
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterPublishFailedException(Guid securityId, Guid revisionId, IReadOnlyList&lt;string&gt; failedHandlers) : base($&quot;Publishing Security Master revision &#x27;{revisionId:D}&#x27; for security &#x27;{securityId:D}&#x27; failed in {failedHandlers.Count} handler(s): {string.Join(&quot;, &quot;, failedHandlers)}.&quot;);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs:11](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs#L11) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs:19](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs#L19) |  |
+| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs:21](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs#L21) |  |
+| <code>public IReadOnlyList&lt;string&gt; FailedHandlers { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs:23](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPublishFailedException.cs#L23) |  |
+
+## SecurityMasterQueryService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterQueryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L10).
+
+Reads current and historical security details from Security Master projections and retained records.
+
+```csharp
+public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, ISecurityMasterReportingQueryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterQueryService(ISecurityMasterEventStore eventStore, ISecurityMasterStore store, SecurityMasterAggregateRebuilder rebuilder);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L18) |  |
+| <code>public Task&lt;SecurityDetailDto?&gt; GetByIdAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:28](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L28) |  |
+| <code>public async Task&lt;SecurityDetailDto?&gt; GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:31](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L31) |  |
+| <code>public async Task&lt;SecurityDetailDto?&gt; GetRecordedByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L38) |  |
+| <code>public async Task&lt;SecurityDetailDto?&gt; GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:55](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L55) |  |
+| <code>public async Task&lt;SecurityDetailDto?&gt; GetRecordedByIdentifierAsOfAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, DateTimeOffset recordedAsOfUtc, DateTimeOffset? effectiveAsOfUtc = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:85](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L85) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecuritySummaryDto&gt;&gt; SearchAsync(SecuritySearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:185](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L185) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecurityMasterEventEnvelope&gt;&gt; GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:206](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L206) |  |
+| <code>public async Task&lt;SecurityEconomicDefinitionRecord?&gt; GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:212](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L212) |  |
+| <code>public async Task&lt;SecurityMasterReportingReference?&gt; GetReportingReferenceByIdentifierAsOfAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, DateTimeOffset asOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:218](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L218) |  |
+| <code>public async Task&lt;TradingParametersDto?&gt; GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:274](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L274) |  |
+| <code>public Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:330](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L330) |  |
+| <code>public async Task&lt;PreferredEquityTermsDto?&gt; GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:333](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L333) |  |
+| <code>public async Task&lt;ConvertibleEquityTermsDto?&gt; GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:365](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L365) |  |
+
+## SecurityMasterRestatementDecision
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRestatementDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:32](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L32).
+
+The restatement outcome a publish reports to the operator: whether a closed-period edit requires restatement, and the report packs proposed for it (the operator approves each via the existing governed report-pack restatement path; the workbench only proposes).
+
+```csharp
+public sealed record SecurityMasterRestatementDecision(bool RestatementRequired, IReadOnlyList<RestatementCandidateDto> Candidates);
+```
+
+## SecurityMasterRevisionFieldBase
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionFieldBase</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:90](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L90).
+
+The canonical state a field-edit proposal was drafted against: the security version the edit was staged at and a canonical snapshot of every stored key the approved merge would overwrite for that field (SecurityAssetTermsFieldSnapshot).
+
+```csharp
+public sealed record SecurityMasterRevisionFieldBase(long BaseVersion, string FieldSnapshot);
+```
+
 ## SecurityMasterRevisionFieldValue
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionFieldValue</code>. Kind: `record`.
@@ -859,44 +995,44 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ConfigurationService(ILogger? log = null, ConfigurationWizard? wizard = null, AutoConfigurationService? autoConfig = null, ProviderCredentialResolver? credentialResolver = null, IBestOfBreedProviderSelector? providerSelector = null, Func&lt;bool&gt;? ibGatewayAvailabilityProbe = null, Func&lt;IBestOfBreedProviderSelector?&gt;? providerSelectorAccessor = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:45](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L45) |  |
-| <code>public ConfigurationPipeline Pipeline =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:66](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L66) | Gets the underlying configuration pipeline for advanced scenarios. |
-| <code>public Task&lt;WizardResult&gt; RunWizardAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:72](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L72) | Runs the interactive configuration wizard. |
-| <code>public WizardResult RunAutoConfig() =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:77](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L77) | Runs quick auto-configuration based on environment variables. |
-| <code>public Task&lt;WizardResult&gt; RunQuickstartAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:82](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L82) | Runs quickstart: auto-configures, validates credentials, and prepares for launch. |
-| <code>public AutoConfigurationService.AutoConfigResult AutoConfigure(AppConfig? existingConfig = null) =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:88](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L88) | Auto-configures the application based on detected providers and environment. Returns a comprehensive result with detected providers, applied fixes, and recommendations. |
-| <code>public AppConfig GenerateFirstTimeConfig(FirstTimeConfigOptions options) =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:94](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L94) | Generates configuration for first-time users with interactive defaults. |
-| <code>public IReadOnlyList&lt;DetectedProvider&gt; DetectProviders() =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:103](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L103) | Detects all available providers based on environment variables and configuration. This is the single source of truth for provider detection. |
-| <code>public IReadOnlyDictionary&lt;string, bool&gt; GetCredentialStatus() =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:109](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L109) | Gets a quick summary of which providers have credentials configured. |
-| <code>public IReadOnlyList&lt;DetectedProvider&gt; GetProvidersByCapability(string capability);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:115](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L115) | Gets detected providers filtered by capability. |
-| <code>public DetectedProvider? GetBestRealTimeProvider();</code> | [src/Meridian.Application/Services/ConfigurationService.cs:125](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L125) | Gets the best available provider for real-time streaming. |
-| <code>public IReadOnlyList&lt;DetectedProvider&gt; GetHistoricalProviders();</code> | [src/Meridian.Application/Services/ConfigurationService.cs:171](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L171) | Gets available providers for historical data backfill. |
-| <code>public string FormatProviderDetection(IReadOnlyList&lt;DetectedProvider&gt;? providers = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:182](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L182) | Formats provider detection results as display text (for CLI commands to print). |
-| <code>public ICredentialContext CreateCredentialContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null) =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:226](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L226) | Creates a provider-scoped credential context from attribute metadata and config fallbacks. |
-| <code>public AppConfig ResolveAllCredentials(AppConfig config) =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:234](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L234) | Resolves all credentials for a given configuration and returns a config with resolved values. |
-| <code>public int ValidateConfig(string configPath);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:243](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L243) | Validates a configuration file and returns an exit code (0 = valid, 1 = invalid). This is the single validation entry point for CLI commands. |
-| <code>public bool ValidateConfig(AppConfig config, out IReadOnlyList&lt;string&gt; errors);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:253](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L253) | Validates an AppConfig object using the unified validation pipeline. Returns true if valid, false otherwise. |
-| <code>public async Task&lt;DryRunResult&gt; DryRunValidationAsync(AppConfig config, DryRunOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:275](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L275) | Performs comprehensive validation without starting the collector (dry-run). |
-| <code>public QuickCheckResult PerformQuickCheck(AppConfig config);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:296](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L296) | Performs a quick configuration health check. |
-| <code>public async Task&lt;ConnectivityTestService.ConnectivitySummary&gt; TestConnectivityAsync(AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:305](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L305) | Tests connectivity to all configured providers. |
-| <code>public async Task&lt;CredentialValidationService.ValidationSummary&gt; ValidateCredentialsAsync(AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:316](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L316) | Validates API credentials for all configured providers. |
-| <code>public (AppConfig Config, IReadOnlyList&lt;string&gt; AppliedFixes, IReadOnlyList&lt;string&gt; Warnings) ApplySelfHealingFixes(AppConfig config, SelfHealingStrictness strictness = SelfHealingStrictness.Development);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:339](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L339) | Applies self-healing fixes to a configuration and returns the fixed config along with lists of applied fixes and advisory warnings. |
-| <code>public bool IsIBGatewayAvailable() =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:359](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L359) | Checks if IB Gateway/TWS is available on default ports. |
-| <code>public AppConfig ApplyEnvironmentOverrides(AppConfig config);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:366](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L366) | Applies environment variable overrides to configuration. |
-| <code>public AppConfig LoadAndPrepareConfig(string configPath, bool applySelfHealing = true);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:376](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L376) | Loads configuration with environment overlays and self-healing fixes applied. This is the recommended way to load configuration for all entry points. |
-| <code>public ValidatedConfig LoadValidatedConfig(string configPath, PipelineOptions? options = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:424](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L424) | Loads and validates configuration through the unified pipeline. Returns a ValidatedConfig with full metadata about validation, fixes, and warnings. |
-| <code>public ValidatedConfig ProcessConfig(AppConfig config, PipelineOptions? options = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:440](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L440) | Processes an existing AppConfig through the unified pipeline. |
-| <code>public async Task&lt;ValidatedConfig&gt; RunWizardAndValidateAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:448](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L448) | Runs the wizard and processes the result through the pipeline. |
-| <code>public ValidatedConfig RunAutoConfigAndValidate(AppConfig? existingConfig = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:457](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L457) | Runs auto-configuration and processes the result through the pipeline. |
-| <code>public static string? GetEnvironmentName() =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:472](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L472) | Gets the current environment name from MDC_ENVIRONMENT or DOTNET_ENVIRONMENT. |
-| <code>public ConfigWatcher StartHotReload(string configPath, Action&lt;AppConfig&gt; onConfigChanged, Action&lt;Exception&gt;? onError = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:481](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L481) | Starts hot reload monitoring for configuration file changes. |
-| <code>public ConfigWatcher StartValidatedHotReload(string configPath, Action&lt;ValidatedConfig&gt; onConfigChanged, Action&lt;Exception&gt;? onError = null, PipelineOptions? options = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:504](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L504) | Starts hot reload monitoring with validated configuration updates. The callback receives a ValidatedConfig that has been processed through the full pipeline. |
-| <code>public void StopHotReload();</code> | [src/Meridian.Application/Services/ConfigurationService.cs:519](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L519) | Stops hot reload monitoring. |
-| <code>public void DisplayConfigSummary(AppConfig config, string configPath, string[] args);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:530](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L530) | Displays configuration summary to console. |
-| <code>public ConfigTemplate? GetConfigTemplate(string templateName);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:539](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L539) | Generates a configuration template. |
-| <code>public AppConfig GetConfig(string? configPath = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:548](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L548) | Returns the current on-disk config via ConfigStore. |
-| <code>public async Task SaveConfigAsync(AppConfig config, string? configPath = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:557](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L557) | Saves a modified config back to disk. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/ConfigurationService.cs:565](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L565) |  |
+| <code>public ConfigurationService(ILogger? log = null, ConfigurationWizard? wizard = null, AutoConfigurationService? autoConfig = null, ProviderCredentialResolver? credentialResolver = null, IBestOfBreedProviderSelector? providerSelector = null, Func&lt;bool&gt;? ibGatewayAvailabilityProbe = null, Func&lt;IBestOfBreedProviderSelector?&gt;? providerSelectorAccessor = null, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:46](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L46) |  |
+| <code>public ConfigurationPipeline Pipeline =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:69](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L69) | Gets the underlying configuration pipeline for advanced scenarios. |
+| <code>public Task&lt;WizardResult&gt; RunWizardAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:75](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L75) | Runs the interactive configuration wizard. |
+| <code>public WizardResult RunAutoConfig() =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:80](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L80) | Runs quick auto-configuration based on environment variables. |
+| <code>public Task&lt;WizardResult&gt; RunQuickstartAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:85](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L85) | Runs quickstart: auto-configures, validates credentials, and prepares for launch. |
+| <code>public AutoConfigurationService.AutoConfigResult AutoConfigure(AppConfig? existingConfig = null) =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:91](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L91) | Auto-configures the application based on detected providers and environment. Returns a comprehensive result with detected providers, applied fixes, and recommendations. |
+| <code>public AppConfig GenerateFirstTimeConfig(FirstTimeConfigOptions options) =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:97](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L97) | Generates configuration for first-time users with interactive defaults. |
+| <code>public IReadOnlyList&lt;DetectedProvider&gt; DetectProviders() =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:106](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L106) | Detects all available providers based on environment variables and configuration. This is the single source of truth for provider detection. |
+| <code>public IReadOnlyDictionary&lt;string, bool&gt; GetCredentialStatus() =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:112](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L112) | Gets a quick summary of which providers have credentials configured. |
+| <code>public IReadOnlyList&lt;DetectedProvider&gt; GetProvidersByCapability(string capability);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:118](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L118) | Gets detected providers filtered by capability. |
+| <code>public DetectedProvider? GetBestRealTimeProvider();</code> | [src/Meridian.Application/Services/ConfigurationService.cs:128](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L128) | Gets the best available provider for real-time streaming. |
+| <code>public IReadOnlyList&lt;DetectedProvider&gt; GetHistoricalProviders();</code> | [src/Meridian.Application/Services/ConfigurationService.cs:174](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L174) | Gets available providers for historical data backfill. |
+| <code>public string FormatProviderDetection(IReadOnlyList&lt;DetectedProvider&gt;? providers = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:185](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L185) | Formats provider detection results as display text (for CLI commands to print). |
+| <code>public ICredentialContext CreateCredentialContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null) =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:229](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L229) | Creates a provider-scoped credential context from attribute metadata and config fallbacks. |
+| <code>public AppConfig ResolveAllCredentials(AppConfig config) =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:237](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L237) | Resolves all credentials for a given configuration and returns a config with resolved values. |
+| <code>public int ValidateConfig(string configPath);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:246](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L246) | Validates a configuration file and returns an exit code (0 = valid, 1 = invalid). This is the single validation entry point for CLI commands. |
+| <code>public bool ValidateConfig(AppConfig config, out IReadOnlyList&lt;string&gt; errors);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:256](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L256) | Validates an AppConfig object using the unified validation pipeline. Returns true if valid, false otherwise. |
+| <code>public async Task&lt;DryRunResult&gt; DryRunValidationAsync(AppConfig config, DryRunOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:278](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L278) | Performs comprehensive validation without starting the collector (dry-run). |
+| <code>public QuickCheckResult PerformQuickCheck(AppConfig config);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:299](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L299) | Performs a quick configuration health check. |
+| <code>public async Task&lt;ConnectivityTestService.ConnectivitySummary&gt; TestConnectivityAsync(AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:308](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L308) | Tests connectivity to all configured providers. |
+| <code>public async Task&lt;CredentialValidationService.ValidationSummary&gt; ValidateCredentialsAsync(AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:319](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L319) | Validates API credentials for all configured providers. |
+| <code>public (AppConfig Config, IReadOnlyList&lt;string&gt; AppliedFixes, IReadOnlyList&lt;string&gt; Warnings) ApplySelfHealingFixes(AppConfig config, SelfHealingStrictness strictness = SelfHealingStrictness.Development);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:342](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L342) | Applies self-healing fixes to a configuration and returns the fixed config along with lists of applied fixes and advisory warnings. |
+| <code>public bool IsIBGatewayAvailable() =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:362](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L362) | Checks if IB Gateway/TWS is available on default ports. |
+| <code>public AppConfig ApplyEnvironmentOverrides(AppConfig config);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:369](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L369) | Applies environment variable overrides to configuration. |
+| <code>public AppConfig LoadAndPrepareConfig(string configPath, bool applySelfHealing = true);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:379](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L379) | Loads configuration with environment overlays and self-healing fixes applied. This is the recommended way to load configuration for all entry points. |
+| <code>public ValidatedConfig LoadValidatedConfig(string configPath, PipelineOptions? options = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:427](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L427) | Loads and validates configuration through the unified pipeline. Returns a ValidatedConfig with full metadata about validation, fixes, and warnings. |
+| <code>public ValidatedConfig ProcessConfig(AppConfig config, PipelineOptions? options = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:443](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L443) | Processes an existing AppConfig through the unified pipeline. |
+| <code>public async Task&lt;ValidatedConfig&gt; RunWizardAndValidateAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:451](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L451) | Runs the wizard and processes the result through the pipeline. |
+| <code>public ValidatedConfig RunAutoConfigAndValidate(AppConfig? existingConfig = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:460](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L460) | Runs auto-configuration and processes the result through the pipeline. |
+| <code>public static string? GetEnvironmentName() =&gt; …;</code> | [src/Meridian.Application/Services/ConfigurationService.cs:475](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L475) | Gets the current environment name from MDC_ENVIRONMENT or DOTNET_ENVIRONMENT. |
+| <code>public ConfigWatcher StartHotReload(string configPath, Action&lt;AppConfig&gt; onConfigChanged, Action&lt;Exception&gt;? onError = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:484](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L484) | Starts hot reload monitoring for configuration file changes. |
+| <code>public ConfigWatcher StartValidatedHotReload(string configPath, Action&lt;ValidatedConfig&gt; onConfigChanged, Action&lt;Exception&gt;? onError = null, PipelineOptions? options = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:507](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L507) | Starts hot reload monitoring with validated configuration updates. The callback receives a ValidatedConfig that has been processed through the full pipeline. |
+| <code>public void StopHotReload();</code> | [src/Meridian.Application/Services/ConfigurationService.cs:522](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L522) | Stops hot reload monitoring. |
+| <code>public void DisplayConfigSummary(AppConfig config, string configPath, string[] args);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:533](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L533) | Displays configuration summary to console. |
+| <code>public ConfigTemplate? GetConfigTemplate(string templateName);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:542](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L542) | Generates a configuration template. |
+| <code>public AppConfig GetConfig(string? configPath = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:551](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L551) | Returns the current on-disk config via ConfigStore. |
+| <code>public async Task SaveConfigAsync(AppConfig config, string? configPath = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:560](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L560) | Saves a modified config back to disk. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/ConfigurationService.cs:568](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L568) |  |
 
 ## ConfigurationServiceCredentialAdapter
 
@@ -921,7 +1057,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Services.ConfigurationWizard</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:22](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L22).
+Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:23](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L23).
 
 Interactive configuration wizard for first-time setup. Guides users through configuration with a step-by-step process. Delegates orchestration to WizardCoordinator and individual IWizardStep implementations.
 
@@ -933,10 +1069,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ConfigurationWizard(TextWriter? output = null, TextReader? input = null);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:37](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L37) |  |
-| <code>public async Task&lt;WizardResult&gt; RunAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:47](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L47) | Runs the interactive configuration wizard using the step-graph coordinator. |
-| <code>public WizardResult RunQuickSetup();</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:79](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L79) | Runs a quick auto-configuration without interactive prompts. |
-| <code>public async Task&lt;WizardResult&gt; RunQuickstartAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:134](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L134) | Runs a quickstart flow: auto-configures, validates, and returns a config ready to launch. |
+| <code>public ConfigurationWizard(TextWriter? output = null, TextReader? input = null, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:39](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L39) |  |
+| <code>public async Task&lt;WizardResult&gt; RunAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:51](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L51) | Runs the interactive configuration wizard using the step-graph coordinator. |
+| <code>public WizardResult RunQuickSetup();</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:83](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L83) | Runs a quick auto-configuration without interactive prompts. |
+| <code>public async Task&lt;WizardResult&gt; RunQuickstartAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:138](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L138) | Runs a quickstart flow: auto-configures, validates, and returns a config ready to launch. |
 
 ## ConnectivityProbeService
 
@@ -980,124 +1116,3 @@ Declared public members:
 | <code>public async Task&lt;ConnectivitySummary&gt; TestAllAsync(AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConnectivityTestService.cs:56](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L56) | Tests connectivity to all configured providers. |
 | <code>public void DisplaySummary(ConnectivitySummary summary);</code> | [src/Meridian.Application/Services/ConnectivityTestService.cs:158](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L158) | Displays the connectivity test summary. |
 | <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/ConnectivityTestService.cs:515](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L515) |  |
-
-## ConnectivitySummary
-
-Qualified name: <code>Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/ConnectivityTestService.cs:47](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L47).
-
-Summary of all connectivity tests.
-
-```csharp
-public sealed record ConnectivitySummary(IReadOnlyList<ConnectivityTestResult> Results, bool AllReachable, IReadOnlyList<string> NetworkIssues);
-```
-
-## ConnectivityTestResult
-
-Qualified name: <code>Meridian.Application.Services.ConnectivityTestService.ConnectivityTestResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/ConnectivityTestService.cs:36](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L36).
-
-Result of a connectivity test.
-
-```csharp
-public sealed record ConnectivityTestResult(string Provider, bool IsReachable, TimeSpan ResponseTime, string? Error, string? Suggestion);
-```
-
-## CredentialValidationService
-
-Qualified name: <code>Meridian.Application.Services.CredentialValidationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/CredentialValidationService.cs:14](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L14).
-
-Service for validating API credentials at startup. Performs lightweight validation calls to verify credentials are valid.
-
-```csharp
-public sealed class CredentialValidationService : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CredentialValidationService();</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:20](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L20) |  |
-| <code>public async Task&lt;ValidationSummary&gt; ValidateAllAsync(AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:49](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L49) | Validates all configured credentials. |
-| <code>public async Task&lt;ValidationResult&gt; ValidateAlpacaAsync(AlpacaOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:148](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L148) | Validates Alpaca credentials by calling the account endpoint. |
-| <code>public async Task&lt;ValidationResult&gt; ValidatePolygonAsync(PolygonOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:220](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L220) | Validates Polygon credentials by calling the ticker details endpoint. |
-| <code>public async Task&lt;ValidationResult&gt; ValidateTiingoAsync(TiingoConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:277](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L277) | Validates Tiingo credentials by calling the meta endpoint. |
-| <code>public async Task&lt;ValidationResult&gt; ValidateFinnhubAsync(FinnhubConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:333](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L333) | Validates Finnhub credentials by calling the profile endpoint. |
-| <code>public async Task&lt;ValidationResult&gt; ValidatePolygonBackfillAsync(PolygonConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:394](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L394) | Validates Polygon backfill credentials. |
-| <code>public async Task&lt;ValidationResult&gt; ValidateAlphaVantageAsync(AlphaVantageConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:450](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L450) | Validates Alpha Vantage credentials. |
-| <code>public async Task&lt;ValidationResult&gt; ValidateFredAsync(FredConfig options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:531](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L531) | Validates FRED credentials. |
-| <code>public void PrintSummary(ValidationSummary summary, TextWriter? output = null);</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:598](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L598) | Prints a summary of validation results to the console. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/CredentialValidationService.cs:652](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L652) |  |
-
-## ValidationResult
-
-Qualified name: <code>Meridian.Application.Services.CredentialValidationService.ValidationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/CredentialValidationService.cs:29](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L29).
-
-Result of credential validation.
-
-```csharp
-public sealed record ValidationResult(string Provider, bool IsValid, string? Message, string? AccountInfo, TimeSpan ResponseTime);
-```
-
-## ValidationSummary
-
-Qualified name: <code>Meridian.Application.Services.CredentialValidationService.ValidationSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/CredentialValidationService.cs:40](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L40).
-
-Summary of all validation results.
-
-```csharp
-public sealed record ValidationSummary(IReadOnlyList<ValidationResult> Results, bool AllValid, IReadOnlyList<string> Warnings);
-```
-
-## DailySummary
-
-Qualified name: <code>Meridian.Application.Services.DailySummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:719](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L719).
-
-Daily summary data structure.
-
-```csharp
-public sealed class DailySummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateTimeOffset GeneratedAt { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:721](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L721) |  |
-| <code>public DateOnly Date { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:722](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L722) |  |
-| <code>public string MarketStatus { get; init; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:723](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L723) |  |
-| <code>public bool IsHalfDay { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:724](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L724) |  |
-| <code>public long TotalEventsPublished { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:727](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L727) |  |
-| <code>public long TotalEventsConsumed { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:728](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L728) |  |
-| <code>public long TotalEventsDropped { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:729](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L729) |  |
-| <code>public long PeakQueueSize { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:730](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L730) |  |
-| <code>public double AverageProcessingTimeUs { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:731](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L731) |  |
-| <code>public int StaleSymbolCount { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:734](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L734) |  |
-| <code>public string[] StaleSymbols { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:735](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L735) |  |
-| <code>public string SystemHealthStatus { get; init; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:738](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L738) |  |
-| <code>public int WarningCount { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:739](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L739) |  |
-| <code>public string[] Warnings { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:740](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L740) |  |
-| <code>public double MemoryUsageMb { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:743](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L743) |  |
-| <code>public GcStats GcCollections { get; init; } = new ();</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:744](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L744) |  |
-
-## DailySummaryResult
-
-Qualified name: <code>Meridian.Application.Services.DailySummaryResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:760](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L760).
-
-Result of a daily summary send operation.
-
-```csharp
-public readonly record struct DailySummaryResult(bool Success, DailySummary Summary, IReadOnlyList<WebhookDeliveryResult> DeliveryResults, DateTimeOffset SentAt, string? ErrorMessage);
-```

@@ -45,7 +45,7 @@ export function narrowRowsWithFundScopeContext<T>(
   noun: string
 ): FundScopeRowsResult<T> {
   if (!context) {
-    return { status: "inactive", rows: [...rows], totalCount: rows.length, outsideCount: 0, unknownCount: 0, dimension: null, note: null };
+    return { status: "inactive", rows: [...rows], totalCount: rows.length, outsideCount: 0, unknownCount: 0, withheldCount: 0, dimension: null, note: null };
   }
   const narrowing = narrowRowsToFundScope(
     rows,

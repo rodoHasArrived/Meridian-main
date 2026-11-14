@@ -36,13 +36,30 @@ public sealed record WorkstationScopeFundOptionDto(
 /// <summary>
 /// A fund account the caller may scope to. <see cref="FundId"/> and <see cref="EntityId"/> are
 /// null when the account has no such relationship or when it points at a fund or entity the
-/// caller may not see.
+/// caller may not see; <see cref="FundWithheld"/> and <see cref="EntityWithheld"/> tell the two
+/// apart.
 /// </summary>
+/// <param name="AccountId">The fund-account id.</param>
+/// <param name="DisplayName">The account's display name, or its id when it has none.</param>
+/// <param name="FundId">The account's fund, when it has one the caller may see.</param>
+/// <param name="EntityId">The account's legal entity, when it has one the caller may see.</param>
+/// <param name="FundWithheld">
+/// True when the account belongs to an active fund the caller may not see, so
+/// <see cref="FundId"/> is null although a fund exists. Only the existence of the relationship is
+/// disclosed, never the fund's id or name. Added after the first release; defaults to false.
+/// </param>
+/// <param name="EntityWithheld">
+/// True when the account is booked to an active legal entity the caller may not see, so
+/// <see cref="EntityId"/> is null although an entity exists. Discloses existence only, as
+/// <see cref="FundWithheld"/> does. Defaults to false.
+/// </param>
 public sealed record WorkstationScopeAccountOptionDto(
     Guid AccountId,
     string DisplayName,
     Guid? FundId,
-    Guid? EntityId);
+    Guid? EntityId,
+    bool FundWithheld = false,
+    bool EntityWithheld = false);
 
 /// <summary>
 /// Provides source-generated JSON metadata for the workstation scope-option contracts. Null

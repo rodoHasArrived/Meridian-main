@@ -29,7 +29,7 @@ class ProductionReadinessRegistryTests(unittest.TestCase):
             item['evidence_links'] = []
         change(data)
         import yaml
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             root = Path(temp)
             path = root / renderer.DATA
             path.parent.mkdir(parents=True)

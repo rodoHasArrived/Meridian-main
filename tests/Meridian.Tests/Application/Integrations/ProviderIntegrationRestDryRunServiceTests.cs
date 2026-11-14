@@ -414,6 +414,42 @@ public sealed class ProviderIntegrationRestDryRunServiceTests : IDisposable
         retainedPayload.OriginalManifestReference.Should().Be(expected);
     }
 
+    [Theory]
+    [InlineData(206, null, true)]
+    [InlineData(200, "bytes 0-10/100", true)]
+    [InlineData(200, "malformed range", true)]
+    [InlineData(200, null, false)]
+    public async Task RunRestDryRunAsync_SeparatesPartialResponseFromCompleteEmptyResult(int statusCode, string? contentRange, bool incomplete)
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")!;
+        var connection = CreateConnection(manifest);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var headers = new Dictionary<string, string>();
+        if (contentRange is not null)
+            headers["cOnTeNt-RaNgE"] = contentRange;
+        var body = contentRange is null ? "{\"positions\":[]}" :
+            """{"positions":[{"account_id":"A-100","cusip":"9128285M8","quantity":"100","currency":"USD","as_of_date":"2026-06-16","position_id":"POS-1"}]}""";
+        var transport = new RecordingTransport(new ProviderIntegrationHttpResponse(statusCode, headers, body));
+
+        var result = await new ProviderIntegrationRestDryRunService(store, transport)
+            .RunRestDryRunAsync(CreateRequest(manifest, connection));
+
+        var expectedStatus = incomplete ? ProviderIntegrationProcessingStatusDto.Quarantined : ProviderIntegrationProcessingStatusDto.Validated;
+        result.Status.Should().Be(expectedStatus);
+        result.RecordsReceived.Should().Be(0);
+        result.RecordsAccepted.Should().Be(0);
+        result.Issues.Should().ContainSingle().Which.Code.Should().Be(incomplete ? "http.response.incomplete" : "response.no-records");
+        (await store.ListStagingRecordsAsync(result.SyncRunId)).Should().BeEmpty();
+        (await store.ListQuarantinedRecordsAsync(result.SyncRunId)).Should().BeEmpty();
+        var raw = (await store.GetRawPayloadAsync(result.SyncRunId, result.RawPayloadId))!;
+        raw.RequestMetadata["incompleteResponse"].Should().Be(incomplete ? "true" : "false");
+        raw.RawPayload.GetProperty("positions").GetArrayLength().Should().Be(contentRange is null ? 0 : 1);
+        raw.ManifestReference.Should().Be(ProviderIntegrationManifestIdentity.Create(manifest));
+        (await store.GetSyncRunAsync(result.SyncRunId))!.Status.Should().Be(expectedStatus);
+    }
+
     [Fact]
     public async Task RunRestDryRunAsync_RejectsReplayRunIdBeforeTransportOrEvidence()
     {

@@ -85,6 +85,57 @@ public sealed class StatementImportServiceTests : IDisposable
         => new(fileName, StatementConnectorTestData.ReadFixture(fileName), mappingProfileId);
 
     [Theory]
+    [InlineData("FUND-A,SPY,1,10,-10,trade,2026-06-02,\"USD", "CSV_INVALID_SYNTAX")]
+    [InlineData("FUND-A,SP\"Y\",1,10,-10,trade,2026-06-02,USD", "CSV_INVALID_SYNTAX")]
+    [InlineData("FUND-A,\"SPY\"junk,1,10,-10,trade,2026-06-02,USD", "CSV_INVALID_SYNTAX")]
+    [InlineData("FUND-A,SPY,1,10,-10,trade,2026-06-02,USD,discarded", "COLUMN_COUNT_MISMATCH")]
+    [InlineData("FUND-A,SPY,1,10,-10,trade,2026-06-02", "COLUMN_COUNT_MISMATCH")]
+    [InlineData("FUND-A,SP\0Y,1,10,-10,trade,2026-06-02,USD", "CSV_INVALID_SYNTAX")]
+    public async Task CsvMalformedTail_BlocksWholeImportThenAllowsCorrectedReplay(string malformedRow, string code)
+    {
+        const string header = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\n";
+        const string firstRow = "FUND-A,AAPL,1,10,-10,trade,2026-06-01,USD\n";
+        var document = new StatementSourceDocument("malformed-tail.csv", Encoding.UTF8.GetBytes(header + firstRow + malformedRow + "\n"));
+
+        var preview = await _service.PreviewAsync(document, "csv-mapped");
+        preview.Status.Should().Be("NeedsAttention");
+        var validation = await _service.ValidateAsync(document, "csv-mapped");
+        validation.IsValid.Should().BeFalse();
+        validation.Errors.Should().Contain(error => error.Contains(code, StringComparison.Ordinal));
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document)));
+        (await _workflow.ListImportsAsync()).Should().BeEmpty("the valid prefix cannot make a refused tail complete");
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+
+        var corrected = document with { Content = Encoding.UTF8.GetBytes(header + firstRow + "FUND-A,SPY,1,10,-10,trade,2026-06-02,USD\n") };
+        var result = await _service.CommitAsync(CommitRequest(corrected));
+        var retainedSource = await File.ReadAllBytesAsync(Path.Combine(_root, result.RetainedSourcePath));
+        retainedSource.Should().Equal(corrected.Content.ToArray());
+        var import = (await _workflow.ListImportsAsync()).Should().ContainSingle().Which;
+        import.SourceFileHash.Should().Be(Sha256Digest.Compute(retainedSource));
+        import.NormalizedRowCount.Should().Be(2);
+
+        var restarted = new StatementImportService(_registry,
+            new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root)), _workflow, _root);
+        var duplicate = await restarted.CommitAsync(CommitRequest(corrected));
+        duplicate.Duplicate.Should().BeTrue();
+        duplicate.RunId.Should().Be(result.RunId);
+        (await _workflow.ListImportsAsync()).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task CsvMalformedHeader_IsAValidationFailureWithoutThrowingOrRetention()
+    {
+        var document = new StatementSourceDocument("bad-header.csv", Encoding.UTF8.GetBytes(
+            "\"account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\n" +
+            "FUND-A,SPY,1,10,-10,trade,2026-06-02,USD\n"));
+
+        (await _service.ValidateAsync(document, "csv-mapped")).IsValid.Should().BeFalse();
+        (await _service.PreviewAsync(document, "csv-mapped")).Status.Should().Be("NeedsAttention");
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document)));
+        (await _workflow.ListImportsAsync()).Should().BeEmpty();
+    }
+
+    [Theory]
     [InlineData("commission", "1,25")]
     [InlineData("commission", "invalid")]
     [InlineData("quantity", null)]

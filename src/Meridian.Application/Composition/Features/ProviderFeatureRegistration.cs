@@ -9,6 +9,7 @@ using Meridian.Core.Logging;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.NYSE;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Application.Composition.Features;
@@ -21,6 +22,11 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        services.AddProviderCredentialOwnershipPolicy();
+        // NYSE still reads provider-wide configuration/environment credentials. Keep every
+        // registered NYSE surface unavailable until it can retain a tenant/account selection.
+        services.AddSingleton(sp => new NyseCredentialAccessPolicy(
+            sp.GetRequiredService<ProviderCredentialOwnershipPolicy>().RequireExplicitOwnership));
         services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         // Register credential resolver
         services.AddSingleton<IProviderCredentialResolver>(sp =>
@@ -30,9 +36,11 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
             var credentialStore = sp.GetService<IProviderCredentialStore>();
             var configStore = sp.GetRequiredService<ConfigStore>();
             if (credentialStore is not null)
-                return new StoredProviderCredentialResolver(credentialStore, fallback, configStore);
+                return new StoredProviderCredentialResolver(credentialStore, fallback, configStore,
+                    sp.GetRequiredService<ProviderCredentialOwnershipPolicy>());
             var config = File.Exists(configStore.ConfigPath) ? configStore.LoadRequired() : configStore.Load();
-            if (ProviderOwnershipRules.AnyScopedOwnership(config.ProviderConnections))
+            if (sp.GetRequiredService<ProviderCredentialOwnershipPolicy>().RequireExplicitOwnership ||
+                ProviderOwnershipRules.AnyScopedOwnership(config.ProviderConnections))
                 throw new InvalidOperationException("Owned provider runtime credentials require a credential vault.");
             return fallback;
         });

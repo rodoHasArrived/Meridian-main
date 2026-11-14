@@ -463,6 +463,35 @@ public sealed class CsvStatementEvidenceTests : IDisposable
     private const string Header = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission";
 
     [Theory]
+    [InlineData("A1,SP\"Y\",1,10,-10,BUY,2026-01-02,,USD,0")]
+    [InlineData("A1,\"SPY\"junk,1,10,-10,BUY,2026-01-02,,USD,0")]
+    [InlineData("A1,SPY,1,10,-10,BUY,2026-01-02,,USD,0,discarded")]
+    [InlineData("A1,SPY,1,10,-10,BUY,2026-01-02,,USD")]
+    [InlineData("A1,SPY,1,10,-10,BUY,2026-01-02,,USD,\"0")]
+    public async Task MalformedTail_RefusesTheWholeCanonicalImportAndCanBeCorrected(string malformedRow)
+    {
+        Directory.CreateDirectory(_root);
+        var path = Path.Combine(_root, "malformed-tail.csv");
+        const string validRow = "A1,AAPL,1,10,-10,BUY,2026-01-02,,USD,0\n";
+        await File.WriteAllTextAsync(path, Header + "\n" + validRow + malformedRow + "\n");
+        var request = new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31)) { ExternalAccountId = "A1" };
+        var store = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
+        var service = new CsvBrokerStatementService(store);
+
+        (await service.ValidateAsync(request)).IsValid.Should().BeFalse();
+        await Assert.ThrowsAsync<InvalidDataException>(() => service.ImportAsync(request));
+        (await store.ListImportsAsync()).Should().BeEmpty();
+
+        await File.WriteAllTextAsync(path, Header + "\n" + validRow);
+        var imported = await service.ImportAsync(request);
+        imported.Rows.Should().ContainSingle();
+        imported.Import.SourceFileHash.Should().Be(Sha256Digest.Compute(await File.ReadAllBytesAsync(path)));
+        var restarted = new CsvBrokerStatementService(new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter()));
+        await Assert.ThrowsAsync<StatementAlreadyImportedException>(() => restarted.ImportAsync(request));
+        (await store.ListImportsAsync()).Should().ContainSingle();
+    }
+
+    [Theory]
     [InlineData("account,symbol,quantity,price,cashAmount,activityType,tradeDate")]
     [InlineData(Header)]
     public async Task MonthEndHeaderOnlyStatement_RefusesValidationAndImport(string header)
