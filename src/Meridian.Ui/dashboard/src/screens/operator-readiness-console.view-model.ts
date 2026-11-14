@@ -11,7 +11,7 @@ import {
 import { normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
-  formatReadinessUtcMinute,
+  formatReadinessMinute,
   levelFromReadiness,
   levelFromTone,
   sentence,
@@ -473,7 +473,7 @@ export function buildOperatorReadinessConsoleState({
         ? "Readiness unavailable"
         : "No readiness data";
   const overallLabel = formatEffectiveOverallLabel(readinessStatusLabel, overallLevel);
-  const asOf = formatReadinessUtcMinute(operatorInbox?.asOf ?? readiness?.asOf ?? null, "Unavailable");
+  const asOf = formatReadinessMinute(operatorInbox?.asOf ?? readiness?.asOf ?? null, "Unavailable");
 
   return {
     title: "Operator Readiness Console",
@@ -759,7 +759,7 @@ function buildActiveSessionFacts(readiness: TradingOperatorReadiness | null): Re
       label: "Paper portfolio value",
       value: session.portfolioValue === null || session.portfolioValue === undefined ? "Unavailable" : formatCurrency(session.portfolioValue),
       detail: `Initial cash ${formatCurrency(session.initialCash)}`,
-      meta: `Created ${formatReadinessUtcMinute(session.createdAt, "timestamp unavailable")}`,
+      meta: `Created ${formatReadinessMinute(session.createdAt, "timestamp unavailable")}`,
       level: session.portfolioValue === null || session.portfolioValue === undefined ? "review" : "ready"
     },
     {
@@ -1251,7 +1251,7 @@ function prioritizeWorkItems(workItems: OperatorWorkItem[]): OperatorWorkItem[] 
 
 function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): ReadinessConsoleRowBase {
   const action = includeAction ? buildWorkItemAction(item) : null;
-  const createdAtLabel = formatReadinessUtcMinute(item.createdAt, "Timestamp unavailable");
+  const createdAtLabel = formatReadinessMinute(item.createdAt, "Timestamp unavailable");
   const signoffSummary = buildSignoffSummary(item);
 
   return {

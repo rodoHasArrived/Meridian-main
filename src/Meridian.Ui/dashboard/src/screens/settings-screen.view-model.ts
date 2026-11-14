@@ -12,7 +12,7 @@ import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { settingsProviderConnectionRoute, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
-  formatSettingsUtcMinute
+  formatSettingsMinute
 } from "@/screens/settings-screen.date-format";
 import {
   buildAssetProfileGovernancePanel,
@@ -1466,7 +1466,7 @@ function buildRecentEventsSection(overview: SystemOverviewResponse | null): Sett
   const events = overview.recentEvents ?? [];
   const rows = events.map((event) => {
     const source = event.source.trim() || "Unknown source";
-    const timestamp = formatSettingsUtcMinute(event.timestamp, "Timestamp unavailable");
+    const timestamp = formatSettingsMinute(event.timestamp, "Timestamp unavailable");
     const statusCode = eventStatusCode(event.type);
 
     return {
@@ -1624,7 +1624,7 @@ export function buildSettingsFreshnessViewModel(
     };
   }
 
-  const timestampLabel = formatSettingsUtcMinute(observedAt);
+  const timestampLabel = formatSettingsMinute(observedAt);
   const ageMs = evaluatedAt.getTime() - observedAt.getTime();
   if (ageMs < -5 * 60 * 1_000) {
     return {
@@ -1731,8 +1731,8 @@ function buildRobinhoodConnectionPanel(connection: BrokerageConnectionStatus | n
     statusTone: tone,
     badgeVariant: tone === "default" ? "outline" : tone,
     accountLabel: connection?.externalAccountId?.trim() || "Not linked",
-    connectedAtLabel: formatSettingsUtcMinute(connection?.connectedAt, "Not connected"),
-    expiresAtLabel: formatSettingsUtcMinute(connection?.expiresAt, "No expiry recorded"),
+    connectedAtLabel: formatSettingsMinute(connection?.connectedAt, "Not connected"),
+    expiresAtLabel: formatSettingsMinute(connection?.expiresAt, "No expiry recorded"),
     scopesLabel: scopes.length > 0 ? scopes.join(", ") : "No scopes granted",
     authorizationUrl: connection?.authorizationUrl?.trim() || null,
     warnings: connection?.warnings ?? [],

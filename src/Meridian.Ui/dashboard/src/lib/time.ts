@@ -1,15 +1,20 @@
 // Meridian shared time formatting. Relative-age text for freshness indicators and
 // "last updated" labels; promoted from the watchlist view model so chips, screens,
-// and view models share one age vocabulary.
+// and view models share one age vocabulary. Both helpers are thin layers over the
+// timestamp formatters in `@/lib/format`.
+import { formatRelativeTime, formatTimestamp, formatUtcTimestamp } from "@/lib/format";
+
+/** A UTC-clock timestamp from ISO text, e.g. "Nov 11, 2026, 00:30 UTC"; "Timestamp unavailable" when absent. */
 export function formatDateTimeUtc(value: string | null | undefined): string {
   const timestamp = Date.parse(value ?? "");
   if (!Number.isFinite(timestamp)) return "Timestamp unavailable";
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
-    hourCycle: "h23", timeZone: "UTC", timeZoneName: "short"
-  }).format(timestamp);
+  return formatUtcTimestamp(new Date(timestamp));
 }
 
+/**
+ * Age of a past instant, e.g. "30s ago", "5h ago"; "Never" when absent or invalid. A future
+ * instant (clock skew) renders as the absolute timestamp in the display zone instead.
+ */
 export function formatRelativeAge(iso: string | null, now = Date.now()): string {
   if (!iso) {
     return "Never";
@@ -20,26 +25,5 @@ export function formatRelativeAge(iso: string | null, now = Date.now()): string 
     return "Never";
   }
 
-  const diff = now - timestamp;
-  if (diff < 0) {
-    return new Date(iso).toLocaleString();
-  }
-
-  const seconds = Math.round(diff / 1000);
-  if (seconds < 60) {
-    return `${seconds}s ago`;
-  }
-
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) {
-    return `${minutes}m ago`;
-  }
-
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) {
-    return `${hours}h ago`;
-  }
-
-  const days = Math.round(hours / 24);
-  return `${days}d ago`;
+  return now - timestamp < 0 ? formatTimestamp(timestamp) : formatRelativeTime(timestamp, now);
 }

@@ -10,7 +10,7 @@ import type {
   ProviderSetupInstitutionSearchState,
   ProviderSetupPlaidLinkTokenPhase,
 } from "./data-screen.view-model";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp } from "@/lib/format";
 
 export function buildPlaidInstitutionSearchState({
   form,
@@ -185,6 +185,6 @@ function formatOptionalDateTime(value: string | null): string | null {
     return value;
   }
 
-  return formatUtcTimestamp(date);
+  return formatTimestamp(date);
 }
 

@@ -1,4 +1,4 @@
-import { formatUtcDate, formatUtcTimestamp } from "@/lib/format";
+import { formatUtcDate, formatTimestamp } from "@/lib/format";
 
 /** Operations Continuity's retained UTC timestamp and due-date display formats. */
 export function formatDate(value: string | null | undefined): string {
@@ -11,7 +11,7 @@ export function formatDate(value: string | null | undefined): string {
     return value;
   }
 
-  return formatUtcTimestamp(date);
+  return formatTimestamp(date);
 }
 
 export function formatDateOnly(value: string | null | undefined): string {

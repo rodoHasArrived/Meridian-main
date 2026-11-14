@@ -10,7 +10,6 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { approveSecurityAssetProfile, createSecurityMasterEntry, draftSecurityAssetProfile, getSecurityAssetProfileLineage, rollbackSecurityAssetProfile } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { utcToday } from "@/lib/local-date";
-import { badgeVariantToOperatorSeverity } from "@/lib/shared-tone-mappings";
 import { cn } from "@/lib/utils";
 import { type SettingsMutationConfirmation } from "@/screens/settings-mutation-confirm-dialog";
 import { type SettingsScreenViewModel } from "@/screens/settings-screen.view-model";
@@ -21,6 +20,7 @@ import { buildProfileFieldPayload, createProfileBackedSecurityState, missingRequ
 import { diagnosticToneClass, FilterSelect, SettingsFieldRow } from "./settings-provider-integration";
 import { SettingsChip, capabilityTone, settingsBannerTone } from "@/screens/settings-screen.section-primitives";
 import { createAssetProfileDraftState, type AssetProfileDraftState } from "@/screens/settings-screen.section-state";
+import { toSeverity } from "@/design-system/status-styles";
 
 function AssetProfileFieldInput({
   field,
@@ -532,7 +532,7 @@ export function SettingsAssetProfileSection({ vm, submitAssetProfileDraft, selec
             <SettingsChip label="Declared projected" value={vm.assetProfileGovernancePanel.projectedFieldCountLabel} />
             <SettingsChip label="Close IDs" value={vm.assetProfileGovernancePanel.closeIdentifierCountLabel} />
             <SeverityBadge
-              status={badgeVariantToOperatorSeverity(vm.assetProfileGovernancePanel.statusVariant)}
+              status={toSeverity(vm.assetProfileGovernancePanel.statusVariant)}
               label={vm.assetProfileGovernancePanel.statusLabel}
             />
           </div>

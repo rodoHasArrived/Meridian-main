@@ -41,7 +41,7 @@ import type {
 } from "@/types/archive-maintenance.types";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
 
 const EXECUTION_LIMIT = 25;
 type MaintenanceExecutionRow = MaintenanceExecutionRowViewModel & { source: ArchiveMaintenanceExecution };
@@ -259,7 +259,7 @@ function badgeVariant(tone: MaintenanceTone): "default" | "success" | "warning" 
 }
 
 function formatTimestamp(value: string): string {
-  return formatUtcTimestamp(new Date(value));
+  return formatDisplayTimestamp(new Date(value));
 }
 
 function errorMessage(reason: unknown): string {

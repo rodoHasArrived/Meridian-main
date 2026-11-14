@@ -1020,13 +1020,13 @@ public partial class LiveDataViewerPage : Page
 
 Qualified name: <code>Meridian.Wpf.Views.MainPage</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/MainPage.SplitPane.cs:9](../../../../src/Meridian.Wpf/Views/MainPage.SplitPane.cs#L9).
+Source: [src/Meridian.Wpf/Views/MainPage.SplitPane.cs:15](../../../../src/Meridian.Wpf/Views/MainPage.SplitPane.cs#L15).
 
 ```csharp
 public partial class MainPage
 ```
 
-Source: [src/Meridian.Wpf/Views/MainPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L17).
+Source: [src/Meridian.Wpf/Views/MainPage.xaml.cs:19](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L19).
 
 Hosts the desktop navigation frame, workspace chrome, and command-palette overlay.
 
@@ -1038,10 +1038,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public MainPage(MainPageViewModel viewModel, IShellNavigationCoordinator? shellNavigationCoordinator = null);</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:24](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L24) |  |
-| <code>public void ShowCommandPaletteOverlay();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:86](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L86) |  |
-| <code>public Task WaitForShellReadyAsync();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:92](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L92) |  |
-| <code>public bool NavigateToLaunchPage(string pageTag);</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:102](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L102) |  |
+| <code>public MainPage(MainPageViewModel viewModel, IShellNavigationCoordinator? shellNavigationCoordinator = null);</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:27](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L27) |  |
+| <code>public void ShowCommandPaletteOverlay();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:149](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L149) |  |
+| <code>public Task WaitForShellReadyAsync();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:155](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L155) |  |
+| <code>public bool NavigateToLaunchPage(string pageTag);</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:165](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L165) |  |
 
 ## MeridianDockingManager
 

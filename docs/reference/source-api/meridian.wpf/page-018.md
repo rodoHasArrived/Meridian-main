@@ -918,7 +918,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.SplitPaneHostControl</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:13](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L13).
+Source: [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:15](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L15).
 
 Hosts navigation frames in the selected pane layout and tracks the active pane.
 
@@ -930,13 +930,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string PageTagFormat = &quot;Meridian.PageTag&quot;;</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:16](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L16) |  |
-| <code>public event EventHandler&lt;PaneDropEventArgs&gt;? PaneDropRequested;</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:21](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L21) | Raised when a page-tag string is dropped onto this host. |
-| <code>public PaneLayout Layout { get; set; }</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:23](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L23) |  |
-| <code>public static readonly DependencyProperty LayoutProperty = DependencyProperty.Register(nameof(Layout), typeof(PaneLayout), typeof(SplitPaneHostControl), new PropertyMetadata(PaneLayouts.Single, OnLayoutChanged));</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:29](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L29) |  |
-| <code>public int ActivePaneIndex { get; set; }</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:34](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L34) |  |
-| <code>public SplitPaneHostControl();</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:36](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L36) |  |
-| <code>public Frame? GetPaneFrame(int index) =&gt; …;</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:42](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L42) |  |
+| <code>public const string PageTagFormat = &quot;Meridian.PageTag&quot;;</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:18](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L18) |  |
+| <code>public event EventHandler&lt;PaneDropEventArgs&gt;? PaneDropRequested;</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:23](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L23) | Raised when a page-tag string is dropped onto this host. |
+| <code>public PaneLayout Layout { get; set; }</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:25](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L25) |  |
+| <code>public static readonly DependencyProperty LayoutProperty = DependencyProperty.Register(nameof(Layout), typeof(PaneLayout), typeof(SplitPaneHostControl), new PropertyMetadata(PaneLayouts.Single, OnLayoutChanged));</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:31](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L31) |  |
+| <code>public int ActivePaneIndex { get; set; }</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:36](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L36) |  |
+| <code>public SplitPaneHostControl();</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:38](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L38) |  |
+| <code>public Frame? GetPaneFrame(int index) =&gt; …;</code> | [src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs:44](../../../../src/Meridian.Wpf/Views/SplitPaneHostControl.xaml.cs#L44) |  |
 
 ## StartupWindow
 

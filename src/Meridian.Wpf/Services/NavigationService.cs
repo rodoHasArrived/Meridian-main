@@ -44,11 +44,21 @@ namespace Meridian.Wpf.Services;
 public sealed class NavigationService : NavigationServiceBase, INavigationService
 {
     private static readonly Lazy<NavigationService> _instance = new(() => new NavigationService());
+    private static readonly DependencyProperty ContentPageTagProperty = DependencyProperty.RegisterAttached(
+        "ContentPageTag", typeof(string), typeof(NavigationService), new PropertyMetadata(null));
+
+    internal static string? GetContentPageTag(object? content)
+        => content is DependencyObject element ? element.GetValue(ContentPageTagProperty) as string : null;
 
     private Frame? _frame;
     private IServiceProvider? _serviceProvider;
     private WorkspaceChromePresentationMode _presentationMode = WorkspaceChromePresentationMode.Standalone;
     private readonly AsyncLocal<IServiceProvider?> _navigationScopeProvider = new();
+
+    internal event EventHandler<NavigationEventArgs>? NavigationStarting;
+
+    internal bool IsNavigationFrame(Frame frame, WorkspaceChromePresentationMode presentationMode)
+        => ReferenceEquals(_frame, frame) && _presentationMode == presentationMode;
 
     /// <summary>
     /// Gets the singleton instance of the NavigationService.
@@ -94,6 +104,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         _frame = null;
         _serviceProvider = null;
         _navigationScopeProvider.Value = null;
+        NavigationStarting = null;
         _presentationMode = WorkspaceChromePresentationMode.Standalone;
         ClearHistory();
     }
@@ -134,16 +145,16 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             pageType,
             effectiveParameter,
             presentationMode,
-            workspaceScope?.ServiceProvider);
+            workspaceScope?.ServiceProvider ?? ResolveWorkspaceServiceProvider(canonicalPageTag));
     }
 
     /// <summary>
-    /// Navigates using a workspace-scoped service provider when provided.
+    /// Navigates using the explicit scope or the registered workspace's retained scope.
     /// </summary>
     public bool NavigateTo(string pageTag, object? parameter = null, IServiceScope? workspaceScope = null)
     {
         var previousProvider = _navigationScopeProvider.Value;
-        _navigationScopeProvider.Value = workspaceScope?.ServiceProvider;
+        _navigationScopeProvider.Value = workspaceScope?.ServiceProvider ?? ResolveWorkspaceServiceProvider(pageTag);
         try
         {
             var canonicalPageTag = ShellNavigationCatalog.GetCanonicalPageTag(pageTag);
@@ -162,6 +173,14 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         }
     }
 
+    private IServiceProvider? ResolveWorkspaceServiceProvider(string pageTag)
+    {
+        var workspaceId = ShellNavigationCatalog.InferWorkspaceIdForPageTag(pageTag);
+        return string.IsNullOrWhiteSpace(workspaceId)
+            ? null
+            : _serviceProvider?.GetService<WorkspaceService>()?.GetOrCreateWorkspaceScope(workspaceId)?.ServiceProvider;
+    }
+
     /// <inheritdoc />
     protected override bool NavigateToPageCore(string pageTag, Type pageType, object? parameter)
     {
@@ -170,6 +189,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
         try
         {
+            NavigationStarting?.Invoke(this, new NavigationEventArgs { PageTag = pageTag, Parameter = parameter });
             var content = CreatePageContentCore(
                 pageTag,
                 pageType,
@@ -354,6 +374,9 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     {
         var serviceProvider = scopedProvider ?? _serviceProvider;
         var page = CreatePage(pageTag, pageType, serviceProvider);
+        // Construction failures retain their compatibility UI, but a fallback does not
+        // establish that the registered page is rendered for screenshot readiness.
+        var renderedPageTag = pageType.IsInstanceOfType(page) ? pageTag : null;
         if (page is IWorkspaceShellPageContextAware contextAware)
         {
             contextAware.ApplyWorkspaceShellPageTag(pageTag);
@@ -371,7 +394,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             page is Page wpfPage &&
             ShouldWrapWithWorkspaceChrome(pageTag, pageType))
         {
-            return new WorkspaceDeepPageHostPage(
+            element = new WorkspaceDeepPageHostPage(
                 this,
                 serviceProvider.GetService<WorkspaceShellContextService>(),
                 pageTag,
@@ -380,6 +403,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
                 presentationMode);
         }
 
+        // Keep rendered content identity separate from the shell's requested navigation state.
+        element.SetValue(ContentPageTagProperty, renderedPageTag);
         return element;
     }
 
@@ -406,9 +431,10 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             {
                 return serviceProvider.GetService(pageType) ?? ActivatorUtilities.CreateInstance(serviceProvider, pageType);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Unit tests and partial workspace scopes may not load the full app resource graph.
+                LoggingService.Instance.LogError($"Construction of page '{pageTag}' ({pageType.Name}) failed; using compatibility fallback.", ex);
                 return CreateFallbackPage(pageTag, serviceProvider);
             }
         }

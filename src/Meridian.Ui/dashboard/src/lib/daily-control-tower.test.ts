@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import { buildAppShellViewState, type AppShellWorkspacePayload } from "@/app-shell.view-model";
 import {
   buildDailyControlTowerModel,
+  buildTodayQueueRows,
   buildWorkspaceAttentionCounts,
   dailyControlTowerProofPassportLabels,
-  selectDailyControlTowerQueueItems
+  selectDailyControlTowerQueueItems,
+  type DailyControlTowerFocusRow
 } from "@/lib/daily-control-tower";
+import type { OperatorTriageItem } from "@/lib/operator-inbox-triage";
 import { normalizeWorkspacePath } from "@/lib/workspace";
 import type { DataWorkspaceResponse, TradingWorkspaceResponse } from "@/types";
 
@@ -233,5 +236,40 @@ describe("daily control tower model", () => {
     });
 
     expect(attention).toEqual({ total: 1, byWorkspace: { accounting: 1 } });
+  });
+});
+
+describe("buildTodayQueueRows", () => {
+  const focus = (id: string, tone: DailyControlTowerFocusRow["item"]["tone"], timestampIso: string | null): DailyControlTowerFocusRow => ({
+    item: { id, label: id, detail: `${id} detail`, route: "/accounting", workspaceLabel: "Accounting", actionLabel: "Open", tone, ariaLabel: id },
+    statusLabel: tone,
+    outputLabel: "Accounting record or close evidence",
+    badgeVariant: "outline",
+    proof: timestampIso ? { id, label: id, detail: "", route: "/accounting", workspaceLabel: "Accounting", timestampLabel: "", timestampIso, tone, ariaLabel: id } : null,
+    proofPassportItems: [],
+    proofPassportSummary: ""
+  });
+  const inbox = (workItemId: string, tone: OperatorTriageItem["tone"], createdAt: string): OperatorTriageItem => ({
+    workItemId, label: workItemId, detail: "", workspace: null, targetRoute: null, tone, createdAt, ownerId: null, dueAt: null,
+    version: 1, sourceVersion: null, acknowledgedAt: null, snoozedUntil: null,
+    capabilities: { canAssign: true, canAcknowledge: true, canSnooze: true, canUnsnooze: false, disabledReason: null }, activity: []
+  });
+
+  it("orders by severity, then oldest first, then source rank with workspace signals first", () => {
+    const rows = buildTodayQueueRows(
+      [focus("ws-review-undated", "review", null), focus("ws-blocked", "blocked", "2026-05-14T20:00:00Z"), focus("ws-review-old", "review", "2026-05-14T10:00:00Z")],
+      [inbox("in-warning", "Warning", "2026-05-14T12:00:00Z"), inbox("in-critical", "Critical", "2026-05-14T21:00:00Z"), inbox("in-info", "Info", "2026-05-14T09:00:00Z"), inbox("in-tie", "Warning", "2026-05-14T10:00:00Z")]
+    );
+    expect(rows.map((row) => row.key)).toEqual([
+      "workspace:ws-blocked",
+      "inbox:in-critical",
+      "workspace:ws-review-old",
+      "inbox:in-tie",
+      "inbox:in-warning",
+      "workspace:ws-review-undated",
+      "inbox:in-info"
+    ]);
+    expect(rows.find((row) => row.id === "in-info")).toMatchObject({ source: "inbox", sourceLabel: "Shared inbox", workspaceLabel: "Unspecified" });
+    expect(rows.find((row) => row.id === "ws-blocked")).toMatchObject({ source: "workspace", sourceLabel: "Workspace signal", observedAt: "2026-05-14T20:00:00Z" });
   });
 });

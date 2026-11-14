@@ -1819,6 +1819,7 @@ Meridian-main
 │   │   │   ├── security-master-review-remediation-plan.md
 │   │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
 │   │   │   ├── web-workstation-ux-review-plan-2026-11.md
+│   │   │   ├── workstation-ux-consolidation-plan-2026-11.md
 │   │   │   └── wpf-web-ui-alignment-plan.md
 │   │   ├── actions-local-benchmarks-2026-10-05.json
 │   │   ├── actions-rollout-measurement-2026-10-05.md
@@ -1959,6 +1960,7 @@ Meridian-main
 │   │   │   ├── source-readme-coverage.json
 │   │   │   └── source-readme-coverage.normalized.yml
 │   │   ├── configuration-schema.md
+│   │   ├── desktop-user-manual.md
 │   │   ├── interfaces.md
 │   │   ├── project-context.md
 │   │   ├── project-dependencies.md
@@ -2616,6 +2618,7 @@ Meridian-main
 │   │   │   ├── web-trading-positions.png
 │   │   │   ├── web-trading-risk.png
 │   │   │   └── web-trading-workspace.png
+│   │   ├── capture-manifest.json
 │   │   ├── README.md
 │   │   └── web-audit.md
 │   ├── security
@@ -4983,6 +4986,7 @@ Meridian-main
 │   │   ├── check-meridian-process-lifecycle.ps1
 │   │   ├── cleanup-generated.ps1
 │   │   ├── desktop-dev.ps1
+│   │   ├── desktop-workflow-fixture-config.json
 │   │   ├── desktop-workflows.json
 │   │   ├── desktop_screen_blueprint_checklist.py
 │   │   ├── generate-desktop-user-manual.ps1
@@ -8979,6 +8983,7 @@ Meridian-main
 │   │   │   │   │   │   ├── historical-chart.view-model.test.ts
 │   │   │   │   │   │   ├── historical-chart.view-model.ts
 │   │   │   │   │   │   ├── income-movement-waterfall.tsx
+│   │   │   │   │   │   ├── inline-fund-account-picker.tsx
 │   │   │   │   │   │   ├── keyboard-shortcuts-sheet.test.tsx
 │   │   │   │   │   │   ├── keyboard-shortcuts-sheet.tsx
 │   │   │   │   │   │   ├── layout-switcher.test.tsx
@@ -8998,6 +9003,8 @@ Meridian-main
 │   │   │   │   │   │   ├── number-passport.test.ts
 │   │   │   │   │   │   ├── number-passport.tsx
 │   │   │   │   │   │   ├── onboarding-tour.tsx
+│   │   │   │   │   │   ├── operating-scope-bar.test.tsx
+│   │   │   │   │   │   ├── operating-scope-bar.tsx
 │   │   │   │   │   │   ├── operational-trust-summary.test.tsx
 │   │   │   │   │   │   ├── operational-trust-summary.tsx
 │   │   │   │   │   │   ├── operator-triage-queue.test.tsx
@@ -9084,6 +9091,7 @@ Meridian-main
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.virtualization.test.tsx
+│   │   │   │   │   │   ├── use-operator-triage-inbox.ts
 │   │   │   │   │   │   ├── use-workspace-expansion.ts
 │   │   │   │   │   │   ├── workflow-continuity-dock.combined.test.tsx
 │   │   │   │   │   │   ├── workflow-continuity-dock.route-mode.combined.test.tsx
@@ -9227,6 +9235,8 @@ Meridian-main
 │   │   │   │   │       ├── text-area.tsx
 │   │   │   │   │       ├── theme-toggle.test.tsx
 │   │   │   │   │       ├── theme-toggle.tsx
+│   │   │   │   │       ├── time-text.test.tsx
+│   │   │   │   │       ├── time-text.tsx
 │   │   │   │   │       ├── toast.action.test.tsx
 │   │   │   │   │       ├── toast.tsx
 │   │   │   │   │       ├── tooltip.tsx
@@ -9242,6 +9252,8 @@ Meridian-main
 │   │   │   │   │   ├── nav-rail.tsx
 │   │   │   │   │   ├── primitives.tsx
 │   │   │   │   │   ├── status-badge.test.tsx
+│   │   │   │   │   ├── status-styles.test.ts
+│   │   │   │   │   ├── status-styles.ts
 │   │   │   │   │   ├── status.test.ts
 │   │   │   │   │   ├── status.test.tsx
 │   │   │   │   │   ├── status.tsx
@@ -9432,12 +9444,14 @@ Meridian-main
 │   │   │   │   │   │   ├── read-state.ts
 │   │   │   │   │   │   └── types.ts
 │   │   │   │   │   ├── operating-scope
+│   │   │   │   │   │   ├── figure-scope.ts
 │   │   │   │   │   │   ├── fund-accounts.test.ts
 │   │   │   │   │   │   ├── fund-accounts.ts
 │   │   │   │   │   │   ├── persistence.test.ts
 │   │   │   │   │   │   ├── persistence.ts
 │   │   │   │   │   │   ├── recent-scopes.test.ts
 │   │   │   │   │   │   ├── recent-scopes.ts
+│   │   │   │   │   │   ├── scope-label-context.tsx
 │   │   │   │   │   │   └── scope-picker-context.tsx
 │   │   │   │   │   ├── perf
 │   │   │   │   │   │   ├── off-thread-compute.test.tsx
@@ -9494,12 +9508,15 @@ Meridian-main
 │   │   │   │   │   ├── dev-fixtures.test.ts
 │   │   │   │   │   ├── dev-fixtures.trading-risk.ts
 │   │   │   │   │   ├── dev-fixtures.ts
+│   │   │   │   │   ├── display-time-zone.ts
+│   │   │   │   │   ├── exact-decimal.ts
 │   │   │   │   │   ├── failover-api.ts
 │   │   │   │   │   ├── fixed-income-capabilities.test.ts
 │   │   │   │   │   ├── fixed-income-capabilities.ts
 │   │   │   │   │   ├── fixed-income-navigation.ts
 │   │   │   │   │   ├── focus-classes.ts
 │   │   │   │   │   ├── format.test.ts
+│   │   │   │   │   ├── format.timestamps.test.ts
 │   │   │   │   │   ├── format.ts
 │   │   │   │   │   ├── fund-account-scope.ts
 │   │   │   │   │   ├── identifiers.test.ts
@@ -9614,8 +9631,6 @@ Meridian-main
 │   │   │   │   │   ├── saved-layouts.ts
 │   │   │   │   │   ├── security-schedule-dev-fixtures.ts
 │   │   │   │   │   ├── shareable-view.test.ts
-│   │   │   │   │   ├── shared-tone-mappings.test.ts
-│   │   │   │   │   ├── shared-tone-mappings.ts
 │   │   │   │   │   ├── shell-status-signals-context.tsx
 │   │   │   │   │   ├── since-last-visit.test.ts
 │   │   │   │   │   ├── since-last-visit.ts
@@ -9739,7 +9754,6 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.external-gl-panel.tsx
 │   │   │   │   │   ├── accounting-screen.factor-paydown-panel.test.tsx
 │   │   │   │   │   ├── accounting-screen.factor-paydown-panel.tsx
-│   │   │   │   │   ├── accounting-screen.formatting.test.ts
 │   │   │   │   │   ├── accounting-screen.formatting.ts
 │   │   │   │   │   ├── accounting-screen.governance-presenters.ts
 │   │   │   │   │   ├── accounting-screen.governance.view-model.test.ts
@@ -9795,7 +9809,6 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.statement-run-detail.tsx
 │   │   │   │   │   ├── accounting-screen.statement-run-detail.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.statement-run-detail.view-model.ts
-│   │   │   │   │   ├── accounting-screen.styles.ts
 │   │   │   │   │   ├── accounting-screen.task-mode-view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.task-mode-view-model.ts
 │   │   │   │   │   ├── accounting-screen.test.tsx
@@ -9896,7 +9909,6 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.symbol-mapping-editor.test.tsx
 │   │   │   │   │   ├── data-screen.symbol-mapping-editor.tsx
 │   │   │   │   │   ├── data-screen.test.tsx
-│   │   │   │   │   ├── data-screen.tone-styles.ts
 │   │   │   │   │   ├── data-screen.tsx
 │   │   │   │   │   ├── data-screen.view-model.test.ts
 │   │   │   │   │   ├── data-screen.view-model.ts
@@ -10104,6 +10116,8 @@ Meridian-main
 │   │   │   │   │   ├── settings-screen.section-primitives.tsx
 │   │   │   │   │   ├── settings-screen.section-state.ts
 │   │   │   │   │   ├── settings-screen.test.tsx
+│   │   │   │   │   ├── settings-screen.time-zone-preference.test.tsx
+│   │   │   │   │   ├── settings-screen.time-zone-preference.tsx
 │   │   │   │   │   ├── settings-screen.tsx
 │   │   │   │   │   ├── settings-screen.view-model.test.ts
 │   │   │   │   │   ├── settings-screen.view-model.ts
@@ -14906,6 +14920,7 @@ Meridian-main
 │   │   │   └── ShellRouteRegistryTests.cs
 │   │   ├── Support
 │   │   │   ├── AppServiceTestHost.cs
+│   │   │   ├── DesktopNavigationTestHost.cs
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
 │   │   │   ├── FakeWorkstationReconciliationApiClient.cs
@@ -15042,11 +15057,14 @@ Meridian-main
 │   │   │   ├── DataQualityPageSmokeTests.cs
 │   │   │   ├── DataWorkspaceShellSmokeTests.cs
 │   │   │   ├── DesignSystemResourceTests.cs
+│   │   │   ├── DesktopWorkflowFixtureConfigurationTests.cs
 │   │   │   ├── DesktopWorkflowScriptTests.cs
 │   │   │   ├── FullNavigationSweepTests.cs
 │   │   │   ├── FundProfileSelectionPageSmokeTests.cs
 │   │   │   ├── HelpPageSmokeTests.cs
 │   │   │   ├── LifecycleControlPageSmokeTests.cs
+│   │   │   ├── MainPageLaunchNavigationTests.cs
+│   │   │   ├── MainPageNormalNavigationTests.cs
 │   │   │   ├── MainPageSmokeTests.cs
 │   │   │   ├── MainPageUiWorkflowTests.cs
 │   │   │   ├── NavigationPageSmokeTests.cs
@@ -15149,6 +15167,7 @@ Meridian-main
 │   │   ├── test_desktop_build_receipt.py
 │   │   ├── test_desktop_msix_packaging.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
+│   │   ├── test_desktop_workflow_fixture.py
 │   │   ├── test_direct_lending_outbox_claim_sql.py
 │   │   ├── test_doc_health_dashboard_merge.py
 │   │   ├── test_doc_render_determinism.py

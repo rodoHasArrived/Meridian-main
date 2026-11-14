@@ -1030,7 +1030,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public MainWindow(MainWindowViewModel viewModel, WpfServices.NavigationService navigationService, WpfServices.KeyboardShortcutService keyboardShortcutService, WpfServices.NotificationService notificationService, WpfServices.FundContextService fundContextService, WpfServices.WorkstationOperatingContextService operatingContextService, DesktopShellCoordinator shellCoordinator, DesktopShellSessionService sessionService, DesktopLaunchRouter launchRouter, FileDropRouter fileDropRouter, IWindowStateStore windowStateStore);</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:59](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L59) |  |
-| <code>public void ForceStartupWindowRecovery();</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:980](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L980) |  |
+| <code>public void ForceStartupWindowRecovery();</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:985](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L985) |  |
 
 ## AccountingSubarea
 

@@ -2,6 +2,7 @@ import { createContext, createElement, useCallback, useContext, useEffect, useMe
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { getLiveQuotesSnapshot } from "@/lib/api";
 import { isAbortError, isApiError } from "@/lib/api-errors";
+import { formatTimestamp } from "@/lib/format";
 import type { QuotesSnapshotItem, QuotesSnapshotResponse } from "@/types";
 import { describeCondition, shouldTrigger } from "./evaluator";
 import {
@@ -176,7 +177,7 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
     if (triggeredNow.length > 0) {
       for (const trigger of triggeredNow) {
         const title = `${trigger.symbol} — ${describeCondition(trigger.condition, trigger.threshold, trigger.field)}`;
-        const body = `Triggered at ${formatPrice(trigger.triggeredPrice)} (${new Date(trigger.triggeredAt).toLocaleTimeString()})`;
+        const body = `Triggered at ${formatPrice(trigger.triggeredPrice)} (${formatTimestamp(trigger.triggeredAt)})`;
         fireNotification(title, body);
       }
     }
