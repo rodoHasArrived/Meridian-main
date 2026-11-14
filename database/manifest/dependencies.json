@@ -1090,6 +1090,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.BackfillRoutingProviderChange"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.BackfillStatistics"
     },
     {
@@ -1301,6 +1307,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.FailoverConfigResponse"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.FailoverRuleDeleteRequest"
     },
     {
       "kind": "contract-set-member",
@@ -1835,6 +1847,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.ProviderRouteScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.ProviderRoutingBindingChange"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.ProviderRoutingProposedConfig"
     },
     {
       "kind": "contract-set-member",
@@ -3947,6 +3971,30 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Configuration.BackfillSymbolPlanDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.BackfillVendorTierDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationChangeImpact"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationFieldChange"
     },
     {
       "kind": "contract-set-member",
@@ -6814,6 +6862,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondSecurityTermsDigest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FixedIncome.BondSettlementConsideration"
     },
     {
@@ -9334,6 +9388,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto"
     },
     {
@@ -9779,6 +9845,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreateAccountingPolicyRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -10649,6 +10721,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -13324,6 +13402,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterProfilePromotionService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService"
     },
     {
@@ -14434,6 +14518,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermBinding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRole"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRoles"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding"
     },
     {
@@ -14483,6 +14585,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCodecInputs"
     },
     {
       "kind": "contract-set-member",
@@ -14746,6 +14854,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityListItemBinding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityListingIdentity"
     },
     {
@@ -14873,6 +14987,30 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterOptions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionBlockerDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionCandidateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionDisposition"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionReportDto"
     },
     {
       "kind": "contract-set-member",
@@ -15172,7 +15310,19 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsFormatUndeclaredException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsFormats"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsLegacyEventClassifier"
     },
     {
       "kind": "contract-set-member",
@@ -26266,6 +26416,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto"
     },
     {
@@ -26711,6 +26873,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreateAccountingPolicyRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -27581,6 +27749,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -29350,6 +29524,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterProfilePromotionService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService"
     },
     {
@@ -30460,6 +30640,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermBinding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRole"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRoles"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding"
     },
     {
@@ -30509,6 +30707,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCodecInputs"
     },
     {
       "kind": "contract-set-member",
@@ -30772,6 +30976,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityListItemBinding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityListingIdentity"
     },
     {
@@ -30899,6 +31109,30 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterOptions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionBlockerDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionCandidateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionDisposition"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionReportDto"
     },
     {
       "kind": "contract-set-member",
@@ -31198,7 +31432,19 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsFormatUndeclaredException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsFormats"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsLegacyEventClassifier"
     },
     {
       "kind": "contract-set-member",
@@ -33387,6 +33633,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Api.ProviderRoutingProposedConfig",
+      "target": "contract:Meridian.Contracts.Api.BackfillRoutingProviderChange"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.ProviderRoutingProposedConfig",
+      "target": "contract:Meridian.Contracts.Api.ProviderRoutingBindingChange"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Api.ProviderSetupResult",
       "target": "contract:Meridian.Contracts.Configuration.ProviderCredentialSourceDto"
     },
@@ -33569,6 +33827,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Api.QuotesSnapshotResponse",
       "target": "contract:Meridian.Contracts.Api.QuotesSnapshotItem"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.RoutePreviewRequest",
+      "target": "contract:Meridian.Contracts.Api.ProviderRoutingProposedConfig"
     },
     {
       "kind": "contract-reference",
@@ -35637,6 +35901,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.BackfillProviderMetadataDto",
+      "target": "contract:Meridian.Contracts.Configuration.BackfillVendorTierDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Configuration.BackfillProviderStatusDto",
       "target": "contract:Meridian.Contracts.Configuration.BackfillProviderMetadataDto"
     },
@@ -35651,6 +35921,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Configuration.BackfillProvidersConfigDto",
       "target": "contract:Meridian.Contracts.Configuration.BackfillProviderOptionsDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationChangeImpact"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationFieldChange"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationFieldChange",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationChangeImpact"
     },
     {
       "kind": "contract-reference",
@@ -41139,6 +41427,36 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationProjectionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
+      "target": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationRuleDto",
       "target": "contract:Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto"
     },
@@ -41807,6 +42125,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.CreateAccountingPolicyRequest",
       "target": "contract:Meridian.Contracts.Ledger.AccountingPolicyRulePackDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto"
     },
     {
       "kind": "contract-reference",
@@ -43025,6 +43349,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
       "target": "contract:Meridian.Contracts.Ledger.RuleDryRunResultDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
     },
     {
       "kind": "contract-reference",
@@ -46132,6 +46468,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermBinding"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind"
     },
     {
@@ -46473,6 +46815,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermBinding",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRole"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRoles",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRole"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCodecInputs"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermBinding"
     },
@@ -46779,6 +47139,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionCandidateDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionBlockerDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionCandidateDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionDisposition"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionReportDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionCandidateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterQualityReportDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.DataQualityRuleViolationDto"
     },
@@ -46955,6 +47333,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecuritySummaryDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityTermBinding",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityListItemBinding"
     },
     {
       "kind": "contract-reference",
@@ -57681,6 +58065,102 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoint_rows_account_type on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoint_rows.account_type"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoint_rows_credit on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoint_rows.credit"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoint_rows_debit on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoint_rows.debit"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoint_rows_dimensions on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoint_rows.dimensions"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoint_rows_entry_count on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoint_rows.entry_count"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoint_rows_row_no on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoint_rows.row_no"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoints_content_hash on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_balance_checkpoints.content_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoints_future_audit_sequence on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_balance_checkpoints.future_audit_sequence"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoints_journal_count on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_balance_checkpoints.journal_count"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoints_line_count on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_balance_checkpoints.line_count"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoints_period_version on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_balance_checkpoints.period_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoints_schema_version on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_balance_checkpoints.schema_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoints_source_sequence on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_balance_checkpoints.source_sequence"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_period_close_events_balance_checkpoint_hash on ledger.period_close_events",
+      "target": "database:ledger.period_close_events.balance_checkpoint_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_period_close_events_balance_checkpoint_pair on ledger.period_close_events",
+      "target": "database:ledger.period_close_events.balance_checkpoint_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_period_close_events_balance_checkpoint_pair on ledger.period_close_events",
+      "target": "database:ledger.period_close_events.balance_checkpoint_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.ck_period_close_events_new_status on ledger.period_close_events",
       "target": "database:ledger.period_close_events.new_status"
     },
@@ -58744,6 +59224,82 @@
       "label": "journal_entry_id",
       "source": "database:ledger.journal_legs",
       "target": "database:ledger.journal_entries"
+    },
+    {
+      "constraint": "ledger_balance_checkpoint_rows_checkpoint_id_fkey",
+      "kind": "foreign-key",
+      "label": "checkpoint_id",
+      "source": "database:ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoints"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoint_rows_checkpoint_id_fkey on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoints.checkpoint_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoint_rows_checkpoint_id_fkey on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoints_pkey"
+    },
+    {
+      "constraint": "ledger_balance_checkpoints_period_id_fkey",
+      "kind": "foreign-key",
+      "label": "period_id",
+      "source": "database:ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.accounting_periods"
+    },
+    {
+      "constraint": "ledger_balance_checkpoints_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "constraint": "ledger_balance_checkpoints_close_event_id_fkey",
+      "kind": "foreign-key",
+      "label": "close_event_id",
+      "source": "database:ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.period_close_events"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoints_close_event_id_fkey on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.period_close_events.event_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoints_close_event_id_fkey on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.period_close_events_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoints_ledger_book_id_fkey on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoints_ledger_book_id_fkey on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoints_period_id_fkey on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.accounting_periods.period_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoints_period_id_fkey on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.accounting_periods_pkey"
     },
     {
       "constraint": "ledger_book_control_activation_ledger_book_id_fkey",
@@ -64738,6 +65294,18 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.ledger_balance_checkpoints"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.ledger_book_control_activation"
     },
     {
@@ -65922,7 +66490,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "562c3a66727d2f8d1895144c710bcbfadde6f7befe26c4f26e9ddc1f0a5dcf4d",
+  "fingerprint": "d220aa52884f92a780d4dcb1a52915e69661f48843f0ded97f4da5ce85767e4c",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -67062,6 +67630,12 @@
       "label": "Meridian.Contracts.Api.BackfillResultDto"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Api.BackfillRoutingProviderChange",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.BackfillRoutingProviderChange"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.Api.BackfillStatistics",
       "kind": "contract-type",
@@ -67276,6 +67850,12 @@
       "id": "contract:Meridian.Contracts.Api.FailoverConfigResponse",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.FailoverConfigResponse"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Api.FailoverRuleDeleteRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.FailoverRuleDeleteRequest"
     },
     {
       "classification": "request",
@@ -67810,6 +68390,18 @@
       "id": "contract:Meridian.Contracts.Api.ProviderRouteScopeDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.ProviderRouteScopeDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Api.ProviderRoutingBindingChange",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.ProviderRoutingBindingChange"
+    },
+    {
+      "classification": "configuration",
+      "id": "contract:Meridian.Contracts.Api.ProviderRoutingProposedConfig",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.ProviderRoutingProposedConfig"
     },
     {
       "classification": "record",
@@ -69922,6 +70514,30 @@
       "id": "contract:Meridian.Contracts.Configuration.BackfillSymbolPlanDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Configuration.BackfillSymbolPlanDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Configuration.BackfillVendorTierDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.BackfillVendorTierDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Configuration.ConfigurationChangeImpact",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.ConfigurationChangeImpact"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.ConfigurationChangeStatus"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Configuration.ConfigurationFieldChange",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.ConfigurationFieldChange"
     },
     {
       "classification": "configuration",
@@ -72787,6 +73403,12 @@
     },
     {
       "classification": "class",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondSecurityTermsDigest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondSecurityTermsDigest"
+    },
+    {
+      "classification": "class",
       "id": "contract:Meridian.Contracts.FixedIncome.BondSettlementConsideration",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FixedIncome.BondSettlementConsideration"
@@ -75307,6 +75929,18 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto"
@@ -75754,6 +76388,12 @@
       "id": "contract:Meridian.Contracts.Ledger.CreateAccountingPolicyRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.CreateAccountingPolicyRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto"
     },
     {
       "classification": "dto",
@@ -76624,6 +77264,12 @@
       "id": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto"
     },
     {
       "classification": "dto",
@@ -79297,6 +79943,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterProfilePromotionService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ISecurityMasterProfilePromotionService"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService"
@@ -80407,6 +81059,24 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermBinding",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityCashFlowTermBinding"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRole",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRole"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRoles",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRoles"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding"
@@ -80458,6 +81128,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCodecInputs",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityCodecInputs"
     },
     {
       "classification": "dto",
@@ -80718,6 +81394,12 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityInterestSupport"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityListItemBinding",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityListItemBinding"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityListingIdentity",
       "kind": "contract-type",
@@ -80848,6 +81530,30 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterOptions",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityMasterOptions"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionBlockerDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionBlockerDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionCandidateDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionCandidateDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionDisposition",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionDisposition"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionReportDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionReportDto"
     },
     {
       "classification": "class",
@@ -81145,9 +81851,21 @@
     },
     {
       "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsFormatUndeclaredException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityTermsFormatUndeclaredException"
+    },
+    {
+      "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsFormats",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityTermsFormats"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsLegacyEventClassifier",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityTermsLegacyEventClassifier"
     },
     {
       "classification": "dto",
@@ -90037,6 +90755,81 @@
       "label": "ledger.ck_journal_legs_single_sided_amount on ledger.journal_legs"
     },
     {
+      "id": "database:ledger.ck_ledger_balance_checkpoint_rows_account_type on ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoint_rows_account_type on ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoint_rows_credit on ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoint_rows_credit on ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoint_rows_debit on ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoint_rows_debit on ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoint_rows_dimensions on ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoint_rows_dimensions on ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoint_rows_entry_count on ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoint_rows_entry_count on ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoint_rows_row_no on ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoint_rows_row_no on ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoints_content_hash on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoints_content_hash on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoints_future_audit_sequence on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoints_future_audit_sequence on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoints_journal_count on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoints_journal_count on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoints_line_count on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoints_line_count on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoints_period_version on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoints_period_version on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoints_schema_version on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoints_schema_version on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoints_source_sequence on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoints_source_sequence on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ck_period_close_events_balance_checkpoint_hash on ledger.period_close_events",
+      "kind": "database-object",
+      "label": "ledger.ck_period_close_events_balance_checkpoint_hash on ledger.period_close_events"
+    },
+    {
+      "id": "database:ledger.ck_period_close_events_balance_checkpoint_pair on ledger.period_close_events",
+      "kind": "database-object",
+      "label": "ledger.ck_period_close_events_balance_checkpoint_pair on ledger.period_close_events"
+    },
+    {
       "id": "database:ledger.ck_period_close_events_new_status on ledger.period_close_events",
       "kind": "database-object",
       "label": "ledger.ck_period_close_events_new_status on ledger.period_close_events"
@@ -90820,6 +91613,113 @@
       "label": "ledger.journal_legs.transaction_debit"
     },
     {
+      "id": "database:ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-table",
+      "label": "ledger.ledger_balance_checkpoint_rows",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoint_rows.account_type",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoint_rows.account_type"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoint_rows.credit",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoint_rows.credit"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoint_rows.debit",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoint_rows.debit"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoint_rows.dimensions",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoint_rows.dimensions"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoint_rows.entry_count",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoint_rows.entry_count"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoint_rows.row_no",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoint_rows.row_no"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoint_rows_checkpoint_id_fkey on ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoint_rows_checkpoint_id_fkey on ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints",
+      "kind": "database-table",
+      "label": "ledger.ledger_balance_checkpoints",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.checkpoint_id",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.checkpoint_id"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.content_hash",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.content_hash"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.future_audit_sequence",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.future_audit_sequence"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.journal_count",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.journal_count"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.line_count",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.line_count"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.period_version",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.period_version"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.schema_version",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.schema_version"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.source_sequence",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.source_sequence"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints_close_event_id_fkey on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints_close_event_id_fkey on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints_ledger_book_id_fkey on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints_ledger_book_id_fkey on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints_period_id_fkey on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints_period_id_fkey on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints_pkey",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints_pkey"
+    },
+    {
       "id": "database:ledger.ledger_book_control_activation",
       "kind": "database-table",
       "label": "ledger.ledger_book_control_activation",
@@ -91265,6 +92165,21 @@
       "schema": "ledger"
     },
     {
+      "id": "database:ledger.period_close_events.balance_checkpoint_hash",
+      "kind": "database-object",
+      "label": "ledger.period_close_events.balance_checkpoint_hash"
+    },
+    {
+      "id": "database:ledger.period_close_events.balance_checkpoint_id",
+      "kind": "database-object",
+      "label": "ledger.period_close_events.balance_checkpoint_id"
+    },
+    {
+      "id": "database:ledger.period_close_events.event_id",
+      "kind": "database-object",
+      "label": "ledger.period_close_events.event_id"
+    },
+    {
       "id": "database:ledger.period_close_events.new_status",
       "kind": "database-object",
       "label": "ledger.period_close_events.new_status"
@@ -91278,6 +92193,11 @@
       "id": "database:ledger.period_close_events_period_id_fkey on ledger.period_close_events",
       "kind": "database-object",
       "label": "ledger.period_close_events_period_id_fkey on ledger.period_close_events"
+    },
+    {
+      "id": "database:ledger.period_close_events_pkey",
+      "kind": "database-object",
+      "label": "ledger.period_close_events_pkey"
     },
     {
       "id": "database:ledger.private_capital_calls",
@@ -96697,11 +97617,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4104,
-    "contract_set_memberships": 5264,
-    "edges": 10951,
-    "foreign_keys": 199,
+    "contract_references": 4127,
+    "contract_set_memberships": 5305,
+    "edges": 11045,
+    "foreign_keys": 203,
     "logical_references": 6,
-    "nodes": 5347
+    "nodes": 5412
   }
 }

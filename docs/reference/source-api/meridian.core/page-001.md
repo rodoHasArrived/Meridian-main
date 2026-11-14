@@ -10,12 +10,12 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Core.Config.AlpacaBackfillConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:207](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L207).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:213](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L213).
 
 Alpaca Markets historical data provider configuration.
 
 ```csharp
-public sealed record AlpacaBackfillConfig(bool Enabled = true, string? KeyId = null, string? SecretKey = null, string Feed = "iex", string Adjustment = "all", int Priority = 5, int RateLimitPerMinute = 200);
+public sealed record AlpacaBackfillConfig(bool Enabled = true, string? KeyId = null, string? SecretKey = null, string Feed = "iex", string Adjustment = "all", int Priority = BackfillProviderCatalog.AlpacaPriority, int RateLimitPerMinute = BackfillProviderCatalog.AlpacaPerMinute, string TierId = "free");
 ```
 
 ## AlpacaCredentialEnvironment
@@ -102,12 +102,12 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.AlphaVantageConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:259](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L259).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:268](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L268).
 
 Alpha Vantage provider configuration. Unique capability: Intraday historical data (1, 5, 15, 30, 60 min intervals). Free tier: 25 requests/day (severely limited), 5 calls/minute.
 
 ```csharp
-public sealed record AlphaVantageConfig(bool Enabled = true, string? ApiKey = null, int Priority = 25, int RateLimitPerMinute = 5, int RateLimitPerDay = 25);
+public sealed record AlphaVantageConfig(bool Enabled = true, string? ApiKey = null, int Priority = BackfillProviderCatalog.AlphaVantagePriority, int RateLimitPerMinute = BackfillProviderCatalog.AlphaVantagePerMinute, int RateLimitPerDay = 25);
 ```
 
 ## AppConfig
@@ -169,7 +169,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.AutoGapRemediationConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:50](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L50).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:52](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L52).
 
 Host configuration for automatic, quality-triggered backfill remediation. Primitive time units keep JSON and environment configuration portable; Application composition maps this value into the typed remediation policy exposed through the Options pattern.
 
@@ -186,14 +186,14 @@ Source: [src/Meridian.Core/Config/BackfillConfig.cs:24](../../../../src/Meridian
 Configuration for historical backfill operations.
 
 ```csharp
-public sealed record BackfillConfig(bool Enabled = false, string Provider = "composite", string[]? Symbols = null, DateOnly? From = null, DateOnly? To = null, string Granularity = "daily", bool EnableFallback = true, bool PreferAdjustedPrices = true, bool EnableSymbolResolution = true, string[]? ProviderPriority = null, bool EnableRateLimitRotation = true, double RateLimitRotationThreshold = 0.8, bool SkipExistingData = true, bool FillGapsOnly = true, BackfillJobsConfig? Jobs = null, BackfillProvidersConfig? Providers = null, SymbolResolutionMode SymbolResolutionMode = SymbolResolutionMode.Compare, AutoGapRemediationConfig? AutoRemediation = null);
+public sealed record BackfillConfig(bool Enabled = false, string Provider = "composite", string[]? Symbols = null, DateOnly? From = null, DateOnly? To = null, string Granularity = "daily", bool EnableFallback = true, bool PreferAdjustedPrices = true, bool EnableSymbolResolution = true, string[]? ProviderPriority = null, bool EnableRateLimitRotation = true, double RateLimitRotationThreshold = 0.8, bool SkipExistingData = true, bool FillGapsOnly = true, BackfillJobsConfig? Jobs = null, BackfillProvidersConfig? Providers = null, SymbolResolutionMode SymbolResolutionMode = SymbolResolutionMode.Compare, AutoGapRemediationConfig? AutoRemediation = null, IReadOnlyDictionary<string, ProviderValidationProfile>? ValidationProfiles = null, ProviderValidationProfileAudit[]? ValidationProfileAudit = null);
 ```
 
 ## BackfillJobsConfig
 
 Qualified name: <code>Meridian.Core.Config.BackfillJobsConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:74](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L74).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:76](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L76).
 
 Configuration for backfill job management.
 
@@ -201,16 +201,83 @@ Configuration for backfill job management.
 public sealed record BackfillJobsConfig(bool PersistJobs = true, string JobsDirectory = "_backfill_jobs", int MaxConcurrentRequests = 3, int MaxConcurrentPerProvider = 2, int MaxRetries = 3, int RetryDelaySeconds = 5, int BatchSizeDays = 365, bool AutoPauseOnRateLimit = true, bool AutoResumeAfterRateLimit = true, int MaxRateLimitWaitMinutes = 5, ScheduledBackfillConfig? Scheduling = null, int WorkerErrorRetryDelayMs = 1000);
 ```
 
+## BackfillProviderCatalog
+
+Qualified name: <code>Meridian.Core.Config.BackfillProviderCatalog</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Config/BackfillProviderCatalog.cs:17](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L17).
+
+One source of UI presets and constructor defaults. Paid plans retain conservative finite application caps.
+
+```csharp
+public static class BackfillProviderCatalog
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int AlpacaPriority = 5, AlpacaPerMinute = 200;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:19](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L19) |  |
+| <code>public const int PolygonPriority = 12, PolygonPerMinute = 5, PolygonStarterPerMinute = 100;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:20](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L20) |  |
+| <code>public const int TiingoPriority = 15, TiingoPerHour = 50;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:21](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L21) |  |
+| <code>public const int FinnhubPriority = 18, FinnhubPerMinute = 60;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:22](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L22) |  |
+| <code>public const int StooqPriority = 20;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:23](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L23) |  |
+| <code>public const int YahooPriority = 10, YahooPerHour = 2000;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:24](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L24) |  |
+| <code>public const int AlphaVantagePriority = 25, AlphaVantagePerMinute = 5;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:25](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L25) |  |
+| <code>public const int NasdaqPriority = 30;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:26](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L26) |  |
+| <code>public const int TwelveDataPriority = 22, TwelveDataPerMinute = 8;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:27](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L27) |  |
+| <code>public const int OpenFigiPriority = 100, OpenFigiPerMinute = 25, OpenFigiAuthenticatedPerMinute = 250;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:28](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L28) |  |
+| <code>public static IReadOnlyList&lt;BackfillVendorDescriptor&gt; Providers { get; } = Array.AsReadOnly(new BackfillVendorDescriptor[] { new (&quot;alpaca&quot;, &quot;Alpaca&quot;, AlpacaPriority, true, [new (&quot;free&quot;, &quot;IEX&quot;, AlpacaPerMinute)]), new (&quot;polygon&quot;, &quot;Polygon&quot;, PolygonPriority, true, [new (&quot;free&quot;, &quot;Basic&quot;, PolygonPerMinute), new (&quot;starter&quot;, &quot;Starter (100/min application cap)&quot;, PolygonStarterPerMinute)]), new (&quot;tiingo&quot;, &quot;Tiingo&quot;, TiingoPriority, true, [new (&quot;free&quot;, &quot;Free&quot;, RateLimitPerHour : TiingoPerHour)]), new (&quot;finnhub&quot;, &quot;Finnhub&quot;, FinnhubPriority, true, [new (&quot;free&quot;, &quot;Free&quot;, FinnhubPerMinute)]), new (&quot;stooq&quot;, &quot;Stooq&quot;, StooqPriority, false, [new (&quot;free&quot;, &quot;Public&quot;)]), new (&quot;yahoo&quot;, &quot;Yahoo Finance&quot;, YahooPriority, false, [new (&quot;free&quot;, &quot;Public (unofficial)&quot;, RateLimitPerHour : YahooPerHour)]), new (&quot;alphavantage&quot;, &quot;Alpha Vantage&quot;, AlphaVantagePriority, true, [new (&quot;free&quot;, &quot;Free (25/day retained)&quot;, AlphaVantagePerMinute)]), new (&quot;nasdaqdatalink&quot;, &quot;Nasdaq Data Link&quot;, NasdaqPriority, false, [new (&quot;free&quot;, &quot;Public datasets&quot;)]), new (&quot;twelvedata&quot;, &quot;Twelve Data&quot;, TwelveDataPriority, true, [new (&quot;free&quot;, &quot;Basic&quot;, TwelveDataPerMinute)]), new (&quot;openfigi&quot;, &quot;OpenFIGI (symbol resolution)&quot;, OpenFigiPriority, false, [new (&quot;free&quot;, &quot;Unauthenticated&quot;, OpenFigiPerMinute), new (&quot;authenticated&quot;, &quot;Authenticated&quot;, OpenFigiAuthenticatedPerMinute)]) });</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:30](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L30) |  |
+| <code>public static Meridian.Contracts.Configuration.BackfillProviderMetadataDto[] Describe() =&gt; …;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:44](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L44) |  |
+| <code>public static BackfillVendorDescriptor Get(string id) =&gt; …;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:84](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L84) |  |
+| <code>public static BackfillVendorTier GetTier(string id, string tierId) =&gt; …;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:87](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L87) |  |
+| <code>public static BackfillProviderEdit Read(BackfillProvidersConfig config, string id);</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:90](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L90) |  |
+| <code>public static BackfillProvidersConfig Apply(BackfillProvidersConfig config, string id, BackfillProviderEdit edit);</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:109](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L109) |  |
+
+## BackfillProviderEdit
+
+Qualified name: <code>Meridian.Core.Config.BackfillProviderEdit</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/BackfillProviderCatalog.cs:13](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L13).
+
+Secret-free, bounded fields accepted by the provider editor.
+
+```csharp
+public sealed record BackfillProviderEdit(bool Enabled, int Priority, string TierId = "free", int? RateLimitPerMinute = null, int? RateLimitPerHour = null);
+```
+
 ## BackfillProvidersConfig
 
 Qualified name: <code>Meridian.Core.Config.BackfillProvidersConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:132](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L132).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:134](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L134).
 
 Configuration for individual backfill data providers.
 
 ```csharp
-public sealed record BackfillProvidersConfig(AlpacaBackfillConfig? Alpaca = null, YahooFinanceConfig? Yahoo = null, NasdaqDataLinkConfig? Nasdaq = null, StooqConfig? Stooq = null, OpenFigiConfig? OpenFigi = null, TiingoConfig? Tiingo = null, PolygonConfig? Polygon = null, AlphaVantageConfig? AlphaVantage = null, FinnhubConfig? Finnhub = null, FredConfig? Fred = null, SyntheticMarketDataConfig? Synthetic = null, RobinhoodConfig? Robinhood = null);
+public sealed record BackfillProvidersConfig(AlpacaBackfillConfig? Alpaca = null, YahooFinanceConfig? Yahoo = null, NasdaqDataLinkConfig? Nasdaq = null, StooqConfig? Stooq = null, OpenFigiConfig? OpenFigi = null, TiingoConfig? Tiingo = null, PolygonConfig? Polygon = null, AlphaVantageConfig? AlphaVantage = null, FinnhubConfig? Finnhub = null, FredConfig? Fred = null, SyntheticMarketDataConfig? Synthetic = null, RobinhoodConfig? Robinhood = null, TwelveDataConfig? TwelveData = null);
+```
+
+## BackfillVendorDescriptor
+
+Qualified name: <code>Meridian.Core.Config.BackfillVendorDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/BackfillProviderCatalog.cs:8](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L8).
+
+```csharp
+public sealed record BackfillVendorDescriptor(string Id, string DisplayName, int DefaultPriority, bool RequiresApiKey, IReadOnlyList<BackfillVendorTier> Tiers);
+```
+
+## BackfillVendorTier
+
+Qualified name: <code>Meridian.Core.Config.BackfillVendorTier</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/BackfillProviderCatalog.cs:6](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L6).
+
+Conservative application caps for a declared vendor plan; never a credential or entitlement.
+
+```csharp
+public sealed record BackfillVendorTier(string Id, string Label, int? RateLimitPerMinute = null, int? RateLimitPerHour = null);
 ```
 
 ## CanonicalizationConfig
@@ -743,7 +810,7 @@ Source: [src/Meridian.Core/Config/DataSourceConfig.cs:197](../../../../src/Merid
 Collection of data source configurations.
 
 ```csharp
-public sealed record DataSourcesConfig(DataSourceConfig[]? Sources = null, string? DefaultRealTimeSourceId = null, string? DefaultHistoricalSourceId = null, bool EnableFailover = true, int FailoverTimeoutSeconds = 30, int HealthCheckIntervalSeconds = 10, bool AutoRecover = true, FailoverRuleConfig[]? FailoverRules = null, SymbolMappingsConfig? SymbolMappings = null);
+public sealed record DataSourcesConfig(DataSourceConfig[]? Sources = null, string? DefaultRealTimeSourceId = null, string? DefaultHistoricalSourceId = null, bool EnableFailover = true, int FailoverTimeoutSeconds = 30, int HealthCheckIntervalSeconds = 10, bool AutoRecover = true, FailoverRuleConfig[]? FailoverRules = null, SymbolMappingsConfig? SymbolMappings = null, FailoverRuleThresholdAudit[]? FailoverRuleAudit = null);
 ```
 
 ## DataSourceType
@@ -789,7 +856,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.DefaultScheduleConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:120](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L120).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:122](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L122).
 
 Configuration for a default schedule to create on startup.
 
@@ -808,71 +875,3 @@ Domain configuration for derivatives (options) data collection.
 ```csharp
 public sealed record DerivativesConfig(bool Enabled = false, string[]? Underlyings = null, int MaxDaysToExpiration = 90, int StrikeRange = 20, bool CaptureGreeks = true, bool CaptureChainSnapshots = false, int ChainSnapshotIntervalSeconds = 300, bool CaptureOpenInterest = true, string[]? ExpirationFilter = null, IndexOptionsConfig? IndexOptions = null);
 ```
-
-## DomainCutoverModeConfig
-
-Qualified name: <code>Meridian.Core.Config.DomainCutoverModeConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/AppConfig.cs:218](../../../../src/Meridian.Core/Config/AppConfig.cs#L218).
-
-Serializable cutover mode for a single fund operations domain.
-
-```csharp
-public sealed record DomainCutoverModeConfig(bool ShadowWritesEnabled = true, string ReadMode = "LegacyInMemory");
-```
-
-## EnvironmentOverrideInfo
-
-Qualified name: <code>Meridian.Core.Config.EnvironmentOverrideInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Config/ConfigEnvironmentOverride.cs:507](../../../../src/Meridian.Core/Config/ConfigEnvironmentOverride.cs#L507).
-
-Information about an environment variable override.
-
-```csharp
-public sealed class EnvironmentOverrideInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string EnvironmentVariable { get; set; } = &quot;&quot;;</code> | [src/Meridian.Core/Config/ConfigEnvironmentOverride.cs:509](../../../../src/Meridian.Core/Config/ConfigEnvironmentOverride.cs#L509) |  |
-| <code>public string ConfigPath { get; set; } = &quot;&quot;;</code> | [src/Meridian.Core/Config/ConfigEnvironmentOverride.cs:510](../../../../src/Meridian.Core/Config/ConfigEnvironmentOverride.cs#L510) |  |
-| <code>public string? CurrentValue { get; set; }</code> | [src/Meridian.Core/Config/ConfigEnvironmentOverride.cs:511](../../../../src/Meridian.Core/Config/ConfigEnvironmentOverride.cs#L511) |  |
-| <code>public bool IsSet { get; set; }</code> | [src/Meridian.Core/Config/ConfigEnvironmentOverride.cs:512](../../../../src/Meridian.Core/Config/ConfigEnvironmentOverride.cs#L512) |  |
-| <code>public bool IsSensitive { get; set; }</code> | [src/Meridian.Core/Config/ConfigEnvironmentOverride.cs:513](../../../../src/Meridian.Core/Config/ConfigEnvironmentOverride.cs#L513) |  |
-
-## FailoverRuleConfig
-
-Qualified name: <code>Meridian.Core.Config.FailoverRuleConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/DataSourceConfig.cs:247](../../../../src/Meridian.Core/Config/DataSourceConfig.cs#L247).
-
-Configuration for a failover rule.
-
-```csharp
-public sealed record FailoverRuleConfig(string Id, string PrimaryProviderId, string[] BackupProviderIds, int FailoverThreshold = 3, int RecoveryThreshold = 5, double DataQualityThreshold = 0, double MaxLatencyMs = 0);
-```
-
-## FeatureCapabilityCatalog
-
-Qualified name: <code>Meridian.Core.Config.FeatureCapabilityCatalog</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:6](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L6).
-
-Lists the declared workstation feature capabilities and their default enablement metadata.
-
-```csharp
-public static class FeatureCapabilityCatalog
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; Trading { get; } = [new (&quot;desktop.trading.workspace&quot;, &quot;Trading workspace&quot;, &quot;Trading shell, market feed, order book, position blotter, and run-risk screens.&quot;, true, true), new (&quot;desktop.trading.hours&quot;, &quot;Trading hours&quot;, &quot;Market-session briefing and schedule coverage review in the Trading workspace.&quot;, true, false)];</code> | [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:8](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L8) |  |
-| <code>public static IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; Data { get; } = [new (&quot;desktop.data.workspace&quot;, &quot;Data workspace&quot;, &quot;Provider setup, backfill, storage, quality, and data catalog workstation surfaces.&quot;, true, true), new (&quot;desktop.data.security-master&quot;, &quot;Security master&quot;, &quot;Reference-data review, security lifecycle readiness, and vendor-symbol mapping workbench.&quot;, true, false), new (&quot;desktop.data.retention&quot;, &quot;Retention assurance&quot;, &quot;Archive health, storage optimization, and retention-policy assurance surfaces.&quot;, true, false)];</code> | [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:14](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L14) |  |
-| <code>public static IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; Settings { get; } = [new (&quot;desktop.settings.workspace&quot;, &quot;Settings workspace&quot;, &quot;Preferences, credentials, diagnostics, service management, notifications, and support surfaces.&quot;, true, true), new (&quot;desktop.settings.capabilities&quot;, &quot;Capability toggles&quot;, &quot;Generated capability-control tab for module-declared desktop feature switches.&quot;, true, true), new (&quot;desktop.settings.workflow-library&quot;, &quot;Workflow library&quot;, &quot;Reusable workflow catalog and action launch surface in Settings.&quot;, true, false)];</code> | [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:21](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L21) |  |
-| <code>public static IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; Reporting { get; } = [new (&quot;desktop.reporting.workspace&quot;, &quot;Reporting workspace&quot;, &quot;Governed report-pack review, delivery posture, publication evidence, and line-provenance surfaces.&quot;, true, true), new (&quot;desktop.reporting.review-workbench&quot;, &quot;Reporting review workbench&quot;, &quot;Approval, rejection, publication, restatement, and retained evidence review surfaces.&quot;, true, false), new (&quot;desktop.reporting.delivery-readiness&quot;, &quot;Reporting delivery readiness&quot;, &quot;Schedule due work, delivery blockers, failure evidence, and readiness warnings.&quot;, true, false)];</code> | [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:28](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L28) |  |
-| <code>public static IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; All { get; } = Trading.Concat(Data).Concat(Reporting).Concat(Settings).GroupBy(static capability =&gt; capability.CapabilityKey, StringComparer.OrdinalIgnoreCase).Select(static group =&gt; group.First()).OrderBy(static capability =&gt; capability.DisplayName, StringComparer.OrdinalIgnoreCase).ToArray();</code> | [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:35](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L35) |  |

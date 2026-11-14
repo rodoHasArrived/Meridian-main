@@ -6,16 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ThresholdBreach
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ThresholdBreach</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:33](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L33).
-
-```csharp
-public sealed record ThresholdBreach(string Counterparty, ThresholdSeverity Severity, decimal CoverageRatio, decimal EarlyWarningLevel, decimal HardBreachLevel, string Message);
-```
-
 ## ThresholdSeverity
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ThresholdSeverity</code>. Kind: `enum`.
@@ -86,6 +76,42 @@ Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strateg
 ```csharp
 public sealed partial class TradingOperatorReadinessService
 ```
+
+## UiConfigurationSaveGuard
+
+Qualified name: <code>Meridian.Ui.Shared.Services.UiConfigurationSaveGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs:15](../../../../src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs#L15).
+
+Guards ordinary UI settings writes. Credential lifecycle and host deployment use their own authority.
+
+```csharp
+public static class UiConfigurationSaveGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void ValidateWholeDocumentJson(string existingJson, string proposedJson);</code> | [src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs:27](../../../../src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs#L27) | Validates a desktop whole-document save without recovering corrupt input or ignoring unmodeled host sections. Call while holding the configuration write lease. |
+
+## UiConfigurationValidationException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.UiConfigurationValidationException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs:8](../../../../src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs#L8).
+
+Validation failures contain property names and safe messages, never submitted values.
+
+```csharp
+public sealed class UiConfigurationValidationException(IReadOnlyDictionary<string, string[]> errors) : InvalidOperationException("Configuration was not saved. Correct the validation errors and retry.")
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyDictionary&lt;string, string[]&gt; Errors { get; } = errors;</code> | [src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs:11](../../../../src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs#L11) |  |
 
 ## UpsertProviderModuleRequest
 

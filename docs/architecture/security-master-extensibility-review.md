@@ -1051,6 +1051,96 @@ entry, is the first such field on a generated class.
 
 Behaviour is unchanged: no golden, corpus or fixture moved, and no existing test changed.
 
+#### Cohort 3 — the five structural classes — 2026-11-13
+
+Bond, Swap, DirectLoan, StructuredCredit and CommitmentGuarantee now have both codec arms
+generated, so 29 of the 32 classes are generated. Three row kinds and two class settings were
+added:
+
+| Addition | Meaning | Used by |
+| --- | --- | --- |
+| `Listed` row | A list member read by its own decode and written entry by entry, each entry key named against an entry member | covenants, principal schedules, the dated factor schedule |
+| `Computed` row | A member read through its own conversion and written as a converted value (an F# expression, not a property) | Bond payment frequency and subclass, StructuredCredit kind, Swap legs |
+| `WrittenAs` row | One of several keys a single member is written as, read back by that member's decode row | Bond's coupon structure, written as ten keys |
+| Decode inputs | Whether the decode also takes the parsed economic schedules, the versioned-terms decoding (outside the declared-schedule flag) or the profile-resolved terms document | Bond, DirectLoan, StructuredCredit; Swap; CommitmentGuarantee |
+| Conventions flag | Whether the writer takes the schedule-conventions version flag for a block nested in a list entry | Swap legs |
+
+An optional module other than the rate convention may now be built whole by a module row (Bond's
+`Workflow`). The coverage test excludes `bondWorkflow` with `rateUnit`: the snapshot wrapper writes
+both after the class's document is stamped, and `bondWorkflow` is absent rather than null when
+undeclared.
+
+The table names a few hand-written helpers rather than restating them. On the decode side these
+are the coupon structure (`ToBondCouponStructure`, the coupon half of the former `ToBondTerms`),
+the validated principal and factor schedules, covenants and swap legs. On the writer side,
+`FlatWriterParts` (new, compiled before the generated writer) holds the coupon union's per-key
+projections and the swap-leg payload with and without its block. Those were the inline
+expressions of the hand-written arms, moved unchanged.
+
+Behaviour is unchanged. One ordering detail needed care: the generated decode builds a record's
+fields in order, so Bond's dates now come before its coupon. A write still reads the coupon
+contract first (`DecodeBond`), so a floating coupon with no index and no maturity is still refused
+for the index. A new theory pins that; without the coupon-first read it reports the missing
+maturity instead. Reads were already ordered by the legacy read-order guard. No golden, corpus or
+fixture moved. The schema-bound decode ratchet and existing comments now name
+`ToBondCouponStructure`.
+
+Still hand-written at this entry (3): Equity, InvestmentFund and CustomAsset, for the bespoke
+reasons in the cohort-1 table.
+
+#### Cohort 4 — Equity and InvestmentFund; CustomAsset stays verbatim — 2026-11-13
+
+Equity and InvestmentFund now have both codec arms generated, so 31 of the 32 classes are
+generated. Neither needed a new row kind:
+
+- **Equity.** The classification union is written as four keys (`classification`,
+  `otherClassification`, `preferredTerms`, `convertibleTerms`) through `WrittenAs` rows. The
+  decode stays `ToEquityClassificationOption`, with its write-strict, read-tolerant handling of
+  unrecognized and unnamed `Other` classifications. `EquityCapitalCodec` moved unchanged into the
+  writer-parts file, which compiles before the generated writer, and is split into one function per
+  key. `toPayload` and `toJson` are rebuilt from those functions, so the economic document's
+  `equityCapital` serialization is unchanged.
+- **InvestmentFund.** Plain rows plus a `Computed` distribution policy.
+  `ToInvestmentFundReferenceTerms` is removed. Its comment pinned the old scalar read order, but
+  none of these reads can throw (absent or mistyped values read as absent, and an unrecognized
+  distribution policy is kept as `Other`), so record order changes no outcome.
+
+**CustomAsset is not generated, by design.** Its flat codec is not a set of class keys. A record
+holds the approved profile's document: the profile id, the profile version and the
+profile-governed fields. The writer emits that document verbatim and unstamped (it already
+carries its profile schema version), and the decode either keeps it whole or, on a read of a
+legacy row without a profile envelope, salvages the row as an OtherSecurity. A binding table row
+would only restate that pass-through, and the profile's own schema governs the fields. ADR-027
+stage 3's goal, one statement of which key carries which member, is met for every class that has
+class keys.
+
+Behaviour is unchanged. No golden, corpus or fixture moved and no test changed.
+
+**`Equity.preferredTerms` now has a declared inner shape.** It had none, so its eleven decode
+reads went through the unbound-read ledger (`UnboundCompatibilityReads`). The schema now declares
+it, matching the decode exactly:
+
+- `preferredTerms` itself: `dividendRate`, `redemptionPrice`, `redemptionDate` and `callableDate`
+  optional; `dividendType` required, one of Fixed, Floating or Cumulative; `participationTerms`
+  optional; `liquidationPreference` required.
+- `participationTerms`: both members optional (an absent participation flag reads as false).
+- `liquidationPreference`: `kind` required, one of Pari, Senior or Subordinated; `multiple`
+  optional (read only for Senior).
+
+The eleven reads are now bound and their ledger entries are retired. The only unbound reads left
+are the three CustomAsset legacy-salvage reads, which are permanent.
+
+This is a deliberate write-contract change. The schema validator now walks `preferredTerms` the
+way it already walked `convertibleTerms`:
+
+- A value outside the two vocabularies, or a missing required member, was already refused by the
+  decode. The validator now refuses it first, with the schema's codes.
+- A mistyped optional member (a `dividendRate` of `"6.25"`) used to be read as absent and silently
+  dropped. It is now refused (`SM_TERM_TYPE_INVALID`), as it already was inside `convertibleTerms`.
+
+A new theory pins both vocabulary refusals and the type refusal. The underlying-role coverage
+check lists `liquidationPreference` as not a link, because "preference" only contains "reference".
+
 Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
 namespaces — 7,059 passed, 1 skipped; adjacent suites — 5,145 passed, 134 skipped;
 `Meridian.FSharp.Tests` — 642 passed; `Meridian.Contracts.UnitTests` — 384 passed;
@@ -9749,6 +9839,8 @@ date.
   deadline's date appears under "Payment date", because the view model maps
   `payDate ?? effectiveDate` (`accounting-screen.view-model.ts`). Deferred while pull request
   #3423 edits those files.
+  *(2026-11-13: the labels are done; the payment-date half is still open. See
+  [record corrections](#record-corrections--2026-11-13).)*
 - The WPF "Schedule model" evidence item and the schedule fields print both `Summary` and the
   source summary, so the blocker sentence appears twice there.
 - Clock injection is partial. The snapshot time and the declared rows use the injected clock; the
@@ -9875,6 +9967,8 @@ read past.
   it used to read defaults. The sample configuration no longer sets
   `RequireGovernedTermAmendments` explicitly, so a production host started from it runs governed
   instead of refusing to start. The workbench read model does not yet show the effective profile.
+  *(2026-11-13: it now does, in both workstations. See
+  [record corrections](#record-corrections--2026-11-13).)*
 
 ### D6 — classification labels: closed
 
@@ -9999,6 +10093,25 @@ and role privileges, logical replication, and whether 062 is already applied any
 
 - The typed outcome is not read by any dashboard screen or WPF view; both render the statuses.
 - The three new schedule-book row types are still shown by their raw type names in the browser.
+
+*2026-11-13: the first two risks are closed. See
+[record corrections](#record-corrections--2026-11-13).*
+
+### Record corrections — 2026-11-13
+
+Three items recorded above as open were closed in source by `d9f2c698` (2026-11-11), and this
+record did not say so. Each was checked against source on 2026-11-13.
+
+| Recorded as open | Now in source |
+| --- | --- |
+| The workbench read model does not show the effective governance profile (D5 limits) | `SecurityMasterTrustSnapshotDto.Governance` (`SecurityMasterGovernanceDto`) carries the profile, why it is in effect (`Default`, `Configuration`, `ProductionComposition` or `Latched`), whether it is latched, each of the three requirements and the ignored configuration keys. `SecurityMasterWorkbenchQueryService` reads it from `ISecurityMasterGovernanceRequirements`, the seam that enforces edits, so the display cannot disagree with enforcement. The browser shows it in the accounting screen's Security Master panel (`governanceEvidence`) and WPF in the security's schedule fields (`SecurityMasterViewModel.PolicyEvidence`). `SecurityMasterWorkbenchGovernanceProjectionTests` pins the projection |
+| No dashboard screen or WPF view reads the typed declared call/put outcome | Both read `DeclaredExercise` from the schedule book, falling back to the schedule summary: its status, as-of, security version, window count, blockers and diagnostics. A resolved schedule states that its dates grant no exercise authority |
+| The browser shows the three new schedule-book row types by their raw type names | `formatSecurityScheduleEventType` labels them "Holder put", "Issuer call notice deadline" and "Holder put notice deadline" |
+
+Still open from the same entries: a notice deadline's date still appears under "Payment date" in
+the browser, because the row maps `payDate ?? effectiveDate`
+(`accounting-screen.security-projections.ts`). The other items these entries list as open were
+not re-checked here.
 - No mutation run was made for this pass. The 062 regression test was checked against the
   previous writer; the other new tests were not.
 - WPF sources changed (the governance registration and two log messages). WPF tests cannot run on
@@ -10028,8 +10141,94 @@ record did.
   None of the three is implemented. Source still behaves as D10 describes: a CertificateOfDeposit
   with a non-zero coupon and no declared unit blocks with no repair path, and the legacy
   projection still floors a negative rate at zero.
+
+  *2026-11-13: all three are now implemented.* Verified against source on this date:
+  - *Undeclared legacy rates.* The optional governed `rateUnit` term, with no default, is
+    version-gated and written through the governed edit lifecycle.
+  - *Negative rates.* Live readers that do not model signed interest return the typed
+    `NegativeInterestUnsupported` blocker (`SecurityInterestSupport`) and no partial output. That
+    covers the cash-flow projections (scalar, declared bond leg and swap leg), accounting events,
+    the portfolio cash ladder, bond analytics, asset-obligation projection and the structured
+    cash-flow ledger gate. A zero floor survives only in two places: when a cash-flow receipt
+    captured before `bond-cash-flow-context-v3` is replayed, and when the v1 cash ladder is
+    explicitly selected. Both reproduce historical output and never compute anything new.
+  - *StructuredNote.* The catalog declares fair value through profit or loss and keeps the class
+    outside the accrual slice. `structured-note-fvtpl-v1` (`StructuredNoteAccountingTemplate`)
+    posts only the change from retained carrying value, through the daily valuation route, with
+    no coupon accrual.
+
+  The remediation plan's follow-through section and `docs/domain/security.md` describe the current
+  behaviour.
 - **Sequencing: follow-up pull requests.** The ADR-027 S3-E record contraction, and the code for
   the two D10 decisions that need code, are done in pull requests that follow this one, not
   stacked on it. S3-E proceeds one field group at a time, each with its own replay-compatibility
   proof, as S3-E1 to S3-E4 did. The module homes for the residual complement are part of that
   work.
+
+## D9 leftovers — cash-flow term roles and the resolver's spellings — 2026-11-13
+
+The close-out pass left three D9 items unchanged: the resolver's alias arrays, profile-to-class
+routing and cash-flow term roles. This pass closes all three.
+
+**Profile-to-class routing was already closed.** The close-out pass replaced the
+`KnownProfileAssetClasses` literal map: each class declares its `ReclassifyingProfileIds` on its
+catalog descriptor, and `SecurityAssetPackRegistry.ProfileAssetClasses` is the lookup over them.
+An id two classes claim fails at type initialization. Nothing changed here.
+
+**Cash-flow term roles are declared by each class.** The resolver kept one private alias table for
+every class, and nothing tied it to the schema. That is how DirectLoan's coupon key
+(`currentCouponRate`) went unread and its loans projected zero interest without a refusal. A
+class-name switch was later added to patch individual classes. Now:
+
+- Each calculated class declares on its catalog descriptor which of its schema keys play which
+  role (`CashFlowTermRoles`): maturity, issue, principal face, current factor, coupon rate,
+  payment frequency, day count and the three inflation terms. A class whose rate is a discount
+  yield declares that it pays no contractual coupon (`PaysNoContractualCoupon`: TreasuryBill and
+  CommercialPaper).
+- `SecurityCashFlowTermRoles.Spellings` merges a class's declared keys with the shared vendor
+  spellings. Those spellings are kept, unchanged, because governed profile fields, common terms and
+  documents written before a class's schema existed carry them. A declared key the shared list
+  already names keeps its shared priority; any other declared key is read first, or last when its
+  binding says so (StructuredCredit's `couponOrIndex`, which is a rate only when it is a number).
+- The resolver reads every top-level term through `Spellings`. The class-name switch
+  (`ResolveCouponRate`) and the repo start/end special case are gone, and the resolver leaves the
+  class-literal ratchet's dispatch-site list.
+
+**The lock.** `SecurityCashFlowTermRoleTests` holds the declarations to the schema:
+
+- Every declared key is a schema key of its class, and only calculated classes declare roles.
+- Every calculated class declares its maturity, and a coupon-bearing class declares exactly one
+  of its coupon key or that it pays none.
+- Every schema key of a calculated class that a shared spelling reads for a role is declared with
+  that role, so a class's declarations are its complete reading list.
+- Every declared key and its schema aliases are read.
+
+Removing DirectLoan's coupon declaration fails two of these tests.
+
+**Swap legs.** The leg arrays are now keyed by the schema path each reads (`legs.legType`,
+`legs.resetSchedule.resetDate`, ...). The tests require each to contain every spelling the schema
+declares for its path, and every declared leg field to be read or listed as unread with a reason
+(`legs.currency`, `legs.scheduleConventions`). This found real drift: the schema declares
+`effectiveDate` and `indexRate` as aliases of a reset entry's `resetDate` and `fixingRate`, and the
+resolver read neither.
+
+**Behaviour.** The read order of every existing spelling is unchanged. A theory pins each class's
+order to the one the resolver used before, including the repo, deposit, direct-loan and
+structured-credit coupon keys. One behaviour changes, and it is a fix: a reset entry spelled only
+with the schema's aliases (`effectiveDate`, `indexRate`) is now read, after every spelling that was
+read before, where it used to be skipped and its fixing lost. A write canonicalizes those aliases,
+so only rows written before alias canonicalization can carry them.
+
+Validation (local, .NET SDK 10.0.403):
+
+- `Meridian.Tests`, filtered to Security Master, cash flow, fixed income, bond, swap, ledger,
+  accrual, amortization, obligation, cash ladder and Architecture, against PostgreSQL: 12,010
+  passed, 0 failed, 129 skipped.
+- `Meridian.Contracts.UnitTests`: 496 passed, including the 21 new role and leg tests.
+- `Meridian.Ui.Tests`: 1,558 passed.
+- `Meridian.FSharp.Tests`: 643 passed.
+- `Meridian.FundStructure.Tests`: 300 passed.
+- `Meridian.DirectLending.Tests`: 19 passed, 19 skipped.
+
+The full local `bash scripts/ci.sh` was not run; the hosted `Meridian CI / quality-gate` is
+authoritative.

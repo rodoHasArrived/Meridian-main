@@ -6,6 +6,129 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunComparisonService
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.StrategyRunComparisonService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:9](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L9).
+
+Shared comparison service for run compare/diff endpoint flows.
+
+```csharp
+public sealed class StrategyRunComparisonService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyRunComparisonService(StrategyRunReadService readService);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:13](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L13) |  |
+| <code>public Task&lt;IReadOnlyList&lt;StrategyRunComparison&gt;&gt; CompareRunsAsync(RunComparisonRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:18](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L18) |  |
+| <code>public Task&lt;IReadOnlyList&lt;StrategyRunComparison&gt;&gt; CompareRunsAsync(RunComparisonRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:23](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L23) |  |
+| <code>public Task&lt;StrategyRunDiff?&gt; BuildDiffAsync(RunDiffRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:66](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L66) |  |
+| <code>public Task&lt;StrategyRunDiff?&gt; BuildDiffAsync(RunDiffRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:71](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L71) |  |
+
+## StrategyStatusDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.StrategyStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs:519](../../../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L519).
+
+Snapshot of a strategy&#x27;s current lifecycle state.
+
+```csharp
+public sealed record StrategyStatusDto(string StrategyId, string Status);
+```
+
+## SubscriptionEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.SubscriptionEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs#L15).
+
+Extension methods for registering subscription management API endpoints.
+
+```csharp
+public static class SubscriptionEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapSubscriptionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs#L17) |  |
+
+## SwapReferenceEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.SwapReferenceEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs#L15).
+
+Maps swap reference queries to the shared HTTP API.
+
+```csharp
+public static class SwapReferenceEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapSwapReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs#L17) |  |
+
+## SymbolEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.SymbolEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs#L22).
+
+Extension methods for registering symbol management API endpoints. Implements Phase 3B.1 — replaces 15 stub endpoints with working handlers.
+
+```csharp
+public static class SymbolEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapSymbolEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs#L26) |  |
+| <code>public static void MapIndexEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:581](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs#L581) | Maps the /api/indices endpoints for index constituent data. |
+
+## SymbolMappingEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.SymbolMappingEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs#L17).
+
+Registry-backed symbol mapping endpoints shared by browser and desktop hosts. Legacy configuration remains a migration/rollback input but is not a second write model.
+
+```csharp
+public static partial class SymbolMappingEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapSymbolMappingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs#L21) |  |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs#L15).
+
+```csharp
+public static partial class SymbolMappingEndpoints
+```
+
+## SymbolMappingRolloutRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.SymbolMappingRolloutRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs:115](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs#L115).
+
+```csharp
+public sealed record SymbolMappingRolloutRequest(SymbolResolutionMode Mode, SymbolResolutionMode ExpectedMode, long ReviewedMismatchCount, bool EvidenceReviewed = false, bool ConfirmArchivesNotRewritten = false, bool ConfirmSeriesRemainSeparate = false, string? Reason = null);
+```
+
 ## TradingActionResult
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.TradingActionResult</code>. Kind: `record`.
@@ -1138,135 +1261,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;EvidenceDocumentExtractionResultDto&gt; ExtractAsync(EvidenceDocumentExtractionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:10](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L10) |  |
-
-## IStatementImportEvidenceRetainer
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.IStatementImportEvidenceRetainer</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:22](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L22).
-
-Retains statement-import content as evidence for later verification and review.
-
-```csharp
-public interface IStatementImportEvidenceRetainer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;StatementImportCommitResultDto&gt; RetainAsync(StatementImportCommitResultDto result, StatementImportEvidenceBridgeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:24](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L24) |  |
-
-## JournalEntryEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.JournalEntryEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L23).
-
-Adds journal-entry lifecycle and source evidence to an evidence graph.
-
-```csharp
-public sealed class JournalEntryEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JournalEntryEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:27](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L27) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:32](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L32) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L34) |  |
-| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L37) |  |
-
-## ManualEvidenceDocumentExtractor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.ManualEvidenceDocumentExtractor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:18](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L18).
-
-Builds document extraction results from manual metadata or deterministic fixture inputs.
-
-```csharp
-public sealed class ManualEvidenceDocumentExtractor : IEvidenceDocumentExtractor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ExtractorId = &quot;manual-metadata-v1&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:20](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L20) |  |
-| <code>public const string FixtureExtractorId = &quot;deterministic-fixture-v1&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:21](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L21) |  |
-| <code>public Task&lt;EvidenceDocumentExtractionResultDto&gt; ExtractAsync(EvidenceDocumentExtractionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L23) |  |
-
-## OperationsApprovalEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.OperationsApprovalEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1205](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1205).
-
-Adds operational approval decisions and their linked evidence to an evidence graph.
-
-```csharp
-public sealed class OperationsApprovalEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperationsApprovalEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1209](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1209) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1214](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1214) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1216](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1216) |  |
-| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1220](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1220) |  |
-
-## PaymentIntentEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.PaymentIntentEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1776](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1776).
-
-Adds payment-intent bank, reconciliation, and audit evidence to an evidence graph.
-
-```csharp
-public sealed class PaymentIntentEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PaymentIntentEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1780](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1780) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1785](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1785) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1787](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1787) |  |
-| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1790](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1790) |  |
-
-## PreparerAttestationEvidenceProjectionService
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.PreparerAttestationEvidenceProjectionService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs#L17).
-
-Adds separate evidence-task disclosures to exact visible source documents. It never changes financial approval, evidence readiness, completeness, proof-layer coverage or Verified Coverage.
-
-```csharp
-public sealed class PreparerAttestationEvidenceProjectionService(SinglePrincipalAttestationStore attestations, IEvidenceArtifactStore artifacts, EvidenceAttestationSubjectResolver resolver)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Boundary = &quot;Evidence acknowledgments only; no financial approval, independent review or Verified Coverage credit.&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs:22](../../../../src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs#L22) |  |
-| <code>public async Task&lt;PreparerAttestationEvidenceProjectionDto?&gt; ProjectAsync(EvidencePacketDto packet, PreparerAttestationEvidenceReadContext? context, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs:25](../../../../src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs#L25) |  |
-
-## PreparerAttestationEvidenceReadContext
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.PreparerAttestationEvidenceReadContext</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs#L8).
-
-Trusted server read authority, never a request-body contract.
-
-```csharp
-public sealed record PreparerAttestationEvidenceReadContext(SinglePrincipalAttestationScopeDto Scope, SinglePrincipalAttestationAuthority Authority, Func<string, string, bool> CanReadSourceSubject);
-```

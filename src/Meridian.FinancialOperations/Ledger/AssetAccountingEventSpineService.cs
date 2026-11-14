@@ -265,7 +265,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             ?? throw new InvalidOperationException(
                 $"Authoritative book position '{projectedSpine.Scope.BookPositionId:D}' was not found.");
         await ValidateCouponRecognitionSourceAsync(projectedSpine, ct).ConfigureAwait(false);
-        ValidatePosition(projectedSpine, position);
+        await ValidatePositionWithRetainedHistoryAsync(projectedSpine, position, ct).ConfigureAwait(false);
 
         var book = await _ledgerBookService
             .GetBookAsync(projectedSpine.Scope.LedgerBookId, ct)
@@ -453,7 +453,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             ?? throw new InvalidOperationException(
                 $"Authoritative book position '{source.Scope.BookPositionId:D}' was not found.");
         await ValidateCouponRecognitionSourceAsync(source, ct).ConfigureAwait(false);
-        ValidatePosition(source, position, request.LotMutation?.Direction ?? OpenLotDirection.Long);
+        await ValidatePositionWithRetainedHistoryAsync(source, position, ct, request.LotMutation?.Direction ?? OpenLotDirection.Long).ConfigureAwait(false);
 
         var book = await _ledgerBookService
             .GetBookAsync(source.Scope.LedgerBookId, ct)
@@ -1451,7 +1451,30 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         }
     }
 
-    private static void ValidatePosition(AssetAccountingEventSpineDto source, BookPositionDto position, OpenLotDirection? direction = null)
+    private async Task ValidatePositionWithRetainedHistoryAsync(AssetAccountingEventSpineDto source, BookPositionDto position,
+        CancellationToken ct, OpenLotDirection? direction = null)
+    {
+        IReadOnlyList<ProjectionLineageDto> history = [];
+        var currentEvents = new[] { position.OriginEvent, position.CurrentEconomicState?.SourceEvent,
+            position.ProjectionLineage?.TriggerEvent, position.CurrentEconomicState?.ProjectionLineage?.TriggerEvent };
+        if (source.EventKind == AssetAccountingEventKindDto.DepreciationAmortization &&
+            !currentEvents.Any(item => item is not null && PayloadEquals(item, source.EconomicEvent)))
+        {
+            var snapshot = await _positionStore.GetSecurityAsync(source.Scope.SecurityId, ct).ConfigureAwait(false)
+                ?? throw new InvalidOperationException("Authoritative amortization source history is unavailable.");
+            RequireAssertion(snapshot.SecurityId == source.Scope.SecurityId && snapshot.BookPositions.Any(item =>
+                item.PositionId == position.PositionId && item.SecurityId == position.SecurityId &&
+                item.Version == position.Version && item.BookContext.LedgerBookId == source.Scope.LedgerBookId),
+                "Amortization source history must resolve the same current security, book position, version and ledger book.");
+            history = snapshot.ProjectionLineages.Where(item => item.BookPositionId == position.PositionId &&
+                item.TriggerEvent.SecurityId == position.SecurityId && item.TriggerEvent.BookPositionId == position.PositionId &&
+                PayloadEquals(item.TriggerEvent, source.EconomicEvent) && PayloadEquals(item, source.ProjectionLineage)).ToArray();
+        }
+        ValidatePosition(source, position, direction, history);
+    }
+
+    private static void ValidatePosition(AssetAccountingEventSpineDto source, BookPositionDto position,
+        OpenLotDirection? direction = null, IReadOnlyList<ProjectionLineageDto>? retainedHistory = null)
     {
         if (source.EventKind is AssetAccountingEventKindDto.Acquisition or AssetAccountingEventKindDto.Disposal)
             RequireAssertion((direction ?? source.Direction) == OpenLotDirection.Short
@@ -1477,12 +1500,17 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             position.ProjectionLineage?.TriggerEvent,
             position.CurrentEconomicState?.ProjectionLineage?.TriggerEvent
         };
-        RequireAssertion(source.BondCouponRecognition is not null || authoritativeEvents.Any(candidate =>
+        RequireAssertion(source.BondCouponRecognition is not null || authoritativeEvents.Concat((retainedHistory ?? []).Select(item => item.TriggerEvent)).Any(candidate =>
                 candidate is not null && PayloadEquals(candidate, source.EconomicEvent)),
             "Resolved book position does not retain the exact authoritative economic-event identity, version, source, hash, dates, security, and position.");
 
         var authoritativeEvidence = new List<RetainedEvidenceIdentityDto>();
         authoritativeEvidence.AddRange(position.RetainedEvidence);
+        foreach (var lineage in retainedHistory ?? [])
+        {
+            authoritativeEvidence.AddRange(lineage.RetainedEvidence);
+            authoritativeEvidence.AddRange(lineage.TriggerEvent.RetainedEvidence);
+        }
         if (position.OriginEvent is { } originEvent)
             authoritativeEvidence.AddRange(originEvent.RetainedEvidence);
         if (position.ProjectionLineage is { } positionLineage)

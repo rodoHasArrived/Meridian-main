@@ -6,6 +6,97 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsContinuityReconciliationBridge
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperationsContinuityReconciliationBridge</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:28](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L28).
+
+Connects reconciliation execution and retained break evidence to Operations Continuity transitions.
+
+```csharp
+public sealed class OperationsContinuityReconciliationBridge : IOperationsContinuityReconciliationBridge
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperationsContinuityReconciliationBridge(IOperationsContinuityWorkflowService workflowService, IReconciliationRunService? reconciliationRunService = null, IReconciliationBreakQueueRepository? breakQueueRepository = null, IReconciliationApiService? statementReconciliation = null);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:76](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L76) |  |
+| <code>public async Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:88](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L88) |  |
+| <code>public async Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:95](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L95) |  |
+
+## OperationsReportPackAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperationsReportPackAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:22](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L22).
+
+Resolves pre-close report support from retained packages, never a caller readiness flag.
+
+```csharp
+public sealed class OperationsReportPackAuthority(IAccountingReportPackageService? packages = null, ILedgerBookService? books = null, IFundProfileTenancyRegistry? ownership = null, ILedgerJournalStore? journals = null) : IOperationsReportPackAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool MatchesRetainedRevision(OperationsReportPackReadinessDto retained, OperationsReportPackReadinessDto current);</code> | [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:30](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L30) |  |
+| <code>public async Task&lt;OperationsReportPackReadinessDto&gt; ResolveAsync(OperationsContinuityWorkflowDto workflow, string? packageId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:41](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L41) |  |
+
+## OperatorTriageException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperatorTriageException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:7](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L7).
+
+```csharp
+public sealed class OperatorTriageException(string status, string message) : InvalidOperationException(message)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Status { get; } = status;</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:9](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L9) |  |
+
+## OperatorTriagePolicy
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperatorTriagePolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:13](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L13).
+
+Triage changes attention metadata; it never advances the underlying readiness gate.
+
+```csharp
+public static class OperatorTriagePolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static OperatorTriageState ObserveSeverity(OperatorTriageState state, OperatorWorkItemToneDto tone, DateTimeOffset now);</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:15](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L15) |  |
+| <code>public static bool IsSnoozed(OperatorTriagePersonalState? personal, OperatorWorkItemToneDto tone, DateTimeOffset now) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:32](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L32) |  |
+| <code>public static OperatorTriageState Apply(OperatorTriageState state, string actorId, OperatorTriageCommand command, OperatorWorkItemToneDto tone, DateTimeOffset now, bool sourceOwnsAssignment, out bool replayed);</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:35](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L35) |  |
+
+## OperatorTriageServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperatorTriageServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs:10](../../../../src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs#L10).
+
+```csharp
+public static class OperatorTriageServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddOperatorTriageStorage(this IServiceCollection services, CompositionConfiguration configuration, bool isProduction);</code> | [src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs:12](../../../../src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs#L12) |  |
+
 ## OptionAssessmentImportService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.OptionAssessmentImportService</code>. Kind: `class`.
@@ -806,90 +897,3 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;StatementBreakDto&gt;&gt; ListOpenStatementBreaksAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:267](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L267) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;ReconciliationCaseSummaryDto&gt;&gt; ListOpenCasesAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:299](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L299) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;ReconciliationQueueAccountStatusDto&gt;&gt; ListQueueStatusAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:318](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L318) |  |
-
-## ReconciliationCaseworkAuthorityReadinessState
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReconciliationCaseworkAuthorityReadinessState</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:48](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L48).
-
-Process-local receipt that the canonical reconciliation queue was fully reloaded and passed its integrity checks during reporting startup.
-
-```csharp
-public sealed class ReconciliationCaseworkAuthorityReadinessState
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:52](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L52) |  |
-
-## RecurringJournalCalculationContext
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalCalculationContext</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:19](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L19).
-
-Everything one calculated recurring occurrence may read. The accrual window is the inclusive date range this occurrence owns: it starts the day after the previous occurrence (or at the start of the covering accounting period for the first occurrence) and ends on the effective date, so consecutive occurrences never accrue the same day twice.
-
-```csharp
-public sealed record RecurringJournalCalculationContext(RecurringJournalScope Scope, string ScheduleId, DateOnly EffectiveDate, DateOnly? WindowStart, DateTimeOffset OccurredAtUtc, string PeriodId, IReadOnlyDictionary<string, decimal> Parameters, IReadOnlyDictionary<string, string> Inputs, IReadOnlyList<JournalEvidenceReference> Evidence)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateOnly RequireWindowStart() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:31](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L31) | The first day of the accrual window; fails closed when the period has no start date. |
-| <code>public int WindowDays =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:36](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L36) | Inclusive number of days in the accrual window. |
-| <code>public decimal RequireParameter(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:39](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L39) | A numeric schedule term. Terms are never defaulted: a missing term blocks the draft. |
-| <code>public string RequireInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:44](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L44) |  |
-| <code>public string? OptionalInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:49](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L49) |  |
-| <code>public int RequireYearBasisDays();</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:53](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L53) | An explicit day-count year basis; the accrual refuses to guess one. |
-
-## RecurringJournalCalculationResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalCalculationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:66](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L66).
-
-The outcome of a posting calculation: a balanced draft for human approval, or a recorded reason why this occurrence has nothing to post.
-
-```csharp
-public sealed record RecurringJournalCalculationResult(AutomatedJournalDraft? Draft, string Summary)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static RecurringJournalCalculationResult NothingDue(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:68](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L68) |  |
-
-## RecurringJournalPeriodAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalPeriodAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:20](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L20).
-
-The existing PostgreSQL ledger remains the sole authority for locks and reopens.
-
-```csharp
-public sealed class RecurringJournalPeriodAuthority(ILedgerJournalStore? journalStore = null, IFundProfileTenancyRegistry? tenancy = null, IRecurringJournalSubjectAuthority? subjects = null) : IRecurringJournalPeriodAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;RecurringJournalPeriodState&gt; ResolveAsync(RecurringJournalScope scope, DateOnly date, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:25](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L25) |  |
-
-## RecurringJournalPeriodState
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalPeriodState</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:8](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L8).
-
-```csharp
-public sealed record RecurringJournalPeriodState(string PeriodId, long Version, bool IsOpen, string? LockOwner, string? ReopenPath, string? Blocker, DateOnly? StartDate = null, DateOnly? EndDate = null);
-```

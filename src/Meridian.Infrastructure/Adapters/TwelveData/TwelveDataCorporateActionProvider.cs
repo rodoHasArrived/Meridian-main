@@ -38,6 +38,7 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
     private readonly IConfiguration _configuration;
     private readonly ICredentialContext? _credentials;
     private readonly RateLimiterRegistry _rateLimiterRegistry;
+    private readonly BackfillProviderRuntimeOptions _runtimeOptions;
     private readonly ILogger<TwelveDataCorporateActionProvider> _logger;
 
     public TwelveDataCorporateActionProvider(
@@ -45,11 +46,18 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         IConfiguration configuration,
         ILogger<TwelveDataCorporateActionProvider> logger,
         ICredentialContext? credentials = null,
-        RateLimiterRegistry? rateLimiterRegistry = null)
+        RateLimiterRegistry? rateLimiterRegistry = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _credentials = credentials;
+        var tierId = configuration["Backfill:Providers:TwelveData:TierId"] ?? "free";
+        var tier = Meridian.Core.Config.BackfillProviderCatalog.GetTier("twelvedata", tierId);
+        var rate = int.TryParse(configuration["Backfill:Providers:TwelveData:RateLimitPerMinute"], out var configuredRate)
+            ? configuredRate : tier.RateLimitPerMinute!.Value;
+        _runtimeOptions = runtimeOptions ?? BackfillProviderRuntimeOptions.FromConfig(new Meridian.Core.Config.BackfillProvidersConfig(
+            TwelveData: new Meridian.Core.Config.TwelveDataConfig(RateLimitPerMinute: rate, TierId: tierId)), "twelvedata");
         _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -64,6 +72,13 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         string ticker,
         Guid securityId,
         CancellationToken ct = default)
+        => (await FetchWithOutcomeAsync(ticker, securityId, ct).ConfigureAwait(false)).Actions;
+
+    /// <inheritdoc />
+    public async Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
+        string ticker,
+        Guid securityId,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(ticker);
         ct.ThrowIfCancellationRequested();
@@ -74,7 +89,7 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
             _logger.LogDebug(
                 "Twelve Data API key not configured; corporate action fetch for {Ticker} skipped.",
                 ticker);
-            return [];
+            return CorporateActionFetchResult.Failed("credentials-missing");
         }
 
         var normalizedSymbol = SymbolNormalization.Normalize(ticker);
@@ -86,8 +101,8 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         var splits = await FetchSplitsAsync(client, normalizedSymbol, securityId, ct)
             .ConfigureAwait(false);
 
-        var commands = dividends
-            .Concat(splits)
+        var result = CorporateActionFetchResult.Combine(dividends, splits);
+        var commands = result.Actions
             .OrderBy(command => command.ExDate)
             .ThenBy(command => command.ActionType, StringComparer.Ordinal)
             .ToArray();
@@ -97,10 +112,10 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
             commands.Length,
             ticker);
 
-        return commands;
+        return result with { Actions = commands };
     }
 
-    private async Task<IReadOnlyList<CorporateActionCommand>> FetchDividendsAsync(
+    private async Task<CorporateActionFetchResult> FetchDividendsAsync(
         HttpClient client,
         string symbol,
         Guid securityId,
@@ -112,14 +127,14 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         {
             using var response = await SendAsync(client, url, ct).ConfigureAwait(false);
             if (response is null)
-                return [];
-            if (!response.IsSuccessStatusCode)
+                return CorporateActionFetchResult.Failed("credentials-missing");
+            if (!response.IsSuccessStatusCode || CorporateActionFetchResult.IsPartialResponse(response))
             {
                 _logger.LogDebug(
                     "Twelve Data dividends returned {StatusCode} for {Symbol}; skipping dividend actions.",
                     (int)response.StatusCode,
                     symbol);
-                return [];
+                return CorporateActionFetchResult.FromHttpFailure(response, "dividends");
             }
 
             await using var jsonStream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
@@ -129,25 +144,27 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
                     ct)
                 .ConfigureAwait(false);
 
-            if (payload?.Dividends is null || IsErrorStatus(payload.Status))
-            {
-                return [];
-            }
+            if (payload is not null && IsErrorStatus(payload.Status))
+                return CorporateActionFetchResult.Failed(
+                    payload.Code switch { 401 or 403 => "unauthorized", 429 => "rate-limited", _ => "provider-error" },
+                    statusCode: (int)response.StatusCode, scope: "dividends");
+            if (payload?.Dividends is null)
+                return CorporateActionFetchResult.Failed("invalid-payload", scope: "dividends");
 
-            return payload.Dividends
-                .Select(dividend => MapDividend(dividend, securityId, payload.Meta?.Currency))
-                .Where(static command => command is not null)
-                .Cast<CorporateActionCommand>()
-                .ToArray();
+            var mapped = payload.Dividends.Select(dividend => dividend is null ? null : MapDividend(dividend, securityId, payload.Meta?.Currency)).ToArray();
+            var commands = mapped.Where(static command => command is not null).Cast<CorporateActionCommand>().ToArray();
+            return mapped.Any(static command => command is null)
+                ? new CorporateActionFetchResult(commands, CorporateActionFetchStatus.Partial, [new("invalid-record", Scope: "dividends")])
+                : CorporateActionFetchResult.Complete(commands);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            _logger.LogWarning(ex, "Failed to fetch Twelve Data dividends for {Symbol}.", symbol);
-            return [];
+            _logger.LogWarning("Failed to fetch Twelve Data dividends for {Symbol}.", symbol);
+            return CorporateActionFetchResult.FromException(ex, "dividends");
         }
     }
 
-    private async Task<IReadOnlyList<CorporateActionCommand>> FetchSplitsAsync(
+    private async Task<CorporateActionFetchResult> FetchSplitsAsync(
         HttpClient client,
         string symbol,
         Guid securityId,
@@ -159,14 +176,14 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         {
             using var response = await SendAsync(client, url, ct).ConfigureAwait(false);
             if (response is null)
-                return [];
-            if (!response.IsSuccessStatusCode)
+                return CorporateActionFetchResult.Failed("credentials-missing");
+            if (!response.IsSuccessStatusCode || CorporateActionFetchResult.IsPartialResponse(response))
             {
                 _logger.LogDebug(
                     "Twelve Data splits returned {StatusCode} for {Symbol}; skipping split actions.",
                     (int)response.StatusCode,
                     symbol);
-                return [];
+                return CorporateActionFetchResult.FromHttpFailure(response, "splits");
             }
 
             await using var jsonStream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
@@ -176,21 +193,23 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
                     ct)
                 .ConfigureAwait(false);
 
-            if (payload?.Splits is null || IsErrorStatus(payload.Status))
-            {
-                return [];
-            }
+            if (payload is not null && IsErrorStatus(payload.Status))
+                return CorporateActionFetchResult.Failed(
+                    payload.Code switch { 401 or 403 => "unauthorized", 429 => "rate-limited", _ => "provider-error" },
+                    statusCode: (int)response.StatusCode, scope: "splits");
+            if (payload?.Splits is null)
+                return CorporateActionFetchResult.Failed("invalid-payload", scope: "splits");
 
-            return payload.Splits
-                .Select(split => MapSplit(split, securityId))
-                .Where(static command => command is not null)
-                .Cast<CorporateActionCommand>()
-                .ToArray();
+            var mapped = payload.Splits.Select(split => split is null ? null : MapSplit(split, securityId)).ToArray();
+            var commands = mapped.Where(static command => command is not null).Cast<CorporateActionCommand>().ToArray();
+            return mapped.Any(static command => command is null)
+                ? new CorporateActionFetchResult(commands, CorporateActionFetchStatus.Partial, [new("invalid-record", Scope: "splits")])
+                : CorporateActionFetchResult.Complete(commands);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            _logger.LogWarning(ex, "Failed to fetch Twelve Data splits for {Symbol}.", symbol);
-            return [];
+            _logger.LogWarning("Failed to fetch Twelve Data splits for {Symbol}.", symbol);
+            return CorporateActionFetchResult.FromException(ex, "splits");
         }
     }
 
@@ -203,7 +222,8 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
                 return null;
 
             var budget = _rateLimiterRegistry.GetOrCreate(
-                ProviderId, apiKey, "api-requests", 8, TimeSpan.FromMinutes(1), TimeSpan.FromMilliseconds(7500));
+                ProviderId, apiKey, "api-requests", _runtimeOptions.Requests!.Value, _runtimeOptions.Window!.Value,
+                TimeSpan.FromTicks(_runtimeOptions.Window.Value.Ticks / _runtimeOptions.Requests.Value));
             await budget.WaitForSlotAsync(ct).ConfigureAwait(false);
             // The selected owner can rotate or delete its credential while waiting.
             // Never send a captured old key after pacing, or charge a different key's quota.
@@ -337,6 +357,9 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
 
         [JsonPropertyName("status")]
         public string? Status { get; init; }
+
+        [JsonPropertyName("code")]
+        public int? Code { get; init; }
     }
 
     private sealed class TwelveDataDividend
@@ -355,6 +378,9 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
 
         [JsonPropertyName("status")]
         public string? Status { get; init; }
+
+        [JsonPropertyName("code")]
+        public int? Code { get; init; }
     }
 
     private sealed class TwelveDataSplit

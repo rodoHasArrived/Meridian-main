@@ -6,6 +6,75 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HttpResponseHandler
+
+Qualified name: <code>Meridian.Infrastructure.Utilities.HttpResponseHandler</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:14](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L14).
+
+Centralized HTTP response handling to eliminate duplicate error handling code across providers. Handles common HTTP status codes (429, 403, 404, etc.) consistently.
+
+```csharp
+public sealed class HttpResponseHandler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public HttpResponseHandler(string providerName, ILogger? log = null);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:19](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L19) |  |
+| <code>public async Task&lt;HttpResponseResult&gt; HandleResponseAsync(HttpResponseMessage response, string symbol, string dataType, Action&lt;RateLimitEventArgs&gt;? onRateLimitHit = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:30](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L30) | Handle HTTP response and throw appropriate exceptions for error status codes. Returns result if successful, throws on error (except 404 which returns IsNotFound). |
+| <code>public Task&lt;HttpHandleResult&gt; TryHandleResponseAsync(HttpResponseMessage response, string symbol, string dataType, Action&lt;RateLimitInfo&gt;? onRateLimitHit = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:65](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L65) | Handle HTTP response without throwing exceptions. Returns a result object with categorized error information. This is the preferred method for use in base provider classes that need to return results rather than throw. |
+| <code>public HttpResponseResult HandleResponse(HttpStatusCode statusCode, string symbol, string dataType, string? errorContent = null);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:125](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L125) | Synchronous version for responses already read. |
+| <code>public static TimeSpan? ExtractRetryAfter(HttpResponseMessage response);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:211](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L211) | Extract Retry-After header value from response. |
+
+## HttpResponseResult
+
+Qualified name: <code>Meridian.Infrastructure.Utilities.HttpResponseResult</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:241](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L241).
+
+Result of HTTP response handling.
+
+```csharp
+public readonly record struct HttpResponseResult(bool IsSuccess, HttpStatusCode StatusCode, bool IsNotFound = false, string? ErrorMessage = null);
+```
+
+## JsonElementExtensions
+
+Qualified name: <code>Meridian.Infrastructure.Utilities.JsonElementExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:20](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L20).
+
+Extension methods for JsonElement to simplify property extraction. Reduces boilerplate TryGetProperty patterns across provider implementations. Example usage: // Before var sym = elem.TryGetProperty(&quot;S&quot;, out var sProp) ? sProp.GetString() : null; var price = elem.TryGetProperty(&quot;p&quot;, out var pProp) ? pProp.GetDecimal() : 0m; // After var sym = elem.GetStringOrNull(&quot;S&quot;); var price = elem.GetDecimalOrDefault(&quot;p&quot;);
+
+```csharp
+public static class JsonElementExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string? GetStringOrNull(this JsonElement element, string propertyName);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:28](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L28) | Gets a string property value or null if not present. |
+| <code>public static string GetStringOrEmpty(this JsonElement element, string propertyName);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:39](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L39) | Gets a string property value or empty string if not present. |
+| <code>public static decimal GetDecimalOrDefault(this JsonElement element, string propertyName, decimal defaultValue = 0m);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:51](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L51) | Gets a decimal property value or default if not present. |
+| <code>public static double GetDoubleOrDefault(this JsonElement element, string propertyName, double defaultValue = 0.0);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:72](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L72) | Gets a double property value or default if not present. |
+| <code>public static int GetInt32OrDefault(this JsonElement element, string propertyName, int defaultValue = 0);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:92](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L92) | Gets an int property value or default if not present. |
+| <code>public static long GetInt64OrDefault(this JsonElement element, string propertyName, long defaultValue = 0L);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:112](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L112) | Gets a long property value or default if not present. |
+| <code>public static bool GetBoolOrDefault(this JsonElement element, string propertyName, bool defaultValue = false);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:132](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L132) | Gets a boolean property value or default if not present. |
+| <code>public static DateTimeOffset GetDateTimeOffsetFromUnixMs(this JsonElement element, string propertyName, DateTimeOffset? defaultValue = null);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:153](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L153) | Gets a DateTimeOffset from a Unix milliseconds timestamp property. |
+| <code>public static DateTimeOffset GetDateTimeOffsetFromUnixSeconds(this JsonElement element, string propertyName, DateTimeOffset? defaultValue = null);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:180](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L180) | Gets a DateTimeOffset from a Unix seconds timestamp property. |
+| <code>public static bool HasProperty(this JsonElement element, string propertyName);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:206](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L206) | Checks if a property exists and has a non-null value. |
+| <code>public static IEnumerable&lt;JsonElement&gt; GetArrayOrEmpty(this JsonElement element, string propertyName);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:218](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L218) | Gets an array property as an enumerable of JsonElements. Returns empty enumerable if property not found or not an array. |
+| <code>public static int[] GetInt32ArrayOrEmpty(this JsonElement element, string propertyName);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:233](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L233) | Gets an array of integers from a property. |
+| <code>public static bool TryGetPropertyIgnoreCase(this JsonElement element, string propertyName, out JsonElement value);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:254](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L254) | Looks up a property by name ignoring case. Some reference feeds (e.g. SEC EDGAR) vary key casing between documents, where the case-sensitive JsonElement.TryGetProperty(string, out JsonElement) would miss values. |
+| <code>public static string? GetScalarStringOrNull(this JsonElement element) =&gt; …;</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:278](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L278) | Coerces a scalar element to its string representation: strings verbatim, numbers as raw JSON text, booleans as &quot;true&quot;/&quot;false&quot;. |
+| <code>public static int? GetInt32OrNull(this JsonElement element);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:293](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L293) | Reads a scalar element as an int, accepting either a JSON number or a numeric string. |
+| <code>public static long? GetInt64OrNull(this JsonElement element);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:306](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L306) | Reads a scalar element as a long, accepting either a JSON number or a numeric string. |
+| <code>public static decimal? GetDecimalOrNull(this JsonElement element);</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:319](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L319) | Reads a scalar element as a decimal, accepting either a JSON number or a numeric string. |
+| <code>public static bool? GetBoolOrNull(this JsonElement element) =&gt; …;</code> | [src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs:333](../../../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs#L333) | Reads a scalar element as a bool, accepting JSON booleans, 0/1-style numbers, and &quot;true&quot;/&quot;false&quot;/numeric strings. |
+
 ## ProviderDateParsing
 
 Qualified name: <code>Meridian.Infrastructure.Utilities.ProviderDateParsing</code>. Kind: `class`.

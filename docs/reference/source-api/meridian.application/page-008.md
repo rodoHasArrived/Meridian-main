@@ -6,6 +6,78 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IGovernedTermAmendmentPolicy
+
+Qualified name: <code>Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:19](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L19).
+
+Whether direct term amendments are refused in favour of the governed workbench (Draft → Submitted → Approved → Published). One policy for every client so the web API and the WPF editor cannot disagree. It reads the effective requirement from ISecurityMasterGovernanceRequirements, so it refuses when SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments is on or the Institutional governance profile is in force.
+
+```csharp
+public interface IGovernedTermAmendmentPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string? RefusalReason { get; }</code> | [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:22](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L22) | The refusal an operator should see, or null when direct amendments are permitted. |
+
+## ILedgerPeriodLockReader
+
+Qualified name: <code>Meridian.Application.SecurityMaster.ILedgerPeriodLockReader</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:17](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L17).
+
+Authoritative read of accounting-period lock status for a date, backing the Security Master Passport Workbench period-aware propagation (Phase 3). The authority is the ledger accounting period status (LedgerAccountingPeriod.Status), the same source LedgerPeriodPostingGuard enforces at post-time — not close-readiness. Default-deny: when the covering period is missing, indeterminate, or its status is unrecognized, the reader returns LedgerPeriodStatusDto.HardClosed so an upstream reference-data edit can never silently mutate a book whose lock state could not be confirmed.
+
+```csharp
+public interface ILedgerPeriodLockReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LedgerPeriodStatusDto&gt; GetPeriodStatusAsync(Guid ledgerBookId, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:23](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L23) | Resolves the accounting period covering date for ledgerBookId and returns its lock status; LedgerPeriodStatusDto.HardClosed when indeterminate. |
+
+## IMultiAssetCoverageInvalidator
+
+Qualified name: <code>Meridian.Application.SecurityMaster.IMultiAssetCoverageInvalidator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs:14](../../../../src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs#L14).
+
+Evicts any cached multi-asset coverage / operational-readiness view affected by a published Security Master revision, so the next read recomputes against the refreshed projection. The coverage read path (MultiAssetCoverageReadService) is currently recomputed per request rather than cached, so the default NullMultiAssetCoverageInvalidator is a no-op; a real eviction lands when a coverage cache is introduced. The seam exists now so the ordered published-revision fan-out has a stable place to evict from.
+
+```csharp
+public interface IMultiAssetCoverageInvalidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task InvalidateAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs:17](../../../../src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs#L17) | Invalidates cached coverage for the security/fund implicated by evt. |
+
+## IndeterminateRestatementCandidateResolver
+
+Qualified name: <code>Meridian.Application.SecurityMaster.IndeterminateRestatementCandidateResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:96](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L96).
+
+Fail-closed bridge for hosts whose canonical reporting authority cannot yet answer the security-to-released-run candidate query. It never fabricates a legacy report-pack candidate; instead it marks the lookup indeterminate so soft-closed and hard-closed edits require explicit manual restatement review.
+
+```csharp
+public sealed class IndeterminateRestatementCandidateResolver : IRestatementCandidateResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:98](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L98) |  |
+
 ## InMemorySecurityMasterRevisionStore
 
 Qualified name: <code>Meridian.Application.SecurityMaster.InMemorySecurityMasterRevisionStore</code>. Kind: `class`.
@@ -951,88 +1023,3 @@ Declared public members:
 | <code>public SecurityProjectionRebuildHandler(ILogger&lt;SecurityProjectionRebuildHandler&gt; logger, SecurityMasterAggregateRebuilder? rebuilder = null, SecurityMasterProjectionCache? cache = null);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs:27](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs#L27) |  |
 | <code>public int Order =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs:37](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs#L37) |  |
 | <code>public async Task HandleAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs:39](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs#L39) |  |
-
-## UflProjectionRebuilder
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Rebuild.UflProjectionRebuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs:10](../../../../src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs#L10).
-
-Routes UFL projection rebuild requests through the shared Security Master rebuild pipeline.
-
-```csharp
-public sealed class UflProjectionRebuilder : IUflProjectionRebuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public UflProjectionRebuilder(SecurityMasterRebuildOrchestrator orchestrator, ILogger&lt;UflProjectionRebuilder&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs:15](../../../../src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs#L15) |  |
-| <code>public async Task RebuildAsync(string assetClass, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs:23](../../../../src/Meridian.Application/SecurityMaster/Rebuild/UflProjectionRebuilder.cs#L23) |  |
-
-## RestatementCandidateResult
-
-Qualified name: <code>Meridian.Application.SecurityMaster.RestatementCandidateResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:46](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L46).
-
-The outcome of locating report packs that consumed a changed line in a locked period: the actionable restatement Candidates, plus HasNonActionableMatches — true when at least one published pack referenced the security but could not be turned into an actionable candidate (for example an already-restated pack the workflow cannot re-restate). The caller uses the flag to require a manual follow-up for a soft-closed book even when no actionable candidate was produced, so a real match is never silently dropped. RestatementCandidateResult.IsAuthoritative is false when the configured reporting authority cannot answer the lookup at all; that indeterminate state also requires manual follow-up and must not be interpreted as an authoritative empty result.
-
-```csharp
-public sealed record RestatementCandidateResult(IReadOnlyList<RestatementCandidateDto> Candidates, bool HasNonActionableMatches, bool IsAuthoritative = true)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static RestatementCandidateResult Empty { get; } = new ([], false);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:51](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L51) |  |
-
-## SecurityAssetProfileGovernanceService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityAssetProfileGovernanceService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:39](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L39).
-
-Maintains versioned asset profiles and their governance lifecycle.
-
-```csharp
-public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfileGovernanceService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityAssetProfileGovernanceService();</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:76](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L76) |  |
-| <code>public SecurityAssetProfileGovernanceService(StorageOptions storageOptions);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:80](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L80) |  |
-| <code>public SecurityAssetProfileGovernanceService(StorageOptions storageOptions, ISecurityMasterGovernanceRequirements governanceRequirements) : this(storageOptions);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:94](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L94) | The composed constructor: an approval by an actor who drafted the version is refused while the independent-approver requirement is in force, which is when SecurityMasterWorkbenchOptions.RequireIndependentProfileApprover is on (off by default) or the Institutional governance profile applies. The effective value is read from ISecurityMasterGovernanceRequirements at approval time so the setting hot-reloads. The other constructors keep self-approval allowed. |
-| <code>public IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt; GetProfiles() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:110](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L110) |  |
-| <code>public IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt; GetProfiles(DateOnly effectiveAt) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:117](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L117) |  |
-| <code>public IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt; GetAllProfiles() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:126](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L126) |  |
-| <code>public bool TryGetProfile(string profileId, int version, out SecurityAssetProfileDefinitionDto profile);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:129](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L129) |  |
-| <code>public bool TryGetLatestApprovedProfile(string profileId, out SecurityAssetProfileDefinitionDto profile);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:137](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L137) |  |
-| <code>public SecurityAssetProfileLineageDto GetLineage(string profileId);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:147](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L147) |  |
-| <code>public IReadOnlyList&lt;SecurityAssetProfilePromotionCandidateDto&gt; GetPromotionCandidates() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:163](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L163) |  |
-| <code>public async Task&lt;SecurityAssetProfileGovernanceResultDto&gt; DraftProfileAsync(SecurityAssetProfileDraftRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:171](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L171) |  |
-| <code>public async Task&lt;SecurityAssetProfileGovernanceResultDto&gt; ApproveProfileAsync(SecurityAssetProfileApprovalRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:243](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L243) |  |
-| <code>public async Task&lt;SecurityAssetProfileGovernanceResultDto&gt; RollbackProfileAsync(SecurityAssetProfileRollbackRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:313](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L313) |  |
-
-## SecurityAssetTermsFieldSnapshot
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityAssetTermsFieldSnapshot</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityAssetTermsFieldSnapshot.cs:25](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetTermsFieldSnapshot.cs#L25).
-
-A canonical snapshot of every stored key an approved assetSpecificTerms.* field edit would overwrite when ApprovedFieldEditCanonicalMergeHandler merges it. The snapshot is taken at staging and recorded on the revision as its base, then taken again at publish. If the two differ, the canonical field changed after the proposal was drafted, and publishing it would silently overwrite that newer value.
-
-```csharp
-public static class SecurityAssetTermsFieldSnapshot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string? Capture(string assetClass, JsonElement assetSpecificTerms, string fieldPath);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetTermsFieldSnapshot.cs:34](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetTermsFieldSnapshot.cs#L34) | Snapshots the keys fieldPath governs in assetSpecificTerms, or returns null when the path is not one the merge writes (outside the asset-terms namespace, nested deeper than the merge models, or terms that are not a JSON object). |

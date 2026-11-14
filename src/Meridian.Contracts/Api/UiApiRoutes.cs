@@ -495,6 +495,7 @@ public static class UiApiRoutes
     public const string ReferenceDataEdgarFiler = "/api/reference-data/edgar/filers/{cik}";
     public const string ReferenceDataEdgarFacts = "/api/reference-data/edgar/facts/{cik}";
     public const string ReferenceDataEdgarSecurityData = "/api/reference-data/edgar/security-data/{cik}";
+    public const string ReferenceDataBondDiscovery = "/api/reference-data/bonds/discovery";
     public const string ReferenceDataBondReference = "/api/reference-data/bonds/{securityId:guid}";
     public const string ReferenceDataBondLifecycle = "/api/reference-data/bonds/{securityId:guid}/lifecycle";
     public const string ReferenceDataBondAccrualConvention = "/api/reference-data/bonds/{securityId:guid}/accrual-convention";
@@ -976,6 +977,8 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationPostingRuleDryRun = "/api/ledger/accounting-configuration/posting-rules/dry-run";
     public const string LedgerAccountingConfigurationPostingRuleCandidates = "/api/ledger/accounting-configuration/posting-rules/candidates";
     public const string LedgerAccountingConfigurationAssetAccountingCandidates = "/api/ledger/accounting-configuration/posting-rules/candidates/asset-accounting";
+    public const string LedgerCanonicalAmortizationPreparation = "/api/ledger/books/{ledgerBookId:guid}/amortization/prepare";
+    public const string LedgerCanonicalAmortizationDrafts = "/api/ledger/books/{ledgerBookId:guid}/amortization/drafts";
     public const string LedgerFactorPaydownPreparation = "/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/prepare";
     public const string LedgerFactorPaydownDraftCapabilities = "/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/drafts/{journalEntryId:guid}/capabilities";
     public const string LedgerFactorPaydownDrafts = "/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/draft";
@@ -1031,6 +1034,10 @@ public static class UiApiRoutes
     public const string LedgerJournalAutomationDailyMarkToMarketSchedules = "/api/ledger/journal-automation/daily-mark-to-market-schedules";
     public const string LedgerJournalAutomationDailyMarkToMarketRunDue = "/api/ledger/journal-automation/daily-mark-to-market-run-due";
     public const string LedgerJournalAutomationDailyMarkToMarketBatchLifecycle = "/api/ledger/journal-automation/daily-mark-to-market-batch-lifecycle";
+    public const string LedgerAccrualSchedules = "/api/ledger/journal-automation/accrual-schedules";
+    public const string LedgerAccrualSchedulePreview = "/api/ledger/journal-automation/accrual-schedules/preview";
+    public const string LedgerAccrualScheduleConfigure = "/api/ledger/journal-automation/accrual-schedules/configure";
+    public const string LedgerAccrualScheduleRun = "/api/ledger/journal-automation/accrual-schedules/{scheduleId}/run";
     public const string LedgerJournalAutomationRecurringOccurrences = "/api/ledger/journal-automation/recurring/occurrences";
     public const string LedgerJournalAutomationRecurringSchedules = "/api/ledger/journal-automation/recurring/schedules";
     public const string LedgerJournalAutomationRecurringRestore = "/api/ledger/journal-automation/recurring/restore-definitions";

@@ -44,11 +44,22 @@ public sealed class ProviderRoutingService : ICapabilityRouter
         return RouteCoreAsync(context, tenantId.Trim(), ct);
     }
 
-    private async ValueTask<ProviderRouteResult> RouteCoreAsync(ProviderRouteContext context, string? tenantId, CancellationToken ct)
+    /// <summary>Evaluates a cloned, restricted config without publishing a runtime snapshot or route history.</summary>
+    public ValueTask<ProviderRouteResult> PreviewForTenantAsync(ProviderRouteContext context, string tenantId,
+        ProviderRoutingProposedConfig proposed, CancellationToken ct = default)
+    {
+        var config = ProviderRoutingPreviewConfig.ApplyBindings(_store.LoadRequired(), tenantId, proposed);
+        return RouteCoreAsync(context, tenantId, ct, config);
+    }
+
+    private async ValueTask<ProviderRouteResult> RouteCoreAsync(ProviderRouteContext context, string? tenantId, CancellationToken ct,
+        AppConfig? proposedConfig = null)
     {
         var executionScope = _kernelObservability.BeginExecution(context);
-        var snapshot = tenantId is null ? GetSnapshot() :
-            ProviderRoutingSnapshot.Build(_store.Load(), ProviderRoutingSnapshotStamp.ForPath(_store.ConfigPath));
+        var snapshot = proposedConfig is not null
+            ? ProviderRoutingSnapshot.Build(proposedConfig, ProviderRoutingSnapshotStamp.ForPath(_store.ConfigPath))
+            : tenantId is null ? GetSnapshot() :
+                ProviderRoutingSnapshot.Build(_store.Load(), ProviderRoutingSnapshotStamp.ForPath(_store.ConfigPath));
         var connections = tenantId is null ? snapshot.ConnectionsById : snapshot.ConnectionsById
             .Where(pair => pair.Value.TenantId == tenantId).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
         var bindings = snapshot.GetBindings(context.Capability);
@@ -96,6 +107,12 @@ public sealed class ProviderRoutingService : ICapabilityRouter
                 skipped.Add(snapshot.AmbiguousConnectionIds.Contains(binding.ConnectionId)
                     ? $"Binding '{binding.BindingId}' references ambiguous connection '{binding.ConnectionId}' that is configured more than once."
                     : $"Binding '{binding.BindingId}' references missing connection '{binding.ConnectionId}'.");
+                continue;
+            }
+
+            if (!connection.Enabled)
+            {
+                skipped.Add($"Connection '{connection.ConnectionId}' is disabled.");
                 continue;
             }
 
@@ -169,6 +186,12 @@ public sealed class ProviderRoutingService : ICapabilityRouter
                     continue;
                 }
 
+                if (!fallbackConnection.Enabled)
+                {
+                    skipped.Add($"Fallback connection '{fallbackConnectionId}' is disabled.");
+                    continue;
+                }
+
                 if (!SupportsCapability(fallbackConnection, GetAdapter(fallbackConnection.ProviderFamilyId), context.Capability))
                 {
                     skipped.Add($"Fallback connection '{fallbackConnectionId}' does not support capability '{context.Capability}'.");
@@ -217,7 +240,7 @@ public sealed class ProviderRoutingService : ICapabilityRouter
             {
                 var fallback = orderedCandidates.FirstOrDefault(other =>
                     candidate.FallbackConnectionIds.Contains(other.ConnectionId, StringComparer.OrdinalIgnoreCase) &&
-                    other.IsHealthy);
+                    ProviderRouteEligibility.IsSelectable(other, requireHealthy: true));
 
                 if (fallback is not null)
                 {
@@ -225,27 +248,24 @@ public sealed class ProviderRoutingService : ICapabilityRouter
                     {
                         ReasonCodes = fallback.ReasonCodes.Concat(new[] { $"Selected as failover for '{candidate.ConnectionId}'." }).ToArray()
                     };
+                    resultGate = null;
+                    requiresManualApproval = false;
                     break;
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(candidate.PolicyGate))
+            var eligibilityGate = ProviderRouteEligibility.GetBlockReason(candidate, allowManualApproval: true);
+            if (eligibilityGate is not null)
             {
-                resultGate = candidate.PolicyGate;
+                resultGate = eligibilityGate;
                 if (candidate.SafetyMode == ProviderSafetyMode.ManualApprovalRequired)
                     requiresManualApproval = true;
 
                 continue;
             }
 
-            if (!candidate.IsHealthy &&
-                (candidate.SafetyMode == ProviderSafetyMode.NoAutomaticFailover ||
-                 candidate.SafetyMode == ProviderSafetyMode.SameInstitutionOnly))
-            {
-                resultGate = $"Primary connection '{candidate.ConnectionId}' is unhealthy and automatic failover is blocked by policy.";
-                continue;
-            }
-
+            resultGate = null;
+            requiresManualApproval = false;
             if (candidate.SafetyMode == ProviderSafetyMode.ManualApprovalRequired)
             {
                 requiresManualApproval = true;
@@ -309,6 +329,13 @@ public sealed class ProviderRoutingService : ICapabilityRouter
     {
         if (adapter?.SupportsCapability(capability) == true)
             return true;
+
+        // Legacy family catalogs describe market-data capabilities, not account relationships.
+        // Preserve the bounded Brokerage/Bank/Custodian compatibility below even for cataloged
+        // families, while a known market-data family's negative report remains authoritative.
+        if (adapter is not null && connection.ConnectionType is not
+            (ProviderConnectionType.Brokerage or ProviderConnectionType.Bank or ProviderConnectionType.Custodian))
+            return false;
 
         return connection.ConnectionType switch
         {
@@ -495,6 +522,27 @@ public sealed class ProviderRoutingService : ICapabilityRouter
                 bindingsByCapability,
                 policiesByCapability);
         }
+    }
+}
+
+/// <summary>One eligibility policy for direct routing, failover, and scored selection.</summary>
+internal static class ProviderRouteEligibility
+{
+    public static bool IsSelectable(ProviderRouteDecision decision, bool requireHealthy = false)
+        => (!requireHealthy || decision.IsHealthy) && GetBlockReason(decision) is null;
+
+    public static string? GetBlockReason(ProviderRouteDecision decision, bool allowManualApproval = false)
+    {
+        if (!string.IsNullOrWhiteSpace(decision.PolicyGate))
+            return decision.PolicyGate;
+
+        if (!decision.IsHealthy && decision.SafetyMode is ProviderSafetyMode.NoAutomaticFailover or ProviderSafetyMode.SameInstitutionOnly)
+            return $"Primary connection '{decision.ConnectionId}' is unhealthy and automatic failover is blocked by policy.";
+
+        if (!allowManualApproval && decision.SafetyMode == ProviderSafetyMode.ManualApprovalRequired)
+            return $"Capability '{decision.Capability}' requires manual approval before routing.";
+
+        return null;
     }
 }
 
@@ -735,7 +783,10 @@ internal sealed class MutableProviderFamilyAdapter : IProviderFamilyAdapter
         if (!_descriptors.ContainsKey(descriptor.Kind))
             _descriptors[descriptor.Kind] = descriptor;
 
-        if (!_resolvers.ContainsKey(descriptor.Kind))
+        // Catalog metadata registers a null placeholder before the runtime implementations.
+        // Upgrade that placeholder, but keep the first concrete sync/async registration intact.
+        if (!_resolvers.TryGetValue(descriptor.Kind, out var existingResolver) ||
+            (existingResolver is null && !_asyncResolvers.ContainsKey(descriptor.Kind)))
         {
             _resolvers[descriptor.Kind] = resolver;
             if (asyncResolver is not null)

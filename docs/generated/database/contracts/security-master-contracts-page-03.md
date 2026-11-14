@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 3 of 8
 
-Objects 161-240 of 582. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 594. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -270,6 +270,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterPricingService["ISecurityMasterPricingService"] {
     }
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterProfilePromotionService["ISecurityMasterProfilePromotionService"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService["ISecurityMasterQueryService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterReportingQueryService["ISecurityMasterReportingQueryService"] {
@@ -441,8 +443,6 @@ classDiagram
         +Guid? SecurityId
         +decimal UnitValue
     }
-    class Meridian_Contracts_SecurityMaster_OtcCollateralDirection["OtcCollateralDirection"] {
-    }
     Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusalCode
     Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal
     Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleStatus
@@ -464,5 +464,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_InstrumentTypeDescriptorLabelException --> Meridian_Contracts_SecurityMaster_InstrumentTypeDescriptorLabelField
     Meridian_Contracts_SecurityMaster_IssuerFactSnapshot --> Meridian_Contracts_SecurityMaster_EdgarXbrlFact
     Meridian_Contracts_SecurityMaster_NotionalLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
-    Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto --> Meridian_Contracts_SecurityMaster_OtcCollateralDirection
 ```

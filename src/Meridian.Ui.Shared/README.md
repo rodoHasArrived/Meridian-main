@@ -6,11 +6,75 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.Ui.Shared
 
+Backfill provider status, fallback-chain and dry-run reads require an available
+`Backfill.Providers` section and return HTTP 503 when it is missing. The separate metadata route
+continues to expose catalog presets without presenting them as configured runtime state.
+
+Symbol mappings expose provider-scoped rollout at `/api/symbols/mappings/rollout`. Reads return
+saved versus active modes and retained comparison evidence. Canonical promotion requires active
+and saved Compare mode, the reviewed mismatch count, a reason and archive/series acknowledgements.
+Changes use the configuration lock and atomic writer and do not activate a running resolver;
+responses explicitly report `RestartHost`. Unacknowledged or stale promotions leave config intact.
+Focused coverage: `SymbolMappingRolloutEndpointTests` and `CanonicalRegistrySymbolResolverTests`.
+
+Streaming failover compatibility trigger/reset controls await the live runtime hand-off and refuse
+unavailable or rejected transitions. Config reads with `configurationOnly=true` remain available
+while streaming is stopped and report unknown active providers explicitly. Rule quality, latency,
+failure and recovery threshold relaxations require an operator reason; the rule and immutable audit
+entry persist together. Saves return the shared setting-change impact; failover timing diagnostics
+report retained `DataSourcesConfig` values rather than placeholder thresholds.
+Rule deletion requires a JSON body with an operator-supplied `reason` and retains the removed
+provider chain and thresholds atomically. Recreating the rule cannot erase that deletion evidence.
+
+Configuration saves validate under the shared write lease before atomic persistence. Ordinary UI
+saves refuse tenant-posture changes, plaintext credential edits and live brokerage activation;
+changes to price adjustment or Canonical resolution require an explicit archive/series confirmation.
+`GET /api/config/changes` and configuration-save responses expose field names and `Live`,
+`ReconnectProvider` or `RestartHost` impact. Pending state lasts for the host lifetime; a saved
+change is never presented as an applied provider rebuild. Browser Settings and Data use the same
+status.
+
+
+The browser's fixed-income journeys use shared permissioned adapters rather than calculation-only
+entry points. Bond settlement preparation resolves an optional service explicitly (503 when absent)
+and returns exact decimal strings. Curve definition/history/publication and curve valuation retain
+their existing Security Master permission boundaries and also serialize financial decimals exactly.
+Yield analysis accepts an exact retained terms version; curve inputs belong to DCF valuation.
+
+Accrual-schedule adapters expose the recurring store/planner/runner through scoped definition,
+preview, configuration and due-occurrence actions. Reviewed fund-account scope is carried into
+period/subject authority and journal dimensions for account-owned and sleeve-owned books.
+Canonical amortization adapters resolve the lot,
+acquisition policy, retained reference evidence, current book/period and versions before calculating
+an occurrence and its schedule. Reviewed fingerprint checks precede immutable asset journal draft
+intake. Draft creation retains the exact reviewed occurrence lineage on the authoritative position
+without changing acquisition history or posting economics, and preserves its full dimensions;
+journal validation, independent approval and atomic posting retain their authority. No
+preview alone grants journal or lot mutation authority.
+This browser amortization handoff supports matching acquisition/functional currencies at unit
+acquisition FX. Other lots are refused before calculation or source retention because the current
+governed journal handoff cannot preserve their transaction-currency posting evidence.
+
+Provider-backed bond discovery requires tenant scope and Security Master read permission, uses
+Alpaca's fixed-income filter and authoritative error propagation, and exposes modification permission
+separately for candidate staging. The browser stages the reviewed identity through the existing
+retained asset-information upload; discovery never supplies approved economic terms. Tests use
+synthetic fixtures; live provider behavior remains untested.
+Completed empty bond lookups return `available: true`; failed lookups return HTTP 503 with
+`available: false`, no candidates and a stable `failureReason` describing unavailable credentials,
+transport, malformed payload, incomplete response or throttling.
+Discovery holds the retained configuration lease through dispatch and requires an applied Alpaca
+runtime binding owned by the authenticated tenant. Missing, deleted, inconsistent or pending
+bindings refuse before HTTP; a different tenant cannot use the host's selected provider credentials.
+Null configuration documents and noncanonical credential environments also report unavailable
+credentials and release the configuration lease before returning.
+The complete lookup has a 20-second deadline and preserves caller cancellation. Expiry reports
+`lookupTimedOut` and releases the configuration lease; blank queries refuse before provider probes.
 Visualization services are registered through the existing workstation composition and endpoint
 map. Private-capital observation and broker-assessment imports use dedicated permissions and
 authenticated tenant/company plus entity/account checks. The former verifies retained source
@@ -52,6 +116,12 @@ endpoint exports the authorized retained journal in CSV, Excel, Parquet or Arrow
 require an exact retained valuation cut. Its availability table distinguishes absent lot evidence
 from measured empty schedules. Temporary export files are removed after ZIP construction. The
 paper-accounting reconciliation host is registered after the shared portfolio registry.
+
+Daily valuation carrying-value reads use the durable store's as-of trial-balance capability,
+which can combine an immutable period-close checkpoint with subsequent journal activity.
+Compatibility stores retain journal hydration. Both paths preserve entity scope and distinguish
+an absent securities account from a retained account whose balance is zero; integrity failures
+are propagated before a valuation draft is prepared.
 
 Fund workspace research-ledger reads hydrate archived journal details only after the fund and
 selected-run filters admit a run, then recheck its run, fund, archive hash and retained count.
@@ -1042,8 +1112,9 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 Leaf reporting comparisons, access-policy evaluation, journal disposal-tax reads, partners-capital
 reads, retained ledger-population replay, and amount binding compile in
-[`Meridian.Reporting.ReadModels`](../Meridian.Reporting.ReadModels/README.md). Their existing
-source paths and public namespaces remain stable, and Ui.Shared forwards their public identities.
+[`Meridian.Reporting.ReadModels`](../Meridian.Reporting.ReadModels/README.md), whose project now
+owns their source files. Their public namespaces remain stable, and Ui.Shared forwards their public
+identities.
 That assembly depends only on Contracts, Ledger, Reporting, and Storage.Accounting; it can build
 without endpoint or workstation orchestration. The larger cross-domain workflows remain here.
 
@@ -3676,7 +3747,12 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 
 ## Validation
 
+Execution endpoint and session regressions live in `Meridian.Tests`; retained workflow and
+journal cases use `Meridian.Execution.Tests`. The UI-service suite remains a separate check.
+
 ```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ExecutionGovernanceEndpointsTests|FullyQualifiedName~EquityOrderSessionPolicyTests" /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~ExecutionWorkflowTests|FullyQualifiedName~ExecutionJournalAttemptTests" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
 ```
 

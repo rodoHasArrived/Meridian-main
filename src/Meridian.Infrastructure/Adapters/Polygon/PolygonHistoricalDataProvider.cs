@@ -48,10 +48,12 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
 
 
-    public override int Priority => 12;
-    public override TimeSpan RateLimitDelay => TimeSpan.FromSeconds(12); // 5 requests/minute = 12 seconds between requests
-    public override int MaxRequestsPerWindow => 5;
-    public override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
+    public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.PolygonPriority;
+    public override TimeSpan RateLimitDelay => RuntimeOptions?.Requests is { } requests
+        ? TimeSpan.FromTicks((RuntimeOptions.Window ?? RateLimitWindow).Ticks / requests)
+        : TimeSpan.FromSeconds(12); // 5 requests/minute = 12 seconds between requests
+    public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? Meridian.Core.Config.BackfillProviderCatalog.PolygonPerMinute;
+    public override TimeSpan RateLimitWindow => RuntimeOptions?.Window ?? TimeSpan.FromMinutes(1);
 
     /// <summary>
     /// Polygon supports adjusted bars with intraday aggregates and corporate actions.
@@ -63,8 +65,8 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
 
     public PolygonHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null,
-        TimeProvider? timeProvider = null)
-        : base(httpClient, log, timeProvider: timeProvider)
+        TimeProvider? timeProvider = null, BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(httpClient, log, timeProvider: timeProvider, runtimeOptions: runtimeOptions)
     {
         _apiKey = apiKey ?? Environment.GetEnvironmentVariable("POLYGON_API_KEY");
 

@@ -19,7 +19,7 @@ remaining compatibility-lane cleanup.
 | Lookup material | `docs/reference/` | Keep APIs, environment variables, CLI flags, schemas, glossary, and matrices discoverable. |
 | Roadmap truth | `docs/roadmap/data/*.yml` | Validate and render; do not hand-author competing durable roadmap truth. |
 | Source-module truth | `docs/source/data/*.yml` and registered `src/**/README.md` | Update with source behavior, ownership, validation, TODO, and diagram changes. |
-| Generated output | `docs/generated/`, `docs/roadmap/generated/`, `docs/source/generated/`, `docs/ai/generated/` | Update generators or inputs, not emitted files by hand. |
+| Generated output | `docs/generated/`, `docs/roadmap/generated/`, `docs/source/generated/`, `docs/ai/generated/`, `docs/ai/exports/`, `docs/reference/source-api/` | Update generators or inputs, not emitted files by hand. |
 | Automation-owned status output | `docs/status/` | Keep generated reports and compatibility artifacts at the paths consumed by tooling; do not create competing roadmap truth. |
 | Detailed supporting guidance | `docs/development/`, `docs/security/`, `docs/testing/`, `docs/integrations/`, and related specialist folders | Development holds active implementation, extension, testing, and tooling guides reached from Engineering. Link specialist material from its canonical owner and avoid duplicating entrypoint commands or product status. |
 | Transitional compatibility paths | `docs/operations/` and `docs/plans/` | Retain only when active code, tests, tooling, or strong links require the path; do not add new durable guidance. |
@@ -78,6 +78,16 @@ Before adding or moving docs:
 - Removed or unexpected top-level folders are errors. Add active documentation to a canonical or
   supporting lane, or archive historical material under `archive/docs/`.
 - The validator still warns on missing lifecycle fields so legacy files can be cleaned up in batches instead of blocking unrelated slices.
+
+### Immutable evidence documents
+
+The structure validator expands only the exact Markdown entries listed by the registered
+`docs/testing/evidence/wal-checksum-2026-10-07/manifest.json`. It verifies that manifest's checksum
+and each listed Markdown file's size and SHA-256 before classifying the file as an immutable
+snapshot. It reports these separately from generated output and maintained guides. Unlisted files
+in the same packet still need lifecycle metadata; checksum drift or missing evidence is an error
+even without `--strict`. Preserve snapshot bytes and original evidence dates instead of adding
+current review headers to them. Run the packet's `verify-evidence.py` for its full integrity check.
 
 ## Retained binary evidence
 

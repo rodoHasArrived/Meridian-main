@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderSelectorControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Diagnostics.ProviderSelectorControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs:18](../../../../src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs#L18).
+
+Provides a combo-box surface for selecting a provider.
+
+```csharp
+public sealed class ProviderSelectorControl : ComboBox
+```
+
+## RoutingMatrixControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Diagnostics.RoutingMatrixControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs:33](../../../../src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs#L33).
+
+Provides a data-grid surface for workflow routing rows.
+
+```csharp
+public sealed class RoutingMatrixControl : DataGrid
+```
+
 ## DetailPaneControl
 
 Qualified name: <code>Meridian.Wpf.Workstation.Layout.DetailPaneControl</code>. Kind: `class`.
@@ -703,38 +727,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;WorkstationCommandModel&gt; PrimaryCommands { get; init; } = Array.Empty&lt;WorkstationCommandModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:182](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L182) |  |
 | <code>public IReadOnlyList&lt;WorkstationCommandModel&gt; SecondaryCommands { get; init; } = Array.Empty&lt;WorkstationCommandModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:184](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L184) |  |
-
-## WorkstationCommandMapper
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationCommandMapper</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:190](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L190).
-
-Projects workspace command metadata and availability into workstation command presentation models.
-
-```csharp
-public static class WorkstationCommandMapper
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static WorkstationCommandModel FromWorkspaceCommand(WorkspaceCommandItem command);</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:192](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L192) |  |
-| <code>public static WorkstationCommandGroupModel FromWorkspaceCommandGroup(WorkspaceCommandGroup commandGroup);</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:226](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L226) |  |
-
-## WorkstationCommandModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationCommandModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:158](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L158).
-
-```csharp
-public sealed record WorkstationCommandModel(string Id, string Label, string Description, string Glyph = "", string Tone = WorkspaceTone.Secondary, bool IsEnabled = true, string DisabledReason = "", bool IsBusy = false, string ConfirmationText = "", string ShortcutHint = "", WorkstationActionPostureModel? Posture = null, string EvidenceSourceText = "", string TargetText = "", string GroupLabel = "")
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string AutomationId =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:174](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L174) |  |

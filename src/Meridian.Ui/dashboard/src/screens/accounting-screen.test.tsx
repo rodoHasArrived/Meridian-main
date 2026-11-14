@@ -2,14 +2,16 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
+import * as bondReferenceApi from "@/lib/api/bond-reference.api";
 import * as approvalCollaboration from "@/lib/approval-collaboration";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import * as markFreshnessApi from "@/lib/api/mark-freshness.api";
 import * as recurringJournalsApi from "@/lib/api/recurring-journals.api";
 import { AccountingScreen } from "@/screens/accounting-screen";
+import { bondLadderRowId } from "@/components/meridian/bond-reference-ladder-panel";
 import { resetSinceLastVisitCache } from "@/lib/since-last-visit";
 import { getOperatorSurfaceVisit, recordOperatorSurfaceVisit } from "@/lib/api/operator-workstation.api";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
@@ -40,6 +42,7 @@ import type {
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
   SecurityMasterConflict,
+  SecurityMasterEntry,
   SecurityMasterTrustSnapshot,
   SessionInfo
 } from "@/types";
@@ -1569,6 +1572,20 @@ function AccountingLocationProbe({ onChange }: { onChange: (search: string) => v
   }, [location.search, onChange]);
 
   return null;
+}
+
+function AccountingRouteProbe() {
+  const location = useLocation();
+  return <output aria-label="Accounting route">{location.pathname}{location.search}{location.hash}</output>;
+}
+
+function AccountingHistoryProbe() {
+  const navigate = useNavigate();
+  return <>
+    <AccountingRouteProbe />
+    <button type="button" onClick={() => navigate(-1)}>History back</button>
+    <button type="button" onClick={() => navigate(1)}>History forward</button>
+  </>;
 }
 
 async function renderAccountingScreenWithLocation(
@@ -5061,6 +5078,122 @@ describe("AccountingScreen", () => {
     expect(screen.getByLabelText("Clean price / 100")).toHaveValue("");
   });
 
+  it("opens the exact deep-linked bond without search and ignores the explorer's delayed default", async () => {
+    const bondId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+    const bond: SecurityMasterEntry = { securityId: bondId, displayName: "Direct bond", status: "Active", classification: { assetClass: "Bond", subType: "Corporate", primaryIdentifierKind: "Cusip", primaryIdentifierValue: "123456AB1" }, economicDefinition: { currency: "USD", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" } };
+    const explorer = await api.getFinancialRecordExplorer("security-instrument");
+    let finishExplorer!: (value: typeof explorer) => void;
+    vi.mocked(api.getFinancialRecordExplorer).mockImplementationOnce(() => new Promise(resolve => { finishExplorer = resolve; }));
+    vi.mocked(api.getSecurityDetail).mockResolvedValueOnce(bond);
+    vi.mocked(api.getSecurityIdentity).mockResolvedValueOnce({ securityId: bondId, displayName: bond.displayName, assetClass: "Bond", status: "Active", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, identifiers: [], aliases: [] });
+    await renderAccountingScreen(data, `/accounting/security-master?securityId=${bondId.toUpperCase()}&tab=evidence&bondAction=analytics`);
+    expect(await screen.findByRole("heading", { name: "Bond analytics" })).toBeInTheDocument();
+    expect(api.getSecurityDetail).toHaveBeenCalledWith(bondId.toUpperCase(), expect.objectContaining({ allowDevelopmentFallback: false }));
+    expect(document.getElementById("bond-analytics-action")).toHaveFocus();
+    finishExplorer(explorer);
+    await waitForAsyncEffects();
+    expect(api.getSecurityIdentity).toHaveBeenLastCalledWith(bondId.toUpperCase());
+    expect(screen.getByRole("heading", { name: "Bond analytics" })).toBeInTheDocument();
+  });
+
+  it("replaces the automatic explorer selection so Back leaves Security Master in one step", async () => {
+    const user = userEvent.setup();
+    const securityId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+    const explorer = await api.getFinancialRecordExplorer("security-instrument");
+    const row = { ...explorer.rows[0], recordId: `security-instrument:${securityId}`, detail: { ...explorer.rows[0].detail, recordId: `security-instrument:${securityId}` } };
+    vi.mocked(api.getFinancialRecordExplorer).mockResolvedValueOnce({ ...explorer, rows: [row], selectedRecord: row.detail });
+    renderWithRouter(<><AccountingScreen data={data} /><AccountingHistoryProbe /></>, {
+      initialEntries: ["/portfolio", "/accounting/security-master?fundAccountId=fund-alpha&tab=reference#bond-ladders"]
+    });
+    const route = () => new URL(screen.getByLabelText("Accounting route").textContent!, "https://meridian.test");
+    await waitFor(() => expect(route().searchParams.get("securityId")).toBe(securityId));
+    expect(route().searchParams.get("fundAccountId")).toBe("fund-alpha");
+    expect(route().searchParams.get("tab")).toBe("reference");
+    expect(route().hash).toBe("#bond-ladders");
+
+    await user.click(screen.getByRole("button", { name: "History back" }));
+    await waitFor(() => expect(route().pathname).toBe("/portfolio"));
+    await user.click(screen.getByRole("button", { name: "History forward" }));
+    await waitFor(() => expect(route().searchParams.get("securityId")).toBe(securityId));
+    await user.click(screen.getByRole("button", { name: "History back" }));
+    await waitFor(() => expect(route().pathname).toBe("/portfolio"));
+  });
+
+  it("pushes explicit explorer choices and restores exact instruments with Back and Forward", async () => {
+    const user = userEvent.setup();
+    const firstId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+    const secondId = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
+    const explorer = await api.getFinancialRecordExplorer("security-instrument");
+    const first = { ...explorer.rows[0], recordId: `security-instrument:${firstId}`, detail: { ...explorer.rows[0].detail, recordId: `security-instrument:${firstId}` } };
+    const second = { ...first, recordId: `security-instrument:${secondId}`, label: "Second instrument", cells: first.cells.map(cell => cell.columnId === "name" ? { ...cell, displayValue: "Second instrument" } : cell), detail: { ...first.detail, recordId: `security-instrument:${secondId}`, title: "Second instrument" } };
+    vi.mocked(api.getFinancialRecordExplorer).mockResolvedValueOnce({ ...explorer, rows: [first, second], selectedRecord: first.detail });
+    renderWithRouter(<><AccountingScreen data={data} /><AccountingHistoryProbe /></>, {
+      initialEntries: [`/accounting/security-master?securityId=${firstId}&fundAccountId=fund-alpha&tab=reference#bond-ladders`]
+    });
+    const route = () => new URL(screen.getByLabelText("Accounting route").textContent!, "https://meridian.test");
+    const grid = await screen.findByRole("grid", { name: "Security & Instrument Explorer records" });
+    await user.click(within(grid).getByRole("row", { name: /Second instrument/ }));
+    await waitFor(() => expect(route().searchParams.get("securityId")).toBe(secondId));
+    await user.click(screen.getByRole("button", { name: "History back" }));
+    await waitFor(() => expect(route().searchParams.get("securityId")).toBe(firstId));
+    await waitFor(() => expect(api.getSecurityDetail).toHaveBeenLastCalledWith(firstId, { allowDevelopmentFallback: false }));
+    await user.click(screen.getByRole("button", { name: "History forward" }));
+    await waitFor(() => expect(route().searchParams.get("securityId")).toBe(secondId));
+    await waitFor(() => expect(api.getSecurityDetail).toHaveBeenLastCalledWith(secondId, { allowDevelopmentFallback: false }));
+    expect(route().searchParams.get("fundAccountId")).toBe("fund-alpha");
+    expect(route().searchParams.get("tab")).toBe("reference");
+    expect(route().hash).toBe("#bond-ladders");
+  });
+
+  it("offers issuer and maturity ladders before a security is selected", async () => {
+    vi.mocked(api.getFinancialRecordExplorer).mockRejectedValueOnce(new Error("Explorer unavailable"));
+    await renderAccountingScreen(data, "/accounting/security-master#bond-ladders");
+    expect(screen.getByRole("region", { name: "Bond reference ladders" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Load ladder" })).toBeEnabled();
+    expect(screen.queryByRole("tab", { name: /^Identity/ })).not.toBeInTheDocument();
+  });
+
+  it("returns to the exact ladder row through the route hash while retaining the query and instrument", async () => {
+    const user = userEvent.setup();
+    const bondId = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
+    const bond: SecurityMasterEntry = { securityId: bondId, displayName: "Ladder return bond", status: "Active", classification: { assetClass: "Bond", subType: "Corporate", primaryIdentifierKind: "Cusip", primaryIdentifierValue: "123456AB1" }, economicDefinition: { currency: "USD", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" } };
+    vi.mocked(api.getFinancialRecordExplorer).mockRejectedValueOnce(new Error("Explorer unavailable"));
+    vi.mocked(api.getSecurityDetail).mockResolvedValueOnce(bond);
+    vi.mocked(api.getSecurityIdentity).mockResolvedValueOnce({ securityId: bondId, displayName: bond.displayName, assetClass: "Bond", status: "Active", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, identifiers: [], aliases: [] });
+    const issuerPage = vi.spyOn(bondReferenceApi, "getBondIssuerLadderPage").mockResolvedValueOnce({ items: [{ securityId: bondId, displayName: bond.displayName, currency: "USD", issuerName: "Synthetic issuer", seniority: null, primaryIdentifier: "123456AB1", lifecycle: null, version: 7 }], nextCursor: null });
+    try {
+      renderWithRouter(<><AccountingScreen data={data} /><AccountingRouteProbe /></>, { initialEntries: ["/accounting/security-master?fundAccountId=fund-alpha"] });
+      await user.type(screen.getByLabelText("Issuer name", { exact: true }), "Synthetic issuer");
+      await user.click(screen.getByRole("button", { name: "Load ladder" }));
+      const row = await screen.findByRole("button", { name: bond.displayName });
+      const rowTarget = bondLadderRowId(bondId);
+      const rowHash = `#${encodeURIComponent(rowTarget)}`;
+      expect(row).toHaveAttribute("id", rowTarget);
+      await user.click(row);
+      const returnButton = await screen.findByRole("button", { name: "Return to bond ladder" });
+      expect(screen.getByLabelText("Accounting route")).toHaveTextContent("#security-detail-page-title");
+
+      // Check emitted navigation independently of animation scheduling; browser acceptance
+      // exercises the real shell and local scroll/focus effects together.
+      const frame = vi.spyOn(window, "requestAnimationFrame").mockReturnValue(0);
+      try {
+        await user.click(returnButton);
+        await waitFor(() => expect(screen.getByLabelText("Accounting route")).toHaveTextContent(rowHash));
+        const route = new URL(screen.getByLabelText("Accounting route").textContent!, "http://localhost");
+        expect(route.hash).toBe(rowHash);
+        expect(route.searchParams.get("securityId")).toBe(bondId);
+        expect(route.searchParams.get("fundAccountId")).toBe("fund-alpha");
+        expect(route.searchParams.get("tab")).toBe("reference");
+        expect(document.getElementById(decodeURIComponent(route.hash.slice(1)))).toBe(row);
+        expect(screen.getByLabelText("Issuer name", { exact: true })).toHaveValue("Synthetic issuer");
+      } finally {
+        frame.mockRestore();
+      }
+    } finally {
+      issuerPage.mockRestore();
+    }
+  });
+
   it("announces security search failures as alerts", async () => {
     vi.mocked(api.searchSecurities).mockRejectedValueOnce(new Error("Provider offline"));
 
@@ -5156,8 +5289,15 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("Collector")).toBeInTheDocument();
   });
 
-  it("renders multi-asset reference data source coverage after selecting a security", async () => {
+  it("renders reference coverage using authoritative identifiers and currency after selecting a security", async () => {
     const user = userEvent.setup();
+    vi.mocked(api.getSecurityDetail).mockImplementation(async (securityId) => ({
+      securityId,
+      displayName: "Reviewed reference instrument",
+      status: "Active",
+      classification: { assetClass: "Bond", subType: "Corporate", primaryIdentifierKind: "Isin", primaryIdentifierValue: "FR0000000001" },
+      economicDefinition: { currency: "EUR", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" }
+    }));
 
     await renderAccountingScreen(data, "/accounting/security-master");
 
@@ -5169,7 +5309,9 @@ describe("AccountingScreen", () => {
     expect(await screen.findByRole("heading", { name: "Multi-asset reference data" })).toBeInTheDocument();
     expect(api.getReferenceDataWorkbenchCoverage).toHaveBeenCalledWith(expect.objectContaining({
       securityId: "22222222-2222-2222-2222-222222222222",
-      primaryIdentifierValue: "AAPL"
+      primaryIdentifierKind: "Isin",
+      primaryIdentifierValue: "FR0000000001",
+      currency: "EUR"
     }));
 
     const table = screen.getByRole("treegrid", {

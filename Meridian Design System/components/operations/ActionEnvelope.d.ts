@@ -136,8 +136,10 @@ export interface ActionApi {
   instructionFor(action: string): Instruction | null;
   /** Submitting a key that is already in flight or landed dedupes — a double click is one instruction. */
   submit(action: string, overrides?: Partial<ActionDeclaration>): Promise<{ id: string; state: ActionState; deduped?: boolean }>;
-  /** Same key, next attempt — asks whether the first one landed. */
-  retry(action: string): Promise<{ id: string; state: ActionState }>;
+  /** Same key and payload, next attempt. Pass an instruction id to retry that exact row;
+   * omitting it selects the latest unresolved instruction for the action. Missing, in-flight,
+   * and landed instructions are not retried. */
+  retry(action: string, instructionId?: string): Promise<{ id: string; state: ActionState; deduped?: boolean } | null>;
   unresolved: Instruction[];
 }
 

@@ -11,6 +11,29 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Application
 
+Shared `ConfigStore` saves retain a host-lifetime activation record containing only field names,
+impact classes and timestamps. Symbol changes are `Live`, streaming provider selection/options
+require `ReconnectProvider`, and construction-time settings conservatively require `RestartHost`.
+The current runtime cannot rebuild providers in process, so pending provider reconnects also expose
+`RequiresRestart=true`; clients must not imply that a connection retry applies new provider options.
+Later live saves retain outstanding restart/reconnect changes; reverting a field to its host baseline
+clears that field's pending state. The journal stores value hashes rather than configuration values.
+`SaveAsync` now also refuses to overwrite a malformed existing authoritative document.
+
+Provider routing rejects disabled connections and policy-gated fallbacks consistently across direct
+and scored selection. Catalog metadata placeholders yield to the first concrete capability factory.
+Corporate-action ingest and inbox outcomes distinguish complete empty history from unknown, failed
+and partial coverage; incomplete histories are withheld from proposal staging.
+
+`SymbolSearchService.SearchAuthoritativeAsync` supplies explicit single-provider candidate lookup.
+Provider failures propagate to the discovery surface as unavailable, separately from a successful
+empty search. It never consumes best-effort autocomplete cache entries; swallowed autocomplete
+failures cannot become authoritative candidate evidence. The browser discovery journey currently
+uses Alpaca's fixed-income filter and stages identity evidence for review without approving terms.
+The authoritative request establishes availability directly, without an unrelated tolerant symbol
+health probe. Typed failures preserve missing/rejected credentials, transport, malformed payload,
+incomplete response and throttling distinctions. Unsupported strict decoders fail closed.
+
 Loan portfolio reads include server-decimal maturity buckets by contractual quarter and currency;
 these summarize current principal and do not project repayments. Corporate-action calendar reads
 use the scoped retained date population before pagination and bind cursors to the range revision.
@@ -616,6 +639,16 @@ withheld, including when a host supplies a later instance/factory override. Stri
 requires per-loan tenant authority before those workers can be enabled.
 
 Bond cash-flow context overloads resolve retained terms once, honor forward-curve recorded cutoffs, and retain content-addressed calculation receipts under `bonds/calculations`. The passive `GetProjectionBlockerAsync` capability read uses the same current calculation rules on selected terms and cutoffs, retains no receipt, and returns only a typed refusal. Replay reloads immutable inputs and checks calendar hashes rather than substituting current terms. Storage composition shares the durable bond-cutover policy with calculation and accounting orchestration; the ledger composition preserves independent approval and replay. See [bond expansion](../../docs/engineering/plans/bond-capability-expansion.md).
+
+Provider routing previews accept a restricted, read-only proposed configuration: tenant-owned binding
+priority/enabled changes or host backfill provider priority/enabled changes. The host backfill preview
+constructs adapters with the authoritative prepared credential resolver, then disposes them without
+fetching data or changing saved configuration. Daily symbol/date queries disclose that vendor coverage,
+network health and current quota remain unverified; fabricated Synthetic selections and enabled but
+unavailable vendors are explicit. Composite and quota-rotation ordering hold fabricated adapters behind
+observed vendors regardless of numeric priority, retaining explicit Source stamps when real-vendor failure
+requires a synthetic fallback. `BackfillRoutingLint` adds fabricated-fallback warnings to the unified
+configuration pipeline after credential resolution. Focused invariant coverage is in `RoutingPreviewTests`.
 
 ## Purpose
 
@@ -1392,7 +1425,7 @@ because it is stored as the wrong JSON kind or under a case-variant key (every r
 `ExerciseStyle` is not `exerciseStyle`; the variant is refused whether or not the canonical key sits
 beside it, because a readable canonical value only means the record loads while the variant is
 dropped without trace) — and, for bonds, coupon structure the canonical codec does
-not read. `ToBondTerms` reads the flat companions (`couponRate`, `floatingIndex`, `spreadBps`, cap/floor,
+not read. `ToBondCouponStructure` reads the flat companions (`couponRate`, `floatingIndex`, `spreadBps`, cap/floor,
 `stepSchedule`, the inflation triple, `dayCount`) ONE COUPON ARM AT A TIME, so a populated companion
 is lost whenever the arm the record resolves to does not read it — a `floatingIndex` beside
 `couponType: "Fixed"` as surely as one with no `couponType` at all — and so are legacy nested

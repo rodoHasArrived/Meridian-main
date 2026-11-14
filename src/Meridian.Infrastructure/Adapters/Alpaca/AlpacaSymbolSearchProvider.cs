@@ -126,9 +126,24 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
     }
 
     protected override IEnumerable<SymbolSearchResult> DeserializeSearchResults(string json, string query)
-    {
-        var assets = DeserializeJson<List<AlpacaAsset>>(json);
+        => MapSearchResults(DeserializeJson<List<AlpacaAsset>>(json), query);
 
+    protected override IEnumerable<SymbolSearchResult> DeserializeAuthoritativeSearchResults(string json, string query)
+    {
+        // An empty array is a successful search. Malformed JSON, an error object, JSON null or
+        // unidentifiable array members are unavailable evidence, not proof of zero matches.
+        var assets = JsonSerializer.Deserialize<List<AlpacaAsset>>(json)
+            ?? throw new JsonException("Alpaca asset search must return an asset array.");
+        if (assets.Any(static asset => asset is null || string.IsNullOrWhiteSpace(asset.Symbol) || string.IsNullOrWhiteSpace(asset.Name)
+            || string.IsNullOrWhiteSpace(asset.AssetClass) || !AuthoritativeAssetClasses.Contains(asset.AssetClass) || !asset.HasTradable))
+            throw new JsonException("Alpaca asset search requires each asset's symbol, name, class and explicit tradability.");
+        return MapSearchResults(assets, query).Select(static result =>
+            result.AssetType?.ToLowerInvariant() is "treasury" or "corporate"
+                ? result with { AssetType = "FixedIncome" } : result);
+    }
+
+    private IEnumerable<SymbolSearchResult> MapSearchResults(IReadOnlyList<AlpacaAsset>? assets, string query)
+    {
         if (assets is null || assets.Count == 0)
             return Enumerable.Empty<SymbolSearchResult>();
 
@@ -219,6 +234,15 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
         };
     }
 
+    // Vendor response classes are broader than the filters this adapter exposes. Preserve known
+    // non-bond classes, but do not let an unrecognized class hide a possible bond candidate.
+    // https://github.com/alpacahq/alpaca-py/blob/master/alpaca/trading/enums.py (AssetClass).
+    private static readonly HashSet<string> AuthoritativeAssetClasses = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "us_equity", "us_option", "crypto", "crypto_perp", "treasury", "corporate", "global_equity",
+        "us_index", "us_equity_chain", "ipo", "fixed_income"
+    };
+
 
     /// <remarks>
     /// The Trading API reports the crypto order increments as JSON strings and the maintenance
@@ -246,7 +270,20 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
         public string? Status { get; set; }
 
         [JsonPropertyName("tradable")]
-        public bool Tradable { get; set; }
+        public bool Tradable
+        {
+            get => _tradable;
+            set
+            {
+                _tradable = value;
+                HasTradable = true;
+            }
+        }
+
+        private bool _tradable;
+
+        [JsonIgnore]
+        public bool HasTradable { get; private set; }
 
         [JsonPropertyName("marginable")]
         public bool Marginable { get; set; }

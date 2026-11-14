@@ -2,11 +2,25 @@
 
 # `ledger-contracts` data objects - page 4 of 6
 
-Objects 241-320 of 426. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 430. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_GeneratedPostingLineDto["GeneratedPostingLineDto"] {
+        +string AccountPath
+        +decimal Amount
+        +string AmountFormulaId
+        +string Currency
+        +string? Description
+        +LedgerDimensionSetDto? Dimensions
+        +string LineId
+        +AccountingTemplateLineSideDto Side
+    }
+    class Meridian_Contracts_Ledger_IAccountingActionAuditStore["IAccountingActionAuditStore"] {
+    }
+    class Meridian_Contracts_Ledger_IAccountingAuditChainVerifier["IAccountingAuditChainVerifier"] {
+    }
     class Meridian_Contracts_Ledger_IAccountingAuditPendingMarkerStore["IAccountingAuditPendingMarkerStore"] {
     }
     class Meridian_Contracts_Ledger_IAccountingConfigurationService["IAccountingConfigurationService"] {
@@ -572,24 +586,7 @@ classDiagram
         +string Label
         +Guid LedgerBookId
     }
-    class Meridian_Contracts_Ledger_LedgerPeriodQuery["LedgerPeriodQuery"] {
-        +AccountingBasisKindDto? AccountingBasis
-        +string? FundProfileId
-        +Guid? FundStructureNodeId
-        +Guid? LedgerBookId
-        +bool OpenOnly
-        +LedgerPeriodStatusDto? Status
-    }
-    class Meridian_Contracts_Ledger_LedgerPeriodReopenResultDto["LedgerPeriodReopenResultDto"] {
-        +string ApprovalReference
-        +IReadOnlyList~string~ EvidenceLinks
-        +LedgerPeriodDto Period
-        +string PriorStatus
-        +DateTimeOffset ReopenedAtUtc
-        +string ReopenedBy
-    }
-    class Meridian_Contracts_Ledger_LedgerPeriodSignoffStatusDto["LedgerPeriodSignoffStatusDto"] {
-    }
+    Meridian_Contracts_Ledger_GeneratedPostingLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_IntercompanyAccountBindingDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
     Meridian_Contracts_Ledger_IntercompanyBalanceScheduleDto --> Meridian_Contracts_Ledger_IntercompanyBalanceScheduleIssueDto
     Meridian_Contracts_Ledger_IntercompanyBalanceScheduleDto --> Meridian_Contracts_Ledger_IntercompanyBalanceScheduleRowDto
@@ -621,6 +618,4 @@ classDiagram
     Meridian_Contracts_Ledger_LedgerJournalEntryLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_LedgerJournalTaxResultsDto --> Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto
     Meridian_Contracts_Ledger_LedgerPeriodCloseResultDto --> Meridian_Contracts_Ledger_LedgerPeriodDto
-    Meridian_Contracts_Ledger_LedgerPeriodPnlSummaryDto --> Meridian_Contracts_Ledger_LedgerPeriodSignoffStatusDto
-    Meridian_Contracts_Ledger_LedgerPeriodReopenResultDto --> Meridian_Contracts_Ledger_LedgerPeriodDto
 ```

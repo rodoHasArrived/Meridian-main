@@ -804,25 +804,6 @@ Declared public members:
 | <code>public IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; ListRecordsForFundProfile(string fundProfileId);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:579](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L579) | Every retained report-pack record scoped to a fund profile, newest period first. Unlike ListRecords this is intentionally uncapped: callers that locate restatement candidates for a closed-period reference-data edit must see the full set of the fund&#x27;s published packs, since a silently dropped pack would be a missed restatement. |
 | <code>public IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; ListRecordsForSecurityInFund(Guid securityId, string fundProfileId);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:593](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L593) | The report packs in a fund profile whose retained report-line provenance references securityId. When a security→report-line index is wired this is an O(matches) lookup; otherwise it falls back to the full fund scan filtered by the shared matcher, preserving behaviour. Callers apply their own state gating (e.g. only Published/Restated packs). |
 
-## ReportPeriodRange
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportPeriodRange</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPeriodRange.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportPeriodRange.cs#L15).
-
-Confidently resolves a report pack&#x27;s free-form Period label into the calendar date range it covers — but only for unambiguous ISO-style labels: a bare year (2026), a year-month (2026-05), or a full date (2026-05-31). Fiscal period/quarter labels (2026-P03, 2026-Q1) and any other free text return null, because mapping them to calendar dates requires a fund-specific fiscal calendar this layer does not have. Callers MUST treat null as &quot;unknown range&quot; and fail open (keep the candidate): the restatement narrowing may only exclude a pack it is certain falls entirely before an edit&#x27;s effective date, never one whose period it cannot parse — otherwise it would risk a silent restatement miss.
-
-```csharp
-public static class ReportPeriodRange
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static (DateOnly Start, DateOnly End)? TryParse(string? period);</code> | [src/Meridian.Ui.Shared/Services/ReportPeriodRange.cs:21](../../../../src/Meridian.Ui.Shared/Services/ReportPeriodRange.cs#L21) | The inclusive &#91;Start, End&#93; calendar range a period label covers, or null when the label is not an unambiguous ISO year / year-month / year-month-day. |
-| <code>public static bool IsEntirelyBefore(string? period, DateOnly effectiveDate) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportPeriodRange.cs:70](../../../../src/Meridian.Ui.Shared/Services/ReportPeriodRange.cs#L70) | True only when period parses to a confident range that ends strictly before effectiveDate — i.e. the period is entirely earlier than an edit effective on that date and so cannot be affected by it. Unparseable labels return false (fail open). |
-
 ## ReportTemplateGovernanceStoreOptions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportTemplateGovernanceStoreOptions</code>. Kind: `record`.
@@ -955,3 +936,21 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static RiskRuleFirstRunDefaults Conservative { get; } = new (MaxGrossExposure : 1_000_000m, MaxSymbolConcentrationPercent : 25m, MaxOrderNotional : 100_000m, EscalateOrderNotional : 25_000m, MaxOrderQuantity : 10_000m, MaxPriceDeviationPercent : 10m, PriceCollarPercent : 5m);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:54](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L54) | The workstation&#x27;s first-run posture: sized against the default $100k paper book so the rails constrain without strangling a fresh install — a $100k per-order reject ceiling with governed escalation from $25k, a 10,000-unit fat-finger quantity ceiling, a 10% aggressive price band with the 5% collar parked inside it (a collar at or above the band could never fire), 25% single-symbol concentration, and a $1m gross-exposure ceiling. |
+
+## RiskRuleRuntimeOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleRuntimeOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:18](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L18).
+
+Location of the persisted operator-tuned risk-rule thresholds (drawdown %, order-rate ceiling), and optionally the first-run ceilings seeded before any operator snapshot exists.
+
+```csharp
+public sealed record RiskRuleRuntimeOptions(string SnapshotPath, RiskRuleFirstRunDefaults? FirstRunDefaults = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RiskRuleRuntimeOptions Default { get; } = new (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), &quot;Meridian&quot;, &quot;workstation&quot;, &quot;risk-rules.json&quot;));</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:22](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L22) |  |

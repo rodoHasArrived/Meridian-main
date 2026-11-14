@@ -44,7 +44,17 @@ public enum SecurityTermRead
 /// supplies the written form (a required date written as its default when the record lacks it).
 /// </param>
 /// <param name="DecodeOnly">Whether the key is written by another row and only read here.</param>
-/// <param name="WriteOnly">Whether the key is read by a whole-module row and only written here.</param>
+/// <param name="WriteOnly">
+/// Whether the key is only written here: read by a whole-module row of the same field, or by the
+/// decode row of the same member when one member is written as several keys.
+/// </param>
+/// <param name="WriteExpression">
+/// The written value verbatim, as an F# expression over <c>terms</c>, where the written form is a
+/// conversion no record property states (a label of a union, one arm of a coupon structure).
+/// </param>
+/// <param name="Items">
+/// For a list member, the keys each written entry carries and the entry members they come from.
+/// </param>
 public sealed record SecurityTermBinding(
     string Path,
     string? Key,
@@ -52,7 +62,25 @@ public sealed record SecurityTermBinding(
     string? DecodeExpression = null,
     string? WriteVia = null,
     bool DecodeOnly = false,
-    bool WriteOnly = false);
+    bool WriteOnly = false,
+    string? WriteExpression = null,
+    IReadOnlyList<SecurityListItemBinding>? Items = null);
+
+/// <summary>One key of a written list entry and the entry member it carries.</summary>
+public sealed record SecurityListItemBinding(string Key, string Member);
+
+/// <summary>Inputs a class's decode reads beyond the schema-bound terms.</summary>
+[Flags]
+public enum SecurityCodecInputs
+{
+    None = 0,
+    /// <summary>The row's versioned-term decoding, for versioned containers inside a list entry.</summary>
+    VersionedTerms = 1,
+    /// <summary>The parsed and validated economic schedules (principal, factor, step coupon).</summary>
+    EconomicSchedules = 2,
+    /// <summary>The profile-resolved terms document, for a list read from it.</summary>
+    ResolvedTermsDocument = 4,
+}
 
 /// <summary>The bindings of one asset class.</summary>
 /// <param name="ReadsResolvedTerms">
@@ -63,11 +91,18 @@ public sealed record SecurityTermBinding(
 /// <c>scheduleConventions</c> block and the call and put schedules), which the decode reads only at
 /// the row's terms version and the writer writes only from the version that declares them.
 /// </param>
+/// <param name="Inputs">What else the decode reads; see <see cref="SecurityCodecInputs"/>.</param>
+/// <param name="WritesConventionsFlag">
+/// Whether the writer takes the schedule-conventions version flag for a container nested in a
+/// list entry (a swap leg's block) rather than at the root.
+/// </param>
 public sealed record SecurityClassCodecBinding(
     string AssetClass,
     bool ReadsResolvedTerms,
     IReadOnlyList<SecurityTermBinding> Members,
-    bool VersionedSchedules = false);
+    bool VersionedSchedules = false,
+    SecurityCodecInputs Inputs = SecurityCodecInputs.None,
+    bool WritesConventionsFlag = false);
 
 /// <summary>
 /// The single statement of which flat key carries which member of a per-class record, for the
@@ -108,6 +143,23 @@ public static class SecurityAssetTermsCodecBindings
     private static SecurityTermBinding Converted(string path, string key, string decodeExpression, string property)
         => new(path, key, null, decodeExpression, property);
 
+    /// <summary>A member read through its own conversion and written as a converted value.</summary>
+    private static SecurityTermBinding Computed(string path, string key, string decodeExpression, string writeExpression)
+        => new(path, key, null, decodeExpression, WriteExpression: writeExpression);
+
+    /// <summary>
+    /// A key computed from a member another row decodes: one of several keys a single member (a
+    /// coupon structure) is written as. The decode row of <paramref name="path"/> reads it back.
+    /// </summary>
+    private static SecurityTermBinding WrittenAs(string path, string key, string writeExpression)
+        => new(path, key, null, WriteOnly: true, WriteExpression: writeExpression);
+
+    /// <summary>A list member read by its own decode and written entry by entry.</summary>
+    private static SecurityTermBinding Listed(string path, string key, string decodeExpression, string property,
+        params (string Key, string Member)[] items)
+        => new(path, key, null, decodeExpression, property,
+            Items: items.Select(static item => new SecurityListItemBinding(item.Key, item.Member)).ToArray());
+
     private static SecurityClassCodecBinding Class(string assetClass, params SecurityTermBinding[] members)
         => new(assetClass, false, members);
 
@@ -117,9 +169,27 @@ public static class SecurityAssetTermsCodecBindings
     private static SecurityClassCodecBinding ResolvedClass(string assetClass, params SecurityTermBinding[] members)
         => new(assetClass, true, members);
 
+    private static readonly (string, string)[] CovenantItems =
+        [("covenantType", "CovenantType"), ("threshold", "Threshold"), ("notes", "Notes")];
+
+    private static readonly (string, string)[] PrincipalPaymentItems =
+        [("paymentDate", "PaymentDate"), ("amount", "Amount")];
+
     /// <summary>The generated classes, in catalog order.</summary>
     public static IReadOnlyList<SecurityClassCodecBinding> Classes { get; } =
     [
+        Class("Equity",
+            B("Capital.ShareClass", "shareClass", SecurityTermRead.OptionalString),
+            Computed("Capital.VotingRightsCat", "votingRightsCat",
+                "ToVotingRightsCatOption(bound.OptionalString(\"votingRightsCat\"))",
+                "terms.Capital.VotingRightsCat |> Option.map VotingRightsCat.asString"),
+            // The classification union is written as four keys; classification discriminates and
+            // the preferred and convertible blocks carry the dependent terms.
+            Fixed("Capital.Classification", "ToEquityClassificationOption(bound, mode)"),
+            WrittenAs("Capital.Classification", "classification", "EquityCapitalCodec.classification terms.Capital"),
+            WrittenAs("Capital.Classification", "otherClassification", "EquityCapitalCodec.otherClassification terms.Capital"),
+            WrittenAs("Capital.Classification", "preferredTerms", "EquityCapitalCodec.preferredTerms terms.Capital"),
+            WrittenAs("Capital.Classification", "convertibleTerms", "EquityCapitalCodec.convertibleTerms terms.Capital")),
         Class("Option",
             B("Dates.MaturityDate", "expiry", SecurityTermRead.RequiredDate, via: "Expiry"),
             B("ListingDetail.OptChainId", "optChainId", SecurityTermRead.OptionalString),
@@ -144,6 +214,46 @@ public static class SecurityAssetTermsCodecBindings
             B("ListingDetail.IsRollTarget", "isRollTarget", SecurityTermRead.BooleanDefaultFalse),
             B("ListingDetail.RollWindowDays", "rollWindowDays", SecurityTermRead.OptionalInt),
             B("TradingParameters.ContractMultiplier", "multiplier", SecurityTermRead.RequiredDecimal)),
+        new("Bond", false,
+        [
+            B("Dates.IssueDate", "issueDate", SecurityTermRead.OptionalDate),
+            B("Dates.MaturityDate", "maturity", SecurityTermRead.RequiredDate, via: "Maturity"),
+            // The coupon structure is one union written as ten keys; couponType discriminates.
+            Fixed("CouponStructure.Structure", "ToBondCouponStructure(bound, mode, economicSchedules)"),
+            WrittenAs("CouponStructure.Structure", "couponType", "FlatWriterParts.couponType terms.Coupon"),
+            WrittenAs("CouponStructure.Structure", "couponRate", "BondTerms.couponRate terms"),
+            WrittenAs("CouponStructure.Structure", "floatingIndex", "FlatWriterParts.floatingIndex terms.Coupon"),
+            WrittenAs("CouponStructure.Structure", "spreadBps", "FlatWriterParts.floatingSpreadBps terms.Coupon"),
+            WrittenAs("CouponStructure.Structure", "capRate", "FlatWriterParts.floatingCapRate terms.Coupon"),
+            WrittenAs("CouponStructure.Structure", "floorRate", "FlatWriterParts.floatingFloorRate terms.Coupon"),
+            WrittenAs("CouponStructure.Structure", "stepSchedule", "FlatWriterParts.stepSchedule terms.Coupon"),
+            WrittenAs("CouponStructure.Structure", "inflationIndex", "FlatWriterParts.inflationIndex terms.Coupon"),
+            WrittenAs("CouponStructure.Structure", "inflationBaseIndexValue", "FlatWriterParts.inflationBaseIndexValue terms.Coupon"),
+            WrittenAs("CouponStructure.Structure", "inflationIndexRatio", "FlatWriterParts.inflationIndexRatio terms.Coupon"),
+            WrittenAs("CouponStructure.Structure", "dayCount",
+                "BondTerms.dayCount terms |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel"),
+            Computed("CouponStructure.PaymentFrequency", "paymentFrequency",
+                "ToPaymentFrequencyOption(bound.OptionalString(\"paymentFrequency\"))",
+                "terms.PaymentFrequency |> Option.map PaymentFrequency.label"),
+            Module("Callability",
+                "EconomicCallTermsModule.Scalar(bound.OptionalBoolean(\"isCallable\") ?? false, ToOption(bound.OptionalDateOnly(\"callDate\")))"),
+            WrittenFrom("Callability.IsCallable", "isCallable", "IsCallable"),
+            WrittenFrom("Callability.FirstCallDate", "callDate", "CallDate"),
+            B("IssuerTerms.IssuerName", "issuerName", SecurityTermRead.OptionalString),
+            Computed("DebtClassification.Subclass", "subclass",
+                "ParseBondSubclass(bound.OptionalString(\"subclass\"))", "BondSubclass.label terms.Subclass"),
+            B("DebtClassification.Seniority", "seniority", SecurityTermRead.OptionalString),
+            B("RedemptionFacts.Par", "par", SecurityTermRead.OptionalDecimal),
+            B("RedemptionFacts.LegalFinalMaturity", "legalFinalMaturity", SecurityTermRead.OptionalDate),
+            B("RedemptionFacts.PreRefundDate", "preRefundDate", SecurityTermRead.OptionalDate),
+            B("RedemptionFacts.MandatoryPutDate", "mandatoryPutDate", SecurityTermRead.OptionalDate),
+            Listed("Principal.Payments", "principalSchedule", "PrincipalPayments(economicSchedules)", "PrincipalSchedule",
+                PrincipalPaymentItems),
+            Module("DeclaredSchedule",
+                "new DeclaredScheduleTerms(ReadScheduleConventions(json, assetClass, versionedTerms),\n                ReadCallPutSchedules(json, assetClass, versionedTerms))"),
+            // Written after stamping by the snapshot wrapper (absent rather than null when undeclared).
+            Module("Workflow", "ReadBondWorkflowTerms(json, versionedTerms)"),
+        ], VersionedSchedules: true, Inputs: SecurityCodecInputs.EconomicSchedules),
         Class("FxSpot",
             B("CurrencyPair.BaseCurrency", "baseCurrency", SecurityTermRead.RequiredString),
             B("CurrencyPair.QuoteCurrency", "quoteCurrency", SecurityTermRead.RequiredString)),
@@ -208,6 +318,60 @@ public static class SecurityAssetTermsCodecBindings
             B("ClassificationDetail.SubType", "subType", SecurityTermRead.OptionalString),
             B("IssuerTerms.IssuerName", "issuerName", SecurityTermRead.OptionalString),
             B("IssuerTerms.IssuerProgram", "settlementType", SecurityTermRead.OptionalString)),
+        new("Swap", false,
+        [
+            B("Dates.EffectiveDate", "effectiveDate", SecurityTermRead.RequiredDate, via: "EffectiveDate"),
+            Also("Dates.IssueDate", "effectiveDate", SecurityTermRead.RequiredDate),
+            B("Dates.MaturityDate", "maturityDate", SecurityTermRead.RequiredDate, via: "MaturityDate"),
+            // Each leg carries its own schedule-conventions block from the version that declares it.
+            Computed("SwapLegs.Legs", "legs", "ToSwapLegs(json, assetClass, versionedTerms, mode)",
+                "terms.Legs |> List.map (FlatWriterParts.swapLeg writesScheduleConventions)"),
+        ], Inputs: SecurityCodecInputs.VersionedTerms, WritesConventionsFlag: true),
+        new("DirectLoan", false,
+        [
+            B("Dates.MaturityDate", "maturity", SecurityTermRead.OptionalDate),
+            B("IssuerTerms.IssuerName", "borrower", SecurityTermRead.RequiredString, via: "Borrower"),
+            Listed("LoanCovenants.Entries", "covenants", "ToCovenants(GetRequiredArray(json, \"covenants\").EnumerateArray())",
+                "Covenants", CovenantItems),
+            B("FloatingRate.ReferenceIndex", "referenceIndex", SecurityTermRead.OptionalString),
+            B("FloatingRate.SpreadBps", "spreadBps", SecurityTermRead.OptionalDecimal),
+            B("FloatingRate.ResetFrequency", "resetFrequency", SecurityTermRead.OptionalString),
+            B("CouponTerms.CouponRate", "currentCouponRate", SecurityTermRead.OptionalDecimal),
+            Listed("Principal.Payments", "principalSchedule", "PrincipalPayments(economicSchedules)", "PrincipalSchedule",
+                PrincipalPaymentItems),
+            B("ReferenceDataSource.PricingSource", "pricingSource", SecurityTermRead.OptionalString),
+        ], Inputs: SecurityCodecInputs.EconomicSchedules),
+        // Scalar keys from the profile-resolved document; the versioned containers from the root,
+        // since a profile envelope decodes none.
+        new("StructuredCredit", true,
+        [
+            Converted("CouponTerms.CouponType", "couponOrIndex",
+                "FSharpOption<CouponKind>.Some(CouponKind.NewOtherCoupon(bound.RequiredString(\"couponOrIndex\")))", "CouponOrIndex"),
+            Computed("TrancheContract.Kind", "structuredCreditKind",
+                "ToStructuredCreditKindOption(bound.OptionalConventionString(\"structuredCreditKind\"))",
+                "terms.Kind |> Option.map StructuredCreditKind.asString"),
+            B("TrancheContract.Seniority", "seniority", SecurityTermRead.ConventionString),
+            B("TrancheContract.AttachmentPoint", "attachmentPoint", SecurityTermRead.StrictDecimal),
+            B("TrancheContract.DetachmentPoint", "detachmentPoint", SecurityTermRead.StrictDecimal),
+            B("TrancheContract.ReinvestmentPeriodEnd", "reinvestmentPeriodEnd", SecurityTermRead.StrictDate),
+            B("TrancheContract.NonCallPeriodEnd", "nonCallPeriodEnd", SecurityTermRead.StrictDate),
+            B("Pool.Factor", "currentFactor", SecurityTermRead.OptionalDecimal),
+            B("Pool.WeightedAvgCoupon", "weightedAverageCoupon", SecurityTermRead.StrictDecimal),
+            B("Pool.WeightedAvgMaturityMonths", "weightedAverageMaturityMonths", SecurityTermRead.StrictInt),
+            B("Pool.WeightedAvgLoanAgeMos", "weightedAverageLoanAgeMonths", SecurityTermRead.StrictInt),
+            B("Pool.CollateralType", "collateralType", SecurityTermRead.RequiredString, via: "CollateralType"),
+            B("Pool.PoolIdentifier", "poolId", SecurityTermRead.OptionalString),
+            B("Pool.TrancheClass", "tranche", SecurityTermRead.RequiredString, via: "Tranche"),
+            Fixed("Pool.IsInterestOnly", "false"),
+            Fixed("Pool.IsPrincipalOnly", "false"),
+            B("Pool.NotionalBalance", "originalFace", SecurityTermRead.RequiredDecimal, via: "OriginalFace"),
+            B("Pool.FactorScheduleReference", "factorSchedule", SecurityTermRead.OptionalString),
+            Listed("Pool.FactorScheduleEntries", "factorScheduleEntries", "FactorScheduleEntries(economicSchedules)",
+                "FactorScheduleEntries", ("asOfDate", "AsOfDate"), ("factor", "Factor")),
+            B("Dates.MaturityDate", "maturity", SecurityTermRead.OptionalDate),
+            Module("DeclaredSchedule",
+                "new DeclaredScheduleTerms(ReadScheduleConventions(json, assetClass, versionedTerms),\n                ReadCallPutSchedules(json, assetClass, versionedTerms))"),
+        ], VersionedSchedules: true, Inputs: SecurityCodecInputs.EconomicSchedules),
         ResolvedClass("PrivateFundInterest",
             B("PrivateAssetValuation.Vintage", "vintage", SecurityTermRead.RequiredInt),
             B("PrivateAssetValuation.NavDate", "navDate", SecurityTermRead.RequiredDate),
@@ -234,6 +398,20 @@ public static class SecurityAssetTermsCodecBindings
             B("IssuerTerms.IssuerName", "sponsor", SecurityTermRead.OptionalString),
             B("IssuerTerms.IssuerProgram", "propertyType", SecurityTermRead.RequiredString, via: "PropertyType"),
             Fixed("IssuerTerms.IssuerSector", "ToOption(\"RealEstate\")")),
+        new("CommitmentGuarantee", true,
+        [
+            B("Dates.EffectiveDate", "effectiveDate", SecurityTermRead.RequiredDate, via: "EffectiveDate"),
+            Also("Dates.IssueDate", "effectiveDate", SecurityTermRead.RequiredDate),
+            B("Dates.MaturityDate", "expiryDate", SecurityTermRead.OptionalDate),
+            B("Notional.CommittedAmount", "committedAmount", SecurityTermRead.RequiredDecimal),
+            B("Notional.UnfundedAmount", "unfundedAmount", SecurityTermRead.OptionalDecimal),
+            B("IssuerTerms.IssuerName", "counterparty", SecurityTermRead.RequiredString, via: "Counterparty"),
+            B("IssuerTerms.IssuerProgram", "beneficiary", SecurityTermRead.OptionalString),
+            B("ContractualRate.FeeRate", "feeRate", SecurityTermRead.OptionalDecimal),
+            B("CollateralTerms.CollateralType", "collateral", SecurityTermRead.OptionalString),
+            Listed("LoanCovenants.Entries", "covenants", "ToCovenants(GetOptionalArrayItems(terms, \"covenants\"))",
+                "Covenants", CovenantItems),
+        ], Inputs: SecurityCodecInputs.ResolvedTermsDocument),
         Class("Commodity",
             B("CommodityContract.CommodityType", "commodityType", SecurityTermRead.RequiredString),
             B("CommodityContract.Denomination", "denomination", SecurityTermRead.OptionalString),
@@ -320,6 +498,15 @@ public static class SecurityAssetTermsCodecBindings
             B("IssuerTerms.IssuerName", "issuerName", SecurityTermRead.RequiredString, via: "IssuerName"),
             B("ContractualRate.CouponRate", "couponRate", SecurityTermRead.StrictDecimal),
             B("ContractualRate.PaymentFrequency", "paymentFrequency", SecurityTermRead.ConventionString)),
+        Class("InvestmentFund",
+            B("FundShare.FundType", "fundType", SecurityTermRead.OptionalString),
+            B("FundShare.NavCurrency", "navCurrency", SecurityTermRead.OptionalString),
+            Computed("FundShare.DistributionPolicy", "distributionPolicy",
+                "ToDistributionPolicyOption(bound.OptionalString(\"distributionPolicy\"))",
+                "terms.DistributionPolicy |> Option.map DistributionPolicy.label"),
+            B("FundShare.IsStableNav", "isStableNav", SecurityTermRead.OptionalBoolean),
+            B("FundTerms.FundFamily", "fundFamily", SecurityTermRead.OptionalString),
+            B("ReferenceDataSource.PricingSource", "pricingSource", SecurityTermRead.OptionalString)),
     ];
 
     /// <summary>The generated classes by name.</summary>

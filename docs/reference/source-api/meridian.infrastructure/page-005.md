@@ -6,6 +6,80 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NasdaqDataLinkCorporateActionProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkCorporateActionProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L34).
+
+Fetches dividend and split history from Nasdaq Data Link time-series datasets.
+
+```csharp
+public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateActionProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public NasdaqDataLinkCorporateActionProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger&lt;NasdaqDataLinkCorporateActionProvider&gt; logger, ICredentialContext? credentials = null);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:41](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L41) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:53](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L53) |  |
+| <code>public CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L55) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L59) |  |
+| <code>public async Task&lt;CorporateActionFetchResult&gt; FetchWithOutcomeAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:66](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L66) |  |
+
+## NasdaqDataLinkHistoricalDataProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkHistoricalDataProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:31](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L31).
+
+Historical data provider using Nasdaq Data Link (formerly Quandl). Free tier: 50 calls/day, 300 calls/10 seconds. Provides access to various datasets including WIKI (end-of-life) and premium datasets. Extends BaseHistoricalDataProvider for common functionality.
+
+```csharp
+public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:38](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L38) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:39](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L39) |  |
+| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:40](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L40) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:43](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L43) |  |
+| <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L44) |  |
+| <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:47](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L47) |  |
+| <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:48](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L48) |  |
+| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:53](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L53) | Nasdaq Data Link supports adjusted bars with corporate actions. |
+| <code>public NasdaqDataLinkHistoricalDataProvider(string? apiKey = null, string database = &quot;WIKI&quot;, HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:62](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L62) | Create a Nasdaq Data Link provider. |
+| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:82](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L82) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:99](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L99) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:109](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L109) |  |
+
+## NasdaqDataLinkSymbolSearchProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkSymbolSearchProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:25](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L25).
+
+Symbol/reference search provider for Nasdaq Data Link dataset discovery.
+
+```csharp
+public sealed class NasdaqDataLinkSymbolSearchProvider : BaseSymbolSearchProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:27](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L27) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:28](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L28) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:29](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L29) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:45](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L45) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:50](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L50) |  |
+| <code>public NasdaqDataLinkSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null) : base(apiKey, httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:58](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L58) |  |
+
 ## NYSEDataSource
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource</code>. Kind: `class`.
@@ -251,7 +325,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:22](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L22).
+Source: [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:24](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L24).
 
 Client for the OpenFIGI API (https://www.openfigi.com/api). Provides mapping between tickers, ISINs, CUSIPs, SEDOLs and FIGI identifiers. Free tier: 25 requests/minute, 250 identifiers per request.
 
@@ -263,25 +337,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:34](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L34) |  |
-| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:35](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L35) |  |
-| <code>public OpenFigiClient(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, IProviderCredentialResolver? credentialResolver = null);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:43](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L43) | Creates a new OpenFIGI client. |
-| <code>public async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:61](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L61) | Check if the OpenFIGI API is available. |
-| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; LookupByTickerAsync(string ticker, string? exchangeCode = null, string? marketSector = &quot;Equity&quot;, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:82](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L82) | Lookup FIGI mappings by ticker symbol. |
-| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; LookupByIsinAsync(string isin, string? marketSector = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:103](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L103) | Lookup FIGI mappings by ISIN. |
-| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; LookupByCusipAsync(string cusip, string? marketSector = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:122](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L122) | Lookup FIGI mappings by CUSIP. |
-| <code>public async Task&lt;BondFigiLookupResult&gt; LookupBondIdentifierAsync(string identifier, string identifierType, string? marketSector = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:142](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L142) | Discovers a bond by durable identifier without an implicit equity/corporate filter. Competing FIGIs remain candidates; response order never resolves an ambiguity. |
-| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; LookupBySedolAsync(string sedol, string? marketSector = &quot;Equity&quot;, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:167](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L167) | Lookup FIGI mappings by SEDOL. |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, IReadOnlyList&lt;FigiMapping&gt;&gt;&gt; BulkLookupByTickersAsync(IEnumerable&lt;string&gt; tickers, string? exchangeCode = null, string? marketSector = &quot;Equity&quot;, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:186](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L186) | Bulk lookup FIGI mappings for multiple tickers. |
-| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; SearchAsync(string query, string? exchangeCode = null, string? marketSector = &quot;Equity&quot;, string? securityType = null, int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:226](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L226) | Search for securities by query string (uses filter endpoint). |
-| <code>public async Task&lt;IReadOnlyList&lt;SymbolSearchResult&gt;&gt; EnrichWithFigiAsync(IEnumerable&lt;SymbolSearchResult&gt; results, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:283](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L283) | Enrich symbol search results with FIGI information. |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:446](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L446) |  |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:35](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L35) |  |
+| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:36](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L36) |  |
+| <code>public OpenFigiClient(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, IProviderCredentialResolver? credentialResolver = null, OpenFigiConfig? options = null);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:44](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L44) | Creates a new OpenFIGI client. |
+| <code>public async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:72](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L72) | Check if the OpenFIGI API is available. |
+| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; LookupByTickerAsync(string ticker, string? exchangeCode = null, string? marketSector = &quot;Equity&quot;, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:93](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L93) | Lookup FIGI mappings by ticker symbol. |
+| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; LookupByIsinAsync(string isin, string? marketSector = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:114](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L114) | Lookup FIGI mappings by ISIN. |
+| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; LookupByCusipAsync(string cusip, string? marketSector = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:133](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L133) | Lookup FIGI mappings by CUSIP. |
+| <code>public async Task&lt;BondFigiLookupResult&gt; LookupBondIdentifierAsync(string identifier, string identifierType, string? marketSector = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:153](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L153) | Discovers a bond by durable identifier without an implicit equity/corporate filter. Competing FIGIs remain candidates; response order never resolves an ambiguity. |
+| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; LookupBySedolAsync(string sedol, string? marketSector = &quot;Equity&quot;, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:178](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L178) | Lookup FIGI mappings by SEDOL. |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;string, IReadOnlyList&lt;FigiMapping&gt;&gt;&gt; BulkLookupByTickersAsync(IEnumerable&lt;string&gt; tickers, string? exchangeCode = null, string? marketSector = &quot;Equity&quot;, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:197](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L197) | Bulk lookup FIGI mappings for multiple tickers. |
+| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; SearchAsync(string query, string? exchangeCode = null, string? marketSector = &quot;Equity&quot;, string? securityType = null, int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:237](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L237) | Search for securities by query string (uses filter endpoint). |
+| <code>public async Task&lt;IReadOnlyList&lt;SymbolSearchResult&gt;&gt; EnrichWithFigiAsync(IEnumerable&lt;SymbolSearchResult&gt; results, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:294](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L294) | Enrich symbol search results with FIGI information. |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:457](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L457) |  |
 
 ## OpenFigiSymbolResolver
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiSymbolResolver</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:19](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L19).
+Source: [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:20](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L20).
 
 Symbol resolver using the OpenFIGI API (https://www.openfigi.com/). Free tier: 25 requests/minute without API key, 250 requests/minute with key.
 
@@ -293,12 +367,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:29](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L29) |  |
-| <code>public OpenFigiSymbolResolver(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, IProviderCredentialResolver? credentialResolver = null);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:31](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L31) |  |
-| <code>public async Task&lt;SymbolResolution?&gt; ResolveAsync(string symbol, string? exchange = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:46](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L46) |  |
-| <code>public async Task&lt;string?&gt; MapSymbolAsync(string symbol, string fromProvider, string toProvider, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:200](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L200) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SymbolSearchResult&gt;&gt; SearchAsync(string query, int maxResults = 10, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:214](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L214) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:261](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L261) |  |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:30](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L30) |  |
+| <code>public OpenFigiSymbolResolver(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, IProviderCredentialResolver? credentialResolver = null, OpenFigiConfig? options = null);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:32](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L32) |  |
+| <code>public async Task&lt;SymbolResolution?&gt; ResolveAsync(string symbol, string? exchange = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:57](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L57) |  |
+| <code>public async Task&lt;string?&gt; MapSymbolAsync(string symbol, string fromProvider, string toProvider, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:211](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L211) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SymbolSearchResult&gt;&gt; SearchAsync(string query, int maxResults = 10, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:225](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L225) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:272](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L272) |  |
 
 ## FilePlaidConnectionRepository
 
@@ -527,22 +601,22 @@ Declared public members:
 | <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:46](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L46) |  |
 | <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L51) |  |
 | <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:52](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L52) |  |
-| <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L53) |  |
-| <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:54](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L54) |  |
-| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly with { Intraday = true };</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L59) | Polygon supports adjusted bars with intraday aggregates and corporate actions. |
-| <code>public PolygonHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, TimeProvider? timeProvider = null) : base(httpClient, log, timeProvider : timeProvider);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:65](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L65) |  |
-| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:75](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L75) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:96](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L96) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:102](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L102) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetIntradayBarsAsync(string symbol, string interval, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:188](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L188) | Get intraday bars for a symbol. Polygon supports various intervals. |
-| <code>public async Task&lt;IReadOnlyList&lt;SplitInfo&gt;&gt; GetSplitsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:273](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L273) | Get stock splits for a symbol. |
-| <code>public async Task&lt;IReadOnlyList&lt;DividendInfo&gt;&gt; GetDividendsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:301](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L301) | Get dividends for a symbol. |
+| <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L55) |  |
+| <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L56) |  |
+| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly with { Intraday = true };</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:61](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L61) | Polygon supports adjusted bars with intraday aggregates and corporate actions. |
+| <code>public PolygonHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, TimeProvider? timeProvider = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, timeProvider : timeProvider, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L67) |  |
+| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:77](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L77) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:98](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L98) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:104](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L104) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetIntradayBarsAsync(string symbol, string interval, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:190](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L190) | Get intraday bars for a symbol. Polygon supports various intervals. |
+| <code>public async Task&lt;IReadOnlyList&lt;SplitInfo&gt;&gt; GetSplitsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:275](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L275) | Get stock splits for a symbol. |
+| <code>public async Task&lt;IReadOnlyList&lt;DividendInfo&gt;&gt; GetDividendsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:303](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L303) | Get dividends for a symbol. |
 
 ## PolygonMarketDataClient
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:48](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L48).
+Source: [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L49).
 
 Polygon.io market data adapter implementing the IMarketDataClient abstraction. Supports full WebSocket streaming for trades, quotes, and aggregates. Extends WebSocketProviderBase, which centralises connection lifecycle, resilience (retry + circuit breaker), heartbeat monitoring, and automatic reconnection. ~280 LOC of WebSocket boilerplate removed compared to the previous direct implementation. Current support: - Trades: YES (streams &quot;T&quot; messages and forwards to TradeDataCollector) - Quotes: YES (streams &quot;Q&quot; messages and forwards to QuoteCollector) - Aggregates: YES (streams &quot;A&quot; and &quot;AM&quot; messages for second/minute bars) Polygon WebSocket Protocol: - Endpoint: wss://socket.polygon.io/{feed} (stocks, options, forex, crypto) - Auth: Send {&quot;action&quot;:&quot;auth&quot;,&quot;params&quot;:&quot;{apiKey}&quot;} after connect - Subscribe: {&quot;action&quot;:&quot;subscribe&quot;,&quot;params&quot;:&quot;T.AAPL,Q.AAPL&quot;} - Message types: T=trade, Q=quote, A=aggregate, AM=minute aggregate
 
@@ -554,31 +628,31 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PolygonMarketDataClient(IMarketEventPublisher publisher, TradeDataCollector tradeCollector, QuoteCollector quoteCollector, PolygonOptions? options = null, IReconnectionMetrics? reconnectionMetrics = null) : base(providerName : &quot;Polygon&quot;, config : WebSocketConnectionConfig.Default, subscriptionStartId : ProviderSubscriptionRanges.PolygonStart);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:66](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L66) | Creates a new Polygon market data client. |
-| <code>public bool HasValidCredentials =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:106](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L106) | Gets whether the client has a valid API key configured. |
-| <code>public override bool IsEnabled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:110](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L110) |  |
-| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:115](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L115) | Gets the current connection state. |
-| <code>public string Feed =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:120](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L120) | Gets the configured feed type (stocks, options, forex, crypto). |
-| <code>public bool UseDelayed =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:125](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L125) | Gets whether using delayed (15-minute) data. |
-| <code>public override string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:129](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L129) |  |
-| <code>public override string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:132](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L132) |  |
-| <code>public override string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:135](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L135) |  |
-| <code>public override int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:138](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L138) |  |
-| <code>public override ProviderCapabilities ProviderCapabilities { get; } = ProviderCapabilities.Streaming(trades : true, quotes : true, depth : false) with { SupportedMarkets = new[] { &quot;US&quot; }, MaxRequestsPerWindow = PolygonRateLimits.MaxRequestsPerWindowFree, RateLimitWindow = PolygonRateLimits.Window, MinRequestDelay = TimeSpan.FromMilliseconds(12000) };</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:141](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L141) |  |
-| <code>public ProviderCredentialField[] ProviderCredentialFields =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:153](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L153) |  |
-| <code>public string[] ProviderNotes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:159](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L159) |  |
-| <code>public string[] ProviderWarnings =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:167](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L167) |  |
-| <code>public override async Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:326](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L326) |  |
-| <code>public override int SubscribeMarketDepth(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:337](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L337) |  |
-| <code>public override void UnsubscribeMarketDepth(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:368](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L368) |  |
-| <code>public override int SubscribeTrades(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:386](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L386) |  |
-| <code>public override void UnsubscribeTrades(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:416](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L416) |  |
-| <code>public int SubscribeAggregates(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:438](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L438) | Subscribes to aggregate bars (second and minute) for the specified symbol. |
-| <code>public void UnsubscribeAggregates(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:470](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L470) | Unsubscribes from aggregate bars for the specified subscription. |
-| <code>public int SubscriptionCount =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:488](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L488) | Gets the current subscription count. |
-| <code>public IReadOnlyList&lt;string&gt; SubscribedTradeSymbols =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:491](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L491) | Gets the list of currently subscribed trade symbols. |
-| <code>public IReadOnlyList&lt;string&gt; SubscribedQuoteSymbols =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:494](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L494) | Gets the list of currently subscribed quote symbols. |
-| <code>public IReadOnlyList&lt;string&gt; SubscribedAggregateSymbols =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:497](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L497) | Gets the list of currently subscribed aggregate symbols. |
+| <code>public PolygonMarketDataClient(IMarketEventPublisher publisher, TradeDataCollector tradeCollector, QuoteCollector quoteCollector, PolygonOptions? options = null, IReconnectionMetrics? reconnectionMetrics = null, ProviderValidationProfile? validationProfile = null) : base(providerName : &quot;Polygon&quot;, config : WebSocketConnectionConfig.Default, subscriptionStartId : ProviderSubscriptionRanges.PolygonStart);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:68](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L68) | Creates a new Polygon market data client. |
+| <code>public bool HasValidCredentials =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:112](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L112) | Gets whether the client has a valid API key configured. |
+| <code>public override bool IsEnabled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:116](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L116) |  |
+| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:121](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L121) | Gets the current connection state. |
+| <code>public string Feed =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:126](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L126) | Gets the configured feed type (stocks, options, forex, crypto). |
+| <code>public bool UseDelayed =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:131](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L131) | Gets whether using delayed (15-minute) data. |
+| <code>public override string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:135](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L135) |  |
+| <code>public override string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:138](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L138) |  |
+| <code>public override string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:141](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L141) |  |
+| <code>public override int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:144](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L144) |  |
+| <code>public override ProviderCapabilities ProviderCapabilities { get; } = ProviderCapabilities.Streaming(trades : true, quotes : true, depth : false) with { SupportedMarkets = new[] { &quot;US&quot; }, MaxRequestsPerWindow = PolygonRateLimits.MaxRequestsPerWindowFree, RateLimitWindow = PolygonRateLimits.Window, MinRequestDelay = TimeSpan.FromMilliseconds(12000) };</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:147](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L147) |  |
+| <code>public ProviderCredentialField[] ProviderCredentialFields =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:159](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L159) |  |
+| <code>public string[] ProviderNotes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:165](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L165) |  |
+| <code>public string[] ProviderWarnings =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:173](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L173) |  |
+| <code>public override async Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:332](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L332) |  |
+| <code>public override int SubscribeMarketDepth(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:343](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L343) |  |
+| <code>public override void UnsubscribeMarketDepth(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:374](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L374) |  |
+| <code>public override int SubscribeTrades(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:392](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L392) |  |
+| <code>public override void UnsubscribeTrades(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:422](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L422) |  |
+| <code>public int SubscribeAggregates(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:444](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L444) | Subscribes to aggregate bars (second and minute) for the specified symbol. |
+| <code>public void UnsubscribeAggregates(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:476](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L476) | Unsubscribes from aggregate bars for the specified subscription. |
+| <code>public int SubscriptionCount =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:494](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L494) | Gets the current subscription count. |
+| <code>public IReadOnlyList&lt;string&gt; SubscribedTradeSymbols =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:497](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L497) | Gets the list of currently subscribed trade symbols. |
+| <code>public IReadOnlyList&lt;string&gt; SubscribedQuoteSymbols =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:500](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L500) | Gets the list of currently subscribed quote symbols. |
+| <code>public IReadOnlyList&lt;string&gt; SubscribedAggregateSymbols =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs:503](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs#L503) | Gets the list of currently subscribed aggregate symbols. |
 
 ## PolygonOptionsChainProvider
 
@@ -738,7 +812,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataClient</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L44).
+Source: [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:46](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L46).
 
 Polling-based market data client using the Robinhood unofficial API. Provides real-time BBO quotes for US equities via polling the quotes endpoint. Important: Robinhood does not provide a public WebSocket API. This client uses REST polling (default interval: 2 seconds) as the closest available substitute for streaming quotes. Authentication: set ROBINHOOD_ACCESS_TOKEN environment variable. Trade data and market depth are not available via the Robinhood unofficial API.
 
@@ -750,21 +824,21 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public RobinhoodMarketDataClient(IHttpClientFactory httpClientFactory, QuoteCollector quoteCollector, ILogger&lt;RobinhoodMarketDataClient&gt; logger, string? accessToken = null) : base(&quot;Robinhood Live Quotes&quot;, logger, DefaultPollInterval);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:60](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L60) |  |
-| <code>public override bool IsEnabled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:100](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L100) |  |
-| <code>public int SubscribeTrades(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:115](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L115) |  |
-| <code>public void UnsubscribeTrades(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:124](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L124) |  |
-| <code>public int SubscribeMarketDepth(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:127](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L127) |  |
-| <code>public void UnsubscribeMarketDepth(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:136](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L136) |  |
-| <code>public int SubscribeQuotes(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:139](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L139) | Subscribe a symbol to receive polling-based BBO quote updates. |
-| <code>public void UnsubscribeQuotes(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:149](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L149) | Unsubscribe from polling-based BBO quote updates. |
-| <code>public RobinhoodMarketDataDiagnostics GetDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:158](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L158) | Returns a redacted diagnostics snapshot for health surfaces and tests. |
+| <code>public RobinhoodMarketDataClient(IHttpClientFactory httpClientFactory, QuoteCollector quoteCollector, ILogger&lt;RobinhoodMarketDataClient&gt; logger, string? accessToken = null, ProviderValidationProfile? validationProfile = null) : base(&quot;Robinhood Live Quotes&quot;, logger, DefaultPollInterval);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:63](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L63) |  |
+| <code>public override bool IsEnabled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:108](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L108) |  |
+| <code>public int SubscribeTrades(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:123](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L123) |  |
+| <code>public void UnsubscribeTrades(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:132](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L132) |  |
+| <code>public int SubscribeMarketDepth(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:135](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L135) |  |
+| <code>public void UnsubscribeMarketDepth(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:144](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L144) |  |
+| <code>public int SubscribeQuotes(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:147](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L147) | Subscribe a symbol to receive polling-based BBO quote updates. |
+| <code>public void UnsubscribeQuotes(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:157](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L157) | Unsubscribe from polling-based BBO quote updates. |
+| <code>public RobinhoodMarketDataDiagnostics GetDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:166](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L166) | Returns a redacted diagnostics snapshot for health surfaces and tests. |
 
 ## RobinhoodMarketDataDiagnostics
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataDiagnostics</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:391](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L391).
+Source: [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs:399](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs#L399).
 
 Redacted provider diagnostics for the Robinhood polling market data adapter. Excludes access tokens, request URLs, account IDs, and response payloads.
 
@@ -887,7 +961,7 @@ Declared public members:
 | <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:27](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L27) |  |
 | <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L28) |  |
 | <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:32](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L32) |  |
-| <code>public StooqHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null) : base(httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L34) |  |
+| <code>public StooqHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L34) |  |
 | <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs#L55) |  |
 
 ## SyntheticHistoricalDataProvider
@@ -1175,50 +1249,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public TemplateBrokerHttpClient(HttpClient httpClient) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L51) |  |
 | <code>public async Task&lt;TResponse&gt; PostJsonAsync&lt;TRequest, TResponse&gt;(string path, TRequest payload, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L53) |  |
-
-## TemplateBrokerMapper
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerMapper</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:88](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L88).
-
-Maps template broker order and status payloads to canonical orders and execution reports.
-
-```csharp
-public sealed class TemplateBrokerMapper
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OrderRequest ToCanonicalOrderRequest(TemplateBrokerOrderPayload payload) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:90](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L90) |  |
-| <code>public ExecutionReport ToCanonicalExecutionReport(TemplateBrokerOrderStatusPayload payload) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:100](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L100) |  |
-
-## TemplateBrokerMarketDataExtensions
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerMarketDataExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:185](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L185).
-
-Provides the placeholder market data ingestion seam for the broker adapter template.
-
-```csharp
-public sealed class TemplateBrokerMarketDataExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task IngestMarketDataAsync(IAsyncEnumerable&lt;TemplateBrokerMarketDataPayload&gt; feed, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:187](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L187) |  |
-
-## TemplateBrokerMarketDataPayload
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerMarketDataPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:209](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L209).
-
-```csharp
-public sealed record TemplateBrokerMarketDataPayload(string Symbol, decimal Price, long Size, DateTimeOffset Timestamp);
-```

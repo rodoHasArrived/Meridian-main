@@ -6,6 +6,58 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AlternativeAssetLotExtensions
+
+Qualified name: <code>Meridian.Application.SecurityMaster.AlternativeAssetLotExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs:11](../../../../src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs#L11).
+
+Adapts the canonical commitment, fund-unit and notional lots to the LedgerTaxLot shape the relief engines consume, the way FaceValueLotExtensions does for face-value lots.
+
+```csharp
+public static class AlternativeAssetLotExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerTaxLot ToLedgerTaxLot(this FundUnitLot lot);</code> | [src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs:17](../../../../src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs#L17) | A fund unit lot is already in ledger shape: quantity is the unit count and unit cost is the acquisition NAV per unit, so quantity times unit cost reproduces FundUnitLot.CostBasis. |
+| <code>public static LedgerTaxLot ToLedgerTaxLot(this CommitmentLot lot);</code> | [src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs:35](../../../../src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs#L35) | The ledger carries contributed capital, not the commitment: the relief engines relieve what was paid in, while the unfunded balance is an obligation the ledger projects separately. The ledger lot is therefore SecurityLotUnitKind.CurrencyAmount of CommitmentLot.FundedAmount at a unit cost of one, and an unfunded commitment has no ledger lot yet. |
+| <code>public static LedgerTaxLot ToLedgerTaxLot(this NotionalLot lot);</code> | [src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs:54](../../../../src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs#L54) | A notional lot&#x27;s quantity is the notional outstanding and its only cost is the upfront payment, so the ledger lot carries that notional at a unit cost that reproduces NotionalLot.CostBasis (zero for a par contract). A fully amortized lot has no notional left to carry. |
+
+## AmortizationAccrualWindow
+
+Qualified name: <code>Meridian.Application.SecurityMaster.AmortizationAccrualWindow</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:87](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L87).
+
+An inclusive range of accounting dates whose accrual is posted as one entry.
+
+```csharp
+public sealed record AmortizationAccrualWindow
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AmortizationAccrualWindow(DateOnly start, DateOnly end);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:89](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L89) |  |
+| <code>public DateOnly Start { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:97](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L97) |  |
+| <code>public DateOnly End { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:99](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L99) |  |
+
+## AmortizationLedgerPostingContext
+
+Qualified name: <code>Meridian.Application.SecurityMaster.AmortizationLedgerPostingContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:73](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L73).
+
+Position-level context for posting projected cash flows. The legacy OpenLots input interprets LedgerTaxLot.UnitCost as a market quote under QuoteConvention; cost-basis relief instead uses monetary cost per recorded quantity. These inputs must not be interchanged. Historical pool accrual uses AccrualHoldings, whose FaceValueLot owns the acquisition quote basis and booked factor. Day-count weighting comes from the same terms as the projected coupon, while typed holdings supply the actual daily interest face.
+
+```csharp
+public sealed record AmortizationLedgerPostingContext(IReadOnlyList<LedgerTaxLot>? OpenLots = null, string? FinancialAccountId = null, StructuredCashFlowScenario Scenario = StructuredCashFlowScenario.Base, int? MaxPeriods = null, DateTimeOffset? ProjectionAsOf = null, DateOnly? AmortizedThrough = null, AmortizationAccrualWindow? AccrualWindow = null, decimal? CouponPrincipalBasis = null, SecurityQuoteConvention? QuoteConvention = null, IReadOnlyList<FaceValueAccrualHolding>? AccrualHoldings = null, StructuredCashFlowProjectionDto? RetainedProjection = null);
+```
+
 ## ApprovedFieldEditCanonicalMergeHandler
 
 Qualified name: <code>Meridian.Application.SecurityMaster.ApprovedFieldEditCanonicalMergeHandler</code>. Kind: `class`.
@@ -326,14 +378,20 @@ Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActio
 Snapshot of the corporate-action inbox: staged (not auto-applied) proposals from the most recent ingest sweep, with enough run context for the workbench badge and review list.
 
 ```csharp
-public sealed record CorporateActionInboxDto(DateTimeOffset? LastIngestAt, int StagedCount, int AppliedLastRun, int DuplicatesSkippedLastRun, IReadOnlyList<CorporateActionProposal> Staged, IReadOnlyList<string> Errors);
+public sealed record CorporateActionInboxDto(DateTimeOffset? LastIngestAt, int StagedCount, int AppliedLastRun, int DuplicatesSkippedLastRun, IReadOnlyList<CorporateActionProposal> Staged, IReadOnlyList<string> Errors)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;CorporateActionProviderFetchOutcome&gt; FetchOutcomes { get; init; } = [];</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:53](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L53) |  |
 
 ## CorporateActionInboxState
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionInboxState</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:58](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L58).
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:61](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L61).
 
 Holds the latest corporate-action ingest outcome so the workbench can badge and list staged proposals between sweeps. In-memory by design: proposals are re-derivable by re-running ingest, and applied actions are already durable in the event store.
 
@@ -345,15 +403,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public void Record(CorporateActionIngestResult result);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:64](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L64) |  |
-| <code>public bool TryTakeStaged(Guid securityId, string actionType, DateOnly exDate, out CorporateActionProposal proposal);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:78](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L78) | Removes and returns the staged proposal matching (security, action type, ex-date) so an operator apply consumes it exactly once. Auto-applied proposals are not takeable. |
-| <code>public CorporateActionInboxDto GetInbox();</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:103](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L103) |  |
+| <code>public void Record(CorporateActionIngestResult result);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:67](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L67) |  |
+| <code>public bool TryTakeStaged(Guid securityId, string actionType, DateOnly exDate, out CorporateActionProposal proposal);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:81](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L81) | Removes and returns the staged proposal matching (security, action type, ex-date) so an operator apply consumes it exactly once. Auto-applied proposals are not takeable. |
+| <code>public CorporateActionInboxDto GetInbox();</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:106](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L106) |  |
 
 ## CorporateActionIngestOrchestrator
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestOrchestrator</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:72](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L72).
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:83](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L83).
 
 Fans out to every registered ICorporateActionProvider for mastered symbols, normalizes announcements, computes cross-provider consensus over full economic value keys, and records every distinct observation in the durable proposal inbox. Provider agreement is retained as evidence and never appends or approves accounting by itself. The legacy append path remains only for hosts/tests that have not registered durable operations.
 
@@ -365,8 +423,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CorporateActionIngestOrchestrator(IEnumerable&lt;ICorporateActionProvider&gt; providers, ISecurityMasterStore store, ISecurityMasterEventStore eventStore, ISecurityMasterCorporateActionCommandService commandService, ILogger&lt;CorporateActionIngestOrchestrator&gt; logger, ICorporateActionOperationsService? operationsService = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:81](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L81) |  |
-| <code>public async Task&lt;CorporateActionIngestResult&gt; IngestAsync(CorporateActionIngestRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:97](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L97) |  |
+| <code>public CorporateActionIngestOrchestrator(IEnumerable&lt;ICorporateActionProvider&gt; providers, ISecurityMasterStore store, ISecurityMasterEventStore eventStore, ISecurityMasterCorporateActionCommandService commandService, ILogger&lt;CorporateActionIngestOrchestrator&gt; logger, ICorporateActionOperationsService? operationsService = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:92](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L92) |  |
+| <code>public async Task&lt;CorporateActionIngestResult&gt; IngestAsync(CorporateActionIngestRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:108](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L108) |  |
 
 ## CorporateActionIngestRequest
 
@@ -387,8 +445,14 @@ Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.Corpo
 Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:56](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L56).
 
 ```csharp
-public sealed record CorporateActionIngestResult(int SecuritiesScanned, int ProvidersQueried, int Applied, int Staged, int DuplicatesSkipped, IReadOnlyList<CorporateActionProposal> Proposals, IReadOnlyList<string> Errors);
+public sealed record CorporateActionIngestResult(int SecuritiesScanned, int ProvidersQueried, int Applied, int Staged, int DuplicatesSkipped, IReadOnlyList<CorporateActionProposal> Proposals, IReadOnlyList<string> Errors)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;CorporateActionProviderFetchOutcome&gt; FetchOutcomes { get; init; } = [];</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:65](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L65) |  |
 
 ## CorporateActionOperationsService
 
@@ -454,6 +518,18 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static CorporateActionDto ToCorporateAction(CorporateActionProposal proposal);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L17) |  |
+
+## CorporateActionProviderFetchOutcome
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionProviderFetchOutcome</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:69](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L69).
+
+Per-provider, per-security coverage, independent of proposal acceptance authority.
+
+```csharp
+public sealed record CorporateActionProviderFetchOutcome(string ProviderId, string Ticker, CorporateActionFetchStatus Status, int ActionsFetched, IReadOnlyList<CorporateActionFetchFailure> Failures);
+```
 
 ## CorporateActionScopeFanOutDecision
 
@@ -887,75 +963,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;SecurityDetailDto&gt; AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs:29](../../../../src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs#L29) | Applies the merged amendment of an approved revision named by request.SourceRecordId. |
-
-## IGovernedTermAmendmentPolicy
-
-Qualified name: <code>Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:19](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L19).
-
-Whether direct term amendments are refused in favour of the governed workbench (Draft → Submitted → Approved → Published). One policy for every client so the web API and the WPF editor cannot disagree. It reads the effective requirement from ISecurityMasterGovernanceRequirements, so it refuses when SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments is on or the Institutional governance profile is in force.
-
-```csharp
-public interface IGovernedTermAmendmentPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string? RefusalReason { get; }</code> | [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:22](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L22) | The refusal an operator should see, or null when direct amendments are permitted. |
-
-## ILedgerPeriodLockReader
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ILedgerPeriodLockReader</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:17](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L17).
-
-Authoritative read of accounting-period lock status for a date, backing the Security Master Passport Workbench period-aware propagation (Phase 3). The authority is the ledger accounting period status (LedgerAccountingPeriod.Status), the same source LedgerPeriodPostingGuard enforces at post-time — not close-readiness. Default-deny: when the covering period is missing, indeterminate, or its status is unrecognized, the reader returns LedgerPeriodStatusDto.HardClosed so an upstream reference-data edit can never silently mutate a book whose lock state could not be confirmed.
-
-```csharp
-public interface ILedgerPeriodLockReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;LedgerPeriodStatusDto&gt; GetPeriodStatusAsync(Guid ledgerBookId, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:23](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L23) | Resolves the accounting period covering date for ledgerBookId and returns its lock status; LedgerPeriodStatusDto.HardClosed when indeterminate. |
-
-## IMultiAssetCoverageInvalidator
-
-Qualified name: <code>Meridian.Application.SecurityMaster.IMultiAssetCoverageInvalidator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs:14](../../../../src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs#L14).
-
-Evicts any cached multi-asset coverage / operational-readiness view affected by a published Security Master revision, so the next read recomputes against the refreshed projection. The coverage read path (MultiAssetCoverageReadService) is currently recomputed per request rather than cached, so the default NullMultiAssetCoverageInvalidator is a no-op; a real eviction lands when a coverage cache is introduced. The seam exists now so the ordered published-revision fan-out has a stable place to evict from.
-
-```csharp
-public interface IMultiAssetCoverageInvalidator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task InvalidateAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs:17](../../../../src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs#L17) | Invalidates cached coverage for the security/fund implicated by evt. |
-
-## IndeterminateRestatementCandidateResolver
-
-Qualified name: <code>Meridian.Application.SecurityMaster.IndeterminateRestatementCandidateResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:96](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L96).
-
-Fail-closed bridge for hosts whose canonical reporting authority cannot yet answer the security-to-released-run candidate query. It never fabricates a legacy report-pack candidate; instead it marks the lookup indeterminate so soft-closed and hard-closed edits require explicit manual restatement review.
-
-```csharp
-public sealed class IndeterminateRestatementCandidateResolver : IRestatementCandidateResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:98](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L98) |  |

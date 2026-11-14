@@ -11,6 +11,18 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Contracts
 
+Backfill provider metadata includes vendor-tier presets and the selected tier ID without credentials.
+Shared settings responses expose saved-change impacts independently of active runtime confirmation.
+Nested backfill, provider, source and symbol-mapping DTO extension data retains host-owned validation
+profiles, audit histories, failover rules/timing and other unmodeled fields during settings roundtrips.
+
+
+`Ledger/CanonicalAmortizationPreparationDtos.cs` defines browser preparation and governed draft
+handoff over the existing canonical lot engine. Requests supply retained lot/evidence identities,
+book/period/version, accounts, explicit supported policy choices and a bounded schedule horizon.
+Responses retain the canonical instruction, exact calculated occurrence bases, journal projection,
+scope and preparation fingerprint. Draft commands carry the reviewed request and opaque fingerprint;
+displayed financial amounts never become client-authored posting instructions.
 Visualization contracts retain server-calculated loan maturity buckets as exact decimal strings,
 bond contractual maturity and governing yield-scenario identities, and audit-source availability.
 `PrivateCapital` describes holder-side source observations and import receipts, separately from
@@ -158,7 +170,7 @@ economic module preserves the declaration on replay. An invalid retained declara
 normalization instead of reviving a field default. New unit versions keep calculation-only
 companions and swap leg conventions read-only through the schema's authoring flag.
 
-`LedgerCurrencyRounding.RoundCurrency(amount, currency)` rounds to the currency's minor units via `CurrencyMinorUnits` (0 for JPY, 3 for KWD/BHD, 2 otherwise).
+`LedgerCurrencyRounding.RoundCurrency(amount, currency)` rounds to the currency's minor units via `CurrencyMinorUnits` (including 0 for JPY, 3 for KWD/BHD, 4 for CLF/UYW, and 2 for ordinary currencies).
 
 `BondAnalyticsCashFlow.FloatingCoupon` carries v3-only reset evidence: reset date, observed/forecast
 status, named index, index and effective coupon annual fractions, spread in basis points, and source.

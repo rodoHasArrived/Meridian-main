@@ -16,3 +16,5 @@ Two halves. The **declaration** (endpoint · idempotency key · permission · po
 ```
 
 Rules. A double-clicked Submit is one instruction: the provider dedupes on the declared key. `posture="confirmed"` shows no local effect until the instruction lands; `"optimistic"` shows it immediately, marked provisional. A rejection must carry a reason — a refusal without one is treated as unlanded, because "no" and "no answer" are different facts. Never render an unlanded instruction as an error toast that disappears: it stays in the `InstructionLedger` until someone resolves it.
+
+Retry an individual instruction with `retry(action, instruction.id)` so the selected row retains its exact key, payload, and next attempt. `ActionQueue` does this automatically. The action-only `retry(action)` form remains available and selects the latest unresolved instruction for that action. An unknown id, in-flight instruction, or landed instruction is a no-op; simultaneous retries of the same key share one attempt.

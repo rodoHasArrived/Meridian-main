@@ -116,7 +116,12 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
 
         module.Register(services, new DataSourceRegistry());
 
+        descriptor.Historical.Should().BeAssignableTo<ISecurityRateObservationProvider>(
+            "typed rates are another view of the historical adapter, not a third independently constructed adapter");
         services.Should().HaveCount(3);
+        descriptor.Implementations().Should().BeEquivalentTo(
+            [typeof(FredHistoricalDataProvider), typeof(FredSymbolSearchProvider)],
+            "the rates bridge reuses historical ingestion without adding a descriptor fallback capability");
         services.Select(service => service.ServiceType).Should().BeEquivalentTo(
             descriptor.Implementations().Append(typeof(ISecurityRateObservationProvider)),
             "historical and search own their factories, while typed rates reuse the gated historical singleton");
@@ -132,13 +137,23 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
             .Returns(_ => { credentialReads++; return credentials; });
         var configured = new AppConfig(Backfill: new BackfillConfig(Providers:
             new BackfillProvidersConfig(Fred: new FredConfig(Enabled: true))));
-        services.AddSingleton(new ProviderFactory(configured, resolver));
+        var factoryConstructions = 0;
+        services.AddSingleton<ProviderFactory>(_ =>
+        {
+            factoryConstructions++;
+            return new ProviderFactory(configured, resolver);
+        });
         using var provider = services.BuildServiceProvider();
+        factoryConstructions.Should().Be(0, "registration and container creation must leave factories lazy");
         credentialReads.Should().Be(0, "registration and building the container cannot eagerly read credentials");
         var typed = provider.GetRequiredService<ISecurityRateObservationProvider>();
         typed.Should().BeSameAs(provider.GetRequiredService<FredHistoricalDataProvider>());
         provider.GetRequiredService<ISecurityRateObservationProvider>().Should().BeSameAs(typed);
         credentialReads.Should().Be(1, "both contracts must share the single late-gated factory and container lifetime");
+        var search = provider.GetRequiredService<FredSymbolSearchProvider>();
+        provider.GetRequiredService<FredSymbolSearchProvider>().Should().BeSameAs(search);
+        factoryConstructions.Should().Be(1);
+        credentialReads.Should().Be(2, "historical and search each resolve credentials once for their singleton");
 
         var disabledServices = new ServiceCollection();
         module.Register(disabledServices, new DataSourceRegistry());
@@ -147,7 +162,7 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         using var disabled = disabledServices.BuildServiceProvider();
         Action resolveTyped = () => disabled.GetRequiredService<ISecurityRateObservationProvider>();
         resolveTyped.Should().Throw<InvalidOperationException>().WithMessage("*no configured historical capability*");
-        credentialReads.Should().Be(1, "the typed alias cannot bypass the historical opt-in gate to read credentials");
+        credentialReads.Should().Be(2, "the typed alias cannot bypass the historical opt-in gate to read credentials");
     }
 
     [Fact]
@@ -164,6 +179,50 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
             "rate observations must reuse the module's existing historical singleton, never construct a parallel adapter");
         provider.GetRequiredService<ISecurityRateObservationProvider>().Should().BeSameAs(historical,
             "rate observations must reuse the same late-gated historical implementation");
+    }
+
+    [Fact]
+    public void Fred_typed_rate_alias_reuses_the_late_configured_historical_singleton()
+    {
+        var module = new FredProviderModule();
+        var resolver = new DeferredFredCredentialResolver();
+        var services = new ServiceCollection();
+        module.Register(services, new DataSourceRegistry());
+        services.AddSingleton(_ => new ProviderFactory(FredConfigForCatalogTest(), resolver));
+        using var provider = services.BuildServiceProvider();
+
+        resolver.CallCount.Should().Be(0, "neither registration nor container construction may resolve credentials or create an adapter");
+        resolver.HasKey = true;
+
+        var rates = provider.GetRequiredService<ISecurityRateObservationProvider>();
+        rates.Should().BeSameAs(provider.GetRequiredService<FredHistoricalDataProvider>(),
+            "typed observations must use the historical factory's gate and container-owned instance");
+        provider.GetRequiredService<ISecurityRateObservationProvider>().Should().BeSameAs(rates);
+        provider.GetRequiredService<FredSymbolSearchProvider>().Should().NotBeNull();
+        resolver.CallCount.Should().Be(2, "the historical and search factories each read the final resolver once, while the alias creates no adapter");
+    }
+
+    [Theory]
+    [InlineData(false, true, true)]
+    [InlineData(true, false, true)]
+    [InlineData(true, true, false)]
+    public void Fred_typed_rate_alias_cannot_bypass_family_backfill_or_credential_gates(
+        bool familyEnabled, bool backfillEnabled, bool hasKey)
+    {
+        var module = new FredProviderModule();
+        var resolver = new DeferredFredCredentialResolver { HasKey = hasKey };
+        var services = new ServiceCollection();
+        module.Register(services, new DataSourceRegistry());
+        services.AddSingleton(_ => new ProviderFactory(FredConfigForCatalogTest(familyEnabled, backfillEnabled), resolver));
+        using var provider = services.BuildServiceProvider();
+        resolver.CallCount.Should().Be(0);
+
+        var resolveRate = () => provider.GetRequiredService<ISecurityRateObservationProvider>();
+        var resolveHistorical = () => provider.GetRequiredService<FredHistoricalDataProvider>();
+        var resolveSearch = () => provider.GetRequiredService<FredSymbolSearchProvider>();
+        resolveRate.Should().Throw<InvalidOperationException>().WithMessage("*no configured historical capability*");
+        resolveHistorical.Should().Throw<InvalidOperationException>().WithMessage("*no configured historical capability*");
+        resolveSearch.Should().Throw<InvalidOperationException>().WithMessage("*no configured symbol-search capability*");
     }
 
     [Fact]
@@ -186,6 +245,23 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         services.Should().OnlyContain(service => service.Lifetime == ServiceLifetime.Singleton
             && service.ImplementationFactory != null,
             "the module must own concrete factory construction and container lifetime");
+    }
+
+    [Fact]
+    public void Fred_rate_bridge_preserves_the_historical_configuration_gate()
+    {
+        var services = new ServiceCollection();
+        new FredProviderModule().Register(services, new DataSourceRegistry());
+        services.AddSingleton(new ProviderFactory(new AppConfig(Backfill: new BackfillConfig(
+            Providers: new BackfillProvidersConfig(Fred: new FredConfig(Enabled: false, ApiKey: "synthetic-fred-key")))),
+            new EnvironmentCredentialResolver()));
+        using var provider = services.BuildServiceProvider();
+
+        var resolveRates = () => provider.GetRequiredService<ISecurityRateObservationProvider>();
+        resolveRates.Should().Throw<InvalidOperationException>()
+            .WithMessage("*no configured historical capability*");
+        FredProviderModule.Descriptor.Registrations().Should().BeEmpty(
+            "a disabled module-owned historical capability cannot be recreated through descriptor fallback");
     }
 
     [Fact]
@@ -563,6 +639,29 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
             "Yahoo adjusted-bar event extraction is historical evidence, not a registered ICorporateActionProvider");
         yahoo.Brokerage.Should().BeNull(
             "Yahoo Finance is a data fallback and must never advertise brokerage readiness");
+    }
+
+    private static AppConfig FredConfigForCatalogTest(bool familyEnabled = true, bool backfillEnabled = true)
+        => new(Backfill: new BackfillConfig(Providers: new BackfillProvidersConfig(Fred: new FredConfig(Enabled: backfillEnabled))),
+            ProviderModules: new ProviderModulesConfig(new()
+            {
+                ["fred"] = new(Enabled: familyEnabled)
+            }));
+
+    private sealed class DeferredFredCredentialResolver : IProviderCredentialResolver, ICredentialContext
+    {
+        public bool HasKey { get; set; }
+        public int CallCount { get; private set; }
+        public bool IsAuthoritative => true;
+
+        public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary<string, string?>? configuredValues = null)
+        {
+            CallCount++;
+            return this;
+        }
+
+        public string? Get(string name) => HasKey && name == "FRED_API_KEY" ? "synthetic-fred-key" : null;
+        public bool IsConfigured(string name) => Get(name) is not null;
     }
 
     private static string GetAdapterFolder(Type implementation)

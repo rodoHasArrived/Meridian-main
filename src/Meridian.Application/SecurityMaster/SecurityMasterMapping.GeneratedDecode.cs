@@ -13,8 +13,10 @@ internal static partial class SecurityMasterMapping
     /// <summary>The classes whose decode arm is generated from the binding table.</summary>
     internal static IReadOnlyList<string> GeneratedDecodeClasses { get; } =
     [
+        "Equity",
         "Option",
         "Future",
+        "Bond",
         "FxSpot",
         "Deposit",
         "MoneyMarketFund",
@@ -24,9 +26,13 @@ internal static partial class SecurityMasterMapping
         "Repo",
         "CashSweep",
         "OtherSecurity",
+        "Swap",
+        "DirectLoan",
+        "StructuredCredit",
         "PrivateFundInterest",
         "PrivateCompanyEquity",
         "RealEstateHolding",
+        "CommitmentGuarantee",
         "Commodity",
         "CryptoCurrency",
         "Cfd",
@@ -37,7 +43,15 @@ internal static partial class SecurityMasterMapping
         "Swaption",
         "CapFloor",
         "StructuredNote",
+        "InvestmentFund",
     ];
+
+    private static SecurityKind DecodeGeneratedEquity(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)
+        => SecurityKind.NewEquity(new EquityTerms(
+            new EquityCapitalTerms(
+                ToOption(bound.OptionalString("shareClass")),
+                ToVotingRightsCatOption(bound.OptionalString("votingRightsCat")),
+                ToEquityClassificationOption(bound, mode))));
 
     private static SecurityKind DecodeGeneratedOption(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)
         => SecurityKind.NewOption(new OptionTerms(
@@ -97,6 +111,38 @@ internal static partial class SecurityMasterMapping
                 null,
                 null,
                 null)));
+
+    private static SecurityKind DecodeGeneratedBond(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json, SecurityVersionedTermDecoding versionedTerms, SecurityEconomicScheduleValidation economicSchedules)
+        => SecurityKind.NewBond(new BondTerms(
+            new MaturityTerms(
+                null,
+                ToOption(bound.OptionalDateOnly("issueDate")),
+                ToOption(bound.RequiredDateOnly("maturity"))),
+            new BondCouponTerms(
+                ToBondCouponStructure(bound, mode, economicSchedules),
+                ToPaymentFrequencyOption(bound.OptionalString("paymentFrequency"))),
+            EconomicCallTermsModule.Scalar(bound.OptionalBoolean("isCallable") ?? false, ToOption(bound.OptionalDateOnly("callDate"))),
+            new IssuerRef(
+                ToOption(bound.OptionalString("issuerName")),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null),
+            new DebtClassificationTerms(
+                ParseBondSubclass(bound.OptionalString("subclass")),
+                ToOption(bound.OptionalString("seniority"))),
+            new BondRedemptionTerms(
+                ToOption(bound.OptionalDecimal("par")),
+                ToOption(bound.OptionalDateOnly("legalFinalMaturity")),
+                ToOption(bound.OptionalDateOnly("preRefundDate")),
+                ToOption(bound.OptionalDateOnly("mandatoryPutDate"))),
+            new PrincipalScheduleTerms(
+                PrincipalPayments(economicSchedules)),
+            new DeclaredScheduleTerms(ReadScheduleConventions(json, assetClass, versionedTerms),
+                ReadCallPutSchedules(json, assetClass, versionedTerms)),
+            ReadBondWorkflowTerms(json, versionedTerms)));
 
     private static SecurityKind DecodeGeneratedFxSpot(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)
         => SecurityKind.NewFxSpot(new FxSpotTerms(
@@ -249,6 +295,90 @@ internal static partial class SecurityMasterMapping
                 null,
                 null)));
 
+    private static SecurityKind DecodeGeneratedSwap(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json, SecurityVersionedTermDecoding versionedTerms)
+        => SecurityKind.NewSwap(new SwapTerms(
+            new MaturityTerms(
+                ToOption(bound.RequiredDateOnly("effectiveDate")),
+                ToOption(bound.RequiredDateOnly("effectiveDate")),
+                ToOption(bound.RequiredDateOnly("maturityDate"))),
+            new SwapLegTerms(
+                ToSwapLegs(json, assetClass, versionedTerms, mode)),
+            ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write))));
+
+    private static SecurityKind DecodeGeneratedDirectLoan(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json, SecurityEconomicScheduleValidation economicSchedules)
+        => SecurityKind.NewDirectLoan(new DirectLoanTerms(
+            new MaturityTerms(
+                null,
+                null,
+                ToOption(bound.OptionalDateOnly("maturity"))),
+            new IssuerRef(
+                FSharpOption<string>.Some(bound.RequiredString("borrower")),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null),
+            new LoanCovenantTerms(
+                ToCovenants(GetRequiredArray(json, "covenants").EnumerateArray())),
+            new FloatingRateTerms(
+                ToOption(bound.OptionalString("referenceIndex")),
+                ToOption(bound.OptionalDecimal("spreadBps")),
+                ToOption(bound.OptionalString("resetFrequency")),
+                null,
+                null),
+            new CouponTerms(
+                null,
+                ToOption(bound.OptionalDecimal("currentCouponRate")),
+                null,
+                null),
+            new PrincipalScheduleTerms(
+                PrincipalPayments(economicSchedules)),
+            new ReferenceDataSourceTerms(
+                ToOption(bound.OptionalString("pricingSource")),
+                null),
+            ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write))));
+
+    private static SecurityKind DecodeGeneratedStructuredCredit(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json, SecurityVersionedTermDecoding versionedTerms, SecurityEconomicScheduleValidation economicSchedules)
+        => SecurityKind.NewStructuredCredit(new StructuredCreditTerms(
+            new CouponTerms(
+                FSharpOption<CouponKind>.Some(CouponKind.NewOtherCoupon(bound.RequiredString("couponOrIndex"))),
+                null,
+                null,
+                null),
+            new TrancheContractTerms(
+                ToStructuredCreditKindOption(bound.OptionalConventionString("structuredCreditKind")),
+                ToOption(bound.OptionalConventionString("seniority")),
+                ToOption(bound.OptionalStrictDecimal("attachmentPoint")),
+                ToOption(bound.OptionalStrictDecimal("detachmentPoint")),
+                ToOption(bound.OptionalStrictDateOnly("reinvestmentPeriodEnd")),
+                ToOption(bound.OptionalStrictDateOnly("nonCallPeriodEnd"))),
+            new StructuredProductTerms(
+                ToOption(bound.OptionalDecimal("currentFactor")),
+                null,
+                ToOption(bound.OptionalStrictDecimal("weightedAverageCoupon")),
+                ToOption(bound.OptionalStrictInt("weightedAverageMaturityMonths")),
+                ToOption(bound.OptionalStrictInt("weightedAverageLoanAgeMonths")),
+                FSharpOption<string>.Some(bound.RequiredString("collateralType")),
+                ToOption(bound.OptionalString("poolId")),
+                FSharpOption<string>.Some(bound.RequiredString("tranche")),
+                null,
+                null,
+                false,
+                false,
+                ToOption(bound.RequiredDecimal("originalFace")),
+                null,
+                null,
+                ToOption(bound.OptionalString("factorSchedule")),
+                FactorScheduleEntries(economicSchedules)),
+            new MaturityTerms(
+                null,
+                null,
+                ToOption(bound.OptionalDateOnly("maturity"))),
+            new DeclaredScheduleTerms(ReadScheduleConventions(json, assetClass, versionedTerms),
+                ReadCallPutSchedules(json, assetClass, versionedTerms)),
+            ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write))));
+
     private static SecurityKind DecodeGeneratedPrivateFundInterest(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)
         => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
             new PrivateAssetValuationTerms(
@@ -327,6 +457,41 @@ internal static partial class SecurityMasterMapping
                 null,
                 ToOption("RealEstate"),
                 null)));
+
+    private static SecurityKind DecodeGeneratedCommitmentGuarantee(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json, JsonElement terms)
+        => SecurityKind.NewCommitmentGuarantee(new CommitmentGuaranteeTerms(
+            new MaturityTerms(
+                ToOption(bound.RequiredDateOnly("effectiveDate")),
+                ToOption(bound.RequiredDateOnly("effectiveDate")),
+                ToOption(bound.OptionalDateOnly("expiryDate"))),
+            new NotionalTerms(
+                null,
+                null,
+                ToOption(bound.RequiredDecimal("committedAmount")),
+                null,
+                ToOption(bound.OptionalDecimal("unfundedAmount"))),
+            new IssuerRef(
+                FSharpOption<string>.Some(bound.RequiredString("counterparty")),
+                null,
+                ToOption(bound.OptionalString("beneficiary")),
+                null,
+                null,
+                null,
+                null),
+            new ContractualRateTerms(
+                null,
+                null,
+                ToOption(bound.OptionalDecimal("feeRate")),
+                null,
+                null),
+            new FinancingTerms(
+                null,
+                ToOption(bound.OptionalString("collateral")),
+                null,
+                null,
+                null),
+            new LoanCovenantTerms(
+                ToCovenants(GetOptionalArrayItems(terms, "covenants")))));
 
     private static SecurityKind DecodeGeneratedCommodity(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)
         => SecurityKind.NewCommodity(new CommodityTerms(
@@ -536,4 +701,20 @@ internal static partial class SecurityMasterMapping
                 ToOption(bound.OptionalConventionString("paymentFrequency")),
                 null),
             ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write))));
+
+    private static SecurityKind DecodeGeneratedInvestmentFund(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)
+        => SecurityKind.NewInvestmentFund(new InvestmentFundTerms(
+            new FundShareTerms(
+                ToOption(bound.OptionalString("fundType")),
+                ToOption(bound.OptionalString("navCurrency")),
+                ToDistributionPolicyOption(bound.OptionalString("distributionPolicy")),
+                ToOption(bound.OptionalBoolean("isStableNav"))),
+            new FundTerms(
+                ToOption(bound.OptionalString("fundFamily")),
+                null,
+                null,
+                null),
+            new ReferenceDataSourceTerms(
+                ToOption(bound.OptionalString("pricingSource")),
+                null)));
 }

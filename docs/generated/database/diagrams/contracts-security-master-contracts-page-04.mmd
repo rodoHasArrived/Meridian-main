@@ -1,5 +1,7 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_OtcCollateralDirection["OtcCollateralDirection"] {
+    }
     class Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto["OtcCollateralHeldLineDto"] {
         +Guid BalanceId
         +string Description
@@ -468,8 +470,7 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_Schedules_ScheduleAnchorMode["ScheduleAnchorMode"] {
     }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose["ScheduleCalendarPurpose"] {
-    }
+    Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto --> Meridian_Contracts_SecurityMaster_OtcCollateralDirection
     Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto --> Meridian_Contracts_SecurityMaster_OtcCollateralKind
     Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto --> Meridian_Contracts_SecurityMaster_OtcMovementKind
     Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto --> Meridian_Contracts_SecurityMaster_OtcMovementParty

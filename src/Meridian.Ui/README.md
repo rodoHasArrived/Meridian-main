@@ -11,6 +11,11 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui
 
+The Providers workstation includes guarded failover, historical provider limits and routing previews,
+symbol rollout, validation profiles and quota history. Data and Settings share pending activation
+status from the host; rebuild the dashboard to refresh these served controls. See the dashboard and
+shared-service READMEs for validation and runtime boundaries.
+
 The browser bond workstation extends the existing Data/Security Master and Portfolio cash screens. Shared endpoints retain accepted holdings, input revisions, comparisons, forecasts, collection watches, risk and governed income preparations. See [bond operations](../../docs/operators/bond-workflows.md) for source formats and activation boundaries.
 
 The served bundle also includes linked analytical investigation views across the existing workspaces: orders, displayed depth, options, margin, maturities, ownership, retained private capital, fixed-income exercises, corporate dates, tax parcels and retained strategy sweeps. The dashboard and shared-source READMEs document their source, unit and authority boundaries; generated assets must be rebuilt after integration.
@@ -156,6 +161,11 @@ precision with journal-ID links, no invented Strategy metrics, and a masthead ac
 leaves once setup is complete. No shared contract changed; entity display names still need a
 shared seam before the ledger can show them.
 
+Dashboard source includes signed report-value summaries, a retained investment-income movement
+waterfall with exact-decimal bridge checks, and position-table display graphics. Financial strings,
+missing observations, shared mark assessments and retained supporting-record paths remain visible.
+The host-served bundle is rebuilt from these dashboard changes.
+
 ## Purpose
 
 Meridian.Ui contains the browser workstation source folder and built host-served workstation assets.
@@ -181,6 +191,10 @@ Use `dashboard/` for source changes and generated `wwwroot/workstation/` assets 
 Browser workflow target routing keeps desktop compatibility page tags aligned to the canonical operator lanes under `dashboard/`.
 The browser Data workspace exposes provider catalog/onboarding discovery through `/data/providers`
 while keeping generated host assets in `wwwroot/workstation/` as build output.
+Fixed-income task aliases in command search open the existing Security Master, Asset detail,
+cash-ladder, account-oversight, factor-paydown and cutover routes. Reference probes wait for the
+authoritative selected instrument's currency and identifiers, including ladder selections outside
+search results. The rebuilt host-served bundle carries the same routing and selection behavior.
 The browser app shell projects the design-document primary operator workflow
 (`Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, `Report`) from dashboard view-model
 state so host-served workstation assets retain the same financial-operations flow after rebuilds.

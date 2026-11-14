@@ -2,11 +2,13 @@
 
 # `security-master-contracts` data objects - page 4 of 8
 
-Objects 241-320 of 582. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 594. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_OtcCollateralDirection["OtcCollateralDirection"] {
+    }
     class Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto["OtcCollateralHeldLineDto"] {
         +Guid BalanceId
         +string Description
@@ -475,8 +477,7 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_Schedules_ScheduleAnchorMode["ScheduleAnchorMode"] {
     }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose["ScheduleCalendarPurpose"] {
-    }
+    Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto --> Meridian_Contracts_SecurityMaster_OtcCollateralDirection
     Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto --> Meridian_Contracts_SecurityMaster_OtcCollateralKind
     Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto --> Meridian_Contracts_SecurityMaster_OtcMovementKind
     Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto --> Meridian_Contracts_SecurityMaster_OtcMovementParty

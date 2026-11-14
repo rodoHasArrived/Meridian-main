@@ -95,6 +95,7 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
         CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(ticker);
+        ct.ThrowIfCancellationRequested();
 
         var keyId = _credentials is not null ? _credentials.Get("ALPACA_KEY_ID") : _configuration["ALPACA_KEY_ID"]
                     ?? _configuration["APCA_API_KEY_ID"]
@@ -152,7 +153,7 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
                 var url = pageToken is null ? baseUrl : $"{baseUrl}&page_token={Uri.EscapeDataString(pageToken)}";
                 using var response = await client.GetAsync(url, ct).ConfigureAwait(false);
 
-                if (!response.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode || CorporateActionFetchResult.IsPartialResponse(response))
                 {
                     // A refused request is not an empty history. It is logged where an operator
                     // will see it, and no partial result is returned as if it were complete.
@@ -172,23 +173,30 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
                 if (document.RootElement.ValueKind != JsonValueKind.Object)
                     throw new JsonException("Alpaca corporate-actions response is not an object.");
 
-                if (document.RootElement.TryGetProperty("corporate_actions", out var groups)
-                    && groups.ValueKind == JsonValueKind.Object)
+                if (!document.RootElement.TryGetProperty("corporate_actions", out var groups)
+                    || groups.ValueKind != JsonValueKind.Object)
+                    throw new JsonException("Missing corporate-action groups.");
                 {
                     foreach (var (group, isSplit, description) in ActionGroups)
                     {
-                        if (!groups.TryGetProperty(group, out var actions) || actions.ValueKind != JsonValueKind.Array)
+                        if (!groups.TryGetProperty(group, out var actions))
                             continue;
+                        if (actions.ValueKind != JsonValueKind.Array)
+                            throw new JsonException("Invalid corporate-action group.");
 
                         foreach (var payload in actions.EnumerateArray())
                         {
                             var action = payload.Deserialize(AlpacaCorporateActionJsonContext.Default.AlpacaAction);
-                            if (action is not null && MapToCommand(action, payload, securityId, ticker, isSplit, description) is { } command)
-                                byGroup[group].Add(command);
+                            if (action is null || MapToCommand(action, payload, securityId, ticker, isSplit, description) is not { } command)
+                                throw new JsonException("Invalid corporate-action record.");
+                            byGroup[group].Add(command);
                         }
                     }
                 }
 
+                if (document.RootElement.TryGetProperty("next_page_token", out var token)
+                    && token.ValueKind is not (JsonValueKind.String or JsonValueKind.Null))
+                    throw new JsonException("Invalid corporate-action pagination token.");
                 pagesRead++;
                 pageToken = document.RootElement.TryGetProperty("next_page_token", out var next)
                     && next.ValueKind == JsonValueKind.String
@@ -219,9 +227,9 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
                 }
             }
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            _logger.LogWarning(ex, "Failed to fetch Alpaca corporate actions for {Ticker}.", ticker);
+            _logger.LogWarning("Failed to fetch Alpaca corporate actions for {Ticker}.", ticker);
 
             // The exception type is reported, not its message, so nothing the provider sent is echoed.
             return NotComplete(string.Create(

@@ -6,6 +6,93 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationCaseworkAuthorityReadinessState
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReconciliationCaseworkAuthorityReadinessState</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:48](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L48).
+
+Process-local receipt that the canonical reconciliation queue was fully reloaded and passed its integrity checks during reporting startup.
+
+```csharp
+public sealed class ReconciliationCaseworkAuthorityReadinessState
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:52](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L52) |  |
+
+## RecurringJournalCalculationContext
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalCalculationContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:19](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L19).
+
+Everything one calculated recurring occurrence may read. The accrual window is the inclusive date range this occurrence owns: it starts the day after the previous occurrence (or at the start of the covering accounting period for the first occurrence) and ends on the effective date, so consecutive occurrences never accrue the same day twice.
+
+```csharp
+public sealed record RecurringJournalCalculationContext(RecurringJournalScope Scope, string ScheduleId, DateOnly EffectiveDate, DateOnly? WindowStart, DateTimeOffset OccurredAtUtc, string PeriodId, IReadOnlyDictionary<string, decimal> Parameters, IReadOnlyDictionary<string, string> Inputs, IReadOnlyList<JournalEvidenceReference> Evidence)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateOnly RequireWindowStart() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:31](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L31) | The first day of the accrual window; fails closed when the period has no start date. |
+| <code>public int WindowDays =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:36](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L36) | Inclusive number of days in the accrual window. |
+| <code>public decimal RequireParameter(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:39](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L39) | A numeric schedule term. Terms are never defaulted: a missing term blocks the draft. |
+| <code>public string RequireInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:44](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L44) |  |
+| <code>public string? OptionalInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:49](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L49) |  |
+| <code>public int RequireYearBasisDays();</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:53](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L53) | An explicit day-count year basis; the accrual refuses to guess one. |
+
+## RecurringJournalCalculationResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalCalculationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:66](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L66).
+
+The outcome of a posting calculation: a balanced draft for human approval, or a recorded reason why this occurrence has nothing to post.
+
+```csharp
+public sealed record RecurringJournalCalculationResult(AutomatedJournalDraft? Draft, string Summary)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RecurringJournalCalculationResult NothingDue(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:68](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L68) |  |
+
+## RecurringJournalPeriodAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalPeriodAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:20](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L20).
+
+The existing PostgreSQL ledger remains the sole authority for locks and reopens.
+
+```csharp
+public sealed class RecurringJournalPeriodAuthority(ILedgerJournalStore? journalStore = null, IFundProfileTenancyRegistry? tenancy = null, IRecurringJournalSubjectAuthority? subjects = null) : IRecurringJournalPeriodAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;RecurringJournalPeriodState&gt; ResolveAsync(RecurringJournalScope scope, DateOnly date, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:25](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L25) |  |
+
+## RecurringJournalPeriodState
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalPeriodState</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:8](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L8).
+
+```csharp
+public sealed record RecurringJournalPeriodState(string PeriodId, long Version, bool IsOpen, string? LockOwner, string? ReopenPath, string? Blocker, DateOnly? StartDate = null, DateOnly? EndDate = null);
+```
+
 ## RecurringJournalRunner
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalRunner</code>. Kind: `class`.
@@ -24,8 +111,8 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool SupportsCalculation(string kind) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:24](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L24) | Whether a calculated template of this kind can be run by this host. |
 | <code>public IReadOnlyList&lt;string&gt; MissingCalculationInputs(JournalTemplateCalculation calculation) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:27](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L27) | The inputs a calculated template of this kind must state and does not. |
-| <code>public async Task&lt;IReadOnlyList&lt;AutomatedJournalScheduledRunResult&gt;&gt; RunDueAsync(DateTimeOffset now, string? tenant = null, string? company = null, bool scopeSpecified = false, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:32](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L32) |  |
-| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:334](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L334) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AutomatedJournalScheduledRunResult&gt;&gt; RunDueAsync(DateTimeOffset now, string? tenant = null, string? company = null, bool scopeSpecified = false, CancellationToken ct = default, string? scheduleId = null, RecurringJournalScope? exactScope = null, int? expectedScheduleVersion = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:32](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L32) |  |
+| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:339](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L339) |  |
 
 ## RecurringJournalSubjectAuthority
 
@@ -91,63 +178,6 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool IsConfigured =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:166](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L166) |  |
 | <code>public ValueTask&lt;string?&gt; ResolveDestinationAsync(ReportingRecipientDestinationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:168](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L168) |  |
-
-## ReportAccessPolicyEvaluator
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportAccessPolicyEvaluator</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L22).
-
-Compatibility adapter for Reporting-owned access policy normalization and evaluation.
-
-```csharp
-public static class ReportAccessPolicyEvaluator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ReportAccessPolicyDto Normalize(ReportAccessPolicyDto? policy, string? defaultOwnerPrincipalId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:24](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L24) |  |
-| <code>public static IReadOnlyList&lt;string&gt; Validate(ReportAccessPolicyDto? policy) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:27](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L27) |  |
-| <code>public static ReportAccessEvaluationDto Evaluate(ReportAccessPolicyDto? policy, ReportAccessQueryContext? context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:30](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L30) |  |
-| <code>public static ReportAccessEvaluationDto Evaluate(ReportingOutputManifest manifest, ReportAccessQueryContext? context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:33](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L33) |  |
-| <code>public static string BuildSummary(ReportAccessPolicyDto? policy) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L36) |  |
-
-## ReportAccessQueryContext
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportAccessQueryContext</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:6](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L6).
-
-```csharp
-public sealed record ReportAccessQueryContext(string? ActorPrincipalId = null, IReadOnlyList<string>? GroupPrincipalIds = null, string? CompanyId = null, bool HasGlobalOverride = false, string? TenantId = null, bool RequireBoundScope = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingAccessQueryContext ToReportingContext() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L15) | Converts the compatibility context to the Reporting-owned query contract. |
-
-## ReportAmountBindingBuilder
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportAmountBindingBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs#L9).
-
-Projects account amounts and exact line identities from the retained canonical ledger population.
-
-```csharp
-public static class ReportAmountBindingBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ImmutableArray&lt;ReportLedgerAmountBindingDto&gt; Build(ReportingLedgerPopulationSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs#L11) |  |
-| <code>public static bool MatchesRetained(ReportingLedgerPopulationSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs#L39) |  |
 
 ## ReportingAccessGrantService
 
@@ -615,52 +645,6 @@ Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHttpRelayCli
 ```csharp
 public sealed record ReportingHttpRelayClientOptions(Uri Endpoint, string BearerCredential, TimeSpan Timeout);
 ```
-
-## ReportingIncomeComparisonService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingIncomeComparisonService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs:8](../../../../src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs#L8).
-
-Tenant-scoped comparisons retained through the existing immutable artifact store.
-
-```csharp
-public sealed class ReportingIncomeComparisonService(IReportingRunStore runs, IReportingArtifactStore artifacts, IReportingGovernanceRepository governance)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;ReportingIncomeComparisonRunDto&gt;&gt; ListCandidatesAsync(ReportAccessQueryContext access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs#L15) |  |
-| <code>public async Task&lt;ReportingIncomeComparisonDto&gt; CreateAsync(ReportingIncomeComparisonRequestDto request, ReportAccessQueryContext access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs:45](../../../../src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs#L45) |  |
-| <code>public async Task&lt;ReportingIncomeComparisonDto&gt; GetAsync(string comparisonId, ReportAccessQueryContext access, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs:67](../../../../src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs#L67) |  |
-| <code>public async Task&lt;ReportingIncomeContributionSupportDto&gt; GetSupportAsync(string comparisonId, string contributionId, ReportAccessQueryContext access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs:71](../../../../src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs#L71) |  |
-
-## ReportingLedgerPopulationSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingLedgerPopulationSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:12](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L12).
-
-Frozen journals, tax relief and corporate-action lot evidence used by both activity rows and financial statements.
-
-```csharp
-public sealed record ReportingLedgerPopulationSnapshot(LedgerAmountScopeDto Scope, LedgerReportPackRequest Request, ImmutableArray<LedgerJournalEntryRecord> Journals, ImmutableArray<LedgerTaxLotReliefProjection> TaxLotReliefProjections)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ImmutableArray&lt;ReportLedgerAmountBindingDto&gt; ReportAmounts { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L18) |  |
-| <code>public long PeriodVersion { get; init; }</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:20](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L20) |  |
-| <code>public ImmutableArray&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; DatasetRows { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L22) |  |
-| <code>public ImmutableArray&lt;CanonicalCorporateActionLotReport&gt; CorporateActionLotReports { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:25](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L25) | Corporate-action lot evidence captured with the journals; empty for legacy populations. |
-| <code>public ReportingRetainedLedgerPopulation Retain();</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:33](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L33) |  |
-| <code>public static ReportingLedgerPopulationSnapshot Decode(ReportingAuthoritativeSourceCheckpoint checkpoint);</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:43](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L43) |  |
-| <code>public string ComputeCheckpointHash(ReportingAuthoritativeSourceCheckpoint checkpoint) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L100) |  |
-| <code>public LedgerFinancialReportPack Replay();</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:104](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L104) |  |
 
 ## ReportingLegacyArchiveReceipt
 

@@ -21,6 +21,8 @@ Evidence note: a ✅ row whose offline/CI evidence is mock-, fixture-, or simula
 
 ## Wave 1 Matrix
 
+The Wave 1 runner derives provider and cross-cutting test filters from the same inventories it emits as evidence. Each test step writes a fresh TRX file and records executed/passed counts plus passed matches for every claimed suite or scenario. Missing or malformed results, zero matched tests, missing evidence anchors, failures, skipped tests and explicit run-level errors fail the step even if the process exits zero. Build and test steps rerun on every invocation; checkpoints retain run status but do not substitute old assemblies or counts for current proof. Resumed invocations regenerate summary and packet artifacts.
+
 | Scope | Offline / CI evidence | Manual / runtime evidence | Status | Bounded by |
 | --- | --- | --- | --- | --- |
 | Alpaca core provider confidence | `AlpacaBrokerageGatewayTests`, `AlpacaCorporateActionProviderTests`, `AlpacaCredentialAndReconnectTests`, `AlpacaHistoricalDataProviderTests` (capability surface, deterministic throttling counter, degraded response posture), `AlpacaMessageParsingTests`, `AlpacaQuotePipelineGoldenTests`, `AlpacaQuoteRoutingTests`, `ProviderFactoryCredentialContextTests` (APCA alias + DI/factory credential path), `ExecutionGovernanceEndpointsTests.AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam` | Not required for the active Wave 1 claim; DK1 packet-bound operator sign-off fields (`status`, `signedOwners`, `missingOwners`, `validForDk1Exit`) remain required when regenerating runtime evidence | ✅ | n/a |

@@ -6,24 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## RiskRuleRuntimeOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleRuntimeOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:18](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L18).
-
-Location of the persisted operator-tuned risk-rule thresholds (drawdown %, order-rate ceiling), and optionally the first-run ceilings seeded before any operator snapshot exists.
-
-```csharp
-public sealed record RiskRuleRuntimeOptions(string SnapshotPath, RiskRuleFirstRunDefaults? FirstRunDefaults = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static RiskRuleRuntimeOptions Default { get; } = new (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), &quot;Meridian&quot;, &quot;workstation&quot;, &quot;risk-rules.json&quot;));</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:22](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L22) |  |
-
 ## RiskRuleRuntimeService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleRuntimeService</code>. Kind: `class`.
@@ -856,4 +838,14 @@ Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:23](../
 
 ```csharp
 public sealed record SyncValidationResult(bool Passed, IReadOnlyList<SyncValidationIssue> Issues);
+```
+
+## ThresholdBreach
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThresholdBreach</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:33](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L33).
+
+```csharp
+public sealed record ThresholdBreach(string Counterparty, ThresholdSeverity Severity, decimal CoverageRatio, decimal EarlyWarningLevel, decimal HardBreachLevel, string Message);
 ```

@@ -311,8 +311,18 @@ public sealed class ProviderRouteExplainabilityService
 
     public async Task<RoutePreviewResponse> PreviewForTenantAsync(RoutePreviewRequest request, string tenantId, CancellationToken ct = default)
     {
-        var result = await _selector.SelectForTenantAsync(ProviderRoutingMapper.ToRouteContext(request), tenantId, ct).ConfigureAwait(false);
-        return ProviderRoutingMapper.ToDto(result);
+        var routeContext = ProviderRoutingMapper.ToRouteContext(request);
+        var result = request.ProposedConfig is null
+            ? await _selector.SelectForTenantAsync(routeContext, tenantId, ct).ConfigureAwait(false)
+            : await _selector.PreviewForTenantAsync(routeContext, tenantId, request.ProposedConfig, ct).ConfigureAwait(false);
+        var dto = ProviderRoutingMapper.ToDto(result);
+        return dto with
+        {
+            IsProposed = request.ProposedConfig is not null,
+            Warnings = string.Equals(dto.SelectedProviderFamilyId, "synthetic", StringComparison.OrdinalIgnoreCase)
+                ? ["FABRICATED DATA: the selected route serves Synthetic data. It is unsuitable as observed market evidence."]
+                : []
+        };
     }
 
     public Task<IReadOnlyList<RoutePreviewResponse>> GetHistoryAsync(CancellationToken ct = default)

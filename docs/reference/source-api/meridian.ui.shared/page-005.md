@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderConnectionEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderConnectionEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs#L15).
+
+Maps provider connection discovery, credential changes, and verification operations.
+
+```csharp
+public static class ProviderConnectionEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapProviderConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs#L17) |  |
+
+## ProviderCredentialEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderCredentialEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderCredentialEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderCredentialEndpoints.cs#L19).
+
+Compatibility provider-credential endpoints. Canonical mutation and verification routes live under /api/providers/{providerId}/credentials and /api/providers/{providerId}/verify.
+
+```csharp
+public static class ProviderCredentialEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapProviderCredentialEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderCredentialEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderCredentialEndpoints.cs#L21) |  |
+
+## ProviderCredentialOwnershipEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderCredentialOwnershipEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderCredentialOwnershipEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderCredentialOwnershipEndpoints.cs#L14).
+
+Administrative ownership commands shared by the browser and installed workstation.
+
+```csharp
+public static class ProviderCredentialOwnershipEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapProviderCredentialOwnershipEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderCredentialOwnershipEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderCredentialOwnershipEndpoints.cs#L16) |  |
+
 ## ProviderDataProjectionEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderDataProjectionEndpoints</code>. Kind: `class`.
@@ -48,7 +102,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderExtendedEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L20).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L22).
 
 Extension methods for registering extended provider API endpoints (failover, rate limits, capabilities, switching).
 
@@ -60,7 +114,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L22) |  |
+| <code>public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L24) |  |
 
 ## ProviderModuleEndpoints
 
@@ -84,7 +138,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderRoutingEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L14).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L17).
 
 Endpoint mapping for the relationship-aware provider routing layer.
 
@@ -96,7 +150,36 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderRoutingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L16) |  |
+| <code>public static void MapProviderRoutingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L19) |  |
+
+## ProviderValidationEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderValidationEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L13).
+
+Non-secret provider-boundary validation settings and before/after change evidence.
+
+```csharp
+public static class ProviderValidationEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapProviderValidationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L15) |  |
+| <code>public static (AppConfig Config, ProviderValidationProfileAudit Result) ApplyProfile(AppConfig config, string provider, ProviderValidationProfileRequest request, string actor);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:70](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L70) |  |
+
+## ProviderValidationProfileRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderValidationProfileRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:97](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L97).
+
+```csharp
+public sealed record ProviderValidationProfileRequest(ProviderValidationProfile Profile, string? Reason = null);
+```
 
 ## QuantDiagnosticDto
 
@@ -415,6 +498,16 @@ Operator resolution request for a parked escalation.
 public sealed record RiskEscalationResolutionRequest(string? Reason = null, bool Release = true);
 ```
 
+## RunAccrualScheduleInput
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RunAccrualScheduleInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs#L23).
+
+```csharp
+public sealed record RunAccrualScheduleInput(string FundProfileId, Guid LedgerBookId, string EntityId, int ExpectedVersion);
+```
+
 ## SamplingEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.SamplingEndpoints</code>. Kind: `class`.
@@ -702,110 +795,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapStrategyLifecycleEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L24) |  |
-
-## StrategyRunComparisonService
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.StrategyRunComparisonService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:9](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L9).
-
-Shared comparison service for run compare/diff endpoint flows.
-
-```csharp
-public sealed class StrategyRunComparisonService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StrategyRunComparisonService(StrategyRunReadService readService);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:13](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L13) |  |
-| <code>public Task&lt;IReadOnlyList&lt;StrategyRunComparison&gt;&gt; CompareRunsAsync(RunComparisonRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:18](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L18) |  |
-| <code>public Task&lt;IReadOnlyList&lt;StrategyRunComparison&gt;&gt; CompareRunsAsync(RunComparisonRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:23](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L23) |  |
-| <code>public Task&lt;StrategyRunDiff?&gt; BuildDiffAsync(RunDiffRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:66](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L66) |  |
-| <code>public Task&lt;StrategyRunDiff?&gt; BuildDiffAsync(RunDiffRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:71](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L71) |  |
-
-## StrategyStatusDto
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.StrategyStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs:519](../../../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L519).
-
-Snapshot of a strategy&#x27;s current lifecycle state.
-
-```csharp
-public sealed record StrategyStatusDto(string StrategyId, string Status);
-```
-
-## SubscriptionEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.SubscriptionEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs#L15).
-
-Extension methods for registering subscription management API endpoints.
-
-```csharp
-public static class SubscriptionEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapSubscriptionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs#L17) |  |
-
-## SwapReferenceEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.SwapReferenceEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs#L15).
-
-Maps swap reference queries to the shared HTTP API.
-
-```csharp
-public static class SwapReferenceEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapSwapReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs#L17) |  |
-
-## SymbolEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.SymbolEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs#L22).
-
-Extension methods for registering symbol management API endpoints. Implements Phase 3B.1 — replaces 15 stub endpoints with working handlers.
-
-```csharp
-public static class SymbolEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapSymbolEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs#L26) |  |
-| <code>public static void MapIndexEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:581](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs#L581) | Maps the /api/indices endpoints for index constituent data. |
-
-## SymbolMappingEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.SymbolMappingEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs#L17).
-
-Registry-backed symbol mapping endpoints shared by browser and desktop hosts. Legacy configuration remains a migration/rollback input but is not a second write model.
-
-```csharp
-public static class SymbolMappingEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapSymbolMappingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs#L21) |  |

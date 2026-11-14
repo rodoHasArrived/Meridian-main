@@ -508,7 +508,7 @@ public sealed class ConfigJsonSchemaGenerator
 
     private static bool AllowsNull(Type type, NullabilityInfo nullability)
         => Nullable.GetUnderlyingType(type) != null
-           || (type.IsClass && nullability.ReadState != NullabilityState.NotNull);
+           || ((type.IsClass || type.IsInterface) && nullability.ReadState != NullabilityState.NotNull);
 
     private static JsonObject AllowNull(JsonNode schema)
         => new()
@@ -553,9 +553,14 @@ public sealed class ConfigJsonSchemaGenerator
 
     private static bool TryGetDictionaryValueType(Type type, out Type valueType)
     {
-        var dictionaryInterface = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>)
+        var dictionaryInterface = type.IsGenericType
+            && (type.GetGenericTypeDefinition() == typeof(Dictionary<,>)
+                || type.GetGenericTypeDefinition() == typeof(IDictionary<,>)
+                || type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>))
             ? type
-            : type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDictionary<,>));
+            : type.GetInterfaces().FirstOrDefault(i => i.IsGenericType
+                && (i.GetGenericTypeDefinition() == typeof(IDictionary<,>)
+                    || i.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)));
 
         if (dictionaryInterface != null && dictionaryInterface.GetGenericArguments()[0] == typeof(string))
         {

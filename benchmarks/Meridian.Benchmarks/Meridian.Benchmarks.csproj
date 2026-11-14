@@ -21,9 +21,6 @@
     <PackageReference Include="BenchmarkDotNet" />
     <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
 
-    <!-- JSON serialization benchmarks -->
-    <PackageReference Include="Newtonsoft.Json" />
-
     <!-- Reference layer projects -->
     <ProjectReference Include="..\..\src\Meridian\Meridian.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Application\Meridian.Application.csproj" />

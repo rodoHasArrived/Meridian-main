@@ -11,6 +11,133 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui/dashboard
 
+The Providers route also includes on-demand backfill tier/priority controls, a read-only routing
+preview, validation profiles and bounded quota history. Tier defaults and ceilings come from the
+server catalog; choosing a paid tier declares the operator's subscription and does not verify it.
+Numeric priority and Move up provide keyboard alternatives to dragging. Preview accepts symbol,
+daily date range and proposed priority/availability without saving or fetching prices; unavailable
+vendors, fabricated selections and unverified coverage remain explicit. Validation relaxation
+requires a reason and exposes retained change history. Quota history distinguishes an observed
+throttle from the next provider attempted and discloses process-lifetime retention.
+
+Settings and Providers share the setting-activation banner. Save receipts distinguish `Live`,
+`ReconnectProvider` and `RestartHost`; pending field names remain inspectable until host activation.
+No control in these panels edits credentials, deployment tenancy, storage paths, provenance stamps,
+IB pacing or live execution. Focused tests use the corresponding `data-screen.*` panel suites and
+`settings-change-impact.test.tsx`; browser acceptance uses synthetic responses, never live credentials.
+
+Canonical symbol registry includes an on-demand mapping editor over the shared CRUD and CSV
+import routes. Operators can correct provider aliases, inspect retained Compare mismatches and
+stage Compare → Canonical independently for IB, Alpaca, Polygon and Yahoo. Promotion requires
+review, a recorded reason and explicit acknowledgements that existing archives are not rewritten
+and raw/adjusted series remain separate. Active and saved mode are displayed separately; mode
+changes require host restart. Authoritative failures disable writes while preserving the draft.
+Focused coverage: `data-screen.symbol-mapping-editor.test.tsx` and existing canonical registry tests.
+
+The Data provider workspace includes an on-demand streaming failover editor. It reads authoritative
+saved settings, distinguishes unavailable runtime state, and refreshes the active provider after a
+committed switch/reset. Settings and rule create/edit/delete use shared guarded API saves and show
+pending host restart; relaxed rule thresholds require an audited reason. Focused coverage lives in
+`data-screen.failover.test.tsx` and the shared `FailoverEndpointTests`.
+Deleting a rule also requires an explicit operator reason and retains the removed protection snapshot.
+
+## Fixed-income workflow access
+
+Asset detail and selected bond holdings link to the existing Security Master analytics and
+convention-migration workflows. Symbol-only holdings resolve an exact Security Master identity;
+ambiguous matches require selection. `securityId`, `tab=evidence` and `bondAction=analytics|migration`
+retain the requested action on reload. Explicitly linked instruments control the explorer selection;
+an absent row never substitutes the default instrument. Initial action focus is applied once, and
+manual record selection updates the link. The explorer's initial automatic selection replaces the
+current history entry, so Back leaves Security Master in one step. Subsequent explicit selections
+create history entries; Back and Forward restore their exact instruments. Instrument reads disable
+development fallback.
+
+Issuer and maturity ladders are browsable before selecting a security. Keyboard-accessible row
+actions open authoritative instrument detail. Command search includes analytics, convention
+migration, ladders, account forecasts and reviewed close prices. Account oversight is visible in
+Reconciliation with account-owned book selection and explicit access/configuration blockers.
+
+Cash-ladder contributions link instruments and Security Master evidence. Their inline inspector
+reads the exact Asset Operations projection identity, engine and retained terms version/hash;
+unavailable original evidence remains a blocker. Asset Operations and contractual scenario run
+identities are distinct. Contractual scenarios expose multiple prepayment intervals, contract-derived
+stream selection and separate explicit hypothetical notice dates. Account forecasts already support
+dated FX: preparation can reuse a selected retained snapshot's observations, flows and dated FX with
+unchanged amounts/evidence, then capture a reviewed linked correction. First-capture preparation
+in this account-oversight workflow still requires reviewed source inputs; the separate account/bond
+planning workflows below do not assemble that forecast command automatically.
+
+`lib/workstation-features.ts` exports `WORKSTATION_CAPABILITY_TRACES`, mapping the ten fixed-income
+capabilities through service, API, client, screen/action, permission and browser acceptance evidence.
+Missing seams and input-preparation limits stay explicit; catalog metadata never grants access.
+The current journeys below include curve/version management and selection, pricing-source controls,
+settlement previews, canonical amortization draft handoff and provider discovery. Remaining work
+includes browsable contractual run history, account-oversight first-capture preparation, contextual
+factor-paydown launch, account/evidence selectors and supported amortization reversal/FX coverage.
+These limits and pending complete-workflow browser acceptance remain in the
+[access plan](../../../docs/engineering/plans/bond-capability-expansion.md#existing-capability-access-next-delivery-priority).
+
+Focused validation includes the changed screen/component tests, `fixed-income-capabilities.test.ts`,
+and `node scripts/dev/verify-fixed-income-access.mjs` from the repository root against a running Vite
+server. Browser evidence uses deterministic synthetic API responses, not live provider certification.
+
+## Fixed-income and accounting journeys
+
+Security Master exposes **Curves: definitions, pillars and historical versions** before security
+search, including an empty master. Operators create immutable definitions, publish multiple dated
+pillars, and inspect or compare retained versions with their source, timestamps and content hashes.
+Bond Evidence includes yield analysis with an explicit terms version and separate curve valuation
+with exact retained Discount and optional Forward:index versions. Curve values and settlement
+economics arrive as decimal strings; the browser does not recalculate them.
+
+Portfolio holding inspection links to Asset Detail. Its **Trading Parameters → Prepare bond
+settlement** action exposes the existing preparation service for bond acquisitions. Explicit terms,
+dates, face, booked factor, clean price, fees, observed cash, retained evidence and distinct accounts
+produce a reconciliation review or named blockers. Preparation creates no trade, journal or lot.
+
+Accounting's journal workbench exposes **Accrual schedules** with reviewed fixed amounts, cadence,
+dates, accounts, source evidence, authoritative period preview, occurrence generation and the
+retained journal queue. Account-owned and sleeve-owned books accept a reviewed fund-account
+identity, checked against retained book membership before configuration. Ledger Explorer exposes
+**Canonical lot amortization** using acquisition
+policy and retained lot economics, schedule previews and an explicitly reviewed occurrence. Draft
+handoff recomputes the preparation fingerprint and enters the existing immutable journal workflow;
+the reviewed occurrence is retained on its authoritative position, preserving all journal dimensions.
+Independent approval and posting authority remain there. Missing scope, permissions, required
+services, closed periods, changed inputs and uncertain writes remain explicit blockers.
+The canonical amortization handoff accepts matching acquisition/functional currencies at unit
+acquisition FX; unsupported FX lots stop before calculation or retained source/draft writes.
+
+The account oversight **Close prices → Maintain pricing sources** action maintains that exact
+account/security's ordered source hierarchy, staleness limits and effective UTC version. Unknown
+save outcomes retry the same reviewed command. Existing retained price sets keep their evidence.
+
+Asset Detail and Loan Book cash-flow scenarios support multiple nonoverlapping per-stream
+`[start, end)` prepayment assumptions, PSA seasoning and recast policies, plus immutable benchmark
+curve pins. Preview, retention, retrieval and replay preserve the exact decimal inputs and manifest.
+
+Security Master's **Discover provider bonds and stage candidate imports** action searches the
+configured Alpaca fixed-income provider, exposes missing services or provider failures, and requires
+candidate review before staging an identity-only asset-information upload. It does not infer coupon
+or maturity terms or create approved security economics. Staging uses the existing retained upload
+review path and requires Modify Security Master. Provider evidence is synthetic-verified;
+live-provider compatibility remains live-untested.
+
+Workflow tests live beside each feature: `security-curve-workbench`, `security-curve-valuation-panel`,
+`bond-settlement-panel`, `accrual-schedule-workbench`, `accounting-screen.canonical-amortization-panel`,
+`pricing-source-hierarchy-panel`, `contractual-cash-flow-workbench`, and `bond-discovery-panel`.
+
+Shared `ExactCurveInputs` rows pair a calculation role with a definition and an explicitly selected
+immutable version. Changing the curve clears its version; loading, empty and retry states stay
+visible. Use these rows only in calculations that consume curves, and validate role semantics in
+the owning workflow. Never silently select the latest version. Structured retained-evidence fields
+keep identity, source, custody, dates and digest/version separate and labeled. Recurring source
+references and reviewed canonical accounting identities have different contracts and must not be
+interchanged. Preview edits invalidate prior results; consequential handoffs require review, retain
+one command through uncertain outcomes, and expose the exact retained draft rather than a generic
+journal destination.
+
 Strategy grid cells, maturity bars and ownership-map nodes include the same displayed text and
 word boundaries in their accessible names, retaining coordinates, currency and full record
 identity. Margin SVG labels inherit the current foreground in light and dark themes.
@@ -82,9 +209,27 @@ explicit cancel, and pending saves retain the mounted editor.
 
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes
-or mutation authority. Accounting Security Master selection/search state belongs to
+or mutation authority. Presentational Settings sections live beside the screen:
+`settings-screen.profile-sections.tsx` (profile authentication, system posture, appearance),
+`settings-screen.brokerage-sections.tsx` (Alpaca and Robinhood), `settings-screen.diagnostics-section.tsx`,
+and `settings-screen.capability-sections.tsx` (runtime and backend capabilities), with shared chips and
+tone helpers in `settings-screen.section-primitives.tsx`. The state-heavy sections pair a private
+`useSettings<Section>SectionState` hook with their component in `settings-screen.scoped-access-section.tsx`,
+`settings-screen.operations-section.tsx`, `settings-screen.asset-profile-section.tsx`, and
+`settings-screen.provider-section.tsx`; draft-state shapes shared with the screen live in
+`settings-screen.section-state.ts`. The screen keeps shared state, the effects that reconcile it with
+incoming props, the mutation-confirmation dialog, and the route-driven section gates. Accounting Security Master selection/search state belongs to
 `accounting-screen.security-master.ts`, while schedules, corporate actions, open lots and
 instrument-passport projections belong to `accounting-screen.security-projections.ts`.
+The Accounting screen composes its larger panels from sibling modules:
+`accounting-screen.external-gl-panel.tsx`, `accounting-screen.approvals-workstream.tsx`,
+`accounting-screen.case-workbench.tsx`, `accounting-screen.manual-journal-panel.tsx`, and
+`accounting-screen.configuration-panel.tsx`, with `accounting-screen.accounting-value.tsx` holding the
+shared label/value cell.
+`src/lib/api.ts` is the stable import facade for the workstation API client: it re-exports the
+transport in `src/lib/api/http-client.ts` and the domain endpoint modules in `src/lib/api/*.api.ts`
+without widening the public surface. Import from `@/lib/api`; endpoint modules import the transport
+from `@/lib/api/http-client`, never from the facade.
 The existing view-model entrypoint re-exports their public contracts for current callers.
 The design-system source contract checks the projection owner, those re-exports and the screen's
 schedules-view binding together.
@@ -108,11 +253,12 @@ file-size limits. Curve sampling, reported returns and promotion selection behav
 Trading promotion form normalization, keyed evidence parsing and request validation live in
 `trading-screen.promotion-evidence.ts`; the existing trading view-model entrypoint re-exports its
 public contracts. Gate criteria, retained evidence requirements and command transport are unchanged.
-Reference Data probe payload classification lives in `lib/reference-data-probe.ts`, while the API
-entrypoint keeps transport/probe orchestration and the established public type exports.
+Reference Data probe payload classification lives in `lib/reference-data-probe.ts`; probe
+orchestration lives in `lib/api/system-overview.api.ts`, and the `lib/api.ts` facade keeps the
+established public type exports.
 
-Fund Structure setup contracts live in `lib/api/fund-structure-setup.contracts.ts`; `lib/api.ts`
-retains their public type exports and the setup request functions. Pure order-ticket form,
+Fund Structure setup contracts live in `lib/api/fund-structure-setup.contracts.ts` and the setup
+request functions in `lib/api/fund-structure-setup.api.ts`; `lib/api.ts` re-exports both. Pure order-ticket form,
 validation and control-state helpers live in `trading-screen.order-ticket-state.ts`.
 `trading-screen.view-model.ts` retains service and hook orchestration and re-exports the public
 helpers and types. The extracted declarations and function bodies preserve the existing request
@@ -182,6 +328,21 @@ scroll position. Analytics offers Use retained observation with source, time, fr
 clean/dirty quotation and settlement evidence. Calculation submits the immutable receipt identity,
 not a copied quote. Blocker actions focus convention review, source selection or rates/fixings while
 retaining calculation inputs. Decimal text stays exact through parsing and formatting.
+Reference-data probes wait for authoritative selected detail and retain its currency and identifiers
+even when the bond is absent from the current search. Loading, failed or mismatched detail issues
+no probes with invented selection context. Injected callers without a detail loader can use an exact
+search row. Coverage is in `accounting-screen.view-model.test.ts`.
+
+Command search finds these existing fixed-income workflows by task: `bond analytics`, `bond ladder`,
+`floating coupons`, `observed fixings` and `rates ingestion` open Security Master. Ladders can be
+browsed before selecting a security; selected-bond analytics uses its Evidence tab and reference
+probes retain its authoritative identity. `cash-flow scenarios` opens Asset detail;
+`coupon income` and `bond maturities` open the portfolio cash ladder. `account oversight`,
+`account cash forecast` and `close prices` open Reconciliation casework. `MBS paydown` opens Factor
+paydown, and `bond calculation cutover` opens Accounting Configure. These aliases use existing
+routes and preserve their permissions and context; they do not assert provider availability or
+add support for an unsupported calculation model. Regression coverage is in
+`command-palette.view-model.test.ts`.
 
 Integration dry-runs show provider market value, normalized bond consideration and variance together,
 with an explicit sample-payment preview for fixed-income conventions. Retained source and derived
@@ -197,6 +358,17 @@ in `trading-screen.test.tsx` and `trading-screen.view-model.test.ts`.
 Pure ticket control and invalid-field projections live beside their wording in
 `trading-screen.order-ticket-text.ts`. Definitive order-refusal classification lives in
 `api-errors.ts`; the existing `api.ts` facade retains its named export.
+
+The supported USD-equity order flow also requires a current shared-server preview and operator
+acknowledgement before submission; edits invalidate that preview, and submission rechecks admission.
+An unconfirmed outcome holds the submitted account/client identity until Refresh checks finds a
+terminal retained journal outcome. Orders exposes that journal, notifications link to its evidence,
+Settings Preferences holds account-scoped execution alerts, and Strategy shows retained run
+comparison. These surfaces consume shared services: unknown costs and incomplete comparison remain
+explicit, and agreement grants no promotion authority. See
+[execution workflows](../../../docs/engineering/execution-workflows.md). Focused browser coverage
+lives in `trading-screen.server-preview.test.tsx`, `trading-screen.journal.test.tsx`, and
+`lib/notification-center/execution.test.ts`.
 
 Native capital-call previews accept the server's canonical case-normalized call identity while
 retaining the reviewed plan hash; a preview for another call is rejected before retention.
@@ -290,6 +462,34 @@ the same reviewed request for retry. Focused tests are in
 `accounting-screen.factor-paydown-panel.test.tsx`, `factor-paydown.api.test.ts`,
 `accounting-screen.asset-workflow.test.ts` and `asset-accounting-workflow.api.test.ts`.
 
+## Financial visual evidence
+
+Report-writer chart previews are explicitly labeled **Signed value summary** beside the configured
+chart type. They use a symmetric scale around a visible zero baseline; missing, non-numeric and
+non-finite observations remain unavailable. Reported values, series labels, warnings and the
+underlying grid stay inspectable. The summary does not claim to render the configured chart type.
+
+The retained income comparison adds a baseline → journal → population → methodology → unexplained
+→ current waterfall. Exact decimal strings are summed and checked with integer arithmetic before
+only bounded drawing coordinates become numbers. Missing, incompatible or inconsistent bridges
+withhold the plot. The server residual is included once; unexplained records remain separate, and
+nonzero unsupported records cannot produce a reconciled success banner through netting. Each
+contribution opens the existing retained-support sheet, preserving URL state and keyboard return.
+
+Open-position exposure and P&L cells retain their original financial strings with small relative
+bars. A strict presentation adapter accepts only the source's demonstrated invariant dollar formats
+(including grouped values and K/M suffixes). These are rounded display comparisons, not concentration
+calculations or an inferred ISO currency. Each column uses its own largest absolute supported value
+across all loaded positions before filters, grouped by source currency. Rows without a currency stay
+in a separate, explicitly unavailable-currency group; no currency conversion is applied. Unsupported formats retain
+the original amount and say Graphic unavailable. Losses extend left of a visible zero marker;
+the largest displayed exposures with the shared mark-review assessment receive a textual cue.
+
+Focused coverage: `report-writer-grid-format.test.ts`, `report-writer-chart-preview.test.tsx`,
+`income-movement-waterfall.test.ts`, `reporting-income-comparison.test.tsx`,
+`position-value-graphic.test.ts`, `position-value-graphic.test.tsx`, and the existing position-control
+and Portfolio view-model tests.
+
 ## Portfolio Open positions controls
 
 Open positions supports case-insensitive symbol search, exact Side filtering from loaded rows,
@@ -318,6 +518,15 @@ Focused coverage: `portfolio-positions-table.test.ts`, `use-portfolio-positions-
 and Trading blotters retain their existing interaction models.
 
 ## Shared workstation header
+
+The notification bell counts unread events, separately from unresolved financial work.
+Its operator inbox belongs to the current account scope: changing accounts immediately
+withholds old rows and cancels obsolete reads. Polls do not overlap, and reads time out
+after 15 seconds so a stalled request cannot prevent recovery. Failed inbox reads
+clear prior inbox evidence and show an unavailable message with Retry inbox; independent
+system events and price alerts remain available. Loading and unavailable counts explicitly
+cover loaded feeds only. Regression coverage is in `use-notification-center.test.tsx` and
+`notification-center.test.tsx`.
 
 The browser shell renders `WorkspaceHeader` as one row above every route:
 
@@ -2175,6 +2384,8 @@ instead of the deterministic fixture; without that config it remains on `quickbo
 Route-provided `fundAccountId`, `ledgerBookId`, `periodId`, and `workflowStatus` now scope the close command center's
 operations-continuity lookup before workflow detail is loaded, preventing a newer unrelated close
 workflow from driving the accounting cockpit when operators open a scoped Accounting route.
+Close-source loading and current daily valuation schedule selection live in
+`accounting-screen.close-sources.ts`; the screen retains rendering and command handling.
 During workstation bootstrap, the shell lets the Accounting route render its own actionable loading
 workspace. That loading view shows the route/workstream being prepared, the Accounting payload groups
 still loading, and links to continuity, entity setup, provider posture, and retained report evidence

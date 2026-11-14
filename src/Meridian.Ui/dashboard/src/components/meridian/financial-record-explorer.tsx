@@ -69,6 +69,7 @@ export function FinancialRecordExplorerShell({
   explorer,
   onSaveView,
   onSelectRecord,
+  activeRecordId,
   children,
   className
 }: {
@@ -84,6 +85,8 @@ export function FinancialRecordExplorerShell({
   explorer?: FinancialRecordExplorerDto | null;
   onSaveView?: (request: FinancialRecordExplorerSavedViewSaveRequestDto) => void | Promise<void>;
   onSelectRecord?: (recordId: string) => void;
+  /** A linked authoritative record controls selection; never fall back to another row. */
+  activeRecordId?: string;
   children: ReactNode;
   className?: string;
 }) {
@@ -177,15 +180,17 @@ export function FinancialRecordExplorerShell({
     );
   }, [dtoMode, searchText, selectedFilters]);
 
-  const selectedRow = rows.find((row) => row.recordId === selectedRecordId) ?? rows[0] ?? null;
+  const selectedRow = activeRecordId !== undefined
+    ? rows.find((row) => row.recordId === activeRecordId) ?? null
+    : rows.find((row) => row.recordId === selectedRecordId) ?? rows[0] ?? null;
   const selectedRecord = selectedRow?.detail ?? null;
-  const selectedRecordShareId = selectedRow?.recordId ?? selectedRecordId;
+  const selectedRecordShareId = activeRecordId ?? selectedRow?.recordId ?? selectedRecordId;
 
   useEffect(() => {
-    if (selectedRow?.recordId) {
+    if (activeRecordId === undefined && selectedRow?.recordId) {
       onSelectRecord?.(selectedRow.recordId);
     }
-  }, [onSelectRecord, selectedRow?.recordId]);
+  }, [activeRecordId, onSelectRecord, selectedRow?.recordId]);
   const trimmedViewName = viewName.trim();
   const materialChange = Boolean(dtoMode && onSaveView && (trimmedViewName || searchText.trim() || (selectedViewId && selectedViewId !== activeSavedView?.id)));
   const canSaveView = Boolean(materialChange && trimmedViewName);
@@ -237,6 +242,7 @@ export function FinancialRecordExplorerShell({
   }
 
   function handleSelectRecord(recordId: string) {
+    if (activeRecordId !== undefined) onSelectRecord?.(recordId);
     setSelectedRecordId(recordId);
     setInspectorOpen(true);
   }

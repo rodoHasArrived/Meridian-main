@@ -1,3 +1,5 @@
+using Meridian.Core.Config;
+using DataSourceType = Meridian.Infrastructure.DataSources.DataSourceType;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -23,7 +25,6 @@ public sealed class OpenFigiClient : IDisposable
 {
     private const string BaseUrl = "https://api.openfigi.com/v3";
     private const int MaxIdentifiersPerRequest = 100; // Conservative limit (max is 100 for unauthenticated)
-    private const int MaxRequestsPerMinute = 25;
 
     private readonly HttpClient _http;
     private readonly RateLimiter _rateLimiter;
@@ -41,7 +42,8 @@ public sealed class OpenFigiClient : IDisposable
     /// <param name="httpClient">Optional HTTP client for testing.</param>
     /// <param name="log">Optional logger.</param>
     public OpenFigiClient(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null,
-        IProviderCredentialResolver? credentialResolver = null)
+        IProviderCredentialResolver? credentialResolver = null,
+        OpenFigiConfig? options = null)
     {
         _log = log ?? LoggingSetup.ForContext<OpenFigiClient>();
         _credentials = new OpenFigiRequestCredentials(apiKey, credentialResolver, useEnvironmentFallback: true);
@@ -51,7 +53,16 @@ public sealed class OpenFigiClient : IDisposable
         _http.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0");
 
         // Rate limit: 25/min unauthenticated, higher with API key
-        var maxRequests = credentialResolver is not null || string.IsNullOrEmpty(apiKey) ? MaxRequestsPerMinute : 250;
+        var tier = BackfillProviderCatalog.GetTier("openfigi", options?.TierId ?? "free");
+        var configured = options?.RateLimitPerMinute ?? tier.RateLimitPerMinute!.Value;
+        if (configured < 1 || configured > tier.RateLimitPerMinute)
+            throw new ArgumentOutOfRangeException(nameof(options), "OpenFIGI limit exceeds the selected tier ceiling.");
+        // A dynamically resolved credential can disappear or change. Preserve the unauthenticated
+        // ceiling until request-time credential authority can supply a different limiter.
+        var safeCeiling = credentialResolver is not null || string.IsNullOrEmpty(apiKey)
+            ? BackfillProviderCatalog.GetTier("openfigi", "free").RateLimitPerMinute!.Value
+            : tier.RateLimitPerMinute!.Value;
+        var maxRequests = Math.Min(configured, safeCeiling);
         _rateLimiter = new RateLimiter(maxRequests, TimeSpan.FromMinutes(1), TimeSpan.FromMilliseconds(100), _log);
     }
 

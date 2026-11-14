@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "packagedAt": "2026-11-12T23:02:12.205223+00:00",
+  "reason": "Archive historical diagnostic project snapshots in place so repository project discovery does not treat evidence as maintained Meridian projects.",
+  "method": "Python standard-library gzip; compression level 9; mtime 0; verified byte-identical decompression.",
+  "sourceCommit": "f65ab80d30d0bb7cff6279ad0a2f61fe17ec0871",
+  "snapshots": [
+    {
+      "originalPath": "component-profiles/dedup/Profile.csproj",
+      "storedPath": "component-profiles/dedup/Profile.csproj.gz",
+      "encoding": "gzip",
+      "originalBytes": 377,
+      "originalSha256": "cbabe02a5bc5ca6adace51bca85984f581077a142346d7a814ccc2a07fe8587b",
+      "bytes": 232,
+      "sha256": "f4898fd9f1056c7f94c9b85ca926d75901fa124bb8d978f95c603d3db21c3e59"
+    },
+    {
+      "originalPath": "components/before/Profile.csproj",
+      "storedPath": "components/before/Profile.csproj.gz",
+      "encoding": "gzip",
+      "originalBytes": 254,
+      "originalSha256": "4ac0b929e0a1160d5313d3f65a90af589b5ce302dccde75a7041d961bb159c49",
+      "bytes": 173,
+      "sha256": "8237efd1d6a71efe4f02fcb8cb5cfacb69f6ca40900af20ed25e512c79f4c15f"
+    },
+    {
+      "originalPath": "components/candidates/managed/Profile.csproj",
+      "storedPath": "components/candidates/managed/Profile.csproj.gz",
+      "encoding": "gzip",
+      "originalBytes": 504,
+      "originalSha256": "760edc17aefefd0b30e8a352180a67893d49b68196426db0e550ccba4585273c",
+      "bytes": 296,
+      "sha256": "2abd0009d697ab78ace951ebbceace47b068fa5b6b59da221d1e872b708f69c0"
+    },
+    {
+      "originalPath": "components/candidates/native/Profile.csproj",
+      "storedPath": "components/candidates/native/Profile.csproj.gz",
+      "encoding": "gzip",
+      "originalBytes": 438,
+      "originalSha256": "8d63bb7c5b07dbed96eef5e47d2dfb733ff31190ed1aa3c7b31bdc5c677da5f1",
+      "bytes": 264,
+      "sha256": "c1dd14d7e73f0b3beae0be12b8245c71655f99fb9e497e3c2a80852d7c2f70ba"
+    },
+    {
+      "originalPath": "components/compression/Profile.csproj",
+      "storedPath": "components/compression/Profile.csproj.gz",
+      "encoding": "gzip",
+      "originalBytes": 387,
+      "originalSha256": "4a53432e5083604389dcac7c48c0c2917f80ac8a993de81f7bcb206e5957d4e1",
+      "bytes": 246,
+      "sha256": "9e88f19876630ff48a355be804459f90b6435814f78729213171ff265f528dca"
+    },
+    {
+      "originalPath": "components/packbits/Profile.csproj",
+      "storedPath": "components/packbits/Profile.csproj.gz",
+      "encoding": "gzip",
+      "originalBytes": 498,
+      "originalSha256": "ec01937301c0a26b3a5134dd6564eba1166b2895ee6aacfe05347b6a9c477ad4",
+      "bytes": 296,
+      "sha256": "da69422bf5570210b1fd74d6f2a9ee9791000e86bd1411daac9e074b0a6909a9"
+    }
+  ],
+  "portableRunOriginals": "Unchanged; no portable run path, original run manifest, measurement, verdict, or diagnostic project content is modified."
+}

@@ -96,6 +96,24 @@ describe("Portfolio Open positions controls", () => {
     expect(positionIds()).toEqual(["msft-long-0", "aapl-short-1", "msft-long-2", "aapl-long-3"]);
   });
 
+  it("keeps graphic scale anchored to all loaded positions while filters hide the largest", async () => {
+    const user = userEvent.setup();
+    const larger = { ...position("MSFT", "Long", false), exposure: "$37,800", unrealizedPnl: "-$180", currency: "USD" };
+    const smaller = { ...position("AAPL", "Short", true), exposure: "$18,900", unrealizedPnl: "+$90", currency: "USD" };
+    const otherCurrency = { ...position("SHOP", "Long", true), exposure: "$1M", unrealizedPnl: "+$1M", currency: "CAD" };
+    renderPortfolio({ ...trading, positions: [larger, smaller, otherCurrency] });
+    await waitForAsyncEffects();
+    const table = positionTable();
+    expect(within(table).getByText("Largest · mark review")).toBeInTheDocument();
+    await user.type(screen.getByRole("searchbox", { name: "Search positions by symbol" }), "AAPL");
+    const exposure = table.querySelector('[data-position-value-graphic="exposure"]');
+    expect(exposure?.lastElementChild).toHaveStyle({ width: "50%" });
+    const pnl = table.querySelector('[data-position-value-graphic="pnl"]');
+    expect(pnl?.lastElementChild).toHaveStyle({ width: "25%", left: "50%" });
+    expect(within(table).getByText("$18,900")).toBeInTheDocument();
+    expect(within(pnl!.parentElement!).getByText("+$90")).toBeInTheDocument();
+  });
+
   it("sorts supported columns in both directions while retaining row IDs and source-order ties", async () => {
     const user = userEvent.setup();
     renderPortfolio();

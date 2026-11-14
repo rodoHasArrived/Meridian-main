@@ -535,12 +535,21 @@
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/workstation/runs/run-42/ledger/journal",
+        "/api/ledger/intercompany/capabilities",
         "/api/ledger/books",
         "/api/ledger/periods"
       ],
       "waitForTexts": [
         "Accounting scope",
-        "Group consolidation"
+        "Group consolidation",
+        "Accounting profile management requires fund-structure permission for the organization and both entities."
+      ],
+      "waitForSelectors": [
+        "#entity-operations [role=\"tablist\"]"
+      ],
+      "waitForAbsentTexts": [
+        "Loading entity operation permissions…",
+        "This evidence could not be loaded."
       ]
     },
     {
