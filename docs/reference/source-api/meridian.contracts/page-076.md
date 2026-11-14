@@ -22,7 +22,7 @@ public sealed record WorkstationScopeOptionsDto(IReadOnlyList<WorkstationScopeEn
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L58).
+Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:75](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L75).
 
 Provides source-generated JSON metadata for the workstation scope-option contracts. Null relationships are written explicitly so clients can tell &quot;no fund&quot; from a missing field.
 

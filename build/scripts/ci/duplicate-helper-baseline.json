@@ -4,7 +4,6 @@
   "files": {
     "src/Meridian.Application/Integrations/ProviderIntegrationMappedRecordIdentity.cs": 1,
     "src/Meridian.Application/Integrations/ProviderIntegrationSetupValidation.cs": 1,
-    "src/Meridian.Application/Services/StoredProviderCredentialResolver.cs": 1,
     "src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs": 1,
     "src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs": 1,
     "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs": 1,
@@ -70,7 +69,7 @@
     "src/Meridian.Wpf/Services/FundLedgerReadService.cs": 1,
     "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.TextHelpers.cs": 1
   },
-  "total": 76,
+  "total": 75,
   "tracked_helpers": [
     "NormalizeOptional",
     "RequireText",

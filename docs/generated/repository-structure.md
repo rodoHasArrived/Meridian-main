@@ -2335,7 +2335,8 @@ Meridian-main
 │   │   │   │   ├── page-018.md
 │   │   │   │   ├── page-019.md
 │   │   │   │   ├── page-020.md
-│   │   │   │   └── page-021.md
+│   │   │   │   ├── page-021.md
+│   │   │   │   └── page-022.md
 │   │   │   └── README.md
 │   │   ├── accounting-configuration.md
 │   │   ├── accounting-report-packs.md
@@ -11644,6 +11645,8 @@ Meridian-main
 │   │   │   ├── WorkstationProviderOwnershipApiClient.cs
 │   │   │   ├── WorkstationReconciliationApiClient.cs
 │   │   │   ├── WorkstationRecurringJournalQueueClient.cs
+│   │   │   ├── WorkstationScopeOptionsApiClient.cs
+│   │   │   ├── WorkstationScopeOptionsNarrowing.cs
 │   │   │   ├── WorkstationSecurityMasterApiClient.CashDividends.cs
 │   │   │   ├── WorkstationSecurityMasterApiClient.cs
 │   │   │   ├── WorkstationStrategyBriefingService.cs
@@ -11869,7 +11872,8 @@ Meridian-main
 │   │   │   ├── WelcomePageViewModel.cs
 │   │   │   ├── WorkflowLibraryViewModel.cs
 │   │   │   ├── WorkspacePageViewModel.cs
-│   │   │   └── WorkspaceShellViewModelBase.cs
+│   │   │   ├── WorkspaceShellViewModelBase.cs
+│   │   │   └── WorkstationScopeOptionsViewModel.cs
 │   │   ├── Views
 │   │   │   ├── AccountingClosePage.xaml
 │   │   │   ├── AccountingClosePage.xaml.cs
@@ -15103,6 +15107,7 @@ Meridian-main
 │   │   │   ├── WorkstationOperatingContextServiceTests.cs
 │   │   │   ├── WorkstationReconciliationApiClientTests.cs
 │   │   │   ├── WorkstationRecurringJournalQueueClientTests.cs
+│   │   │   ├── WorkstationScopeOptionsApiClientTests.cs
 │   │   │   └── WorkstationWorkflowSummaryServiceTests.cs
 │   │   ├── Shell
 │   │   │   ├── PageContentFactoryTests.cs
@@ -15237,7 +15242,8 @@ Meridian-main
 │   │   │   ├── WorkspaceAttentionRibbonViewModelTests.cs
 │   │   │   ├── WorkspaceCockpitShellViewModelTests.cs
 │   │   │   ├── WorkspacePageViewModelTests.cs
-│   │   │   └── WorkspaceShellProvenanceBadgeTests.cs
+│   │   │   ├── WorkspaceShellProvenanceBadgeTests.cs
+│   │   │   └── WorkstationScopeOptionsViewModelTests.cs
 │   │   ├── Views
 │   │   │   ├── AccountingWorkspaceShellPageTests.cs
 │   │   │   ├── AccountingWorkspaceShellSmokeTests.cs

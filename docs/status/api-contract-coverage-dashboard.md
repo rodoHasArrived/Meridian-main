@@ -1879,11 +1879,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `WorkstationRiskGuardrail` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:388` |
 | `WorkstationRunDigest` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:115` |
 | `WorkstationRunDrillInLinks` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:34` |
-| `WorkstationScopeAccountOptionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:41` |
+| `WorkstationScopeAccountOptionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:56` |
 | `WorkstationScopeEntityOptionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:23` |
 | `WorkstationScopeFundOptionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:31` |
 | `WorkstationScopeOptionsDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:17` |
-| `WorkstationScopeOptionsJsonContext` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:58` |
+| `WorkstationScopeOptionsJsonContext` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:75` |
 | `WorkstationSecurityCoverageGapPayload` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:59` |
 | `WorkstationSecurityCoveragePayload` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:65` |
 | `WorkstationSecurityCoverageReferencePayload` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:42` |

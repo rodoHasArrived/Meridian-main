@@ -1173,6 +1173,18 @@ The desktop passport editor loads the asset-class registry definition and offers
 a choice list for vocabulary and convention terms, and the shared `SecurityAssetTermFormModel`
 pre-check; the free-text field path remains available.
 
+**Scope options (P4 parity, 2026-11-14).** The operating-context page (`Views/FundProfileSelectionPage.xaml`)
+has a Scope Options card with entity, fund and fund-account pickers fed by the shared
+`GET /api/workstation/scope-options` seam (`WorkstationScopeOptionsDto`), read through
+`Services/WorkstationScopeOptionsApiClient`. Picks narrow by the browser scope picker's rule
+(`Services/WorkstationScopeOptionsNarrowing`): an entity keeps the funds holding it and the accounts
+booked to it or held by those funds, a fund keeps its own accounts, and accounts with no stated
+fund or entity are left out of a narrowed list and counted in a note. On a 404 (a host older than
+the route) the client falls back to the in-process fund-structure graph and says that list is not
+filtered by grants; any other failure, 403 included, leaves the lists empty with a status message
+saying why. "Use Scope" selects the matching operating context (account, else fund, else entity)
+when the desktop context catalog has one; it does not create contexts or change the scope model.
+
 ## Security Master governance controls (2026-11)
 
 - **Desktop honours governed term amendments.** The desktop binds the `SecurityMasterWorkbench` configuration section and calls `AddSecurityMasterGovernanceRequirements`, which registers the shared requirements seam, `IGovernedTermAmendmentPolicy` over it, and the startup guard that refuses a configuration contradicting the governance profile ahead of the shell. When governed term amendments are required (`RequireGovernedTermAmendments` on, `GovernanceProfile` set to `Institutional`, or a production composition of the desktop's own service collection; once Institutional, the desktop stays Institutional until it restarts), `SecurityMasterEditViewModel` refuses a direct amendment with the shared guidance instead of bypassing the gate the web API enforces. The service enforces the requirement too, and the editor reports that refusal, so a desktop composed without the policy still cannot write directly.

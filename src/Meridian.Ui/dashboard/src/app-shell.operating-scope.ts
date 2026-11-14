@@ -225,12 +225,16 @@ export function appendOperatingScopeToRoute(route: string, operatingScope: AppSh
 /**
  * Routes whose screen narrows its fund-account rows to the chosen entity and fund client-side,
  * using the organization graph (`lib/operating-scope/fund-scope-narrowing.ts`): the Portfolio
- * brokerage household (accounts and positions) and the Accounting close calendar (close
- * workflows). A route matches itself and its sub-paths.
+ * brokerage household (accounts and positions), the Accounting close calendar (close workflows),
+ * the Operations Continuity workflow list, and the statement fetch schedules on Statement import.
+ * A route matches itself and its sub-paths. Operations Continuity also applies `entityId` to its
+ * close-readiness read (`ACCOUNTING_ENTITY_ROUTES`); the two add the same key and coexist.
  */
 export const FUND_SCOPE_NARROWED_ROUTES: readonly string[] = [
   WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
-  WORKSTATION_ROUTE_CATALOG.accountingCloseCalendar
+  WORKSTATION_ROUTE_CATALOG.accountingCloseCalendar,
+  WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
+  WORKSTATION_ROUTE_CATALOG.accountingStatementImport
 ];
 
 /**
