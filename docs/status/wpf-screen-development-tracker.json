@@ -7,17 +7,16 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "ff34acf5f0af",
+  "sourceFingerprint": "3da83fb2cda2",
   "baselineDate": "2026-06-17",
   "summary": {
     "screenCount": 98,
     "workspaceCount": 7,
-    "screenshotCount": 92,
+    "screenshotCount": 98,
     "testReferenceCount": 98,
-    "openTaskCount": 6,
+    "openTaskCount": 0,
     "statusCounts": {
-      "evidence-current": 92,
-      "needs-screenshot": 6
+      "evidence-current": 98
     },
     "workspaces": [
       {
@@ -46,9 +45,9 @@
         "primaryCount": 8,
         "secondaryCount": 8,
         "overflowCount": 0,
-        "screenshotCount": 14,
+        "screenshotCount": 16,
         "testReferenceCount": 16,
-        "openTaskCount": 2
+        "openTaskCount": 0
       },
       {
         "name": "Reporting",
@@ -56,9 +55,9 @@
         "primaryCount": 7,
         "secondaryCount": 3,
         "overflowCount": 0,
-        "screenshotCount": 8,
+        "screenshotCount": 10,
         "testReferenceCount": 10,
-        "openTaskCount": 2
+        "openTaskCount": 0
       },
       {
         "name": "Strategy",
@@ -66,9 +65,9 @@
         "primaryCount": 6,
         "secondaryCount": 3,
         "overflowCount": 3,
-        "screenshotCount": 13,
+        "screenshotCount": 14,
         "testReferenceCount": 14,
-        "openTaskCount": 1
+        "openTaskCount": 0
       },
       {
         "name": "Data",
@@ -86,9 +85,9 @@
         "primaryCount": 6,
         "secondaryCount": 6,
         "overflowCount": 6,
-        "screenshotCount": 17,
+        "screenshotCount": 18,
         "testReferenceCount": 18,
-        "openTaskCount": 1
+        "openTaskCount": 0
       }
     ]
   },
@@ -104,8 +103,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-trading-shell.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
@@ -127,6 +126,8 @@
         "tests/Meridian.Wpf.Tests/ViewModels/TradingWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/Wave2OperatorInboxAcceptanceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/MainPageLaunchNavigationTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/MainPageNormalNavigationTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/StrategyWorkspaceShellPageTests.cs",
         "tests/Meridian.Wpf.Tests/Views/StrategyWorkspaceShellWorkflowTests.cs",
@@ -142,11 +143,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-trading-shell.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-trading-shell.png (2026-11-14)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Models/WorkspaceShellChromeContributionTests.cs, +22 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Models/WorkspaceShellChromeContributionTests.cs, +24 more."
         }
       ],
       "openTaskCount": 0
@@ -162,8 +163,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-live-data.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
@@ -180,7 +181,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-live-data.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-live-data.png (2026-11-14)."
         },
         {
           "done": true,
@@ -200,8 +201,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-order-book.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
@@ -214,7 +215,8 @@
         "tests/Meridian.Wpf.Tests/ViewModels/OrderBookViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/PageActivationLifetimeContractTests.cs",
         "tests/Meridian.Wpf.Tests/Views/NavigationPageSmokeTests.cs",
-        "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
+        "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/WorkstationPageSmokeTests.cs"
       ],
       "status": "evidence-current",
       "tasks": [
@@ -224,11 +226,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-order-book.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-order-book.png (2026-11-14)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +8 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +9 more."
         }
       ],
       "openTaskCount": 0
@@ -244,8 +246,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-position-blotter.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
@@ -271,7 +273,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-position-blotter.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-position-blotter.png (2026-11-14)."
         },
         {
           "done": true,
@@ -291,8 +293,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-run-risk.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
@@ -319,7 +321,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-risk.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-risk.png (2026-11-14)."
         },
         {
           "done": true,
@@ -339,8 +341,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-trading-hours.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
@@ -356,7 +358,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-trading-hours.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-trading-hours.png (2026-11-14)."
         },
         {
           "done": true,
@@ -376,8 +378,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-direct-lending.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
@@ -393,7 +395,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-direct-lending.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-direct-lending.png (2026-11-14)."
         },
         {
           "done": true,
@@ -413,8 +415,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-portfolio-shell.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
@@ -428,6 +430,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/WorkflowLibraryViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceShellProvenanceBadgeTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/MainPageLaunchNavigationTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellPageSmokeTests.cs"
@@ -440,11 +443,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-portfolio-shell.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-portfolio-shell.png (2026-11-14)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +11 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +12 more."
         }
       ],
       "openTaskCount": 0
@@ -460,8 +463,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-account-portfolio.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
@@ -486,7 +489,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-account-portfolio.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-account-portfolio.png (2026-11-14)."
         },
         {
           "done": true,
@@ -506,8 +509,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-aggregate-portfolio.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
@@ -524,7 +527,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-aggregate-portfolio.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-aggregate-portfolio.png (2026-11-14)."
         },
         {
           "done": true,
@@ -544,8 +547,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-run-portfolio.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
@@ -568,7 +571,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-portfolio.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-portfolio.png (2026-11-14)."
         },
         {
           "done": true,
@@ -588,8 +591,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-portfolio-explorer.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
@@ -607,7 +610,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-portfolio-explorer.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-portfolio-explorer.png (2026-11-14)."
         },
         {
           "done": true,
@@ -627,8 +630,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-fund-portfolio.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
@@ -648,7 +651,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-portfolio.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-portfolio.png (2026-11-14)."
         },
         {
           "done": true,
@@ -668,8 +671,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-fund-accounts.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -695,7 +698,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-accounts.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-accounts.png (2026-11-14)."
         },
         {
           "done": true,
@@ -715,8 +718,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-portfolio-import.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
@@ -734,7 +737,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-portfolio-import.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-portfolio-import.png (2026-11-14)."
         },
         {
           "done": true,
@@ -754,8 +757,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-accounting-shell.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -774,6 +777,8 @@
         "tests/Meridian.Wpf.Tests/Views/AccountingWorkspaceShellPageTests.cs",
         "tests/Meridian.Wpf.Tests/Views/AccountingWorkspaceShellSmokeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/DesktopWorkflowScriptTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/MainPageLaunchNavigationTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/MainPageNormalNavigationTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceQueueToneStylesTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs",
@@ -787,11 +792,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-accounting-shell.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-accounting-shell.png (2026-11-14)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +17 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +19 more."
         }
       ],
       "openTaskCount": 0
@@ -807,8 +812,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-fund-structure-setup.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -823,7 +828,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-structure-setup.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-structure-setup.png (2026-11-14)."
         },
         {
           "done": true,
@@ -843,8 +848,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-fund-ledger.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -873,7 +878,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-ledger.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-ledger.png (2026-11-14)."
         },
         {
           "done": true,
@@ -891,11 +896,11 @@
       "order": 12,
       "pageType": "OperationsContinuityPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "New W8-WPF-PARITY-001 Wave P3 surface has no retained PNG yet.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-operations-continuity.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
@@ -908,22 +913,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/OperationsContinuityViewModelTests.SharedBlockers.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkflowLibraryViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as OperationsContinuity (OperationsContinuityPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for OperationsContinuity or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-operations-continuity.png (2026-11-14)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/OperationsContinuityDtoContractTests.cs, +7 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -936,8 +941,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-run-ledger.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -956,7 +961,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-ledger.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-ledger.png (2026-11-14)."
         },
         {
           "done": true,
@@ -976,8 +981,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-run-cash-flow.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -994,7 +999,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-cash-flow.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-cash-flow.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1012,11 +1017,11 @@
       "order": 62,
       "pageType": "PostedLedgerPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "New W8-WPF-PARITY-001 posted-journal surface has no retained PNG yet.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-posted-ledger.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportRetainedAmountsViewModelTests.cs",
@@ -1024,22 +1029,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/PostedLedgerBasisArrivalTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/PostedLedgerViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as PostedLedger (PostedLedgerPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for PostedLedger or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-posted-ledger.png (2026-11-14)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportRetainedAmountsViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/LedgerAmountProofInteractionTests.cs, +2 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -1052,8 +1057,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-fund-reconciliation.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -1085,7 +1090,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-reconciliation.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-reconciliation.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1105,8 +1110,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-fund-banking.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -1125,7 +1130,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-banking.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-banking.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1145,8 +1150,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-fund-cash-financing.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -1166,7 +1171,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-cash-financing.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-cash-financing.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1186,8 +1191,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-fund-accounting-configure.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -1205,7 +1210,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-accounting-configure.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-accounting-configure.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1225,8 +1230,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-fund-accounting-close.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingCloseHttpRecoveryTests.cs",
@@ -1244,7 +1249,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-accounting-close.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-accounting-close.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1264,8 +1269,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-fund-trial-balance.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -1290,7 +1295,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-trial-balance.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-trial-balance.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1310,8 +1315,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-ledger-explorer.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -1329,7 +1334,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-ledger-explorer.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-ledger-explorer.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1349,8 +1354,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-fund-audit-trail.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -1379,7 +1384,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-audit-trail.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-audit-trail.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1399,8 +1404,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-security-instrument-explorer.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -1418,7 +1423,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-security-instrument-explorer.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-security-instrument-explorer.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1438,8 +1443,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-reporting-shell.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
@@ -1452,6 +1457,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceShellProvenanceBadgeTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/MainPageLaunchNavigationTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellPageSmokeTests.cs"
@@ -1464,11 +1470,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-reporting-shell.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-reporting-shell.png (2026-11-14)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingWorkspaceGovernanceSurfaceTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +10 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingWorkspaceGovernanceSurfaceTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +11 more."
         }
       ],
       "openTaskCount": 0
@@ -1484,8 +1490,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-fund-report-pack.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
@@ -1513,7 +1519,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-report-pack.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-report-pack.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1533,8 +1539,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-report-run-status.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
@@ -1551,7 +1557,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-report-run-status.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-report-run-status.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1569,11 +1575,11 @@
       "order": 16,
       "pageType": "EvidenceWorkbenchPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "New W8-WPF-PARITY-001 Wave P1 surface has no retained PNG yet.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-evidence-workbench.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
@@ -1585,22 +1591,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/WorkflowLibraryViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/ApplicationPrimitiveControlsTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as EvidenceWorkbench (EvidenceWorkbenchPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for EvidenceWorkbench or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-evidence-workbench.png (2026-11-14)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +6 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Reporting",
@@ -1611,30 +1617,30 @@
       "order": 17,
       "pageType": "OperationsRecordReleasePage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "New W8-WPF-PARITY-001 Wave P3 surface has no retained PNG yet.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-operations-record-release.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as OperationsRecordRelease (OperationsRecordReleasePage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for OperationsRecordRelease or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-operations-record-release.png (2026-11-14)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Reporting",
@@ -1647,8 +1653,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-dashboard.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
@@ -1670,7 +1676,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-dashboard.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-dashboard.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1690,8 +1696,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-analysis-export.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
@@ -1709,7 +1715,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-analysis-export.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-analysis-export.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1729,8 +1735,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-report-line-provenance-explorer.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
@@ -1748,7 +1754,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-report-line-provenance-explorer.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-report-line-provenance-explorer.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1768,8 +1774,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-analysis-export-wizard.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
@@ -1783,7 +1789,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-analysis-export-wizard.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-analysis-export-wizard.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1803,8 +1809,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-export-presets.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
@@ -1819,7 +1825,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-export-presets.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-export-presets.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1839,8 +1845,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-lean-integration.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
@@ -1856,7 +1862,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-lean-integration.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-lean-integration.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1876,8 +1882,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-event-replay.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
@@ -1895,7 +1901,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-event-replay.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-event-replay.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1915,8 +1921,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-watchlist.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs",
@@ -1938,7 +1944,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-watchlist.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-watchlist.png (2026-11-14)."
         },
         {
           "done": true,
@@ -1958,8 +1964,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-strategy-shell.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
@@ -1976,6 +1982,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/StrategyWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/DesktopWorkflowScriptTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/MainPageLaunchNavigationTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/StrategyWorkspaceShellPageTests.cs",
         "tests/Meridian.Wpf.Tests/Views/StrategyWorkspaceShellSmokeTests.cs",
@@ -1991,11 +1998,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-strategy-shell.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-strategy-shell.png (2026-11-14)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +17 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +18 more."
         }
       ],
       "openTaskCount": 0
@@ -2011,8 +2018,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-backtest.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
@@ -2033,6 +2040,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/PageActivationLifetimeContractTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/StrategyRunBrowserViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/StrategyWorkspaceShellViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/MainPageNormalNavigationTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/StrategyWorkspaceShellPageTests.cs",
         "tests/Meridian.Wpf.Tests/Views/StrategyWorkspaceShellWorkflowTests.cs",
@@ -2046,11 +2054,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-backtest.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-backtest.png (2026-11-14)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +19 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +20 more."
         }
       ],
       "openTaskCount": 0
@@ -2066,8 +2074,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-strategy-runs.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
@@ -2093,7 +2101,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-strategy-runs.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-strategy-runs.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2113,8 +2121,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-run-detail.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
@@ -2135,7 +2143,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-detail.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-detail.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2155,8 +2163,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-charts.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
@@ -2173,7 +2181,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-charts.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-charts.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2193,8 +2201,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-run-mat.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
@@ -2205,6 +2213,8 @@
         "tests/Meridian.Wpf.Tests/Support/RunMatUiAutomationFacade.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/RunMatViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/StrategyWorkspaceShellViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/MainPageLaunchNavigationTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/MainPageNormalNavigationTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/RunMatUiSmokeTests.cs"
       ],
@@ -2216,11 +2226,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-mat.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-mat.png (2026-11-14)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +7 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +9 more."
         }
       ],
       "openTaskCount": 0
@@ -2236,8 +2246,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-batch-backtest.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
@@ -2252,7 +2262,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-batch-backtest.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-batch-backtest.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2272,8 +2282,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-advanced-analytics.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
@@ -2287,7 +2297,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-advanced-analytics.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-advanced-analytics.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2307,8 +2317,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-quant-script.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
@@ -2330,7 +2340,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-quant-script.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-quant-script.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2350,14 +2360,15 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-home-workspace.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/HomeWorkspaceViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
-        "tests/Meridian.Wpf.Tests/ViewModels/OperatorReadinessConsoleViewModelTests.cs"
+        "tests/Meridian.Wpf.Tests/ViewModels/OperatorReadinessConsoleViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/MainPageLaunchNavigationTests.cs"
       ],
       "status": "evidence-current",
       "tasks": [
@@ -2367,11 +2378,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-home-workspace.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-home-workspace.png (2026-11-14)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/HomeWorkspaceViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/HomeWorkspaceViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, +2 more."
         }
       ],
       "openTaskCount": 0
@@ -2385,32 +2396,32 @@
       "order": 26,
       "pageType": "OperatorReadinessConsolePage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "New W8-WPF-PARITY-001 Wave P2 surface has no retained PNG yet.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-operator-readiness-console.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/OperatorReadinessConsoleViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as OperatorReadinessConsole (OperatorReadinessConsolePage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for OperatorReadinessConsole or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-operator-readiness-console.png (2026-11-14)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/OperatorReadinessConsoleViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -2423,8 +2434,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-data-browser.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -2439,7 +2450,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-browser.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-browser.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2459,8 +2470,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-data-calendar.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs"
@@ -2473,7 +2484,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-calendar.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-calendar.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2493,8 +2504,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-data-sampling.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -2508,7 +2519,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-sampling.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-sampling.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2528,8 +2539,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-time-series-alignment.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -2543,7 +2554,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-time-series-alignment.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-time-series-alignment.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2563,8 +2574,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-index-subscription.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs"
@@ -2577,7 +2588,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-index-subscription.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-index-subscription.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2597,8 +2608,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-options.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -2617,7 +2628,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-options.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-options.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2637,8 +2648,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-add-provider-wizard.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -2655,7 +2666,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-add-provider-wizard.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-add-provider-wizard.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2675,8 +2686,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-archive-health.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -2690,7 +2701,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-archive-health.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-archive-health.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2710,8 +2721,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-storage-optimization.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -2725,7 +2736,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-storage-optimization.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-storage-optimization.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2745,8 +2756,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-retention-assurance.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -2761,7 +2772,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-retention-assurance.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-retention-assurance.png (2026-11-14)."
         },
         {
           "done": true,
@@ -2781,8 +2792,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-data-shell.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -2798,6 +2809,8 @@
         "tests/Meridian.Wpf.Tests/ViewModels/WorkflowLibraryViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/DataWorkspaceShellSmokeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/DesktopWorkflowScriptTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/MainPageLaunchNavigationTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/MainPageNormalNavigationTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceQueueToneStylesTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs",
@@ -2811,11 +2824,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-shell.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-shell.png (2026-11-14)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +14 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +16 more."
         }
       ],
       "openTaskCount": 0
@@ -2831,8 +2844,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-provider.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -2871,6 +2884,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/ApplicationPrimitiveControlsTests.cs",
         "tests/Meridian.Wpf.Tests/Views/BondAnalyticsFloatingViewTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/DesktopWorkflowFixtureConfigurationTests.cs",
         "tests/Meridian.Wpf.Tests/Views/ProviderPageSimplificationTests.cs",
         "tests/Meridian.Wpf.Tests/Views/SecretInputControlTests.cs",
         "tests/Meridian.Wpf.Tests/Views/StrategyWorkspaceShellWorkflowTests.cs",
@@ -2888,11 +2902,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-provider.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-provider.png (2026-11-14)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +41 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +42 more."
         }
       ],
       "openTaskCount": 0
@@ -2908,8 +2922,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-backfill.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -2934,6 +2948,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/ProviderViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ScheduleManagerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/DesktopWorkflowFixtureConfigurationTests.cs",
         "tests/Meridian.Wpf.Tests/Views/ProviderPageSimplificationTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkstationPrimitiveControlsTests.cs"
@@ -2946,11 +2961,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-backfill.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-backfill.png (2026-11-14)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +22 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +23 more."
         }
       ],
       "openTaskCount": 0
@@ -2966,8 +2981,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-symbols.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -2999,6 +3014,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WatchlistViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/DesktopWorkflowFixtureConfigurationTests.cs",
         "tests/Meridian.Wpf.Tests/Views/StrategyWorkspaceShellWorkflowTests.cs"
       ],
       "status": "evidence-current",
@@ -3009,11 +3025,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-symbols.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-symbols.png (2026-11-14)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/BackfillPresentationServiceTests.cs, +27 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/BackfillPresentationServiceTests.cs, +28 more."
         }
       ],
       "openTaskCount": 0
@@ -3029,8 +3045,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-storage.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -3075,7 +3091,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-storage.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-storage.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3095,8 +3111,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-data-export.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -3114,7 +3130,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-export.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-export.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3134,8 +3150,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-data-sources.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -3151,7 +3167,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-sources.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-sources.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3171,8 +3187,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-provider-health.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -3196,7 +3212,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-provider-health.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-provider-health.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3216,8 +3232,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-data-quality.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -3237,7 +3253,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-quality.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-quality.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3257,8 +3273,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-security-master.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
@@ -3302,7 +3318,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-security-master.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-security-master.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3322,8 +3338,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-symbol-mapping.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -3339,7 +3355,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-symbol-mapping.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-symbol-mapping.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3359,8 +3375,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-symbol-storage.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -3374,7 +3390,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-symbol-storage.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-symbol-storage.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3394,8 +3410,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-schedules.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -3413,7 +3429,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-schedules.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-schedules.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3433,8 +3449,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-collection-sessions.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -3452,7 +3468,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-collection-sessions.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-collection-sessions.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3472,8 +3488,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-package-manager.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
@@ -3488,7 +3504,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-package-manager.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-package-manager.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3508,8 +3524,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-activity-log.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
@@ -3524,7 +3540,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-activity-log.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-activity-log.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3544,8 +3560,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-keyboard-shortcuts.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
@@ -3559,7 +3575,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-keyboard-shortcuts.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-keyboard-shortcuts.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3579,8 +3595,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-help.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Views/HelpPageSmokeTests.cs"
@@ -3593,7 +3609,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-help.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-help.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3613,8 +3629,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-setup-wizard.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
@@ -3631,7 +3647,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-setup-wizard.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-setup-wizard.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3651,8 +3667,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-workspaces.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
@@ -3672,7 +3688,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-workspaces.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-workspaces.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3692,8 +3708,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-welcome.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
@@ -3710,7 +3726,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-welcome.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-welcome.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3730,8 +3746,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-settings-shell.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
@@ -3742,6 +3758,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/OperatorReadinessConsoleViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/MainPageLaunchNavigationTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellPageSmokeTests.cs"
@@ -3754,11 +3771,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-settings-shell.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-settings-shell.png (2026-11-14)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +8 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +9 more."
         }
       ],
       "openTaskCount": 0
@@ -3774,8 +3791,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-settings.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs",
@@ -3812,7 +3829,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-settings.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-settings.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3832,8 +3849,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-credential-management.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
@@ -3852,7 +3869,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-credential-management.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-credential-management.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3872,8 +3889,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-system-health.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
@@ -3892,7 +3909,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-system-health.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-system-health.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3910,32 +3927,32 @@
       "order": 35,
       "pageType": "LifecycleControlPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "New lifecycle-control surface has no retained PNG yet.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-lifecycle-control.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/LifecycleControlViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/LifecycleControlPageSmokeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as LifecycleControl (LifecycleControlPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for LifecycleControl or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-lifecycle-control.png (2026-11-14)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/LifecycleControlViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/LifecycleControlPageSmokeTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Settings",
@@ -3948,8 +3965,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-diagnostics.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
@@ -3974,7 +3991,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-diagnostics.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-diagnostics.png (2026-11-14)."
         },
         {
           "done": true,
@@ -3994,8 +4011,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-service-manager.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
@@ -4011,7 +4028,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-service-manager.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-service-manager.png (2026-11-14)."
         },
         {
           "done": true,
@@ -4031,8 +4048,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-admin-maintenance.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
@@ -4049,7 +4066,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-admin-maintenance.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-admin-maintenance.png (2026-11-14)."
         },
         {
           "done": true,
@@ -4069,8 +4086,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-environment-designer.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
@@ -4084,7 +4101,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-environment-designer.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-environment-designer.png (2026-11-14)."
         },
         {
           "done": true,
@@ -4104,8 +4121,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-messaging-hub.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
@@ -4120,7 +4137,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-messaging-hub.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-messaging-hub.png (2026-11-14)."
         },
         {
           "done": true,
@@ -4140,8 +4157,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-notification-center.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
@@ -4162,7 +4179,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-notification-center.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-notification-center.png (2026-11-14)."
         },
         {
           "done": true,
@@ -4182,8 +4199,8 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-workflow-library.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-26",
-      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "refreshedDate": "2026-11-14",
+      "fixtureMode": "Fixture mode (native Windows run)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
@@ -4199,7 +4216,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-workflow-library.png (2026-06-26)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-workflow-library.png (2026-11-14)."
         },
         {
           "done": true,

@@ -1,10 +1,12 @@
 using System.Windows.Controls;
+using System.Reflection;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Views;
+using Meridian.Wpf.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Tests.Services;
@@ -159,6 +161,89 @@ public sealed class NavigationServiceTests : IDisposable
             var content = service.CreatePageContent("PortfolioShell", workspaceScope: scope);
 
             content.Should().BeSameAs(scopedPage);
+        });
+    }
+
+    [Fact]
+    public void HomeContentAndNavigation_WithoutExplicitScope_ShouldUseTheRetainedWorkspaceScope()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+            WorkspaceService.Instance.ResetForTests();
+            using var provider = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider(validateScopes: true);
+            var service = NavigationService.Instance;
+            service.SetServiceProvider(provider);
+
+            try
+            {
+                Action resolveScopedServiceFromRoot = () => provider.GetRequiredService<StrategyWorkspaceShellPresentationService>();
+                resolveScopedServiceFromRoot.Should().Throw<InvalidOperationException>(
+                    "the native Development host rejects resolving workspace-scoped presentation services from its root");
+
+                var content = service.CreatePageContent("ResearchShell");
+                content.Should().BeOfType<StrategyWorkspaceShellPage>();
+                NavigationService.GetContentPageTag(content).Should().Be("StrategyShell");
+
+                var workspaceService = provider.GetRequiredService<WorkspaceService>();
+                var retainedScope = workspaceService.GetWorkspaceScope("strategy");
+                retainedScope.Should().NotBeNull();
+                var retainedPresentation = retainedScope!.ServiceProvider.GetRequiredService<StrategyWorkspaceShellPresentationService>();
+                var presentationField = typeof(StrategyWorkspaceShellViewModel)
+                    .GetField("_presentationService", BindingFlags.Instance | BindingFlags.NonPublic)!;
+                presentationField.GetValue(content.DataContext).Should().BeSameAs(retainedPresentation);
+
+                var frame = new Frame();
+                service.Initialize(frame);
+                service.NavigateTo("StrategyShell").Should().BeTrue();
+                RunMatUiAutomationFacade.DrainDispatcher();
+                frame.Content.Should().BeOfType<StrategyWorkspaceShellPage>();
+                presentationField.GetValue(((Page)frame.Content).DataContext).Should().BeSameAs(retainedPresentation);
+
+                using var explicitScope = provider.CreateScope();
+                var explicitContent = service.CreatePageContent("StrategyShell", workspaceScope: explicitScope);
+                explicitContent.Should().BeOfType<StrategyWorkspaceShellPage>();
+                var explicitPresentation = explicitScope.ServiceProvider.GetRequiredService<StrategyWorkspaceShellPresentationService>();
+                explicitPresentation.Should().NotBeSameAs(retainedPresentation);
+                presentationField.GetValue(explicitContent.DataContext).Should().BeSameAs(explicitPresentation,
+                    "an explicit caller scope must take precedence over the retained workspace scope");
+            }
+            finally
+            {
+                WorkspaceService.Instance.ResetForTests();
+                service.ResetForTests();
+            }
+        });
+    }
+
+    [Theory]
+    [InlineData("PortfolioShell")]
+    [InlineData("RunMat")]
+    public void CreatePageContent_WhenPageConstructionFails_ShouldNotCertifyFallbackAsRendered(string pageTag)
+    {
+        WpfTestThread.Run(() =>
+        {
+            var service = NavigationService.Instance;
+            var pageType = service.GetPageType(pageTag)!;
+            var constructionAttempted = false;
+            var services = new ServiceCollection();
+            services.AddTransient(pageType, _ =>
+            {
+                constructionAttempted = true;
+                throw new InvalidOperationException("Injected page construction failure");
+            });
+
+            using var provider = services.BuildServiceProvider();
+            service.SetServiceProvider(provider);
+
+            var content = service.CreatePageContent(pageTag);
+            var fallback = NavigationHostInspector.ResolveInnermostContent(content);
+
+            constructionAttempted.Should().BeTrue();
+            fallback.Should().BeAssignableTo<Page>("compatibility fallback behavior is retained");
+            pageType.IsInstanceOfType(fallback).Should().BeFalse();
+            NavigationService.GetContentPageTag(content).Should().BeNull(
+                "a fallback must not satisfy the rendered-page readiness check");
         });
     }
 
