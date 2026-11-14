@@ -1254,7 +1254,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Integrations.IProviderIntegrationHostResolver</code>. Kind: `interface`.
 
-Source: [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:289](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L289).
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:294](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L294).
 
 Resolves integration endpoint host names to IP addresses for transport validation.
 
@@ -1266,7 +1266,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ValueTask&lt;IReadOnlyList&lt;IPAddress&gt;&gt; ResolveAsync(string host, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:291](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L291) |  |
+| <code>ValueTask&lt;IReadOnlyList&lt;IPAddress&gt;&gt; ResolveAsync(string host, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:296](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L296) |  |
 
 ## IProviderIntegrationHttpTransport
 
@@ -1305,7 +1305,7 @@ Declared public members:
 | <code>public ProviderIntegrationActivationReadinessService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationActivationReadinessService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:22](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L22) |  |
 | <code>public async Task&lt;ProviderIntegrationActivationReadinessDto&gt; EvaluateAsync(string manifestId, string? connectionId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:30](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L30) |  |
 | <code>public async Task&lt;ProviderIntegrationActivationReadinessDto&gt; EvaluateAsync(string? tenantId, string manifestId, string? connectionId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:36](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L36) |  |
-| <code>public static ProviderIntegrationActivationReadinessDto Evaluate(ProviderIntegrationManifestDto manifest, ProviderConnectionDto? connection = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:80](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L80) |  |
+| <code>public static ProviderIntegrationActivationReadinessDto Evaluate(ProviderIntegrationManifestDto manifest, ProviderConnectionDto? connection = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:160](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L160) |  |
 
 ## ProviderIntegrationActivationService
 

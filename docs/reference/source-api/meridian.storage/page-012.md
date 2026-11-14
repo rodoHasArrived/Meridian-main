@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Storage.Services.DataInsight</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MetadataTagService.cs:597](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L597).
+Source: [src/Meridian.Storage/Services/MetadataTagService.cs:611](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L611).
 
 An insight derived from data content analysis.
 
@@ -22,7 +22,7 @@ public sealed record DataInsight(string Category, string Description, double? Nu
 
 Qualified name: <code>Meridian.Storage.Services.DataLineageService</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Services/DataLineageService.cs:15](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L15).
+Source: [src/Meridian.Storage/Services/DataLineageService.cs:16](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L16).
 
 Service for tracking data lineage: provenance, transformations, and dependency graphs across the entire storage system. Records where data came from, what transformations were applied, and how data flows between storage tiers and formats.
 
@@ -34,16 +34,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public DataLineageService(string lineageStorePath, ILogger&lt;DataLineageService&gt; logger) : this(lineageStorePath, logger, static (path, content) =&gt; AtomicFileWriter.Write(path, content), static (path, content, ct) =&gt; AtomicFileWriter.WriteAsync(path, content, ct));</code> | [src/Meridian.Storage/Services/DataLineageService.cs:24](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L24) |  |
-| <code>public void RecordIngestion(string filePath, IngestionRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:47](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L47) |  |
-| <code>public void RecordTransformation(string sourceFilePath, string targetFilePath, TransformationRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:60](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L60) |  |
-| <code>public void RecordMigration(string sourceFilePath, string targetFilePath, MigrationRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:79](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L79) |  |
-| <code>public void RecordDeletion(string filePath, string reason);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:97](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L97) |  |
-| <code>public LineageGraph? GetLineageGraph(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:114](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L114) |  |
-| <code>public IReadOnlyList&lt;string&gt; GetUpstream(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:121](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L121) |  |
-| <code>public IReadOnlyList&lt;string&gt; GetDownstream(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:133](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L133) |  |
-| <code>public LineageReport GenerateReport();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:145](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L145) |  |
-| <code>public async Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:174](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L174) |  |
+| <code>public DataLineageService(string lineageStorePath, ILogger&lt;DataLineageService&gt; logger) : this(lineageStorePath, logger, static (path, content) =&gt; AtomicFileWriter.Write(path, content), static (path, content, ct) =&gt; AtomicFileWriter.WriteAsync(path, content, ct));</code> | [src/Meridian.Storage/Services/DataLineageService.cs:25](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L25) |  |
+| <code>public void RecordIngestion(string filePath, IngestionRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:48](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L48) |  |
+| <code>public void RecordTransformation(string sourceFilePath, string targetFilePath, TransformationRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:61](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L61) |  |
+| <code>public void RecordMigration(string sourceFilePath, string targetFilePath, MigrationRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:80](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L80) |  |
+| <code>public void RecordDeletion(string filePath, string reason);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:98](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L98) |  |
+| <code>public LineageGraph? GetLineageGraph(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:115](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L115) |  |
+| <code>public IReadOnlyList&lt;string&gt; GetUpstream(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:122](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L122) |  |
+| <code>public IReadOnlyList&lt;string&gt; GetDownstream(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:134](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L134) |  |
+| <code>public LineageReport GenerateReport();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:146](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L146) |  |
+| <code>public async Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:175](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L175) |  |
 
 ## DataQualityReport
 
@@ -423,7 +423,7 @@ public sealed record FileMetadata(string FilePath, string Symbol, string EventTy
 
 Qualified name: <code>Meridian.Storage.Services.FileMetadataRecord</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Services/MetadataTagService.cs:568](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L568).
+Source: [src/Meridian.Storage/Services/MetadataTagService.cs:578](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L578).
 
 Full metadata record for a stored data file.
 
@@ -435,15 +435,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string FilePath { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:570](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L570) |  |
-| <code>public DateTime CreatedUtc { get; set; }</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:571](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L571) |  |
-| <code>public DateTime LastModifiedUtc { get; set; }</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:572](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L572) |  |
-| <code>public Dictionary&lt;string, string&gt; Tags { get; set; } = new ();</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:573](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L573) |  |
-| <code>public List&lt;LineageEntry&gt; Lineage { get; set; } = new ();</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:574](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L574) |  |
-| <code>public Dictionary&lt;string, DataInsight&gt; Insights { get; set; } = new ();</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:575](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L575) |  |
-| <code>public double QualityScore { get; set; } = 1.0;</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:576](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L576) |  |
-| <code>public string? QualityScoredBy { get; set; }</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:577](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L577) |  |
-| <code>public DateTime? QualityScoredAtUtc { get; set; }</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:578](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L578) |  |
+| <code>[JsonRequired] public string FilePath { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:581](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L581) |  |
+| <code>public DateTime CreatedUtc { get; set; }</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:582](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L582) |  |
+| <code>public DateTime LastModifiedUtc { get; set; }</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:583](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L583) |  |
+| <code>[JsonRequired] public Dictionary&lt;string, string&gt; Tags { get; set; } = new ();</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:585](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L585) |  |
+| <code>[JsonRequired] public List&lt;LineageEntry&gt; Lineage { get; set; } = new ();</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:587](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L587) |  |
+| <code>[JsonRequired] public Dictionary&lt;string, DataInsight&gt; Insights { get; set; } = new ();</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:589](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L589) |  |
+| <code>public double QualityScore { get; set; } = 1.0;</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:590](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L590) |  |
+| <code>public string? QualityScoredBy { get; set; }</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:591](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L591) |  |
+| <code>public DateTime? QualityScoredAtUtc { get; set; }</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:592](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L592) |  |
 
 ## FileMigrationResult
 
@@ -684,7 +684,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.IDataLineageService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/Services/DataLineageService.cs:392](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L392).
+Source: [src/Meridian.Storage/Services/DataLineageService.cs:402](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L402).
 
 Interface for data lineage tracking service.
 
@@ -696,15 +696,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>void RecordIngestion(string filePath, IngestionRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:394](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L394) |  |
-| <code>void RecordTransformation(string sourceFilePath, string targetFilePath, TransformationRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:395](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L395) |  |
-| <code>void RecordMigration(string sourceFilePath, string targetFilePath, MigrationRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:396](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L396) |  |
-| <code>void RecordDeletion(string filePath, string reason);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:397](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L397) |  |
-| <code>LineageGraph? GetLineageGraph(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:398](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L398) |  |
-| <code>IReadOnlyList&lt;string&gt; GetUpstream(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:399](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L399) |  |
-| <code>IReadOnlyList&lt;string&gt; GetDownstream(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:400](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L400) |  |
-| <code>LineageReport GenerateReport();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:401](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L401) |  |
-| <code>Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:402](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L402) |  |
+| <code>void RecordIngestion(string filePath, IngestionRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:404](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L404) |  |
+| <code>void RecordTransformation(string sourceFilePath, string targetFilePath, TransformationRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:405](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L405) |  |
+| <code>void RecordMigration(string sourceFilePath, string targetFilePath, MigrationRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:406](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L406) |  |
+| <code>void RecordDeletion(string filePath, string reason);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:407](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L407) |  |
+| <code>LineageGraph? GetLineageGraph(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:408](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L408) |  |
+| <code>IReadOnlyList&lt;string&gt; GetUpstream(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:409](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L409) |  |
+| <code>IReadOnlyList&lt;string&gt; GetDownstream(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:410](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L410) |  |
+| <code>LineageReport GenerateReport();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:411](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L411) |  |
+| <code>Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:412](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L412) |  |
 
 ## IDataQualityScoringService
 
@@ -824,7 +824,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.IMetadataTagService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/Services/MetadataTagService.cs:535](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L535).
+Source: [src/Meridian.Storage/Services/MetadataTagService.cs:545](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L545).
 
 Interface for metadata tagging and lineage tracking on stored data files.
 
@@ -836,25 +836,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>void SetTag(string filePath, string key, string value);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:537](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L537) |  |
-| <code>void SetTags(string filePath, IReadOnlyDictionary&lt;string, string&gt; tags);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:538](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L538) |  |
-| <code>string? GetTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:539](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L539) |  |
-| <code>IReadOnlyDictionary&lt;string, string&gt; GetAllTags(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:540](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L540) |  |
-| <code>bool RemoveTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:541](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L541) |  |
-| <code>void RecordLineage(string filePath, LineageEntry entry);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:542](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L542) |  |
-| <code>IReadOnlyList&lt;LineageEntry&gt; GetLineage(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:543](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L543) |  |
-| <code>void SetInsight(string filePath, string insightKey, DataInsight insight);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:544](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L544) |  |
-| <code>DataInsight? GetInsight(string filePath, string insightKey);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:545](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L545) |  |
-| <code>IReadOnlyDictionary&lt;string, DataInsight&gt; GetAllInsights(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:546](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L546) |  |
-| <code>void SetQualityScore(string filePath, double score, string? scoredBy = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:547](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L547) |  |
-| <code>double? GetQualityScore(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:548](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L548) |  |
-| <code>IReadOnlyList&lt;string&gt; SearchByTag(string key, string? valuePattern = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:549](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L549) |  |
-| <code>IReadOnlyList&lt;string&gt; SearchByQualityScore(double minScore, double maxScore = 1.0);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:550](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L550) |  |
-| <code>FileMetadataRecord? GetFullMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:551](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L551) |  |
-| <code>void RemoveMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:552](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L552) |  |
-| <code>Task SetQualityAssessmentAsync(string filePath, double score, DataInsight insight, string? scoredBy = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:553](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L553) |  |
-| <code>Task SetQualityAssessmentsAsync(IReadOnlyCollection&lt;QualityAssessmentMetadataUpdate&gt; assessments, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:554](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L554) |  |
-| <code>Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:555](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L555) |  |
+| <code>void SetTag(string filePath, string key, string value);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:547](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L547) |  |
+| <code>void SetTags(string filePath, IReadOnlyDictionary&lt;string, string&gt; tags);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:548](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L548) |  |
+| <code>string? GetTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:549](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L549) |  |
+| <code>IReadOnlyDictionary&lt;string, string&gt; GetAllTags(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:550](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L550) |  |
+| <code>bool RemoveTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:551](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L551) |  |
+| <code>void RecordLineage(string filePath, LineageEntry entry);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:552](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L552) |  |
+| <code>IReadOnlyList&lt;LineageEntry&gt; GetLineage(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:553](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L553) |  |
+| <code>void SetInsight(string filePath, string insightKey, DataInsight insight);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:554](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L554) |  |
+| <code>DataInsight? GetInsight(string filePath, string insightKey);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:555](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L555) |  |
+| <code>IReadOnlyDictionary&lt;string, DataInsight&gt; GetAllInsights(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:556](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L556) |  |
+| <code>void SetQualityScore(string filePath, double score, string? scoredBy = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:557](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L557) |  |
+| <code>double? GetQualityScore(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:558](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L558) |  |
+| <code>IReadOnlyList&lt;string&gt; SearchByTag(string key, string? valuePattern = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:559](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L559) |  |
+| <code>IReadOnlyList&lt;string&gt; SearchByQualityScore(double minScore, double maxScore = 1.0);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:560](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L560) |  |
+| <code>FileMetadataRecord? GetFullMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:561](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L561) |  |
+| <code>void RemoveMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:562](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L562) |  |
+| <code>Task SetQualityAssessmentAsync(string filePath, double score, DataInsight insight, string? scoredBy = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:563](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L563) |  |
+| <code>Task SetQualityAssessmentsAsync(IReadOnlyCollection&lt;QualityAssessmentMetadataUpdate&gt; assessments, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:564](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L564) |  |
+| <code>Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:565](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L565) |  |
 
 ## IndexRebuildVerification
 

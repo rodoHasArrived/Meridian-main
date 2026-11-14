@@ -7,6 +7,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Integrations;
 using Meridian.Identity.Auth;
 using Meridian.Storage.Integrations;
+using Meridian.Tests.Application.Integrations;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using IntegrationProviderConnectionDto = Meridian.Contracts.Integrations.ProviderConnectionDto;
@@ -733,8 +734,10 @@ public sealed partial class WorkstationEndpointsTests
             review!.ConnectionId.Should().Be("connection-alpha");
             review.SyncRunIds.Should().ContainSingle().Which.Should().Be("sync-run-new");
             review.TotalStagedRecords.Should().Be(1);
-            review.ReadyForReconciliationCount.Should().Be(1);
-            review.WarningRecordCount.Should().Be(0);
+            review.ReadyForReconciliationCount.Should().Be(0);
+            review.WarningRecordCount.Should().Be(1);
+            review.WarningGroups.Should().Contain(issue => issue.IssueCode == "source.run.incomplete" &&
+                issue.Severity == ProviderIntegrationIssueSeverityDto.Critical);
             review.CapabilitySummaries.Should().ContainSingle(summary =>
                 summary.Capability == ProviderCapabilityKindDto.Positions &&
                 summary.RecordCount == 1);
@@ -1450,6 +1453,7 @@ public sealed partial class WorkstationEndpointsTests
             var connection = CreateProviderIntegrationActivationConnection(manifest);
             await tenantStore.SaveManifestAsync(manifest);
             await tenantStore.SaveConnectionAsync(connection);
+            await ProviderIntegrationCompletionFixture.RetainEmptySourceAsync(tenantStore, manifest, connection);
             await using var app = await CreateAppAsync(
                 services => RegisterProviderIntegrationEndpointServices(services, store),
                 currentUserPermissions: UserPermission.ManageProviders);
@@ -1725,7 +1729,7 @@ public sealed partial class WorkstationEndpointsTests
         var connection = CreateProviderIntegrationEndpointConnection(manifest);
         await tenantStore.SaveManifestAsync(manifest).ConfigureAwait(false);
         await tenantStore.SaveConnectionAsync(connection).ConfigureAwait(false);
-        await tenantStore.SaveSyncRunAsync(CreateProviderIntegrationEndpointSyncRun(
+        var run = CreateProviderIntegrationEndpointSyncRun(
             "sync-run-ready",
             manifest,
             connection,
@@ -1734,13 +1738,15 @@ public sealed partial class WorkstationEndpointsTests
             received: 1,
             accepted: 1,
             quarantined: 0,
-            issues: [])).ConfigureAwait(false);
+            issues: []);
+        await tenantStore.SaveSyncRunAsync(run).ConfigureAwait(false);
+        await SaveProviderIntegrationEndpointRawAsync(tenantStore, run).ConfigureAwait(false);
         await tenantStore.SaveStagingRecordAsync(new IntegrationStagingRecordDto(
             "staging-ready",
             "sync-run-ready",
             connection.ConnectionId,
             ProviderCapabilityKindDto.Positions,
-            "payload-ready",
+            run.RawPayloadId!,
             "source-ready",
             $"{connection.ConnectionId}:Positions:source-ready",
             ProviderIntegrationEndpointJson("""{"providerAccountId":"A-100","internalAccountId":"internal-account-100","security":{"internalSecurityId":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"},"quantity":100,"asOf":"2026-06-16"}"""),
@@ -1757,6 +1763,7 @@ public sealed partial class WorkstationEndpointsTests
         int quarantineCount)
     {
         await store.SaveSyncRunAsync(syncRun).ConfigureAwait(false);
+        await SaveProviderIntegrationEndpointRawAsync(store, syncRun).ConfigureAwait(false);
         for (var index = 0; index < stagingCount; index++)
         {
             await store.SaveStagingRecordAsync(
@@ -1789,6 +1796,16 @@ public sealed partial class WorkstationEndpointsTests
                     syncRun.StartedAt)).ConfigureAwait(false);
         }
     }
+
+    private static Task SaveProviderIntegrationEndpointRawAsync(IProviderIntegrationManifestStore store, ProviderIntegrationSyncRunDto run)
+        => store.SaveRawPayloadAsync(new(run.RawPayloadId!, run.ProviderId, run.ConnectionId, run.Capability,
+            run.EndpointKey, run.SyncRunId, run.StartedAt, new Dictionary<string, string> { ["statusCode"] = "200" },
+            JsonSerializer.SerializeToElement(new { positions = Enumerable.Range(0, run.RecordsReceived).Select(index => new { source_id = $"source-{index}", account_id = "A-100", quantity = 100, as_of = "2026-06-16" }).ToArray() }),
+            $"{run.ManifestId}:v{run.ManifestReference!.ManifestVersion}", ProviderIntegrationProcessingStatusDto.Received)
+        {
+            ManifestReference = run.ManifestReference,
+            OriginalManifestReference = run.OriginalManifestReference
+        });
 
     private static ProviderIntegrationSyncRunDto CreateProviderIntegrationEndpointSyncRun(
         string syncRunId,

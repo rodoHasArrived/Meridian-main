@@ -11,6 +11,13 @@ last_reviewed: 2026-11-14
 
 # src/Meridian.FinancialOperations
 
+Mapped statement CSV rejects malformed quotes, null characters and rows whose field count differs
+from the reviewed header. Validation and preview report blocking diagnostics, and commit refuses the
+whole document before retaining evidence. Valid quoted delimiters and escaped quotes retain their
+exact financial meaning. `StatementImportServiceTests.CsvMalformedTail_BlocksWholeImportThenAllowsCorrectedReplay`
+proves a valid prefix cannot make a malformed tail complete and that a corrected retry retains exact
+source bytes and remains idempotent after service restart.
+
 The intercompany obligation monitor enriches the existing posted balance schedule with canonical
 legal expiry, coverage, lifecycle and guarantee observations. Its default expiry horizon is 30
 calendar days; retained source versions distinguish current, stale and unavailable evidence. The

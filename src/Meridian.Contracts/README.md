@@ -11,6 +11,11 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Contracts
 
+`Api/ProviderRateLimits.cs` retains the existing counters and adds their explicit `quotaUnit`,
+daily usage/cap and vendor reset policy. Compatibility request-named counters can contain credits;
+clients display their unit rather than assume each HTTP request costs one. Missing daily evidence
+remains unavailable, while an explicit null daily cap means this runtime models no daily cap.
+
 Native intercompany agreement terms add an optional null-omitted `StructuredTerms` companion for
 declared rates, schedules, allocations and guarantee disclosure. New decimals serialize as exact
 strings; omitted companions preserve retained legal command/review hashes. Separate external-review

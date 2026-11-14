@@ -41,6 +41,7 @@ public sealed class NyseMarketDataClient :
         IHttpClientFactory httpClientFactory,
         NYSEOptions? options = null)
     {
+        NyseCredentialAccessPolicy.EnsureAccessAllowed();
         _tradeCollector = tradeCollector ?? throw new ArgumentNullException(nameof(tradeCollector));
         _depthCollector = depthCollector ?? throw new ArgumentNullException(nameof(depthCollector));
         _quoteCollector = quoteCollector ?? throw new ArgumentNullException(nameof(quoteCollector));

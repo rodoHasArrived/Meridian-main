@@ -6,6 +6,148 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DailySummaryResult
+
+Qualified name: <code>Meridian.Application.Services.DailySummaryResult</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:760](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L760).
+
+Result of a daily summary send operation.
+
+```csharp
+public readonly record struct DailySummaryResult(bool Success, DailySummary Summary, IReadOnlyList<WebhookDeliveryResult> DeliveryResults, DateTimeOffset SentAt, string? ErrorMessage);
+```
+
+## DailySummaryWebhook
+
+Qualified name: <code>Meridian.Application.Services.DailySummaryWebhook</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:27](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L27).
+
+Sends end-of-day summary digests via webhook to external services. Supports Slack, Discord, Microsoft Teams, and generic JSON webhooks.
+
+```csharp
+public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public event Action&lt;DailySummaryResult&gt;? OnSummarySent;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:47](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L47) | Event raised when a summary is sent successfully. |
+| <code>public event Action&lt;DailySummaryResult&gt;? OnSummaryFailed;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:52](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L52) | Event raised when a summary fails to send. |
+| <code>public DailySummaryWebhook(DailySummaryWebhookConfig config, TradingCalendar? tradingCalendar = null, TimeProvider? timeProvider = null) : this(config, tradingCalendar, timeProvider, null);</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:54](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L54) |  |
+| <code>public void RegisterStatisticsProviders(Func&lt;PipelineStatistics&gt;? pipelineStats = null, Func&lt;IReadOnlyList&lt;StaleDataAlert&gt;&gt;? staleSymbols = null, Func&lt;SystemHealthSnapshot&gt;? healthSnapshot = null);</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:88](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L88) | Registers statistics providers for inclusion in the summary. |
+| <code>public async Task&lt;DailySummaryResult&gt; SendSummaryAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:101](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L101) | Sends a daily summary immediately to all configured webhooks. |
+| <code>public async Task&lt;IReadOnlyList&lt;WebhookDeliveryResult&gt;&gt; SendMessageAsync(string message, string? title = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:159](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L159) | Sends a custom message to all configured webhooks. |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:606](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L606) |  |
+
+## DailySummaryWebhookConfig
+
+Qualified name: <code>Meridian.Application.Services.DailySummaryWebhookConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:638](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L638).
+
+Configuration for daily summary webhooks.
+
+```csharp
+public sealed record DailySummaryWebhookConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WebhookConfig[]? Webhooks { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:643](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L643) | List of webhook endpoints to send summaries to. |
+| <code>public bool EnableScheduledSummary { get; init; } = true;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:648](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L648) | Whether to enable scheduled daily summaries. |
+| <code>public string ScheduledTime { get; init; } = &quot;16:30&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:654](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L654) | Time to send the daily summary (ET timezone). Format: &quot;HH:mm&quot; Default: &quot;16:30&quot; (4:30 PM ET, after market close) |
+| <code>public int RetryCount { get; init; } = 3;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:659](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L659) | Number of retry attempts for failed deliveries. |
+| <code>public int TimeoutSeconds { get; init; } = 30;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:664](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L664) | HTTP request timeout in seconds. |
+
+## DataSourceSelection
+
+Qualified name: <code>Meridian.Application.Services.DataSourceSelection</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:340](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L340).
+
+Data source selection from wizard.
+
+```csharp
+public sealed class DataSourceSelection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DataSourceKind DataSource { get; set; } = DataSourceKind.IB;</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:342](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L342) |  |
+| <code>public AlpacaOptions? Alpaca { get; set; }</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:343](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L343) |  |
+| <code>public PolygonOptions? Polygon { get; set; }</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:344](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L344) |  |
+| <code>public IBOptions? IB { get; set; }</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:345](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L345) |  |
+| <code>public IBClientPortalOptions? IBClientPortal { get; set; }</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:346](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L346) |  |
+
+## DryRunOptions
+
+Qualified name: <code>Meridian.Application.Services.DryRunOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/DryRunService.cs:525](../../../../src/Meridian.Application/Services/DryRunService.cs#L525).
+
+Options for dry-run validation.
+
+```csharp
+public sealed record DryRunOptions(bool ValidateConfiguration = true, bool ValidateFileSystem = true, bool ValidateConnectivity = true, bool ValidateProviders = true, bool ValidateSymbols = true, bool ValidateResources = true);
+```
+
+## DryRunResult
+
+Qualified name: <code>Meridian.Application.Services.DryRunResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/DryRunService.cs:537](../../../../src/Meridian.Application/Services/DryRunService.cs#L537).
+
+Result of dry-run validation.
+
+```csharp
+public sealed class DryRunResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool OverallSuccess { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:539](../../../../src/Meridian.Application/Services/DryRunService.cs#L539) |  |
+| <code>public DateTimeOffset StartTime { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:540](../../../../src/Meridian.Application/Services/DryRunService.cs#L540) |  |
+| <code>public DateTimeOffset EndTime { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:541](../../../../src/Meridian.Application/Services/DryRunService.cs#L541) |  |
+| <code>public long DurationMs { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:542](../../../../src/Meridian.Application/Services/DryRunService.cs#L542) |  |
+| <code>public DryRunOptions? Options { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:543](../../../../src/Meridian.Application/Services/DryRunService.cs#L543) |  |
+| <code>public ValidationSection? ConfigurationValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:545](../../../../src/Meridian.Application/Services/DryRunService.cs#L545) |  |
+| <code>public ValidationSection? FileSystemValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:546](../../../../src/Meridian.Application/Services/DryRunService.cs#L546) |  |
+| <code>public ValidationSection? ConnectivityValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:547](../../../../src/Meridian.Application/Services/DryRunService.cs#L547) |  |
+| <code>public ValidationSection? ProviderValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:548](../../../../src/Meridian.Application/Services/DryRunService.cs#L548) |  |
+| <code>public ValidationSection? SymbolValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:549](../../../../src/Meridian.Application/Services/DryRunService.cs#L549) |  |
+| <code>public ValidationSection? ResourceValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:550](../../../../src/Meridian.Application/Services/DryRunService.cs#L550) |  |
+| <code>public ValidationSection? CredentialAuthValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:551](../../../../src/Meridian.Application/Services/DryRunService.cs#L551) |  |
+
+## DryRunService
+
+Qualified name: <code>Meridian.Application.Services.DryRunService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/DryRunService.cs:13](../../../../src/Meridian.Application/Services/DryRunService.cs#L13).
+
+Service for dry-run validation of configuration and operations. Implements QW-93: Dry Run Mode.
+
+```csharp
+public sealed class DryRunService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsDryRunMode { get; private set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:20](../../../../src/Meridian.Application/Services/DryRunService.cs#L20) | Global flag indicating if the application is in dry-run mode. |
+| <code>public static void EnableDryRunMode();</code> | [src/Meridian.Application/Services/DryRunService.cs:25](../../../../src/Meridian.Application/Services/DryRunService.cs#L25) | Enables dry-run mode globally. |
+| <code>public async Task&lt;DryRunResult&gt; ValidateAsync(AppConfig config, DryRunOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/DryRunService.cs:33](../../../../src/Meridian.Application/Services/DryRunService.cs#L33) | Performs a comprehensive dry-run validation. |
+| <code>public string GenerateReport(DryRunResult result);</code> | [src/Meridian.Application/Services/DryRunService.cs:101](../../../../src/Meridian.Application/Services/DryRunService.cs#L101) | Generates a human-readable dry-run report. |
+
 ## ExecutionSimulationOrchestrator
 
 Qualified name: <code>Meridian.Application.Services.ExecutionSimulationOrchestrator</code>. Kind: `class`.
@@ -319,11 +461,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:20](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L20) |  |
-| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, UI.ConfigStore configStore) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:29](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L29) | Resolves host defaults from the current retained configuration at provider construction. |
-| <code>public StoredProviderCredentialResolver(IScopedProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, ProviderCredentialScope scope) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:40](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L40) | Binds runtime credential resolution to an already authorized connection scope. The caller must derive this scope from trusted ownership context. Missing scoped records never fall back to provider-wide credentials, configuration or environment. |
-| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:49](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L49) |  |
-| <code>public async ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:103](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L103) |  |
+| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:22](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L22) |  |
+| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, UI.ConfigStore configStore, ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:31](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L31) | Resolves host defaults from the current retained configuration at provider construction. |
+| <code>public StoredProviderCredentialResolver(IScopedProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, ProviderCredentialScope scope) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:44](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L44) | Binds runtime credential resolution to an already authorized connection scope. The caller must derive this scope from trusted ownership context. Missing scoped records never fall back to provider-wide credentials, configuration or environment. |
+| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:53](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L53) |  |
+| <code>public async ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:110](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L110) |  |
 
 ## SymbolPreset
 
@@ -472,7 +614,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Application.Services.WizardResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:321](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L321).
+Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:331](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L331).
 
 Result of running the configuration wizard.
 
@@ -781,7 +923,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.ProviderStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:608](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L608).
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:613](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L613).
 
 Provider availability status.
 
@@ -817,139 +959,3 @@ Declared public members:
 | <code>public async Task&lt;bool&gt; DeleteScheduleAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:188](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L188) | Delete a schedule. |
 | <code>public async Task&lt;ScheduleExecutionStatus&gt; ExecuteNowAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:205](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L205) | Manually execute a schedule now. |
 | <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:579](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L579) |  |
-
-## SymbolAddOptions
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolAddOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:695](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L695).
-
-Options for adding symbols.
-
-```csharp
-public sealed record SymbolAddOptions(bool SubscribeTrades = true, bool SubscribeDepth = true, int DepthLevels = 10, string SecurityType = "STK", string Exchange = "SMART", string Currency = "USD", bool UpdateExisting = false);
-```
-
-## SymbolImportExportService
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolImportExportService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:14](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L14).
-
-Service for bulk import and export of symbol subscriptions via CSV, text files, and other formats.
-
-```csharp
-public sealed class SymbolImportExportService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SymbolImportExportService(ConfigStore configStore);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:21](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L21) |  |
-| <code>public async Task&lt;BulkImportResult&gt; ImportFromTextAsync(string textContent, BulkImportOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:30](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L30) | Import symbols from plain text content (one symbol per line). Supports comments (#, ;, //) and inline comments. |
-| <code>public async Task&lt;BulkImportResult&gt; ImportAutoDetectAsync(string content, BulkImportOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:159](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L159) | Detect import format and route to appropriate handler. |
-| <code>public async Task&lt;BulkImportResult&gt; ImportFromCsvAsync(string csvContent, BulkImportOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:182](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L182) | Import symbols from CSV content. |
-| <code>public string ExportToCsv(BulkExportOptions? options = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:287](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L287) | Export current symbol subscriptions to CSV. |
-| <code>public byte[] ExportToCsvBytes(BulkExportOptions? options = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:320](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L320) | Get export as bytes for file download. |
-
-## SymbolManagementService
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolManagementService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:17](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L17).
-
-Unified service for symbol management operations including: - Adding/removing symbols from configuration - Listing monitored symbols - Scanning archived data for symbols
-
-```csharp
-public sealed class SymbolManagementService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SymbolManagementService(ConfigStore configStore, string dataRoot, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:38](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L38) |  |
-| <code>public async Task&lt;SymbolOperationResult&gt; AddSymbolsAsync(IEnumerable&lt;string&gt; symbols, SymbolAddOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:48](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L48) | Add one or more symbols to the configuration for monitoring. |
-| <code>public async Task&lt;SymbolOperationResult&gt; RemoveSymbolsAsync(IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:128](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L128) | Remove symbols from the configuration. |
-| <code>public MonitoredSymbolsResult GetMonitoredSymbols();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:176](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L176) | Get all symbols currently configured for monitoring. |
-| <code>public async Task&lt;ArchivedSymbolsResult&gt; GetArchivedSymbolsAsync(ArchivedSymbolsOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:202](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L202) | Scan the data directory for archived symbols. |
-| <code>public async Task&lt;SymbolStatusReport&gt; GetSymbolStatusAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:253](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L253) | Get a comprehensive symbol status report combining monitored and archived data. |
-| <code>public void DisplayMonitoredSymbols(MonitoredSymbolsResult result);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:279](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L279) | Display formatted symbol management output to console. |
-| <code>public void DisplayArchivedSymbols(ArchivedSymbolsResult result);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:314](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L314) | Display formatted archived symbols output to console. |
-| <code>public async Task DisplayAllSymbolsAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:357](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L357) | Display a combined view of monitored and archived symbols. |
-
-## SymbolOperationResult
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolOperationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:682](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L682).
-
-Result of a symbol add/remove operation.
-
-```csharp
-public sealed record SymbolOperationResult(bool Success, string Message, string[] AffectedSymbols, int AddedCount = 0, int UpdatedCount = 0, int RemovedCount = 0, int SkippedCount = 0);
-```
-
-## SymbolSearchService
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolSearchService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:20](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L20).
-
-Service for searching and autocompleting symbols across multiple providers. Aggregates results from Finnhub, Polygon, Alpaca, and OpenFIGI.
-
-```csharp
-public sealed class SymbolSearchService : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SymbolSearchService(MetadataEnrichmentService? metadataService = null, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:33](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L33) | Creates a new symbol search service with default provider configuration. |
-| <code>public SymbolSearchService(IEnumerable&lt;ISymbolSearchProvider&gt; providers, OpenFigiClient? figiClient, MetadataEnrichmentService metadataService, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:51](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L51) | Creates a symbol search service with custom providers. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderStatus&gt;&gt; GetProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:85](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L85) | Get available providers and their status. |
-| <code>public Task&lt;SymbolSearchResponse&gt; SearchAsync(SymbolSearchRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:132](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L132) | Search for symbols with autocomplete support. |
-| <code>public Task&lt;SymbolSearchResponse&gt; SearchAuthoritativeAsync(SymbolSearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:139](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L139) | Explicit provider lookup that distinguishes provider failure from a successful empty search. Intended for candidate-review workflows where a swallowed failure would misstate availability. |
-| <code>public async Task&lt;SymbolDetails?&gt; GetDetailsAsync(string symbol, string? provider = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:382](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L382) | Get detailed information about a specific symbol. |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, IReadOnlyList&lt;FigiMapping&gt;&gt;&gt; LookupFigiAsync(IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:476](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L476) | Lookup FIGI identifiers for symbols. |
-| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; SearchFigiAsync(string query, int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:497](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L497) | Search OpenFIGI directly. |
-| <code>public void ClearCache();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:576](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L576) | Clear the search and details cache. |
-| <code>public void Dispose();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:583](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L583) |  |
-
-## SymbolStatusReport
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolStatusReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:764](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L764).
-
-Combined status report for a single symbol.
-
-```csharp
-public sealed record SymbolStatusReport(string Symbol, bool IsMonitored, bool HasArchivedData, SymbolConfig? MonitoredConfig, ArchivedSymbolInfo? ArchivedInfo);
-```
-
-## TemplateService
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.TemplateService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:15](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L15).
-
-Service for managing subscription templates (equity groups, sectors, indices).
-
-```csharp
-public sealed class TemplateService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TemplateService(ConfigStore configStore, string? templatesPath = null);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:22](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L22) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SymbolTemplate&gt;&gt; GetAllTemplatesAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:34](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L34) | Get all available templates (built-in + custom). |
-| <code>public async Task&lt;SymbolTemplate?&gt; GetTemplateAsync(string templateId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:45](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L45) | Get a specific template by ID. |
-| <code>public async Task&lt;ApplyTemplateResult&gt; ApplyTemplateAsync(ApplyTemplateRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:57](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L57) | Apply a template to the current subscriptions. |
-| <code>public async Task&lt;SymbolTemplate&gt; CreateTemplateAsync(string name, string description, TemplateCategory category, string[] symbols, TemplateSubscriptionDefaults? defaults = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:113](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L113) | Create a custom template. |
-| <code>public async Task&lt;bool&gt; DeleteTemplateAsync(string templateId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:142](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L142) | Delete a custom template. |
-| <code>public async Task&lt;SymbolTemplate&gt; CreateFromCurrentAsync(string name, string description, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:162](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L162) | Create a template from current subscriptions. |

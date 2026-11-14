@@ -473,9 +473,9 @@ public sealed class ConfigJsonSchemaGenerator
             // Extension-data catch-alls preserve unmodeled sections at runtime; they are
             // not declared configuration surface and must not appear in the schema.
             .Where(p => p.GetCustomAttribute<JsonExtensionDataAttribute>() is null)
-            // Ignored members may support in-process compatibility aliases, but they are
-            // not accepted by the JSON configuration contract.
-            .Where(p => p.GetCustomAttribute<JsonIgnoreAttribute>() is null)
+            // Always-ignored members may be compatibility aliases. Conditional write omission
+            // still accepts the member on input and must retain its configuration schema.
+            .Where(p => p.GetCustomAttribute<JsonIgnoreAttribute>()?.Condition != JsonIgnoreCondition.Always)
             .OrderBy(p => p.Name, StringComparer.Ordinal);
 
     private string GetDefinitionName(Type type)

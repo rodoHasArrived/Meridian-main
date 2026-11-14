@@ -1000,7 +1000,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs](../../src/Meridian
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/config/changes` | GET | `(ConfigStore store) => …` | `Produces<ConfigurationChangeStatus>(200)`; `Results.Json` | `WithName("GetConfigurationChangeStatus")`; `WithDescription("Saved setting impacts and changes awaiting provider reconnect or host restart; no setting values are returned.")` | [L44](../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L44) |
+| `/api/config/changes` | GET | `(ConfigStore store) => …` | `Produces<ConfigurationChangeStatus>(200)`; `Results.Json` | `WithName("GetConfigurationChangeStatus")`; `WithDescription("Saved setting impacts and changes awaiting provider reconnect or host restart; no setting values are returned.")` | [L45](../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L45) |
 
 ### DirectLendingEndpoints
 
@@ -1655,8 +1655,8 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs](../../src/Meridi
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/config/data-sources` | GET | `(ConfigStore store) => …` | `Produces(200)`; `Results.Json` | `WithName("GetDataSourcesAlias")`; `WithDescription("Alias for /api/config/datasources for backward compatibility.")` | [L684](../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L684) |
-| `/api/config/data-sources` | POST | `async (HttpContext context, ConfigStore store, DataSourceConfigRequest req) => …` | `Produces(200)`; `Produces(400)`; `Produces(StatusCodes.Status401Unauthorized)`; `Produces(StatusCodes.Status403Forbidden)`; `Results.BadRequest`; `Results.Ok` | `WithName("UpsertDataSourceAlias")`; `WithDescription("Alias for /api/config/datasources POST for backward compatibility.")` | [L702](../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L702) |
+| `/api/config/data-sources` | GET | `(ConfigStore store) => …` | `Produces(200)`; `Results.Json` | `WithName("GetDataSourcesAlias")`; `WithDescription("Alias for /api/config/datasources for backward compatibility.")` | [L689](../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L689) |
+| `/api/config/data-sources` | POST | `async (HttpContext context, ConfigStore store, DataSourceConfigRequest req) => …` | `Produces(200)`; `Produces(400)`; `Produces(StatusCodes.Status401Unauthorized)`; `Produces(StatusCodes.Status403Forbidden)`; `Results.BadRequest`; `Results.Ok` | `WithName("UpsertDataSourceAlias")`; `WithDescription("Alias for /api/config/datasources POST for backward compatibility.")` | [L707](../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L707) |
 
 ### ProviderValidationEndpoints
 

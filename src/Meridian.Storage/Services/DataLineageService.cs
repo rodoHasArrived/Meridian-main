@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Infrastructure.Contracts;
@@ -15,10 +16,10 @@ namespace Meridian.Storage.Services;
 public sealed class DataLineageService : IDataLineageService
 {
     private readonly string _lineageStorePath;
-    private readonly ILogger<DataLineageService> _logger;
     private readonly SemaphoreSlim _saveLock = new(1, 1);
     private readonly Action<string, string> _writeFile;
     private readonly Func<string, string, CancellationToken, Task> _writeFileAsync;
+    private bool _hasRetainedSnapshot;
     private LineageState _state = LineageState.CreateEmpty();
 
     public DataLineageService(string lineageStorePath, ILogger<DataLineageService> logger)
@@ -36,8 +37,8 @@ public sealed class DataLineageService : IDataLineageService
         Action<string, string> writeFile,
         Func<string, string, CancellationToken, Task> writeFileAsync)
     {
-        _lineageStorePath = lineageStorePath ?? throw new ArgumentNullException(nameof(lineageStorePath));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _lineageStorePath = Path.GetFullPath(lineageStorePath ?? throw new ArgumentNullException(nameof(lineageStorePath)));
+        ArgumentNullException.ThrowIfNull(logger);
         _writeFile = writeFile ?? throw new ArgumentNullException(nameof(writeFile));
         _writeFileAsync = writeFileAsync ?? throw new ArgumentNullException(nameof(writeFileAsync));
         Volatile.Write(ref _state, Load());
@@ -176,7 +177,8 @@ public sealed class DataLineageService : IDataLineageService
         await _saveLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var candidate = CloneState(Volatile.Read(ref _state));
+            using var processLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
+            var candidate = Load();
             await SaveToDiskAsync(candidate, ct).ConfigureAwait(false);
             Volatile.Write(ref _state, candidate);
         }
@@ -225,29 +227,42 @@ public sealed class DataLineageService : IDataLineageService
     private LineageState Load()
     {
         var state = LineageState.CreateEmpty();
-
         try
         {
-            if (!File.Exists(_lineageStorePath))
-                return state;
-
-            var json = File.ReadAllText(_lineageStorePath);
+            var bytes = File.ReadAllBytes(_lineageStorePath);
+            var offset = bytes.Length >= 3 && bytes[0] == 0xef && bytes[1] == 0xbb && bytes[2] == 0xbf ? 3 : 0;
+            var json = new UTF8Encoding(false, true).GetString(bytes, offset, bytes.Length - offset);
             var data = JsonSerializer.Deserialize(json, DataLineageServiceJsonContext.Default.LineageStore);
+            if (data is null || data.Version != "1.0.0" || data.Graphs is null)
+                throw new InvalidDataException("The retained lineage snapshot has an unsupported or incomplete format.");
 
-            if (data?.Graphs != null)
+            foreach (var entry in data.Graphs)
             {
-                foreach (var kvp in data.Graphs)
-                {
-                    state.Graphs[kvp.Key] = CloneGraph(kvp.Value);
-                }
+                if (entry.Value is null || string.IsNullOrWhiteSpace(entry.Key) ||
+                    !StringComparer.OrdinalIgnoreCase.Equals(entry.Key, entry.Value.FilePath) || entry.Value.Upstream is null || entry.Value.Downstream is null ||
+                    entry.Value.Ingestions is null || entry.Value.Transformations is null || entry.Value.Migrations is null)
+                    throw new InvalidDataException("The retained lineage snapshot contains an inconsistent file identity.");
+                state.Graphs.Add(entry.Key, CloneGraph(entry.Value));
             }
+            _hasRetainedSnapshot = true;
+            return state;
         }
-        catch (Exception ex)
+        catch (Exception exception) when ((exception is FileNotFoundException or DirectoryNotFoundException) && !_hasRetainedSnapshot)
         {
-            _logger.LogWarning(ex, "Failed to load lineage data from {Path}", _lineageStorePath);
+            return state;
         }
+        catch (Exception exception) when (exception is JsonException or DecoderFallbackException)
+        {
+            throw new InvalidDataException("The retained lineage snapshot is malformed; restore it before writing new history.", exception);
+        }
+    }
 
-        return state;
+    private Task<FileStream> AcquireMutationLeaseAsync(CancellationToken ct)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_lineageStorePath)!);
+        // The persistent handle fences the complete read-modify-replace across instances and
+        // processes. Never remove the lock file: replacement could split ownership by inode.
+        return ArchiveAppendLock.AcquireAsync(_lineageStorePath, TimeSpan.FromSeconds(10), ct);
     }
 
     private void PersistChange(Func<LineageState, bool> mutate)
@@ -261,9 +276,11 @@ public sealed class DataLineageService : IDataLineageService
 
         try
         {
-            var candidate = CloneState(Volatile.Read(ref _state));
+            using var processLease = AcquireMutationLeaseAsync(CancellationToken.None).GetAwaiter().GetResult();
+            var candidate = Load();
             if (!mutate(candidate))
             {
+                Volatile.Write(ref _state, candidate);
                 return;
             }
 
@@ -294,6 +311,7 @@ public sealed class DataLineageService : IDataLineageService
 
         var json = JsonSerializer.Serialize(CreateStoreSnapshot(state), DataLineageServiceJsonContext.Default.LineageStore);
         _writeFile(_lineageStorePath, json);
+        _hasRetainedSnapshot = true;
     }
 
     private async Task SaveToDiskAsync(LineageState state, CancellationToken ct)
@@ -304,6 +322,7 @@ public sealed class DataLineageService : IDataLineageService
 
         var json = JsonSerializer.Serialize(CreateStoreSnapshot(state), DataLineageServiceJsonContext.Default.LineageStore);
         await _writeFileAsync(_lineageStorePath, json, ct).ConfigureAwait(false);
+        _hasRetainedSnapshot = true;
     }
 
     private static LineageGraph GetOrAddGraph(LineageState state, string filePath)
@@ -315,17 +334,6 @@ public sealed class DataLineageService : IDataLineageService
         }
 
         return graph;
-    }
-
-    private static LineageState CloneState(LineageState state)
-    {
-        var clone = LineageState.CreateEmpty();
-        foreach (var graph in state.Graphs)
-        {
-            clone.Graphs[graph.Key] = CloneGraph(graph.Value);
-        }
-
-        return clone;
     }
 
     private static LineageGraph CloneGraph(LineageGraph graph)
@@ -380,8 +388,10 @@ public sealed class DataLineageService : IDataLineageService
 
     internal sealed class LineageStore
     {
+        [JsonRequired]
         public string Version { get; set; } = "1.0.0";
         public DateTime UpdatedAtUtc { get; set; }
+        [JsonRequired]
         public Dictionary<string, LineageGraph> Graphs { get; set; } = new();
     }
 }
@@ -408,15 +418,21 @@ public interface IDataLineageService
 /// </summary>
 public sealed class LineageGraph
 {
+    [JsonRequired]
     public string FilePath { get; set; } = string.Empty;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime LastUpdatedUtc { get; set; } = DateTime.UtcNow;
     public DateTime? DeletedAtUtc { get; set; }
     public string? DeletionReason { get; set; }
+    [JsonRequired]
     public List<string> Upstream { get; set; } = new();
+    [JsonRequired]
     public List<string> Downstream { get; set; } = new();
+    [JsonRequired]
     public List<IngestionRecord> Ingestions { get; set; } = new();
+    [JsonRequired]
     public List<TransformationRecord> Transformations { get; set; } = new();
+    [JsonRequired]
     public List<MigrationRecord> Migrations { get; set; } = new();
 }
 

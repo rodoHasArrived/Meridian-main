@@ -6,6 +6,105 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SubscriptionRequestValidation
+
+Qualified name: <code>Meridian.Infrastructure.Shared.SubscriptionRequestValidation</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:37](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L37).
+
+```csharp
+public sealed record SubscriptionRequestValidation(bool IsValid, bool IsDuplicate, string? NormalizedSymbol, string? NormalizedKind, int? ExistingSubscriptionId, string? FailureReason)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SubscriptionRequestValidation Invalid(string failureReason) =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:45](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L45) |  |
+| <code>public static SubscriptionRequestValidation Valid(string normalizedSymbol, string normalizedKind, bool isDuplicate, int? existingSubscriptionId) =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:48](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L48) |  |
+
+## SubscriptionSnapshot
+
+Qualified name: <code>Meridian.Infrastructure.Shared.SubscriptionSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:424](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L424).
+
+Snapshot of subscription state for serialization or logging.
+
+```csharp
+public sealed record SubscriptionSnapshot(int TotalSubscriptions, int FailedSubscriptions, int RecoveringSubscriptions, IReadOnlyDictionary<string, IReadOnlyList<string>> SymbolsByKind, IReadOnlyList<Subscription> Subscriptions);
+```
+
+## SubscriptionStatus
+
+Qualified name: <code>Meridian.Infrastructure.Shared.SubscriptionStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:29](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L29).
+
+```csharp
+public enum SubscriptionStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Pending = 0</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:31](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L31) |  |
+| <code>Active = 1</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:32](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L32) |  |
+| <code>Recovering = 2</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:33](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L33) |  |
+| <code>Failed = 3</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:34](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L34) |  |
+
+## SymbolStateStore (generic arity 1)
+
+Qualified name: <code>Meridian.Infrastructure.Shared.SymbolStateStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:118](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L118).
+
+Default implementation of ISymbolStateStore using ConcurrentDictionary.
+
+```csharp
+public sealed class SymbolStateStore<T>: ISymbolStateStore<T> where T : class
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolStateStore(bool ignoreCase = true);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:128](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L128) | Creates a new symbol state store. |
+| <code>public int Count =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:135](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L135) |  |
+| <code>public T GetOrAdd(string symbol, Func&lt;string, T&gt; factory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:138](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L138) |  |
+| <code>public bool TryGet(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:147](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L147) |  |
+| <code>public void Set(string symbol, T state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:159](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L159) |  |
+| <code>public T AddOrUpdate(string symbol, Func&lt;string, T&gt; addFactory, Func&lt;string, T, T&gt; updateFactory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:168](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L168) |  |
+| <code>public bool Remove(string symbol);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:176](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L176) |  |
+| <code>public bool TryRemove(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:183](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L183) |  |
+| <code>public bool Contains(string symbol);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:195](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L195) |  |
+| <code>public IReadOnlyList&lt;string&gt; GetSymbols();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:202](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L202) |  |
+| <code>public IReadOnlyDictionary&lt;string, T&gt; GetSnapshot();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:209](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L209) |  |
+| <code>public void Clear();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:216](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L216) |  |
+| <code>public void ForEach(Action&lt;string, T&gt; action);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:223](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L223) |  |
+| <code>public int RemoveStale(Func&lt;string, T, bool&gt; isStale);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:235](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L235) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:260](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L260) |  |
+
+## TaskSafetyExtensions
+
+Qualified name: <code>Meridian.Infrastructure.Shared.TaskSafetyExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs:11](../../../../src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs#L11).
+
+Extension methods for safely handling fire-and-forget async operations. Ensures that exceptions from unawaited tasks are observed and logged instead of silently swallowed or causing UnobservedTaskException.
+
+```csharp
+public static class TaskSafetyExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void ObserveException(this Task task, ILogger? logger = null, string? operation = null);</code> | [src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs:24](../../../../src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs#L24) | Observes a fire-and-forget task, ensuring any exception is logged rather than silently swallowed. Use this when a task cannot be awaited (e.g., called from a synchronous method or event handler) but failures must not go unnoticed. |
+| <code>public static void ObserveException(this ValueTask valueTask, ILogger? logger = null, string? operation = null);</code> | [src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs:44](../../../../src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs#L44) | Observes a fire-and-forget ValueTask, ensuring any exception is logged. |
+
 ## HttpResponseHandler
 
 Qualified name: <code>Meridian.Infrastructure.Utilities.HttpResponseHandler</code>. Kind: `class`.

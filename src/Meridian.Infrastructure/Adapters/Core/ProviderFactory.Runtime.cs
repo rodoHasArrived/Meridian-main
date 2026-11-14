@@ -5,6 +5,8 @@ using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Alpaca;
+using Meridian.Infrastructure.Adapters.AlphaVantage;
+using Meridian.Infrastructure.Adapters.TwelveData;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.NYSE;
 using Meridian.Infrastructure.Adapters.Polygon;
@@ -40,9 +42,16 @@ public sealed partial class ProviderFactory
             .AddInMemoryCollection(configuredValues.Select(value =>
                 new KeyValuePair<string, string?>(value.Name, credentials.Get(value.Name))))
             .Build();
-        if (typeof(TProvider) == typeof(Meridian.Infrastructure.Adapters.TwelveData.TwelveDataCorporateActionProvider))
+        // These adapters share the typed account declaration with factory-created history and
+        // search, even when a caller supplied an AppConfig separately from host IConfiguration.
+        if (typeof(TProvider) == typeof(TwelveDataCorporateActionProvider))
             return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials,
+                _config.ProviderQuotas?.TwelveData ?? new TwelveDataQuotaConfig(),
                 BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "twelvedata"));
+        if (typeof(TProvider) == typeof(AlphaVantageCorporateActionProvider))
+            return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials,
+                _config.ProviderQuotas?.AlphaVantage ?? new AlphaVantageQuotaConfig(),
+                BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "alphavantage"));
         return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials);
     }
 
@@ -157,12 +166,16 @@ public sealed partial class ProviderFactory
             validationProfile: ProviderValidationProfile.Resolve(_config.Backfill, "polygon"));
     }
 
-    internal IMarketDataClient CreateNyseStreamingClient() => new NyseMarketDataClient(
-        Services.GetRequiredService<TradeDataCollector>(),
-        Services.GetRequiredService<MarketDepthCollector>(),
-        Services.GetRequiredService<QuoteCollector>(),
-        Services.GetRequiredService<IHttpClientFactory>(),
-        Services.GetService<NYSEOptions>());
+    internal IMarketDataClient CreateNyseStreamingClient()
+    {
+        NyseCredentialAccessPolicy.EnsureAccessAllowed(Services);
+        return new NyseMarketDataClient(
+            Services.GetRequiredService<TradeDataCollector>(),
+            Services.GetRequiredService<MarketDepthCollector>(),
+            Services.GetRequiredService<QuoteCollector>(),
+            Services.GetRequiredService<IHttpClientFactory>(),
+            Services.GetService<NYSEOptions>());
+    }
 
     internal IMarketDataClient CreateRobinhoodStreamingClient() => new RobinhoodMarketDataClient(
         Services.GetRequiredService<IHttpClientFactory>(),

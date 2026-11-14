@@ -64,7 +64,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderConnectionEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs#L15).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs#L16).
 
 Maps provider connection discovery, credential changes, and verification operations.
 
@@ -76,7 +76,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs#L17) |  |
+| <code>public static void MapProviderConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs#L18) |  |
 
 ## ProviderCredentialEndpoints
 

@@ -6,6 +6,142 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolAddOptions
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolAddOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:695](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L695).
+
+Options for adding symbols.
+
+```csharp
+public sealed record SymbolAddOptions(bool SubscribeTrades = true, bool SubscribeDepth = true, int DepthLevels = 10, string SecurityType = "STK", string Exchange = "SMART", string Currency = "USD", bool UpdateExisting = false);
+```
+
+## SymbolImportExportService
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolImportExportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:14](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L14).
+
+Service for bulk import and export of symbol subscriptions via CSV, text files, and other formats.
+
+```csharp
+public sealed class SymbolImportExportService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolImportExportService(ConfigStore configStore);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:21](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L21) |  |
+| <code>public async Task&lt;BulkImportResult&gt; ImportFromTextAsync(string textContent, BulkImportOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:30](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L30) | Import symbols from plain text content (one symbol per line). Supports comments (#, ;, //) and inline comments. |
+| <code>public async Task&lt;BulkImportResult&gt; ImportAutoDetectAsync(string content, BulkImportOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:159](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L159) | Detect import format and route to appropriate handler. |
+| <code>public async Task&lt;BulkImportResult&gt; ImportFromCsvAsync(string csvContent, BulkImportOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:182](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L182) | Import symbols from CSV content. |
+| <code>public string ExportToCsv(BulkExportOptions? options = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:287](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L287) | Export current symbol subscriptions to CSV. |
+| <code>public byte[] ExportToCsvBytes(BulkExportOptions? options = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:320](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L320) | Get export as bytes for file download. |
+
+## SymbolManagementService
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolManagementService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:17](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L17).
+
+Unified service for symbol management operations including: - Adding/removing symbols from configuration - Listing monitored symbols - Scanning archived data for symbols
+
+```csharp
+public sealed class SymbolManagementService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolManagementService(ConfigStore configStore, string dataRoot, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:38](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L38) |  |
+| <code>public async Task&lt;SymbolOperationResult&gt; AddSymbolsAsync(IEnumerable&lt;string&gt; symbols, SymbolAddOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:48](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L48) | Add one or more symbols to the configuration for monitoring. |
+| <code>public async Task&lt;SymbolOperationResult&gt; RemoveSymbolsAsync(IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:128](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L128) | Remove symbols from the configuration. |
+| <code>public MonitoredSymbolsResult GetMonitoredSymbols();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:176](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L176) | Get all symbols currently configured for monitoring. |
+| <code>public async Task&lt;ArchivedSymbolsResult&gt; GetArchivedSymbolsAsync(ArchivedSymbolsOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:202](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L202) | Scan the data directory for archived symbols. |
+| <code>public async Task&lt;SymbolStatusReport&gt; GetSymbolStatusAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:253](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L253) | Get a comprehensive symbol status report combining monitored and archived data. |
+| <code>public void DisplayMonitoredSymbols(MonitoredSymbolsResult result);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:279](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L279) | Display formatted symbol management output to console. |
+| <code>public void DisplayArchivedSymbols(ArchivedSymbolsResult result);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:314](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L314) | Display formatted archived symbols output to console. |
+| <code>public async Task DisplayAllSymbolsAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:357](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L357) | Display a combined view of monitored and archived symbols. |
+
+## SymbolOperationResult
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolOperationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:682](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L682).
+
+Result of a symbol add/remove operation.
+
+```csharp
+public sealed record SymbolOperationResult(bool Success, string Message, string[] AffectedSymbols, int AddedCount = 0, int UpdatedCount = 0, int RemovedCount = 0, int SkippedCount = 0);
+```
+
+## SymbolSearchService
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolSearchService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:22](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L22).
+
+Service for searching and autocompleting symbols across multiple providers. Aggregates results from Finnhub, Polygon, Alpaca, and OpenFIGI.
+
+```csharp
+public sealed class SymbolSearchService : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolSearchService(MetadataEnrichmentService? metadataService = null, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:35](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L35) | Creates a new symbol search service with default provider configuration. |
+| <code>public SymbolSearchService(IEnumerable&lt;ISymbolSearchProvider&gt; providers, OpenFigiClient? figiClient, MetadataEnrichmentService metadataService, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:56](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L56) | Creates a symbol search service with custom providers. |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderStatus&gt;&gt; GetProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:90](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L90) | Get available providers and their status. |
+| <code>public Task&lt;SymbolSearchResponse&gt; SearchAsync(SymbolSearchRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:137](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L137) | Search for symbols with autocomplete support. |
+| <code>public Task&lt;SymbolSearchResponse&gt; SearchAuthoritativeAsync(SymbolSearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:144](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L144) | Explicit provider lookup that distinguishes provider failure from a successful empty search. Intended for candidate-review workflows where a swallowed failure would misstate availability. |
+| <code>public async Task&lt;SymbolDetails?&gt; GetDetailsAsync(string symbol, string? provider = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:387](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L387) | Get detailed information about a specific symbol. |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;string, IReadOnlyList&lt;FigiMapping&gt;&gt;&gt; LookupFigiAsync(IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:481](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L481) | Lookup FIGI identifiers for symbols. |
+| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; SearchFigiAsync(string query, int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:502](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L502) | Search OpenFIGI directly. |
+| <code>public void ClearCache();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:581](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L581) | Clear the search and details cache. |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:588](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L588) |  |
+
+## SymbolStatusReport
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolStatusReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:764](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L764).
+
+Combined status report for a single symbol.
+
+```csharp
+public sealed record SymbolStatusReport(string Symbol, bool IsMonitored, bool HasArchivedData, SymbolConfig? MonitoredConfig, ArchivedSymbolInfo? ArchivedInfo);
+```
+
+## TemplateService
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.TemplateService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:15](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L15).
+
+Service for managing subscription templates (equity groups, sectors, indices).
+
+```csharp
+public sealed class TemplateService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TemplateService(ConfigStore configStore, string? templatesPath = null);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:22](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L22) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SymbolTemplate&gt;&gt; GetAllTemplatesAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:34](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L34) | Get all available templates (built-in + custom). |
+| <code>public async Task&lt;SymbolTemplate?&gt; GetTemplateAsync(string templateId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:45](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L45) | Get a specific template by ID. |
+| <code>public async Task&lt;ApplyTemplateResult&gt; ApplyTemplateAsync(ApplyTemplateRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:57](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L57) | Apply a template to the current subscriptions. |
+| <code>public async Task&lt;SymbolTemplate&gt; CreateTemplateAsync(string name, string description, TemplateCategory category, string[] symbols, TemplateSubscriptionDefaults? defaults = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:113](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L113) | Create a custom template. |
+| <code>public async Task&lt;bool&gt; DeleteTemplateAsync(string templateId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:142](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L142) | Delete a custom template. |
+| <code>public async Task&lt;SymbolTemplate&gt; CreateFromCurrentAsync(string name, string description, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:162](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L162) | Create a template from current subscriptions. |
+
 ## WatchlistService
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.WatchlistService</code>. Kind: `class`.
@@ -230,7 +366,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.UI.ConfigStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Http/ConfigStore.cs:31](../../../../src/Meridian.Application/Http/ConfigStore.cs#L31).
+Source: [src/Meridian.Application/Http/ConfigStore.cs:32](../../../../src/Meridian.Application/Http/ConfigStore.cs#L32).
 
 Service for loading and persisting application configuration. Provides access to config files, status files, and provider metrics. This is the single implementation shared by console, web, and desktop hosts.
 
@@ -242,27 +378,27 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static Func&lt;string&gt; DefaultPathResolver { get; set; } = ResolveDefaultPath;</code> | [src/Meridian.Application/Http/ConfigStore.cs:36](../../../../src/Meridian.Application/Http/ConfigStore.cs#L36) | Default path resolver that returns the nearest standard Meridian configuration path. |
-| <code>public string ConfigPath { get; }</code> | [src/Meridian.Application/Http/ConfigStore.cs:45](../../../../src/Meridian.Application/Http/ConfigStore.cs#L45) | Gets the path to the configuration file. |
-| <code>public ConfigStore();</code> | [src/Meridian.Application/Http/ConfigStore.cs:50](../../../../src/Meridian.Application/Http/ConfigStore.cs#L50) | Creates a new ConfigStore with the default configuration path resolution. |
-| <code>public ConfigStore(string? configPath);</code> | [src/Meridian.Application/Http/ConfigStore.cs:59](../../../../src/Meridian.Application/Http/ConfigStore.cs#L59) | Creates a new ConfigStore with a custom configuration path. |
-| <code>public static AppConfig LoadConfig(string path);</code> | [src/Meridian.Application/Http/ConfigStore.cs:83](../../../../src/Meridian.Application/Http/ConfigStore.cs#L83) | Static method to load configuration from a path. Used by ConfigurationService.LoadAndPrepareConfig() for consolidated config loading. |
-| <code>public AppConfig Load() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:111](../../../../src/Meridian.Application/Http/ConfigStore.cs#L111) | Instance method to load configuration from the configured path. Delegates to the static LoadConfig method. |
-| <code>public ConfigurationChangeStatus GetChangeStatus() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:114](../../../../src/Meridian.Application/Http/ConfigStore.cs#L114) | Saved setting impacts and host-lifetime pending activation; contains no setting values. |
-| <code>public static ConfigurationChangeImpact GetSettingImpact(string path) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:117](../../../../src/Meridian.Application/Http/ConfigStore.cs#L117) | Conservative activation requirement for a configuration field, also exposed by effective settings. |
-| <code>public AppConfig LoadRequired();</code> | [src/Meridian.Application/Http/ConfigStore.cs:120](../../../../src/Meridian.Application/Http/ConfigStore.cs#L120) | Loads existing configuration without substituting defaults when authoritative state cannot be read. |
-| <code>public Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;AppConfig, (AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:145](../../../../src/Meridian.Application/Http/ConfigStore.cs#L145) | Read-modify-write of the configuration document under the cross-process configuration lock (PRD-002: concurrent configuration writes). The current document is loaded inside the lock, handed to update, and the returned document is written atomically before the lock is released, so two writers editing different sections can never lose each other&#x27;s change the way a Load() + SaveAsync pair can. |
-| <code>public Task UpdateAsync(Func&lt;AppConfig, AppConfig&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:149](../../../../src/Meridian.Application/Http/ConfigStore.cs#L149) | Result-less form of UpdateAsync{T}. |
-| <code>public async Task&lt;IDisposable&gt; AcquireWriteLeaseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:182](../../../../src/Meridian.Application/Http/ConfigStore.cs#L182) | Holds the cross-process configuration write lock (the .lock sidecar beside the file) until the returned lease is disposed. For writers that persist the document through their own serializer, such as the WPF shell&#x27;s configuration service, so the installed two-process workstation shares one lock with every UpdateAsync{T} caller. Not reentrant. |
-| <code>public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:204](../../../../src/Meridian.Application/Http/ConfigStore.cs#L204) | Whole-document replacement: the caller&#x27;s snapshot becomes the configuration, last writer wins. Reserved for callers that own the entire document (the CLI &quot;save this configuration&quot; path and the setup wizard&#x27;s generated output). Section-level edits use UpdateAsync{T}, which reads the current document under the same lock and cannot drop a concurrent change. |
-| <code>public async Task SaveFeatureCapabilityOverridesAsync(IReadOnlyDictionary&lt;string, bool&gt; overrides, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:234](../../../../src/Meridian.Application/Http/ConfigStore.cs#L234) |  |
-| <code>public string? TryLoadStatusJson();</code> | [src/Meridian.Application/Http/ConfigStore.cs:284](../../../../src/Meridian.Application/Http/ConfigStore.cs#L284) |  |
-| <code>public string GetStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:301](../../../../src/Meridian.Application/Http/ConfigStore.cs#L301) |  |
-| <code>public string GetBackfillStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:308](../../../../src/Meridian.Application/Http/ConfigStore.cs#L308) |  |
-| <code>public BackfillResult? TryLoadBackfillStatus();</code> | [src/Meridian.Application/Http/ConfigStore.cs:315](../../../../src/Meridian.Application/Http/ConfigStore.cs#L315) |  |
-| <code>public string GetDataRoot(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:322](../../../../src/Meridian.Application/Http/ConfigStore.cs#L322) |  |
-| <code>public string GetProviderMetricsPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:328](../../../../src/Meridian.Application/Http/ConfigStore.cs#L328) |  |
-| <code>public ProviderMetricsStatus? TryLoadProviderMetrics();</code> | [src/Meridian.Application/Http/ConfigStore.cs:335](../../../../src/Meridian.Application/Http/ConfigStore.cs#L335) |  |
+| <code>public static Func&lt;string&gt; DefaultPathResolver { get; set; } = ResolveDefaultPath;</code> | [src/Meridian.Application/Http/ConfigStore.cs:37](../../../../src/Meridian.Application/Http/ConfigStore.cs#L37) | Default path resolver that returns the nearest standard Meridian configuration path. |
+| <code>public string ConfigPath { get; }</code> | [src/Meridian.Application/Http/ConfigStore.cs:47](../../../../src/Meridian.Application/Http/ConfigStore.cs#L47) | Gets the path to the configuration file. |
+| <code>public ConfigStore() : this(null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:52](../../../../src/Meridian.Application/Http/ConfigStore.cs#L52) | Creates a new ConfigStore with the default configuration path resolution. |
+| <code>public ConfigStore(string? configPath, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:59](../../../../src/Meridian.Application/Http/ConfigStore.cs#L59) | Creates a new ConfigStore with a custom configuration path. |
+| <code>public static AppConfig LoadConfig(string path);</code> | [src/Meridian.Application/Http/ConfigStore.cs:84](../../../../src/Meridian.Application/Http/ConfigStore.cs#L84) | Static method to load configuration from a path. Used by ConfigurationService.LoadAndPrepareConfig() for consolidated config loading. |
+| <code>public AppConfig Load() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:112](../../../../src/Meridian.Application/Http/ConfigStore.cs#L112) | Instance method to load configuration from the configured path. Delegates to the static LoadConfig method. |
+| <code>public ConfigurationChangeStatus GetChangeStatus() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:115](../../../../src/Meridian.Application/Http/ConfigStore.cs#L115) | Saved setting impacts and host-lifetime pending activation; contains no setting values. |
+| <code>public static ConfigurationChangeImpact GetSettingImpact(string path) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:118](../../../../src/Meridian.Application/Http/ConfigStore.cs#L118) | Conservative activation requirement for a configuration field, also exposed by effective settings. |
+| <code>public AppConfig LoadRequired();</code> | [src/Meridian.Application/Http/ConfigStore.cs:121](../../../../src/Meridian.Application/Http/ConfigStore.cs#L121) | Loads existing configuration without substituting defaults when authoritative state cannot be read. |
+| <code>public Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;AppConfig, (AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:146](../../../../src/Meridian.Application/Http/ConfigStore.cs#L146) | Read-modify-write of the configuration document under the cross-process configuration lock (PRD-002: concurrent configuration writes). The current document is loaded inside the lock, handed to update, and the returned document is written atomically before the lock is released, so two writers editing different sections can never lose each other&#x27;s change the way a Load() + SaveAsync pair can. |
+| <code>public Task UpdateAsync(Func&lt;AppConfig, AppConfig&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:150](../../../../src/Meridian.Application/Http/ConfigStore.cs#L150) | Result-less form of UpdateAsync{T}. |
+| <code>public async Task&lt;IDisposable&gt; AcquireWriteLeaseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:184](../../../../src/Meridian.Application/Http/ConfigStore.cs#L184) | Holds the cross-process configuration write lock (the .lock sidecar beside the file) until the returned lease is disposed. For writers that persist the document through their own serializer, such as the WPF shell&#x27;s configuration service, so the installed two-process workstation shares one lock with every UpdateAsync{T} caller. Not reentrant. |
+| <code>public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:206](../../../../src/Meridian.Application/Http/ConfigStore.cs#L206) | Whole-document replacement: the caller&#x27;s snapshot becomes the configuration, last writer wins. Reserved for callers that own the entire document (the CLI &quot;save this configuration&quot; path and the setup wizard&#x27;s generated output). Section-level edits use UpdateAsync{T}, which reads the current document under the same lock and cannot drop a concurrent change. |
+| <code>public async Task SaveFeatureCapabilityOverridesAsync(IReadOnlyDictionary&lt;string, bool&gt; overrides, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:240](../../../../src/Meridian.Application/Http/ConfigStore.cs#L240) |  |
+| <code>public string? TryLoadStatusJson();</code> | [src/Meridian.Application/Http/ConfigStore.cs:296](../../../../src/Meridian.Application/Http/ConfigStore.cs#L296) |  |
+| <code>public string GetStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:313](../../../../src/Meridian.Application/Http/ConfigStore.cs#L313) |  |
+| <code>public string GetBackfillStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:320](../../../../src/Meridian.Application/Http/ConfigStore.cs#L320) |  |
+| <code>public BackfillResult? TryLoadBackfillStatus();</code> | [src/Meridian.Application/Http/ConfigStore.cs:327](../../../../src/Meridian.Application/Http/ConfigStore.cs#L327) |  |
+| <code>public string GetDataRoot(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:334](../../../../src/Meridian.Application/Http/ConfigStore.cs#L334) |  |
+| <code>public string GetProviderMetricsPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:340](../../../../src/Meridian.Application/Http/ConfigStore.cs#L340) |  |
+| <code>public ProviderMetricsStatus? TryLoadProviderMetrics();</code> | [src/Meridian.Application/Http/ConfigStore.cs:347](../../../../src/Meridian.Application/Http/ConfigStore.cs#L347) |  |
 
 ## StatusEndpointHandlers
 
@@ -629,7 +765,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Wizard.Steps.ReviewConfigurationStep</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs:14](../../../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs#L14).
+Source: [src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs:15](../../../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs#L15).
 
 Step 9: Assembles the final AppConfig from wizard context and shows it to the user for review. Writes WizardContext.FinalConfig; sets WizardContext.IsCancelled if the user declines.
 
@@ -641,15 +777,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs:19](../../../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs#L19) |  |
-| <code>public ReviewConfigurationStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs:21](../../../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs#L21) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs:27](../../../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs#L27) |  |
+| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs:21](../../../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs#L21) |  |
+| <code>public ReviewConfigurationStep(TextWriter output, TextReader input, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs:23](../../../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs#L23) |  |
+| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs:31](../../../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs#L31) |  |
 
 ## SaveConfigurationStep
 
 Qualified name: <code>Meridian.Application.Wizard.Steps.SaveConfigurationStep</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs:11](../../../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs#L11).
+Source: [src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs:12](../../../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs#L12).
 
 Step 10: Persists the assembled configuration to disk. Writes WizardContext.SavedConfigPath.
 
@@ -661,9 +797,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs#L17) |  |
-| <code>public SaveConfigurationStep(TextWriter output, TextReader input) : this(output, input, static path =&gt; new ConfigStore(path));</code> | [src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs:19](../../../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs#L19) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs:34](../../../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs#L34) |  |
+| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs:18](../../../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs#L18) |  |
+| <code>public SaveConfigurationStep(TextWriter output, TextReader input, ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(output, input, path =&gt; new ConfigStore(path, ownershipPolicy));</code> | [src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs:20](../../../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs#L20) |  |
+| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs:36](../../../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs#L36) |  |
 
 ## SelectUseCaseStep
 
@@ -689,7 +825,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Wizard.Steps.ValidateCredentialsStep</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:12](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L12).
+Source: [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:13](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L13).
 
 Step 5: Validates credentials for the selected data source. Does not modify context state; purely informational.
 
@@ -701,15 +837,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L17) |  |
-| <code>public ValidateCredentialsStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:19](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L19) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:25](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L25) |  |
+| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:20](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L20) |  |
+| <code>public ValidateCredentialsStep(TextWriter output, TextReader input, ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(output, input, ownershipPolicy, ValidateAsync);</code> | [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:22](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L22) |  |
+| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:38](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L38) |  |
 
 ## WizardWorkflowFactory
 
 Qualified name: <code>Meridian.Application.Wizard.WizardWorkflowFactory</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Wizard/WizardWorkflowFactory.cs:12](../../../../src/Meridian.Application/Wizard/WizardWorkflowFactory.cs#L12).
+Source: [src/Meridian.Application/Wizard/WizardWorkflowFactory.cs:13](../../../../src/Meridian.Application/Wizard/WizardWorkflowFactory.cs#L13).
 
 Builds the default interactive configuration workflow graph and returns a pre-wired WizardCoordinator ready to run from WizardStepId.DetectProviders.
 
@@ -721,4 +857,4 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static WizardCoordinator CreateInteractive(AutoConfigurationService autoConfig, TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/WizardWorkflowFactory.cs:17](../../../../src/Meridian.Application/Wizard/WizardWorkflowFactory.cs#L17) | Creates the interactive (CLI) wizard coordinator. |
+| <code>public static WizardCoordinator CreateInteractive(AutoConfigurationService autoConfig, TextWriter output, TextReader input, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Wizard/WizardWorkflowFactory.cs:18](../../../../src/Meridian.Application/Wizard/WizardWorkflowFactory.cs#L18) | Creates the interactive (CLI) wizard coordinator. |

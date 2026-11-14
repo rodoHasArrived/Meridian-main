@@ -76,6 +76,16 @@ public sealed class ProviderIntegrationPromotionReadinessServiceTests : IDisposa
         var manifestReference = ProviderIntegrationManifestIdentity.Create(manifest);
         await store.SaveManifestAsync(manifest).ConfigureAwait(false);
         await store.SaveConnectionAsync(CreateConnection()).ConfigureAwait(false);
+        await store.SaveRawPayloadAsync(new RawIngestionPayloadDto(
+            "payload-1", manifest.ProviderId, "connection-alpha", ProviderCapabilityKindDto.Positions,
+            "positions", "sync-run-promotion-1", DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            new Dictionary<string, string> { ["statusCode"] = "200" },
+            Json("""{"positions":[{"account_id":"A1","position_id":"source-position-1","quantity":100},{"account_id":"A2","position_id":"source-position-2","quantity":50},{"position_id":"source-position-3","quantity":10}]}"""),
+            $"{manifest.ManifestId}:v{manifest.ManifestVersion}", ProviderIntegrationProcessingStatusDto.Received)
+        {
+            ManifestReference = manifestReference,
+            OriginalManifestReference = manifestReference
+        }).ConfigureAwait(false);
         await store.SaveSyncRunAsync(new ProviderIntegrationSyncRunDto(
             "sync-run-promotion-1",
             "manifest-custodian-abc-v1",

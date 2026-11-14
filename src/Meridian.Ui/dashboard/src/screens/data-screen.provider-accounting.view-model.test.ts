@@ -12,6 +12,31 @@ import {
 const now = Date.parse("2026-07-13T12:00:00Z");
 
 describe("provider accounting view model", () => {
+  it("keeps weighted credits and the declared daily reset distinct from request counts", () => {
+    const rates = buildProviderRateLimitsFixture();
+    rates.providers[0] = {
+      ...rates.providers[0], quotaUnit: "credits", requestsInWindow: 40,
+      maxRequestsPerWindow: 55, remainingRequests: 15,
+      dailyUnitsUsed: 400, dailyMaximum: 800, dailyResetPolicy: "utc-midnight"
+    };
+    const panel = buildProviderAccountingPanelState(buildProviderAccountingCatalogFixture(), rates, now);
+    expect(panel.rateLimits[0].requestUsage).toBe("40 / 55 credits");
+    expect(panel.rateLimits[0].remaining).toBe("15 credits");
+    expect(panel.rateLimits[0].dailyUsage).toBe("400 / 800 credits · midnight UTC");
+  });
+
+  it("does not infer a daily quota or reset policy when the runtime did not supply one", () => {
+    const rates = buildProviderRateLimitsFixture();
+    const legacy = buildProviderAccountingPanelState(buildProviderAccountingCatalogFixture(), rates, now);
+    expect(legacy.rateLimits[0].dailyUsage).toBe("Unavailable");
+    rates.providers[0] = { ...rates.providers[0], dailyUnitsUsed: 1, dailyMaximum: 25 };
+    const unknownReset = buildProviderAccountingPanelState(buildProviderAccountingCatalogFixture(), rates, now);
+    expect(unknownReset.rateLimits[0].dailyUsage).toContain("reset policy unavailable");
+    rates.providers[0].dailyMaximum = null;
+    const uncapped = buildProviderAccountingPanelState(buildProviderAccountingCatalogFixture(), rates, now);
+    expect(uncapped.rateLimits[0].dailyUsage).toBe("No daily cap modeled");
+  });
+
   it("projects truthful registration failures and current retry posture", () => {
     const panel = buildProviderAccountingPanelState(
       buildProviderAccountingCatalogFixture(),
@@ -33,8 +58,8 @@ describe("provider accounting view model", () => {
         provider: "NYSE",
         surface: "Historical",
         status: "Rate limited",
-        requestUsage: "8 / 10",
-        remaining: "2",
+        requestUsage: "8 / 10 requests",
+        remaining: "2 requests",
         resetCountdown: "1m 5s",
         failureReason: "Current rate-limit reason: provider response.",
         retryPosture: "Retry after 1m 5s.",

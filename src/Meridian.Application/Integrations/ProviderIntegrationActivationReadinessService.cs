@@ -67,7 +67,87 @@ public sealed class ProviderIntegrationActivationReadinessService
             : await scopedStore.GetConnectionAsync(connectionId, ct).ConfigureAwait(false)
                 ?? throw new KeyNotFoundException($"Provider integration connection '{connectionId}' was not found.");
 
-        return Evaluate(manifest, connection);
+        return await EvaluateRetainedAsync(scopedStore, manifest, connection, ct).ConfigureAwait(false);
+    }
+
+    internal static async Task<ProviderIntegrationActivationReadinessDto> EvaluateRetainedAsync(
+        IProviderIntegrationManifestStore store,
+        ProviderIntegrationManifestDto manifest,
+        ProviderConnectionDto? connection,
+        CancellationToken ct,
+        ProviderIntegrationManifestReferenceDto? reviewedReference = null)
+    {
+        var evidenceIssues = new List<ProviderIntegrationActivationIssueDto>();
+        var effectiveManifest = manifest;
+        if (manifest.Activation.RequiresDryRun)
+        {
+            var reference = reviewedReference ?? ProviderIntegrationManifestIdentity.Create(manifest);
+            var reviewedManifest = await store.GetManifestVersionAsync(reference.ManifestId, reference.ManifestVersion, ct).ConfigureAwait(false);
+            if (reviewedManifest is null || !ProviderIntegrationManifestIdentity.Matches(reference,
+                    ProviderIntegrationManifestIdentity.Create(reviewedManifest)))
+                throw new InvalidDataException("The reviewed manifest history is unavailable or inconsistent.");
+            IReadOnlyList<ProviderIntegrationSyncRunDto> runs = connection is null
+                ? [] : await store.ListSyncRunsAsync(connection.ConnectionId, ct).ConfigureAwait(false);
+            var capabilities = manifest.Capabilities.Where(capability => capability.Enabled &&
+                (connection is null || connection.EnabledCapabilities.Contains(capability.Capability))).ToArray();
+            foreach (var capability in capabilities)
+            {
+                var scopedRuns = runs.Where(run => run.ManifestId == manifest.ManifestId && run.ProviderId == manifest.ProviderId &&
+                        run.ConnectionId == connection?.ConnectionId && run.Capability == capability.Capability &&
+                        run.SourceSyncRunId is null && run.ReplayMode is null)
+                    .OrderByDescending(run => run.StartedAt).ToArray();
+                DateTimeOffset? latest = null;
+                var complete = true;
+                foreach (var run in scopedRuns)
+                {
+                    if (latest is not null && run.StartedAt < latest)
+                        break;
+                    if (run.ManifestReference is not { } runReference || runReference.ManifestVersion > reviewedManifest.ManifestVersion)
+                        continue;
+                    var historical = await store.GetManifestVersionAsync(runReference.ManifestId, runReference.ManifestVersion, ct).ConfigureAwait(false);
+                    if (historical is null || !ProviderIntegrationManifestIdentity.Matches(runReference,
+                            ProviderIntegrationManifestIdentity.Create(historical)) || !SameIngestionDefinition(historical, reviewedManifest))
+                        continue;
+                    latest = run.StartedAt;
+                    var records = await store.ListStagingRecordsAsync(run.SyncRunId, ct).ConfigureAwait(false);
+                    if (await ProviderIntegrationRunCompleteness.GetIssueAsync(store, run, records, ct).ConfigureAwait(false) is not null)
+                        complete = false;
+                }
+                if (latest is null || !complete)
+                    evidenceIssues.Add(new("provider-manifest.dry-run-evidence-required", ProviderIntegrationIssueSeverityDto.Critical,
+                        "Activation requires a complete retained dry run for the reviewed manifest and selected connection.",
+                        capability.Capability, "Fetch complete source data and validate every enabled capability before activation."));
+            }
+
+            // Dry runs pin the current immutable manifest; they do not publish a new state version.
+            // Derive readiness from that evidence before activation creates its next manifest version.
+            if (evidenceIssues.Count == 0 && capabilities.Length > 0 &&
+                manifest.State is ProviderIntegrationActivationStateDto.Draft or ProviderIntegrationActivationStateDto.Tested)
+                effectiveManifest = manifest with { State = ProviderIntegrationActivationStateDto.DryRunPassed };
+        }
+
+        var readiness = Evaluate(effectiveManifest, connection);
+        return readiness with
+        {
+            IsReady = readiness.IsReady && evidenceIssues.Count == 0,
+            Issues = [.. readiness.Issues, .. evidenceIssues]
+        };
+    }
+
+    private static bool SameIngestionDefinition(ProviderIntegrationManifestDto historical, ProviderIntegrationManifestDto reviewed)
+    {
+        // An activation/state promotion changes immutable identity without changing ingestion.
+        // Keep the exact historical reference, and permit only these lifecycle fields to differ.
+        var comparable = historical with
+        {
+            ManifestVersion = reviewed.ManifestVersion,
+            State = reviewed.State,
+            ApprovedBy = reviewed.ApprovedBy,
+            ApprovedAt = reviewed.ApprovedAt,
+            ChangeReason = reviewed.ChangeReason
+        };
+        return ProviderIntegrationManifestIdentity.Matches(
+            ProviderIntegrationManifestIdentity.Create(comparable), ProviderIntegrationManifestIdentity.Create(reviewed));
     }
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)

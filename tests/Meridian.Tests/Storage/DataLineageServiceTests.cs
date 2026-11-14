@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Meridian.Tests.Storage;
 
-public sealed class DataLineageServiceTests : IDisposable
+public sealed partial class DataLineageServiceTests : IDisposable
 {
     private readonly string _tempDir;
     private readonly string _lineagePath;
@@ -190,10 +190,9 @@ public sealed class DataLineageServiceTests : IDisposable
     public void RecordIngestion_WhenPersistenceWriteFails_Throws()
     {
         var brokenPath = Path.Combine(_tempDir, "broken-lineage.json");
-        File.WriteAllText(brokenPath, "{}");
-
         var loggerMock = new Mock<ILogger<DataLineageService>>();
         var service = new DataLineageService(brokenPath, loggerMock.Object);
+        service.SaveAsync().GetAwaiter().GetResult();
         File.Delete(brokenPath);
         Directory.CreateDirectory(brokenPath);
 
