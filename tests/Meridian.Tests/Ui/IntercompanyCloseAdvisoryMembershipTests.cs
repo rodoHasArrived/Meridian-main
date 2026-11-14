@@ -56,7 +56,10 @@ public sealed class IntercompanyCloseAdvisoryMembershipTests
         using var fixture = new Fixture(kind);
         fixture.Account = fixture.Account with
         {
-            AccountId = Guid.NewGuid(), FundId = Guid.NewGuid(), SleeveId = Guid.NewGuid(), VehicleId = Guid.NewGuid()
+            AccountId = Guid.NewGuid(),
+            FundId = Guid.NewGuid(),
+            SleeveId = Guid.NewGuid(),
+            VehicleId = Guid.NewGuid()
         };
         AssertUnavailable(await fixture.RunAsync());
         fixture.Monitor.VerifyNoOtherCalls();
@@ -76,13 +79,27 @@ public sealed class IntercompanyCloseAdvisoryMembershipTests
         using var fixture = new Fixture(FundStructureNodeKindDto.Sleeve);
         switch (defect)
         {
-            case "owner-tenant": fixture.Owner = fixture.Owner with { TenantId = "other-tenant" }; break;
-            case "owner-company": fixture.Owner = fixture.Owner with { CompanyId = "other-company" }; break;
-            case "caller-tenant": fixture.Http.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "other-tenant"; break;
-            case "caller-company": fixture.Http.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "other-company"; break;
-            case "fund": fixture.Scope = fixture.Scope with { FundProfileId = "other-fund" }; break;
-            case "period-book": fixture.Period = fixture.Period with { LedgerBookId = Guid.NewGuid() }; break;
-            case "entity": fixture.Scope = fixture.Scope with { EntityId = Guid.NewGuid().ToString("D") }; break;
+            case "owner-tenant":
+                fixture.Owner = fixture.Owner with { TenantId = "other-tenant" };
+                break;
+            case "owner-company":
+                fixture.Owner = fixture.Owner with { CompanyId = "other-company" };
+                break;
+            case "caller-tenant":
+                fixture.Http.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "other-tenant";
+                break;
+            case "caller-company":
+                fixture.Http.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "other-company";
+                break;
+            case "fund":
+                fixture.Scope = fixture.Scope with { FundProfileId = "other-fund" };
+                break;
+            case "period-book":
+                fixture.Period = fixture.Period with { LedgerBookId = Guid.NewGuid() };
+                break;
+            case "entity":
+                fixture.Scope = fixture.Scope with { EntityId = Guid.NewGuid().ToString("D") };
+                break;
         }
         AssertUnavailable(await fixture.RunAsync());
         fixture.Monitor.VerifyNoOtherCalls();
@@ -104,14 +121,30 @@ public sealed class IntercompanyCloseAdvisoryMembershipTests
         using var fixture = new Fixture(FundStructureNodeKindDto.Vehicle, registerSubject: defect != "missing-resolver");
         switch (defect)
         {
-            case "inactive": fixture.Account = fixture.Account with { IsActive = false }; break;
-            case "expired": fixture.Account = fixture.Account with { EffectiveTo = DateTimeOffset.UtcNow.AddDays(-1) }; break;
-            case "missing-account": fixture.MissingAccount = true; break;
-            case "missing-book": fixture.MissingSubjectBook = true; break;
-            case "missing-account-selection": fixture.Scope = fixture.Scope with { FundAccountId = null }; break;
-            case "subject-scope": fixture.TransformSubject = x => x with { Scope = x.Scope with { EntityId = Guid.NewGuid().ToString("D") } }; break;
-            case "subject-status": fixture.TransformSubject = x => x with { Status = "Unavailable" }; break;
-            case "subject-version": fixture.TransformSubject = x => x with { EvidenceVersion = "" }; break;
+            case "inactive":
+                fixture.Account = fixture.Account with { IsActive = false };
+                break;
+            case "expired":
+                fixture.Account = fixture.Account with { EffectiveTo = DateTimeOffset.UtcNow.AddDays(-1) };
+                break;
+            case "missing-account":
+                fixture.MissingAccount = true;
+                break;
+            case "missing-book":
+                fixture.MissingSubjectBook = true;
+                break;
+            case "missing-account-selection":
+                fixture.Scope = fixture.Scope with { FundAccountId = null };
+                break;
+            case "subject-scope":
+                fixture.TransformSubject = x => x with { Scope = x.Scope with { EntityId = Guid.NewGuid().ToString("D") } };
+                break;
+            case "subject-status":
+                fixture.TransformSubject = x => x with { Status = "Unavailable" };
+                break;
+            case "subject-version":
+                fixture.TransformSubject = x => x with { EvidenceVersion = "" };
+                break;
         }
         AssertUnavailable(await fixture.RunAsync());
         fixture.Monitor.VerifyNoOtherCalls();
@@ -128,10 +161,18 @@ public sealed class IntercompanyCloseAdvisoryMembershipTests
         using var fixture = new Fixture(FundStructureNodeKindDto.Account);
         switch (defect)
         {
-            case "missing-entity-book": fixture.EntityBookAvailable = false; break;
-            case "denied-reporting-grant": fixture.EntityReportAllowed = false; break;
-            case "entity-other-tenant": fixture.EntityTenant = "other-tenant"; break;
-            case "unpartitioned-authority": fixture.Partitioned = false; break;
+            case "missing-entity-book":
+                fixture.EntityBookAvailable = false;
+                break;
+            case "denied-reporting-grant":
+                fixture.EntityReportAllowed = false;
+                break;
+            case "entity-other-tenant":
+                fixture.EntityTenant = "other-tenant";
+                break;
+            case "unpartitioned-authority":
+                fixture.Partitioned = false;
+                break;
         }
         AssertUnavailable(await fixture.RunAsync());
         Assert.NotNull(fixture.CapturedRequest);
