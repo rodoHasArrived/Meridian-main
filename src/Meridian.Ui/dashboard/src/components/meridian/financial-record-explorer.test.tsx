@@ -52,6 +52,28 @@ describe("FinancialRecordExplorerShell", () => {
     );
   });
 
+  it("keeps compact scope, warnings and filters visible with source and proof available on demand", async () => {
+    const user = userEvent.setup();
+    const dto = createExplorerDto();
+    const { container } = renderExplorer(vi.fn(), dto, undefined, true);
+
+    expect(screen.getByLabelText("Explorer scope")).toBeVisible();
+    expect(screen.getByLabelText("Explorer summary")).toBeVisible();
+    expect(screen.getByLabelText("Applied explorer filters")).toBeVisible();
+    expect(screen.getByLabelText("Saved explorer views")).toBeVisible();
+    expect(screen.getByRole("link", { name: "Inspect record — selected record" })).toBeVisible();
+    expect(screen.getByRole("textbox", { name: "Saved view name" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Save view" })).toBeDisabled();
+    expect(screen.getByText(dto.sourceState)).not.toBeVisible();
+    await user.click(screen.getByText("Explorer details"));
+    expect(screen.getByText(dto.sourceState)).toBeVisible();
+    expect(screen.getByText("Proof drill-through")).toBeVisible();
+    await user.type(screen.getByRole("textbox", { name: "Search Ledger Explorer" }), "Revenue");
+    expect(screen.queryByRole("cell", { name: "Cash" })).not.toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Revenue" })).toBeInTheDocument();
+    expect((await axe(container)).violations).toEqual([]);
+  });
+
   it("publishes the selected record so route-owned detail can stay synchronized", async () => {
     const onSelectRecord = vi.fn();
 
@@ -605,11 +627,13 @@ describe("FinancialRecordExplorerShell", () => {
 function renderExplorer(
   onSaveView?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSaveView"],
   explorer: FinancialRecordExplorerDto = createExplorerDto(),
-  onSelectRecord?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSelectRecord"]
+  onSelectRecord?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSelectRecord"],
+  compact = false
 ) {
   return render(
     <FinancialRecordExplorerShell
       explorerLabel="Accounting"
+      compact={compact}
       title="Ledger Explorer"
       description="Static fallback"
       scopeItems={[]}

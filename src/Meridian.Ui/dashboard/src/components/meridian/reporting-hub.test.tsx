@@ -159,8 +159,11 @@ describe("ReportingHub", () => {
 
     const summaryBadges = screen.getAllByText("No urgent work queued · 1 report family needs setup or review");
     expect(summaryBadges.some((badge) => badge.classList.contains("border-warning/35"))).toBe(true);
-    expect(screen.getByText("No dedicated daily work items are loaded. 1 report family still needs review in the organizer below.")).toBeInTheDocument();
+    expect(screen.getByText("No dedicated daily work items are loaded. 1 report family still needs review in the family organizer.")).toBeInTheDocument();
     expect(screen.queryByText(/No due packages, approvals/i)).not.toBeInTheDocument();
+    const organizer = screen.getByRole("region", { name: "Report family organizer" });
+    const emptyQueue = screen.getByRole("region", { name: "Daily reporting triage queue" });
+    expect(organizer.compareDocumentPosition(emptyQueue) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("selects any work item and exposes all of its retained support and actions", async () => {
