@@ -2990,6 +2990,11 @@ external-runtime requirements. Package conformance and browser regression harnes
 
 ## Validation
 
+TypeScript is pinned to 5.9.3 in the package manifest and lockfile. This stays within the
+`typescript-eslint` supported compiler range while updating the previous 5.7 baseline.
+After compiler updates, run `npx tsc --noEmit` from this directory and the focused Vite
+configuration tests before rebuilding the workstation assets.
+
 Launcher/process ownership coverage runs from the repository root with
 `node --test scripts/dev/web-dev.test.mjs`. Focused Vite/API mode coverage is in
 `src/vite-config.test.ts` and `src/lib/api.development-modes.test.ts`.

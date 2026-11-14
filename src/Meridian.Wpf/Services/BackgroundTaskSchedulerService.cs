@@ -172,8 +172,8 @@ public sealed class BackgroundTaskSchedulerService
                 if (completed.IsFaulted)
                 {
                     LoggingService.Instance.LogError(
-                        $"Background task '{task.Name}' failed",
-                        completed.Exception?.GetBaseException());
+                        "Background task '{Task}' failed",
+                        completed.Exception?.GetBaseException(), ("Task", task.Name));
                 }
             },
             CancellationToken.None,
@@ -240,8 +240,8 @@ public sealed class BackgroundTaskSchedulerService
                 catch (Exception ex) when (ex is not OutOfMemoryException)
                 {
                     LoggingService.Instance.LogError(
-                        $"Scheduled background task '{task.Name}' failed",
-                        ex);
+                        "Scheduled background task '{Task}' failed",
+                        ex, ("Task", task.Name));
                 }
             }
         }
