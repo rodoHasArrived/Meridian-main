@@ -62,6 +62,27 @@ describe("collectScopeStructureOptions", () => {
     });
   });
 
+  it("reads withheld fund and entity flags defensively, only beside a null relationship", () => {
+    const structure = collectScopeStructureOptions({
+      accounts: [
+        { accountId: "W-1", displayName: "Withheld", fundId: null, entityId: null, fundWithheld: true, entityWithheld: true },
+        { accountId: "W-2", displayName: "Visible fund", fundId: "F-1", entityId: null, fundWithheld: true, entityWithheld: "yes" },
+        { accountId: "W-3", displayName: "No flags", fundId: null, entityId: null }
+      ]
+    });
+
+    expect(structure.accounts.find((account) => account.id === "W-1")).toMatchObject({ fundWithheld: true, entityWithheld: true });
+    // A stated fund wins over a stray flag, and only a literal true counts.
+    expect(structure.accounts.find((account) => account.id === "W-2")).toEqual({
+      id: "W-2",
+      label: "Visible fund",
+      fundId: "F-1",
+      entityId: null
+    });
+    // The organization graph fallback sends no flags: nothing is withheld.
+    expect(structure.accounts.find((account) => account.id === "W-3")).not.toHaveProperty("fundWithheld");
+  });
+
   it("is unavailable for a missing or unrelated payload", () => {
     expect(collectScopeStructureOptions(null)).toBe(UNAVAILABLE_SCOPE_STRUCTURE);
     expect(collectScopeStructureOptions({ unrelated: true })).toBe(UNAVAILABLE_SCOPE_STRUCTURE);
@@ -106,6 +127,34 @@ describe("constrainScopeOptions", () => {
     expect(result.funds).toHaveLength(3);
     expect(result.accounts.map((account) => account.id)).toEqual(["A-1"]);
     expect(result.accountsWithoutKnownRelationship).toBe(2);
+  });
+
+  it("counts accounts whose fund or entity is withheld apart from ones with none, and never calls them conflicts", () => {
+    const withheld = collectScopeStructureOptions({
+      entities: [{ entityId: "E-A", name: "Entity A" }],
+      funds: [{ fundId: "F-1", name: "Fund One", entityIds: ["E-A"] }],
+      accounts: [
+        { accountId: "A-1", displayName: "In fund", fundId: "F-1", entityId: "E-A" },
+        { accountId: "W-1", displayName: "Fund withheld", fundId: null, entityId: "E-A", fundWithheld: true },
+        { accountId: "W-2", displayName: "Both withheld", fundId: null, entityId: null, fundWithheld: true, entityWithheld: true },
+        { accountId: "U-1", displayName: "Unfiled", fundId: null, entityId: null }
+      ]
+    });
+
+    const byFund = constrainScopeOptions(withheld, withheld.accounts, { fundId: "F-1" });
+    expect(byFund.accounts.map((account) => account.id)).toEqual(["A-1"]);
+    expect(byFund.accountsWithWithheldRelationship).toBe(2);
+    expect(byFund.accountsWithoutKnownRelationship).toBe(1);
+
+    const byEntity = constrainScopeOptions(withheld, withheld.accounts, { entityId: "E-A" });
+    // W-1 is booked to E-A itself, so it is kept; W-2 cannot be placed.
+    expect(byEntity.accounts.map((account) => account.id)).toEqual(["W-1", "A-1"]);
+    expect(byEntity.accountsWithWithheldRelationship).toBe(1);
+    expect(byEntity.accountsWithoutKnownRelationship).toBe(1);
+
+    expect(accountConflictsWithScope(withheld, withheld.accounts, "W-1", { fundId: "F-1" })).toBe(false);
+    expect(accountConflictsWithScope(withheld, withheld.accounts, "W-2", { fundId: "F-1" })).toBe(false);
+    expect(constrainScopeOptions(withheld, withheld.accounts, {}).accountsWithWithheldRelationship).toBe(0);
   });
 
   it("keeps an account the picker offers when its fund's entity comes from another account", () => {

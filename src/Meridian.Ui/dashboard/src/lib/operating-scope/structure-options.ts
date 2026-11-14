@@ -5,7 +5,10 @@
 // Meridian.Contracts). It is open to every authenticated operator and lists only the legal
 // entities (`entities[]`), funds with the entities they hold (`funds[].entityIds`) and accounts
 // with their fund and entity (`accounts[].fundId` / `accounts[].entityId`) that the caller's own
-// scoped grants let it read; a relationship pointing outside that set arrives as null. Its field
+// scoped grants let it read; a relationship pointing outside that set arrives as null, with
+// `accounts[].fundWithheld` / `accounts[].entityWithheld` set when the account does have that fund or
+// entity but the caller may not see it (only that a relationship exists is disclosed, never its id
+// or name). The graph fallback sends no such flags, so they read as false there. Its field
 // names match the organization graph's summaries, so one parser reads both. A host older than
 // that route answers 404, and the picker then falls back to the organization graph,
 // `GET /api/fund-structure/graph` (`OrganizationStructureGraphDto`), which is gated to
@@ -127,14 +130,18 @@ export function collectScopeStructureOptions(graph: unknown): ScopeStructureOpti
   const accounts = distinctById(
     readArray(graph.accounts).map((account) => {
       const id = readId(account.accountId);
-      return id
-        ? {
-            id,
-            label: readLabel(account.displayName, id),
-            fundId: readId(account.fundId),
-            entityId: readId(account.entityId)
-          }
-        : null;
+      if (!id) return null;
+      const option: ScopeFundAccountOption = {
+        id,
+        label: readLabel(account.displayName, id),
+        fundId: readId(account.fundId),
+        entityId: readId(account.entityId)
+      };
+      // Only a literal true counts, and only beside a null relationship; the flags are left off
+      // otherwise so an account the caller can fully place looks the same from either payload.
+      if (account.fundWithheld === true && !option.fundId) option.fundWithheld = true;
+      if (account.entityWithheld === true && !option.entityId) option.entityWithheld = true;
+      return option;
     })
   );
 
@@ -172,7 +179,22 @@ export interface ConstrainedScopeOptions {
   accountsConstrained: boolean;
   /** Accounts left out because the data does not say which fund or entity they belong to. */
   accountsWithoutKnownRelationship: number;
+  /**
+   * Accounts left out because their fund (or entity) exists but is not visible to the caller, so
+   * they cannot be placed. Counted apart from `accountsWithoutKnownRelationship`: they do have one.
+   */
+  accountsWithWithheldRelationship: number;
 }
+
+/**
+ * Where an account sits against a chosen entity/fund:
+ *
+ * - `inside`: under the chosen fund (or entity);
+ * - `outside`: the data places it under another one;
+ * - `withheld`: it has a fund (or entity) the caller may not see, so it cannot be placed;
+ * - `unrecorded`: the data records no fund (or entity) for it.
+ */
+export type ScopeAccountPlacement = "inside" | "outside" | "withheld" | "unrecorded";
 
 /**
  * The choices left once an entity and/or fund is picked:
@@ -200,7 +222,8 @@ export function constrainScopeOptions(
     accounts: [...accounts],
     fundsConstrained: false,
     accountsConstrained: false,
-    accountsWithoutKnownRelationship: 0
+    accountsWithoutKnownRelationship: 0,
+    accountsWithWithheldRelationship: 0
   };
   if (structure.status !== "ready" || (!entityId && !fundId)) {
     return unconstrained;
@@ -212,31 +235,12 @@ export function constrainScopeOptions(
     : structure.funds;
 
   let withoutKnownRelationship = 0;
+  let withWithheldRelationship = 0;
   const narrowedAccounts = accounts.filter((account) => {
-    const accountFund = normalizeOptional(account.fundId);
-    const accountEntity = normalizeOptional(account.entityId);
-    if (fundId) {
-      if (!accountFund) {
-        withoutKnownRelationship += 1;
-        return false;
-      }
-      if (accountFund !== fundId) {
-        return false;
-      }
-    }
-    if (entityId) {
-      if (accountEntity) {
-        return accountEntity === entityId;
-      }
-      if (accountFund) {
-        return fundsForEntity?.has(accountFund) ?? false;
-      }
-      if (!fundId) {
-        withoutKnownRelationship += 1;
-      }
-      return false;
-    }
-    return true;
+    const placement = placeAccount(account, fundId, entityId, fundsForEntity);
+    if (placement === "unrecorded") withoutKnownRelationship += 1;
+    if (placement === "withheld") withWithheldRelationship += 1;
+    return placement === "inside";
   });
 
   return {
@@ -245,8 +249,32 @@ export function constrainScopeOptions(
     accounts: narrowedAccounts,
     fundsConstrained: Boolean(entityId),
     accountsConstrained: true,
-    accountsWithoutKnownRelationship: withoutKnownRelationship
+    accountsWithoutKnownRelationship: withoutKnownRelationship,
+    accountsWithWithheldRelationship: withWithheldRelationship
   };
+}
+
+/**
+ * Each account's placement against the chosen entity/fund (keyed by lower-cased id), by the same
+ * rule `constrainScopeOptions` narrows with; null when nothing is narrowed (no selection, or no
+ * graph).
+ */
+export function placeAccountsInScope(
+  structure: ScopeStructureOptions,
+  accounts: readonly ScopeFundAccountOption[],
+  selection: Pick<AppShellOperatingScopeInput, "entityId" | "fundId">
+): Map<string, ScopeAccountPlacement> | null {
+  const entityId = normalizeOptional(selection.entityId);
+  const fundId = normalizeOptional(selection.fundId);
+  if (structure.status !== "ready" || (!entityId && !fundId)) {
+    return null;
+  }
+  const fundsForEntity = entityId ? fundIdsForEntity(structure, accounts, entityId) : null;
+  const placements = new Map<string, ScopeAccountPlacement>();
+  for (const account of accounts) {
+    placements.set(normalizeId(account.id), placeAccount(account, fundId, entityId, fundsForEntity));
+  }
+  return placements;
 }
 
 /**
@@ -288,9 +316,11 @@ export function accountConflictsWithScope(
   if (!account || (!normalizeOptional(account.fundId) && !normalizeOptional(account.entityId))) {
     return false;
   }
-  // Constrain against every account: a fund's link to an entity can come from another account, and
-  // the picker builds its options the same way, so an account it offers is never treated as a conflict.
-  return !constrainScopeOptions(structure, accounts, selection).accounts.some((candidate) => normalizeId(candidate.id) === id);
+  // Place against every account: a fund's link to an entity can come from another account, and
+  // the picker builds its options the same way, so an account it offers is never treated as a
+  // conflict. A withheld fund or entity might be the chosen one, so that is never a conflict either.
+  const placement = placeAccountsInScope(structure, accounts, selection)?.get(id);
+  return placement === "outside" || placement === "unrecorded";
 }
 
 /** Display names for the scope's entity, fund and account ids, where a loaded payload gave one. */
@@ -309,6 +339,36 @@ export function scopeValueLabels(
     fundId: find(structure.funds, scope.fundId),
     fundAccountId: find(accounts, scope.fundAccountId)
   };
+}
+
+/** One account against the chosen (normalized) fund/entity; see `ScopeAccountPlacement`. */
+function placeAccount(
+  account: ScopeFundAccountOption,
+  fundId: string | null,
+  entityId: string | null,
+  fundsForEntity: Set<string> | null
+): ScopeAccountPlacement {
+  const accountFund = normalizeOptional(account.fundId);
+  const accountEntity = normalizeOptional(account.entityId);
+  if (fundId) {
+    if (!accountFund) {
+      return account.fundWithheld === true ? "withheld" : "unrecorded";
+    }
+    if (accountFund !== fundId) {
+      return "outside";
+    }
+  }
+  if (entityId) {
+    if (accountEntity) {
+      return accountEntity === entityId ? "inside" : "outside";
+    }
+    if (accountFund) {
+      return fundsForEntity?.has(accountFund) ? "inside" : "outside";
+    }
+    // Only reachable without a chosen fund: a chosen fund already returned for a fundless account.
+    return account.entityWithheld === true || account.fundWithheld === true ? "withheld" : "unrecorded";
+  }
+  return "inside";
 }
 
 function fundIdsForEntity(

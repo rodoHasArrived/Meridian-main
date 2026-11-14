@@ -185,6 +185,11 @@ items, which is a follow-up.
 - The picker prefers it and falls back to `/api/fund-structure/graph` on a 404 (older hosts). A
   trading-only operator now gets its accounts; the picker says "No entities or funds are visible to
   you" instead of naming fund-structure access, and "could not be loaded" when the read fails.
+- Withheld relationships (landed 2026-11-14, source): an account whose fund or entity exists but is
+  outside the caller's visible set carries `fundWithheld`/`entityWithheld` (additive, default
+  false; existence only, never the id or name). The picker, the inline account picker and narrowed
+  screens count those accounts apart from ones with no recorded fund ("2 whose fund is not visible
+  to you not shown") and never treat them as conflicts. They are still left out of a narrowed list.
 
 **P4 screens narrow by fund (landed 2026-11-14, dashboard source; host bundle not yet rebuilt):**
 - Shared rule (`lib/operating-scope/fund-scope-narrowing.ts`): a fund-account row is kept when the
@@ -265,7 +270,8 @@ money formatter.
   the host bundle for the scope-option read, a WPF consumer of the same seam, inline account pickers
   on other single-account screens as they are identified, and (if wanted) letting a trading,
   direct-lending or accounting grant at fund level disclose that fund's name, which no existing read
-  does today.
+  does today (until then such accounts are counted as "not visible to you", not placed). A fund's
+  `entityIds` carries no withheld marker yet; add one only if a consumer needs it.
 - The triage "Due · UTC" and "Observed · UTC" labels (`triageDateLabel`) still use a fixed-UTC
   `Intl.DateTimeFormat` without a zone label. They are honest as headed; moving them to the
   display zone needs the headers renamed.

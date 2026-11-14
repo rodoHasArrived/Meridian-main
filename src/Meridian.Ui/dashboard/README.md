@@ -567,14 +567,18 @@ their fund-account rows by entity and fund. Elsewhere a set fund shows as retain
 `use-scope-structure.ts` when the picker first opens or the scope names an entity or fund). That
 read is open to every authenticated operator and lists only the entities, funds and accounts the
 caller's own scoped grants let it read (see the Ui.Shared README, "Operating-scope options"); a
-fund or entity the caller may not see is withheld as a null relationship. A host without that route
+fund or entity the caller may not see is withheld as a null relationship, with the account's
+`fundWithheld`/`entityWithheld` flag set (read defensively; the graph fallback sends none, so they
+read as false). A host without that route
 answers 404 and the picker reads the organization graph `GET /api/fund-structure/graph?activeOnly=true`
 instead (same field names, gated to fund-structure permissions). Either way it lists entities, funds
 with the entities they hold, and accounts with their fund and entity; household brokerage accounts
 the payload does not list are added without a relationship. Choosing an entity narrows the funds to
 those holding it and the accounts to those booked to it; choosing a fund narrows the accounts to its
-own; an account with no recorded (or no visible) fund or entity is left out of a narrowed list and
-counted, and a fund or account known to sit outside a new entity or fund is cleared with a status
+own; an account with no recorded fund or entity is left out of a narrowed list and counted, and an
+account whose fund or entity exists but is withheld from the caller is left out too but counted
+separately ("2 whose fund is not visible to you not shown"), never as having none and never as a
+conflict; and a fund or account known to sit outside a new entity or fund is cleared with a status
 note. A permission-limited operator (for example trading-only) gets its accounts and empty entity
 and fund lists; those fields then take typed ids and the picker says "No entities or funds are
 visible to you". When the read fails, the entity and fund fields take typed ids, nothing is
@@ -585,7 +589,9 @@ Screens that narrow by fund apply the same rule to rows keyed by fund account
 `lib/operating-scope/fund-scope-context.tsx`). A row is kept when the graph places its account under
 the chosen fund (or, with only an entity chosen, under that entity). A row whose account the graph
 does not place is left out and counted in a status note ("Narrowed to fund Growth Fund I: showing 3
-of 5 brokerage accounts. 1 with no recorded fund not shown."), never hidden silently. Without the
+of 5 brokerage accounts. 1 with no recorded fund not shown."), never hidden silently. A row whose
+account's fund (or entity) is withheld from the caller is counted on its own ("… 2 whose fund is
+not visible to you not shown."). Without the
 structure read (loading, or the read failed) nothing is narrowed and the note says why. Server
 payloads are unchanged; the narrowing is client-side. Current screens (`FUND_SCOPE_NARROWED_ROUTES`):
 
