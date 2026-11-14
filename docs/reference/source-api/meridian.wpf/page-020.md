@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DiagnosticsChecklistControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Diagnostics.DiagnosticsChecklistControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs:13](../../../../src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs#L13).
+
+Provides an items-control surface for diagnostic checklist entries.
+
+```csharp
+public sealed class DiagnosticsChecklistControl : ItemsControl
+```
+
 ## ProviderSelectorControl
 
 Qualified name: <code>Meridian.Wpf.Workstation.Diagnostics.ProviderSelectorControl</code>. Kind: `class`.
@@ -708,22 +720,3 @@ Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:23
 ```csharp
 public sealed record WorkstationBadgeModel(string Label, string Value, string Glyph = "", string Tone = WorkspaceTone.Neutral);
 ```
-
-## WorkstationCommandGroupModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationCommandGroupModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:180](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L180).
-
-Carries primary and secondary command presentation for workstation command bars.
-
-```csharp
-public sealed class WorkstationCommandGroupModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;WorkstationCommandModel&gt; PrimaryCommands { get; init; } = Array.Empty&lt;WorkstationCommandModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:182](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L182) |  |
-| <code>public IReadOnlyList&lt;WorkstationCommandModel&gt; SecondaryCommands { get; init; } = Array.Empty&lt;WorkstationCommandModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:184](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L184) |  |

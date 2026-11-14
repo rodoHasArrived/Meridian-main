@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileStatementNormalizedEntityRepository
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementNormalizedEntityRepository</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:381](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L381).
+
+Persists normalized statement entities in local run artifacts.
+
+```csharp
+public sealed class FileStatementNormalizedEntityRepository : IStatementNormalizedEntityRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileStatementNormalizedEntityRepository(string dataDirectory);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:386](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L386) |  |
+| <code>public async Task SaveAsync(string runId, StatementNormalizedEntities entities, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:391](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L391) |  |
+| <code>public Task&lt;StatementNormalizedEntities?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:411](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L411) |  |
+
 ## FileStatementReconciliationCheckpointStore
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementReconciliationCheckpointStore</code>. Kind: `class`.
@@ -882,19 +902,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public const string BreakWorkflowContract = &quot;meridian.reconciliation.break-workflow&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs#L13) |  |
 | <code>public static bool IsSupported(string contract, ReconciliationContractVersion version) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs#L20) |  |
-
-## ReconciliationContractVersion
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationContractVersion</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs:3](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs#L3).
-
-```csharp
-public enum ReconciliationContractVersion : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>V1 = 1</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs:5](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs#L5) |  |

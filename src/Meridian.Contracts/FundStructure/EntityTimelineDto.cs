@@ -8,7 +8,11 @@ public sealed record EntityTimelineDto(Guid OrganizationId, LegalEntitySummaryDt
     IReadOnlyList<EntityLifecycleRevisionDto> LifecycleRevisions,
     IReadOnlyList<OwnershipLinkDto> OwnershipLinks, IReadOnlyList<IntercompanyAgreementDetailDto> Agreements,
     IReadOnlyList<ResolvedIntercompanyAccountingArrangementDto> AccountingArrangements,
-    IReadOnlyList<LedgerBookDto> Books, IReadOnlyList<string> Warnings);
+    IReadOnlyList<LedgerBookDto> Books, IReadOnlyList<string> Warnings)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool CanAttestExternalLifecycleReview { get; init; }
+}
 
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     PropertyNameCaseInsensitive = true)]

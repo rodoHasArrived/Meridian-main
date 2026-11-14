@@ -34,6 +34,8 @@ public sealed partial class IntercompanyAgreementService(
         ValidateContext(context);
         if (command.CommandId == Guid.Empty || command.AgreementId == Guid.Empty || command.ProposalId == Guid.Empty)
             throw new IntercompanyAgreementValidationException("Command, agreement and proposal identities are required.");
+        if (command.ExternalReview is not null && action is not ("Approve" or "Reject"))
+            throw new IntercompanyAgreementValidationException("External review is recorded only with an approval or rejection decision.");
         var hash = IntercompanyAgreementRules.CommandHash(command);
         var probe = await store.GetAsync(context.TenantId, command.AgreementId, ct).ConfigureAwait(false);
         var proposed = action is "Create" or "CreateProposal" or "SaveDraft" ? command.Draft
@@ -84,7 +86,10 @@ public sealed partial class IntercompanyAgreementService(
                 AggregateVersion = version,
                 History = [.. state.History, new IntercompanyAgreementAuditDto(Guid.NewGuid(), command.ProposalId, action,
                     context.Actor, now, version, command.Rationale, updated.Proposals.Single(p => p.ProposalId == command.ProposalId).Draft)
-                    { MigrationWarnings = migrationWarnings.Count == 0 ? null : migrationWarnings.Distinct().ToArray() }]
+                    {
+                        MigrationWarnings = migrationWarnings.Count == 0 ? null : migrationWarnings.Distinct().ToArray(),
+                        ExternalReview = updated.Proposals.Single(p => p.ProposalId == command.ProposalId).ExternalReview
+                    }]
             };
             var detail = Project(updated, context, Today(), null);
             var receipt = new IntercompanyAgreementCommandReceiptDto(command.CommandId, action, hash, context.Actor, now, version, detail);
@@ -159,7 +164,8 @@ public sealed partial class IntercompanyAgreementService(
         else if (action == "Approve")
         {
             RequireState(existing, IntercompanyAgreementProposalStateDto.Submitted);
-            RequireIndependent(existing, context.Actor);
+            if (command.ExternalReview is null)
+                RequireIndependent(existing, context.Actor);
             if (string.IsNullOrWhiteSpace(command.Rationale))
                 throw new IntercompanyAgreementValidationException("Approval rationale is required.");
             if (command.SubmittedHash != existing.SubmittedHash || ReviewHash(state, existing) != existing.SubmittedHash)
@@ -167,20 +173,34 @@ public sealed partial class IntercompanyAgreementService(
             var canonical = await ValidateReviewAsync(tx, context, state, existing, existing.Rationale, migrationWarnings, ct).ConfigureAwait(false);
             if (!IntercompanyAgreementRules.SameEvidence(canonical.Evidence ?? [], existing.Draft.Evidence ?? []))
                 throw new IntercompanyAgreementConflictException("Evidence changed after submission; replace the proposal and obtain fresh review.");
+            var externalReview = await ResolveExternalReviewAsync(context, state.AgreementId, existing,
+                command.ExternalReview, now, ct).ConfigureAwait(false);
             var revision = new IntercompanyAgreementRevisionDto(state.AgreementId, state.Revisions.Count + 1,
                 state.Revisions.Count == 0 ? null : state.Revisions.Max(r => r.AgreementVersion), existing.BaseAgreementVersion,
                 existing.Action, existing.Draft, existing.ProposalId, existing.SubmittedHash!, existing.Authors,
-                existing.Submitter!, context.Actor, now, command.Rationale.Trim());
+                existing.Submitter!, context.Actor, now, command.Rationale.Trim())
+            { ExternalReview = externalReview };
             state = state with { Revisions = [.. state.Revisions, revision] };
-            proposalUpdate = existing with { State = IntercompanyAgreementProposalStateDto.Approved, UpdatedAtUtc = now };
+            proposalUpdate = existing with { State = IntercompanyAgreementProposalStateDto.Approved, UpdatedAtUtc = now, ExternalReview = externalReview };
         }
         else if (action == "Reject")
         {
             RequireState(existing, IntercompanyAgreementProposalStateDto.Submitted);
-            RequireIndependent(existing, context.Actor);
+            // A rejected proposal does not create an approved revision. Preserve the independent
+            // path and require the same evidence-bound attestation when a preparer records review.
+            if (command.ExternalReview is null)
+                RequireIndependent(existing, context.Actor);
+            IntercompanyExternalReviewAttestationDto? externalReview = null;
+            if (command.ExternalReview is not null)
+            {
+                if (command.SubmittedHash != existing.SubmittedHash || ReviewHash(state, existing) != existing.SubmittedHash)
+                    throw new IntercompanyAgreementConflictException("Rejection attestation must bind the exact submitted hash.");
+                externalReview = await ResolveExternalReviewAsync(context, state.AgreementId, existing,
+                    command.ExternalReview, now, ct).ConfigureAwait(false);
+            }
             if (string.IsNullOrWhiteSpace(command.Rationale))
                 throw new IntercompanyAgreementValidationException("Rejection rationale is required.");
-            proposalUpdate = existing with { State = IntercompanyAgreementProposalStateDto.Rejected, UpdatedAtUtc = now };
+            proposalUpdate = existing with { State = IntercompanyAgreementProposalStateDto.Rejected, UpdatedAtUtc = now, ExternalReview = externalReview };
         }
         else if (action == "Withdraw")
         {
@@ -218,6 +238,20 @@ public sealed partial class IntercompanyAgreementService(
         if (retained.Count == 0 || retained.Any(e => string.IsNullOrWhiteSpace(e.Reference) || string.IsNullOrWhiteSpace(e.ArtifactId) || string.IsNullOrWhiteSpace(e.ContentHash)))
             throw new IntercompanyAgreementValidationException("At least one resolved retained agreement artifact is required.");
         return draft with { Evidence = retained.OrderBy(e => e.Reference, StringComparer.Ordinal).ToArray() };
+    }
+
+    private async Task<IntercompanyExternalReviewAttestationDto?> ResolveExternalReviewAsync(
+        IntercompanyAgreementCallContext context, Guid agreementId, IntercompanyAgreementProposalDto proposal,
+        IntercompanyExternalReviewDto? review, DateTimeOffset now, CancellationToken ct)
+    {
+        if (review is null)
+            return null;
+        IntercompanyExternalReviewValidation.Validate(review, proposal.SubmittedHash!, context.Actor, now);
+        var retained = await evidence.ResolveAsync(context, agreementId, proposal.ProposalId,
+            [review.Evidence], ct).ConfigureAwait(false);
+        if (retained.Count != 1)
+            throw new IntercompanyAgreementValidationException("External review must resolve one exact retained document.");
+        return IntercompanyExternalReviewValidation.Retain(review, retained[0], proposal.SubmittedHash!, context.Actor, now);
     }
 
     private async Task ValidateNewCommitmentLifecycleAsync(IntercompanyAgreementCallContext context,

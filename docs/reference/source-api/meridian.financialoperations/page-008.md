@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationContractVersion
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationContractVersion</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs:3](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs#L3).
+
+```csharp
+public enum ReconciliationContractVersion : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>V1 = 1</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs:5](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContractCatalog.cs#L5) |  |
+
 ## ReconciliationEngineService
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationEngineService</code>. Kind: `class`.
@@ -835,13 +851,3 @@ Enum declarations:
 | <code>Reconcile</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs#L11) |  |
 | <code>Completed</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs#L12) |  |
 | <code>Failed</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs#L13) |  |
-
-## StatementReconciliationValidationRequest
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementReconciliationValidationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L11).
-
-```csharp
-public sealed record StatementReconciliationValidationRequest(string SourceKind, string SourcePath, string? MappingProfileId);
-```

@@ -5,6 +5,7 @@ export * from "./types/audit-integrity";
 export * from "./types/account-oversight";
 export * from "./types/instrument-accounting";
 export type * from "./types/intercompany-agreements";
+export type * from "./types/intercompany-obligations";
 export * from "./types/brokerage-recovery";
 export * from "./types/close-preparation";
 export * from "./types/ledger-amount-proof";

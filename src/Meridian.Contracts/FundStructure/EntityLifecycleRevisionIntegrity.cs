@@ -40,6 +40,18 @@ public static class EntityLifecycleRevisionIntegrity
             || string.IsNullOrWhiteSpace(revision.Reason) || string.IsNullOrWhiteSpace(revision.EvidenceReference)
             || revision.Revision < 1)
             throw new InvalidOperationException("Lifecycle revisions require tenant, actor, reason, evidence and a positive revision.");
+        if (revision.ExternalReview is { } review)
+        {
+            var subject = new AppendEntityLifecycleRevisionRequestDto(revision.EntityId, revision.Revision - 1,
+                revision.Timeline, revision.Reason, revision.EvidenceReference);
+            if (revision.LegacySnapshot || !Sha256Digest.FixedEquals(review.SubmittedHash, EntityLifecycleExternalReviewIntegrity.SubmittedHash(subject))
+                || review.Operator != revision.RecordedBy || review.RecordedAtUtc != revision.RecordedAtUtc
+                || string.IsNullOrWhiteSpace(review.ExternalReviewer) || string.IsNullOrWhiteSpace(review.ReviewerReference)
+                || string.IsNullOrWhiteSpace(review.Rationale) || review.Evidence is null
+                || string.IsNullOrWhiteSpace(review.Evidence.Reference) || string.IsNullOrWhiteSpace(review.Evidence.ArtifactId)
+                || !Sha256Digest.IsCanonical(review.Evidence.ContentHash))
+                throw new InvalidOperationException("Retained lifecycle external review must bind the exact legal subject, authenticated attester and immutable evidence.");
+        }
         var normalized = revision with
         {
             TenantId = revision.TenantId.Trim().ToLowerInvariant(),

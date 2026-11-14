@@ -647,6 +647,24 @@ Declared public members:
 | <code>public async Task&lt;IAsyncDisposable&gt; AcquireAsync(IReadOnlyList&lt;LedgerPostingAuthorityContext&gt; contexts, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:21](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L21) |  |
 | <code>public async Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:194](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L194) |  |
 
+## IntercompanyObligationMonitorService
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyObligationMonitorService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs:13](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs#L13).
+
+Read-only legal and lifecycle observations over the native posted balance schedule.
+
+```csharp
+public sealed class IntercompanyObligationMonitorService(IIntercompanyBalanceScheduleSource schedules, IIntercompanyAgreementService agreements, IEntityLifecycleService lifecycle, ILedgerJournalStore journals, IIntercompanyAgreementAccessAuthority access, TimeProvider? timeProvider = null) : IIntercompanyObligationMonitorService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyObligationMonitorDto&gt; EvaluateAsync(IntercompanyAgreementCallContext context, string? companyId, IntercompanyObligationMonitorRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs:23](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs#L23) |  |
+
 ## IntercompanyProposalDraftBuilder
 
 Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyProposalDraftBuilder</code>. Kind: `class`.
@@ -920,14 +938,4 @@ Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateServi
 
 ```csharp
 public sealed record AccountingPostingCandidateWriteResult(PostingRuleJournalCandidateResultDto Candidate, LedgerJournalEntryWrite? Write);
-```
-
-## AssetAccountingCandidateAuthorityContext
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.AssetAccountingCandidateAuthorityContext</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:45](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L45).
-
-```csharp
-public sealed record AssetAccountingCandidateAuthorityContext(Guid EventId, long EventVersion, long SourceSpineVersion, long DraftSpineVersion, string SourceProjectionFingerprint, AssetAccountingEventKindDto EventKind, Guid SecurityId, Guid BookPositionId, long ExpectedBookPositionVersion, Guid LedgerBookId, Guid PeriodId, long ExpectedPeriodVersion, string RulePackId, string RulePackVersion, long SecurityVersion = 0, string? CanonicalInstrumentSymbol = null);
 ```

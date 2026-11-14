@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolQualityDisplayItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SymbolQualityDisplayItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:774](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L774).
+
+Presents a symbol&#x27;s quality grade, completeness, integrity, and issue count.
+
+```csharp
+public sealed class SymbolQualityDisplayItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:776](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L776) |  |
+| <code>public string Grade { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:777](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L777) |  |
+| <code>public SolidColorBrush? GradeBackground { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:778](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L778) |  |
+| <code>public double OverallScore { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:779](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L779) |  |
+| <code>public string CompletenessText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:780](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L780) |  |
+| <code>public string IntegrityText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:781](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L781) |  |
+| <code>public string IssueCount { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:782](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L782) |  |
+
 ## SymbolsPageSectionViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SymbolsPageSectionViewModel</code>. Kind: `class`.
@@ -1353,28 +1377,4 @@ Source: [src/Meridian.Wpf/Views/Pages.cs:41](../../../../src/Meridian.Wpf/Views/
 
 ```csharp
 public partial class AnalysisExportPage : Page
-```
-
-## AnalysisExportWizardPage
-
-Qualified name: <code>Meridian.Wpf.Views.AnalysisExportWizardPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/AnalysisExportWizardPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/AnalysisExportWizardPage.xaml.cs#L10).
-
-Provides the desktop page to configure analysis export steps with guided prompts.
-
-```csharp
-public partial class AnalysisExportWizardPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AnalysisExportWizardPage();</code> | [src/Meridian.Wpf/Views/AnalysisExportWizardPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/AnalysisExportWizardPage.xaml.cs#L14) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:42](../../../../src/Meridian.Wpf/Views/Pages.cs#L42).
-
-```csharp
-public partial class AnalysisExportWizardPage : Page
 ```

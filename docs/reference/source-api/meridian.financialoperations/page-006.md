@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementBalanceRole
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementBalanceRole</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:74](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L74).
+
+Which booked balance a statement connector emits as its StatementRecordKind.CashBalance row. Reconciliation runs always use Closing; Opening is an explicit opt-in used only by shadow-mode onboarding to read the incumbent&#x27;s opening booked balance (camt.053 OPBD, BAI2 010 only).
+
+```csharp
+public enum StatementBalanceRole
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Closing</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:76](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L76) |  |
+| <code>Opening</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:77](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L77) |  |
+
 ## StatementBuiltInProfiles
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementBuiltInProfiles</code>. Kind: `class`.
@@ -813,23 +832,3 @@ Declared public members:
 | <code>public FileStatementMatchResultRepository(string dataDirectory);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:426](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L426) |  |
 | <code>public async Task SaveAsync(string runId, StatementMatchResultArtifact result, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:431](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L431) |  |
 | <code>public async Task&lt;StatementMatchResultArtifact?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:453](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L453) |  |
-
-## FileStatementNormalizedEntityRepository
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementNormalizedEntityRepository</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:381](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L381).
-
-Persists normalized statement entities in local run artifacts.
-
-```csharp
-public sealed class FileStatementNormalizedEntityRepository : IStatementNormalizedEntityRepository
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileStatementNormalizedEntityRepository(string dataDirectory);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:386](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L386) |  |
-| <code>public async Task SaveAsync(string runId, StatementNormalizedEntities entities, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:391](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L391) |  |
-| <code>public Task&lt;StatementNormalizedEntities?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:411](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L411) |  |

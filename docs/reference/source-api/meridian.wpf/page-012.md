@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ChartIndicatorToggle
+
+Qualified name: <code>Meridian.Wpf.ViewModels.ChartIndicatorToggle</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:784](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L784).
+
+Exposes the identity, label, and observable enabled state of a chart indicator.
+
+```csharp
+public sealed class ChartIndicatorToggle : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ChartIndicatorToggle(string id, string label, Action&lt;string, bool&gt; toggleChanged);</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:789](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L789) |  |
+| <code>public string Id { get; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:796](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L796) |  |
+| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:798](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L798) |  |
+| <code>public bool IsEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:800](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L800) |  |
+
 ## ChartingPageViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.ChartingPageViewModel</code>. Kind: `class`.
@@ -1719,19 +1740,3 @@ Source: [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:627](..
 ```csharp
 public sealed record FinancialRecordExplorerPresentation(string Title, string Description, string SourceState, bool IsBlocked, string BlockedReason, WorkstationTableModel<FinancialRecordExplorerRowModel> Table, IReadOnlyList<FinancialRecordExplorerRowModel> Rows, IReadOnlyList<FinancialRecordExplorerFactModel> SummaryItems, IReadOnlyList<FinancialRecordExplorerFactModel> ScopeItems, IReadOnlyList<FinancialRecordExplorerFactModel> FilterItems, IReadOnlyList<FinancialRecordExplorerSavedViewModel> SavedViews, IReadOnlyList<FinancialRecordExplorerActionModel> ExplorerActions, FinancialRecordExplorerRowModel? SelectedRecord, string EmptyStateTitle, string EmptyStateDetail);
 ```
-
-## FinancialRecordExplorerRelationshipModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.FinancialRecordExplorerViewModel.FinancialRecordExplorerRelationshipModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:782](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L782).
-
-```csharp
-public sealed record FinancialRecordExplorerRelationshipModel(string RelationshipId, string Label, string Description, string Href, string TargetPageTag, string Tone)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static FinancialRecordExplorerRelationshipModel FromDto(FinancialRecordExplorerRelationshipDto relationship) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:790](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L790) |  |

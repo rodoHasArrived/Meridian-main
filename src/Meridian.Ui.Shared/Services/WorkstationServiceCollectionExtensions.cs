@@ -1133,6 +1133,7 @@ public static class WorkstationServiceCollectionExtensions
             new PositionSnapshotAutomatedJournalDividendPositionResolver(
                 sp.GetService<IPositionSnapshotStore>()));
         services.TryAddSingleton<TimeProvider>(TimeProvider.System);
+        services.AddIntercompanyP1P2Services();
         services.TryAddSingleton<PrivateCapitalLifecycleService>(sp =>
             sp.GetService<IPrivateCapitalStore>() is { } store
                 ? new PrivateCapitalLifecycleService(store, sp.GetRequiredService<TimeProvider>()) : null!);
@@ -1368,7 +1369,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IPrivateCapitalCloseCockpitService>(),
                 sp.GetService<ILedgerBookService>(),
                 sp.GetService<IAccountingCloseManagementService>(),
-                sp.GetService<ICloseReadinessSubjectSource>()));
+                sp.GetService<ICloseReadinessSubjectSource>(),
+                sp.GetService<IIntercompanyCloseAdvisorySource>()));
         services.TryAddSingleton<SecurityMasterExceptionSlaConfig>();
         services.TryAddSingleton<IReconciliationSlaPolicyProvider>(sp =>
             new SecurityMasterReconciliationSlaPolicyProvider(
