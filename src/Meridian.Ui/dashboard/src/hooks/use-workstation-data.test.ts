@@ -769,6 +769,8 @@ describe("useWorkstationData", () => {
       resolveRequest<SessionInfo>("session", 1, { activeWorkspace: "trading", commandCount: 1, displayName: "account-b session", environment: "paper", role: "Operator" });
       resolveRequest<SystemOverviewResponse>("overview", 1, { marker: "account-b overview" } as unknown as SystemOverviewResponse);
       rejectRequest("trading", 1, new Error("Trading workspace request failed."));
+      // The Trading headline also reads the Portfolio workspace for the selected account.
+      resolveRequestIfPresent<PortfolioWorkspaceResponse>("portfolio", 1, { marker: "account-b portfolio" } as unknown as PortfolioWorkspaceResponse);
       resolveRequest<WorkflowLibrary>("workflowLibrary", 1, { marker: "account-b workflows" } as unknown as WorkflowLibrary);
       resolveRequest<WorkflowPresetLibrary>("workflowPresets", 1, { generatedAt: "2026-01-01T00:04:00Z", presets: [] });
       await flushAsync();
