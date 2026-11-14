@@ -6,6 +6,76 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IndexUpdateType
+
+Qualified name: <code>Meridian.Storage.Services.IndexUpdateType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:856](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L856).
+
+```csharp
+public enum IndexUpdateType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>FileCreated</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:858](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L858) |  |
+| <code>FileAppended</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:859](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L859) |  |
+| <code>FileDeleted</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:860](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L860) |  |
+| <code>FileMoved</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:861](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L861) |  |
+| <code>MetadataChanged</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:862](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L862) |  |
+
+## IngestionRecord
+
+Qualified name: <code>Meridian.Storage.Services.IngestionRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataLineageService.cs:423](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L423).
+
+```csharp
+public sealed record IngestionRecord(DateTime TimestampUtc, string Provider, string Symbol, string EventType, long EventCount, string? ApiEndpoint = null, TimeSpan? Latency = null, IReadOnlyDictionary<string, string>? Parameters = null);
+```
+
+## InsightSeverity
+
+Qualified name: <code>Meridian.Storage.Services.InsightSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Services/MetadataTagService.cs:609](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L609).
+
+Severity level for data insights.
+
+```csharp
+public enum InsightSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:611](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L611) |  |
+| <code>Notable</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:612](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L612) |  |
+| <code>Warning</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:613](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L613) |  |
+| <code>Critical</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:614](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L614) |  |
+
+## IQualityTrendStore
+
+Qualified name: <code>Meridian.Storage.Services.IQualityTrendStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Services/QualityTrendStore.cs:14](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L14).
+
+Appends quality trend observations and queries a symbol&#x27;s observations over an inclusive time range.
+
+```csharp
+public interface IQualityTrendStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task AppendAsync(QualityTrendPoint point, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:16](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L16) |  |
+| <code>Task&lt;IReadOnlyList&lt;QualityTrendPoint&gt;&gt; GetPointsAsync(string symbol, DateTimeOffset fromInclusive, DateTimeOffset toInclusive, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:17](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L17) |  |
+
 ## IQuotaEnforcementService
 
 Qualified name: <code>Meridian.Storage.Services.IQuotaEnforcementService</code>. Kind: `interface`.
@@ -732,69 +802,3 @@ Declared public members:
 | <code>public string? ResultHashSha256 { get; init; }</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:196](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L196) |  |
 | <code>public string? RulesetVersion { get; init; }</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:197](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L197) |  |
 | <code>public VerifiedOperationOutcome? Outcome { get; init; }</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:198](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L198) |  |
-
-## QualityTrendResultHash
-
-Qualified name: <code>Meridian.Storage.Services.QualityTrendResultHash</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/QualityTrendStore.cs:204](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L204).
-
-Computes a deterministic digest binding a quality evaluation to its inputs, rules, and scored results.
-
-```csharp
-public static class QualityTrendResultHash
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string Compute(string evaluationId, string rulesetVersion, string inputHashSha256, string symbol, DateOnly date, string provider, DateTimeOffset scoredAt, double overallScore, IReadOnlyDictionary&lt;string, double&gt; dimensionScores);</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:206](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L206) |  |
-
-## QuotaCheckResult
-
-Qualified name: <code>Meridian.Storage.Services.QuotaCheckResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/QuotaEnforcementService.cs:366](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L366).
-
-```csharp
-public sealed record QuotaCheckResult(bool IsAllowed, string? QuotaId = null, double UsagePercentage = 0, string? Warning = null, bool RequiresCleanup = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly QuotaCheckResult Allowed = new (true);</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:373](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L373) |  |
-
-## QuotaEnforcementService
-
-Qualified name: <code>Meridian.Storage.Services.QuotaEnforcementService</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/QuotaEnforcementService.cs:14](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L14).
-
-Service that enforces per-source, per-symbol, and per-event-type storage quotas. Tracks usage in real-time and applies configured enforcement policies when quotas are exceeded.
-
-```csharp
-public sealed class QuotaEnforcementService : IQuotaEnforcementService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public QuotaEnforcementService(StorageOptions options, ILogger&lt;QuotaEnforcementService&gt; logger, ISourceRegistry? sourceRegistry = null);</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:29](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L29) |  |
-| <code>public QuotaCheckResult CheckQuota(string symbol, string source, string eventType, long additionalBytes);</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:41](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L41) |  |
-| <code>public void RecordUsage(string filePath, long bytes);</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:101](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L101) |  |
-| <code>public async Task&lt;QuotaScanResult&gt; ScanAndUpdateAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:130](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L130) |  |
-| <code>public QuotaStatusReport GetStatus();</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:183](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L183) |  |
-
-## QuotaScanResult
-
-Qualified name: <code>Meridian.Storage.Services.QuotaScanResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/QuotaEnforcementService.cs:376](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L376).
-
-```csharp
-public sealed record QuotaScanResult(DateTime ScannedAtUtc, int FilesScanned, long TotalBytes, IReadOnlyList<QuotaViolation> Violations);
-```

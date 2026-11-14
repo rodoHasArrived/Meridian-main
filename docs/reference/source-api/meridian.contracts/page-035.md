@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Ledger.JournalEntryRebookDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1231](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1231).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1235](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1235).
 
 ```csharp
 public sealed record JournalEntryRebookDto(Guid OriginalJournalEntryId, Guid RebookJournalEntryId, string Reason, DateTimeOffset CreatedAtUtc, string CreatedBy);
@@ -20,7 +20,7 @@ public sealed record JournalEntryRebookDto(Guid OriginalJournalEntryId, Guid Reb
 
 Qualified name: <code>Meridian.Contracts.Ledger.JournalEntryReversalDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1224](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1224).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1228](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1228).
 
 ```csharp
 public sealed record JournalEntryReversalDto(Guid OriginalJournalEntryId, Guid ReversalJournalEntryId, string Reason, DateTimeOffset CreatedAtUtc, string CreatedBy);

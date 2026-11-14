@@ -30,9 +30,10 @@ This layer should expose AI/tooling access without mixing MCP mechanics into UI 
 ## Accounting reads
 
 `get_run_trial_balance(runId, asOf)` reads the workstation trial-balance endpoint at an explicit
-inclusive timestamp. Configure `MeridianApi:BaseUrl` (environment key `MeridianApi__BaseUrl`, default
-`http://localhost:8080/`) and an authorized `MeridianApi:BearerToken` session where required. HTTPS is
-required for non-loopback hosts; redirects are disabled. Authentication, tenant scope and run
+inclusive timestamp using the same issued-session flow as the other ledger tools. Configure
+`MDC_API_URL` (default `http://localhost:8080/`) and either `MDC_LEDGER_SESSION_TOKEN` or
+`MDC_LEDGER_USERNAME`/`MDC_LEDGER_PASSWORD`, as described below. HTTPS is required for non-loopback
+hosts; redirects are disabled. Authentication, tenant scope and run
 visibility remain enforced by the workstation API. The tool does not open ledger archives directly,
 mutate books, or expose refused response bodies. Large responses direct callers to the export flow.
 Never commit session tokens.
@@ -40,6 +41,44 @@ Never commit session tokens.
 ## Important workflows
 
 Use this module for MCP host behavior and AI-assisted tool/resource access.
+
+### Ledger reads
+
+`LedgerTools` forwards journal, current/as-of trial-balance, account-summary, running-balance,
+per-symbol and accounting-completeness reads to the workstation API. Run tools accept a retained
+`runId`; posted-book tools accept a `periodId`, and completeness requires the exact book, period,
+aggregate and financial-account scope. The API applies its usual permissions and tenant visibility;
+these tools do not read journal files directly or grant posting authority.
+
+Set `MDC_API_URL` to the API origin (default `http://localhost:8080/`). HTTPS is required for
+non-loopback hosts. HTTP password sign-in on loopback is supported only when the server explicitly
+declares its `LocalWorkstation` posture and receives a loopback connection. Other server postures
+issue Secure session cookies and require an HTTPS API URL, including on localhost; the client
+honors those cookie flags and reports a configuration error instead of downgrading them.
+Configure one of these authentication modes in the MCP process's secret
+environment settings:
+
+- `MDC_LEDGER_SESSION_TOKEN`: the value of an already-issued Meridian `mdc-session` cookie,
+  without the cookie name or other headers. Obtain it through the deployment's existing operator
+  sign-in flow (`POST /api/auth/login`). The token is a secret with the session's expiry and
+  revocation behavior. Replace it when the operator signs out or it expires.
+- `MDC_LEDGER_USERNAME` and `MDC_LEDGER_PASSWORD`: an existing enabled Meridian operator account.
+  The client signs in through `POST /api/auth/login`, keeps the issued session cookie in process
+  memory, and renews it once if a read returns 401. Concurrent reads share that renewal. If a
+  token and credentials are both configured, the token is tried first, then the same configured
+  operator credentials may establish a fresh session.
+
+The account must have a server-configured company and the applicable strategy/ledger read
+permissions. Tenant and company are resolved from that authenticated account; caller-supplied
+tenant headers never establish scope. `MDC_API_KEY` alone cannot authenticate these scoped
+session-owned reads. If the deployment additionally requires an API key at its login endpoint,
+that existing key may be configured and is sent only on the sign-in request. Its existing policy
+must already allow that sign-in; otherwise use an issued operator session. No role or API gate
+is widened by the MCP client.
+
+Redirects are disabled. Credentials and session cookies are never returned by tools or persisted
+by the MCP client. A 403 or 404 is propagated without another sign-in or a fallback identity.
+Journal and symbol tools use `offset`/`limit` pagination (default 500, maximum 10,000).
 
 ### Preview-first repository edits
 

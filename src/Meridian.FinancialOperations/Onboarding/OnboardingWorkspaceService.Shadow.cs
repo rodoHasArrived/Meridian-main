@@ -419,8 +419,11 @@ public sealed partial class OnboardingWorkspaceService
         var explained = lines.Count(line => line.Status == "Explained");
         var breaks = lines.Count(line => line.Status == "Break");
         var missing = lines.Count(line => line.Status == "Missing");
+        var complete = run.Inputs.MissingSources.Count == 0
+            && Coverage(workspace, run.Inputs) >= workspace.Criteria.MinimumCoveragePercent
+            && Hash(run.Criteria) == Hash(workspace.Criteria);
         return new(run.ComparisonId, run.OpeningSourceKind ?? "", run.AsOfDate, incumbent?.ContentHash ?? "",
-            matched, explained, breaks, missing, lines.Count > 0 && breaks == 0 && missing == 0, lines,
+            matched, explained, breaks, missing, complete && lines.Count > 0 && breaks == 0 && missing == 0, lines,
             run.Inputs.Snapshots.SelectMany(snapshot => snapshot.EvidenceIds.Append(snapshot.SnapshotId))
                 .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray());
     }
@@ -430,7 +433,7 @@ public sealed partial class OnboardingWorkspaceService
         string currency, string? instrumentId, decimal? meridian, decimal? incumbent,
         OnboardingDifferenceDto? difference, string? missingReason)
     {
-        var tolerance = Tolerance(workspace.Criteria, kind);
+        var tolerance = Tolerance(run.Criteria, kind);
         var explanation = difference is null ? null : ApplicableExplanation(workspace, run, difference);
         var status = !string.IsNullOrWhiteSpace(missingReason) || meridian is null || incumbent is null ? "Missing"
             : difference is null || difference.Status == "Resolved" ? "Matched"

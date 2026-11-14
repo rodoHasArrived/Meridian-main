@@ -87,7 +87,7 @@ public sealed partial class ManualJournalAgreementReviewTests
             EvidenceLinks: [$"/api/workstation/evidence/subjects/accounting-record/{(action == JournalEntryLifecycleActionDto.Post ? "posting" : "approval")}/tenant/{draft.TenantId}/company/{draft.CompanyId}/ledger-book/{draft.LedgerBookId:D}/{draft.PeriodId}"],
             LedgerBookId: draft.LedgerBookId, TenantId: draft.TenantId, CompanyId: draft.CompanyId);
 
-    private static CorrectionFixture CorrectionHarness(bool profiled, string kind)
+    private static CorrectionFixture CorrectionHarness(bool profiled, string kind, string currencyEvidence = "legacy")
     {
         var book = IntercompanyAgreementPostingGuardTests.Book();
         var periodId = Guid.NewGuid();
@@ -114,6 +114,12 @@ public sealed partial class ManualJournalAgreementReviewTests
             ReversalOfJournalEntryId: kind == "reversal" ? sourceId : null,
             RebookedFromJournalEntryId: kind == "rebook" ? sourceId : null,
             TenantId: "tenant-agreement", CompanyId: "company-agreement");
+        if (currencyEvidence == "foreign")
+            draft = draft with
+            {
+                Lines = draft.Lines.Select(line => line with
+                { TransactionCurrency = new ManualJournalLineCurrencyDto("EUR", 96m, 1.25m) }).ToArray()
+            };
         var configuration = Substitute.For<IAccountingConfigurationService>();
         configuration.GetWorkspaceAsync(Arg.Any<string?>(), Arg.Any<Guid?>(), Arg.Any<CancellationToken>(), Arg.Any<string?>(), Arg.Any<string?>())
             .Returns(new AccountingConfigurationWorkspaceDto(book.FundProfileId, book.LedgerBookId,
@@ -135,6 +141,43 @@ public sealed partial class ManualJournalAgreementReviewTests
             Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
         var posted = new List<LedgerJournalEntryWrite>();
         var records = new List<LedgerJournalEntryRecord>();
+        var sources = new List<LedgerJournalEntryRecord>();
+        if (kind == "reversal")
+        {
+            // A correction fixture needs the same immutable source evidence as the real editor.
+            // Keeping this separate from newly posted writes preserves the existing no-impact
+            // assertions throughout review and independent approval.
+            var sourceTimestamp = new DateTimeOffset(draft.AccountingDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+            var sourceLines = draft.Lines.Select(line =>
+            {
+                var debit = line.Side == AccountingTemplateLineSideDto.Credit ? line.Amount : 0m;
+                var credit = line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : 0m;
+                var sourceDimensions = line.Dimensions ?? new LedgerDimensionSetDto(
+                    FundId: book.FundProfileId, EntityId: domain.EntityId);
+                var currency = currencyEvidence switch
+                {
+                    "legacy" => null,
+                    "native" => new LedgerEntryCurrency("USD", "USD", debit, credit, 1m),
+                    "foreign" => new LedgerEntryCurrency("EUR", "USD", debit == 0m ? 0m : 96m,
+                        credit == 0m ? 0m : 96m, 1.25m),
+                    _ => throw new ArgumentOutOfRangeException(nameof(currencyEvidence))
+                };
+                return new LedgerEntry(Guid.NewGuid(), sourceId, sourceTimestamp,
+                    new(line.AccountPath, line.Side == AccountingTemplateLineSideDto.Debit
+                        ? LedgerAccountType.Asset : LedgerAccountType.Revenue),
+                    debit, credit, "Retained immutable source", LedgerDimensionMapper.ToDomain(sourceDimensions), currency);
+            }).ToArray();
+            sources.Add(new(new(sourceId, sourceTimestamp, "Retained immutable source", sourceLines,
+                new(EffectiveDate: draft.AccountingDate)), book.LedgerBookId, periodId,
+                null, null, 1, now, draft.AccountingBasis));
+        }
+        journals.QueryAsync(Arg.Any<LedgerJournalEntryQuery>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            var query = call.Arg<LedgerJournalEntryQuery>();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(sources.Concat(records)
+                .Where(record => (query.LedgerBookId is null || query.LedgerBookId == book.LedgerBookId)
+                    && (query.JournalEntryId is null || query.JournalEntryId == record.Entry.JournalEntryId)).ToArray());
+        });
         journals.AppendAsync(Arg.Any<LedgerJournalEntryWrite>(), Arg.Any<CancellationToken>()).Returns(call =>
         {
             var write = AccountingPostingCommandValidator.NormalizeAndValidate(call.Arg<LedgerJournalEntryWrite>());
@@ -153,9 +196,9 @@ public sealed partial class ManualJournalAgreementReviewTests
         var operational = new IntercompanyLedgerPostingAuthority(arrangements, service, Substitute.For<IIntercompanyAccountBindingStore>(),
             Substitute.For<IAccountingConfigurationStore>(), journals, Substitute.For<IFundProfileTenancyRegistry>());
         return new(new(new InMemoryManualJournalEntryDraftStore(), configuration, new InMemoryAccountingActionAuditStore(),
-            journalStore: journals, intercompanyPostingAuthority: operational), draft, reviews, posted);
+            journalStore: journals, intercompanyPostingAuthority: operational), draft, reviews, posted, sources);
     }
 
     private sealed record CorrectionFixture(ManualJournalEntryWorkbenchService Service, ManualJournalEntryDraftDto Draft,
-        List<LedgerJournalEntryWrite> Reviews, List<LedgerJournalEntryWrite> Posted);
+        List<LedgerJournalEntryWrite> Reviews, List<LedgerJournalEntryWrite> Posted, List<LedgerJournalEntryRecord> Sources);
 }

@@ -27,7 +27,7 @@ public static class OnboardingDifferenceClassifications
 /// <summary>Incumbent opening-balance sources accepted by shadow onboarding.</summary>
 public static class OnboardingOpeningSourceKinds
 {
-    /// <summary>camt.053 opening booked balance (OPBD) or BAI2 opening ledger (010, falling back to 040).</summary>
+    /// <summary>camt.053 opening booked balance (OPBD) or BAI2 opening ledger balance (010 only).</summary>
     public const string StatementOpening = "StatementOpening";
     /// <summary>Administrator opening pack CSV of cash, position and NAV rows.</summary>
     public const string AdministratorPack = "AdministratorPack";

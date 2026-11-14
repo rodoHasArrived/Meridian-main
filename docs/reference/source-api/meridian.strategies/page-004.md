@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## JsonlStrategyDesignRepository
+
+Qualified name: <code>Meridian.Strategies.Storage.JsonlStrategyDesignRepository</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Storage/JsonlStrategyDesignRepository.cs:26](../../../../src/Meridian.Strategies/Storage/JsonlStrategyDesignRepository.cs#L26).
+
+Append-only JSONL repository for Strategy Builder design drafts.
+
+```csharp
+public sealed class JsonlStrategyDesignRepository : IStrategyDesignRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonlStrategyDesignRepository(StrategyDesignStoreOptions? options, ILogger&lt;JsonlStrategyDesignRepository&gt; logger);</code> | [src/Meridian.Strategies/Storage/JsonlStrategyDesignRepository.cs:32](../../../../src/Meridian.Strategies/Storage/JsonlStrategyDesignRepository.cs#L32) |  |
+| <code>public JsonlStrategyDesignRepository(string baseDirectory, ILogger&lt;JsonlStrategyDesignRepository&gt; logger) : this(new StrategyDesignStoreOptions(baseDirectory), logger);</code> | [src/Meridian.Strategies/Storage/JsonlStrategyDesignRepository.cs:40](../../../../src/Meridian.Strategies/Storage/JsonlStrategyDesignRepository.cs#L40) |  |
+| <code>public async Task SaveAsync(StrategyDesignDocument document, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/JsonlStrategyDesignRepository.cs:48](../../../../src/Meridian.Strategies/Storage/JsonlStrategyDesignRepository.cs#L48) |  |
+| <code>public async Task&lt;StrategyDesignDocument?&gt; GetAsync(string documentId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/JsonlStrategyDesignRepository.cs:67](../../../../src/Meridian.Strategies/Storage/JsonlStrategyDesignRepository.cs#L67) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;StrategyDesignDraftSummary&gt;&gt; ListDraftsAsync(CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/JsonlStrategyDesignRepository.cs:77](../../../../src/Meridian.Strategies/Storage/JsonlStrategyDesignRepository.cs#L77) |  |
+
 ## JsonlStrategyRunLedgerArchive
 
 Qualified name: <code>Meridian.Strategies.Storage.JsonlStrategyRunLedgerArchive</code>. Kind: `class`.

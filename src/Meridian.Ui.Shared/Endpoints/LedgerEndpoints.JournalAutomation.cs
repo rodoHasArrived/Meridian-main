@@ -65,6 +65,11 @@ public static partial class LedgerEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // Source-linked reversals require the dedicated accountant permission and exact
+            // retained book ownership checks. The generic monthly route cannot grant that authority.
+            if (request.Kind == AutomatedJournalScheduleKind.PeriodEndMarkReversal || request.PeriodAdjustment is not null)
+                return Results.BadRequest(new { error = "Use the governed period-adjustments/schedule-mark-reversal route for source-linked reversal schedules." });
+
             var store = context.RequestServices.GetService<IAutomatedJournalScheduleStore>();
             if (store is null)
             {

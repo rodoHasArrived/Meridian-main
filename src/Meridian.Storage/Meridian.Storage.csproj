@@ -56,6 +56,8 @@
     <Compile Remove="FundAccounts/**/*.cs" />
     <Compile Remove="FundStructure/**/*.cs" />
     <Compile Remove="Ledger/**/*.cs" />
+    <Compile Remove="Export/LedgerJournalExporter.cs" />
+    <Compile Remove="Export/LedgerJournalExportJsonContext.cs" />
     <Compile Remove="MoneyMarket/**/*.cs" />
     <Compile Remove="Reporting/**/*.cs" />
     <Compile Remove="SecurityMaster/**/*.cs" />

@@ -806,7 +806,7 @@ public sealed record BatchUpdateRequest(string[] Symbols, string? SecurityType =
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.BrokerType</code>. Kind: `enum`.
 
-Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:118](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L118).
+Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:120](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L120).
 
 Supported broker types.
 
@@ -818,9 +818,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Alpaca</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:120](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L120) |  |
-| <code>InteractiveBrokers</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:122](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L122) |  |
-| <code>Manual</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:124](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L124) |  |
+| <code>Alpaca</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:122](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L122) |  |
+| <code>InteractiveBrokers</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:124](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L124) |  |
+| <code>Manual</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:126](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L126) |  |
 
 ## BulkExportOptions
 

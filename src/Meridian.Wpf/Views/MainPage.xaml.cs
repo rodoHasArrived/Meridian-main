@@ -56,6 +56,7 @@ public partial class MainPage : Page
     {
         _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         _navigationService.NavigationStarting -= OnNavigationStarting;
+        DetachFrameNavigationHandlers();
         _viewModel.Dispose();
     }
 
@@ -118,8 +119,15 @@ public partial class MainPage : Page
 
     private void BindNavigationFrame(Frame frame)
     {
+        if (!ReferenceEquals(_lastShellNavigationFrame, frame))
+        {
+            DetachFrameNavigationHandlers();
+            frame.Navigating += OnShellFrameNavigating;
+            frame.Navigated += OnShellFrameNavigated;
+            _lastShellNavigationFrame = frame;
+        }
+
         _navigationService.Initialize(frame, WorkspaceChromePresentationMode.Docked);
-        _lastShellNavigationFrame = frame;
     }
 
     private void OnOpenCommandPaletteClick(object sender, RoutedEventArgs e)

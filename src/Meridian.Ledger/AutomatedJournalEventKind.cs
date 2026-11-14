@@ -55,4 +55,10 @@ public enum AutomatedJournalEventKind
 
     /// <summary>A distribution to an investor, declared and split through the waterfall.</summary>
     DistributionDeclared,
+
+    /// <summary>Complete broker-account opening balances retained for human review.</summary>
+    OpeningBalanceImported,
+
+    /// <summary>Source-linked correction prepared in a later open period for independent approval.</summary>
+    PriorPeriodAdjustment,
 }

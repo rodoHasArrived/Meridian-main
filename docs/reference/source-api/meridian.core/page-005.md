@@ -141,7 +141,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.ManualPortfolioEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:107](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L107).
+Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:109](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L109).
 
 Manual portfolio entry for direct import without broker API.
 
@@ -184,6 +184,18 @@ Result of a metadata filter operation.
 public sealed record MetadataFilterResult(SymbolMetadata[] Symbols, int TotalCount, SymbolMetadataFilter AppliedFilter);
 ```
 
+## PortfolioImportAccountingScope
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.PortfolioImportAccountingScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:4](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L4).
+
+Explicit, retained ownership and date for an opening-balance draft.
+
+```csharp
+public sealed record PortfolioImportAccountingScope(string TenantId, string CompanyId, string FundProfileId, Guid FinancialAccountId, Guid LedgerBookId, Guid PeriodId, DateOnly EffectiveDate, string Actor, Guid? EntityId = null);
+```
+
 ## PortfolioImportOptions
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.PortfolioImportOptions</code>. Kind: `record`.
@@ -193,7 +205,7 @@ Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:59](../../../
 Options for portfolio import.
 
 ```csharp
-public sealed record PortfolioImportOptions(decimal? MinPositionValue = null, decimal? MinQuantity = null, string[]? AssetClasses = null, string[]? ExcludeSymbols = null, bool LongOnly = false, bool CreateWatchlist = false, string? WatchlistName = null, bool SubscribeTrades = true, bool SubscribeDepth = true, bool SkipExisting = true);
+public sealed record PortfolioImportOptions(decimal? MinPositionValue = null, decimal? MinQuantity = null, string[]? AssetClasses = null, string[]? ExcludeSymbols = null, bool LongOnly = false, bool CreateWatchlist = false, string? WatchlistName = null, bool SubscribeTrades = true, bool SubscribeDepth = true, bool SkipExisting = true, string? BrokerAccountId = null);
 ```
 
 ## PortfolioImportRequest
@@ -212,13 +224,54 @@ public sealed record PortfolioImportRequest(string Broker, PortfolioImportOption
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.PortfolioImportResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:84](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L84).
+Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs:86](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs#L86).
 
 Result of portfolio import.
 
 ```csharp
 public sealed record PortfolioImportResult(bool Success, string Broker, int ImportedCount, int SkippedCount, int FailedCount, string[] ImportedSymbols, string[] Errors, string? WatchlistId = null, PortfolioSummary? Portfolio = null);
 ```
+
+## PortfolioImportRun
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.PortfolioImportRun</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:17](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L17).
+
+A completed import means the requested draft is queued, never approved or posted.
+
+```csharp
+public sealed record PortfolioImportRun(PortfolioImportRunRequest Request, string CommandHash, PortfolioImportRunStatus Status, DateTimeOffset StartedAtUtc, DateTimeOffset UpdatedAtUtc, PortfolioSummary? Snapshot = null, string? SnapshotHash = null, PortfolioImportResult? Subscriptions = null, string? WatchlistId = null, Guid? OpeningJournalEntryId = null, string? Error = null, IReadOnlyList<string>? PlannedSymbols = null);
+```
+
+## PortfolioImportRunRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.PortfolioImportRunRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:9](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L9).
+
+```csharp
+public sealed record PortfolioImportRunRequest(Guid RunId, string Broker, PortfolioImportOptions Options, PortfolioImportAccountingScope Scope, bool PrepareOpeningBalances = false);
+```
+
+## PortfolioImportRunStatus
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.PortfolioImportRunStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:14](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L14).
+
+```csharp
+public enum PortfolioImportRunStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Running</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:14](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L14) |  |
+| <code>Succeeded</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:14](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L14) |  |
+| <code>Partial</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:14](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L14) |  |
+| <code>Failed</code> | [src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs:14](../../../../src/Meridian.Core/Subscriptions/Models/PortfolioImportRun.cs#L14) |  |
 
 ## PortfolioPosition
 
