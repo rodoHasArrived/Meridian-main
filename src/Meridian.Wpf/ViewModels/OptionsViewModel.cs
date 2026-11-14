@@ -350,7 +350,7 @@ public sealed class OptionsViewModel : BindableBase, IAsyncDisposable
         {
             ApplyIfCurrentExpiration(revision, symbol, requestCancellation, () =>
             {
-                _loggingService.LogError($"Failed to load expirations for {symbol}", ex);
+                _loggingService.LogError("Failed to load expirations for {Symbol}", ex, ("Symbol", symbol));
                 ShowStatusIfCurrent(
                     presentationRevision,
                     $"Failed to load expirations: {ex.Message}",
@@ -441,7 +441,8 @@ public sealed class OptionsViewModel : BindableBase, IAsyncDisposable
         {
             ApplyIfCurrentChain(revision, key, requestCancellation, () =>
             {
-                _loggingService.LogError($"Failed to load chain for {symbol} {expiration}", ex);
+                _loggingService.LogError("Failed to load chain for {Symbol} {Expiration}", ex,
+                    ("Symbol", symbol), ("Expiration", expiration));
                 ShowStatusIfCurrent(
                     presentationRevision,
                     $"Failed to load chain: {ex.Message}",

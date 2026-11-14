@@ -498,7 +498,8 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
         }
         catch (Exception ex)
         {
-            WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Refresh failed: {ex.Message}");
+            WpfLoggingService.Instance.LogError("[TradingWorkspaceShell] Refresh failed: {Error}", ex,
+                ("Error", ex.Message));
             HasError = true;
             ErrorMessage = ex.Message;
             ApplyState(_presentationService.BuildDegradedState());
@@ -539,7 +540,8 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
         }
         catch (Exception ex)
         {
-            WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Safety command '{actionId}' failed: {ex.Message}");
+            WpfLoggingService.Instance.LogError("[TradingWorkspaceShell] Safety command '{Action}' failed: {Error}", ex,
+                ("Action", actionId), ("Error", ex.Message));
             outcome = SafetyCommandOutcome.Failed(actionId is "Stop" ? "Stop" : "Cancel all");
         }
 

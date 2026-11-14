@@ -1844,7 +1844,8 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         }
         catch (Exception ex)
         {
-            _loggingService.LogError($"Navigation parameter handling failed: {parameter}", ex);
+            _loggingService.LogError("Navigation parameter handling failed: {Parameter}", ex,
+                ("Parameter", parameter?.ToString() ?? string.Empty));
         }
     }
 

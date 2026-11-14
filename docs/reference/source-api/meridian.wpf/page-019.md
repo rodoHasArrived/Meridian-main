@@ -191,7 +191,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.TradingWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:296](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L296).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:299](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L299).
 
 Binds derived pages to the trading workspace shell definition.
 

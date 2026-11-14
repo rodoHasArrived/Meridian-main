@@ -526,7 +526,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("Cash variance over tolerance.", reconciliation.get("waitForTexts", []))
         self.assertEqual(
             [
-                'select:has(option[value="run-42"]:checked)',
+                '#reconciliation-run-picker[role="combobox"][value="Paper Index Mean Reversion · 1 open"]',
                 '#reconciliation-break-queue tr[data-dense-row-id="run-42:cash"][aria-selected="true"]',
                 '#reconciliation-break-detail-panel[aria-label="Reconciliation break detail for run-42:cash"]',
             ],

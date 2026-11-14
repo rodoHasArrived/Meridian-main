@@ -675,10 +675,6 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
         </div>
       </section>
 
-      {showOverview ? <KpiProvider models={{ trading: { ...data, metrics: trustedHeadlineMetrics } }}><StatStrip ids={workspaceKpiIds("trading", trustedHeadlineMetrics)} label="Trading headline metrics" /></KpiProvider> : null}
-
-      {showOverview ? tradingConfidence : null}
-
       {/* The full recovery workspace belongs to the overview; every other route keeps one
           blocked-state row so its own object (blotter, book, guardrails) stays above the fold. */}
       <BrokerageRecoveryPanel
@@ -691,6 +687,10 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
         variant={showOverview ? "full" : "row"}
         reviewHref={`${WORKSTATION_ROUTE_CATALOG.trading}${search}#brokerage-recovery`}
       />
+
+      {showOverview ? <KpiProvider models={{ trading: { ...data, metrics: trustedHeadlineMetrics } }}><StatStrip ids={workspaceKpiIds("trading", trustedHeadlineMetrics)} label="Trading headline metrics" /></KpiProvider> : null}
+
+      {showOverview ? tradingConfidence : null}
 
       {showOverview ? (
       <section id="trading-posture" className="workspace-section-band" aria-labelledby="trading-posture-heading">

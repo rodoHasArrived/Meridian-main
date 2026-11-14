@@ -10141,6 +10141,7 @@ Meridian-main
 │   │   │   │   │   ├── reconciliation-bulk-triage.test.ts
 │   │   │   │   │   ├── reconciliation-bulk-triage.ts
 │   │   │   │   │   ├── reconciliation-casework-outcome.ts
+│   │   │   │   │   ├── reconciliation-run-picker.test.tsx
 │   │   │   │   │   ├── reconciliation-source-observation.test.ts
 │   │   │   │   │   ├── reconciliation-source-observation.ts
 │   │   │   │   │   ├── reconciliation-view-state.test.tsx
@@ -10573,6 +10574,7 @@ Meridian-main
 │   │   │   ├── LiveDataService.cs
 │   │   │   ├── LoggingService.cs
 │   │   │   ├── LoggingServiceBase.cs
+│   │   │   ├── LogMessageTemplate.cs
 │   │   │   ├── ManifestService.cs
 │   │   │   ├── NavigationServiceBase.cs
 │   │   │   ├── NotificationService.cs
@@ -10714,6 +10716,7 @@ Meridian-main
 │   │   │   ├── LedgerEndpoints.AccrualSchedules.cs
 │   │   │   ├── LedgerEndpoints.Amortization.cs
 │   │   │   ├── LedgerEndpoints.AuditIntegrity.cs
+│   │   │   ├── LedgerEndpoints.Authorization.cs
 │   │   │   ├── LedgerEndpoints.BondWorkflows.cs
 │   │   │   ├── LedgerEndpoints.CloseExecution.cs
 │   │   │   ├── LedgerEndpoints.ClosePreparation.cs
@@ -10735,7 +10738,9 @@ Meridian-main
 │   │   │   ├── LedgerEndpoints.PrivateCapital.cs
 │   │   │   ├── LedgerEndpoints.RecurringJournals.cs
 │   │   │   ├── LedgerEndpoints.Reporting.cs
+│   │   │   ├── LedgerEndpoints.ReportProjections.cs
 │   │   │   ├── LedgerEndpoints.RunningBalance.cs
+│   │   │   ├── LedgerEndpoints.ServiceResolution.cs
 │   │   │   ├── LedgerEndpoints.Tax.cs
 │   │   │   ├── LiveDataEndpoints.cs
 │   │   │   ├── LoginSessionMiddleware.cs
@@ -11013,16 +11018,31 @@ Meridian-main
 │   │   │   ├── FinancialRecordExplorerReadScope.cs
 │   │   │   ├── FinancialRecordExplorerReadService.cs
 │   │   │   ├── FinancialRecordExplorerReadService.DimensionMatching.cs
+│   │   │   ├── FinancialRecordExplorerReadService.Formatting.cs
+│   │   │   ├── FinancialRecordExplorerReadService.Graphs.cs
 │   │   │   ├── FinancialRecordExplorerReadService.InstrumentJournalProof.cs
+│   │   │   ├── FinancialRecordExplorerReadService.LedgerAndPortfolio.cs
 │   │   │   ├── FinancialRecordExplorerReadService.PreparerAttestation.cs
+│   │   │   ├── FinancialRecordExplorerReadService.Querying.cs
+│   │   │   ├── FinancialRecordExplorerReadService.ReportLineProvenance.cs
+│   │   │   ├── FinancialRecordExplorerReadService.RunSources.cs
+│   │   │   ├── FinancialRecordExplorerReadService.SecurityEvidence.cs
+│   │   │   ├── FinancialRecordExplorerReadService.SecurityInstrument.cs
 │   │   │   ├── FinancialRecordExplorerReadService.SecurityRows.cs
 │   │   │   ├── FinancialRecordExplorerSavedViewStore.cs
 │   │   │   ├── FirstRunExperienceService.cs
 │   │   │   ├── FixedIncomeAccrualCalculation.cs
 │   │   │   ├── FundAccountCloseReadinessService.cs
+│   │   │   ├── FundOperationsWorkspaceReadService.Accounts.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.cs
+│   │   │   ├── FundOperationsWorkspaceReadService.Ledger.cs
+│   │   │   ├── FundOperationsWorkspaceReadService.LiveViews.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.Models.cs
+│   │   │   ├── FundOperationsWorkspaceReadService.PortfolioReporting.cs
+│   │   │   ├── FundOperationsWorkspaceReadService.Reconciliation.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.ReconciliationReadCut.cs
+│   │   │   ├── FundOperationsWorkspaceReadService.ReportPacks.cs
+│   │   │   ├── FundOperationsWorkspaceReadService.StructuredExports.cs
 │   │   │   ├── FundReportArtifactRenderer.cs
 │   │   │   ├── FundStructureSetupWorkflowService.cs
 │   │   │   ├── GovernanceReportPackRepository.cs

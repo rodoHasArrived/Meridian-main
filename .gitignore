@@ -272,7 +272,6 @@ __pycache__/
 
 .fakeactionlint
 /Meridian Design System/uploads
-/src/Meridian.Host/wwwroot/workstation/
 # PRD-018: src/Meridian.Ui/wwwroot/workstation is the canonical TRACKED workstation bundle —
 # the dashboard build writes it, the host serves it, and CI's freshness gate keeps it current.
 # Only Vite's temporary build directories under it stay ignored.
