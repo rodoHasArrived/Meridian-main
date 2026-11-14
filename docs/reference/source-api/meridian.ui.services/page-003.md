@@ -766,7 +766,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.ConfigService</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ConfigService.cs:25](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L25).
+Source: [src/Meridian.Ui.Services/Services/ConfigService.cs:24](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L24).
 
 Default configuration service for the shared UI services layer. Provides basic config loading/saving from the standard appsettings path. Platform-specific projects may override this by setting the Instance property.
 
@@ -778,31 +778,31 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ConfigService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:33](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L33) |  |
-| <code>public static Func&lt;string&gt; DefaultPathResolver { get; set; } = _defaultPathResolver;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:34](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L34) |  |
-| <code>public string ConfigPath { get; }</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:43](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L43) |  |
-| <code>public ConfigService() : this(DefaultPathResolver);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:45](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L45) |  |
-| <code>public virtual async Task&lt;AppConfig?&gt; LoadConfigAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:58](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L58) |  |
-| <code>public virtual async Task SaveConfigAsync(AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:78](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L78) |  |
-| <code>public string ResolveDataRoot(AppConfig? config = null) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:108](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L108) |  |
-| <code>public async Task SaveDataSourceAsync(string dataSource, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:111](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L111) |  |
-| <code>public async Task SaveAlpacaOptionsAsync(AlpacaOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:118](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L118) |  |
-| <code>public async Task SaveStorageConfigAsync(string dataRoot, bool compress, StorageConfig storage, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:125](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L125) |  |
-| <code>public async Task AddOrUpdateSymbolAsync(SymbolConfig symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:134](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L134) |  |
-| <code>public Task AddSymbolAsync(SymbolConfig symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:148](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L148) |  |
-| <code>public async Task DeleteSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:151](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L151) |  |
-| <code>public async Task&lt;DataSourceConfig[]&gt; GetDataSourcesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:160](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L160) |  |
-| <code>public async Task&lt;DataSourcesConfig&gt; GetDataSourcesConfigAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:166](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L166) |  |
-| <code>public async Task AddOrUpdateDataSourceAsync(DataSourceConfig dataSource, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:172](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L172) |  |
-| <code>public async Task DeleteDataSourceAsync(string id, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:188](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L188) |  |
-| <code>public async Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:199](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L199) |  |
-| <code>public async Task ToggleDataSourceAsync(string id, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:211](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L211) |  |
-| <code>public async Task UpdateFailoverSettingsAsync(bool enableFailover, int failoverTimeoutSeconds, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:224](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L224) |  |
-| <code>public Task&lt;AppSettings&gt; GetAppSettingsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:234](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L234) |  |
-| <code>public Task SaveAppSettingsAsync(AppSettings settings, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:237](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L237) |  |
-| <code>public Task UpdateServiceUrlAsync(string serviceUrl, int timeoutSeconds = 30, int backfillTimeoutMinutes = 60, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:240](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L240) |  |
-| <code>public Task InitializeAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:246](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L246) |  |
-| <code>public Task&lt;DiagnosticValidationResult&gt; ValidateConfigAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:249](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L249) |  |
+| <code>public static ConfigService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:32](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L32) |  |
+| <code>public static Func&lt;string&gt; DefaultPathResolver { get; set; } = _defaultPathResolver;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:33](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L33) |  |
+| <code>public string ConfigPath { get; }</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:42](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L42) |  |
+| <code>public ConfigService() : this(DefaultPathResolver);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:44](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L44) |  |
+| <code>public virtual async Task&lt;AppConfig?&gt; LoadConfigAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:57](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L57) |  |
+| <code>public virtual async Task SaveConfigAsync(AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:77](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L77) |  |
+| <code>public string ResolveDataRoot(AppConfig? config = null) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:107](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L107) |  |
+| <code>public async Task SaveDataSourceAsync(string dataSource, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:110](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L110) |  |
+| <code>public async Task SaveAlpacaOptionsAsync(AlpacaOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:117](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L117) |  |
+| <code>public async Task SaveStorageConfigAsync(string dataRoot, bool compress, StorageConfig storage, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:124](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L124) |  |
+| <code>public async Task AddOrUpdateSymbolAsync(SymbolConfig symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:133](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L133) |  |
+| <code>public Task AddSymbolAsync(SymbolConfig symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:147](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L147) |  |
+| <code>public async Task DeleteSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:150](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L150) |  |
+| <code>public async Task&lt;DataSourceConfig[]&gt; GetDataSourcesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:159](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L159) |  |
+| <code>public async Task&lt;DataSourcesConfig&gt; GetDataSourcesConfigAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:165](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L165) |  |
+| <code>public async Task AddOrUpdateDataSourceAsync(DataSourceConfig dataSource, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:171](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L171) |  |
+| <code>public async Task DeleteDataSourceAsync(string id, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:187](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L187) |  |
+| <code>public async Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:198](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L198) |  |
+| <code>public async Task ToggleDataSourceAsync(string id, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:210](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L210) |  |
+| <code>public async Task UpdateFailoverSettingsAsync(bool enableFailover, int failoverTimeoutSeconds, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:223](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L223) |  |
+| <code>public Task&lt;AppSettings&gt; GetAppSettingsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:233](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L233) |  |
+| <code>public Task SaveAppSettingsAsync(AppSettings settings, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:236](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L236) |  |
+| <code>public Task UpdateServiceUrlAsync(string serviceUrl, int timeoutSeconds = 30, int backfillTimeoutMinutes = 60, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:239](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L239) |  |
+| <code>public Task InitializeAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:245](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L245) |  |
+| <code>public Task&lt;DiagnosticValidationResult&gt; ValidateConfigAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigService.cs:248](../../../../src/Meridian.Ui.Services/Services/ConfigService.cs#L248) |  |
 
 ## ConfigStatusResponse
 

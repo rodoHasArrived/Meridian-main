@@ -7,8 +7,14 @@ namespace Meridian.Wpf.Controls;
 /// <summary>Owns only view lifetime and refresh wiring; status projection remains in the view model.</summary>
 public partial class ConfigurationChangeBanner : UserControl
 {
-    private readonly ConfigurationChangeStatusViewModel _model = new(ct =>
-        WpfRemoteWorkstationClient.Instance.GetAsync<ConfigurationChangeStatus>("/api/config/changes", ct));
+    private readonly ConfigurationChangeStatusViewModel _model = new(async ct =>
+    {
+        var response = await WpfRemoteWorkstationClient.Instance
+            .GetWithResponseAsync<ConfigurationChangeStatus>("/api/config/changes", ct).ConfigureAwait(false);
+        if (!response.Success)
+            throw new InvalidOperationException("Host setting activation status was not confirmed.");
+        return response.Data;
+    });
     private CancellationTokenSource? _lifetime;
     private readonly DispatcherTimer _refreshTimer = new() { Interval = TimeSpan.FromSeconds(15) };
 

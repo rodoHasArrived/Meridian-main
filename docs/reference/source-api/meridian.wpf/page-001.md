@@ -266,7 +266,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ConfigurationChangeBanner();</code> | [src/Meridian.Wpf/Controls/ConfigurationChangeBanner.xaml.cs:15](../../../../src/Meridian.Wpf/Controls/ConfigurationChangeBanner.xaml.cs#L15) |  |
+| <code>public ConfigurationChangeBanner();</code> | [src/Meridian.Wpf/Controls/ConfigurationChangeBanner.xaml.cs:21](../../../../src/Meridian.Wpf/Controls/ConfigurationChangeBanner.xaml.cs#L21) |  |
 
 ## DataConfidenceExplanationButton
 

@@ -1,3 +1,4 @@
+using System.Net.Http;
 using Meridian.Contracts.Configuration;
 using Meridian.Wpf.ViewModels;
 

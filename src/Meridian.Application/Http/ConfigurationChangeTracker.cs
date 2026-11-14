@@ -1,9 +1,8 @@
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Integrity;
 using Meridian.Core.Config;
 
 namespace Meridian.Application.UI;
@@ -79,6 +78,6 @@ internal sealed class ConfigurationChangeTracker
                 Flatten(array[index], path + "." + index, fields);
         }
         else
-            fields[path] = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(node?.ToJsonString() ?? "null")));
+            fields[path] = Sha256Digest.ComputeUtf8(node?.ToJsonString() ?? "null");
     }
 }

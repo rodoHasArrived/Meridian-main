@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Integrity;
 using Meridian.Storage.Archival;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Shared.Services;
@@ -103,7 +102,7 @@ public class ConfigService : IConfigService
     }
 
     private static string Fingerprint(string json)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json)));
+        => Sha256Digest.ComputeUtf8(json);
 
     public string ResolveDataRoot(AppConfig? config = null)
         => MeridianPathDefaults.ResolveDataRoot(ConfigPath, config?.DataRoot);
