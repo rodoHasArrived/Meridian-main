@@ -90,8 +90,25 @@ internal sealed class IntercompanyCloseAdvisorySource(IServiceProvider services)
         var period = await journals.GetPeriodAsync(periodId, ct);
         if (book is null || owner is null || !owner.IsHeldBy(tenantId) || owner.CompanyId != companyId
             || period is null || period.LedgerBookId != bookId || scope.FundProfileId != book.FundProfileId
-            || !Guid.TryParse(scope.EntityId, out var entityId) || entityId != book.FundStructureNodeId)
+            || !Guid.TryParse(scope.EntityId, out var entityId) || entityId == Guid.Empty)
             return Unknown();
+        if (book.FundStructureNodeKind == FundStructureNodeKindDto.Entity)
+        {
+            if (entityId != book.FundStructureNodeId)
+                return Unknown();
+        }
+        else
+        {
+            if (book.FundStructureNodeKind is not (FundStructureNodeKindDto.Account or FundStructureNodeKindDto.Fund
+                or FundStructureNodeKindDto.Sleeve or FundStructureNodeKindDto.Vehicle)
+                || services.GetService<ICloseReadinessSubjectSource>() is not { } subjects)
+                return Unknown();
+            // Non-entity book node IDs identify account/group membership, not the legal entity.
+            var subject = await subjects.GetSubjectAsync(scope, ct);
+            if (subject is null || subject.Scope != scope || subject.Status != "Ready"
+                || string.IsNullOrWhiteSpace(subject.EvidenceVersion))
+                return Unknown();
+        }
         var advisory = await monitor.EvaluateAsync(new(tenantId, caller.Actor), companyId,
             new(book.FundProfileId, bookId, period.EndDate, 30, entityId), ct);
         return advisory with { BalanceSchedule = null };

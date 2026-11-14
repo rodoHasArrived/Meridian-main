@@ -136,6 +136,9 @@ public sealed class IntercompanyObligationMonitorService(
             throw new UnauthorizedAccessException("Legal disclosure includes an inaccessible party.");
         var observedEntities = entities.Concat(disclosedParties).Distinct().Order().ToArray();
         var timelines = new Dictionary<Guid, EntityLifecycleRevisionDto?>();
+        var coverageEnds = new List<AgreementCoverageEnd>();
+        var horizon = request.AsOf.DayNumber > DateOnly.MaxValue.DayNumber - request.ExpiryHorizonDays
+            ? DateOnly.MaxValue : request.AsOf.AddDays(request.ExpiryHorizonDays);
         var versions = new List<IntercompanyObligationSourceVersionDto>
         {
             new("balance-schedule", request.LedgerBookId?.ToString("D") ?? request.FundProfileId ?? "scope",
@@ -145,9 +148,13 @@ public sealed class IntercompanyObligationMonitorService(
             versions.Add(new("ledger-book", book.LedgerBookId.ToString("D"), book.UpdatedAt.ToString("O", CultureInfo.InvariantCulture),
                 Sha256Digest.ComputeUtf8($"{book.FundProfileId}\n{book.FundStructureNodeId:D}\n{book.FundStructureNodeKind}\n{book.BaseCurrency}\n{book.AccountingBasis}\n{book.AccountingPolicyId}\n{book.AccountingPolicyVersion}")));
         foreach (var detail in legal.Values.OrderBy(x => x.AgreementId))
+        {
             versions.Add(new("legal-agreement", detail.AgreementId.ToString("D"), detail.AggregateVersion.ToString(CultureInfo.InvariantCulture),
                 Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(detail,
                     IntercompanyObligationMonitorJsonContext.Default.IntercompanyAgreementDetailDto))));
+            if (await FindCoverageEndAsync(context, detail, request.AsOf, horizon, ct).ConfigureAwait(false) is { } coverageEnd)
+                coverageEnds.Add(coverageEnd);
+        }
         foreach (var entity in observedEntities)
         {
             var revision = await lifecycle.GetAsync(entity, ct: ct).ConfigureAwait(false);
@@ -159,8 +166,35 @@ public sealed class IntercompanyObligationMonitorService(
             versions.Add(new("entity-lifecycle", entity.ToString("D"), revision?.Revision.ToString(CultureInfo.InvariantCulture) ?? "unknown",
                 revision?.ContentHash ?? Sha256Digest.ComputeUtf8("unknown")));
         }
-        return new(schedule, legal, timelines, versions.OrderBy(x => x.SourceKind, StringComparer.Ordinal)
+        return new(schedule, legal, timelines, coverageEnds, versions.OrderBy(x => x.SourceKind, StringComparer.Ordinal)
             .ThenBy(x => x.SourceId, StringComparer.Ordinal).ToArray());
+    }
+
+    private async Task<AgreementCoverageEnd?> FindCoverageEndAsync(IntercompanyAgreementCallContext context,
+        IntercompanyAgreementDetailDto detail, DateOnly asOf, DateOnly horizon, CancellationToken ct)
+    {
+        if (!detail.LatestApprovedVersion.HasValue || detail.EffectiveStatus != IntercompanyAgreementStatusDto.Active ||
+            detail.ApplicableRevision is not { } active)
+            return null;
+        // Ask the native legal projection at every retained change boundary. A later reactivation
+        // cannot erase an intervening gap, and a superseded revision's raw expiry grants no finding.
+        var boundaries = detail.Revisions.SelectMany(revision => revision.Action == IntercompanyAgreementActionDto.Terminate
+                ? new DateOnly?[] { revision.Terms.TerminationEffectiveDate }
+                : [revision.Terms.EffectiveFrom, revision.Terms.EffectiveTo])
+            .Where(date => date.HasValue && date.Value > asOf && date.Value <= horizon)
+            .Select(date => date!.Value).Distinct().Order();
+        foreach (var boundary in boundaries)
+        {
+            var projected = await agreements.GetAsync(context, detail.AgreementId, boundary, ct: ct).ConfigureAwait(false);
+            if (projected is null || projected.AgreementId != detail.AgreementId || projected.AsOf != boundary ||
+                projected.AggregateVersion != detail.AggregateVersion)
+                throw new InvalidOperationException("The legal registry changed or could not establish the requested effective chronology.");
+            if (projected.EffectiveStatus != IntercompanyAgreementStatusDto.Active)
+                return new(detail.AgreementId, active.AgreementVersion, boundary);
+            active = projected.ApplicableRevision
+                ?? throw new InvalidOperationException("Active legal coverage has no retained approved revision.");
+        }
+        return null;
     }
 
     private static List<IntercompanyObligationFindingDto> BuildFindings(Observation observation,
@@ -176,15 +210,12 @@ public sealed class IntercompanyObligationMonitorService(
         if (!schedule.Available)
             findings.Add(new("intercompany.schedule.unavailable", "Warning",
                 "The posted intercompany schedule is unavailable; balance coverage is unknown."));
-        var horizon = request.AsOf.DayNumber > DateOnly.MaxValue.DayNumber - request.ExpiryHorizonDays
-            ? DateOnly.MaxValue : request.AsOf.AddDays(request.ExpiryHorizonDays);
-        foreach (var detail in observation.Agreements.Values.Where(x => x.LatestApprovedVersion.HasValue))
+        foreach (var coverageEnd in observation.CoverageEnds)
         {
-            var revision = detail.ApplicableRevision;
-            if (detail.EffectiveStatus == IntercompanyAgreementStatusDto.Active && revision?.Terms.EffectiveTo is { } end && end <= horizon)
-                findings.Add(new("intercompany.agreement.expiring", "Warning",
-                    $"{detail.Name} expires on {end:yyyy-MM-dd}.", AgreementId: detail.AgreementId,
-                    AgreementVersion: revision.AgreementVersion, DrillThrough: AgreementRoute(detail.AgreementId)));
+            var detail = observation.Agreements[coverageEnd.AgreementId];
+            findings.Add(new("intercompany.agreement.expiring", "Warning",
+                $"{detail.Name} legal coverage ends on {coverageEnd.Date:yyyy-MM-dd}.", AgreementId: detail.AgreementId,
+                AgreementVersion: coverageEnd.AgreementVersion, DrillThrough: AgreementRoute(detail.AgreementId)));
         }
         foreach (var row in schedule.Rows)
         {
@@ -246,5 +277,7 @@ public sealed class IntercompanyObligationMonitorService(
     private sealed record Observation(IntercompanyBalanceScheduleDto Schedule,
         IReadOnlyDictionary<Guid, IntercompanyAgreementDetailDto> Agreements,
         IReadOnlyDictionary<Guid, EntityLifecycleRevisionDto?> Lifecycle,
+        IReadOnlyList<AgreementCoverageEnd> CoverageEnds,
         IReadOnlyList<IntercompanyObligationSourceVersionDto> Versions);
+    private sealed record AgreementCoverageEnd(Guid AgreementId, int AgreementVersion, DateOnly Date);
 }

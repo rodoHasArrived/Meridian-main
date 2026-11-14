@@ -1,3 +1,4 @@
+using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
@@ -30,10 +31,12 @@ public sealed class IntercompanyObligationMonitorServiceTests
     public async Task ApproachingExpiryAndExpiredExposureRemainAdvisory()
     {
         var fixture = new Fixture();
+        var expiring = fixture.Revision with
+        { Terms = fixture.Revision.Terms with { EffectiveTo = Fixture.AsOf.AddDays(20) } };
         fixture.Detail = fixture.Detail with
         {
-            ApplicableRevision = fixture.Revision with
-            { Terms = fixture.Revision.Terms with { EffectiveTo = Fixture.AsOf.AddDays(20) } }
+            ApplicableRevision = expiring,
+            Revisions = [expiring]
         };
         Assert.Contains((await fixture.RunAsync()).Findings, x => x.Code == "intercompany.agreement.expiring");
         fixture.Detail = fixture.Detail with { EffectiveStatus = IntercompanyAgreementStatusDto.Expired };
@@ -253,7 +256,13 @@ public sealed class IntercompanyObligationMonitorServiceTests
             Agreements.Setup(x => x.ListAsync(It.IsAny<IntercompanyAgreementCallContext>(), It.IsAny<IntercompanyAgreementQueryDto>(),
                 It.IsAny<CancellationToken>())).ReturnsAsync(() => new IntercompanyAgreementListDto([Detail], null));
             Agreements.Setup(x => x.GetAsync(It.IsAny<IntercompanyAgreementCallContext>(), It.IsAny<Guid>(), It.IsAny<DateOnly?>(),
-                It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>())).ReturnsAsync(() => Detail);
+                It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((IntercompanyAgreementCallContext _, Guid _, DateOnly? asOf, DateTimeOffset? knownAt, CancellationToken _) =>
+                {
+                    var date = asOf ?? AsOf;
+                    var timeline = IntercompanyAgreementTimeline.Resolve(Detail.Revisions, date, knownAt);
+                    return Detail with { AsOf = date, EffectiveStatus = timeline.Status, ApplicableRevision = timeline.Revision };
+                });
             Journals.Setup(x => x.GetLedgerBookAsync(Book.LedgerBookId, It.IsAny<CancellationToken>())).ReturnsAsync(() => Book);
             Access.Setup(x => x.CanAccessEntitiesAsync(It.IsAny<IntercompanyAgreementCallContext>(), It.IsAny<IReadOnlyList<Guid>>(),
                 It.IsAny<CancellationToken>())).ReturnsAsync(true);
