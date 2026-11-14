@@ -41,6 +41,7 @@ import { WorkflowContextDisclosure } from "@/components/meridian/workflow-contex
 import { OperatingScopeBar } from "@/components/meridian/operating-scope-bar";
 import { WorkspaceViewsMenu } from "@/components/meridian/workspace-views-menu";
 import { WorkspaceStatus } from "@/components/meridian/workspace-status";
+import { SectionDescriptionPreferences } from "@/components/ui/section-description";
 import { EntityInspectorProvider } from "@/components/meridian/entity-inspector";
 import { MetricPassportSessionProvider } from "@/components/meridian/metric-passport";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
@@ -897,6 +898,7 @@ function AppShell({
   ]);
 
   return (
+    <SectionDescriptionPreferences operatorKey={session ? `${session.environment}:${session.displayName}:${session.role}` : null}>
     <MetricPassportSessionProvider scopeKey={JSON.stringify([operatingScopeInput, refreshStatus.inFlight])} sessionIdentity={session}>
     <EntityInspectorProvider scopeKey={JSON.stringify(operatingScopeInput)} sessionIdentity={session} refreshSequence={refreshStatus.inFlight ? 1 : 0}>
     <ScopePickerOpenerProvider open={openScopePicker}>
@@ -1168,6 +1170,7 @@ function AppShell({
     </ScopePickerOpenerProvider>
     </EntityInspectorProvider>
     </MetricPassportSessionProvider>
+    </SectionDescriptionPreferences>
   );
 }
 

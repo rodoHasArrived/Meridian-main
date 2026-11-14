@@ -139,7 +139,7 @@ export function SettingsAccessPostureSection({ vm, overview, providerHealth }: S
           <div className="flex flex-wrap gap-2">
             <SettingsChip label="Providers healthy" value={providerHealth ? `${providerHealth.healthy} / ${providerHealth.total}` : "—"} />
             <SettingsChip label="Runs" value={overview ? String(overview.activeRuns) : "—"} />
-            <SettingsChip label="Positions" value={openPositionsKpi.value} />
+            <SettingsChip label="Positions" kpi={openPositionsKpi} />
             <SettingsChip label="Storage" value={overview?.storageHealth ?? "—"} />
           </div>
           {vm.hasOverview ? (

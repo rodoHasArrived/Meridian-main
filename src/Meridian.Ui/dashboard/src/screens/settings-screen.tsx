@@ -1,15 +1,13 @@
+import { SectionDescription } from "@/components/ui/section-description";
+import { KpiProvider, useKpiModels } from "@/lib/kpi-context";
 import { ExecutionAlertSettingsPanel } from "./settings-screen.execution-alerts";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
-import { StatStrip } from "@/components/meridian/stat-strip";
-import { KpiProvider, useKpi, useKpiModels } from "@/lib/kpi-context";
-import { WORKSPACE_KPI_IDS } from "@/lib/kpi-registry";
 import { SettingsChangeImpactBanner } from "@/screens/settings-change-impact";
 import { listScopedAccessAssignments } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
-import { resolveFigureEvidence, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { SettingsMutationConfirmDialog, type SettingsMutationConfirmation } from "@/screens/settings-mutation-confirm-dialog";
 import { resolveSettingsRouteState, SETTINGS_ROUTE_VIEW_COPY, type SettingsRouteViewId } from "@/screens/settings-route-state";
 import { buildApprovalPolicyRuleDraft, buildCloseCalendarItemDraft, buildLedgerMappingAssignmentDraft, buildRolePermissionProfileDraft, settingsRoleDisplayLabel } from "@/screens/settings-screen.operations-form-options";
@@ -60,17 +58,6 @@ interface SettingsScreenProps {
   loading?: boolean;
   error?: string | null;
   workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
-}
-
-// Storage-health headline metric tone — mirrors the view-model's storage tone mapping so the
-// MetricCard accent matches the "Storage health" system item.
-function settingsStorageHealthTone(
-  health: SystemOverviewResponse["storageHealth"] | undefined
-): "default" | "success" | "warning" | "danger" {
-  if (health === "Healthy") return "success";
-  if (health === "Warning") return "warning";
-  if (health === "Critical") return "danger";
-  return "default";
 }
 
 function inferSettingsTaskView({
@@ -194,15 +181,8 @@ function SettingsScreenContent({
 }: SettingsScreenProps) {
   const location = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
-  const figureContext = useWorkspaceFigureContext();
   const providerHealth = selectSharedProviderHealth(sharedCounts, data?.providers);
-  // Provider health is not an overview figure: it comes from the shared cross-screen counts, or
-  // from the Data rows when those counts are unavailable. It states that payload's evidence, so a
-  // failed counts reload shows as stale here even when the overview reloaded.
-  const providerHealthFromSharedCounts = Boolean(sharedCounts?.providers);
-  const providerHealthEvidence = resolveFigureEvidence(figureContext, providerHealthFromSharedCounts ? "crossScreenCounts" : "data");
   const kpiModels = useKpiModels();
-  const openPositionsKpi = useKpi("portfolio.open-positions");
   const vm = buildSettingsScreenViewModel({
     session,
     overview,
@@ -453,30 +433,6 @@ function SettingsScreenContent({
     [allProviderRows]
   );
   const routeCopy = SETTINGS_ROUTE_VIEW_COPY[activeTaskView];
-  const settingsStatMetrics = [
-    {
-      id: "providers-healthy",
-      label: "Providers healthy",
-      value: providerHealth ? `${providerHealth.healthy} / ${providerHealth.total}` : "—",
-      delta: "",
-      tone: !providerHealth
-        ? "default" as const
-        : providerHealth.total > 0 && providerHealth.healthy === providerHealth.total ? "success" as const : "warning" as const,
-      ...(providerHealth
-        ? {
-            provenance: {
-              source: providerHealthFromSharedCounts ? "Cross-screen counts" : "Data workspace",
-              // Outside the shell the counts payload's own as-of time is the only one it carries.
-              asOf: providerHealthEvidence.asOf ?? (providerHealthFromSharedCounts ? sharedCounts?.asOf ?? null : null)
-            },
-            ...(providerHealthEvidence.freshness ? { freshness: providerHealthEvidence.freshness } : {})
-          }
-        : {})
-    },
-    { id: "active-runs", label: "Active runs", value: overview ? String(overview.activeRuns) : "—", delta: "", tone: "default" as const },
-    { id: "open-positions", label: "Open positions", value: openPositionsKpi.value, delta: openPositionsKpi.delta, tone: openPositionsKpi.tone },
-    { id: "storage-health", label: "Storage health", value: overview?.storageHealth ?? "—", delta: "", tone: settingsStorageHealthTone(overview?.storageHealth) }
-  ];
   const showChooserSection = activeTaskView === "chooser";
   const showPreferencesSection = activeTaskView === "preferences";
   const showAccessSection = activeTaskView === "access";
@@ -719,8 +675,7 @@ function SettingsScreenContent({
   const { activeProviderDisplayName, createProviderRuntimeHandoff, inlineProviderManagementEnabled, loadProviderRuntimeEvidence, providerCapabilityFilter, providerHealthFilter, providerRuntimeState, providerSearch, providerSort, providerVerificationFilter, replayProviderRuntimeQuarantine, resolveProviderRuntimeQuarantineRecord, runProviderRuntimeDueSync, setProviderCapabilityFilter, setProviderHealthFilter, setProviderSearch, setProviderSort, setProviderVerificationFilter, showProviderAdvancedControls, showProviderFilters, submitProviderOpenApiImport, updateProviderOpenApiImportState, visibleProviderGroups } = useSettingsProviderSectionState({ activeProviderId, activeTaskView, allProviderRows, featureCapabilities, legacyEmbeddedSettingsView, providerOpenApiImportState, session, setProviderOpenApiImportState, vm });
 
   return (
-    <div className="space-y-5">
-      {/* Route heading first ("where am I?"); workspace-wide metrics follow. */}
+    <div className="space-y-3">
       <section
         id="settings-overview"
         role="region"
@@ -731,15 +686,12 @@ function SettingsScreenContent({
           <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
             {routeCopy.title}
           </h2>
-          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+          <SectionDescription descriptionKey={`settings:${activeTaskView}`} label={`About ${routeCopy.title}`}>
             {routeCopy.description}
-          </p>
+          </SectionDescription>
         </div>
       </section>
 
-      <KpiProvider models={{ overview: overview ? { ...overview, metrics: settingsStatMetrics } : null }}>
-        <StatStrip ids={WORKSPACE_KPI_IDS.settings} label="Operator control posture metrics" source="System overview" figureSource="overview" />
-      </KpiProvider>
       <SettingsChangeImpactBanner />
 
       {showChooserSection ? <SettingsTaskChooser viewModel={vm} /> : null}

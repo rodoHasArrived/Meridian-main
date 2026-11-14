@@ -3581,6 +3581,7 @@ describe("AccountingScreen", () => {
   it("renders the close cockpit landing with focused accounting task modes", async () => {
     await renderAccountingScreen();
 
+    expect(screen.getByLabelText("Accounting headline metrics")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Accounting case workbench" })).toBeInTheDocument();
@@ -3665,6 +3666,7 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
 
+    expect(screen.queryByLabelText("Accounting headline metrics")).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toHaveTextContent("Journal Entry");
     expect(screen.getByRole("heading", { name: "Manual journal entry workbench" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Journal health and actions" })).toHaveTextContent("Balanced");
@@ -4618,6 +4620,7 @@ describe("AccountingScreen", () => {
   it("renders reconciliation strong panels with view-model presentation state", async () => {
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
+    expect(screen.queryByLabelText("Accounting headline metrics")).not.toBeInTheDocument();
     const comparison = screen.getByRole("region", { name: "Cash reconciliation broker statement versus ledger comparison" });
     expect(comparison).toHaveTextContent("Cash reconciliation - broker statement vs. ledger");
     expect(comparison).toHaveTextContent("Statement balance");

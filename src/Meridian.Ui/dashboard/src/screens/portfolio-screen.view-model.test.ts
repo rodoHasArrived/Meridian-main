@@ -1492,6 +1492,6 @@ describe("buildPortfolioScreenViewModel", () => {
 
 function portfolioFromTrading(value: TradingWorkspaceResponse, strategyWorkspace: StrategyWorkspaceResponse | null): PortfolioWorkspaceResponse;
 function portfolioFromTrading(value: null, strategyWorkspace: StrategyWorkspaceResponse | null): null;
-function portfolioFromTrading(value: TradingWorkspaceResponse | null, strategyWorkspace: StrategyWorkspaceResponse | null) {
+function portfolioFromTrading(value: TradingWorkspaceResponse | null, strategyWorkspace: StrategyWorkspaceResponse | null): PortfolioWorkspaceResponse | null {
   return value ? { metrics: [], positions: value.positions, risk: value.risk, brokerage: value.brokerage, runs: (strategyWorkspace?.runs ?? []).map(({ id, ...run }) => ({ ...run, runId: id, promotionState: run.promotionState ?? null })), cashFlow: null } : null;
 }

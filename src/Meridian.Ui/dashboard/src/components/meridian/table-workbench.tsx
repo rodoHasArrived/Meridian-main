@@ -28,6 +28,8 @@ export interface TableWorkbenchProps<T> extends Omit<DenseDataTableProps<T>, "co
   onSearchTextChange?: (value: string) => void;
   getSearchText?: (row: T) => string;
   filters?: ReactNode;
+  /** Keep query controls visible; disclose column, density, export and saved-view tools. */
+  compactToolbar?: boolean;
   filterState?: Record<string, string>;
   onRestoreFilters?: (filters: Record<string, string>) => void;
   onRestoreView?: (view: TableView) => void;
@@ -43,7 +45,7 @@ export interface TableWorkbenchProps<T> extends Omit<DenseDataTableProps<T>, "co
 }
 
 export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, searchText: controlledSearch,
-  onSearchTextChange, getSearchText, filters, filterState, onRestoreFilters, onRestoreView, completePopulation = false,
+  onSearchTextChange, getSearchText, filters, compactToolbar = false, filterState, onRestoreFilters, onRestoreView, completePopulation = false,
   sourceDescription, exportContext, exportLabel = "Export CSV", onExportAll, sort, onToggleSort, defaultSort = null,
   hiddenColumnIds: controlledHiddenColumnIds, onHiddenColumnIdsChange, ...tableProps }: TableWorkbenchProps<T>) {
   const id = useId();
@@ -199,30 +201,51 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
     } catch (cause) { if (current === session.current && !signal?.aborted) setError(cause instanceof Error ? cause.message : "Export failed. No complete export was produced."); }
     finally { if (current === session.current) setExporting(false); }
   }
+  const columnControls = hideableColumns.map(column => <label key={column.id}><input type="checkbox" checked={effectiveVisibleIds.includes(column.id)}
+    disabled={visibleColumns.length === 1 && effectiveVisibleIds.includes(column.id)}
+    onChange={event => changeVisibleIds(event.target.checked ? columns.filter(item => effectiveVisibleIds.includes(item.id) || item.id === column.id).map(item => item.id) : effectiveVisibleIds.filter(value => value !== column.id))} />{column.label || column.srLabel || column.id}</label>);
+  const densityControl = <label>Density<select aria-label={`${tableProps.ariaLabel} density`} value={density} onChange={event => setDensity(event.target.value as typeof density)}><option value="compact">Compact</option><option value="comfortable">Comfortable</option></select></label>;
+  const exportControl = <Button size="sm" variant="outline" onClick={() => void exportAll()} disabled={exporting || !exportColumns.length || (!completePopulation && !onExportAll)}
+    title={!completePopulation && !onExportAll ? "A complete authorized source is required before export." : `Export all ${pluralizeCount(filteredRows.length, "filtered match", { plural: "filtered matches" })}. ${sourceDescription}`}>{exporting ? "Exporting…" : exportLabel}</Button>;
+  const viewControls = <>
+    <label>Saved views<select value={selectedView} onChange={event => restoreView(event.target.value)}><option value="">Current view</option>{views.map(view => <option key={view.viewId} value={view.viewId}>{view.label}{view.isReadOnly ? " · Legacy tenant view" : ""}</option>)}</select></label>
+    <label>View name<input value={viewName} maxLength={100} onChange={event => setViewName(event.target.value)} /></label>
+    <Button size="sm" onClick={() => void saveView()} disabled={saving}>{saving ? "Saving…" : "Save to my account"}</Button>
+  </>;
+  const unavailableViews = compactToolbar && notice === "Saved views unavailable. You can continue reviewing this table.";
+
   return (
     <section className={cn("table-workbench", `table-workbench--${density}`)} aria-label={`${tableProps.ariaLabel} controls and results`}>
-      <div className="table-workbench-toolbar" role="group" aria-label={`${tableProps.ariaLabel} table controls`}>
+      <div className={cn("table-workbench-toolbar", compactToolbar && "table-workbench-toolbar--compact")} role="group" aria-label={`${tableProps.ariaLabel} table controls`}>
         {getSearchText || onSearchTextChange ? <label className="table-workbench-search" htmlFor={`${id}-search`}>Search
           <input id={`${id}-search`} type="search" value={search} onChange={event => setSearch(event.target.value)} />
         </label> : null}
         {filters}
-        <details className="table-workbench-disclosure"><summary>Columns</summary><div className="table-workbench-menu">
-          {hideableColumns.map(column => <label key={column.id}><input type="checkbox" checked={effectiveVisibleIds.includes(column.id)}
-            disabled={visibleColumns.length === 1 && effectiveVisibleIds.includes(column.id)}
-            onChange={event => changeVisibleIds(event.target.checked ? columns.filter(item => effectiveVisibleIds.includes(item.id) || item.id === column.id).map(item => item.id) : effectiveVisibleIds.filter(value => value !== column.id))} />{column.label || column.srLabel || column.id}</label>)}
-        </div></details>
-        <label>Density<select aria-label={`${tableProps.ariaLabel} density`} value={density} onChange={event => setDensity(event.target.value as typeof density)}><option value="compact">Compact</option><option value="comfortable">Comfortable</option></select></label>
-        <Button size="sm" variant="outline" onClick={() => void exportAll()} disabled={exporting || !exportColumns.length || (!completePopulation && !onExportAll)}
-          title={!completePopulation && !onExportAll ? "A complete authorized source is required before export." : `Export all ${pluralizeCount(filteredRows.length, "filtered match", { plural: "filtered matches" })}. ${sourceDescription}`}>{exporting ? "Exporting…" : exportLabel}</Button>
-        <details className="table-workbench-disclosure"><summary>Save view</summary><div className="table-workbench-menu">
-          <label>Saved views<select value={selectedView} onChange={event => restoreView(event.target.value)}><option value="">Current view</option>{views.map(view => <option key={view.viewId} value={view.viewId}>{view.label}{view.isReadOnly ? " · Legacy tenant view" : ""}</option>)}</select></label>
-          <label>View name<input value={viewName} maxLength={100} onChange={event => setViewName(event.target.value)} /></label>
-          <Button size="sm" onClick={() => void saveView()} disabled={saving}>{saving ? "Saving…" : "Save to my account"}</Button>
-        </div></details>
+        {compactToolbar ? <details className="table-workbench-disclosure" onKeyDown={event => {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            event.currentTarget.open = false;
+            event.currentTarget.querySelector("summary")?.focus();
+          }
+        }}>
+          <summary aria-label={`${tableProps.ariaLabel} table options`}>Table options</summary>
+          <div className="table-workbench-menu table-workbench-options">
+            <fieldset><legend>Columns</legend>{columnControls}</fieldset>
+            {densityControl}
+            {exportControl}
+            <fieldset><legend>Save view</legend>{viewControls}</fieldset>
+          </div>
+        </details> : <>
+          <details className="table-workbench-disclosure"><summary>Columns</summary><div className="table-workbench-menu">{columnControls}</div></details>
+          {densityControl}
+          {exportControl}
+          <details className="table-workbench-disclosure"><summary>Save view</summary><div className="table-workbench-menu">{viewControls}</div></details>
+        </>}
         <span className="table-workbench-count">{pluralizeCount(filteredRows.length, "match", { plural: "matches" })}</span>
+        {unavailableViews ? <span role="status" title={notice} className="table-workbench-view-notice">Views unavailable</span> : null}
       </div>
       {error ? <p role="alert" className="text-danger text-sm">{error}</p> : null}
-      {notice ? <p role="status" className="text-muted-foreground text-xs">{notice}</p> : null}
+      {notice && !unavailableViews ? <p role="status" className="text-muted-foreground text-xs">{notice}</p> : null}
       <div ref={frame} className="table-workbench-frame" data-scroll-left={scrollEdges.left} data-scroll-right={scrollEdges.right}>
         <DenseDataTable {...tableProps} columns={tableColumns} rows={filteredRows} sort={effectiveSort} onToggleSort={toggleSort} />
       </div>

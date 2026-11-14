@@ -389,6 +389,7 @@ describe("TradingScreen", () => {
   it("renders the overview posture with the workflow strip and no blotters", async () => {
     await renderTradingScreen();
     expect(screen.getByRole("region", { name: "Execution cockpit context" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Trading headline metrics")).toBeInTheDocument();
     const workflowStrip = screen.getByRole("region", { name: "Workflow control strip" });
     expect(within(workflowStrip).getByRole("button", { name: /strategy controls/i })).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /session replay/i })).toBeInTheDocument();
@@ -404,8 +405,18 @@ describe("TradingScreen", () => {
   it("renders the position book with wiring state on the positions route", async () => {
     await renderTradingScreen(data, "/trading/positions");
     expect(screen.getByText("Live positions")).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Open orders" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
+    expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
+  });
+
+  it("keeps account setup visible on orders and links to the full recovery workspace", async () => {
+    await renderTradingScreen(data, "/trading/orders");
+    expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
+    const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
+    expect(within(recovery).getByRole("status", { name: "Brokerage recovery readiness" })).toHaveTextContent("No fund account in scope");
+    expect(within(recovery).getByRole("link", { name: "Review brokerage recovery" })).toHaveAttribute("href", "/trading#brokerage-recovery");
+    expect(within(recovery).queryByRole("button", { name: "Synchronize and reconcile" })).not.toBeInTheDocument();
   });
 
   it("resolves route views by exact path segment, not substring", () => {
@@ -423,11 +434,11 @@ describe("TradingScreen", () => {
 
     // No in-page route tab strip duplicating the sidebar.
     expect(screen.queryByRole("tablist", { name: "Trading routes" })).not.toBeInTheDocument();
-    // The route heading leads, ahead of the workspace-wide metrics.
+    // The route heading leads; workspace-wide metrics belong to the overview.
     const heading = screen.getByRole("region", { name: "Execution cockpit context" });
-    const metrics = screen.getByLabelText("Trading headline metrics");
-    expect(heading.compareDocumentPosition(metrics) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(await screen.findByRole("heading", { name: "Open orders" })).toBeInTheDocument();
+    expect(heading).toBeInTheDocument();
+    expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
+    expect(await screen.findByText("Open orders")).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
   });
 
