@@ -46,6 +46,12 @@
       "object_type": "table"
     },
     {
+      "comment": "Retained bounded onboarding workspaces, including shadow-mode designation, certificates and promotion (W11-SHADOW-001).",
+      "fingerprint": "e0dfd87589d457e3bbec91b230cd9228fed01313f11ecc75c3a7558929470cba",
+      "object": "ledger.onboarding_workspaces",
+      "object_type": "table"
+    },
+    {
       "comment": "Immutable reviewed capital-call allocations bound to exact approved commitment revisions and accounting scope.",
       "fingerprint": "b58763b6ed0064d51c6744344d1d0ea328139584dcece915364e704fae352ed2",
       "object": "ledger.private_capital_calls",
@@ -3595,6 +3601,78 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "1b07c7a48366b05e56813f73d0f6d2a39f587fce3480cc1e01cafcd759bdc513",
+      "kind": "normal",
+      "source": "ledger.onboarding_workspaces_company_id_check on ledger.onboarding_workspaces",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.onboarding_workspaces.company_id",
+      "target_kind": "table column",
+      "target_name": "onboarding_workspaces",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "924b87c1dace11ef0151054e755e8f3057faf1754912b93a955fe006c978e660",
+      "kind": "normal",
+      "source": "ledger.onboarding_workspaces_payload_json_check on ledger.onboarding_workspaces",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.onboarding_workspaces.payload_json",
+      "target_kind": "table column",
+      "target_name": "onboarding_workspaces",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "427a43916219c655881b19e04024436f98f613400ffeb1af586b485b4de78c19",
+      "kind": "normal",
+      "source": "ledger.onboarding_workspaces_shadow_state_check on ledger.onboarding_workspaces",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.onboarding_workspaces.shadow_state",
+      "target_kind": "table column",
+      "target_name": "onboarding_workspaces",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "c2a1b7e3c9be743ec6b155c7624c4c5600bc09927866476f7c7239511cebcb1b",
+      "kind": "normal",
+      "source": "ledger.onboarding_workspaces_tenant_id_check on ledger.onboarding_workspaces",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.onboarding_workspaces.tenant_id",
+      "target_kind": "table column",
+      "target_name": "onboarding_workspaces",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "195f402f09e57eec1700ca73903d785e117673ceb371fb1fa06881110a9e61b8",
+      "kind": "normal",
+      "source": "ledger.onboarding_workspaces_version_check on ledger.onboarding_workspaces",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.onboarding_workspaces.version",
+      "target_kind": "table column",
+      "target_name": "onboarding_workspaces",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "6c472f529559858944a09a1f01a9bf8cd762575cd0014e9a7abc0b8b3a716e34",
+      "kind": "normal",
+      "source": "ledger.onboarding_workspaces_workspace_id_check on ledger.onboarding_workspaces",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.onboarding_workspaces.workspace_id",
+      "target_kind": "table column",
+      "target_name": "onboarding_workspaces",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "f1f00f9505d893a5c219e3cabd4434ad74ebb8ba5bf27ec2beb53ee1eae8bc11",
       "kind": "normal",
       "source": "ledger.open_lot_backfill_evidence_content_check on ledger.open_lot_backfill_evidence",
@@ -4703,7 +4781,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "1efe1154695d661fdc0177dd133fbfee5401a2e63502eab23e3b3dc594e79a7e",
+  "fingerprint": "8171d974261005ad652d4e7c3e8ab2475d640e7f2301ef8ce729308da89e33b3",
   "foreign_tables": [],
   "functions": [
     {
@@ -5540,6 +5618,37 @@
       "security_definer": false,
       "security_labels": [],
       "signature": "reject_ledger_balance_checkpoint_mutation()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "ca1be53bdf94bdfa95e1d354b11459b7ed9e26c7ac1b378822a262b04478c5a8",
+      "fingerprint": "0c628686674d6373aef5dfa9bbcee92dfe1649ebe716bc993ad061eadf921451",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_onboarding_workspace_delete",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_onboarding_workspace_delete()",
       "strict": false,
       "volatility": "volatile"
     },
@@ -22177,6 +22286,473 @@
       ],
       "columns": [
         {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "23df5012b669a8af91f0fe3ee7949df18759bde304dcc34664caa63d8dcd7bdb",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "workspace_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "85dbc0fc36597916d01510a1466660d6fc78a5b6a002d073648aba5018a31b2a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "004384db083f764caa218b743f80c29947b747d61e5c80b1bd2ce4a0c8ef6e16",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "company_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "ec7d824a33c5e242bb29feebbae751478f0e3e586e11ae64fac9b6b93a5fff2c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ledger_book_id",
+          "nullable": true,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "fa28fefbddc0780e03dde9cd88cfd5759043c8f96bcd62a1b26e6e1d6e6a7ef8",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "b4432476578922340626a6705d203f445ed7b897cc9ed5168fad69a81927fc2c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "shadow_state",
+          "nullable": true,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "2b9e03afa955e8ca734f6ed04422e6df44e72b6c3dd584ebe0e7dba093eb5a65",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "created_at",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "2647ea2564e0a9b40daa27a288d27bc49b5e13e13c007ffe5158ebcc486f8902",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "updated_at",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "066e100bcea8b969f3ea0b92b5326082272dfafcac0442f57d7840ad1e72f562",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_json",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Retained bounded onboarding workspaces, including shadow-mode designation, certificates and promotion (W11-SHADOW-001).",
+      "constraints": [
+        {
+          "columns": [
+            "company_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(btrim(company_id)) > 0)",
+          "delete_action": null,
+          "fingerprint": "f95cae23f8d949201eb9439e6ecf51a50fd588545d38d70d7562e21894a34957",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "onboarding_workspaces_company_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "payload_json"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (jsonb_typeof(payload_json::jsonb) = 'object'::text)",
+          "delete_action": null,
+          "fingerprint": "57042a11a1d46ad7bbb1240d4c2609f847d184fa69dd4a1ff876cd3dfe8674ef",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "onboarding_workspaces_payload_json_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "shadow_state"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (shadow_state = ANY (ARRAY['Shadow'::text, 'Promoted'::text, 'Withdrawn'::text]))",
+          "delete_action": null,
+          "fingerprint": "dda75854da523a99215253522dd8bb6c048b10313ea4b697617fda9f9b72bf2f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "onboarding_workspaces_shadow_state_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(btrim(tenant_id)) > 0)",
+          "delete_action": null,
+          "fingerprint": "01bff72fd0d43c8337fa1022d3ecd2c21c98454d092ce36bde58f3814f4c92bd",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "onboarding_workspaces_tenant_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (version > 0)",
+          "delete_action": null,
+          "fingerprint": "59f856feaeee7c339d32b39e7d07c081a30f21bd1871bb353c92e90b74d61b13",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "onboarding_workspaces_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "workspace_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(btrim(workspace_id)) > 0)",
+          "delete_action": null,
+          "fingerprint": "9026496b53d515ef4d5f52c5fc9960d3e2360df51d4d76a56aa33fb9a7d3c699",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "onboarding_workspaces_workspace_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "workspace_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (workspace_id)",
+          "delete_action": null,
+          "fingerprint": "35310408718cc0520424dda70bed4fd474ee6a735864944a40d175e3fe130bbb",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "onboarding_workspaces_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "acfe80b52d06b8ef8b55f0c1a6ffa91cad2db3b837af3c2c886100712e4953df",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_onboarding_workspaces_ledger_book ON ledger.onboarding_workspaces USING btree (tenant_id, ledger_book_id, created_at)",
+          "expression": null,
+          "fingerprint": "66c5647b179d5a4efc247be82ebea1aaf24fc096ceb41e470282973ca2453ec8",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "ledger_book_id",
+            "created_at"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_onboarding_workspaces_ledger_book",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_onboarding_workspaces_scope ON ledger.onboarding_workspaces USING btree (tenant_id, company_id, updated_at DESC)",
+          "expression": null,
+          "fingerprint": "f3b66a4a351d7150e491b314b36010473c8b508fd4161cb92d50c4f5389dea17",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "company_id",
+            "updated_at"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_onboarding_workspaces_scope",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX onboarding_workspaces_pkey ON ledger.onboarding_workspaces USING btree (workspace_id)",
+          "expression": null,
+          "fingerprint": "3a5266ecc888e1f412737d4871007ccbe59a4f756cde64ffc947a9520133d2e3",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "workspace_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "onboarding_workspaces_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_onboarding_workspaces_active_shadow_book ON ledger.onboarding_workspaces USING btree (tenant_id, ledger_book_id) WHERE ((shadow_state = ANY (ARRAY['Shadow'::text, 'Promoted'::text])) AND (ledger_book_id IS NOT NULL))",
+          "expression": null,
+          "fingerprint": "23c8f8ee99124c9a7b4735f7489ab1cb08e32dd77ee0c62d05cda8ac611fd3ae",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "ledger_book_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_onboarding_workspaces_active_shadow_book",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "(shadow_state = ANY (ARRAY['Shadow'::text, 'Promoted'::text])) AND ledger_book_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "onboarding_workspaces",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER onboarding_workspace_retained BEFORE DELETE ON ledger.onboarding_workspaces FOR EACH ROW EXECUTE FUNCTION ledger.reject_onboarding_workspace_delete()",
+          "definition_hash": "8a58433269e0ced06bc37886915cdb4a84f1c67814d09e175867c23ada14513f",
+          "enabled": "origin",
+          "events": [
+            "delete"
+          ],
+          "fingerprint": "e5db3d63574ef12d9ca8aadbaa15a5fdbd43edaa8e3484b4c672a94ee6f635dc",
+          "function_schema": "ledger",
+          "function_signature": "reject_onboarding_workspace_delete()",
+          "level": "row",
+          "name": "onboarding_workspace_retained",
+          "relation": "onboarding_workspaces",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
           "collation": null,
           "comment": null,
           "data_type": "uuid",
@@ -30319,6 +30895,14 @@
       "forced": false,
       "policies": [],
       "relation": "legacy_intercompany_attributions",
+      "schema": "ledger"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "92f4fbd2755e7282183cb0404ac5ac75a6e24d1b46976d3d47e24df1cc53ae56",
+      "forced": false,
+      "policies": [],
+      "relation": "onboarding_workspaces",
       "schema": "ledger"
     },
     {
@@ -46747,6 +47331,473 @@
       ],
       "columns": [
         {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "23df5012b669a8af91f0fe3ee7949df18759bde304dcc34664caa63d8dcd7bdb",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "workspace_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "85dbc0fc36597916d01510a1466660d6fc78a5b6a002d073648aba5018a31b2a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "004384db083f764caa218b743f80c29947b747d61e5c80b1bd2ce4a0c8ef6e16",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "company_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "ec7d824a33c5e242bb29feebbae751478f0e3e586e11ae64fac9b6b93a5fff2c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ledger_book_id",
+          "nullable": true,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "fa28fefbddc0780e03dde9cd88cfd5759043c8f96bcd62a1b26e6e1d6e6a7ef8",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "b4432476578922340626a6705d203f445ed7b897cc9ed5168fad69a81927fc2c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "shadow_state",
+          "nullable": true,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "2b9e03afa955e8ca734f6ed04422e6df44e72b6c3dd584ebe0e7dba093eb5a65",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "created_at",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "2647ea2564e0a9b40daa27a288d27bc49b5e13e13c007ffe5158ebcc486f8902",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "updated_at",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "066e100bcea8b969f3ea0b92b5326082272dfafcac0442f57d7840ad1e72f562",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_json",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Retained bounded onboarding workspaces, including shadow-mode designation, certificates and promotion (W11-SHADOW-001).",
+      "constraints": [
+        {
+          "columns": [
+            "company_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(btrim(company_id)) > 0)",
+          "delete_action": null,
+          "fingerprint": "f95cae23f8d949201eb9439e6ecf51a50fd588545d38d70d7562e21894a34957",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "onboarding_workspaces_company_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "payload_json"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (jsonb_typeof(payload_json::jsonb) = 'object'::text)",
+          "delete_action": null,
+          "fingerprint": "57042a11a1d46ad7bbb1240d4c2609f847d184fa69dd4a1ff876cd3dfe8674ef",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "onboarding_workspaces_payload_json_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "shadow_state"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (shadow_state = ANY (ARRAY['Shadow'::text, 'Promoted'::text, 'Withdrawn'::text]))",
+          "delete_action": null,
+          "fingerprint": "dda75854da523a99215253522dd8bb6c048b10313ea4b697617fda9f9b72bf2f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "onboarding_workspaces_shadow_state_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(btrim(tenant_id)) > 0)",
+          "delete_action": null,
+          "fingerprint": "01bff72fd0d43c8337fa1022d3ecd2c21c98454d092ce36bde58f3814f4c92bd",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "onboarding_workspaces_tenant_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (version > 0)",
+          "delete_action": null,
+          "fingerprint": "59f856feaeee7c339d32b39e7d07c081a30f21bd1871bb353c92e90b74d61b13",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "onboarding_workspaces_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "workspace_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(btrim(workspace_id)) > 0)",
+          "delete_action": null,
+          "fingerprint": "9026496b53d515ef4d5f52c5fc9960d3e2360df51d4d76a56aa33fb9a7d3c699",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "onboarding_workspaces_workspace_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "workspace_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (workspace_id)",
+          "delete_action": null,
+          "fingerprint": "35310408718cc0520424dda70bed4fd474ee6a735864944a40d175e3fe130bbb",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "onboarding_workspaces_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "acfe80b52d06b8ef8b55f0c1a6ffa91cad2db3b837af3c2c886100712e4953df",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_onboarding_workspaces_ledger_book ON ledger.onboarding_workspaces USING btree (tenant_id, ledger_book_id, created_at)",
+          "expression": null,
+          "fingerprint": "66c5647b179d5a4efc247be82ebea1aaf24fc096ceb41e470282973ca2453ec8",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "ledger_book_id",
+            "created_at"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_onboarding_workspaces_ledger_book",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_onboarding_workspaces_scope ON ledger.onboarding_workspaces USING btree (tenant_id, company_id, updated_at DESC)",
+          "expression": null,
+          "fingerprint": "f3b66a4a351d7150e491b314b36010473c8b508fd4161cb92d50c4f5389dea17",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "company_id",
+            "updated_at"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_onboarding_workspaces_scope",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX onboarding_workspaces_pkey ON ledger.onboarding_workspaces USING btree (workspace_id)",
+          "expression": null,
+          "fingerprint": "3a5266ecc888e1f412737d4871007ccbe59a4f756cde64ffc947a9520133d2e3",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "workspace_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "onboarding_workspaces_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_onboarding_workspaces_active_shadow_book ON ledger.onboarding_workspaces USING btree (tenant_id, ledger_book_id) WHERE ((shadow_state = ANY (ARRAY['Shadow'::text, 'Promoted'::text])) AND (ledger_book_id IS NOT NULL))",
+          "expression": null,
+          "fingerprint": "23c8f8ee99124c9a7b4735f7489ab1cb08e32dd77ee0c62d05cda8ac611fd3ae",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "ledger_book_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_onboarding_workspaces_active_shadow_book",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "(shadow_state = ANY (ARRAY['Shadow'::text, 'Promoted'::text])) AND ledger_book_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "onboarding_workspaces",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER onboarding_workspace_retained BEFORE DELETE ON ledger.onboarding_workspaces FOR EACH ROW EXECUTE FUNCTION ledger.reject_onboarding_workspace_delete()",
+          "definition_hash": "8a58433269e0ced06bc37886915cdb4a84f1c67814d09e175867c23ada14513f",
+          "enabled": "origin",
+          "events": [
+            "delete"
+          ],
+          "fingerprint": "e5db3d63574ef12d9ca8aadbaa15a5fdbd43edaa8e3484b4c672a94ee6f635dc",
+          "function_schema": "ledger",
+          "function_signature": "reject_onboarding_workspace_delete()",
+          "level": "row",
+          "name": "onboarding_workspace_retained",
+          "relation": "onboarding_workspaces",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
           "collation": null,
           "comment": null,
           "data_type": "uuid",
@@ -55422,6 +56473,23 @@
       "level": "statement",
       "name": "tr_legacy_intercompany_attribution_no_truncate",
       "relation": "legacy_intercompany_attributions",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER onboarding_workspace_retained BEFORE DELETE ON ledger.onboarding_workspaces FOR EACH ROW EXECUTE FUNCTION ledger.reject_onboarding_workspace_delete()",
+      "definition_hash": "8a58433269e0ced06bc37886915cdb4a84f1c67814d09e175867c23ada14513f",
+      "enabled": "origin",
+      "events": [
+        "delete"
+      ],
+      "fingerprint": "e5db3d63574ef12d9ca8aadbaa15a5fdbd43edaa8e3484b4c672a94ee6f635dc",
+      "function_schema": "ledger",
+      "function_signature": "reject_onboarding_workspace_delete()",
+      "level": "row",
+      "name": "onboarding_workspace_retained",
+      "relation": "onboarding_workspaces",
       "schema": "ledger",
       "timing": "before"
     },

@@ -2,9 +2,9 @@
 
 # `ledger` schema
 
-- Relations: 55
-- Functions/procedures: 31
-- Triggers: 61
+- Relations: 56
+- Functions/procedures: 32
+- Triggers: 62
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -490,6 +490,17 @@ erDiagram
         text company_id
         jsonb payload
     }
+    ledger_onboarding_workspaces {
+        text workspace_id PK
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        integer version
+        text shadow_state
+        timestamp_with_time_zone created_at
+        timestamp_with_time_zone updated_at
+        text payload_json
+    }
     ledger_open_lot_backfill_evidence {
         uuid evidence_record_id PK
         uuid ledger_book_id FK
@@ -838,6 +849,7 @@ erDiagram
 | `ledger_event_audit_head` | table | 6 | `chain_id` | 0 | 1 | - |
 | `ledger_journal_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
 | `legacy_intercompany_attributions` | table | 8 | `attribution_id` | 1 | 3 | - |
+| `onboarding_workspaces` | table | 9 | `workspace_id` | 0 | 4 | Retained bounded onboarding workspaces, including shadow-mode designation, certificates and promotion (W11-SHADOW-001). |
 | `open_lot_backfill_evidence` | table | 11 | `evidence_record_id` | 2 | 1 | - |
 | `open_lot_backfill_exceptions` | table | 9 | `tax_lot_record_id` | 3 | 2 | - |
 | `open_lot_backfill_receipts` | table | 12 | `receipt_id` | 3 | 3 | - |
