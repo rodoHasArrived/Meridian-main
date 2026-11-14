@@ -8,6 +8,8 @@ import type {
   SystemOverviewResponse,
   TradingWorkspaceResponse
 } from "@/types";
+import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
+import { countOpenOrders, countOpenBreaks, countProviderHealth, selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 
 /** Read models are inputs, never competing fallbacks for the same figure. */
 export interface KpiReadModels {
@@ -18,6 +20,7 @@ export interface KpiReadModels {
   strategy?: StrategyWorkspaceResponse | null;
   data?: DataWorkspaceResponse | null;
   accounting?: AccountingWorkspaceResponse | null;
+  crossScreenCounts?: WorkstationCrossScreenCounts | null;
 }
 
 export type KpiScope = Readonly<Record<string, string | null | undefined>>;
@@ -32,6 +35,7 @@ interface ComputedKpi {
   status: KpiStatus;
   raw: string | number | null;
   currency: string | null;
+  evidence?: Partial<MetricSnapshot>;
 }
 
 export interface KpiDefinition {
@@ -68,6 +72,19 @@ export function parseKpiMoney(value: string): Money | null {
   return { units: BigInt(`${whole}${fraction}`) * (negative ? -1n : 1n), scale: fraction.length, currency };
 }
 
+function positionMoney(value: string, suppliedCurrency?: string | null): Money | null {
+  const currency = suppliedCurrency?.trim().toUpperCase();
+  if (!currency) return parseKpiMoney(value);
+  if (!/^[A-Z]{3}$/.test(currency)) return null;
+  const parsed = parseKpiMoney(value);
+  if (!parsed) return parseKpiMoney(`${currency} ${value}`);
+  // A producer's explicit ISO denomination outranks the generic dollar display convention.
+  // An explicitly conflicting code (or an unambiguous euro/pound symbol) remains invalid.
+  const genericDollar = /^[()+\-\s]*\$/.test(value.trim());
+  if (parsed.currency !== currency && !genericDollar) return null;
+  return { ...parsed, currency };
+}
+
 function decimalText({ units, scale }: Money): string {
   const negative = units < 0n;
   const digits = (negative ? -units : units).toString().padStart(scale + 1, "0");
@@ -98,7 +115,7 @@ function sumPositions(models: KpiReadModels, field: "exposure" | "unrealizedPnl"
   if (portfolio.positions.length === 0) return {
     ...unavailable("No holdings · currency not supplied"), value: "—", status: "empty", tone: "default"
   };
-  const values = portfolio.positions.map((position) => parseKpiMoney(position[field]));
+  const values = portfolio.positions.map((position) => positionMoney(position[field], position.currency));
   if (values.some((value) => !value)) return unavailable("Currency or value not supplied for every holding");
   const parsed = values as Money[];
   if (new Set(parsed.map((value) => value.currency)).size !== 1) return unavailable("Mixed currencies · no FX conversion supplied");
@@ -127,7 +144,7 @@ function sourceMetric(owner: "trading" | "strategy" | "data" | "accounting" | "p
       const money = currency === true ? parseKpiMoney(metric.value) : null;
       if (currency === true && !money) return unavailable("Currency or value not supplied");
       if (currency === "compact-usd" && !/^\$\d+(?:\.\d+)?[kM]?$/.test(metric.value.trim())) return unavailable("Compact USD estimate not supplied");
-      return { value: metric.value, delta: metric.delta, tone: metric.tone, status: "available", raw: money ? decimalText(money) : metric.value, currency: currency === "compact-usd" ? "USD" : money?.currency ?? null };
+      return { value: metric.value, delta: metric.delta, tone: metric.tone, status: "available", raw: money ? decimalText(money) : metric.value, currency: currency === "compact-usd" ? "USD" : money?.currency ?? null, evidence: metric };
     }
   };
 }
@@ -154,6 +171,45 @@ function retainedSummary(label: string, aliases: readonly string[], currency = f
 const holdingDimensions = ["source", "account"] as const;
 const holdingCurrencyRule = "Sum only explicitly denominated amounts in one currency, exactly as decimals; no FX conversion, no missing-value or partial-sum fallback.";
 
+function crossScreenProviders(models: KpiReadModels): ComputedKpi {
+  const providers = selectSharedProviderHealth(models.crossScreenCounts, models.data?.providers);
+  if (!providers) return unavailable("Provider health count unavailable");
+  return scalar(`${providers.healthy} / ${providers.total}`, providers.total > 0 && providers.healthy === providers.total ? "success" : "warning");
+}
+
+const providerDefinition: KpiDefinition = {
+  label: "Providers healthy", owner: "crossScreenCounts",
+  computation: "Healthy providers out of every listed provider, from the shared cross-screen count; use the Data provider list only when the shared count is absent. Never use separately counted overview cards.",
+  scopeDimensions: holdingDimensions, currencyRule: "Not a monetary figure.", compute: crossScreenProviders
+};
+
+const dataProviderDefinition: KpiDefinition = {
+  ...providerDefinition,
+  computation: "Healthy providers out of every listed Data provider, counted from the loaded Data list using the shared definition; fall back to the shared count only when that list is absent.",
+  compute: (models) => {
+    const providers = countProviderHealth(models.data?.providers)
+      ?? selectSharedProviderHealth(models.crossScreenCounts, undefined);
+    return providers ? scalar(`${providers.healthy} / ${providers.total}`, providers.total > 0 && providers.healthy === providers.total ? "success" : "warning") : unavailable("Provider health count unavailable");
+  }
+};
+
+function crossScreenOpenOrders(models: KpiReadModels): ComputedKpi {
+  const count = countOpenOrders(models.trading?.openOrders) ?? models.crossScreenCounts?.openOrders?.count;
+  if (count == null) return unavailable("Open-order count unavailable");
+  const evidence = models.trading?.openOrders ? models.trading.metrics?.find((metric) => ["orders", "open-orders", "trading-open-orders"].includes(metric.id)) : undefined;
+  return { ...scalar(count), evidence };
+}
+
+function crossScreenOpenBreaks(models: KpiReadModels): ComputedKpi {
+  const count = models.accounting?.workspace?.openBreaks ?? countOpenBreaks(models.accounting?.breakQueue) ?? models.crossScreenCounts?.openBreaks?.count;
+  if (count == null) return unavailable("Open-break count unavailable");
+  const caption = models.accounting?.metrics?.find((metric) => metric.id === "open-breaks" || metric.id === "breaks");
+  return {
+    ...scalar(count, count === 0 ? "success" : "warning", caption?.delta ?? ""),
+    evidence: { baseline: caption?.baseline, comparisonPeriod: caption?.comparisonPeriod }
+  };
+}
+
 export const KPI_REGISTRY = {
   "portfolio.total-exposure": {
     label: "Total exposure", owner: "portfolio", computation: "Sum the absolute exposure of every live holding; short positions contribute to gross exposure.",
@@ -172,7 +228,10 @@ export const KPI_REGISTRY = {
   "portfolio.retained-market-value": retainedSummary("Market value", ["market value"], true),
   "portfolio.retained-records": retainedSummary("Retained positions", ["positions", "position records"]),
   "trading.net-pnl": sourceMetric("trading", "Net P&L", ["trading-net-pnl", "pnl"], true),
-  "trading.open-orders": sourceMetric("trading", "Open orders", ["trading-open-orders", "orders"]),
+  "trading.open-orders": {
+    label: "Open orders", owner: "crossScreenCounts", computation: "Open orders counted once by the shared cross-screen definition: count the Trading open-order list when loaded, otherwise read the shared server count.",
+    scopeDimensions: holdingDimensions, currencyRule: "Not a monetary figure.", compute: crossScreenOpenOrders
+  },
   "trading.cash": sourceMetric("trading", "Cash", ["trading-cash"], true),
   "trading.portfolio-value": sourceMetric("trading", "Portfolio value", ["trading-portfolio-value"], true),
   "trading.fills": sourceMetric("trading", "Fills", ["fills"]),
@@ -187,22 +246,21 @@ export const KPI_REGISTRY = {
   "strategy.review-runs": sourceMetric("strategy", "Needs review", ["review-runs", "review"]),
   "strategy.winning-runs": sourceMetric("strategy", "Positive P&L", ["winning-runs"]),
   "strategy.promotions": sourceMetric("strategy", "Promotions", ["promotions"]),
-  "data.providers-healthy": sourceMetric("data", "Providers healthy", ["providers-healthy", "providers"]),
+  "data.providers-healthy": dataProviderDefinition,
   "data.backfills-running": sourceMetric("data", "Backfills running", ["backfills-running", "backfills"]),
   "data.exports-ready": sourceMetric("data", "Exports ready", ["exports-ready", "exports"]),
   "data.ops-review": sourceMetric("data", "Needs review", ["ops-review", "review"]),
   "data.kernel-critical-jumps": sourceMetric("data", "Kernel jump alerts", ["kernel-critical-jumps"]),
   "data.replacement-cost": sourceMetric("data", "Est. replacement cost", ["data-replacement-cost"], "compact-usd"),
-  "accounting.open-breaks": sourceMetric("accounting", "Open breaks", ["open-breaks", "breaks"]),
+  "accounting.open-breaks": {
+    label: "Open breaks", owner: "crossScreenCounts", computation: "Use the Accounting server's open-break total before its possibly withheld case rows; otherwise read the shared server count. All sources use the unresolved, undismissed and unsigned-off break definition.",
+    scopeDimensions: holdingDimensions, currencyRule: "Not a monetary figure.", compute: crossScreenOpenBreaks
+  },
   "accounting.timing-drift": sourceMetric("accounting", "Timing drift", ["timing-drift", "drift"]),
   "accounting.security-gaps": sourceMetric("accounting", "Security gaps", ["security-gaps", "coverage"]),
   "accounting.audit-ready": sourceMetric("accounting", "Audit ready", ["audit-ready", "audit"]),
   "accounting.kernel-critical-jumps": sourceMetric("accounting", "Kernel jump alerts", ["kernel-critical-jumps"]),
-  "system.providers-online": {
-    label: "Providers online", owner: "overview", computation: "Read providersOnline / providersTotal from system overview.",
-    scopeDimensions: ["source", "account"], currencyRule: "Not a monetary figure.",
-    compute: ({ overview }: KpiReadModels) => overview ? scalar(`${overview.providersOnline} / ${overview.providersTotal}`, overview.providersOnline === overview.providersTotal ? "success" : "warning") : unavailable()
-  },
+  "system.providers-online": providerDefinition,
   "system.active-runs": {
     label: "Active runs", owner: "overview", computation: "Read the system overview's activeRuns; this is the system population, not the Strategy workspace's retained runs.",
     scopeDimensions: ["source", "account"], currencyRule: "Not a monetary figure.",
@@ -280,31 +338,57 @@ function readRetainedScopeField(explorer: FinancialRecordExplorerDto | null | un
   return { value: values.length === 1 ? values[0] : null, ambiguous: values.length > 1 };
 }
 
-function readScope(definition: KpiDefinition, models: KpiReadModels): Record<string, string | null> {
-  if (definition.owner === "portfolioExplorer") {
+/** The payload actually supplying a registered figure, including the shared-count fallback. */
+export function kpiReadOwner(id: KpiId, models: KpiReadModels): Owner {
+  const owner = KPI_REGISTRY[id].owner;
+  if (owner !== "crossScreenCounts") return owner;
+  if (id === "system.providers-online") return models.crossScreenCounts?.providers ? "crossScreenCounts" : "data";
+  if (id === "data.providers-healthy") return models.data?.providers ? "data" : "crossScreenCounts";
+  if (id === "trading.open-orders") return models.trading?.openOrders ? "trading" : "crossScreenCounts";
+  return models.accounting?.workspace?.openBreaks != null || models.accounting?.breakQueue ? "accounting" : "crossScreenCounts";
+}
+
+function readScope(id: KpiId, models: KpiReadModels): Record<string, string | null> {
+  const owner = kpiReadOwner(id, models);
+  if (owner === "portfolioExplorer") {
     const field = (...names: string[]) => readRetainedScopeField(models.portfolioExplorer, names).value;
     return { source: "retained-records", account: field("account", "account id"), run: field("run", "run id"), asOf: field("as of"), recordSource: field("source") };
   }
   // Portfolio endpoint is currently aggregate. URL scope must not relabel it as filtered.
-  return { source: definition.owner === "portfolio" ? "live-holdings" : definition.owner, account: definition.owner === "trading" ? models.trading?.brokerage?.account ?? null : "all" };
+  return { source: owner === "portfolio" ? "live-holdings" : owner, account: owner === "trading" ? models.trading?.brokerage?.account ?? null : "all" };
 }
 
 export function resolveKpi(id: KpiId, models: KpiReadModels, requestedScope?: KpiScope): ResolvedKpi {
   const definition: KpiDefinition = KPI_REGISTRY[id];
-  const dimensions = readScope(definition, models);
-  let result = definition.compute(models);
-  // A consumer can request a scope, but cannot claim the owner supplied a different one.
+  const dimensions = readScope(id, models);
+  const result = definition.compute(models);
+  const scope = JSON.stringify(Object.fromEntries(Object.entries(dimensions).sort(([a], [b]) => a.localeCompare(b))));
+  return applyKpiScope({
+    ...result.evidence,
+    id, label: definition.label, value: result.value, delta: result.delta, tone: result.tone, status: result.status, currency: result.currency, scope,
+    canonicalValue: JSON.stringify({ status: result.status, value: result.raw, currency: result.currency })
+  }, requestedScope);
+}
+
+/** Validate after actual loaded scope has been attached; unavailable requests keep their identity. */
+export function applyKpiScope(metric: ResolvedKpi, requestedScope?: KpiScope): ResolvedKpi {
+  const definition: KpiDefinition = KPI_REGISTRY[metric.id];
+  const dimensions = JSON.parse(metric.scope) as Record<string, string | null>;
+  let invalid = false;
   for (const [key, value] of Object.entries(requestedScope ?? {})) {
     if (value == null || value === "") continue;
     if (!definition.scopeDimensions.includes(key) || dimensions[key] !== value) {
-      result = unavailable("Requested scope is not supplied by owning read model");
+      invalid = true;
       dimensions[key] = value;
     }
   }
-  const scope = JSON.stringify(Object.fromEntries(Object.entries(dimensions).sort(([a], [b]) => a.localeCompare(b))));
+  if (!invalid) return metric;
+  const result = unavailable("Requested scope is not supplied by owning read model");
   return {
-    id, label: definition.label, value: result.value, delta: result.delta, tone: result.tone, status: result.status, currency: result.currency, scope,
-    canonicalValue: JSON.stringify({ status: result.status, value: result.raw, currency: result.currency })
+    ...metric, value: result.value, delta: result.delta, tone: result.tone, status: result.status, currency: null,
+    freshness: metric.freshness === "stale" ? "stale" : "unverified",
+    canonicalValue: JSON.stringify({ status: result.status, value: null, currency: null }),
+    scope: JSON.stringify(Object.fromEntries(Object.entries(dimensions).sort(([a], [b]) => a.localeCompare(b))))
   };
 }
 

@@ -31,10 +31,14 @@ public static class LedgerStoreExtensions
             () => sp.GetService<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore>());
         services.AddSingleton<Func<IConsolidationPostingAuthority?>>(sp =>
             () => sp.GetService<IConsolidationPostingAuthority>());
+        services.AddSingleton<Func<IIntercompanyAgreementPostingAuthority?>>(sp =>
+            () => sp.GetService<IIntercompanyAgreementPostingAuthority>());
         services.AddSingleton<PostgresLedgerJournalStore>();
         services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+        services.AddSingleton<IIntercompanyAgreementJournalValidation>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<ILedgerReportingSnapshotSource>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+        services.AddSingleton<ILedgerBalanceSnapshotSource>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<Meridian.Contracts.Accounting.Lots.IOpenLotBackfillStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<IGovernedLedgerPostingTarget, DurableLedgerPostingTarget>();
         services.AddSingleton(sp => new DurableAutomatedJournalPoster(
@@ -42,6 +46,7 @@ public static class LedgerStoreExtensions
         services.AddSingleton<IAutomatedJournalPostingTarget>(sp =>
             sp.GetRequiredService<DurableAutomatedJournalPoster>());
         services.AddSingleton<PostgresAccountingConfigurationStore>();
+        services.AddSingleton<IPrivateCapitalStore, PostgresPrivateCapitalStore>();
         services.AddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
         services.AddSingleton<IAccountingActionAuditStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
         services.AddSingleton<LedgerMigrationRunner>();
@@ -52,7 +57,8 @@ public static class LedgerStoreExtensions
         services.AddSingleton<ILedgerBookService>(sp =>
             new PostgresLedgerBookService(
                 sp.GetRequiredService<ILedgerJournalStore>(),
-                sp.GetService<IOperatorInboxService>()));
+                    sp.GetService<IOperatorInboxService>(),
+                    sp.GetService<IConsolidationBookPolicyValidator>()));
 
         return services;
     }

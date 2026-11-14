@@ -49,7 +49,11 @@ Usage:
   node scripts/smoke-workstation.mjs [options]
 
 Options:
-  --url <url>              Existing workstation URL to test.
+  --design-system          Run maintained theme/font/accessibility and fixture-workbench checks.
+  --artifacts-dir <path>   Design-system JSON/screenshots directory (ignored artifacts/ by default).
+  --backend-url <url>      Existing backend-connected dev server for workbench exclusion checks.
+  --production-url <url>   Existing production preview for workbench exclusion checks.
+  --url <url>              Existing workstation URL to test (fixture-only dev for --design-system).
   --skip-server            Do not start Vite; requires --url or default local server.
   --host <host>            Vite host when starting the dev server. Default: 127.0.0.1.
   --port <port>            Vite port when starting the dev server. Default: 5173.
@@ -180,6 +184,8 @@ async function setupApiMocking(page, fixtureRoutes) {
   await page.route("**/api/**", (route) => {
     const url = new URL(route.request().url());
     const pathname = url.pathname;
+    // Vite source imports such as /workstation/src/lib/api/*.ts are not API requests.
+    if (!pathname.startsWith("/api/")) return route.continue();
 
     if (Object.prototype.hasOwnProperty.call(fixtureRoutes, pathname)) {
       return route.fulfill({
@@ -211,6 +217,11 @@ async function main() {
 
   const repoRoot = await findRepoRoot(process.cwd());
   const dashboardDir = path.join(repoRoot, "src/Meridian.Ui/dashboard");
+  if (flags.has("design-system")) {
+    const { runManagedDesignSystemSmoke } = await import("./design-system-smoke-runner.mjs");
+    await runManagedDesignSystemSmoke({ values, flags, repoRoot, dashboardDir });
+    return;
+  }
   const host = values.get("host") ?? "127.0.0.1";
   const port = Number(values.get("port") ?? "5173");
   const timeoutMs = Number(values.get("timeout-ms") ?? "30000");

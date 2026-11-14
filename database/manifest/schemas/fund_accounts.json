@@ -14,7 +14,14 @@
     }
   ],
   "comment": null,
-  "comments": [],
+  "comments": [
+    {
+      "comment": "Append-only, tenant/company-scoped private-capital source records and replay receipts; financial authority follows explicit correction links.",
+      "fingerprint": "30a6b197e443af2ad56de1e99c7f853d010fc616754e8bf78a42c5c90e5ccd8a",
+      "object": "fund_accounts.private_capital_record",
+      "object_type": "table"
+    }
+  ],
   "composite_types": [],
   "dependencies": [
     {
@@ -364,13 +371,37 @@
       "target_kind": "index",
       "target_name": "account_definition_pkey",
       "target_schema": "fund_accounts"
+    },
+    {
+      "fingerprint": "ed072518b33dcc7c132cd46cbb18b093b5bd1babffb43eb7de161fa8171e9998",
+      "kind": "normal",
+      "source": "fund_accounts.private_capital_record_check on fund_accounts.private_capital_record",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_accounts",
+      "target": "fund_accounts.private_capital_record.company_id",
+      "target_kind": "table column",
+      "target_name": "private_capital_record",
+      "target_schema": "fund_accounts"
+    },
+    {
+      "fingerprint": "5be2731e45fdaa1d070bdd61f93d495efc760b850058f066396ce98d3866d662",
+      "kind": "normal",
+      "source": "fund_accounts.private_capital_record_check on fund_accounts.private_capital_record",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_accounts",
+      "target": "fund_accounts.private_capital_record.tenant_id",
+      "target_kind": "table column",
+      "target_name": "private_capital_record",
+      "target_schema": "fund_accounts"
     }
   ],
   "domains": [],
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "b88d70b4f769dc43e7235337e069e5bf7484d39e55209c5c2401e83a0ccfee10",
+  "fingerprint": "aba5d08fb6eddf3918fe09173e330f6adbbda454e5972af83d26c14d8217e077",
   "foreign_tables": [],
   "functions": [],
   "logical_modules": [
@@ -4617,6 +4648,38 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "94ed9a523d9fdda3e6fdfea5fb7ecfdbd1b6c93f856d19ea713a21a1d4a7db89",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "authority",
+          "nullable": true,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "862e9352afb99460a08c24230b2a52fd7cd1c62a5efa1fcbe300214da4856797",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "content_sha256",
+          "nullable": true,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -4666,7 +4729,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "20bee3feb2c73d5dff0b3bc1d78dcd8d80a38dafa81017fac6960e567202d5e4",
+      "fingerprint": "2c7711b2c5c02828749074a6865b59a353e1d1c939b36b8f411c304751d19b72",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -4690,6 +4753,30 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_custodian_snapshot_authority ON fund_accounts.custodian_statement_batch USING btree (account_id, as_of_date DESC, ingested_at DESC)",
+          "expression": null,
+          "fingerprint": "f1400141e8579823ff3bffa68785f3db35c4b7ccae13e7c7c393753b6394a843",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "account_id",
+            "as_of_date",
+            "ingested_at"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_custodian_snapshot_authority",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         }
       ],
@@ -5051,6 +5138,267 @@
       "security_labels": [],
       "sequence": null,
       "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "900f8e8670dd269b5c0a80be9c4799201d07a69d1f9e3c30c7e907a13da2d1c3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "company_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f99c1b572aef2278a7cb488e9216c04aa8298472f7e4f7cb8bc9c04e88da1877",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "record_kind",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "f0eaa6c1a28bfd3482dc4fc34576e85cdaa0cb1bc3c39725640d1870c57c6470",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "record_id",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "3de60eb54b140bcbf34dcc3e6bbd1463132073f9ce6fb1a6dea5d885a098eaf0",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "2634f0b1435628dce6aa26db990c11d82403f47b6526b42a96c44cb97305a518",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "retained_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Append-only, tenant/company-scoped private-capital source records and replay receipts; financial authority follows explicit correction links.",
+      "constraints": [
+        {
+          "columns": [
+            "tenant_id",
+            "company_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM tenant_id)) > 0 AND length(TRIM(BOTH FROM company_id)) > 0)",
+          "delete_action": null,
+          "fingerprint": "13e095112777cf51f24038c6310202ccf1f1fec9b6e2672f81ed55d80b9074d2",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "private_capital_record_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "company_id",
+            "record_kind",
+            "record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (tenant_id, company_id, record_kind, record_id)",
+          "delete_action": null,
+          "fingerprint": "414344428aec78524f7c8c001873f6c004912a8d18c51164eabbf45fd6ed8fe0",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "private_capital_record_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "2e8455c98639022826a1ae7278295ba5ccf35c806c2461199843ede8992bc6ac",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX private_capital_record_pkey ON fund_accounts.private_capital_record USING btree (tenant_id, company_id, record_kind, record_id)",
+          "expression": null,
+          "fingerprint": "7c5df30b8715a839b33a755f918b3c57dd11a1659bf1cff90dd61cef633d0f36",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "company_id",
+            "record_kind",
+            "record_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "private_capital_record_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_private_capital_single_correction ON fund_accounts.private_capital_record USING btree (tenant_id, company_id, ((payload ->> 'supersedesSnapshotId'::text))) WHERE ((record_kind = 'snapshot'::text) AND ((payload ->> 'supersedesSnapshotId'::text) IS NOT NULL))",
+          "expression": "payload ->> 'supersedesSnapshotId'::text",
+          "fingerprint": "70315c4215397c32b22018f169ddc6376b63e393797edcdf3ae8d4aa9d4c8707",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "company_id",
+            "(payload ->> 'supersedesSnapshotId'::text)"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_private_capital_single_correction",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "record_kind = 'snapshot'::text AND (payload ->> 'supersedesSnapshotId'::text) IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "private_capital_record",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_accounts",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
     }
   ],
   "row_level_security": [
@@ -5148,6 +5496,14 @@
       "forced": false,
       "policies": [],
       "relation": "fund_account_schema_migrations",
+      "schema": "fund_accounts"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "6b599688c13ecdeb94d6d6b773f2ac6136faa9b1010f21e6ea4ce49269114056",
+      "forced": false,
+      "policies": [],
+      "relation": "private_capital_record",
       "schema": "fund_accounts"
     }
   ],
@@ -9388,6 +9744,38 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "94ed9a523d9fdda3e6fdfea5fb7ecfdbd1b6c93f856d19ea713a21a1d4a7db89",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "authority",
+          "nullable": true,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "862e9352afb99460a08c24230b2a52fd7cd1c62a5efa1fcbe300214da4856797",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "content_sha256",
+          "nullable": true,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -9437,7 +9825,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "20bee3feb2c73d5dff0b3bc1d78dcd8d80a38dafa81017fac6960e567202d5e4",
+      "fingerprint": "2c7711b2c5c02828749074a6865b59a353e1d1c939b36b8f411c304751d19b72",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -9461,6 +9849,30 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_custodian_snapshot_authority ON fund_accounts.custodian_statement_batch USING btree (account_id, as_of_date DESC, ingested_at DESC)",
+          "expression": null,
+          "fingerprint": "f1400141e8579823ff3bffa68785f3db35c4b7ccae13e7c7c393753b6394a843",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "account_id",
+            "as_of_date",
+            "ingested_at"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_custodian_snapshot_authority",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         }
       ],
@@ -9811,6 +10223,267 @@
       "is_partition": false,
       "kind": "table",
       "name": "fund_account_schema_migrations",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_accounts",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "900f8e8670dd269b5c0a80be9c4799201d07a69d1f9e3c30c7e907a13da2d1c3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "company_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f99c1b572aef2278a7cb488e9216c04aa8298472f7e4f7cb8bc9c04e88da1877",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "record_kind",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "f0eaa6c1a28bfd3482dc4fc34576e85cdaa0cb1bc3c39725640d1870c57c6470",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "record_id",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "3de60eb54b140bcbf34dcc3e6bbd1463132073f9ce6fb1a6dea5d885a098eaf0",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "2634f0b1435628dce6aa26db990c11d82403f47b6526b42a96c44cb97305a518",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "retained_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Append-only, tenant/company-scoped private-capital source records and replay receipts; financial authority follows explicit correction links.",
+      "constraints": [
+        {
+          "columns": [
+            "tenant_id",
+            "company_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM tenant_id)) > 0 AND length(TRIM(BOTH FROM company_id)) > 0)",
+          "delete_action": null,
+          "fingerprint": "13e095112777cf51f24038c6310202ccf1f1fec9b6e2672f81ed55d80b9074d2",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "private_capital_record_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "company_id",
+            "record_kind",
+            "record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (tenant_id, company_id, record_kind, record_id)",
+          "delete_action": null,
+          "fingerprint": "414344428aec78524f7c8c001873f6c004912a8d18c51164eabbf45fd6ed8fe0",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "private_capital_record_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "2e8455c98639022826a1ae7278295ba5ccf35c806c2461199843ede8992bc6ac",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX private_capital_record_pkey ON fund_accounts.private_capital_record USING btree (tenant_id, company_id, record_kind, record_id)",
+          "expression": null,
+          "fingerprint": "7c5df30b8715a839b33a755f918b3c57dd11a1659bf1cff90dd61cef633d0f36",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "company_id",
+            "record_kind",
+            "record_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "private_capital_record_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_private_capital_single_correction ON fund_accounts.private_capital_record USING btree (tenant_id, company_id, ((payload ->> 'supersedesSnapshotId'::text))) WHERE ((record_kind = 'snapshot'::text) AND ((payload ->> 'supersedesSnapshotId'::text) IS NOT NULL))",
+          "expression": "payload ->> 'supersedesSnapshotId'::text",
+          "fingerprint": "70315c4215397c32b22018f169ddc6376b63e393797edcdf3ae8d4aa9d4c8707",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "company_id",
+            "(payload ->> 'supersedesSnapshotId'::text)"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_private_capital_single_correction",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "record_kind = 'snapshot'::text AND (payload ->> 'supersedesSnapshotId'::text) IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "private_capital_record",
       "options": [],
       "owner": "meridian",
       "persistence": "permanent",

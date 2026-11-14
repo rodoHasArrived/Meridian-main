@@ -11,6 +11,24 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Core
 
+Subscription import contracts include an explicit broker-account selection and durable import
+run identity, ownership/book scope, immutable source hash, checkpoints and terminal status.
+Missing broker quantities remain invalid source data rather than implicit zero holdings.
+
+`Config/BackfillProviderCatalog.cs` owns secret-free historical-provider tier presets, conservative
+request ceilings and pure option edits. Provider records retain the declared tier; editor updates
+preserve stored credentials and archive adjustment semantics. Unknown providers (including IB and
+synthetic provenance controls), unknown tiers and rate increases beyond the declared tier cap refuse.
+Catalog options retain each configuration record's defaults. Alpha Vantage runtime construction
+still requires an explicitly enabled provider configuration and a resolved credential; a catalog
+preset alone does not activate it.
+
+`ProviderSearchException` and `ProviderSearchFailure` identify unavailable credentials, transport failures, malformed or
+incomplete responses and throttling for explicit provider lookups. A successful empty search is
+represented by its result rather than a failure category.
+
+`Meridian.Core.Currency.CurrencyMinorUnits.GetPrecision` delegates to `Meridian.Contracts.Ledger.CurrencyMinorUnits`, so the ISO 4217 minor-unit table is maintained in one place.
+
 `ProviderConnectionsConfig.RuntimeCredentials` holds optional explicit host defaults keyed by
 canonical provider and retained tenant/connection identity. It is additive and omitted when absent;
 Application owns validation and resolution. It contains no secrets and confers no verification.
@@ -22,6 +40,12 @@ deletion before host selection cannot implicitly reactivate provider-wide fallba
 
 `IO/IAtomicFileWriter.cs` exposes only the atomic operations needed by Infrastructure consumers.
 The concrete durable writer stays in Storage and is supplied through application/host composition.
+`IO/ExclusiveFileLock.cs` is the shared cross-process lock-file primitive: the open
+`FileShare.None` handle is the lock, the file is never deleted, only sharing/lock contention is
+retried, and other I/O faults propagate at once. `AcquireAsync` waits with `Task.Delay` and honors
+cancellation; the synchronous `Acquire` is for callers that hold an in-process monitor. A wedged
+holder surfaces as `TimeoutException` carrying the last refusal. `RetryBackoff` supplies the bounded
+exponential backoff with jitter used between attempts.
 
 ## Purpose
 
@@ -58,6 +82,9 @@ This layer provides low-level reusable infrastructure. It must stay independent 
   including shared alert/health-check monitoring contracts, the `IFlushable` shutdown/flush
   contract, and optional flush queue-diagnostics contract used by storage sinks, Platform runtime
   shutdown handlers, and Application pipeline components.
+  `Scheduling/CronExpressionParser` is the shared five-field cron evaluator (time-zone and
+  daylight-saving aware) with two Meridian extensions: `d#n` in the day-of-week field for the nth
+  weekday of the month, and a lone `L` in the day-of-month field for the last day of the month.
 
 ## Important workflows
 
@@ -120,6 +147,18 @@ asset-class endpoints serialize.
 
 `SecurityMasterJsonContext` also registers the income schedule, factor history and term-block
 request contracts.
+
+## Security Master governance controls (2026-11)
+
+- **Config schema.** `ConfigJsonSchemaGenerator` includes the boolean `SecurityMasterWorkbench:RequireIndependentProfileApprover` key and the `SecurityMasterWorkbench:GovernanceProfile` key (`Standard` or `Institutional`), matching `config/appsettings.schema.json`.
+
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+
+`EventPipelinePolicy.CreateChannel` accepts an item-dropped callback so the owning pipeline can count
+evictions. `ConfigJsonSchemaGenerator` declares the sample configuration's `Settings`, `Serilog` and
+`$schema` keys. It emits string-keyed mutable and read-only dictionaries as JSON objects
+with typed `additionalProperties`, before considering enumerable collection shapes. Nullable
+interface-backed maps accept null, matching serialized provider validation profiles and rollout modes.
 
 ## Diagrams
 

@@ -1,5 +1,7 @@
-import { RefreshCcw } from "lucide-react";
+import { TableWorkbench } from "@/components/meridian/table-workbench";
+import { ChevronDown, RefreshCcw } from "lucide-react";
 import { Link } from "react-router-dom";
+import { RollforwardTrace } from "@/components/accounting/RollforwardTrace";
 import { SnapshotMetricTile } from "@/components/meridian/snapshot-metric-tile";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,11 +10,23 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
-import { accountingToolingBadgeVariant, accountingToolingBorderClass } from "@/screens/accounting-screen.styles";
 import { AccountingChip } from "@/screens/accounting-screen.workbench-context";
-import type { CapitalAccountWorkbenchViewModel } from "@/screens/accounting-screen.view-model";
+import type { CapitalAccountWorkbenchProofViewModel } from "@/screens/accounting-screen.capital-accounts.view-model";
+import { pluralizeCount } from "@/lib/format";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import { StatusBadge, type DesignSystemSeverity } from "@/design-system/status";
+import type { RollforwardVerdict } from "@/components/accounting/proof-arithmetic";
+import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
 
-export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchViewModel }) {
+// Only a real proof is green. Figures that agree by construction ("Not itemised") ask for review.
+const ROLLFORWARD_VERDICT_SEVERITY: Record<RollforwardVerdict, DesignSystemSeverity> = {
+  tied: "ready",
+  unsupported: "review",
+  out: "blocked",
+  indeterminate: "blocked"
+};
+
+export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchProofViewModel }) {
   if (!view.available) {
     return (
       <Card className="panel-surface" role="region" aria-labelledby="capital-account-workbench-heading">
@@ -46,7 +60,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
             <CardDescription>{view.description}</CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={accountingToolingBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
+            <Badge variant={statusBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
             <Button size="sm" variant="outline" disabled={view.loading} busy={view.loading} onClick={() => void view.refresh()}>
               <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
               Refresh
@@ -63,6 +77,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
 
         <div className="flex flex-wrap gap-2">
           <AccountingChip label="Projected" value={view.projectedAtLabel} />
+          <Button asChild size="sm" variant="outline"><Link to={WORKSTATION_ROUTE_CATALOG.accountingCapitalCalls}>Manage commitments and capital calls</Link></Button>
         </div>
         <TechnicalDetails label="Workbench route" className="max-w-3xl">
           <div className="break-all font-mono text-xs text-foreground">{view.workbenchRouteLabel}</div>
@@ -100,40 +115,26 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="space-y-2" aria-labelledby="capital-account-fund-event-command-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-fund-event-command-heading" className="text-sm font-semibold text-foreground">Fund-event command centers</h4>
-              <Badge variant="outline">{view.fundEventCommandRows.length.toLocaleString()} events</Badge>
+              <Badge variant="outline">{pluralizeCount(view.fundEventCommandRows.length, "event", { localizeCount: true })}</Badge>
             </div>
             <div className="overflow-x-auto rounded-md border border-border/70">
-              <table className="w-full min-w-[940px] text-sm" aria-label="Capital-account fund-event command centers">
-                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Fund event</th>
-                    <th className="px-3 py-2 text-left">Readiness</th>
-                    <th className="px-3 py-2 text-left">Evidence</th>
-                    <th className="px-3 py-2 text-left">Routes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {view.fundEventCommandRows.map((row) => (
-                    <tr key={row.id} className="border-t border-border/60 align-top">
-                      <td className="px-3 py-2">
-                        <div className="font-semibold text-foreground">{row.title}</div>
+              <TableWorkbench<(typeof view.fundEventCommandRows)[number]> tableClassName={"w-full min-w-[940px] text-sm"} maxVisibleRows={null}  workbenchId="accounting-capital-command-centers" sourceKey={view.workbenchRouteLabel}
+ rows={view.fundEventCommandRows} columns={[{ id: "field-0", label: "Fund event", rowHeader: true, exportValue: row => `${row.title} | ${row.subtitle} | ${row.memoLabel} | ${row.netActivityLabel}`, render: row => <>
+<div className="font-semibold text-foreground">{row.title}</div>
                         <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.subtitle}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.memoLabel}</div>
                         <div className="mt-1 font-mono text-xs text-muted-foreground">{row.netActivityLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant={row.readinessTone} dot>{row.readinessLabel}</Badge>
+</> },{ id: "field-1", label: "Readiness", exportValue: row => `${row.readinessLabel} | ${row.readinessReasonLabel} | ${row.nextActionLabel}`, render: row => <>
+<Badge variant={row.readinessTone} dot>{row.readinessLabel}</Badge>
                         <div className="mt-1 text-xs text-muted-foreground">{row.readinessReasonLabel}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.nextActionLabel}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">
-                        <div>{row.evidenceLabel}</div>
+</> },{ id: "field-2", label: "Evidence", exportValue: row => `${row.evidenceLabel} | ${row.subledgerLabel} | ${row.ledgerImpactLabel} | ${row.reportOutputLabel}`, render: row => <>
+<div>{row.evidenceLabel}</div>
                         <div className="mt-1">{row.subledgerLabel}</div>
                         <div className="mt-1">{row.ledgerImpactLabel}</div>
                         <div className="mt-1">{row.reportOutputLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <a
+</> },{ id: "field-3", label: "Routes", exportValue: row => `${row.commandCenterRouteLabel} | ${row.activityRouteLabel} | ${row.evidenceRouteLabel}`, render: row => <>
+<a
                           className="block break-all font-mono text-[11px] text-primary hover:underline"
                           href={row.commandCenterRouteLabel}
                           target="_blank"
@@ -160,11 +161,11 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                         >
                           {row.evidenceRouteLabel}
                         </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+</> }]}
+ getRowId={row => row.id} getSearchText={row => `${row.title} ${row.subtitle}`}
+ completePopulation={!view.loading && !view.errorText} sourceDescription="Complete authorized capital-account workbench projection. Monetary cells retain producer display units."
+ exportContext={{ "Projected at": view.projectedAtLabel, "Workbench": view.workbenchRouteLabel }}
+ emptyText="No records match these controls." ariaLabel="Capital-account fund-event command centers" />
             </div>
           </section>
         ) : null}
@@ -173,68 +174,81 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="min-w-0 space-y-2" aria-labelledby="capital-account-investor-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-investor-heading" className="text-sm font-semibold text-foreground">Investor capital accounts</h4>
-              <Badge variant="outline">{view.investorAccounts.length.toLocaleString()} rows</Badge>
+              <Badge variant="outline">{pluralizeCount(view.investorAccounts.length, "row", { localizeCount: true })}</Badge>
             </div>
             <div className="overflow-x-auto rounded-md border border-border/70">
-              <table className="w-full min-w-[880px] text-sm">
-                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Account</th>
-                    <th className="px-3 py-2 text-left">Readiness</th>
-                    <th className="px-3 py-2 text-right">Net</th>
-                    <th className="px-3 py-2 text-left">Evidence</th>
-                    <th className="px-3 py-2 text-left">Cash support</th>
-                    <th className="px-3 py-2 text-left">Route</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {view.investorAccounts.map((row) => (
-                    <tr key={row.id} className="border-t border-border/60">
-                      <td className="px-3 py-2">
-                        <div className="font-semibold text-foreground">{row.title}</div>
+              <TableWorkbench<(typeof view.investorAccounts)[number]> workbenchId="accounting-capital-investor-accounts" sourceKey={view.workbenchRouteLabel}
+ rows={view.investorAccounts} columns={[{ id: "field-0", label: "Account", rowHeader: true, exportValue: row => `${row.title} | ${row.subtitle} | ${row.eventLabel}`, render: row => <>
+<div className="font-semibold text-foreground">{row.title}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.subtitle}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.eventLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-                      </td>
-                      <td className="px-3 py-2 text-right font-mono tabular-nums">
-                        <div className="text-foreground">{row.netActivityLabel}</div>
+</> },{ id: "field-1", label: "Readiness", exportValue: row => row.statusLabel, render: row => <>
+<Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+</> },{ id: "field-2", label: "Net", exportValue: row => `${row.netActivityLabel} | ${row.rollForwardLabel} | ${row.activityMixLabel}`, render: row => <>
+<div className="text-foreground">{row.netActivityLabel}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.rollForwardLabel}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.activityMixLabel}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">{row.evidenceLabel}</td>
-                      <td className="px-3 py-2 text-xs">
-                        <Badge variant={row.paymentEvidenceTone}>{row.paymentEvidenceLabel}</Badge>
+</> },{ id: "rollforward", label: "Rollforward proof", exportValue: row => row.rollforward.verdictLabel, render: row => <>
+                        <details
+                          className="group min-w-[20rem] max-w-2xl rounded-[var(--radius-card)] border border-border bg-secondary/15"
+                          open={row.rollforward.verdict !== "tied"}
+                        >
+                          <summary className="flex min-h-9 cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-xs font-medium text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)] [&::-webkit-details-marker]:hidden">
+                            <span>Rollforward proof<span className="sr-only"> for {row.title}</span></span>
+                            <StatusBadge
+                              status={ROLLFORWARD_VERDICT_SEVERITY[row.rollforward.verdict]}
+                              label={row.rollforward.verdictLabel}
+                            />
+                            <ChevronDown
+                              className="ml-auto h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+                              aria-hidden="true"
+                            />
+                          </summary>
+                          <div className="border-t border-border/70 px-3 py-3">
+                            <RollforwardTrace
+                              openingLabel={row.rollforward.openingLabel}
+                              opening={row.rollforward.opening}
+                              movements={row.rollforward.movements}
+                              closingLabel={row.rollforward.closingLabel}
+                              closing={row.rollforward.closing}
+                              currency={row.rollforward.currency}
+                              openingDerivation={row.rollforward.openingDerivation}
+                              unsupportedReason={row.rollforward.unsupportedReason}
+                            />
+                          </div>
+                        </details>
+</> },{ id: "field-3", label: "Evidence", exportValue: row => row.evidenceLabel, render: row => <>
+{row.evidenceLabel}
+</> },{ id: "field-4", label: "Cash support", exportValue: row => `${row.paymentEvidenceLabel} | ${row.paymentEvidenceSummaryLabel} | ${row.paymentEvidenceRequiredLabel}`, render: row => <>
+<Badge variant={row.paymentEvidenceTone}>{row.paymentEvidenceLabel}</Badge>
                         <div className="mt-1 text-muted-foreground">{row.paymentEvidenceSummaryLabel}</div>
                         <div className="mt-1 text-muted-foreground">{row.paymentEvidenceRequiredLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <a href={row.routeLabel} className="inline-flex whitespace-nowrap text-xs font-medium text-primary hover:underline">
+</> },{ id: "field-5", label: "Route", exportValue: row => row.routeLabel, render: row => <>
+<a href={row.routeLabel} className="inline-flex whitespace-nowrap text-xs font-medium text-primary hover:underline">
                           Open capital activity
                         </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+</> }]}
+ getRowId={row => row.id} getSearchText={row => `${row.title} ${row.subtitle}`}
+ completePopulation={!view.loading && !view.errorText} sourceDescription="Complete authorized capital-account workbench projection. Monetary cells retain producer display units."
+ exportContext={{ "Projected at": view.projectedAtLabel, "Workbench": view.workbenchRouteLabel }}
+ emptyText="No records match these controls." ariaLabel="Investor capital accounts" />
             </div>
           </section>
 
           <section className="min-w-0 space-y-2" aria-labelledby="capital-account-allocation-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-allocation-heading" className="text-sm font-semibold text-foreground">Allocation rules</h4>
-              <Badge variant="outline">{view.allocationRules.length.toLocaleString()} checks</Badge>
+              <Badge variant="outline">{pluralizeCount(view.allocationRules.length, "check", { localizeCount: true })}</Badge>
             </div>
             <div className="grid gap-2">
               {view.allocationRules.map((row) => (
-                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
+                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", statusPanelClass(row.statusTone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-semibold text-foreground">{row.label}</div>
                       <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.accountLabel}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.reason}</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">{row.basis}</p>
@@ -264,17 +278,17 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="space-y-2" aria-labelledby="capital-account-statement-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-statement-heading" className="text-sm font-semibold text-foreground">Statement lineage</h4>
-              <Badge variant="outline">{view.statementLineage.length.toLocaleString()} statements</Badge>
+              <Badge variant="outline">{pluralizeCount(view.statementLineage.length, "statement", { localizeCount: true })}</Badge>
             </div>
             <div className="grid gap-2">
               {view.statementLineage.map((row) => (
-                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
+                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", statusPanelClass(row.statusTone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-semibold text-foreground">{row.title}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{row.subtitle}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                   </div>
                   <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                     <span>{row.publicationLabel}</span>
@@ -304,17 +318,17 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="space-y-2" aria-labelledby="capital-account-audit-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-audit-heading" className="text-sm font-semibold text-foreground">Audit drill-through</h4>
-              <Badge variant="outline">{view.auditDrillThroughs.length.toLocaleString()} targets</Badge>
+              <Badge variant="outline">{pluralizeCount(view.auditDrillThroughs.length, "target", { localizeCount: true })}</Badge>
             </div>
             <div className="grid gap-2">
               {view.auditDrillThroughs.map((row) => (
-                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
+                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", statusPanelClass(row.statusTone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-semibold text-foreground">{row.title}</div>
-                      <div className="mt-1 text-xs uppercase text-muted-foreground">{row.kind}</div>
+                      <div className={cn("mt-1 text-xs text-muted-foreground", usesTrackedCaps(row.kind) && "uppercase")}>{row.kind}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.summary}</p>
                   <div className="mt-2 flex flex-wrap gap-2 text-xs">
@@ -334,7 +348,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
 
         <div className="grid gap-3 md:grid-cols-2">
           <div className="rounded-md border border-success/30 bg-success/10 px-3 py-3">
-            <div className="text-xs font-semibold uppercase text-success">Live in v0.18 slice</div>
+            <div className="text-xs font-semibold text-success">Live in v0.18 slice</div>
             <ul className="mt-2 grid gap-1 text-sm text-foreground">
               {view.liveCapabilities.map((item) => <li key={item}>{item}</li>)}
             </ul>

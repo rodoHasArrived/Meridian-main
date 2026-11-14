@@ -31,6 +31,8 @@ public sealed class BondAnalyticsServiceTests
         result.Dv01.Should().BeGreaterThan(0m);
         result.Inputs.Should().Contain(static input => input.Kind == "SecurityTerms" && input.Version == 7);
         result.Context.SecurityVersion.Should().Be(7);
+        result.MaturityDate.Should().Be(new DateOnly(2028, 1, 15));
+        result.GoverningYieldScenarios.Should().ContainSingle().Which.Kind.Should().Be("Maturity");
     }
 
     [Fact]
@@ -181,7 +183,14 @@ public sealed class BondAnalyticsServiceTests
         result.ExerciseYields.Single(static item => item.Kind == "Put").RedemptionPrice.Should().Be(105m);
         result.YieldToWorst.Should().Be(Math.Min(result.YieldToMaturity!.Value,
             result.ExerciseYields.Single(static item => item.Kind == "Call").Yield));
+        result.GoverningYieldScenarios.Should().NotBeEmpty().And.OnlyContain(item => item.Kind != "Put" && item.Yield == result.YieldToWorst);
         result.ExerciseYields.Should().OnlyContain(static item => item.LatestNoticeDate == new DateOnly(2026, 12, 16));
+        result.RedemptionScenarios.Should().HaveCount(3);
+        result.RedemptionScenarios.Should().ContainSingle(static item => item.Kind == "Maturity");
+        result.YieldToWorstScenarios.Should().NotBeEmpty().And.OnlyContain(item =>
+            item.Kind != "Put" && item.Yield == result.YieldToWorst);
+        result.YieldToWorstScenarios.Should().BeEquivalentTo(result.RedemptionScenarios
+            .Where(item => item.Kind != "Put" && item.Yield == result.YieldToWorst));
     }
 
     [Fact]
@@ -195,6 +204,82 @@ public sealed class BondAnalyticsServiceTests
         result.Blockers.Should().ContainSingle().Which.Code.Should().Be("CalculationPolicyBlocked");
         result.CleanPrice.Should().BeNull();
     }
+
+    [Theory]
+    [InlineData(SecurityPriceBasis.Clean, "100")]
+    [InlineData(SecurityPriceBasis.Dirty, "101.25")]
+    public async Task RetainedObservation_UsesExactReceiptAndNormalizesDirtyAtSettlement(SecurityPriceBasis basis, string quoteText)
+    {
+        var settlement = new DateOnly(2026, 4, 15);
+        var receipt = Guid.NewGuid();
+        var pricing = Substitute.For<ISecurityMasterPricingService>();
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(Bond());
+        var observation = Observation(receipt, settlement) with
+        {
+            GoldenCopyPrice = decimal.Parse(quoteText, System.Globalization.CultureInfo.InvariantCulture),
+            Quotation = new(basis, SecurityQuotationConvention.Per100Face, SecurityQuoteStatus.Evaluated, settlement, "T+1 US government")
+        };
+        pricing.GetGoldenCopySelectionAsync(SecurityId, "account", receipt, Arg.Any<CancellationToken>()).Returns(observation);
+        var service = new BondAnalyticsService(query, pricing: pricing);
+        var request = new BondAnalyticsRequest(SecurityId, new(AsOf, settlement))
+        { SelectionReceiptId = receipt, PriceAccountId = "account" };
+
+        var first = (await service.CalculateAsync(request))!;
+        var replay = (await service.CalculateAsync(request))!;
+
+        first.Blockers.Should().BeEmpty();
+        first.CleanPrice.Should().BeApproximately(100m, 0.00000001m);
+        first.DirtyPrice.Should().BeApproximately(101.25m, 0.00000001m);
+        var evidence = first.Inputs.Single(input => input.Kind == "PriceSelectionReceipt");
+        evidence.VersionId.Should().Be(receipt);
+        evidence.ContentSha256.Should().HaveLength(64);
+        replay.Inputs.Should().Equal(first.Inputs);
+        await pricing.Received(2).GetGoldenCopySelectionAsync(SecurityId, "account", receipt, Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData("StalePriceObservation")]
+    [InlineData("PriceQuotationRequired")]
+    [InlineData("PriceSettlementMismatch")]
+    [InlineData("PriceReceiptContextMismatch")]
+    public async Task RetainedObservation_RefusesIncompatibleEvidence(string expectedCode)
+    {
+        var receipt = Guid.NewGuid();
+        var settlement = new DateOnly(2026, 4, 15);
+        var quote = Observation(receipt, settlement);
+        quote = expectedCode switch
+        {
+            "StalePriceObservation" => quote with { IsStaleFallback = true },
+            "PriceQuotationRequired" => quote with { Quotation = null },
+            "PriceSettlementMismatch" => quote with { Quotation = quote.Quotation! with { SettlementDate = settlement.AddDays(1) } },
+            _ => quote with { EvaluatedAsOf = AsOf.AddDays(1) }
+        };
+        var pricing = Substitute.For<ISecurityMasterPricingService>();
+        pricing.GetGoldenCopySelectionAsync(SecurityId, null, receipt, Arg.Any<CancellationToken>()).Returns(quote);
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(Bond());
+        var result = (await new BondAnalyticsService(query, pricing: pricing).CalculateAsync(
+            new BondAnalyticsRequest(SecurityId, new(AsOf, settlement)) { SelectionReceiptId = receipt }))!;
+        result.Blockers.Should().ContainSingle().Which.Code.Should().Be(expectedCode);
+        result.CleanPrice.Should().BeNull();
+    }
+
+    [Fact]
+    public void LegacyRequestSerialization_OmitsNewOptionalFields()
+    {
+        var json = JsonSerializer.Serialize(Request(yield: 0.05m));
+        json.Should().NotContain("SelectionReceiptId").And.NotContain("PriceAccountId");
+    }
+
+    private static SecurityPriceGoldenCopyDto Observation(Guid receipt, DateOnly settlement)
+        => new(SecurityId, 100m, SecurityPriceKind.Raw, "provider", AsOf, false, 0, [],
+            SecurityPriceUnit.PercentOfPar, AsOf, AsOf, AsOf.AddDays(1), receipt,
+            new(SecurityId, null, [new(1, "provider", "Provider", 1)], AsOf, "operator"))
+        {
+            Quotation = new(SecurityPriceBasis.Clean, SecurityQuotationConvention.Per100Face,
+            SecurityQuoteStatus.Bid, settlement, "T+1 US government")
+        };
 
     private static BondAnalyticsRequest Request(decimal? price = null, decimal? yield = null)
         => new(SecurityId, new(AsOf), price, yield);

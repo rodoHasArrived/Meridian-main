@@ -5,7 +5,7 @@ import {
 } from "@/lib/workstation-endpoints";
 import {
   formatSettingsDateOnly,
-  formatSettingsUtcMinute
+  formatSettingsMinute
 } from "@/screens/settings-screen.date-format";
 import type { SettingsScreenPayload } from "@/screens/settings-screen.view-model";
 import type {
@@ -16,6 +16,7 @@ import type {
   SecurityAssetProfileDefinition,
   SessionInfo
 } from "@/types";
+import { pluralizeCount } from "@/lib/format";
 
 export interface SettingsOperationsControlMetric {
   label: string;
@@ -241,7 +242,7 @@ function buildLedgerMappingControlCard(
     ],
     detail: firstUnmapped
       ? `${firstUnmapped.accountCode} needs mapping. ${firstUnmapped.recommendedAction}`
-      : `Mapping view generated ${formatSettingsUtcMinute(workbench.asOf)}.`
+      : `Mapping view generated ${formatSettingsMinute(workbench.asOf)}.`
   };
 }
 
@@ -270,7 +271,7 @@ function buildRolePermissionControlCard(
     id: "role-permissions",
     title: "Role and Permission Studio",
     description: "Shows built-in roles, permission groups, and the active operator authority profile.",
-    statusLabel: activeRole ? `${activeRole.displayName} active` : `${catalog.roles.length} roles`,
+    statusLabel: activeRole ? `${activeRole.displayName} active` : pluralizeCount(catalog.roles.length, "role"),
     statusVariant,
     endpointHref: AUTH_API_ENDPOINTS.roles,
     routeHref: AUTH_API_ENDPOINTS.roles,
@@ -310,7 +311,7 @@ function buildApprovalPolicyControlCard(
     id: "approval-policy",
     title: "Approval Policy Matrix",
     description: "Shows required permissions, reviewer separation, report-pack, and checklist-control approval rules.",
-    statusLabel: `${matrix.rows.length} rules`,
+    statusLabel: pluralizeCount(matrix.rows.length, "rule"),
     statusVariant: "success",
     endpointHref: WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix,
     routeHref: WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix,
@@ -324,7 +325,7 @@ function buildApprovalPolicyControlCard(
     ],
     detail: checklistRules > 0
       ? `${checklistRules} rule${checklistRules === 1 ? "" : "s"} require checklist-control approvals before close.`
-      : `Policy generated ${formatSettingsUtcMinute(matrix.generatedAtUtc)}.`
+      : `Policy generated ${formatSettingsMinute(matrix.generatedAtUtc)}.`
   };
 }
 
@@ -373,7 +374,7 @@ function buildCloseCalendarControlCard(
     ],
     detail: nextDue
       ? `${nextDue.periodId}: ${nextDue.nextDueLabel ?? "Next close task"} due ${formatSettingsDateOnly(nextDue.nextDueDate)} for ${nextDue.nextDueOwner ?? "unassigned"}.`
-      : `Close calendar generated ${formatSettingsUtcMinute(calendar.generatedAtUtc)}.`
+      : `Close calendar generated ${formatSettingsMinute(calendar.generatedAtUtc)}.`
   };
 }
 

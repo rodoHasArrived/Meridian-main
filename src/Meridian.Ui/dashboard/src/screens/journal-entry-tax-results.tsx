@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
+import { TaxParcelComposition } from "@/screens/tax-parcel-composition";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, formatTimestamp } from "@/lib/format";
 import { formatTaxAmount as amount, formatTaxDecimal } from "@/lib/ledger-tax-results-format";
 import { getLedgerJournalEntryTaxResults, type LedgerTaxResultScope } from "@/lib/ledger-tax-results-api";
 import type { LedgerDisposalTaxResult, LedgerJournalTaxResults, LedgerDisposalTaxParcel } from "@/types/ledger-tax-results";
@@ -95,6 +96,7 @@ function DisposalResult({ disposal, currency }: { disposal: LedgerDisposalTaxRes
       </dl>
       {disposal.parcels.length > 0 ? (
         <div className="space-y-2">
+          <TaxParcelComposition key={disposal.mutationBatchId} parcels={disposal.parcels} currency={currency} state={stateLabels[disposal.state]} disposal={disposal} />
           <h4 className="text-sm font-semibold">Relieved parcels</h4>
           {disposal.parcels.map((parcel, index) => (
             <ParcelResult key={`${parcel.lotId}-${index}`} parcel={parcel} currency={currency} />
@@ -135,7 +137,5 @@ function TaxFact({ label, value }: { label: string; value: string }) {
 
 function retainedTime(value: string) {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : `${date.toLocaleString("en-US", {
-    year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: "UTC"
-  })} UTC`;
+  return Number.isNaN(date.getTime()) ? value : formatTimestamp(date, { precision: "second" });
 }

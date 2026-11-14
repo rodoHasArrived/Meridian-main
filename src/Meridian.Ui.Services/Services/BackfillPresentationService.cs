@@ -165,7 +165,7 @@ public static class BackfillPresentationService
     };
 
     private static string FormatTimestamp(DateTimeOffset? timestamp) =>
-        timestamp.HasValue ? timestamp.Value.ToLocalTime().ToString("g") : "--";
+        FormatHelpers.FormatUtcTimestamp(timestamp, "--");
 
     private static string NormalizeProvider(string? provider) =>
         string.IsNullOrWhiteSpace(provider) ? "stooq" : provider.Trim().ToLowerInvariant();

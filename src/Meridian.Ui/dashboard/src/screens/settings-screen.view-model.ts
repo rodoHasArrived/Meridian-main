@@ -1,3 +1,5 @@
+import { selectSharedProviderHealth } from "@/lib/cross-screen-counts";
+import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { pluralizeCount } from "@/lib/format";
 import { resolveKpi } from "@/lib/kpi-registry";
@@ -11,7 +13,7 @@ import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { settingsProviderConnectionRoute, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
-  formatSettingsUtcMinute
+  formatSettingsMinute
 } from "@/screens/settings-screen.date-format";
 import {
   buildAssetProfileGovernancePanel,
@@ -1142,6 +1144,8 @@ export interface SettingsScreenViewModel {
 export interface SettingsScreenPayload {
   session: SessionInfo | null;
   overview: SystemOverviewResponse | null;
+  /** The shell's cross-screen counts (A3): Settings shows the same provider health as Data. */
+  crossScreenCounts?: WorkstationCrossScreenCounts | null;
   strategy?: StrategyWorkspaceResponse | null;
   trading?: TradingWorkspaceResponse | null;
   portfolio?: PortfolioWorkspaceResponse | null;
@@ -1344,7 +1348,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     workspaceLabel: "Reporting",
     route: WORKSTATION_ROUTE_CATALOG.reporting,
     title: "Governed reports and exports",
-    description: "Reporting workspace posture, analysis exports, report-pack recipients, data dictionaries, and approval lanes.",
+    description: "Reporting workspace posture, analysis exports, report-pack recipients, data dictionaries, and approval queues.",
     isAvailable: (payload) => payload.reporting !== null && payload.reporting !== undefined,
     unavailableDetail: "Reporting workspace data has not loaded.",
     endpoints: [
@@ -1463,7 +1467,7 @@ function buildRecentEventsSection(overview: SystemOverviewResponse | null): Sett
   const events = overview.recentEvents ?? [];
   const rows = events.map((event) => {
     const source = event.source.trim() || "Unknown source";
-    const timestamp = formatSettingsUtcMinute(event.timestamp, "Timestamp unavailable");
+    const timestamp = formatSettingsMinute(event.timestamp, "Timestamp unavailable");
     const statusCode = eventStatusCode(event.type);
 
     return {
@@ -1621,7 +1625,7 @@ export function buildSettingsFreshnessViewModel(
     };
   }
 
-  const timestampLabel = formatSettingsUtcMinute(observedAt);
+  const timestampLabel = formatSettingsMinute(observedAt);
   const ageMs = evaluatedAt.getTime() - observedAt.getTime();
   if (ageMs < -5 * 60 * 1_000) {
     return {
@@ -1728,8 +1732,8 @@ function buildRobinhoodConnectionPanel(connection: BrokerageConnectionStatus | n
     statusTone: tone,
     badgeVariant: tone === "default" ? "outline" : tone,
     accountLabel: connection?.externalAccountId?.trim() || "Not linked",
-    connectedAtLabel: formatSettingsUtcMinute(connection?.connectedAt, "Not connected"),
-    expiresAtLabel: formatSettingsUtcMinute(connection?.expiresAt, "No expiry recorded"),
+    connectedAtLabel: formatSettingsMinute(connection?.connectedAt, "Not connected"),
+    expiresAtLabel: formatSettingsMinute(connection?.expiresAt, "No expiry recorded"),
     scopesLabel: scopes.length > 0 ? scopes.join(", ") : "No scopes granted",
     authorizationUrl: connection?.authorizationUrl?.trim() || null,
     warnings: connection?.warnings ?? [],
@@ -2829,10 +2833,17 @@ export function buildSettingsScreenViewModel(
       ]
     : [];
 
+  // One provider-health count, the same one Data and the trust strip show (A3). Settings does not
+  // refresh the Data payload, so the shell's refreshed shared count wins over retained Data rows.
+  const providerHealth = selectSharedProviderHealth(payload.crossScreenCounts, payload.data?.providers);
   const systemItems: SettingsSystemItem[] = overview
     ? [
         { label: "Status", value: overview.systemStatus, tone: systemTone(overview.systemStatus) },
-        { label: "Providers online", value: `${overview.providersOnline} / ${overview.providersTotal}`, tone: overview.providersOnline === overview.providersTotal ? "success" : "warning" },
+        {
+          label: "Providers healthy",
+          value: providerHealth ? `${providerHealth.healthy} / ${providerHealth.total}` : "—",
+          tone: !providerHealth ? "muted" : providerHealth.total > 0 && providerHealth.healthy === providerHealth.total ? "success" : "warning"
+        },
         { label: "Active runs", value: String(overview.activeRuns), tone: "default" },
         { label: "Open positions", value: resolveKpi("portfolio.open-positions", { portfolio: payload.portfolio }).value, tone: "default" },
         { label: "Symbols monitored", value: String(overview.symbolsMonitored), tone: "default" },
@@ -2847,7 +2858,7 @@ export function buildSettingsScreenViewModel(
     ? "warning"
     : statusTone;
   const sysSummary = overview
-    ? `${overview.systemStatus} · ${overview.providersOnline}/${overview.providersTotal} providers · ${overview.activeRuns} active run${overview.activeRuns === 1 ? "" : "s"} · heartbeat ${systemFreshness.status}`
+    ? `${overview.systemStatus} · ${providerHealth ? `${providerHealth.healthy}/${providerHealth.total} providers healthy` : "provider health unavailable"} · ${overview.activeRuns} active run${overview.activeRuns === 1 ? "" : "s"} · heartbeat ${systemFreshness.status}`
     : "System overview unavailable.";
   const diagnosticSection = buildDiagnosticEndpointSection(payload);
   const backendCapabilitySection = buildBackendCapabilitySection(payload);

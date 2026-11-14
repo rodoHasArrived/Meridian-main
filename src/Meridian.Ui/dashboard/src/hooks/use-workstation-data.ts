@@ -35,8 +35,10 @@ import {
   getSecurityAssetProfiles,
   setFeatureCapability
 } from "@/lib/api";
+import { getCrossScreenCounts } from "@/lib/api/operator-workstation.api";
 import { describeApiError } from "@/lib/api-errors";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
+import { FIGURE_SOURCE_KEYS, type FigureSourceKey } from "@/lib/workspace-figure-context";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
@@ -66,12 +68,15 @@ import type {
   WorkflowPresetLibrary,
   WorkspaceKey
 } from "@/types";
+import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 
 type WorkspaceErrorMap = Partial<Record<WorkspaceKey, string>>;
+type FigureSourceLoadedAtMap = Partial<Record<FigureSourceKey, string>>;
 type RefreshCategory = "bootstrap" | "workspace" | "workflow";
 type RefreshDataKey =
   | "session"
   | "overview"
+  | "crossScreenCounts"
   | "strategy"
   | "trading"
   | "portfolio"
@@ -101,6 +106,12 @@ interface RefreshEntry {
   key: RefreshDataKey;
   category: RefreshCategory;
   workspaceKeys?: WorkspaceKey[];
+  /**
+   * For an account-scoped figure payload: the fund account the request asks for (null for every
+   * account). Recorded with the payload when it loads, so its figures name the account they
+   * belong to even after the operator selects another one.
+   */
+  figureScope?: string | null;
   start: (requestOptions: { signal: AbortSignal }) => Promise<unknown>;
 }
 
@@ -123,6 +134,8 @@ export interface UseWorkstationDataOptions {
 interface WorkstationDataState {
   session: SessionInfo | null;
   overview: SystemOverviewResponse | null;
+  /** Open orders, provider health and open breaks, counted once for every screen (A3). */
+  crossScreenCounts: WorkstationCrossScreenCounts | null;
   strategy: StrategyWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
   portfolio: PortfolioWorkspaceResponse | null;
@@ -153,6 +166,22 @@ interface WorkstationDataState {
   loading: boolean;
   error: string | null;
   workspaceErrors: WorkspaceErrorMap;
+  /**
+   * When each payload that supplies headline figures last loaded (ISO). A refresh lifecycle
+   * cannot say this: it also settles for another workspace or for no request at all.
+   */
+  figureSourceLoadedAt: FigureSourceLoadedAtMap;
+  /**
+   * Figure payloads that failed their latest reload, so the figures they supply are retained
+   * ones. A payload leaves this list only when it reloads successfully: unlike
+   * `workspaceErrors`, it is not cleared when another refresh starts.
+   */
+  figureSourcesStale: readonly FigureSourceKey[];
+  /**
+   * The fund account each account-scoped figure payload on screen was loaded for (null for every
+   * account). The selected account can change before, or without, that payload reloading.
+   */
+  figureSourceScope: Partial<Record<FigureSourceKey, string | null>>;
   refreshStatus: RequestLifecycleStatus;
   tradingRefreshStatus: RequestLifecycleStatus;
   providerRoutingRefreshStatus: RequestLifecycleStatus;
@@ -162,6 +191,7 @@ interface WorkstationDataState {
 const initialState: WorkstationDataState = {
   session: null,
   overview: null,
+  crossScreenCounts: null,
   strategy: null,
   trading: null,
   portfolio: null,
@@ -192,6 +222,9 @@ const initialState: WorkstationDataState = {
   loading: true,
   error: null,
   workspaceErrors: {},
+  figureSourceLoadedAt: {},
+  figureSourcesStale: [],
+  figureSourceScope: {},
   refreshStatus: null as unknown as RequestLifecycleStatus,
   tradingRefreshStatus: null as unknown as RequestLifecycleStatus,
   providerRoutingRefreshStatus: null as unknown as RequestLifecycleStatus,
@@ -351,8 +384,10 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
       return;
     }
 
+    const primaryLoadedAt = new Date().toISOString();
     const primaryPublished = token.safeSetState(setState, (current) => mergeRefreshSettlements(current, primaryResults, {
       loading: false,
+      loadedAt: primaryLoadedAt,
       replaceErrorsFor: getWorkspaceKeysForEntries(primaryEntries)
     }));
     if (primaryPublished) {
@@ -373,8 +408,10 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
       return;
     }
 
+    const deferredLoadedAt = new Date().toISOString();
     const deferredPublished = token.safeSetState(setState, (current) => mergeRefreshSettlements(current, deferredResults, {
       loading: false,
+      loadedAt: deferredLoadedAt,
       replaceErrorsFor: getWorkspaceKeysForEntries(deferredEntries)
     }));
     if (deferredPublished) {
@@ -430,8 +467,10 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
       return;
     }
 
+    const loadedAt = new Date().toISOString();
     const published = token.safeSetState(setState, (current) => mergeRefreshSettlements(current, settlements, {
       loading: false,
+      loadedAt,
       replaceErrorsFor: getWorkspaceKeysForEntries(scopedEntries)
     }));
     if (published) {
@@ -467,20 +506,25 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     const token = tradingRefreshLifecycle.start({ busyMode: "drop", attempt: options.attempt });
     if (!token) return;
     try {
+      const requestedFundAccountId = normalizeFundAccountGuid(workflowSummaryFundAccountId);
       const result = await getTradingWorkspace({
         signal: token.signal,
-        fundAccountId: normalizeFundAccountGuid(workflowSummaryFundAccountId)
+        fundAccountId: requestedFundAccountId
       });
       if (!token.isCurrent()) {
         tradingRefreshLifecycle.markStale(token.version);
         return;
       }
+      const loadedAt = new Date().toISOString();
       token.safeSetState(setState, (current) => {
         const tradingError = current.workspaceErrors.trading;
         const workspaceErrors = withoutWorkspaceError(current.workspaceErrors, "trading");
         return {
           ...current,
           trading: result,
+          figureSourceLoadedAt: { ...current.figureSourceLoadedAt, trading: loadedAt },
+          figureSourcesStale: withoutStaleFigures(current.figureSourcesStale, "trading"),
+          figureSourceScope: { ...current.figureSourceScope, trading: requestedFundAccountId ?? null },
           error: current.error === tradingError ? firstWorkspaceError(workspaceErrors) ?? null : current.error,
           workspaceErrors,
           usingDevelopmentFixtures: current.usingDevelopmentFixtures || hasDevelopmentFixtureUsage()
@@ -502,7 +546,8 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
         return {
           ...current,
           error: current.error ?? message,
-          workspaceErrors
+          workspaceErrors,
+          figureSourcesStale: withStaleFigures(current.figureSourcesStale, "trading")
         };
       });
       tradingRefreshLifecycle.fail(token, err, { fallback: "Trading workspace refresh failed." });
@@ -640,6 +685,7 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
         portfolioRefreshLifecycle.markStale(token.version);
         return;
       }
+      const loadedAt = new Date().toISOString();
       token.safeSetState(setState, (current) => {
         let next = { ...current };
         const previousPortfolioError = current.workspaceErrors.portfolio;
@@ -647,8 +693,14 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
         const refreshErrors: string[] = [];
         const reportingRefreshErrors: string[] = [];
         if (portfolio.status === "fulfilled") {
-          next = { ...next, portfolio: portfolio.value };
+          next = {
+            ...next,
+            portfolio: portfolio.value,
+            figureSourceLoadedAt: { ...next.figureSourceLoadedAt, portfolio: loadedAt },
+            figureSourcesStale: withoutStaleFigures(next.figureSourcesStale, "portfolio")
+          };
         } else {
+          next = { ...next, figureSourcesStale: withStaleFigures(next.figureSourcesStale, "portfolio") };
           refreshErrors.push(formatRequestError(portfolio.reason, "Portfolio workspace refresh failed"));
         }
         if (portfolioMultiAssetCoverage.status === "fulfilled") {
@@ -662,8 +714,14 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
           refreshErrors.push(formatRequestError(brokeragePortfolio.reason, "Brokerage household portfolio refresh failed"));
         }
         if (reporting.status === "fulfilled") {
-          next = { ...next, reporting: reporting.value };
+          next = {
+            ...next,
+            reporting: reporting.value,
+            figureSourceLoadedAt: { ...next.figureSourceLoadedAt, reporting: loadedAt },
+            figureSourcesStale: withoutStaleFigures(next.figureSourcesStale, "reporting")
+          };
         } else {
+          next = { ...next, figureSourcesStale: withStaleFigures(next.figureSourcesStale, "reporting") };
           reportingRefreshErrors.push(formatRequestError(reporting.reason, "Reporting live portfolio refresh failed"));
         }
 
@@ -692,7 +750,16 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
         };
         return next;
       });
-      portfolioRefreshLifecycle.succeed(token);
+      // This lifecycle dates the Portfolio workspace payload. When that request is rejected the
+      // previous payload stays on screen, so the refresh did not succeed: settling it as partial
+      // keeps `lastSucceededAt` at the last time the payload did load. The other feeds report
+      // their failures through `workspaceErrors` and do not hold the workspace's time back, or an
+      // unconnected brokerage would make a healthy Portfolio workspace look permanently stale.
+      if (portfolio.status === "rejected") {
+        portfolioRefreshLifecycle.partial(token, portfolio.reason, { fallback: "Portfolio workspace refresh failed." });
+      } else {
+        portfolioRefreshLifecycle.succeed(token);
+      }
     } finally {
       portfolioRefreshLifecycle.finish(token);
       refreshingPortfolio.current = false;
@@ -700,6 +767,7 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
   }, [
     portfolioRefreshLifecycle.finish,
     portfolioRefreshLifecycle.markStale,
+    portfolioRefreshLifecycle.partial,
     portfolioRefreshLifecycle.start,
     portfolioRefreshLifecycle.succeed
   ]);
@@ -748,11 +816,20 @@ function createRefreshEntries(
   return [
     { key: "session", category: "bootstrap", start: (requestOptions) => getSession(requestOptions) },
     { key: "overview", category: "bootstrap", start: (requestOptions) => getSystemStatus(requestOptions) },
+    // Loaded on every route, like the overview, so Settings and the shell show the same counts as
+    // the workspaces that hold the source lists.
+    {
+      key: "crossScreenCounts",
+      category: "bootstrap",
+      figureScope: tradingFundAccountId ?? null,
+      start: (requestOptions) => getCrossScreenCounts(tradingFundAccountId, requestOptions)
+    },
     { key: "strategy", category: "workspace", workspaceKeys: ["strategy"], start: (requestOptions) => getStrategyWorkspace(requestOptions) },
     {
       key: "trading",
       category: "workspace",
       workspaceKeys: ["trading"],
+      figureScope: tradingFundAccountId ?? null,
       start: (requestOptions) => getTradingWorkspace({ ...requestOptions, fundAccountId: tradingFundAccountId })
     },
     { key: "portfolio", category: "workspace", workspaceKeys: ["portfolio", "trading", "settings"], start: (requestOptions) => getPortfolioWorkspace(requestOptions) },
@@ -853,10 +930,22 @@ function hasSuccessfulBootstrapEvidence(settlements: SettledRefreshEntry[]) {
     && bootstrapSettlements.every((settlement) => settlement.result.status === "fulfilled");
 }
 
+function asFigureSource(key: RefreshDataKey): FigureSourceKey | null {
+  return (FIGURE_SOURCE_KEYS as readonly string[]).includes(key) ? key as FigureSourceKey : null;
+}
+
+function withStaleFigures(stale: readonly FigureSourceKey[], source: FigureSourceKey): readonly FigureSourceKey[] {
+  return stale.includes(source) ? stale : [...stale, source];
+}
+
+function withoutStaleFigures(stale: readonly FigureSourceKey[], source: FigureSourceKey): readonly FigureSourceKey[] {
+  return stale.includes(source) ? stale.filter((key) => key !== source) : stale;
+}
+
 function mergeRefreshSettlements(
   current: WorkstationDataState,
   settlements: SettledRefreshEntry[],
-  options: { loading: boolean; replaceErrorsFor?: WorkspaceKey[] }
+  options: { loading: boolean; loadedAt: string; replaceErrorsFor?: WorkspaceKey[] }
 ): WorkstationDataState {
   const next: WorkstationDataState = {
     ...current,
@@ -868,6 +957,9 @@ function mergeRefreshSettlements(
   for (const workspaceKey of options.replaceErrorsFor ?? []) {
     delete workspaceErrors[workspaceKey];
   }
+  const figureSourceLoadedAt: FigureSourceLoadedAtMap = { ...current.figureSourceLoadedAt };
+  let figureSourcesStale = current.figureSourcesStale;
+  const figureSourceScope = { ...current.figureSourceScope };
   const bootstrapErrors: string[] = [];
   const hasBootstrapSettlements = settlements.some((settlement) => settlement.entry.category === "bootstrap");
   const hasWorkflowSettlements = settlements.some((settlement) => settlement.entry.category === "workflow");
@@ -877,9 +969,21 @@ function mergeRefreshSettlements(
   for (const { entry, result } of settlements) {
     if (result.status === "fulfilled") {
       assignRefreshValue(next, entry.key, result.value);
+      const figureSource = asFigureSource(entry.key);
+      if (figureSource) {
+        figureSourceLoadedAt[figureSource] = options.loadedAt;
+        figureSourcesStale = withoutStaleFigures(figureSourcesStale, figureSource);
+        if (entry.figureScope !== undefined) {
+          figureSourceScope[figureSource] = entry.figureScope;
+        }
+      }
       continue;
     }
 
+    const failedFigureSource = asFigureSource(entry.key);
+    if (failedFigureSource) {
+      figureSourcesStale = withStaleFigures(figureSourcesStale, failedFigureSource);
+    }
     const message = formatRequestError(result.reason, `${getRefreshEntryLabel(entry)} request failed.`);
     if (entry.category === "workspace") {
       for (const workspaceKey of entry.workspaceKeys ?? []) {
@@ -895,6 +999,9 @@ function mergeRefreshSettlements(
   }
 
   next.workspaceErrors = workspaceErrors;
+  next.figureSourceLoadedAt = figureSourceLoadedAt;
+  next.figureSourcesStale = figureSourcesStale;
+  next.figureSourceScope = figureSourceScope;
   next.workflowError = workflowErrors[0] ?? null;
   const retainedGlobalError = !hasBootstrapSettlements && current.error && !currentErrorIsWorkspaceError
     ? current.error
@@ -937,6 +1044,9 @@ function assignRefreshValue(state: WorkstationDataState, key: RefreshDataKey, va
       break;
     case "overview":
       state.overview = value as SystemOverviewResponse;
+      break;
+    case "crossScreenCounts":
+      state.crossScreenCounts = value as WorkstationCrossScreenCounts;
       break;
     case "strategy":
       state.strategy = value as StrategyWorkspaceResponse;

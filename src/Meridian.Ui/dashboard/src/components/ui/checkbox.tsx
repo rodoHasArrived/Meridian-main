@@ -26,7 +26,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     };
 
     return (
-      <label className={cn("inline-flex items-start gap-2.5 text-sm", disabled ? "cursor-not-allowed opacity-55" : "cursor-pointer", className)}>
+      <label className={cn("inline-flex min-h-6 min-w-6 items-start gap-2.5 text-sm", disabled ? "cursor-not-allowed opacity-55" : "cursor-pointer", className)}>
         <span className="relative mt-0.5 inline-flex h-4 w-4 shrink-0">
           <input
             ref={ref}
@@ -41,14 +41,17 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           <span
             aria-hidden="true"
             className={cn(
-              "flex h-4 w-4 items-center justify-center rounded-[2px] border bg-[var(--ws-surface-raised)]",
+              "flex h-4 w-4 items-center justify-center rounded-[2px] border",
               "transition-[background-color,border-color] duration-150",
-              "peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40",
-              checkedState ? "border-primary bg-primary" : "border-border peer-hover:border-[var(--ws-border-hover)]",
+              "peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--interaction-focus)]",
+              "forced-colors:forced-color-adjust-none forced-colors:peer-focus-visible:outline-2 forced-colors:peer-focus-visible:outline-[Highlight] forced-colors:peer-focus-visible:outline-offset-2",
+              checkedState
+                ? "border-[var(--interaction-selected)] bg-[var(--interaction-selected)] forced-colors:border-[Highlight] forced-colors:bg-[Highlight]"
+                : "border-border bg-[var(--ws-surface-raised)] peer-hover:border-[var(--ws-border-hover)] forced-colors:border-[CanvasText] forced-colors:bg-[Canvas]",
               error ? "border-danger" : ""
             )}
           >
-            <Check className={cn("h-3 w-3 text-primary-foreground transition-opacity", checkedState ? "opacity-100" : "opacity-0")} />
+            <Check className={cn("h-3 w-3 text-[var(--text-on-fill)] transition-opacity forced-colors:text-[HighlightText]", checkedState ? "opacity-100" : "opacity-0")} />
           </span>
         </span>
         {(label || hint || error) ? (
@@ -100,8 +103,8 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(
         aria-checked={checkedState}
         disabled={disabled}
         className={cn(
-          "inline-flex items-center gap-2.5 text-sm text-foreground transition-opacity",
-          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
+          "inline-flex min-h-6 items-center gap-2.5 text-sm text-foreground transition-opacity",
+          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]",
           disabled ? "cursor-not-allowed opacity-55" : "cursor-pointer",
           className
         )}
@@ -111,13 +114,13 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(
         <span
           aria-hidden="true"
           className={cn(
-            "relative h-5 w-9 rounded-full border transition-colors duration-150",
-            checkedState ? "border-primary bg-primary" : "border-border bg-[var(--ws-surface-raised)]"
+            "relative h-5 w-9 rounded-[2px] border transition-colors duration-150",
+            checkedState ? "border-[var(--interaction-selected)] bg-[var(--interaction-selected)]" : "border-border bg-[var(--ws-surface-raised)]"
           )}
         >
           <span
             className={cn(
-              "absolute top-0.5 h-4 w-4 rounded-full bg-background transition-transform duration-150",
+              "absolute top-0.5 h-4 w-4 rounded-[2px] bg-[var(--text-on-fill)] transition-transform duration-150",
               checkedState ? "translate-x-[1.0625rem]" : "translate-x-0.5"
             )}
           />

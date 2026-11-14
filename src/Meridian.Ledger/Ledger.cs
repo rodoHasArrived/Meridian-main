@@ -901,6 +901,11 @@ public sealed class Ledger : IReadOnlyLedger
 
         if (!validation.IsValid)
             throw new LedgerValidationException(validation.Errors[0]);
+
+        // The shared posting kernel validates the functional numeric amounts. Currency
+        // evidence is carried by C# lines, so enforce its invariants before mutating indexes.
+        if (!entry.IsBalanced)
+            throw new LedgerValidationException("Journal entry does not balance in its declared currencies.");
     }
 
     private static bool MatchesFinancialAccount(LedgerAccount account, string? financialAccountId)
@@ -1008,6 +1013,7 @@ public sealed class Ledger : IReadOnlyLedger
             Debit = line.Debit,
             Credit = line.Credit,
             Description = line.Description,
+            FunctionalCurrency = line.Currency?.FunctionalCurrency ?? string.Empty,
         };
 
     private static bool IsWithinRange(DateTimeOffset timestamp, DateTimeOffset? from, DateTimeOffset? to)

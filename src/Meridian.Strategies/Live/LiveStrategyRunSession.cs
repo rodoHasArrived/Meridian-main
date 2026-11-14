@@ -609,7 +609,10 @@ internal sealed class LiveStrategyRunSession
                         Timestamp = state.LastUpdatedAt ?? DateTimeOffset.UtcNow,
                         // Carried from the tracked state so this fallback path books the same
                         // par-scaled cash flow the OMS-stamped report stream would deliver.
-                        UsesFaceValuePercentageOfPar = state.UsesFaceValuePercentageOfPar
+                        UsesFaceValuePercentageOfPar = state.UsesFaceValuePercentageOfPar,
+                        // Likewise the contract multiplier, so a multiplied contract's cash flow
+                        // matches what the paper book moved.
+                        LotMultiplier = state.ContractMultiplier != 1m ? state.ContractMultiplier : null
                     };
                 }
             }
@@ -667,10 +670,14 @@ internal sealed class LiveStrategyRunSession
                 FilledAt: report.Timestamp,
                 AccountId: order.AccountId);
 
-            // The report's OMS-stamped sizing classification rides along so a fixed-income
-            // fill (face value at percent-of-par) books its par-scaled cash flow instead of
-            // a 100x raw quantity-times-price movement.
-            _metrics.RecordFill(fill, report.Timestamp, report.UsesFaceValuePercentageOfPar);
+            // The report's OMS-stamped sizing classification and lot multiplier ride along so a
+            // fixed-income fill (face value at percent-of-par) books its par-scaled cash flow and
+            // a multiplied contract books the same cash the paper portfolio moved.
+            _metrics.RecordFill(
+                fill,
+                report.Timestamp,
+                report.UsesFaceValuePercentageOfPar,
+                report.LotMultiplier ?? 1m);
             if (_strategy.Status != StrategyStatus.Stopped)
             {
                 _strategy.OnOrderFill(fill, _context);
@@ -1122,7 +1129,10 @@ internal sealed class LiveStrategyRunSession
         _context.Universe,
         _context.PortfolioValue,
         _context.Ledger,
-        DateTimeOffset.UtcNow);
+        DateTimeOffset.UtcNow,
+        // Account financing has no retained run allocation. The private context ledger is
+        // not evidence of a measured zero; retain explicit unavailable coverage instead.
+        runAttributedMarginInterest: null);
 
     private static Exception? CombineFailures(Exception? first, Exception? second) =>
         first is null ? second : second is null || ReferenceEquals(first, second) ? first :

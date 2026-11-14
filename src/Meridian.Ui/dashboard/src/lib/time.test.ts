@@ -19,9 +19,10 @@ describe("formatRelativeAge", () => {
     expect(formatRelativeAge("2026-05-06T12:00:00.000Z", now)).toBe("3d ago");
   });
 
-  it("falls back to an absolute label for future timestamps", () => {
+  it("falls back to an absolute label in the display zone for future timestamps", () => {
+    // Previously the host-locale `toLocaleString()`, which varied by machine and used a 12-hour clock.
     const now = Date.parse("2026-05-09T01:00:00.000Z");
     const future = "2026-05-09T02:00:00.000Z";
-    expect(formatRelativeAge(future, now)).toBe(new Date(future).toLocaleString());
+    expect(formatRelativeAge(future, now)).toBe("May 9, 2026, 02:00 UTC");
   });
 });

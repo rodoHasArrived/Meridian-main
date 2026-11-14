@@ -8,7 +8,9 @@ namespace Meridian.Application.SecurityMaster;
 // admission only; descriptive accounting policies never authorize posting or manufacture evidence.
 internal static class SecurityAssetPackAdmission
 {
-    internal static void EnsureSubmittedFields(string assetClass, JsonElement terms)
+    /// <param name="retainedTerms">The stored terms the write replaces (null for a create); declarations
+    /// it leaves unchanged are judged as retained (<see cref="ScheduleTermsWriteRules.Validate(string, JsonElement, JsonElement?)"/>).</param>
+    internal static void EnsureSubmittedFields(string assetClass, JsonElement terms, JsonElement? retainedTerms = null)
     {
         // Preserve the mapping's existing unsupported-class refusal and its repair guidance.
         if (!SecurityAssetClassCatalog.TryGet(assetClass, out _))
@@ -16,10 +18,10 @@ internal static class SecurityAssetPackAdmission
         var descriptor = RequirePackSchemas(assetClass);
         var issues = new SchemaTermsAssetClassValidator(descriptor.AssetClass).ValidateSubmittedFieldsForWrite(terms);
         RefuseErrors(issues, $"submitted {descriptor.AssetClass} terms");
-        EnsureScheduleTermsAdmitted(descriptor.AssetClass, terms);
+        EnsureScheduleTermsAdmitted(descriptor.AssetClass, terms, retainedTerms);
     }
 
-    internal static void EnsureAdmitted(SecurityProjectionRecord projection, DateTimeOffset effectiveAt)
+    internal static void EnsureAdmitted(SecurityProjectionRecord projection, DateTimeOffset effectiveAt, JsonElement? retainedTerms = null)
     {
         var descriptor = RequirePackSchemas(projection.AssetClass);
 
@@ -29,8 +31,9 @@ internal static class SecurityAssetPackAdmission
             .ValidateForWrite(new SecurityValidationContext(projection, effectiveAt));
         RefuseErrors(issues, projection.SecurityId.ToString("D"));
         // A patch-less amendment still writes the complete decoded record. Retained declarations
-        // that survive a tolerant read must satisfy today's semantic write rules before it persists.
-        EnsureScheduleTermsAdmitted(descriptor.AssetClass, projection.AssetSpecificTerms);
+        // that survive a tolerant read must satisfy today's semantic write rules before it persists;
+        // a rule added after they were stored judges only what this amendment introduces or changes.
+        EnsureScheduleTermsAdmitted(descriptor.AssetClass, projection.AssetSpecificTerms, retainedTerms);
     }
 
     private static SecurityAssetClassDescriptor RequirePackSchemas(string assetClass)
@@ -58,11 +61,11 @@ internal static class SecurityAssetPackAdmission
                 + string.Join(" ", errors.Select(issue => $"{issue.Code} ({string.Join(", ", issue.AffectedFields)}): {issue.Message}")));
     }
 
-    private static void EnsureScheduleTermsAdmitted(string assetClass, JsonElement terms)
+    private static void EnsureScheduleTermsAdmitted(string assetClass, JsonElement terms, JsonElement? retainedTerms)
     {
         try
         {
-            ScheduleTermsWriteRules.Validate(assetClass, terms);
+            ScheduleTermsWriteRules.Validate(assetClass, terms, retainedTerms);
         }
         catch (InvalidOperationException exception) when (exception.GetType() == typeof(InvalidOperationException))
         {

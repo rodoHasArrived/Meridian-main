@@ -55,6 +55,11 @@ public static class ProviderCredentialOwnershipEndpoints
         group.MapPost("/{connectionId}/credentials/rollback", (string connectionId, ProviderCredentialMigrationRequest request,
             HttpContext context, [FromServices] ProviderRuntimeCredentialService service) => TransferAsync(service, connectionId, request, context, true, jsonOptions))
             .WithName("RollbackProviderCredentialOwnership").RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        group.MapPost("/{connectionId}/credentials/finalize", (string connectionId, ProviderCredentialMigrationRequest request,
+            HttpContext context, [FromServices] ProviderRuntimeCredentialService service) => ExecuteAsync(context, async (tenant, actor) =>
+                Results.Json(await service.FinalizeAsync(request.ProviderId, connectionId, tenant, request.MigrationId, actor, context.RequestAborted)
+                    .ConfigureAwait(false), jsonOptions)))
+            .WithName("FinalizeProviderCredentialOwnership").RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
     private static Task<IResult> TransferAsync(ProviderRuntimeCredentialService service, string connectionId,

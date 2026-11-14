@@ -175,7 +175,7 @@ public static class RolePermissions
     /// <summary>
     /// Returns the <see cref="UserPermission"/> flags granted to <paramref name="role"/>.
     /// </summary>
-    public static UserPermission For(UserRole role) => role switch
+    public static UserPermission For(UserRole role) => (role switch
     {
         UserRole.Admin => AdminPermissions,
         UserRole.Developer => DeveloperPermissions,
@@ -188,6 +188,21 @@ public static class RolePermissions
         UserRole.Compliance => CompliancePermissions,
         UserRole.Executive => ExecutivePermissions,
         UserRole.ReadOnly => ReadOnlyPermissions,
+        _ => UserPermission.None
+    }) | ObservationPermissionsFor(role);
+
+    // Observation imports have their own business authority. In particular, Developer's
+    // administrative inheritance and ordinary report/market-data access do not grant writes.
+    private static UserPermission ObservationPermissionsFor(UserRole role) => role switch
+    {
+        UserRole.Admin => UserPermission.ViewPrivateCapitalRecords | UserPermission.ManagePrivateCapitalRecords |
+                          UserPermission.ViewOptionAssessments | UserPermission.ManageOptionAssessments,
+        UserRole.Accounting or UserRole.FundAccountant or UserRole.Controller =>
+            UserPermission.ViewPrivateCapitalRecords | UserPermission.ManagePrivateCapitalRecords |
+            UserPermission.ViewOptionAssessments,
+        UserRole.TradeDesk => UserPermission.ViewOptionAssessments | UserPermission.ManageOptionAssessments,
+        UserRole.Developer or UserRole.Analysis or UserRole.ReportingAnalyst or UserRole.Compliance or UserRole.Executive =>
+            UserPermission.ViewPrivateCapitalRecords | UserPermission.ViewOptionAssessments,
         _ => UserPermission.None
     };
 
@@ -348,6 +363,8 @@ public static class RolePermissions
         UserPermission.ViewReporting or UserPermission.ManageReporting or UserPermission.ApproveReporting or UserPermission.DeliverReporting => "Reporting",
         UserPermission.ViewLedgerReports or UserPermission.ManageLedgerReports => "Ledger and fund accounting",
         UserPermission.ManageCompliance => "Compliance",
+        UserPermission.ViewPrivateCapitalRecords or UserPermission.ManagePrivateCapitalRecords => "Private capital",
+        UserPermission.ViewOptionAssessments or UserPermission.ManageOptionAssessments => "Option assessments",
         UserPermission.ViewCorporateActions or
         UserPermission.IngestCorporateActions or
         UserPermission.ResolveCorporateActionTerms or
@@ -393,6 +410,10 @@ public static class RolePermissions
         UserPermission.ViewLedgerReports => "Read the governed ledger: trial balance, P&L, periods, and posted journal entries.",
         UserPermission.ManageLedgerReports => "Operate the governed ledger: post entries, close periods, configure accounting, and run journal automation.",
         UserPermission.ManageCompliance => "File and decide compliance approvals, run access reviews, and extract the audit chain.",
+        UserPermission.ViewPrivateCapitalRecords => "Read source-reported private-capital commitments and valuation observations.",
+        UserPermission.ManagePrivateCapitalRecords => "Register private-capital commitments and accept evidence-backed observation imports.",
+        UserPermission.ViewOptionAssessments => "Read account-scoped retained broker option assessments.",
+        UserPermission.ManageOptionAssessments => "Import and correct evidence-backed broker option assessments without order authority.",
         UserPermission.ViewCorporateActions => "View corporate-action source facts, scoped cases, treatment, and proof.",
         UserPermission.IngestCorporateActions => "Run or manage corporate-action provider ingest without accounting authority.",
         UserPermission.ResolveCorporateActionTerms => "Resolve provider conflicts and confirm normalized corporate-action terms.",

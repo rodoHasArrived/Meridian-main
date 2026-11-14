@@ -1,4 +1,5 @@
 using FluentAssertions;
+using System.Net;
 using Meridian.Ui.Services;
 
 namespace Meridian.Ui.Tests.Services;
@@ -9,6 +10,7 @@ namespace Meridian.Ui.Tests.Services;
 /// </summary>
 public sealed class ProviderHealthServiceTests : IDisposable
 {
+    private readonly ProviderHealthService _service = new();
     // ── Singleton ────────────────────────────────────────────────────
 
     [Fact]
@@ -24,7 +26,7 @@ public sealed class ProviderHealthServiceTests : IDisposable
     [Fact]
     public void GetHealthHistory_NonExistentProvider_ShouldReturnEmptyList()
     {
-        var svc = ProviderHealthService.Instance;
+        var svc = _service;
 
         var history = svc.GetHealthHistory("non-existent-provider-" + Guid.NewGuid(), TimeSpan.FromHours(1));
 
@@ -37,7 +39,7 @@ public sealed class ProviderHealthServiceTests : IDisposable
     [Fact]
     public void StartMonitoring_ShouldNotThrow()
     {
-        var svc = ProviderHealthService.Instance;
+        var svc = _service;
 
         var act = () => svc.StartMonitoring();
 
@@ -48,7 +50,7 @@ public sealed class ProviderHealthServiceTests : IDisposable
     [Fact]
     public void StopMonitoring_ShouldNotThrow()
     {
-        var svc = ProviderHealthService.Instance;
+        var svc = _service;
 
         var act = () => svc.StopMonitoring();
 
@@ -58,12 +60,57 @@ public sealed class ProviderHealthServiceTests : IDisposable
     [Fact]
     public void StartAndStopMonitoring_ShouldNotThrow()
     {
-        var svc = ProviderHealthService.Instance;
+        var svc = _service;
 
-        svc.StartMonitoring();
-        svc.StopMonitoring();
-        svc.StartMonitoring();
-        svc.StopMonitoring();
+        var act = () =>
+        {
+            svc.StartMonitoring();
+            svc.StopMonitoring();
+            svc.StartMonitoring();
+            svc.StopMonitoring();
+        };
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public async Task TimerRefresh_SkipsOverlappingTickAndReleasesGuardAfterCompletion()
+    {
+        using var handler = new GatedHealthHandler();
+        using var api = new ApiClientService(new TestClientFactory(handler));
+        using var service = new ProviderHealthService(api);
+        var first = service.RefreshFromTimerAsync();
+        await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        await service.RefreshFromTimerAsync();
+        handler.Requests.Should().Be(1, "a later timer tick must not overlap the first request");
+        handler.Release.TrySetResult();
+        await first.WaitAsync(TimeSpan.FromSeconds(5));
+        await service.RefreshFromTimerAsync();
+
+        handler.Requests.Should().Be(2, "the guard must be released after the first request finishes");
+    }
+
+    private sealed class TestClientFactory(HttpMessageHandler handler) : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => new(handler, disposeHandler: false);
+    }
+
+    private sealed class GatedHealthHandler : HttpMessageHandler
+    {
+        public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public int Requests { get; private set; }
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Requests++;
+            Started.TrySetResult();
+            await Release.Task.WaitAsync(cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"providers\":[]}", System.Text.Encoding.UTF8, "application/json")
+            };
+        }
     }
 
     // ── Data Model: ProviderHealthData ────────────────────────────────
@@ -203,6 +250,6 @@ public sealed class ProviderHealthServiceTests : IDisposable
     public void Dispose()
     {
         // Ensure monitoring is stopped after tests
-        ProviderHealthService.Instance.StopMonitoring();
+        _service.Dispose();
     }
 }

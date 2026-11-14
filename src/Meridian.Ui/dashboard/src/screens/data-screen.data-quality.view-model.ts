@@ -9,6 +9,7 @@ import type {
   QualityDashboardResponse,
   QualityProviderFreshnessResponse
 } from "@/types";
+import { formatCount, formatDecimal } from "@/lib/format";
 
 export type QualityDashboardFetcher = typeof getQualityDashboard;
 
@@ -65,7 +66,7 @@ export function scoreTone(score: number): QualityTone {
 }
 
 function formatScore(score: number | null): string {
-  return score === null ? "Unavailable" : `${score.toFixed(1)}`;
+  return score === null ? "Unavailable" : formatDecimal(score, 1);
 }
 
 function statusTone(status: QualityCompositeSymbolResponse["status"]): QualityTone {
@@ -109,7 +110,7 @@ function buildSymbolRow(symbol: QualityCompositeSymbolResponse): DataQualitySymb
   const adapter = componentFor(symbol.components, "AdapterGapIntegrity");
   const expectedEventsLabel = symbol.expectedEvents === null || symbol.observedEvents === null
     ? "Expected-session counts unavailable"
-    : `${symbol.observedEvents.toLocaleString()} / ${symbol.expectedEvents.toLocaleString()} expected events`;
+    : `${formatCount(symbol.observedEvents)} / ${formatCount(symbol.expectedEvents)} expected events`;
 
   return {
     symbol: symbol.symbol,

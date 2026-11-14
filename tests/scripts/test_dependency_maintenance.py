@@ -4,8 +4,11 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
+import shlex
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -30,7 +33,7 @@ outcomes = load("summarize-repair-outcomes")
 
 class LockCandidatesTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name) / "repo"
         self.root.mkdir()
@@ -143,6 +146,62 @@ class LockCandidatesTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "inventory differs"):
             locks.adopt(self.root, self.candidate)
         self.assertEqual((existing / "Removed.packages.lock.json").read_text(), "retain")
+
+    def test_disposable_checkout_keeps_unavailable_lfs_assets_offline_and_smudge_scoped(self):
+        # A deterministic LFS smudge fixture needs no LFS installation or network.
+        # Normal checkout must fail for its missing object, just like a local
+        # clone of an Actions checkout that contains pointers but no LFS cache.
+        calls = Path(self.temp.name) / "smudge-calls.txt"
+        filter_script = Path(self.temp.name) / "lfs-filter.py"
+        filter_script.write_text(
+            "import os, pathlib, sys\n"
+            "data = sys.stdin.buffer.read()\n"
+            "if sys.argv[1] == 'smudge':\n"
+            "    value = os.environ.get('GIT_LFS_SKIP_SMUDGE', '')\n"
+            f"    with pathlib.Path({str(calls)!r}).open('a') as output:\n"
+            "        output.write(value + '\\n')\n"
+            "    if value != '1':\n"
+            "        sys.stderr.write('missing LFS object in local origin\\n')\n"
+            "        sys.exit(1)\n"
+            "sys.stdout.buffer.write(data)\n",
+            encoding="utf-8")
+        command = (shlex.quote(Path(sys.executable).as_posix()) + " "
+                   + shlex.quote(filter_script.as_posix()))
+        environment = {
+            "GIT_CONFIG_COUNT": "3",
+            "GIT_CONFIG_KEY_0": "filter.restoreFixture.clean", "GIT_CONFIG_VALUE_0": command + " clean",
+            "GIT_CONFIG_KEY_1": "filter.restoreFixture.smudge", "GIT_CONFIG_VALUE_1": command + " smudge",
+            "GIT_CONFIG_KEY_2": "filter.restoreFixture.required", "GIT_CONFIG_VALUE_2": "true",
+            "GIT_LFS_SKIP_SMUDGE": "0",
+        }
+        pointer = (b"version https://git-lfs.github.com/spec/v1\n"
+                   b"oid sha256:" + b"a" * 64 + b"\nsize 123\n")
+        (self.root / "docs").mkdir()
+        (self.root / "docs/missing.png").write_bytes(pointer)
+        (self.root / ".gitattributes").write_text("*.png filter=restoreFixture -text\n")
+        with patch.dict(os.environ, environment):
+            locks.run(["git", "add", "."], self.root)
+            locks.run(["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+                       "-c", "commit.gpgsign=false", "commit", "--quiet", "-m", "fixture"], self.root)
+            commit = locks.run(["git", "rev-parse", "HEAD"], self.root)
+            normal = Path(self.temp.name) / "normal"
+            locks.run(["git", "clone", "--quiet", "--shared", "--no-checkout",
+                       str(self.root), str(normal)], self.root)
+            with self.assertRaisesRegex(ValueError, "missing LFS object"):
+                locks.run(["git", "checkout", "--quiet", "--detach", commit], normal)
+
+            project = self.root / "src/Example/Example.csproj"
+            project.write_text("<Project><PropertyGroup><CurrentInput>true</CurrentInput></PropertyGroup></Project>")
+            inputs = locks.restore_inputs(self.root)
+            with locks.checkout(self.root, commit, inputs) as work:
+                self.assertEqual((work / "docs/missing.png").read_bytes(), pointer)
+                self.assertEqual((work / "src/Example/Example.csproj").read_bytes(), project.read_bytes())
+                self.assertEqual(locks.restore_inputs(work), inputs)
+                self.assertEqual(os.environ["GIT_LFS_SKIP_SMUDGE"], "0")
+                with self.assertRaisesRegex(ValueError, "missing LFS object"):
+                    locks.run(["git", "checkout", "--quiet", "--force", "--detach", commit], normal)
+            self.assertEqual(locks.restore_inputs(self.root), inputs)
+        self.assertEqual(calls.read_text().splitlines(), ["0", "1", "0"])
 
 
 def archive(receipt, filename="generated-repair-result.json"):

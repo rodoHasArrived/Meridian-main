@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-30
+**Reviewed:** 2026-11-12
 
 Active architectural decisions are routed through:
 
@@ -10,9 +10,10 @@ Active architectural decisions are routed through:
 - [architecture references](../architecture/README.md)
 - [documentation ownership contract](../documentation-ownership.md)
 
-Historical ADRs 001–016 were migrated to the archive during the documentation rebuild, and the
-archive-migration stubs that previously mirrored them here have been removed. Full historical ADR
-content is preserved in:
+Historical ADRs 001–016 were migrated to the archive during the documentation rebuild. The
+eleven historical records still referenced by source attributes are available in the
+[local ADR archive](../../archive/docs/adr/README.md), with their original decision status,
+date, and pinned provenance. Other historical records remain available in the complete snapshot:
 
 - [ADR archive index](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/README.md)
 
@@ -34,6 +35,7 @@ record at its stated date.
 | [024: Terms Payload Format and Version Policy](024-terms-payload-format-and-version-policy.md) | Accepted; per-class terms upgrade hook implemented 2026-10-23; readable-before-writable expand step implemented 2026-10-25 for `scheduleConventions` (increment 4a) and `callSchedule` and `putSchedule` (increment 4b); shape-rule retirement pending backfill evidence |
 | [025: Contractual Schedule Kernel and Business-Day Calendar Seam](025-contractual-schedule-kernel.md) | Proposed; kernel and calendar seam implemented; Security Master, asset-operations, obligation-timeline and fund-structure generators moved onto it (increments 1 and 3); direct-lending and `FaceValueLot` moves planned; `scheduleConventions` (increment 4a) and `callSchedule` and `putSchedule` (increment 4b) readable ahead of write |
 | [026: Stored Curves and the Valuation Seam](026-stored-curves-and-valuation-seam.md) | Proposed; first increment implemented (stored curves, the `Curves` governance stream, the store-backed forward provider, the valuation interface with the quoted-price and discounted-cash-flow models); mark-lane wiring and a persisted valuation receipt planned |
+| [027: Single Economic Model Consolidation](027-single-economic-model-consolidation.md) | Accepted 2026-11-09 — three gated stages (lossless flat codec ending `retainedEconomicTerms` for new writes; commands onto the economic definition; schema-generated codec); stage 1 in progress as remediation slice 10 (increment 1: the Call module's schedule lists recover into the flat arrays); stages 2–3 not started |
 
 Use the [ADR template](_template.md) to author a new decision, retain its approval status, and
 separate existing implementation evidence from planned work.

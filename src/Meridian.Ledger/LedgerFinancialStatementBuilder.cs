@@ -5,7 +5,7 @@ namespace Meridian.Ledger;
 /// <summary>
 /// Builds financial-statement read models from a ledger trial balance and optional chart hierarchy.
 /// </summary>
-public static class LedgerFinancialStatementBuilder
+public static partial class LedgerFinancialStatementBuilder
 {
     /// <summary>
     /// Builds trial-balance, income-statement, and balance-sheet rows from the current ledger state.
@@ -375,7 +375,7 @@ public static class LedgerFinancialStatementBuilder
         var total = 0m;
         foreach (var entry in PeriodEntries(ledger, periodStart, asOf))
         {
-            if (IsPureRetainedEarningsClosingEntry(entry, financialAccountId, lineDimensions))
+            if (IsClosingTransfer(entry, financialAccountId, lineDimensions))
                 continue;
 
             foreach (var line in entry.Lines)
@@ -410,7 +410,7 @@ public static class LedgerFinancialStatementBuilder
         var fee = 0m;
         foreach (var entry in PeriodEntries(ledger, periodStart, asOf))
         {
-            if (IsPureRetainedEarningsClosingEntry(entry, financialAccountId, lineDimensions))
+            if (IsClosingTransfer(entry, financialAccountId, lineDimensions))
                 continue;
 
             foreach (var line in entry.Lines)
@@ -436,19 +436,27 @@ public static class LedgerFinancialStatementBuilder
         return (income, expense, fee);
     }
 
-    private static bool IsPureRetainedEarningsClosingEntry(
+    internal static bool IsClosingTransfer(
         JournalEntry entry,
         string? financialAccountId,
         LedgerLineDimensionSet? lineDimensions)
     {
         var hasRetainedEarnings = false;
+        var hasTemporaryAccount = false;
+        var scopedDebits = 0m;
+        var scopedCredits = 0m;
         foreach (var line in entry.Lines)
         {
             if (!MatchesScope(line, financialAccountId, lineDimensions))
                 continue;
 
+            scopedDebits += line.Debit;
+            scopedCredits += line.Credit;
             if (line.Account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense)
+            {
+                hasTemporaryAccount = true;
                 continue;
+            }
 
             if (line.Account.AccountType == LedgerAccountType.Equity
                 && line.Account.Name.Equals("Retained Earnings", StringComparison.Ordinal))
@@ -460,7 +468,21 @@ public static class LedgerFinancialStatementBuilder
             return false;
         }
 
-        return hasRetainedEarnings;
+        if (hasRetainedEarnings)
+            return true;
+
+        // A zero-result close has no retained-earnings leg. Recognize the producer's retained
+        // close provenance rather than treating every balanced P&L reclassification as a close.
+        // A reversal retains that provenance, so reopening does not manufacture period activity.
+        return hasTemporaryAccount
+               && scopedDebits == scopedCredits
+               && string.Equals(entry.Metadata.ActivityType, "period-close", StringComparison.OrdinalIgnoreCase)
+               && entry.Metadata.Tags is { } tags
+               && tags.TryGetValue("close.periodId", out var periodId) && !string.IsNullOrWhiteSpace(periodId)
+               && tags.TryGetValue("close.projectionFingerprint", out var fingerprint) && !string.IsNullOrWhiteSpace(fingerprint)
+               && entry.Lines.All(static line => line.Account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense
+                   || line.Account.AccountType == LedgerAccountType.Equity
+                   && line.Account.Name.Equals("Retained Earnings", StringComparison.Ordinal));
     }
 
     /// <summary>
@@ -575,6 +597,13 @@ public static class LedgerFinancialStatementBuilder
         {
             var accounts = accountGroup.ToList();
             var account = accounts[0];
+            if (accounts.Any(candidate => candidate.AccountType != account.AccountType))
+            {
+                throw new ArgumentException(
+                    $"Chart account '{account.Name}' has conflicting account types.",
+                    nameof(trialBalance));
+            }
+
             var existing = result.Find(account.Name);
             if (existing is not null)
             {

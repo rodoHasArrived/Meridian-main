@@ -9,21 +9,21 @@ function inject() {
   injected = true;
   const css = `
 .mds-tags{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-height:32px;box-sizing:border-box;
-  padding:3px 6px;border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);cursor:text;}
-.mds-tags:focus-within{outline:var(--focus-ring,2px solid #A85436);outline-offset:1px;}
-.mds-tags--disabled{background:var(--bg-medium,#EDEAE4);cursor:not-allowed;}
+  padding:3px 6px;border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);cursor:text;}
+.mds-tags:focus-within{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:1px;}
+.mds-tags--disabled{background:var(--bg-medium,#EBE8E1);cursor:not-allowed;}
 .mds-tags__chip{display:inline-flex;align-items:center;gap:5px;padding:2px 4px 2px 7px;
-  border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-chip,2px);
-  background:var(--bg-medium,#EDEAE4);font-family:var(--font-data);font-size:11px;
-  color:var(--text-primary,#22252A);white-space:nowrap;}
-.mds-tags__x{appearance:none;border:none;background:transparent;cursor:pointer;padding:0;
-  width:14px;height:14px;line-height:1;font-size:12px;color:var(--text-muted,#5E666F);
+  border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);
+  background:var(--bg-medium,#EBE8E1);font-family:var(--font-data);font-size:11px;
+  color:var(--text-primary,#20252B);white-space:nowrap;}
+.mds-tags__x{appearance:none;border:none;background:transparent;cursor:pointer;padding:0;margin:-5px -3px -5px 0;
+  width:24px;height:24px;line-height:1;font-size:12px;color:var(--text-muted,#606870);
   display:inline-flex;align-items:center;justify-content:center;}
-.mds-tags__x:hover{color:var(--red,#A8443C);}
-.mds-tags__x:focus-visible{outline:var(--focus-ring,2px solid #A85436);outline-offset:0;}
+.mds-tags__x:hover{color:var(--red,#B54B42);}
+.mds-tags__x:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:0;}
 .mds-tags__input{flex:1;min-width:90px;border:none;outline:none;background:transparent;
-  font-family:var(--font-data);font-size:12px;color:var(--text-primary,#22252A);height:24px;}
-.mds-tags__input::placeholder{color:var(--text-disabled,#94999F);}
+  font-family:var(--font-data);font-size:12px;color:var(--text-primary,#20252B);height:24px;}
+.mds-tags__input::placeholder{color:var(--text-disabled,#A4ABB2);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "taginput");
@@ -44,6 +44,7 @@ export function TagInput({
   const [draft, setDraft] = React.useState("");
   const inputRef = React.useRef(null);
   const commit = () => {
+    if (disabled) return;
     let t = draft.trim().replace(/,+$/, "");
     if (!t) return;
     if (uppercase) t = t.toUpperCase();
@@ -51,7 +52,7 @@ export function TagInput({
     if (!value.includes(t) && onChange) onChange([...value, t]);
     setDraft("");
   };
-  const remove = (i) => onChange && onChange(value.filter((_, j) => j !== i));
+  const remove = (i) => !disabled && onChange && onChange(value.filter((_, j) => j !== i));
   const onKeyDown = (e) => {
     if (e.key === "Enter" || e.key === ",") { e.preventDefault(); commit(); }
     else if (e.key === "Backspace" && !draft && value.length) remove(value.length - 1);

@@ -3,6 +3,8 @@ import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
 export const OPERATING_CONTEXT_STORAGE_KEY = "meridian.workstation.operatingContext.v1";
 
 const OPERATING_SCOPE_STORAGE_FIELDS = [
+  "entityId",
+  "fundId",
   "symbol",
   "fundAccountId",
   "runId",
@@ -76,6 +78,8 @@ export function mergeOperatingScopes(
   routeScope: AppShellOperatingScopeInput
 ): AppShellOperatingScopeInput {
   return compactOperatingScope({
+    entityId: routeScope.entityId ?? storedScope.entityId ?? null,
+    fundId: routeScope.fundId ?? storedScope.fundId ?? null,
     symbol: routeScope.symbol ?? storedScope.symbol ?? null,
     fundAccountId: routeScope.fundAccountId ?? storedScope.fundAccountId ?? null,
     runId: routeScope.runId ?? storedScope.runId ?? null,
@@ -89,6 +93,8 @@ export function mergeOperatingScopes(
 
 export function compactOperatingScope(scope: AppShellOperatingScopeInput): AppShellOperatingScopeInput {
   return {
+    ...(scope.entityId ? { entityId: scope.entityId } : {}),
+    ...(scope.fundId ? { fundId: scope.fundId } : {}),
     ...(scope.symbol ? { symbol: scope.symbol } : {}),
     ...(scope.fundAccountId ? { fundAccountId: scope.fundAccountId } : {}),
     ...(scope.runId ? { runId: scope.runId } : {}),
@@ -102,7 +108,9 @@ export function compactOperatingScope(scope: AppShellOperatingScopeInput): AppSh
 
 export function hasOperatingScopeValues(scope: AppShellOperatingScopeInput): boolean {
   return Boolean(
-    scope.symbol
+    scope.entityId
+    || scope.fundId
+    || scope.symbol
     || scope.fundAccountId
     || scope.runId
     || scope.provider

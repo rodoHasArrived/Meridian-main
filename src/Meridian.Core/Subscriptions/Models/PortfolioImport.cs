@@ -75,7 +75,9 @@ public sealed record PortfolioImportOptions(
 
     bool SubscribeDepth = true,
 
-    bool SkipExisting = true
+    bool SkipExisting = true,
+
+    string? BrokerAccountId = null
 );
 
 /// <summary>

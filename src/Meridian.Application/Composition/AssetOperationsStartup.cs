@@ -6,6 +6,10 @@ namespace Meridian.Application.Composition;
 
 internal static class AssetOperationsStartup
 {
+    // Retain the established migration sequence across every host.
+    internal static DatabaseStartupStep StartupStep { get; } =
+        new("asset-operations", ["direct-lending"], EnsureDatabaseReadyAsync);
+
     internal const string ConnectionStringVariable = "MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING";
     internal const string SchemaVariable = "MERIDIAN_ASSET_OPERATIONS_SCHEMA";
     internal const string DefaultSchema = "asset_operations";

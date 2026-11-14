@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useVisibleInterval } from "@/hooks/use-visible-interval";
+import { getExecutionNotifications, type ExecutionNotification } from "@/lib/api/execution-workflows.api";
 import { usePriceAlerts } from "@/lib/price-alerts/service";
-import { getOperatorInbox } from "@/lib/api";
+import { getOperatorInbox, type ApiRequestOptions } from "@/lib/api";
 import {
   buildNotificationCenterModel,
   type NotificationCenterModel
@@ -8,6 +10,7 @@ import {
 import {
   dismissNotification,
   loadNotificationReadState,
+  setNotificationStatus,
   markNotificationRead,
   markNotificationsRead,
   saveNotificationReadState,
@@ -18,19 +21,30 @@ import type { NotificationEnvelope } from "@/lib/notification-center/types";
 import type { OperatorInbox, SystemOverviewResponse } from "@/types";
 
 const DEFAULT_INBOX_POLL_INTERVAL_MS = 60_000;
+const DEFAULT_INBOX_REQUEST_TIMEOUT_MS = 15_000;
 
 export interface UseNotificationCenterOptions {
   overview: SystemOverviewResponse | null;
   fundAccountId?: string | null;
-  fetchInbox?: (fundAccountId?: string) => Promise<OperatorInbox>;
+  fetchInbox?: (fundAccountId?: string, options?: ApiRequestOptions) => Promise<OperatorInbox>;
   storage?: StorageLike | null;
   pollIntervalMs?: number;
 }
 
 export interface NotificationCenterApi extends NotificationCenterModel {
+  inboxStatus: "loading" | "ready" | "unavailable";
+  retryInbox: () => void;
   markRead: (id: string) => void;
   markAllRead: () => void;
   dismiss: (id: string) => void;
+  /** Reverts one inbox/system item to a prior read state and clears its dismissal. */
+  restoreStatus: (id: string, status: { read: boolean }) => void;
+}
+
+interface ScopedInboxState {
+  fundAccountId: string | undefined;
+  inbox: OperatorInbox | null;
+  status: NotificationCenterApi["inboxStatus"];
 }
 
 /**
@@ -42,54 +56,115 @@ export interface NotificationCenterApi extends NotificationCenterModel {
 export function useNotificationCenter(options: UseNotificationCenterOptions): NotificationCenterApi {
   const { overview, fundAccountId, fetchInbox = getOperatorInbox, storage, pollIntervalMs = DEFAULT_INBOX_POLL_INTERVAL_MS } = options;
   const priceAlerts = usePriceAlerts();
-  const [inbox, setInbox] = useState<OperatorInbox | null>(null);
-  const [readState, setReadState] = useState<NotificationReadState>(() => loadNotificationReadState(storage));
-
-  const mountedRef = useRef(true);
+  const [execution, setExecution] = useState<ExecutionNotification[]>([]);
   useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
+    setExecution([]);
+    if (!fundAccountId) return;
+    const controller = new AbortController();
+    let snapshotGeneration = 0;
+    const load = () => {
+      const generation = ++snapshotGeneration;
+      void getExecutionNotifications(fundAccountId, { signal: controller.signal })
+        .then((items) => {
+          if (!controller.signal.aborted && generation === snapshotGeneration) {
+            setExecution(items.filter((item) => item.accountId.toLowerCase() === fundAccountId.toLowerCase()));
+          }
+        })
+        .catch(() => { /* Retained snapshots remain visible until reconnect; scope changes clear them. */ });
     };
-  }, []);
+    load();
+    const stream = typeof EventSource === "undefined" ? null : new EventSource(`/api/execution/notifications/stream?accountId=${encodeURIComponent(fundAccountId)}`);
+    stream?.addEventListener("execution-notifications", (event) => {
+      try {
+        const items = JSON.parse((event as MessageEvent<string>).data) as ExecutionNotification[];
+        if (!controller.signal.aborted && Array.isArray(items)) {
+          const next = items.filter((item) => item.accountId.toLowerCase() === fundAccountId.toLowerCase());
+          // A streamed snapshot supersedes every GET started before it arrived.
+          snapshotGeneration += 1;
+          setExecution(next);
+        }
+      } catch { load(); }
+    });
+    const timer = window.setInterval(load, 30_000);
+    return () => { controller.abort(); stream?.close(); window.clearInterval(timer); };
+  }, [fundAccountId]);
+  const [inboxState, setInboxState] = useState<ScopedInboxState | null>(null);
+  const [retryRevision, setRetryRevision] = useState(0);
+  const [readState, setReadState] = useState<NotificationReadState>(() => loadNotificationReadState(storage));
 
   // Hold fetchInbox in a ref so an inline (unstable) fetchInbox prop cannot re-run
   // the poll effect every render — the effect only reacts to fund account + cadence.
   const fetchInboxRef = useRef(fetchInbox);
   fetchInboxRef.current = fetchInbox;
 
+  const loadInboxRef = useRef<(() => Promise<void>) | null>(null);
+  const pollInbox = useCallback(() => loadInboxRef.current?.(), []);
+
   const normalizedFundAccountId = fundAccountId ?? undefined;
+  // Withhold the previous account on the first render, before effect cleanup runs.
+  const currentInbox = inboxState?.fundAccountId === normalizedFundAccountId ? inboxState : null;
+  const inbox = currentInbox?.inbox ?? null;
+  const inboxStatus = currentInbox?.status ?? "loading";
+  const retryInbox = useCallback(() => setRetryRevision((revision) => revision + 1), []);
+
   useEffect(() => {
     let cancelled = false;
+    let activeRequest: { controller: AbortController; timeoutId: number } | null = null;
+    setInboxState({ fundAccountId: normalizedFundAccountId, inbox: null, status: "loading" });
 
     const load = async () => {
+      // Slow reads must not accumulate or overwrite a later poll out of order.
+      if (activeRequest) return;
+      const request = { controller: new AbortController(), timeoutId: 0 };
+      activeRequest = request;
+      request.timeoutId = window.setTimeout(() => {
+        if (cancelled || activeRequest !== request) return;
+        activeRequest = null;
+        request.controller.abort();
+        setInboxState({ fundAccountId: normalizedFundAccountId, inbox: null, status: "unavailable" });
+      }, DEFAULT_INBOX_REQUEST_TIMEOUT_MS);
       try {
-        const next = await fetchInboxRef.current(normalizedFundAccountId);
-        if (!cancelled && mountedRef.current) {
-          setInbox(next);
+        const next = await fetchInboxRef.current(normalizedFundAccountId, { signal: request.controller.signal });
+        if (!cancelled && activeRequest === request) {
+          setInboxState({ fundAccountId: normalizedFundAccountId, inbox: next, status: "ready" });
         }
       } catch {
-        // Inbox is one of three feeds — a failed fetch must not blank the center.
+        if (!cancelled && activeRequest === request) {
+          // Failed evidence is unavailable, never an empty or previously loaded inbox.
+          // Independent system events and price alerts remain visible.
+          setInboxState({ fundAccountId: normalizedFundAccountId, inbox: null, status: "unavailable" });
+        }
+      } finally {
+        window.clearTimeout(request.timeoutId);
+        if (activeRequest === request) activeRequest = null;
       }
     };
 
+    loadInboxRef.current = load;
     void load();
-    const interval = window.setInterval(() => void load(), pollIntervalMs);
     return () => {
       cancelled = true;
-      window.clearInterval(interval);
+      if (activeRequest) {
+        window.clearTimeout(activeRequest.timeoutId);
+        activeRequest.controller.abort();
+      }
+      if (loadInboxRef.current === load) loadInboxRef.current = null;
     };
-  }, [normalizedFundAccountId, pollIntervalMs]);
+  }, [normalizedFundAccountId, retryRevision]);
+
+  // Paused while the tab is hidden; refreshes once on return.
+  useVisibleInterval(pollInbox, pollIntervalMs);
 
   const model = useMemo(
     () =>
       buildNotificationCenterModel({
+        execution: execution.filter((item) => item.accountId.toLowerCase() === fundAccountId?.toLowerCase()),
         inbox: inbox?.items ?? [],
         systemEvents: overview?.recentEvents ?? [],
         priceTriggers: priceAlerts.state.triggers,
         readState
       }),
-    [inbox, overview, priceAlerts.state.triggers, readState]
+    [execution, fundAccountId, inbox, overview, priceAlerts.state.triggers, readState]
   );
 
   const findEnvelope = useCallback(
@@ -146,5 +221,21 @@ export function useNotificationCenter(options: UseNotificationCenterOptions): No
     [commitReadState, findEnvelope, readState]
   );
 
-  return { ...model, markRead, markAllRead, dismiss };
+  // Undo for a single read or dismiss. Uses a functional update so a restore that
+  // fires after other changes cannot roll back unrelated read state.
+  const restoreStatus = useCallback(
+    (id: string, status: { read: boolean }) => {
+      setReadState((current) => {
+        const next = setNotificationStatus(current, id, { read: status.read, dismissed: false });
+        if (next === current) {
+          return current;
+        }
+        saveNotificationReadState(next, storage);
+        return next;
+      });
+    },
+    [storage]
+  );
+
+  return { ...model, inboxStatus, retryInbox, markRead, markAllRead, dismiss, restoreStatus };
 }

@@ -62,7 +62,13 @@ public sealed class AdrResources(RepoPathService repo)
     [Description("Full content of a specific ADR. Use ID like '007' or '001'.")]
     public string GetAdr(string id)
     {
-        var normalized = id.TrimStart('0').PadLeft(3, '0');
+        // IDs are numbers, never filesystem patterns or paths. Keep wildcard characters and
+        // separators out of EnumerateFiles even on hosts with permissive search patterns.
+        if (string.IsNullOrEmpty(id) || id.Length > 3 || id.Any(c => c is < '0' or > '9'))
+            return $"ADR '{id}' not found. Use a numeric ID such as '007'.";
+        if (!Directory.Exists(repo.AdrPath))
+            return $"ADR '{id}' not found. See mdc://adrs for the full index.";
+        var normalized = id.PadLeft(3, '0');
         var match = Directory.EnumerateFiles(repo.AdrPath, $"{normalized}-*.md").FirstOrDefault();
         if (match is null)
             return $"ADR '{id}' not found. See mdc://adrs for the full index.";

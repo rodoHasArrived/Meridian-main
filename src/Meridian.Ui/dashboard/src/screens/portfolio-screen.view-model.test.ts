@@ -5,6 +5,7 @@ import {
   buildPortfolioRunDrillInSummary,
   buildPortfolioScreenViewModel,
   buildPortfolioFallbackMetrics,
+  resolveRetainedPortfolioRunLabel,
   resolveBrokerageAccountFilterKeyCommand
 } from "@/screens/portfolio-screen.view-model";
 import type {
@@ -467,6 +468,15 @@ const portfolio: PortfolioWorkspaceResponse = {
   }
 };
 
+describe("retained run display names", () => {
+  it("uses only an exact retained run identity match", () => {
+    expect(resolveRetainedPortfolioRunLabel(portfolio.runs[0].runId, portfolio, strategy)).toBe(portfolio.runs[0].strategyName);
+    expect(resolveRetainedPortfolioRunLabel(strategy.runs[0].id, portfolio, strategy)).toBe(strategy.runs[0].strategyName);
+    expect(resolveRetainedPortfolioRunLabel("unknown-retained-run", portfolio, strategy)).toBe("Retained run");
+    expect(resolveRetainedPortfolioRunLabel("42", portfolio, strategy)).toBe("Run 42");
+  });
+});
+
 describe("buildPortfolioScreenViewModel", () => {
   it("returns position rows from trading data", () => {
     const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy), trading, strategy, accounting });
@@ -838,12 +848,12 @@ describe("buildPortfolioScreenViewModel", () => {
         quantity: "60",
         price: "$188.50",
         commission: "$3.00",
-        filledAt: "May 7, 11:50 UTC",
+        filledAt: "May 7, 2026, 11:50 UTC",
         accountId: "paper-account"
       }),
       expect.objectContaining({
         id: "fill-older",
-        filledAt: "May 7, 11:45 UTC"
+        filledAt: "May 7, 2026, 11:45 UTC"
       })
     ]);
   });
@@ -1345,7 +1355,7 @@ describe("buildPortfolioScreenViewModel", () => {
       { label: "Cash", value: "$150,000", tone: "default" },
       { label: "Buying power", value: "$150,000", tone: "default" },
       { label: "Warnings", value: "0 warnings", tone: "success" },
-      { label: "Latest sync", value: "May 7, 12:00 UTC", tone: "muted" }
+      { label: "Latest sync", value: "May 7, 2026, 12:00 UTC", tone: "muted" }
     ]);
   });
 
@@ -1480,6 +1490,8 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 });
 
+function portfolioFromTrading(value: TradingWorkspaceResponse, strategyWorkspace: StrategyWorkspaceResponse | null): PortfolioWorkspaceResponse;
+function portfolioFromTrading(value: null, strategyWorkspace: StrategyWorkspaceResponse | null): null;
 function portfolioFromTrading(value: TradingWorkspaceResponse | null, strategyWorkspace: StrategyWorkspaceResponse | null) {
   return value ? { metrics: [], positions: value.positions, risk: value.risk, brokerage: value.brokerage, runs: (strategyWorkspace?.runs ?? []).map(({ id, ...run }) => ({ ...run, runId: id, promotionState: run.promotionState ?? null })), cashFlow: null } : null;
 }

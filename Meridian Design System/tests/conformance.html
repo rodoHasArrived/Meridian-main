@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian — conformance</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+body{margin:0;background:var(--bg,#F2F0EB);color:var(--text-secondary,#535C65);font-family:var(--font-body);font-size:13px}
+.mast{background:var(--topbar-bg,#29323A);color:var(--topbar-text,#F2F0EB);padding:12px 24px;display:flex;align-items:baseline;gap:14px}
+.mast b{font-weight:600;letter-spacing:.14em;font-size:12px}
+.mast span{font:11px var(--font-data,monospace);color:var(--topbar-text-muted,#9AA4AE)}
+.mast span.r{margin-left:auto}
+.page{padding:0 24px 64px;max-width:1400px}
+h1{font:600 20px/28px var(--font-display,var(--font-body));color:var(--text-primary,#20252B);margin:22px 0 6px}
+p.lede{margin:0 0 18px;max-width:96ch;text-wrap:pretty}
+h2{font:600 15px/22px var(--font-display,var(--font-body));color:var(--text-primary,#20252B);margin:30px 0 8px;padding-top:16px;border-top:1px solid var(--border-strong,#AAA49A);display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+h2 em{font:400 11px var(--font-data,monospace);color:var(--text-muted,#606870);font-style:normal}
+.tiles{display:flex;flex-wrap:wrap;border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3)}
+.tiles div{flex:1 1 130px;padding:12px 14px;border-right:1px solid var(--border-divider,#E6E2DA)}
+.tiles div:last-child{border-right:0}
+.tiles .v{font:600 22px var(--font-data,monospace);color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums}
+.tiles .l{font:600 10px var(--font-body);font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted,#606870)}
+.tiles div[data-tone="bad"] .v{color:var(--severity-blocked-fg,#873832)}
+.tiles div[data-tone="good"] .v{color:var(--severity-ready-fg,#2E7655)}
+table{border-collapse:collapse;width:100%;font:12px var(--font-data,monospace);background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3)}
+th{text-align:left;font:600 10px var(--font-body);font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted,#606870);background:var(--bg-medium,#EBE8E1);padding:6px 9px;border-bottom:1px solid var(--border-strong,#AAA49A);position:sticky;top:0}
+td{padding:5px 9px;border-top:1px solid var(--border-divider,#E6E2DA);vertical-align:top}
+td.w{font-family:var(--font-body);color:var(--text-secondary,#535C65);line-height:18px}
+tr[data-ok="0"] td{background:var(--red-a10,rgba(181,75,66,.08))}
+tr[data-ok="0"] td:first-child{color:var(--severity-blocked-fg,#873832);font-weight:600}
+.tag{display:inline-block;font:600 9px var(--font-body);font-variant:all-small-caps;letter-spacing:.05em;padding:1px 6px;border:1px solid var(--border,#D2CDC3);border-radius:2px;white-space:nowrap}
+.tag[data-s="blocked"]{color:var(--severity-blocked-fg,#873832);border-color:var(--severity-blocked-bd,#B54B42);background:var(--severity-blocked-bg,#F6E9E7)}
+.tag[data-s="scoped"]{color:var(--semantic-info,#2F648A);border-color:var(--severity-info-bd,#A8C0D2);background:var(--info-surface,#E8EEF3)}
+.tag[data-s="review"]{color:var(--severity-review-fg,#725012);border-color:var(--severity-review-bd,#D6C08A);background:var(--severity-review-bg,#F6EFE0)}
+.tag[data-s="clean"]{color:var(--severity-ready-fg,#2E7655);border-color:var(--severity-ready-bd,#9DC4AE);background:var(--severity-ready-bg,#E9F2EC)}
+button.run{min-height:32px;padding:6px 14px;font:600 12px var(--font-body);cursor:pointer;background:var(--graphite,#29323A);border:1px solid var(--graphite,#29323A);color:var(--topbar-text,#F2F0EB);border-radius:4px}
+button.run:disabled{background:var(--bg-light,#F8F7F3);border-color:var(--border,#D2CDC3);color:var(--text-disabled,#A4ABB2);cursor:not-allowed}
+.bar{display:flex;align-items:center;gap:12px;margin:0 0 10px}
+.bar p{margin:0;font:11px/17px var(--font-body);color:var(--text-muted,#606870);max-width:80ch}
+#stage{position:fixed;left:-4000px;top:0;width:1180px;height:820px}
+#stage iframe{width:1180px;height:820px;border:0}
+.deferred{border-left:3px solid var(--brand-signal,#C56343);background:var(--bg-medium,#EBE8E1);padding:11px 14px;margin:22px 0 0;font:12px/19px var(--font-body);max-width:96ch;text-wrap:pretty}
+</style>
+<script src="./conformance-rules.js"></script>
+</head>
+<body>
+<div class="mast"><b>MERIDIAN DESIGN SYSTEM</b><span>CONFORMANCE GATE</span><span class="r" id="stamp">running…</span></div>
+<div class="page">
+<h1>The law, run by a machine</h1>
+<p class="lede">Two gates over one scoreboard. <b>Static:</b> sixteen rules, each of which was a shipped defect first, over every component, token file and template entry — and each rule proves itself against a fixture before its silence is trusted. <b>Dynamic:</b> assertions over the specimen cards, which until now were looked at rather than asserted against. Counts are read from <code>_ds_manifest.json</code>, never typed. Machine-readable result on <code>window.__conformance</code>.</p>
+<div class="tiles" id="tiles"></div>
+
+<h2><span>Static gate</span><em id="static-idx">…</em></h2>
+<table id="rules"><thead><tr><th style="width:60px">Rule</th><th style="width:26%">What it catches</th><th style="width:70px">Severity</th><th style="width:70px">Hits</th><th>Why it exists</th></tr></thead><tbody></tbody></table>
+
+<h2><span>Violations</span><em id="viol-idx">…</em></h2>
+<table id="violations"><thead><tr><th style="width:60px">Rule</th><th style="width:34%">File</th><th style="width:50px">Line</th><th>Evidence</th></tr></thead><tbody></tbody></table>
+
+<h2><span>Gate integrity &amp; parity</span><em>rule fixtures · component trio · documentation counts · emitted adherence ruleset</em></h2>
+<table id="suites"><thead><tr><th style="width:60px">#</th><th style="width:22%">suite</th><th style="width:40%">assertion</th><th>result</th></tr></thead><tbody></tbody></table>
+
+<h2><span>Dynamic gate — specimen cards</span><em id="cards-idx">not run</em></h2>
+<div class="bar">
+  <button class="run" id="runCards" type="button">Run card assertions</button>
+  <p>Loads each <code>@dsCard</code> in an iframe, waits for its used fonts, and asserts: it mounts, no component threw, no duplicate DOM id, every control has an accessible name, every <code>&lt;button&gt;</code> has a type, no positive tabindex, nothing transitions <code>all</code>, dialogs are named, the first control takes visible focus, and a card that publishes an adoption figure recomputes it from its own rows. Three at a time; the run takes a few minutes. Append <code>?cards=all</code> to the URL to start it automatically, <code>?cards=Operations</code> for one group.</p>
+</div>
+<table id="cards"><thead><tr><th style="width:34%">Card</th><th style="width:110px">Group</th><th style="width:70px">Result</th><th>Findings</th></tr></thead><tbody></tbody></table>
+
+<div class="deferred"><b>What this gate does not claim.</b> Re-render stability, screen-reader announcement (NVDA/VoiceOver), rendered contrast and the responsive matrix are still <b>deferred</b> — see <code>tests/BROWSER_TEST_PLAN.md</code>. The AST-only half of <code>_adherence.oxlintrc.json</code> (per-component prop allow-lists) needs a real linter; this harness runs its regex-grade rules and reports the count it cannot run, rather than implying a pass.</div>
+</div>
+<div id="stage" aria-hidden="true"></div>
+<script>
+const { RULES, runStatic, selfTest, CARD_ASSERTIONS, severityLabel } = window.MeridianConformance;
+const $ = (s) => document.querySelector(s);
+const suites = [];
+function suiteRow(suite, name, ok, note) {
+  suites.push({ suite, name, ok, note });
+  const tb = $("#suites tbody"), tr = document.createElement("tr");
+  tr.dataset.ok = ok ? "1" : "0";
+  tr.innerHTML = `<td>${suites.length}</td><td>${suite}</td><td class="w">${name}</td><td>${ok ? "PASS" : "FAIL " + (note || "")}</td>`;
+  tb.appendChild(tr);
+}
+const esc = (s) => String(s).replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+async function pool(items, n, fn) {
+  const out = new Array(items.length); let i = 0;
+  await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => {
+    while (i < items.length) { const k = i++; try { out[k] = await fn(items[k], k); } catch (e) { out[k] = { error: String(e && e.message || e) }; } }
+  }));
+  return out;
+}
+const text = async (p) => { const r = await fetch("../" + p); return r.ok ? r.text() : null; };
+const ELIGIBILITY_PATH = "api/template-eligibility.json";
+
+let manifest, statics, cardsRun = { total: 0, pass: 0 };
+
+async function main() {
+  manifest = await (await fetch("../_ds_manifest.json")).json();
+  const modules = [...new Set(manifest.components.map((c) => c.sourcePath))];
+  const counts = {
+    exports: manifest.components.length,
+    modules: modules.length,
+    cards: manifest.cards.length,
+    templates: manifest.templates.length,
+    tokens: manifest.tokens.length,
+    themes: (manifest.themes || []).length,
+  };
+
+  // ---- fetch the tree ---------------------------------------------------------------------
+  // Template paths come from the eligibility record, not the manifest. The manifest names ONE
+  // entry per template, but eight screens are secondary `.dc.html` files inside a classified slug
+  // (`StrategyBuilder`, `BacktestCompare`, `CloseTieOut`…) — under the old list those eight sat
+  // outside the entire static gate, and C-16's `entries` check was dead code because the harness
+  // only ever handed it the 27 paths the manifest happens to name. A file on disk but absent from
+  // the record is `scripts/check_template_eligibility.py`'s job: a browser cannot list a directory,
+  // so disk truth stays with the tool that has it.
+  const eligibility = await text(ELIGIBILITY_PATH);
+  let declared = [];
+  try {
+    const el = JSON.parse(eligibility);
+    declared = Object.entries(el.templates).flatMap(([slug, t]) => (t.entries || []).map((e) => `templates/${slug}/${e}`));
+  } catch (e) { /* the suiteRow below reports it; the manifest entries still get scanned */ }
+  const templatePaths = [...new Set([...manifest.templates.map((t) => t.entryPath), ...declared])];
+  const paths = [...modules, ...manifest.globalCssPaths, ...templatePaths];
+  const texts = await pool(paths, 12, text);
+  const files = {};
+  paths.forEach((p, i) => { if (typeof texts[i] === "string") files[p] = texts[i]; });
+  if (typeof eligibility === "string") files[ELIGIBILITY_PATH] = eligibility;
+
+  // ---- static gate -----------------------------------------------------------------------
+  statics = runStatic(files);
+  const blocked = statics.violations.filter((v) => v.severity === "blocked").length;
+  const review = statics.violations.length - blocked;
+
+  const rt = $("#rules tbody");
+  for (const rule of RULES) {
+    const hits = statics.byRule[rule.id].hits;
+    const blockingHits = hits.filter((v) => v.severity === "blocked").length;
+    const sev = severityLabel(rule);
+    const tr = document.createElement("tr");
+    tr.dataset.ok = blockingHits === 0 ? "1" : "0";
+    tr.innerHTML = `<td>${rule.id}</td><td class="w">${esc(rule.title)}</td><td><span class="tag" data-s="${sev}" title="${sev === "scoped" ? "blocking in components · a recorded review finding in templates" : ""}">${sev}</span></td>`
+      + `<td>${hits.length === 0 ? '<span class="tag" data-s="clean">clean</span>' : hits.length + (blockingHits ? " · " + blockingHits + " blocking" : "")}</td><td class="w">${esc(rule.why)}<br><span style="color:var(--text-muted)">Fix — ${esc(rule.fix)}</span></td>`;
+    rt.appendChild(tr);
+  }
+  $("#static-idx").textContent = `${RULES.length} rules · ${Object.keys(files).length} files · ${blocked} blocking · ${review} review`;
+
+  suiteRow("counts", "the eligibility record is loaded, so C-16 can decide", !!files[ELIGIBILITY_PATH],
+    ELIGIBILITY_PATH + " was not fetched — C-16 reports every template as unverifiable rather than passing");
+
+  // The gate must scan every screen the record declares, not just the one entry per template the
+  // manifest names — otherwise a secondary `.dc.html` ships through with no rule ever reading it.
+  const unscanned = declared.filter((p) => !files[p]);
+  suiteRow("counts", `all ${declared.length} declared template entries were scanned`, declared.length > manifest.templates.length && unscanned.length === 0,
+    unscanned.length ? `${unscanned.length} declared entr(ies) never fetched: ${unscanned.slice(0, 4).join(", ")}` : "the record declared no more entries than the manifest — expansion did not happen, so secondary screens are unscanned");
+
+  const vt = $("#violations tbody");
+  const shown = statics.violations.slice(0, 400);
+  if (!shown.length) vt.innerHTML = `<tr><td colspan="4" class="w">No violation. Every rule ran and found nothing — and every rule proved it can find something in the suite below.</td></tr>`;
+  for (const v of shown) {
+    const tr = document.createElement("tr");
+    tr.dataset.ok = v.severity === "blocked" ? "0" : "1";
+    tr.innerHTML = `<td>${v.rule}</td><td>${esc(v.path)}</td><td>${v.line}</td><td class="w">${esc(v.snippet)}</td>`;
+    vt.appendChild(tr);
+  }
+  $("#viol-idx").textContent = `${statics.violations.length} total · showing ${shown.length}`;
+
+  // ---- gate integrity: every rule catches its own fixture ---------------------------------
+  for (const r of selfTest()) {
+    suiteRow("rule fixtures", `${r.id} flags its shipped violation`, r.catches, "rule never fires — it proves nothing");
+    suiteRow("rule fixtures", `${r.id} stays quiet on the conformant form`, r.quietOnGood, "rule fires on correct code");
+  }
+
+  // ---- parity: component trio, card per directory -----------------------------------------
+  const dirs = [...new Set(modules.map((m) => m.split("/").slice(0, -1).join("/")))];
+  const cardDirs = new Set(manifest.cards.map((c) => c.path.split("/").slice(0, -1).join("/")));
+  suiteRow("parity", "every component directory has a specimen card", dirs.filter((d) => d.startsWith("components/") && !cardDirs.has(d)).length === 0,
+    "missing: " + dirs.filter((d) => d.startsWith("components/") && !cardDirs.has(d)).join(", "));
+
+  const jsxModules = modules.filter((m) => /\.(jsx|tsx)$/.test(m));
+  const trio = await pool(jsxModules, 12, async (m) => {
+    const base = m.replace(/\.(jsx|tsx)$/, "");
+    const [dts, prompt] = await Promise.all([fetch("../" + base + ".d.ts"), fetch("../" + base + ".prompt.md")]);
+    return { m, dts: dts.ok, prompt: prompt.ok };
+  });
+  const noDts = trio.filter((t) => t && !t.dts).map((t) => t.m);
+  const noPrompt = trio.filter((t) => t && !t.prompt).map((t) => t.m);
+  suiteRow("parity", `every component ships a .d.ts (${jsxModules.length} checked)`, noDts.length === 0, "missing: " + noDts.slice(0, 4).join(", "));
+  suiteRow("parity", `every component ships a .prompt.md (${jsxModules.length} checked)`, noPrompt.length === 0, "missing: " + noPrompt.slice(0, 4).join(", "));
+
+  // ---- parity: the counts stop being typed ------------------------------------------------
+  const [readme, metrics] = await Promise.all([text("README.md"), text("docs/METRICS.md")]);
+  const rm = readme && readme.match(/\*\*(\d+) modules across (\d+) domains → (\d+) exported symbols\*\*/);
+  suiteRow("counts", "readme inventory census matches the manifest", !!rm && Number(rm[1]) === counts.modules && Number(rm[3]) === counts.exports,
+    rm ? `readme says ${rm[1]} modules / ${rm[3]} exports; manifest says ${counts.modules} / ${counts.exports}` : "census line not found in readme.md");
+  // The census line's SHAPE belongs to `scripts/release_identity.py`, not to this gate. This assertion
+  // used to hard-code the separator as ", " while the generator emits " · ", so it could never match and
+  // reported "snapshot line not found" — a false negative sitting behind an otherwise green scoreboard,
+  // which is worse than no assertion because it looks like coverage. Read each labelled count on its
+  // own instead: a separator change, a reordering, or a new field (`themes` arrived exactly that way)
+  // cannot break it, while real numeric drift still fails.
+  const censusLine = metrics && (metrics.match(/^\*\*(\d+) exports across (\d+) modules\*\*.*$/m) || [])[0];
+  const field = (label) => {
+    const m = censusLine && censusLine.match(new RegExp(`(\\d+)\\s+${label}\\b`));
+    return m ? Number(m[1]) : null;
+  };
+  const snap = censusLine ? { exports: field("exports"), modules: field("modules"), cards: field("cards"), templates: field("templates"), tokens: field("tokens"), themes: field("themes") } : null;
+  const censusDrift = snap ? Object.keys(snap).filter((k) => snap[k] !== counts[k]) : [];
+  suiteRow("counts", `docs/METRICS.md snapshot matches the manifest (${snap ? Object.keys(snap).length : 0} fields)`, !!snap && censusDrift.length === 0,
+    !snap ? "no line matching `**<n> exports across <n> modules**` in docs/METRICS.md"
+          : censusDrift.map((k) => `${k}: metrics ${snap[k] === null ? "absent" : snap[k]} vs manifest ${counts[k]}`).join("; "));
+
+  // The size of the rule table is itself a typed count, in three documents — and it drifted the hour
+  // C-16 landed: two of them still said fifteen. Same defect class as 284/118, so the same treatment.
+  const LAW = ["guidelines/CONFORMANCE.md", "tests/README.md", "docs/RELEASE_NOTES_4.2.0.md"];
+  const lawText = await pool(LAW, 3, text);
+  const lastId = RULES[RULES.length - 1].id;
+  const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
+  const spelled = WORDS[RULES.length];
+  const ranges = [], words = [];
+  let claims = 0;
+  LAW.forEach((p, i) => {
+    const t = lawText[i];
+    if (typeof t !== "string") { ranges.push(`${p} unreadable`); return; }
+    for (const m of t.matchAll(/C-01…(C-\d\d)/g)) if (m[1] !== lastId) ranges.push(`${p} says C-01…${m[1]}`);
+    // Only a claim about the SIZE OF THE TABLE counts. In these documents that claim always takes one
+    // of two shapes: "<n> static rules", or "<n> rules (\`C-01…C-16\`)". The first version of this
+    // matched any spelled number followed by "rules" and so failed the gate on "Four rules were wrong
+    // on the first run and were fixed rather than tolerated" — a true sentence about four of the
+    // sixteen. An assertion whose false positive has to be explained away is worth less than no
+    // assertion, so the shape is now pinned instead of the bare word.
+    for (const m of t.matchAll(/\b([a-z]+)\s+(?:static\s+rules\b|rules\s*\(\`C-01…)/gi)) {
+      const w = m[1].toLowerCase();
+      claims++;
+      if (WORDS.includes(w) && w !== spelled) words.push(`${p} says ${w} rules`);
+    }
+  });
+  suiteRow("counts", `every law document names the range C-01…${lastId}`, ranges.length === 0, ranges.join("; "));
+  suiteRow("counts", `and spells the count as ${spelled} (${RULES.length} rules run)`, words.length === 0, words.join("; "));
+  suiteRow("counts", `${claims} table-size claim(s) were found to check — the matcher is not passing by matching nothing`, claims > 0,
+    "no document states the rule count in a checkable shape, so the assertion above proves nothing");
+
+  // ---- the emitted adherence ruleset is exercised, and says what it cannot run ------------
+  try {
+    const adh = await (await fetch("../_adherence.oxlintrc.json")).json();
+    const selectors = (adh.rules["no-restricted-syntax"] || [])[1];
+    const list = Array.isArray(selectors) ? selectors : selectors ? [selectors] : [];
+    const literal = list.filter((s) => /^Literal\[/.test(s.selector || ""));
+    const astOnly = list.length - literal.length;
+    suiteRow("adherence ruleset", `the emitted ruleset is loaded and read (${list.length} selectors)`, list.length > 0, "no selectors found");
+    suiteRow("adherence ruleset", `its ${literal.length} regex-grade selectors have a rule here (hex · px · font-family)`, literal.length <= 3 ? literal.length > 0 : true, "unmapped literal selectors");
+    suiteRow("adherence ruleset", `the ${astOnly} AST-only selectors are declared unrun, not implied to pass`, true);
+    window.__adherence = { selectors: list.length, literal: literal.length, astOnly };
+  } catch (e) { suiteRow("adherence ruleset", "emitted ruleset parses", false, String(e.message || e)); }
+
+  // ---- scoreboard -------------------------------------------------------------------------
+  const failures = suites.filter((s) => !s.ok).length;
+  const tiles = [
+    ["Exports", counts.exports], ["Modules", counts.modules], ["Cards", counts.cards],
+    ["Templates", counts.templates], ["Tokens", counts.tokens],
+    ["Rules run", RULES.length],
+    ["Blocking violations", blocked, blocked ? "bad" : "good"],
+    ["Review findings", review, review ? "" : "good"],
+    ["Gate assertions failing", failures, failures ? "bad" : "good"],
+  ];
+  $("#tiles").innerHTML = tiles.map(([l, v, tone]) => `<div${tone ? ` data-tone="${tone}"` : ""}><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+
+  const stamp = new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, "Z");
+  const verdict = blocked === 0 && failures === 0 ? "PASS" : "FAIL";
+  $("#stamp").textContent = `${verdict} · ${stamp} · ${blocked} blocking · ${review} review · ${failures} gate failures`;
+  document.title = `${verdict} — Meridian conformance (${blocked + failures} to fix)`;
+  window.__conformance = { verdict, at: stamp, counts, rules: RULES.length, blocked, review, violations: statics.violations, suites, cards: cardsRun };
+  persist();
+
+  const q = new URLSearchParams(location.search).get("cards");
+  if (q) runCards(q === "all" ? null : q);
+}
+
+function persist() {
+  try {
+    localStorage.setItem("meridian.conformance.lastRun.v1", JSON.stringify({
+      at: window.__conformance.at, verdict: window.__conformance.verdict, counts: window.__conformance.counts,
+      rules: window.__conformance.rules, blocked: window.__conformance.blocked, review: window.__conformance.review,
+      gateFailures: suites.filter((s) => !s.ok).length,
+      cards: cardsRun,
+      topRules: Object.fromEntries(RULES.map((r) => [r.id, statics.byRule[r.id].hits.length])),
+    }));
+  } catch (e) { /* private mode — the run still stands, it just is not remembered */ }
+}
+
+// ---- dynamic gate -------------------------------------------------------------------------
+async function runCards(group) {
+  const btn = $("#runCards"); btn.disabled = true;
+  const list = manifest.cards.filter((c) => !group || c.group === group);
+  const tb = $("#cards tbody"); tb.innerHTML = "";
+  let done = 0, pass = 0;
+  const results = await pool(list, 3, async (card) => {
+    const res = await assertCard(card);
+    done++; if (res.ok) pass++;
+    $("#cards-idx").textContent = `${done} / ${list.length} run · ${done - pass} with findings`;
+    const tr = document.createElement("tr");
+    tr.dataset.ok = res.ok ? "1" : "0";
+    tr.innerHTML = `<td class="w">${esc(card.name)}<br><span style="font:10px var(--font-data);color:var(--text-muted)">${esc(card.path)}</span></td><td>${esc(card.group)}</td>`
+      + `<td>${res.ok ? '<span class="tag" data-s="clean">clean</span>' : `<span class="tag" data-s="review">${res.findings.length}</span>`}</td>`
+      + `<td class="w">${res.findings.length ? res.findings.map((f) => `<b>${f.id}</b> — ${esc(f.note)}`).join("<br>") : "all " + CARD_ASSERTIONS.length + " assertions hold"}</td>`;
+    tb.appendChild(tr);
+    return res;
+  });
+  cardsRun = { total: results.length, pass, findings: results.flatMap((r) => (r.findings || []).map((f) => ({ card: r.path, ...f }))) };
+  window.__conformance.cards = cardsRun;
+  const verdict = window.__conformance.blocked === 0 && suites.filter((s) => !s.ok).length === 0 && pass === results.length ? "PASS" : "FAIL";
+  window.__conformance.verdict = verdict;
+  document.title = `${verdict} — Meridian conformance (cards ${pass}/${results.length})`;
+  $("#stamp").textContent = `${verdict} · ${window.__conformance.at} · ${window.__conformance.blocked} blocking · ${window.__conformance.review} review · cards ${pass}/${results.length}`;
+  persist();
+  btn.disabled = false;
+}
+
+function assertCard(card) {
+  return new Promise((resolve) => {
+    const frame = document.createElement("iframe");
+    frame.setAttribute("title", card.name);
+    let settled = false;
+    const finish = (findings) => {
+      if (settled) return; settled = true;
+      clearTimeout(timer);
+      frame.remove();
+      resolve({ path: card.path, ok: findings.length === 0, findings });
+    };
+    const timer = setTimeout(() => finish([{ id: "load", note: "did not settle within 14 s" }]), 14000);
+    frame.addEventListener("load", () => {
+      // Cards mount React after load; give the specimen a beat to render before asserting.
+      setTimeout(async () => {
+        let findings = [];
+        try {
+          const doc = frame.contentDocument, win = frame.contentWindow;
+          // Font layout must settle before measurement and iframe disposal. The
+          // 14 s timer stays active while a slow or failed face is being loaded.
+          if (doc.fonts) await doc.fonts.ready;
+          if (settled) return;
+          for (const a of CARD_ASSERTIONS) {
+            let note = null;
+            try { note = a.run(doc, win); } catch (e) { note = "assertion threw: " + (e.message || e); }
+            if (note) findings.push({ id: a.id, note });
+          }
+          // Inspecting hidden typography or moving focus can start a lazy face
+          // load. Keep that request alive until it settles before disposal too.
+          if (doc.fonts) await doc.fonts.ready;
+          if (settled) return;
+          const failedFonts = doc.fonts ? [...doc.fonts].filter((face) => face.status === "error") : [];
+          if (failedFonts.length) findings.push({ id: "fonts", note: `${failedFonts.length} failed font face(s): ${failedFonts.slice(0, 3).map((face) => face.family).join(", ")}` });
+        } catch (e) { findings = [{ id: "access", note: String(e.message || e) }]; }
+        finish(findings);
+      }, 1200);
+    });
+    frame.src = "../" + card.path;
+    document.getElementById("stage").appendChild(frame);
+  });
+}
+
+$("#runCards").addEventListener("click", () => runCards(null));
+main().catch((e) => { $("#stamp").textContent = "HARNESS ERROR · " + (e.message || e); document.title = "FAIL — conformance harness error"; console.error(e); });
+</script>
+</body>
+</html>

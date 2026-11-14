@@ -10,6 +10,8 @@ import * as api from "@/lib/api/accounting-onboarding.api";
 import type {
   OnboardingComparison, OnboardingCriteria, OnboardingDifference, OnboardingReadinessPacket, OnboardingSourceSelection, OnboardingWorkspace
 } from "@/types/accounting-onboarding";
+import { Checkbox } from "@/components/ui/checkbox";
+import { OnboardingShadowPanel } from "./accounting-screen.onboarding-shadow-panel";
 
 const split = (value: FormDataEntryValue | null) => String(value ?? "").split(/[,\n]/).map(item => item.trim()).filter(Boolean);
 const field = (data: FormData, name: string) => String(data.get(name) ?? "").trim();
@@ -34,9 +36,9 @@ function CriteriaFields({ criteria }: { criteria?: OnboardingCriteria }) {
     <fieldset className="space-y-2 text-sm">
       <legend className="mb-2 text-xs font-semibold">Required coverage</legend>
       {[["Balance", "Balances"], ["Position", "Positions"], ["Nav", "NAV"]].map(([value, label]) => (
-        <label key={value} className="mr-3 inline-flex items-center gap-2"><input type="checkbox" name="requiredKinds" value={value} defaultChecked={criteria ? criteria.requiredKinds.includes(value) : true} />{label}</label>
+        <Checkbox key={value} className="mr-3 inline-flex items-center gap-2" name="requiredKinds" value={value} defaultChecked={criteria ? criteria.requiredKinds.includes(value) : true} label={<>{label}</>} />
       ))}
-      <label className="flex items-center gap-2"><input type="checkbox" name="requireCloseReadiness" defaultChecked={criteria?.requireCloseReadiness ?? true} />Require close readiness</label>
+      <Checkbox className="flex items-center gap-2" name="requireCloseReadiness" defaultChecked={criteria?.requireCloseReadiness ?? true} label={<>Require close readiness</>} />
     </fieldset>
   </FormGrid>;
 }
@@ -181,6 +183,7 @@ function WorkspaceDetail({ workspace, onChanged }: { workspace: OnboardingWorksp
     </TechnicalDetails> : null}
     {error ? <StatusBanner tone="danger" role="alert" title="Onboarding action failed" detail={error} /> : null}
     {message ? <p role="status" className="text-sm">{message}</p> : null}
+    <OnboardingShadowPanel workspace={workspace} onChanged={onChanged} />
     <TechnicalDetails label="Coverage and review criteria" description="The onboarding owner can revise criteria. Earlier comparisons and frozen packets keep their original criteria; new work requires review of the current revision.">
       <form aria-label="Update onboarding criteria" key={workspace.dataRevision} className="space-y-3" onSubmit={event => { event.preventDefault(); const criteria = criteriaFrom(new FormData(event.currentTarget)); void mutate(signal => api.updateOnboardingCriteria(workspace.workspaceId, workspace.version, criteria, { signal }), "Criteria revision retained."); }}>
         <CriteriaFields criteria={workspace.criteria} />

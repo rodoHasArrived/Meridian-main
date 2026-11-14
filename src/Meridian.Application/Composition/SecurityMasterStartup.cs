@@ -6,6 +6,10 @@ namespace Meridian.Application.Composition;
 
 internal static class SecurityMasterStartup
 {
+    // Retain the established migration sequence across every host.
+    internal static DatabaseStartupStep StartupStep { get; } =
+        new("security-master", ["ledger"], EnsureDatabaseReadyAsync);
+
     internal const string ConnectionStringVariable = "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING";
     internal const string SchemaVariable = "MERIDIAN_SECURITY_MASTER_SCHEMA";
     internal const string DefaultSchema = "security_master";

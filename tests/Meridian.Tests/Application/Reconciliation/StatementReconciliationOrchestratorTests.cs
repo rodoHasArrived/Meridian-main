@@ -33,6 +33,57 @@ public sealed class StatementReconciliationOrchestratorTests
     }
 
     [Fact]
+    public async Task RunAsync_CallerCancellation_IsNotRecordedAsFailedCheckpoint()
+    {
+        var accountId = Guid.NewGuid();
+        using var cts = new CancellationTokenSource();
+        var store = new CancelOnFirstUpsertStore(cts);
+        var service = new StatementReconciliationService();
+        var adapter = new StatementReconciliationContextAdapter(service);
+        var orchestrator = new StatementReconciliationOrchestrator(adapter, adapter, adapter, store);
+
+        var path = Path.GetTempFileName();
+        await File.WriteAllLinesAsync(path,
+        [
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate",
+            "A1,SPY,10,500,0,position,2026-05-29"
+        ]);
+
+        try
+        {
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+                orchestrator.RunAsync(accountId, "broker", path, resume: false, cts.Token));
+
+            var checkpoint = await store.GetAsync(accountId, CancellationToken.None);
+            Assert.NotNull(checkpoint);
+            Assert.NotEqual(StatementReconciliationStage.Failed, checkpoint!.CurrentStage);
+            Assert.NotEqual("Failed", checkpoint.Status);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    /// <summary>Persists the first checkpoint, then cancels the run (as a shutdown would).</summary>
+    private sealed class CancelOnFirstUpsertStore(CancellationTokenSource cts) : IStatementReconciliationCheckpointStore
+    {
+        private readonly InMemoryStatementReconciliationCheckpointStore _inner = new();
+        private int _upserts;
+
+        public Task<StatementReconciliationCheckpoint?> GetAsync(Guid accountId, CancellationToken ct) =>
+            _inner.GetAsync(accountId, CancellationToken.None);
+
+        // Ignores ct like the in-memory store, so a "Failed" write after cancellation would land.
+        public async Task UpsertAsync(StatementReconciliationCheckpoint checkpoint, CancellationToken ct)
+        {
+            await _inner.UpsertAsync(checkpoint, CancellationToken.None);
+            if (Interlocked.Increment(ref _upserts) == 1)
+                cts.Cancel();
+        }
+    }
+
+    [Fact]
     public async Task RunAsync_Records_Failure_For_Missing_File()
     {
         var store = new InMemoryStatementReconciliationCheckpointStore();

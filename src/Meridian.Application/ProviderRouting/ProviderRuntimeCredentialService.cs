@@ -131,6 +131,22 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
         return migrated;
     }
 
+    /// <summary>Retires a verified migration: rollback ends and the provider-wide record is released; the receipt stays in audit.</summary>
+    public async Task<ProviderCredentialMigrationReceipt> FinalizeAsync(string providerId, string connectionId, string tenantId,
+        string migrationId, string actor, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(actor);
+        using var lease = await configStore.AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
+        var provider = RequireProvider(providerId);
+        var scope = RequireScope(configStore.LoadRequired(), provider, connectionId, tenantId);
+        var migration = credentialStore as IProviderCredentialOwnershipMigration
+            ?? throw new NotSupportedException("Credential vault does not support explicit ownership migration.");
+        var finalized = await migration.FinalizeMigrationAsync(provider, scope, migrationId, actor, ct).ConfigureAwait(false);
+        _logger.LogInformation("Finalized credential ownership migration {MigrationId} for provider {ProviderId} on connection {ConnectionId} in tenant {TenantId} by {Actor}.",
+            ProviderRoutingLogValues.Safe(migrationId), provider, ProviderRoutingLogValues.Safe(connectionId), ProviderRoutingLogValues.Safe(tenantId), ProviderRoutingLogValues.Safe(actor));
+        return finalized;
+    }
+
     /// <summary>Null is permitted only for an entirely legacy provider family, never a partial owner or dangling default.</summary>
     public static ProviderCredentialScope? ResolveScope(AppConfig config, string providerId)
     {

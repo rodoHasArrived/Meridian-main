@@ -1,4 +1,6 @@
 using System.Threading;
+using System.Threading.Channels;
+using Meridian.Core.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Core.Config;
 using Meridian.Core.Logging;
@@ -92,7 +94,7 @@ public sealed class BackfillCoordinator : IDisposable
         var openFigiConfig = cfg.Backfill?.Providers?.OpenFigi;
         if (openFigiConfig?.Enabled ?? true)
         {
-            _ownedSymbolResolver = new OpenFigiSymbolResolver(openFigiConfig?.ApiKey, log: _log);
+            _ownedSymbolResolver = new OpenFigiSymbolResolver(openFigiConfig?.ApiKey, log: _log, options: openFigiConfig);
             _symbolResolver = _ownedSymbolResolver;
         }
     }
@@ -170,7 +172,7 @@ public sealed class BackfillCoordinator : IDisposable
     /// </summary>
     public async Task<IReadOnlyDictionary<string, ProviderHealthStatus>> CheckProviderHealthAsync(CancellationToken ct = default)
     {
-        var providers = CreateProviders();
+        var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
         var results = new Dictionary<string, ProviderHealthStatus>();
 
         foreach (var provider in providers)
@@ -237,13 +239,20 @@ public sealed class BackfillCoordinator : IDisposable
 
             var policy = new JsonlStoragePolicy(storageOpt);
             await using var sink = new JsonlStorageSink(storageOpt, policy);
-            await using var pipeline = new EventPipeline(sink, capacity: 20_000, enablePeriodicFlush: false, metrics: _metrics);
+            // Backfill is a persistence run, not a live feed: when the provider outpaces the sink the
+            // producer must wait rather than evict queued bars. DropOldest here silently left
+            // permanent gaps on disk while bar counts (and the run's Success flag) still included them.
+            await using var pipeline = new EventPipeline(
+                sink,
+                new EventPipelinePolicy(Capacity: 20_000, FullMode: BoundedChannelFullMode.Wait),
+                enablePeriodicFlush: false,
+                metrics: _metrics);
 
             // Keep pipeline counters scoped per run
             _metrics.Reset();
 
             var statusStore = new BackfillStatusStore(_store.GetDataRoot(cfg));
-            var service = CreateService(statusStore);
+            var service = CreateService(statusStore, await CreateProvidersAsync(ct).ConfigureAwait(false));
             var result = await service.RunAsync(request, pipeline, ct).ConfigureAwait(false);
 
             await statusStore.WriteAsync(result).ConfigureAwait(false);
@@ -279,16 +288,18 @@ public sealed class BackfillCoordinator : IDisposable
     /// Previews a backfill operation without fetching data: which provider would serve it,
     /// estimated bar counts and duration, and existing on-disk coverage per symbol.
     /// </summary>
-    public Task<BackfillPreviewResult> PreviewAsync(BackfillRequest request, CancellationToken ct = default)
+    public async Task<BackfillPreviewResult> PreviewAsync(BackfillRequest request, CancellationToken ct = default)
     {
-        ValidateRequest(request);
+        // Validation needs the providers too; create them once, with credentials read ahead.
+        var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
+        CreateService(createdProviders: providers).ValidateRequest(request);
 
-        var provider = CreateProviders()
+        var provider = providers
             .FirstOrDefault(p => p.Name.Equals(request.Provider, StringComparison.OrdinalIgnoreCase));
         var cfg = _store.Load();
         var dataRoot = _store.GetDataRoot(cfg);
 
-        return Task.FromResult(BackfillPreviewPlanner.BuildPreview(request, provider, dataRoot, _providerCatalog));
+        return BackfillPreviewPlanner.BuildPreview(request, provider, dataRoot, _providerCatalog);
     }
 
     /// <summary>
@@ -297,6 +308,23 @@ public sealed class BackfillCoordinator : IDisposable
     /// 2. ProviderFactory.CreateBackfillProviders() - factory with credential resolution
     /// 3. Manual instantiation - backwards compatibility fallback
     /// </summary>
+    /// <summary>
+    /// <see cref="CreateProviders"/> for asynchronous callers. When the factory has to construct
+    /// the providers, their credentials are read first so the construction does not wait on
+    /// credential storage. A populated registry needs no read.
+    /// </summary>
+    private async ValueTask<List<IHistoricalDataProvider>> CreateProvidersAsync(CancellationToken ct)
+    {
+        if (_factory is null || _registry?.GetBackfillProviders().Count > 0)
+            return CreateProviders();
+
+        var prepared = await _factory.PrepareCredentialsAsync(ct).ConfigureAwait(false);
+        using (prepared.Activate())
+        {
+            return CreateProviders();
+        }
+    }
+
     private List<IHistoricalDataProvider> CreateProviders()
     {
         // Priority 1: Use ProviderRegistry if available and populated
@@ -352,14 +380,14 @@ public sealed class BackfillCoordinator : IDisposable
         var stooqCfg = providersCfg?.Stooq;
         if (stooqCfg?.Enabled ?? true)
         {
-            providers.Add(new StooqHistoricalDataProvider(log: _log));
+            providers.Add(new StooqHistoricalDataProvider(log: _log, runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(providersCfg, "stooq")));
         }
 
         // Yahoo Finance
         var yahooCfg = providersCfg?.Yahoo;
         if (yahooCfg?.Enabled ?? true)
         {
-            providers.Add(new YahooFinanceHistoricalDataProvider(log: _log));
+            providers.Add(new YahooFinanceHistoricalDataProvider(log: _log, runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(providersCfg, "yahoo")));
         }
 
         // Nasdaq Data Link (Quandl)
@@ -369,6 +397,7 @@ public sealed class BackfillCoordinator : IDisposable
             providers.Add(new NasdaqDataLinkHistoricalDataProvider(
                 apiKey: nasdaqCfg?.ApiKey,
                 database: nasdaqCfg?.Database ?? "WIKI",
+                runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(providersCfg, "nasdaqdatalink"),
                 log: _log
             ));
         }
@@ -389,12 +418,14 @@ public sealed class BackfillCoordinator : IDisposable
             .ToList();
     }
 
-    private HistoricalBackfillService CreateService(BackfillStatusStore? checkpointStore = null)
+    private HistoricalBackfillService CreateService(
+        BackfillStatusStore? checkpointStore = null,
+        List<IHistoricalDataProvider>? createdProviders = null)
     {
         var cfg = _store.Load();
         var backfillCfg = cfg.Backfill;
 
-        var providers = CreateProviders();
+        var providers = createdProviders ?? CreateProviders();
 
         // If composite provider requested, wrap all providers
         if (string.Equals(backfillCfg?.Provider, "composite", StringComparison.OrdinalIgnoreCase)
@@ -405,7 +436,8 @@ public sealed class BackfillCoordinator : IDisposable
                 backfillCfg?.EnableSymbolResolution ?? true ? _symbolResolver : null,
                 enableCrossValidation: false,
                 log: _log,
-                progressTracker: _progressTracker
+                progressTracker: _progressTracker,
+                validationProfiles: backfillCfg?.ValidationProfiles
             );
 
             // Combine composite (for fallback routing) with individual providers (for direct selection)
@@ -418,7 +450,8 @@ public sealed class BackfillCoordinator : IDisposable
             providers,
             _log,
             checkpointStore: checkpointStore,
-            symbolTimelineResolver: _symbolTimelineResolver);
+            symbolTimelineResolver: _symbolTimelineResolver,
+            validationProfiles: backfillCfg?.ValidationProfiles);
     }
 
     private static string[] GetSupportedGranularityValues(IHistoricalDataProvider provider)

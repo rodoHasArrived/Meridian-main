@@ -1,7 +1,7 @@
 The period-end proof — one row per account, net on its normal side, grouped into type sections with subtotals; the footer proves Σdebit = Σcredit and flags any difference in red.
 
 ```jsx
-const { TrialBalance, Money } = window.MeridianDesignSystem_4f61be;
+const { TrialBalance, Money } = window.MeridianDesignSystem_205d17;
 
 // From raw journal postings — collapse first:
 <TrialBalance rows={Money.buildTrialBalance(postings)} currency="USD" />
@@ -15,3 +15,5 @@ const { TrialBalance, Money } = window.MeridianDesignSystem_4f61be;
 ```
 
 Non-obvious: rows with a signed `balance` (no debit/credit) are placed by `type` normal side — negatives flip sides, and contra types classify into their parent section. `grouped={false}` gives a flat listing. Section subtotals only render when a section has more than one account.
+
+An omitted opposing debit/credit side remains the normal blank counterpart; an explicitly unavailable side/balance prevents proof and displays Missing. Totals never certify a partial known population.

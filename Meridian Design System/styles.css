@@ -11,5 +11,6 @@
 @import "./tokens/base.css";
 @import "./tokens/theme.css";
 @import "./tokens/colors-dark.css";
+@import "./tokens/visualization.css";
 @import "./tokens/contrast-modes.css";
 @import "./tokens/print.css";

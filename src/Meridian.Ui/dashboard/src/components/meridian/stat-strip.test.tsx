@@ -2,15 +2,18 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { StatStrip } from "./stat-strip";
 import { KpiProvider } from "@/lib/kpi-context";
+import { resolveDevFixture } from "@/lib/dev-fixtures";
 import type { PortfolioWorkspaceResponse, SystemOverviewResponse } from "@/types";
 
-const portfolio = {
+const fixture = resolveDevFixture<PortfolioWorkspaceResponse>("/api/workstation/portfolio")!;
+const portfolio: PortfolioWorkspaceResponse = {
+  ...fixture,
   positions: [
-    { symbol: "AAPL", exposure: "$7,159", unrealizedPnl: "+$159" },
-    { symbol: "MSFT", exposure: "$18,428", unrealizedPnl: "-$28" }
+    { ...fixture.positions[0], symbol: "AAPL", exposure: "$7,159", unrealizedPnl: "+$159" },
+    { ...fixture.positions[0], symbol: "MSFT", exposure: "$18,428", unrealizedPnl: "-$28" }
   ],
   metrics: []
-} as PortfolioWorkspaceResponse;
+};
 
 describe("registry headline strips", () => {
   it("uses the owning holdings projection on every route, even when overview disagrees", () => {

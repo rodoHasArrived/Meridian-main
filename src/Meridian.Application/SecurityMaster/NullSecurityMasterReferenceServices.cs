@@ -38,6 +38,10 @@ public sealed class NullSecurityMasterPricingService : ISecurityMasterPricingSer
         Guid securityId, string? accountId, Guid receiptId, CancellationToken ct = default)
         => Task.FromResult<SecurityPriceGoldenCopyDto?>(null);
 
+    public Task<IReadOnlyList<SecurityPriceGoldenCopyDto>> GetObservationSelectionsAsync(Guid securityId, string? accountId,
+        DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null)
+        => Task.FromResult<IReadOnlyList<SecurityPriceGoldenCopyDto>>([]);
+
     public Task<IReadOnlyList<SecurityComparisonPriceDto>> GetComparisonPricesAsync(
         Guid securityId, CancellationToken ct = default)
         => Task.FromResult(_empty);
@@ -77,10 +81,7 @@ public sealed class NullSecurityMasterCashFlowService : ISecurityMasterCashFlowS
         Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken ct = default)
         => Task.FromResult<StructuredCashFlowProjectionDto?>(null);
 
-    public Task<StructuredCashFlowLedgerPostingResult> BuildLedgerPostingsAsync(
-        Guid securityId, string? financialAccountId = null, DateOnly? through = null, CancellationToken ct = default)
-        => Task.FromResult(StructuredCashFlowLedgerPostingResult.Blocked(
-            securityId, "Security Master is not configured; no cash flow projections are available to post."));
+
 }
 
 /// <summary>

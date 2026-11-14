@@ -90,6 +90,17 @@ public sealed class StrategyRunRealismHashTests
     }
 
     [Fact]
+    public void SecurityMasterAssetEvents_ChangeTheHash_WithoutChangingExistingDescriptors()
+    {
+        // The setting adds dividend cash and split position changes to a raw-price run, so two
+        // runs differing only in it are different experiments.
+        Hash(Realism() with { PopulateAssetEventsFromSecurityMaster = true })
+            .Should().NotBe(Hash(Realism()));
+        // Descriptors recorded before the field existed must keep their canonical form.
+        Realism().ToCanonicalString().Should().NotContain("PopulateAssetEventsFromSecurityMaster");
+    }
+
+    [Fact]
     public void IdenticalRealism_ProducesTheSameHash()
     {
         Hash(Realism()).Should().Be(Hash(Realism()));

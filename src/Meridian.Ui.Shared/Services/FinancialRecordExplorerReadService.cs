@@ -344,8 +344,8 @@ public sealed partial class FinancialRecordExplorerReadService
                 new("symbol", "Symbol", Width: 100),
                 new("quantity", "Quantity", "number", 100, IsRightAligned: true),
                 new("averageCost", "Average Cost", "money", 120, IsRightAligned: true),
-                new("realizedPnl", "Realized PnL", "money", 120, IsRightAligned: true),
-                new("unrealizedPnl", "Unrealized PnL", "money", 120, IsRightAligned: true),
+                new("realizedPnl", "Realized P&L", "money", 120, IsRightAligned: true),
+                new("unrealizedPnl", "Unrealized P&L", "money", 120, IsRightAligned: true),
                 new("security", "Security", Width: 180),
                 new("coverage", "Coverage", Width: 110)
             ],
@@ -975,7 +975,7 @@ public sealed partial class FinancialRecordExplorerReadService
                 : BuildGraph(scoped.Rows));
     }
 
-    private static FinancialRecordExplorerDto ApplyExplorerQuery(
+    internal static FinancialRecordExplorerDto ApplyExplorerQuery(
         FinancialRecordExplorerDto explorer,
         FinancialRecordExplorerQueryDto? query)
     {
@@ -1021,7 +1021,8 @@ public sealed partial class FinancialRecordExplorerReadService
                 .Where(static text => !string.IsNullOrWhiteSpace(text))
                 .Select(static text => text!.Trim()));
 
-        if (selectedView is null && string.IsNullOrWhiteSpace(searchText) && filters.Length == 0)
+        if (selectedView is null && string.IsNullOrWhiteSpace(requestedViewId) &&
+            string.IsNullOrWhiteSpace(searchText) && filters.Length == 0)
         {
             return (savedViews, summaryItems, rows);
         }
@@ -1079,26 +1080,6 @@ public sealed partial class FinancialRecordExplorerReadService
             .. summaryItems
         ];
     }
-
-    private static bool RowMatchesFilters(
-        FinancialRecordExplorerRowDto row,
-        IReadOnlyList<FinancialRecordExplorerFilterDto> filters)
-        => filters.Count == 0 || filters.All(filter =>
-        {
-            var expected = NormalizeSearchToken(filter.Value);
-            if (string.IsNullOrWhiteSpace(expected))
-            {
-                return true;
-            }
-
-            var filterId = NormalizeSearchToken(filter.FilterId);
-            var directCell = string.IsNullOrWhiteSpace(filterId)
-                ? null
-                : row.Cells.FirstOrDefault(cell => string.Equals(NormalizeSearchToken(cell.ColumnId), filterId, StringComparison.Ordinal));
-            return directCell is not null
-                ? CellMatchesToken(directCell, expected)
-                : RowMatchesSearch(row, expected);
-        });
 
     private static bool RowMatchesSearch(FinancialRecordExplorerRowDto row, string? searchText)
     {
@@ -1414,7 +1395,7 @@ public sealed partial class FinancialRecordExplorerReadService
             SourceRunId: run.RunId);
     }
 
-    private static void AddDimensionFilters(
+    internal static void AddDimensionFilters(
         ICollection<FinancialRecordExplorerFilterDto> filters,
         IEnumerable<LedgerDimensionSetDto?> dimensionSets)
     {
@@ -1437,6 +1418,13 @@ public sealed partial class FinancialRecordExplorerReadService
         AddDimensionFilter(filters, "tax-lot", "Tax Lot", dimensions.Select(static value => value.TaxLotId));
         AddDimensionFilter(filters, "cost-center", "Cost Center", dimensions.Select(static value => value.CostCenterId));
         AddDimensionFilter(filters, "counterparty", "Counterparty", dimensions.Select(static value => value.CounterpartyId));
+        AddDimensionFilter(filters, "accounting-arrangement", "Accounting arrangement", dimensions.Select(static value => value.AccountingArrangementId));
+        AddDimensionFilter(filters, "accounting-arrangement-revision", "Accounting arrangement revision", dimensions.Select(static value => value.AccountingArrangementRevisionId));
+        AddDimensionFilter(filters, "chart-account-node", "Chart account node", dimensions.Select(static value => value.ChartAccountNodeId));
+        AddDimensionFilter(filters, "account-binding-revision", "Account binding revision", dimensions.Select(static value => value.AccountBindingRevisionId));
+        AddDimensionFilter(filters, "intercompany-transaction", "Intercompany transaction", dimensions.Select(static value => value.IntercompanyTransactionId));
+        AddDimensionFilter(filters, "intercompany-agreement", "Agreement", dimensions.Select(static value => value.IntercompanyAgreementId?.ToString("D")));
+        AddDimensionFilter(filters, "intercompany-agreement-version", "Agreement version", dimensions.Select(static value => value.IntercompanyAgreementVersion?.ToString(CultureInfo.InvariantCulture)));
         AddDimensionFilter(filters, "organization", "Organization", dimensions.Select(static value => value.OrganizationId));
         AddDimensionFilter(filters, "customer", "Customer", dimensions.Select(static value => value.CustomerId));
         AddDimensionFilter(filters, "vendor", "Vendor", dimensions.Select(static value => value.VendorId));
@@ -1495,6 +1483,13 @@ public sealed partial class FinancialRecordExplorerReadService
         AddDimensionField(fields, "Tax Lot", dimensions.TaxLotId);
         AddDimensionField(fields, "Cost Center", dimensions.CostCenterId);
         AddDimensionField(fields, "Counterparty", dimensions.CounterpartyId);
+        AddDimensionField(fields, "Agreement", dimensions.IntercompanyAgreementId?.ToString("D"));
+        AddDimensionField(fields, "Agreement version", dimensions.IntercompanyAgreementVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        AddDimensionField(fields, "Accounting arrangement", dimensions.AccountingArrangementId);
+        AddDimensionField(fields, "Accounting arrangement revision", dimensions.AccountingArrangementRevisionId);
+        AddDimensionField(fields, "Chart account node", dimensions.ChartAccountNodeId);
+        AddDimensionField(fields, "Account binding revision", dimensions.AccountBindingRevisionId);
+        AddDimensionField(fields, "Intercompany transaction", dimensions.IntercompanyTransactionId);
         AddDimensionField(fields, "Organization", dimensions.OrganizationId);
         AddDimensionField(fields, "Customer", dimensions.CustomerId);
         AddDimensionField(fields, "Vendor", dimensions.VendorId);
@@ -1546,8 +1541,8 @@ public sealed partial class FinancialRecordExplorerReadService
             [
                 new("Quantity", position.Quantity.ToString(CultureInfo.InvariantCulture)),
                 new("Average Cost", FormatCurrency(position.AverageCostBasis)),
-                new("Realized PnL", FormatCurrency(position.RealizedPnl), Tone: ToneFromBalance(position.RealizedPnl)),
-                new("Unrealized PnL", FormatCurrency(position.UnrealizedPnl), Tone: ToneFromBalance(position.UnrealizedPnl)),
+                new("Realized P&L", FormatCurrency(position.RealizedPnl), Tone: ToneFromBalance(position.RealizedPnl)),
+                new("Unrealized P&L", FormatCurrency(position.UnrealizedPnl), Tone: ToneFromBalance(position.UnrealizedPnl)),
                 new("Security", security?.DisplayName ?? "Unresolved", Tone: security is null ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Success)
             ],
             ProofActions: BuildExplorerProofActions(run, UiApiRoutes.WorkstationPortfolio),
@@ -1558,7 +1553,7 @@ public sealed partial class FinancialRecordExplorerReadService
             ],
             Impacts:
             [
-                new("portfolio-equity", "Portfolio equity", $"Unrealized PnL impact is {FormatCurrency(position.UnrealizedPnl)}.", Tone: ToneFromBalance(position.UnrealizedPnl)),
+                new("portfolio-equity", "Portfolio equity", $"Unrealized P&L impact is {FormatCurrency(position.UnrealizedPnl)}.", Tone: ToneFromBalance(position.UnrealizedPnl)),
                 new("security-master", "Security Master", security is null ? "Security reference is unresolved." : $"Resolved to {security.DisplayName}.", securityHref, security is null ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Success)
             ],
             FullRecordHref: securityHref);
@@ -1808,13 +1803,22 @@ public sealed partial class FinancialRecordExplorerReadService
         return $"{terms.ToString(CultureInfo.InvariantCulture)} term{Plural(terms)} / {obligations.ToString(CultureInfo.InvariantCulture)} obligation{Plural(obligations)}";
     }
 
-    private static string BuildTermsObligationsDetail(AssetOperationsDetailDto operations)
+    internal static string BuildTermsObligationsDetail(AssetOperationsDetailDto operations)
     {
         var latestTerms = operations.TermsHistory
             .OrderByDescending(static terms => terms.EffectiveDate)
             .FirstOrDefault();
+        // "Next" is the first timeline row outside the Lifecycle lane. One kind of row is passed over: a
+        // declared call or put notice deadline dated before the timeline's as-of. The scalar call
+        // review it replaces was never raised for a date already past, so a declaring bond would
+        // otherwise lead with an elapsed deadline where an undeclared bond leads with its next row.
+        // The elapsed deadline stays on the timeline with its past-due status and warning.
+        var timelineAsOf = operations.TermsObligationsTimeline?.ProjectionAsOf;
         var nextTimelineEvent = operations.TermsObligationsTimeline?.Events
-            .FirstOrDefault(static timelineEvent => !string.Equals(timelineEvent.EventLane, "Lifecycle", StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(timelineEvent => !string.Equals(timelineEvent.EventLane, "Lifecycle", StringComparison.OrdinalIgnoreCase)
+                && !(timelineEvent.EffectiveDate < timelineAsOf
+                    && timelineEvent.EventKind is Meridian.Instruments.AssetOperations.AssetObligationProjectionService.IssuerCallNoticeDeadlineEventKind
+                        or Meridian.Instruments.AssetOperations.AssetObligationProjectionService.HolderPutNoticeDeadlineEventKind));
         var nextFlow = nextTimelineEvent is null
             ? operations.ProjectedCashFlows
                 .OrderBy(static flow => flow.DueDate)

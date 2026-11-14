@@ -9,6 +9,7 @@ import type {
   ProviderRateLimitsResponse,
   ProviderRegistrationFailure
 } from "@/types";
+import { formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
 
 export interface ProviderAccountingServices {
   getCatalog: (signal?: AbortSignal) => Promise<ProviderCatalogResponse>;
@@ -25,6 +26,7 @@ export interface ProviderRegistrationFailureRow {
 }
 
 export interface ProviderRateLimitRow {
+  source: ProviderRateLimitSnapshot;
   id: string;
   provider: string;
   surface: string;
@@ -50,7 +52,7 @@ export interface ProviderAccountingPanelState {
   observedAt: string | null;
 }
 
-const HISTORY_UNAVAILABLE = "Unavailable — runtime rate-limit history is not retained.";
+const HISTORY_GUIDANCE = "Inspect retained observations in Rate-limit and quota history below. History is bounded and cleared on host restart.";
 
 const defaultServices: ProviderAccountingServices = {
   getCatalog: (signal) => workstationApi.getProviderCatalog({ signal }),
@@ -159,7 +161,7 @@ export function buildProviderAccountingPanelState(
         ? "No provider runtime exposed a current rate-limit snapshot."
         : `${rateLimitRows.length} current provider surface${rateLimitRows.length === 1 ? "" : "s"} observed ${formatTimestamp(rateLimits.timestamp)}.`,
     rateLimits: rateLimitRows,
-    historyPosture: HISTORY_UNAVAILABLE,
+    historyPosture: HISTORY_GUIDANCE,
     observedAt: rateLimits?.timestamp ?? null
   };
 }
@@ -184,6 +186,7 @@ function buildRateLimitRow(
   const reason = normalizeReason(provider.reason);
 
   return {
+    source: provider,
     id: `${provider.provider}-${provider.surface}`,
     provider: provider.displayName || provider.name || provider.provider,
     surface: formatToken(provider.surface),
@@ -198,10 +201,10 @@ function buildRateLimitRow(
       ? `Current rate-limit reason: ${reason ?? "reason unavailable"}.`
       : reason
         ? `Current runtime reason: ${reason}.`
-        : "Last rate-limit failure unavailable — history is not retained.",
+        : "No current failure reported. Inspect quota history for retained past observations.",
     retryPosture: buildRetryPosture(provider, resetCountdown),
     connectionPosture: buildConnectionPosture(connection),
-    historyPosture: HISTORY_UNAVAILABLE
+    historyPosture: HISTORY_GUIDANCE
   };
 }
 
@@ -273,5 +276,5 @@ function formatToken(value: string): string {
 
 function formatTimestamp(value: string): string {
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+  return Number.isNaN(parsed.getTime()) ? value : formatDisplayTimestamp(parsed);
 }

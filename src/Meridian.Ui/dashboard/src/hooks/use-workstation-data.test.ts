@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import * as api from "@/lib/api";
+import * as operatorApi from "@/lib/api/operator-workstation.api";
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 import type {
   BrokerageConnectionStatus,
@@ -27,6 +28,10 @@ import type {
   WorkflowPresetLibrary
 } from "@/types";
 
+vi.mock("@/lib/api/operator-workstation.api", () => ({
+  getCrossScreenCounts: vi.fn(() => Promise.resolve(null))
+}));
+
 vi.mock("@/lib/api", () => ({
   getBrokerageHouseholdPortfolio: vi.fn(),
   getDataWorkspace: vi.fn(),
@@ -51,6 +56,7 @@ vi.mock("@/lib/api", () => ({
   getSession: vi.fn(),
   getStrategyWorkspace: vi.fn(),
   getSystemStatus: vi.fn(),
+  // Bootstrap counts (A3) resolve at once with nothing counted; these tests drive the other lanes.
   getTradingWorkspace: vi.fn(),
   getWorkstationWorkflowSummary: vi.fn(),
   getWorkflowLibrary: vi.fn(),
@@ -485,6 +491,9 @@ describe("useWorkstationData", () => {
       await flushAsync();
     });
     await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+    const initialLoadedAt = result.current.figureSourceLoadedAt;
+    expect(Object.keys(initialLoadedAt).sort()).toEqual(["accounting", "crossScreenCounts", "data", "overview", "portfolio", "reporting", "strategy", "trading"]);
+    await new Promise<void>((resolve) => setTimeout(resolve, 5));
 
     now = 32_000;
     rerender({ workspace: "data" });
@@ -508,6 +517,46 @@ describe("useWorkstationData", () => {
     });
 
     expect(result.current.data).toEqual({ marker: "navigation data" });
+    // Only the payloads that were reloaded get a new figure load time: Data and the system
+    // overview. The payloads this refresh did not touch keep theirs.
+    const loadedAt = result.current.figureSourceLoadedAt;
+    expect(Date.parse(loadedAt.data!)).toBeGreaterThan(Date.parse(initialLoadedAt.data!));
+    expect(Date.parse(loadedAt.overview!)).toBeGreaterThan(Date.parse(initialLoadedAt.overview!));
+    for (const source of ["accounting", "portfolio", "reporting", "strategy", "trading"] as const) {
+      expect(loadedAt[source]).toBe(initialLoadedAt[source]);
+    }
+  });
+
+  it("keeps every figure load time when a workspace change reloads none of the workspace payloads", async () => {
+    let now = 1_000;
+    vi.spyOn(Date, "now").mockImplementation(() => now);
+    const { result, rerender } = renderHook(
+      ({ workspace }) => useWorkstationData({ activeWorkspace: workspace }),
+      { initialProps: { workspace: "trading" as WorkspaceKey } }
+    );
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      await resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+    await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+    const initialLoadedAt = result.current.figureSourceLoadedAt;
+    const initialSucceededAt = result.current.refreshStatus.lastSucceededAt;
+    await new Promise<void>((resolve) => setTimeout(resolve, 5));
+
+    // Inside the 30-second budget no workspace payload is stale, so the refresh settles again
+    // without reloading Accounting or the overview. The refresh time moves; the figures' do not.
+    now = 2_000;
+    rerender({ workspace: "accounting" });
+    await waitFor(() => expect(result.current.refreshStatus.lastSucceededAt).not.toBe(initialSucceededAt));
+
+    expect(api.getAccountingWorkspace).toHaveBeenCalledTimes(1);
+    expect(api.getSystemStatus).toHaveBeenCalledTimes(1);
+    expect(result.current.refreshStatus.phase).toBe("succeeded");
+    // The cross-screen counts are empty in this harness, so they alone are requested again.
+    expect({ ...result.current.figureSourceLoadedAt, crossScreenCounts: undefined })
+      .toEqual({ ...initialLoadedAt, crossScreenCounts: undefined });
   });
 
   it("preserves unrelated workspace errors during scoped refresh replacement", async () => {
@@ -554,6 +603,79 @@ describe("useWorkstationData", () => {
 
     expect(result.current.workspaceErrors.trading).toBe("Trading scoped failure.");
     expect(result.current.workspaceErrors.data).toBe("Data scoped failure.");
+    expect([...result.current.figureSourcesStale].sort()).toEqual(["data", "trading"]);
+  });
+
+  it("keeps a workspace's figures stale across an unrelated refresh until its own payload reloads", async () => {
+    const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "trading" }));
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      await resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+    await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+    expect(result.current.figureSourcesStale).toEqual([]);
+    const dataLoadedAt = result.current.figureSourceLoadedAt.data;
+
+    // `bootstrapIndex` counts every refresh; `dataIndex` only the ones that reload Data's slices.
+    const resolveDataRefresh = (bootstrapIndex: number, dataIndex: number, data: () => void) => {
+      resolveRequest<SessionInfo>("session", bootstrapIndex, {
+        activeWorkspace: "data",
+        commandCount: 2,
+        displayName: "data session",
+        environment: "paper",
+        role: "Operator"
+      });
+      resolveRequest<SystemOverviewResponse>("overview", bootstrapIndex, { marker: "data overview" } as unknown as SystemOverviewResponse);
+      data();
+      resolveRequest<ProviderConnectionRow[]>("providerConnections", dataIndex, []);
+      resolveRequest<ProviderReadinessSummary>("providerReadiness", dataIndex, buildProviderReadiness("data"));
+      resolveRequest<WorkflowLibrary>("workflowLibrary", bootstrapIndex, { marker: "data workflows" } as unknown as WorkflowLibrary);
+      resolveRequest<WorkflowPresetLibrary>("workflowPresets", bootstrapIndex, { generatedAt: "2026-01-01T00:03:00Z", presets: [] });
+    };
+
+    // The Data reload fails: its retained figures are stale.
+    let failedDataRefresh!: Promise<void>;
+    act(() => {
+      failedDataRefresh = result.current.refreshWorkspace("data");
+    });
+    await waitFor(() => expect(api.getDataWorkspace).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      resolveDataRefresh(1, 1, () => rejectRequest("data", 1, new Error("Data scoped failure.")));
+      await failedDataRefresh;
+    });
+    expect(result.current.figureSourcesStale).toEqual(["data"]);
+
+    // A shell refresh on Trading clears the error map and reloads only Trading's payloads. Data
+    // was not reloaded, so its figures must stay stale and keep their load time.
+    let shellRefresh!: Promise<void>;
+    act(() => {
+      shellRefresh = result.current.refresh();
+    });
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(3));
+    await act(async () => {
+      await resolveRefreshBatchWithIndexes({ marker: "shell", defaultIndex: 2, tradingIndex: 1 });
+      await shellRefresh;
+    });
+    expect(api.getDataWorkspace).toHaveBeenCalledTimes(2);
+    expect(result.current.refreshStatus.phase).toBe("succeeded");
+    expect(result.current.workspaceErrors.data).toBeUndefined();
+    expect(result.current.figureSourcesStale).toEqual(["data"]);
+    expect(result.current.figureSourceLoadedAt.data).toBe(dataLoadedAt);
+
+    // Only Data's own successful reload clears it.
+    let recoveredDataRefresh!: Promise<void>;
+    act(() => {
+      recoveredDataRefresh = result.current.refreshWorkspace("data");
+    });
+    await waitFor(() => expect(api.getDataWorkspace).toHaveBeenCalledTimes(3));
+    await act(async () => {
+      resolveDataRefresh(3, 2, () => resolveRequest<DataWorkspaceResponse>("data", 2, { marker: "recovered data" } as unknown as DataWorkspaceResponse));
+      await recoveredDataRefresh;
+    });
+    expect(result.current.figureSourcesStale).toEqual([]);
+    expect(result.current.data).toEqual({ marker: "recovered data" });
   });
 
   it("passes account scope into the shared workflow summary request", async () => {
@@ -617,6 +739,46 @@ describe("useWorkstationData", () => {
       resolveRequest<TradingWorkspaceResponse>("trading", 1, { marker: "scoped trading refresh" } as unknown as TradingWorkspaceResponse);
       await tradingRefresh;
     });
+    expect(result.current.figureSourceScope.trading).toBe(fundAccountId);
+  });
+
+  it("keeps the retained Trading payload's account when the selected account's reload fails", async () => {
+    const accountA = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+    const accountB = "7c1d2f7e-0a37-4d0c-9a34-2b1f8a6f6a10";
+    const { result, rerender } = renderHook(
+      ({ fundAccountId }) => useWorkstationData({
+        activeWorkspace: "trading",
+        workflowSummaryScope: { hasOperatingContext: true, fundAccountId }
+      }),
+      { initialProps: { fundAccountId: accountA } }
+    );
+
+    await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      await resolveRefreshBatch(0, "account-a");
+      await flushAsync();
+    });
+    await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+    expect(result.current.figureSourceScope.trading).toBe(accountA);
+
+    // The operator selects account B: the shell reloads for B, and that Trading request fails.
+    rerender({ fundAccountId: accountB });
+    await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(2));
+    expect(api.getTradingWorkspace).toHaveBeenLastCalledWith(expect.objectContaining({ fundAccountId: accountB }));
+    await act(async () => {
+      resolveRequest<SessionInfo>("session", 1, { activeWorkspace: "trading", commandCount: 1, displayName: "account-b session", environment: "paper", role: "Operator" });
+      resolveRequest<SystemOverviewResponse>("overview", 1, { marker: "account-b overview" } as unknown as SystemOverviewResponse);
+      rejectRequest("trading", 1, new Error("Trading workspace request failed."));
+      resolveRequest<WorkflowLibrary>("workflowLibrary", 1, { marker: "account-b workflows" } as unknown as WorkflowLibrary);
+      resolveRequest<WorkflowPresetLibrary>("workflowPresets", 1, { generatedAt: "2026-01-01T00:04:00Z", presets: [] });
+      await flushAsync();
+    });
+    await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+
+    // Account A's payload is still the one on screen, and it is still recorded as account A's.
+    expect(result.current.trading).toEqual({ marker: "account-a trading" });
+    expect(result.current.figureSourceScope.trading).toBe(accountA);
+    expect(result.current.figureSourcesStale).toContain("trading");
   });
 
   it("omits non-GUID operating account labels from trading workspace requests", async () => {
@@ -999,6 +1161,7 @@ describe("useWorkstationData", () => {
     const lastSucceededAt = result.current.refreshStatus.lastSucceededAt;
 
     vi.mocked(api.getWorkstationWorkflowSummary).mockRejectedValueOnce(new Error("Workflow summary failed."));
+    vi.mocked(operatorApi.getCrossScreenCounts).mockRejectedValueOnce(new Error("Cross-screen counts failed."));
     let failedRefresh!: Promise<void>;
     act(() => {
       failedRefresh = result.current.refreshWorkspace("trading");
@@ -1093,6 +1256,41 @@ describe("useWorkstationData", () => {
       "Portfolio refresh failed.; Brokerage portfolio refresh failed."
     );
     expect(result.current.error).toBe(result.current.workspaceErrors.portfolio);
+    expect(result.current.figureSourcesStale).toEqual(["portfolio"]);
+  });
+
+  it("keeps the Portfolio workspace current when only a side feed of its poll fails", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      await resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    let portfolioRefresh!: Promise<void>;
+    act(() => {
+      portfolioRefresh = result.current.refreshPortfolio();
+    });
+    await waitFor(() => expect(api.getReportingWorkspace).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      resolveRequest<PortfolioWorkspaceResponse>("portfolio", 1, { marker: "refreshed portfolio" } as unknown as PortfolioWorkspaceResponse);
+      resolveRequest<MultiAssetCoverageSummary>(
+        "portfolioMultiAssetCoverage",
+        1,
+        { marker: "refreshed portfolio coverage" } as unknown as MultiAssetCoverageSummary
+      );
+      // An unconnected brokerage rejects on every poll; the positions still reloaded.
+      rejectRequest("brokeragePortfolio", 1, new Error("Brokerage portfolio refresh failed."));
+      resolveRequest<ReportingWorkspaceResponse>("reporting", 1, { marker: "refreshed reporting" } as unknown as ReportingWorkspaceResponse);
+      await portfolioRefresh;
+    });
+
+    expect(result.current.portfolio).toEqual({ marker: "refreshed portfolio" });
+    expect(result.current.workspaceErrors.portfolio).toBe("Brokerage portfolio refresh failed.");
+    expect(result.current.portfolioRefreshStatus.phase).toBe("succeeded");
+    expect(result.current.portfolioRefreshStatus.lastSucceededAt).not.toBeNull();
+    expect(result.current.figureSourcesStale).toEqual([]);
   });
 
   it("clears the portfolio-only refresh failure after a later portfolio refresh succeeds", async () => {
@@ -1125,6 +1323,12 @@ describe("useWorkstationData", () => {
       await failedRefresh;
     });
 
+    // The failed poll kept the previous Portfolio payload, so it must not read as a success or
+    // move the time of the last complete refresh.
+    expect(result.current.portfolioRefreshStatus.phase).toBe("partial");
+    expect(result.current.portfolioRefreshStatus.error).toBe("Portfolio refresh failed.");
+    expect(result.current.portfolioRefreshStatus.lastSucceededAt).toBeNull();
+
     let recoveryRefresh!: Promise<void>;
     act(() => {
       recoveryRefresh = result.current.refreshPortfolio();
@@ -1151,6 +1355,9 @@ describe("useWorkstationData", () => {
     expect(result.current.workspaceErrors.portfolio).toBeUndefined();
     expect(result.current.workspaceErrors.reporting).toBeUndefined();
     expect(result.current.error).toBeNull();
+    expect(result.current.portfolioRefreshStatus.phase).toBe("succeeded");
+    expect(result.current.portfolioRefreshStatus.lastSucceededAt).not.toBeNull();
+    expect(result.current.figureSourcesStale).toEqual([]);
   });
 
   it("refreshes reporting live-view payloads with the portfolio refresh lane", async () => {

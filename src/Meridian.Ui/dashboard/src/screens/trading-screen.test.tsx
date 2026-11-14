@@ -3,7 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { resolveTradingRouteView, TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
 import { renderWithRouter, TestMemoryRouter, waitForAsyncEffects } from "@/test/render";
+import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import type { PaperSessionSummary, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+
+vi.mock("@/lib/api/execution-audit.api", () => ({
+  searchExecutionAuditTrail: vi.fn().mockResolvedValue({ asOf: "2026-01-01T00:00:00Z", totalMatched: 0, returned: 0, entries: [], sourceAvailability: { executionAudit: true, operationsContinuity: false } })
+}));
 
 const paperPromotionEvidenceReferences = [
   "DK1_TRUST_PACKET_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
@@ -11,6 +16,16 @@ const paperPromotionEvidenceReferences = [
   "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
   "RISK_CONTROLS_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567"
 ];
+
+vi.mock("@/lib/api/execution-workflows.api", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api/execution-workflows.api")>("@/lib/api/execution-workflows.api");
+  return { ...actual,
+    previewExecutionOrder: vi.fn().mockImplementation(async () => ({ fingerprint: "test", canSubmit: true, requiresApproval: false,
+      evaluatedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 30_000).toISOString(), checks: [] })),
+    getJournal: vi.fn().mockResolvedValue([]),
+    getJournalSummary: vi.fn().mockResolvedValue({ orders: 0, fills: 0, coverage: "incomplete", method: "FIFO operational attribution" })
+  };
+});
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -177,10 +192,10 @@ vi.mock("@/lib/api", async () => {
 
 const data: TradingWorkspaceResponse = {
   metrics: [
-    { id: "m1", label: "Net P&L", value: "+$3,100", delta: "+2.1%", tone: "success" },
-    { id: "m2", label: "Open Orders", value: "4", delta: "+1", tone: "default" },
-    { id: "m3", label: "Fills", value: "13", delta: "+3", tone: "success" },
-    { id: "m4", label: "Risk", value: "Observe", delta: "0%", tone: "warning" }
+    { id: "pnl", label: "Net P&L", value: "+$3,100", delta: "+2.1%", tone: "success" },
+    { id: "orders", label: "Open Orders", value: "4", delta: "+1", tone: "default" },
+    { id: "fills", label: "Fills", value: "13", delta: "+3", tone: "success" },
+    { id: "risk", label: "Risk", value: "Observe", delta: "0%", tone: "warning" }
   ],
   positions: [{ symbol: "AAPL", side: "Long", quantity: "100", averagePrice: "188.10", markPrice: "189.00", dayPnl: "+$90", unrealizedPnl: "+$90", exposure: "$18,900" }],
   openOrders: [{ orderId: "PO-1", symbol: "MSFT", side: "Buy", type: "Limit", quantity: "20", limitPrice: "414.20", status: "Working", submittedAt: "09:42:00 ET" }],
@@ -344,6 +359,22 @@ async function openStrategyControls(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("TradingScreen", () => {
+  it("retains source order and fill prices and identifies their unavailable currency", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen(data, "/trading/orders");
+    const order = screen.getByRole("row", { name: /inspect order po-1/i });
+    const fill = screen.getByRole("row", { name: /inspect fill fl-1/i });
+    expect(within(order).getByText("414.20")).toBeInTheDocument();
+    expect(within(fill).getByText("948.20")).toBeInTheDocument();
+    expect(order).not.toHaveTextContent("$414.20");
+    expect(fill).not.toHaveTextContent("$948.20");
+    const basis = "Prices in source quote units · currency not supplied.";
+    expect(screen.getAllByText(basis)).toHaveLength(3);
+    expect(screen.getByRole("region", { name: /order detail for po-1/i })).toHaveTextContent(basis);
+    await user.click(fill);
+    expect(screen.getByRole("region", { name: /fill detail for fl-1/i })).toHaveTextContent(basis);
+  });
+
   it("renders a VM-owned pending state while the cockpit data loads", async () => {
     await renderTradingScreen(null, "/trading/positions");
 
@@ -362,17 +393,18 @@ describe("TradingScreen", () => {
     expect(within(workflowStrip).getByRole("button", { name: /strategy controls/i })).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /session replay/i })).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /promotion gate/i })).toBeInTheDocument();
-    expect(within(workflowStrip).getByLabelText("Panel: None")).toBeInTheDocument();
+    expect(within(workflowStrip).queryByLabelText(/^Open panel:/)).not.toBeInTheDocument();
+    expect(within(workflowStrip).queryByText(/^Connection$/)).not.toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /open strategy controls panel/i })).toHaveAttribute("aria-expanded", "false");
     // Route-scoped views: blotters live on their focused routes, not the overview.
     expect(screen.queryByText("Live positions")).not.toBeInTheDocument();
-    expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Open orders" })).not.toBeInTheDocument();
   });
 
   it("renders the position book with wiring state on the positions route", async () => {
     await renderTradingScreen(data, "/trading/positions");
     expect(screen.getByText("Live positions")).toBeInTheDocument();
-    expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Open orders" })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
   });
 
@@ -386,15 +418,53 @@ describe("TradingScreen", () => {
     expect(resolveTradingRouteView("/trading/risky-widgets")).toBe("overview");
   });
 
-  it("navigates between route views from the tab strip", async () => {
-    const user = userEvent.setup();
+  it("opens each route on its own job with the sidebar as the only sub-route navigation", async () => {
+    await renderTradingScreen(data, "/trading/orders?symbol=MSFT");
+
+    // No in-page route tab strip duplicating the sidebar.
+    expect(screen.queryByRole("tablist", { name: "Trading routes" })).not.toBeInTheDocument();
+    // The route heading leads, ahead of the workspace-wide metrics.
+    const heading = screen.getByRole("region", { name: "Execution cockpit context" });
+    const metrics = screen.getByLabelText("Trading headline metrics");
+    expect(heading.compareDocumentPosition(metrics) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Open orders" })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
+  });
+
+  it("collapses brokerage recovery to one blocked row that reviews on the overview", async () => {
+    // A live brokerage with no account in scope stays blocked: only a known non-live
+    // environment turns the missing account into setup.
+    await renderTradingScreen({ ...data, brokerage: { ...data.brokerage, environment: "live" } }, "/trading/orders?symbol=MSFT");
+
+    const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
+    expect(within(recovery).getByRole("status")).toHaveTextContent("Live trading blocked — recovery required");
+    // The full workspace (synchronize action, evidence) stays on the overview.
+    expect(within(recovery).queryByRole("button", { name: /synchronize and reconcile/i })).not.toBeInTheDocument();
+    expect(within(recovery).getByRole("link", { name: "Review brokerage recovery" }))
+      .toHaveAttribute("href", "/trading?symbol=MSFT#brokerage-recovery");
+  });
+
+  it("shows a paper brokerage with no account in scope as setup, not a recovery block", async () => {
+    await renderTradingScreen(data, "/trading/positions");
+
+    const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
+    const status = within(recovery).getByRole("status", { name: "Brokerage recovery readiness" });
+    expect(status).toHaveTextContent("No fund account in scope");
+    expect(recovery).not.toHaveTextContent(/recovery required/i);
+    expect(recovery).not.toHaveTextContent("Live trading blocked");
+    // No scope picker is mounted here, so the row keeps its Review link to the overview.
+    expect(within(recovery).getByRole("link", { name: "Review brokerage recovery" }))
+      .toHaveAttribute("href", "/trading#brokerage-recovery");
+  });
+
+  it("keeps the full brokerage recovery panel on the trading overview", async () => {
     await renderTradingScreen(data, "/trading?symbol=MSFT");
 
-    expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
-    await user.click(screen.getByRole("tab", { name: "Orders" }));
-
-    expect(await screen.findByText("Open orders")).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
+    const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
+    // No fund account is in scope here, so the full panel's one next step is choosing one.
+    expect(within(recovery).getByRole("heading", { name: "Brokerage recovery" })).toBeInTheDocument();
+    expect(within(recovery).getByText("Choose a fund account")).toBeInTheDocument();
+    expect(within(recovery).queryByRole("link", { name: "Review brokerage recovery" })).not.toBeInTheDocument();
   });
 
   it("links position rows to the detail rail with keyboard selection", async () => {
@@ -433,26 +503,47 @@ describe("TradingScreen", () => {
       ]
     }, "/trading/orders");
 
+    // Orders and fills control one shared pane; it opens on the first open order.
     const queuedOrder = screen.getByRole("row", { name: /inspect order po-2/i });
-    expect(queuedOrder).toHaveAttribute("aria-controls", "trading-order-detail");
+    expect(queuedOrder).toHaveAttribute("aria-controls", "trading-execution-detail");
     expect(queuedOrder).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getAllByRole("region", { name: /detail for/i })).toHaveLength(1);
+    expect(screen.getByRole("region", { name: /order detail for po-1/i })).toHaveAttribute("id", "trading-execution-detail");
 
     await user.click(queuedOrder);
 
     await waitFor(() => expect(queuedOrder).toHaveAttribute("aria-selected", "true"));
     expect(queuedOrder).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("region", { name: /order detail for po-2/i })).toHaveAttribute("id", "trading-order-detail");
+    const orderPane = screen.getByRole("region", { name: /order detail for po-2/i });
+    expect(orderPane).toHaveAttribute("id", "trading-execution-detail");
+    expect(within(orderPane).getByRole("heading", { name: "Order PO-2" })).toBeInTheDocument();
+    // The pane offers the next action and does not repeat the row's always-visible columns.
+    expect(within(orderPane).getByRole("button", { name: "Cancel order PO-2" })).toBeInTheDocument();
+    expect(within(orderPane).getByLabelText("Order details")).toHaveTextContent("Quantity10");
+    expect(within(orderPane).getByLabelText("Order details")).not.toHaveTextContent("Submitted");
 
     const secondFill = screen.getByRole("row", { name: /inspect fill fl-2/i });
-    expect(secondFill).toHaveAttribute("aria-controls", "trading-fill-detail");
+    expect(secondFill).toHaveAttribute("aria-controls", "trading-execution-detail");
     expect(secondFill).toHaveAttribute("aria-expanded", "false");
 
     secondFill.focus();
     await user.keyboard(" ");
 
+    // Selecting a fill switches the same pane to the fill; the order row is no longer expanded.
     await waitFor(() => expect(secondFill).toHaveAttribute("aria-selected", "true"));
     expect(secondFill).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("region", { name: /fill detail for fl-2/i })).toHaveAttribute("id", "trading-fill-detail");
+    expect(queuedOrder).toHaveAttribute("aria-selected", "true");
+    expect(queuedOrder).toHaveAttribute("aria-expanded", "false");
+    const fillPane = screen.getByRole("region", { name: /fill detail for fl-2/i });
+    expect(fillPane).toHaveAttribute("id", "trading-execution-detail");
+    expect(within(fillPane).getByRole("heading", { name: "Fill FL-2" })).toBeInTheDocument();
+    expect(within(fillPane).queryByRole("button", { name: /cancel order/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /order detail for/i })).not.toBeInTheDocument();
+
+    // Escape from the shared pane returns to the row it is showing, not the other table's.
+    fillPane.focus();
+    await user.keyboard("{Escape}");
+    expect(secondFill).toHaveFocus();
   });
 
   it("announces active workflow side panels from the trading shell view model", async () => {
@@ -466,7 +557,7 @@ describe("TradingScreen", () => {
     await user.click(strategyButton);
 
     expect(screen.getByRole("dialog", { name: /strategy lifecycle/i })).toHaveAttribute("id", "strategy-lifecycle-panel");
-    expect(within(workflowStrip).getByLabelText("Panel: Strategy controls")).toBeInTheDocument();
+    expect(within(workflowStrip).getByLabelText("Open panel: Strategy controls")).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /strategy controls panel is open/i })).toHaveAttribute("aria-expanded", "true");
   });
 
@@ -605,7 +696,7 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Overall: Blocked")).toBeInTheDocument();
     expect(screen.getByText("Paper: Not paper ready")).toBeInTheDocument();
     expect(screen.getByText("Brokerage: No account sync")).toBeInTheDocument();
-    expect(screen.getByText("As of: Apr 26, 16:00 UTC")).toBeInTheDocument();
+    expect(screen.getByText("As of: Apr 26, 2026, 16:00 UTC")).toBeInTheDocument();
     expect(screen.getByText("Replay verified")).toBeInTheDocument();
     expect(screen.getAllByText("Blocked").length).toBeGreaterThan(0);
     expect(screen.getByText("Replay mismatch in server gate.")).toBeInTheDocument();
@@ -644,6 +735,91 @@ describe("TradingScreen", () => {
     rerender(<TestMemoryRouter initialEntries={["/trading"]}><TradingScreen data={{ ...data, readiness }} fundAccountId="22222222-2222-2222-2222-222222222222" /></TestMemoryRouter>);
     expect(within(confidence).queryByText("Connected · healthy")).not.toBeInTheDocument();
     expect(within(confidence).getAllByText("Broker unavailable")[0]).toBeInTheDocument();
+  });
+
+  it("dates the headline figures from the Trading payload's load, not a newer brokerage observation", async () => {
+    // The readiness projection observed the broker at 15:30; the Trading payload that supplies
+    // the headline values was last loaded at 15:00 and has not been reloaded since.
+    const accountId = "11111111-1111-1111-1111-111111111111";
+    const readiness: TradingOperatorReadiness = {
+      ...serverReadinessData.readiness!,
+      asOf: "2026-10-05T15:30:00Z",
+      brokerageRecovery: {
+        fundAccountId: accountId, providerId: "alpaca", externalAccountId: "PA-404", status: "Ready", detail: "Synchronized", blockingReasons: [], affectedRuns: [],
+        portfolio: { cash: 100, buyingPower: 200, portfolioValue: 300, currency: "USD", positionCount: 1, observedAt: "2026-10-05T15:30:00Z", expiresAt: "2026-10-05T15:30:30Z", lastAttemptedAt: null, lastSuccessfulAt: null, isComplete: true, isFresh: true, isConsistent: true, warnings: [] }
+      }
+    };
+    renderWithRouter(
+      <WorkspaceFigureContextProvider
+        value={{ freshness: "fresh", dataLabel: null, staleSources: [], sourceLoadedAt: { trading: "2026-10-05T15:00:00Z" } }}
+      >
+        <TradingScreen data={{ ...data, readiness }} fundAccountId={accountId} />
+      </WorkspaceFigureContextProvider>,
+      { initialEntries: ["/trading"] }
+    );
+    await waitForAsyncEffects();
+
+    const provenance = screen.getByLabelText("Trading headline metrics").parentElement!;
+    expect(provenance).toHaveTextContent("Source: Trading workspace · As of Oct 5, 2026, 15:00 UTC");
+    expect(provenance).not.toHaveTextContent("15:30 UTC");
+  });
+
+  it("keeps the headline figures unverified when the session's data source is unconfirmed, whatever the broker reports", async () => {
+    const accountId = "11111111-1111-1111-1111-111111111111";
+    const readiness: TradingOperatorReadiness = {
+      ...serverReadinessData.readiness!,
+      brokerageRecovery: {
+        fundAccountId: accountId, providerId: "alpaca", externalAccountId: "PA-404", status: "Ready", detail: "Synchronized", blockingReasons: [], affectedRuns: [],
+        portfolio: { cash: 100, buyingPower: 200, portfolioValue: 300, currency: "USD", positionCount: 1, observedAt: "2026-10-05T15:30:00Z", expiresAt: "2026-10-05T15:30:30Z", lastAttemptedAt: null, lastSuccessfulAt: null, isComplete: true, isFresh: true, isConsistent: true, warnings: [] }
+      }
+    };
+    const renderWithSession = (freshness: "fresh" | "unverified") => {
+      const result = renderWithRouter(
+        <WorkspaceFigureContextProvider
+          value={{ freshness, dataLabel: null, staleSources: [], sourceLoadedAt: { trading: "2026-10-05T15:00:00Z" } }}
+        >
+          <TradingScreen data={{ ...data, readiness }} fundAccountId={accountId} />
+        </WorkspaceFigureContextProvider>,
+        { initialEntries: ["/trading"] }
+      );
+      return result;
+    };
+
+    const unverified = renderWithSession("unverified");
+    await waitForAsyncEffects();
+    expect(screen.getByLabelText("Trading headline metrics").parentElement).toHaveTextContent("Unverified figures");
+    unverified.unmount();
+
+    // The same broker evidence with a confirmed session is fresh.
+    renderWithSession("fresh");
+    await waitForAsyncEffects();
+    expect(screen.getByLabelText("Trading headline metrics").parentElement).not.toHaveTextContent(/Unverified figures|Stale figures/);
+  });
+
+  it("keeps naming the account the retained figures belong to after another account is selected", async () => {
+    // The payload on screen was loaded for account A; the operator has selected account B and
+    // its payload has not loaded.
+    const accountA = "11111111-1111-1111-1111-111111111111";
+    const accountB = "22222222-2222-2222-2222-222222222222";
+    renderWithRouter(
+      <WorkspaceFigureContextProvider
+        value={{
+          freshness: "fresh",
+          dataLabel: null,
+          staleSources: [],
+          sourceLoadedAt: { trading: "2026-10-05T15:00:00Z" },
+          sourceScope: { trading: accountA }
+        }}
+      >
+        <TradingScreen data={data} fundAccountId={accountB} />
+      </WorkspaceFigureContextProvider>,
+      { initialEntries: ["/trading"] }
+    );
+    await waitForAsyncEffects();
+
+    const provenance = screen.getByLabelText("Trading headline metrics").parentElement!;
+    expect(provenance).toHaveTextContent(`Stale figures · Source: Trading workspace · As of Oct 5, 2026, 15:00 UTC · Scope: ${accountA}`);
+    expect(provenance).not.toHaveTextContent(accountB);
   });
 
   it("refreshes shared readiness and surfaces account brokerage posture", async () => {
@@ -694,7 +870,7 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getTradingReadiness).toHaveBeenCalledTimes(1));
     expect(screen.getByText("Overall: Review required")).toBeInTheDocument();
     expect(screen.getByText("Brokerage: Failed stale")).toBeInTheDocument();
-    expect(screen.getByText("As of: Apr 26, 16:05 UTC")).toBeInTheDocument();
+    expect(screen.getByText("As of: Apr 26, 2026, 16:05 UTC")).toBeInTheDocument();
     expect(screen.getByText("Brokerage sync failed")).toBeInTheDocument();
     expect(screen.getByText("Sync broker credentials before paper operation.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /open provider setup for brokerage sync failed/i }))
@@ -756,7 +932,7 @@ describe("TradingScreen", () => {
 
   it("refreshes execution controls after control-affecting actions", async () => {
     const user = userEvent.setup();
-    await renderTradingScreen(data, "/trading/orders");
+    await renderTradingScreen(data, "/trading/orders", "53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(1));
 
     await user.click(screen.getByRole("button", { name: /new order/i }));
@@ -764,6 +940,7 @@ describe("TradingScreen", () => {
     const quantityInput = screen.getAllByRole("spinbutton")[0];
     await user.clear(quantityInput);
     await user.type(quantityInput, "10");
+    await waitFor(() => expect(screen.getByText("Checked; submission will revalidate.")).toBeVisible());
     const submitButton = screen.getByRole("button", { name: /submit order/i });
     expect(submitButton).toBeDisabled();
     expect(submitButton).toHaveAttribute("title", "Review the order preview and acknowledge before submitting.");
@@ -784,6 +961,7 @@ describe("TradingScreen", () => {
     const quantityInput = screen.getAllByRole("spinbutton")[0];
     await user.clear(quantityInput);
     await user.type(quantityInput, "10");
+    await waitFor(() => expect(screen.getByText("Checked; submission will revalidate.")).toBeVisible());
     await user.click(screen.getByRole("checkbox", { name: /i reviewed the order preview and risk warnings/i }));
     await user.click(screen.getByRole("button", { name: /submit order/i }));
 
@@ -797,9 +975,12 @@ describe("TradingScreen", () => {
   it("renders VM-owned disabled reasons for blocked trading commands", async () => {
     await renderTradingScreen({ ...data, openOrders: [] }, "/trading/orders");
 
-    const cancelAll = screen.getByRole("button", { name: "No open orders to cancel" });
+    // Cancel all lives behind "More order actions"; its disabled reason is shown in the menu itself.
+    expect(screen.queryByRole("button", { name: /cancel all/i })).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("button", { name: "More order actions" }));
+    const cancelAll = screen.getByRole("menuitem", { name: /cancel all open orders/i });
     expect(cancelAll).toBeDisabled();
-    expect(cancelAll).toHaveAttribute("title", "No open orders require cancellation.");
+    expect(cancelAll).toHaveTextContent("No open orders require cancellation.");
   });
 
   it("rejects direct order-ticket submits until the preview is acknowledged", async () => {
@@ -838,6 +1019,62 @@ describe("TradingScreen", () => {
 
     await user.selectOptions(screen.getByRole("combobox", { name: "Order type" }), "Limit");
     expect(screen.getByLabelText("Limit order price")).toBeInTheDocument();
+  });
+
+  it.each(["Limit", "Stop"] as const)("preserves decimal %s price typing and submits its reviewed numeric value", async (orderType) => {
+    const user = userEvent.setup();
+    const fundAccountId = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+    await renderTradingScreen(data, "/trading/orders", fundAccountId);
+    await user.click(screen.getByRole("button", { name: "New order" }));
+    await user.type(screen.getByLabelText("Order symbol"), "AAPL");
+    await user.type(screen.getByLabelText("Order quantity"), "25");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Order type" }), orderType);
+    const price = screen.getByLabelText(`${orderType} order price`) as HTMLInputElement;
+    // Chromium also retains the intermediate "188.0"; jsdom normalizes that display.
+    await user.type(price, "188.05");
+    expect(price.value).toBe("188.05");
+    expect(price).toHaveValue(188.05);
+    const submit = screen.getByRole("button", { name: "Submit order request" });
+    expect(submit).toBeDisabled();
+    expect(api.submitOrder).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByText("Checked; submission will revalidate.")).toBeVisible());
+    await user.click(screen.getByRole("checkbox", { name: /I reviewed the order preview and risk warnings/i }));
+    expect(submit).toBeEnabled();
+    await user.click(submit);
+    await waitFor(() => expect(api.submitOrder).toHaveBeenCalledWith({ symbol: "AAPL", side: "Buy", type: orderType, quantity: 25, limitPrice: 188.05, fundAccountId, sessionIntent: "RegularOnly", clientOrderId: expect.stringMatching(/^meridian-/) }));
+  });
+
+  it("invalidates reviewed decimal inputs before allowing another submission", async () => {
+    const user = userEvent.setup();
+    const fundAccountId = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+    await renderTradingScreen(data, "/trading/orders", fundAccountId);
+    await user.click(screen.getByRole("button", { name: "New order" }));
+    await user.type(screen.getByLabelText("Order symbol"), "AAPL");
+    await user.type(screen.getByLabelText("Order quantity"), "25");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Order type" }), "Limit");
+    const price = screen.getByLabelText("Limit order price") as HTMLInputElement;
+    await user.type(price, "188.05");
+    const acknowledgement = screen.getByRole("checkbox", { name: /I reviewed the order preview and risk warnings/i });
+    await waitFor(() => expect(screen.getByText("Checked; submission will revalidate.")).toBeVisible());
+    await user.click(acknowledgement);
+    const submit = screen.getByRole("button", { name: "Submit order request" });
+    expect(submit).toBeEnabled();
+
+    await user.clear(price);
+    await user.type(price, "0");
+    expect(price).toHaveAttribute("aria-invalid", "true");
+    expect(acknowledgement).not.toBeChecked();
+    expect(acknowledgement).toBeDisabled();
+    expect(submit).toBeDisabled();
+    fireEvent.submit(submit.closest("form")!);
+    expect(api.submitOrder).not.toHaveBeenCalled();
+
+    await user.clear(price);
+    await user.type(price, "188.05");
+    expect(price.value).toBe("188.05");
+    expect(acknowledgement).toBeEnabled();
+    expect(acknowledgement).not.toBeChecked();
+    expect(submit).toBeDisabled();
   });
 
   it("renders the order impact preview with notional, position effect, and warnings", async () => {
@@ -1029,15 +1266,26 @@ describe("TradingScreen", () => {
     expect(confirmButton).toHaveAttribute("title", "Review and acknowledge the trading action before confirming.");
     await user.click(screen.getByRole("checkbox", { name: /I reviewed this trading action/i }));
     expect(confirmButton).toBeEnabled();
-    expect(confirmButton).toHaveClass("text-danger");
+    expect(confirmButton).toHaveClass("mds-btn--danger");
   });
 
   it("marks financially destructive blotter actions before confirmation", async () => {
     await renderTradingScreen(data, "/trading/orders");
 
-    expect(screen.getByRole("button", { name: /cancel order po-1/i })).toHaveClass("text-danger");
-    expect(screen.getByRole("button", { name: /cancel all .* open orders/i })).toHaveClass("text-danger");
-    expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent("positions");
+    // The row and the detail pane both offer the cancel; each is marked destructive.
+    const cancelButtons = screen.getAllByRole("button", { name: /cancel order po-1/i });
+    expect(cancelButtons).toHaveLength(2);
+    for (const button of cancelButtons) {
+      expect(button).toHaveClass("mds-btn--danger");
+    }
+    await userEvent.setup().click(screen.getByRole("button", { name: "More order actions" }));
+    const cancelAll = screen.getByRole("menuitem", { name: /cancel all open orders/i });
+    expect(cancelAll).toHaveClass("text-danger");
+    await userEvent.setup().click(cancelAll);
+    // Choosing it opens the same confirmation step; nothing is cancelled yet.
+    expect(api.cancelAllOrders).not.toHaveBeenCalled();
+    expect(await screen.findByRole("button", { name: /confirm cancel all open orders/i })).toBeDisabled();
+    expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent(/\d+ positions?/);
     expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent("Latest brokerage heartbeat");
   });
 

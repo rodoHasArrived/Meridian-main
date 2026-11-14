@@ -10,27 +10,28 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-own{position:relative;padding:18px 12px;overflow:auto;}
+.mds-own{position:relative;padding:18px 12px;overflow:auto;display:flex;flex-direction:column;align-items:flex-start;}
+.mds-own__relationships{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 .mds-own__svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;}
-.mds-own__edge{fill:none;stroke:var(--border-strong,#AFABA1);stroke-width:1.25;}
-.mds-own__pct{font-family:var(--font-data,"Cascadia Mono",monospace);font-size:9px;font-weight:700;
-  fill:var(--text-muted,#5E666F);}
-.mds-own__pctbg{fill:var(--bg,#F2F0EC);}
-.mds-own__row{position:relative;display:flex;justify-content:center;align-items:stretch;gap:20px;}
+.mds-own__edge{fill:none;stroke:var(--border-strong,#AAA49A);stroke-width:1.25;}
+.mds-own__pct{font-family:var(--font-data,"IBM Plex Mono",monospace);font-size:9px;font-weight:700;
+  fill:var(--text-muted,#606870);}
+.mds-own__pctbg{fill:var(--bg,#F2F0EB);}
+.mds-own__row{position:relative;display:flex;align-items:stretch;gap:20px;width:max-content;margin-left:auto;margin-right:auto;}
 .mds-own__row + .mds-own__row{margin-top:56px;}
 .mds-own__node{position:relative;z-index:1;display:flex;flex-direction:column;gap:3px;min-width:132px;max-width:200px;
-  padding:8px 11px;border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-card,6px);
-  background:var(--bg-light,#FBFAF8);box-shadow:var(--shadow-raised,0 1px 2px rgba(26,32,39,.06));
-  text-align:left;cursor:default;font-family:var(--font-body,"Segoe UI Variable Text",sans-serif);}
+  padding:8px 11px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-card,6px);
+  background:var(--bg-light,#F8F7F3);box-shadow:var(--shadow-card,none);
+  text-align:left;cursor:default;font-family:var(--font-body,"IBM Plex Sans",sans-serif);}
 .mds-own__node--click{cursor:pointer;}
-.mds-own__node--click:hover{border-color:var(--border-strong,#AFABA1);background:var(--bg-hover,#F0EEE9);}
-.mds-own__node:focus-visible{outline:2px solid var(--focus-ring,#A85436);outline-offset:2px;}
-.mds-own__node--sel{outline:2px solid var(--accent,#A85436);outline-offset:-1px;border-color:var(--accent,#A85436);}
+.mds-own__node--click:hover{border-color:var(--border-strong,#AAA49A);background:var(--bg-hover,#EDEFF0);}
+.mds-own__node:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3);outline-offset:2px;}
+.mds-own__node--sel{outline:2px solid var(--interaction-selected,#496C8F);outline-offset:-1px;border-color:var(--interaction-selected,#496C8F);}
 .mds-own__type{font-size:8.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--text-muted,#5E666F);font-family:var(--font-data,"Cascadia Mono",monospace);}
-.mds-own__name{font-size:12px;font-weight:600;color:var(--text-primary,#22252A);line-height:1.25;}
-.mds-own__meta{font-size:9.5px;color:var(--text-muted,#5E666F);
-  font-family:var(--font-data,"Cascadia Mono",monospace);}
+  color:var(--text-muted,#606870);font-family:var(--font-data,"IBM Plex Mono",monospace);}
+.mds-own__name{font-size:12px;font-weight:600;color:var(--text-primary,#20252B);line-height:1.25;}
+.mds-own__meta{font-size:9.5px;color:var(--text-muted,#606870);
+  font-family:var(--font-data,"IBM Plex Mono",monospace);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "ownership-graph");
@@ -97,6 +98,7 @@ export function OwnershipGraph({
 
   const { N, E } = norm(nodes, edges);
   const rows = layer(N, E);
+  const labelById = new Map(N.map(node => [node.id, node.label]));
 
   useLayoutEffect(() => {
     const wrap = wrapRef.current;
@@ -139,6 +141,7 @@ export function OwnershipGraph({
       <svg className="mds-own__svg" aria-hidden="true">
         {paths.map((p) => (
           <g key={p.id}>
+            {p.title ? <title>{p.title}</title> : null}
             <path className="mds-own__edge" d={p.d} />
             {p.label ? (
               <g>
@@ -149,6 +152,9 @@ export function OwnershipGraph({
           </g>
         ))}
       </svg>
+      <ul className="mds-own__relationships" aria-label="Ownership relationships">
+        {E.map(edge => <li key={edge.id}>{labelById.get(edge.from) ?? edge.from} → {labelById.get(edge.to) ?? edge.to}{edge.relationship ? ` · ${edge.relationship}` : ""}{edge.percent != null ? ` · ${edge.percent}% ownership` : " · Ownership percentage unavailable"}</li>)}
+      </ul>
       {rows.map((row, i) => (
         <div className="mds-own__row" key={i}>
           {row.map((n) => {
@@ -157,7 +163,7 @@ export function OwnershipGraph({
             return (
               <Tag
                 key={n.id}
-                {...(clickable ? { type: "button", onClick: () => onSelectNode(n.id, n) } : {})}
+                {...(clickable ? { type: "button", "aria-pressed": n.id === selectedId, onClick: () => onSelectNode(n.id, n) } : {})}
                 ref={(el) => { nodeRefs.current[n.id] = el; }}
                 className={`mds-own__node${clickable ? " mds-own__node--click" : ""}${n.id === selectedId ? " mds-own__node--sel" : ""}`}
               >

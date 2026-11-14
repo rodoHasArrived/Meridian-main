@@ -29,6 +29,14 @@ public interface ISecurityMasterCashFlowService
     Task<StructuredCashFlowProjectionDto?> GetProjectionAsync(SecurityDetailDto security, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default)
         => GetProjectionAsync(security.SecurityId, scenario, context, ct);
 
+    /// <summary>
+    /// Reads the Base calculation's capability refusal on the supplied selected terms and cutoffs.
+    /// This passive read retains no calculation receipt and exposes no unretained receipt identity.
+    /// An implementation without a read-only capability path must refuse rather than fall back to capture.
+    /// </summary>
+    Task<SecurityCashFlowBlockerDto?> GetProjectionBlockerAsync(SecurityDetailDto security, BondCalculationContext context, CancellationToken ct = default)
+        => throw new NotSupportedException("This cash-flow service does not support read-only capability evaluation.");
+
     /// <summary>Captures selected inputs for callers to retain with their calculation evidence.</summary>
     Task<SecurityCashFlowCalculationReceipt?> CaptureProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default)
         => Task.FromResult<SecurityCashFlowCalculationReceipt?>(null);
@@ -42,21 +50,4 @@ public interface ISecurityMasterCashFlowService
     Task<StructuredCashFlowProjectionDto?> ReplayProjectionAsync(string contentSha256, CancellationToken ct = default)
         => Task.FromResult<StructuredCashFlowProjectionDto?>(null);
 
-    /// <summary>
-    /// Converts the base-scenario projection for <paramref name="securityId"/> into balanced,
-    /// ledger-ready coupon-accrual journal postings. Enforces the staleness gate — a projection
-    /// whose source is <see cref="StructuredCashFlowStaleness.Stale"/> is blocked, never posted —
-    /// so accrual automation cannot run off stale terms.
-    /// </summary>
-    /// <param name="securityId">The security whose accruals should be projected to the ledger.</param>
-    /// <param name="financialAccountId">Optional financial account scoping the ledger accounts.</param>
-    /// <param name="through">
-    /// Optional inclusive upper bound on coupon period dates to accrue. When null, every scheduled
-    /// coupon accrual is projected; callers post only what belongs to the current accrual window.
-    /// </param>
-    Task<StructuredCashFlowLedgerPostingResult> BuildLedgerPostingsAsync(
-        Guid securityId,
-        string? financialAccountId = null,
-        DateOnly? through = null,
-        CancellationToken ct = default);
 }

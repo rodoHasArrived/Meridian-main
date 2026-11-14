@@ -18,6 +18,10 @@ namespace Meridian.Ui.Shared.Services;
 /// </summary>
 public sealed partial class TradingOperatorReadinessService : ITradingOperatorReadinessProvider
 {
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, TradingOperatorReadinessDto> _observations = new();
+    public TradingOperatorReadinessDto? Observe(Guid accountId) =>
+        _observations.TryGetValue(accountId, out var snapshot)
+            && snapshot.AsOf <= DateTimeOffset.UtcNow && DateTimeOffset.UtcNow - snapshot.AsOf <= TimeSpan.FromSeconds(30) ? snapshot : null;
     private static readonly string[] RequiredLivePromotionEvidenceTokens =
         PromotionApprovalChecklist.CreateRequiredFor(RunType.Live);
 
@@ -200,6 +204,8 @@ public sealed partial class TradingOperatorReadinessService : ITradingOperatorRe
         };
 
         ValidateRequiredReadinessFields(readiness);
+        if (fundAccountId is { } observedAccount)
+            _observations[observedAccount] = readiness;
         return readiness;
     }
 

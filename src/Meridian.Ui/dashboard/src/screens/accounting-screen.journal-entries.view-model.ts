@@ -21,8 +21,6 @@ import {
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
-  formatCurrency,
-  formatCurrencyWithCode,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
 import {
@@ -71,6 +69,7 @@ import type {
   PrivateCapitalReportOutput,
   SecurityMasterEntry,
 } from "@/types";
+import { formatCount, formatCurrencyWithCode, formatPrefixedCurrency } from "@/lib/format";
 
 const defaultManualJournalEntryWorkbenchServices: ManualJournalEntryWorkbenchServices = {
   getAssetCapabilities: getAssetAccountingDraftCapabilities,
@@ -222,7 +221,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     setValidatedDraftSignature(null);
     setSelectedLineId(result.journalEntry.lines[0]?.lineId ?? selectedLineId);
     setLifecycleCorrectionDrafts(generated);
-    setLifecycleStatusText(`${result.transition.action} recorded: ${result.transition.fromStatus} -> ${result.transition.toStatus}`);
+    setLifecycleStatusText(`${result.transition.action} recorded: ${result.transition.fromStatus} → ${result.transition.toStatus}`);
     setSavedDraftSignature(buildManualJournalEditableSignature(result.journalEntry));
     setLastSavedAtUtc(result.journalEntry.updatedAtUtc);
     setSaveState("saved");
@@ -728,7 +727,7 @@ export function useManualJournalEntryWorkbenchViewModel(
   const canSubmit = submitDisabledReason === null;
   const blockingIssueCount = draft.validationIssues.filter((issue) => issue.severity === "Critical").length;
   const warningIssueCount = draft.validationIssues.filter((issue) => issue.severity === "Warning").length;
-  const balanceStatusLabel = Math.abs(balancedDraft.imbalance) === 0 ? "Balanced" : "Out by " + formatCurrency(Math.abs(balancedDraft.imbalance));
+  const balanceStatusLabel = Math.abs(balancedDraft.imbalance) === 0 ? "Balanced" : "Out by " + formatPrefixedCurrency(Math.abs(balancedDraft.imbalance));
   const saveStatusLabel = draft.assetAccountingDraft ? "Retained source draft" : saveState === "saving"
     ? "Saving draft"
     : saveState === "unsaved"
@@ -787,10 +786,10 @@ export function useManualJournalEntryWorkbenchViewModel(
     securitySearchErrorText: securitySearchError?.summary ?? null,
     securitySearchStatusText,
     attachmentDraft,
-    totalsLabel: `Debits ${formatCurrency(balancedDraft.totalDebits)} / Credits ${formatCurrency(balancedDraft.totalCredits)}`,
-    totalDebitsLabel: formatCurrency(balancedDraft.totalDebits),
-    totalCreditsLabel: formatCurrency(balancedDraft.totalCredits),
-    imbalanceLabel: `Imbalance ${formatCurrency(balancedDraft.imbalance)}`,
+    totalsLabel: `Debits ${formatPrefixedCurrency(balancedDraft.totalDebits)} / Credits ${formatPrefixedCurrency(balancedDraft.totalCredits)}`,
+    totalDebitsLabel: formatPrefixedCurrency(balancedDraft.totalDebits),
+    totalCreditsLabel: formatPrefixedCurrency(balancedDraft.totalCredits),
+    imbalanceLabel: `Imbalance ${formatPrefixedCurrency(balancedDraft.imbalance)}`,
     balanceStatusLabel,
     balanceStatusTone: Math.abs(balancedDraft.imbalance) === 0 ? "success" : "warning",
     balanceImpactRows,
@@ -1020,77 +1019,77 @@ function buildManualJournalPrivateCapitalActivityView(
       {
         id: "fund-events",
         label: "Fund events",
-        value: activity.fundEventCount.toLocaleString(),
-        detail: `${postedFundEventCount.toLocaleString()} posted / ${activity.submittedFundEventCount.toLocaleString()} submitted or approved`,
+        value: formatCount(activity.fundEventCount),
+        detail: `${formatCount(postedFundEventCount)} posted / ${formatCount(activity.submittedFundEventCount)} submitted or approved`,
         tone: activity.fundEventCount > 0 ? "success" : "default"
       },
       {
         id: "posted-fund-events",
         label: "Posted events",
-        value: postedFundEventCount.toLocaleString(),
+        value: formatCount(postedFundEventCount),
         detail: "Ledger-backed fund-event rows",
         tone: postedFundEventCount > 0 ? "success" : "default"
       },
       {
         id: "fund-event-ledger-records",
         label: "Event ledger records",
-        value: fundEventLedgerRecordCount.toLocaleString(),
+        value: formatCount(fundEventLedgerRecordCount),
         detail: "Event, subledger, GL, evidence, approval, and report output",
         tone: fundEventLedgerRecordCount === activity.fundEventCount && activity.fundEventCount > 0 ? "success" : fundEventLedgerRecordCount > 0 ? "warning" : "default"
       },
       {
         id: "capital-accounts",
         label: "Capital accounts",
-        value: activity.capitalAccountCount.toLocaleString(),
-        detail: `${activity.approvalQueueCount.toLocaleString()} pending approval`,
+        value: formatCount(activity.capitalAccountCount),
+        detail: `${formatCount(activity.approvalQueueCount)} pending approval`,
         tone: activity.approvalQueueCount > 0 ? "warning" : activity.capitalAccountCount > 0 ? "success" : "default"
       },
       {
         id: "capital-account-subledger",
         label: "Subledger rows",
-        value: capitalAccountSubledgerEntries.length.toLocaleString(),
-        detail: `${capitalAccountSubledgers.length.toLocaleString()} account-level subledger(s)`,
+        value: formatCount(capitalAccountSubledgerEntries.length),
+        detail: `${formatCount(capitalAccountSubledgers.length)} account-level subledger(s)`,
         tone: capitalAccountSubledgerEntries.length > 0 ? "success" : "default"
       },
       {
         id: "report-outputs",
         label: "Report outputs",
-        value: reportOutputs.length.toLocaleString(),
-        detail: `${publishedReportOutputCount.toLocaleString()} published / ${reportOutputs.filter((item) => item.isReportReady).length.toLocaleString()} ready`,
+        value: formatCount(reportOutputs.length),
+        detail: `${formatCount(publishedReportOutputCount)} published / ${formatCount(reportOutputs.filter((item) => item.isReportReady).length)} ready`,
         tone: reportOutputs.some((item) => !item.isReportReady) ? "warning" : reportOutputs.length > 0 ? "success" : "default"
       },
       {
         id: "payment-intents",
         label: "Payment intents",
-        value: paymentIntents.length.toLocaleString(),
-        detail: `${deferredPaymentIntentCount.toLocaleString()} execution-deferred / ${blockedPaymentIntentCount.toLocaleString()} blocked or returned`,
+        value: formatCount(paymentIntents.length),
+        detail: `${formatCount(deferredPaymentIntentCount)} execution-deferred / ${formatCount(blockedPaymentIntentCount)} blocked or returned`,
         tone: blockedPaymentIntentCount > 0 ? "danger" : paymentIntents.some((item) => item.status !== "ExecutionDeferred") ? "warning" : paymentIntents.length > 0 ? "success" : "default"
       },
       {
         id: "published-report-outputs",
         label: "Published outputs",
-        value: publishedReportOutputCount.toLocaleString(),
+        value: formatCount(publishedReportOutputCount),
         detail: "Governed report-pack outputs",
         tone: publishedReportOutputCount > 0 ? "success" : "default"
       },
       {
         id: "ledger-impacts",
         label: "Ledger impacts",
-        value: ledgerImpacts.length.toLocaleString(),
-        detail: `${ledgerImpacts.filter((item) => item.isPostingReady).length.toLocaleString()} posting-ready`,
+        value: formatCount(ledgerImpacts.length),
+        detail: `${formatCount(ledgerImpacts.filter((item) => item.isPostingReady).length)} posting-ready`,
         tone: ledgerImpacts.some((item) => !item.isPostingReady) ? "warning" : ledgerImpacts.length > 0 ? "success" : "default"
       },
       {
         id: "net-activity",
         label: "Net activity",
-        value: formatCurrencyWithCode(activity.netCapitalActivity, currency, true),
+        value: formatCurrencyWithCode(activity.netCapitalActivity, currency, { signed: true }),
         detail: "Ledger-derived capital activity",
         tone: activity.netCapitalActivity < 0 ? "warning" : activity.netCapitalActivity > 0 ? "success" : "default"
       },
       {
         id: "projection-issues",
         label: "Data quality issues",
-        value: validationIssues.length.toLocaleString(),
+        value: formatCount(validationIssues.length),
         detail: validationIssues.length > 0 ? "Context needs review" : "Workbench context complete",
         tone: validationIssues.length > 0 ? "warning" : "success"
       }
@@ -1137,9 +1136,9 @@ function buildManualJournalPrivateCapitalCapitalAccountSubledgerRow(
     nextActionLabel: subledger.nextAction || "No next action",
     nextActionRouteLabel: subledger.nextActionRoute || "No next-action route",
     activityRouteLabel: subledger.activityRoute || "No subledger route",
-    netActivityLabel: formatCurrencyWithCode(subledger.netCapitalActivity, subledger.currency, true),
-    openingLabel: formatCurrencyWithCode(subledger.openingNetActivity, subledger.currency, true),
-    endingLabel: formatCurrencyWithCode(subledger.endingNetActivity, subledger.currency, true),
+    netActivityLabel: formatCurrencyWithCode(subledger.netCapitalActivity, subledger.currency, { signed: true }),
+    openingLabel: formatCurrencyWithCode(subledger.openingNetActivity, subledger.currency, { signed: true }),
+    endingLabel: formatCurrencyWithCode(subledger.endingNetActivity, subledger.currency, { signed: true }),
     contributionLabel: formatCurrencyWithCode(subledger.contributions, subledger.currency),
     distributionLabel: formatCurrencyWithCode(subledger.distributions, subledger.currency),
     otherActivityLabel: [
@@ -1147,26 +1146,26 @@ function buildManualJournalPrivateCapitalCapitalAccountSubledgerRow(
       `Redemptions ${formatCurrencyWithCode(subledger.redemptions, subledger.currency)}`,
       `Fees ${formatCurrencyWithCode(subledger.managementFees, subledger.currency)}`
     ].join(" / "),
-    eventCountLabel: `${subledger.fundEventCount.toLocaleString()} fund event(s)`,
-    approvalQueueLabel: `${subledger.approvalQueueCount.toLocaleString()} approval queue`,
-    postedEventLabel: `${subledger.postedFundEventCount.toLocaleString()} posted event(s)`,
-    publishedReportLabel: `${subledger.publishedReportOutputCount.toLocaleString()} published report output(s)`,
+    eventCountLabel: `${formatCount(subledger.fundEventCount)} fund event(s)`,
+    approvalQueueLabel: `${formatCount(subledger.approvalQueueCount)} approval queue`,
+    postedEventLabel: `${formatCount(subledger.postedFundEventCount)} posted event(s)`,
+    publishedReportLabel: `${formatCount(subledger.publishedReportOutputCount)} published report output(s)`,
     dateRangeLabel: [
       subledger.firstEffectiveDate ? `first ${subledger.firstEffectiveDate}` : "no first effective date",
       subledger.lastEffectiveDate ? `last ${subledger.lastEffectiveDate}` : "no last effective date",
       subledger.lastFundEventType ?? "no last event type"
     ].join(" / "),
-    evidenceLabel: `${subledger.evidenceLinkCount.toLocaleString()} evidence`,
+    evidenceLabel: `${formatCount(subledger.evidenceLinkCount)} evidence`,
     paymentEvidenceLabel: paymentEvidence.label,
     paymentEvidenceTone: paymentEvidence.tone,
     paymentEvidenceSummaryLabel: paymentEvidence.summary,
     paymentEvidenceRequiredLabel: paymentEvidence.required,
     evidenceCategorySummaryLabel: evidenceCategories.length > 0
-      ? `${readyEvidenceCategoryCount.toLocaleString()}/${evidenceCategories.length.toLocaleString()} evidence categories ready`
+      ? `${formatCount(readyEvidenceCategoryCount)}/${formatCount(evidenceCategories.length)} evidence categories ready`
       : "No evidence categories",
     evidenceCategories,
     issueLabel: subledger.validationIssueCount > 0
-      ? `${subledger.validationIssueCount.toLocaleString()} subledger issue(s)`
+      ? `${formatCount(subledger.validationIssueCount)} subledger issue(s)`
       : "No subledger issues"
   };
 }
@@ -1203,9 +1202,9 @@ export function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
     nextActionLabel: record.nextAction || "No next action",
     nextActionRouteLabel: record.nextActionRoute ?? "No next-action route",
     effectiveDateLabel: record.effectiveDate,
-    netActivityLabel: formatCurrencyWithCode(record.netCapitalActivity, record.currency, true),
+    netActivityLabel: formatCurrencyWithCode(record.netCapitalActivity, record.currency, { signed: true }),
     grossActivityLabel: formatCurrencyWithCode(record.grossAmount, record.currency),
-    capitalAccountRollForwardLabel: `${formatCurrencyWithCode(record.capitalAccountOpeningNetActivity, record.currency, true)} opening -> ${formatCurrencyWithCode(record.capitalAccountEndingNetActivity, record.currency, true)} ending`,
+    capitalAccountRollForwardLabel: `${formatCurrencyWithCode(record.capitalAccountOpeningNetActivity, record.currency, { signed: true })} opening → ${formatCurrencyWithCode(record.capitalAccountEndingNetActivity, record.currency, { signed: true })} ending`,
     memoLabel: record.memo || record.journalEntryId,
     referenceLabel: [record.paymentIntentId, record.settlementReference].filter((value): value is string => Boolean(value)).join(" / ") || record.journalEntryId,
     paymentEvidenceLabel: paymentEvidence.label,
@@ -1216,22 +1215,22 @@ export function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
     commandCenterRouteLabel: buildPrivateCapitalFundEventCommandCenterRoute(fundProfileId, ledgerBookId, record.fundEventId),
     evidenceRouteLabel: record.evidenceRoute || "No evidence route",
     approvalRouteLabel: record.approvalRoute ?? (record.approvalId ? `/accounting/approvals?approvalId=${encodeURIComponent(record.approvalId)}` : "No approval route"),
-    evidenceLabel: `${record.evidenceLinkCount.toLocaleString()} evidence`,
-    ledgerImpactLabel: `${record.ledgerImpactCount.toLocaleString()} ledger impact(s)${record.isPostingReady ? " / posting ready" : ""}`,
-    subledgerLabel: `${record.capitalAccountSubledgerEntryCount.toLocaleString()} subledger movement(s)`,
-    reportOutputLabel: `${record.reportOutputCount.toLocaleString()} report output(s)${record.isPublished ? " / published" : record.isReportReady ? " / ready" : ""}`,
+    evidenceLabel: `${formatCount(record.evidenceLinkCount)} evidence`,
+    ledgerImpactLabel: `${formatCount(record.ledgerImpactCount)} ledger impact(s)${record.isPostingReady ? " / posting ready" : ""}`,
+    subledgerLabel: `${formatCount(record.capitalAccountSubledgerEntryCount)} subledger movement(s)`,
+    reportOutputLabel: `${formatCount(record.reportOutputCount)} report output(s)${record.isPublished ? " / published" : record.isReportReady ? " / ready" : ""}`,
     reportOutputDetailLabel: [
       record.primaryReportOutputType ?? "No primary output",
       record.reportWorkflowState ?? "No workflow state",
-      `${record.reportLineProvenanceCount.toLocaleString()} provenance`
+      `${formatCount(record.reportLineProvenanceCount)} provenance`
     ].join(" / "),
     reportOutputRouteLabel: record.primaryReportRoute ?? record.retainedManifestPath ?? record.publicationManifestId ?? "No report route",
     evidenceCategorySummaryLabel: evidenceCategories.length > 0
-      ? `${readyEvidenceCategoryCount.toLocaleString()}/${evidenceCategories.length.toLocaleString()} evidence categories ready`
+      ? `${formatCount(readyEvidenceCategoryCount)}/${formatCount(evidenceCategories.length)} evidence categories ready`
       : "No evidence categories",
     evidenceCategories,
     issueLabel: record.validationIssueCount > 0
-      ? `${record.validationIssueCount.toLocaleString()} record issue(s)`
+      ? `${formatCount(record.validationIssueCount)} record issue(s)`
       : "No record issues"
   };
 }
@@ -1265,18 +1264,18 @@ function buildManualJournalPaymentIntentWorkflowRow(
       `purpose ${movement.businessPurpose ?? movement.purpose}`,
       `policy ${movement.approvalPolicy ?? "not assigned"}`
     ].join(" / "),
-    sourceEvidenceLabel: `${(movement.sourceEvidenceLinks ?? []).length.toLocaleString()} source evidence link(s)`,
-    approvalLabel: `${approvedCount.toLocaleString()}/${workflow.approvalChain.length.toLocaleString()} approved`,
-    bankEvidenceLabel: `${bankConfirmedCount.toLocaleString()} confirmed / ${bankRetainedCount.toLocaleString()} retained / ${bankReturnedCount.toLocaleString()} returned`,
-    reconciliationLabel: `${reconciliationReadyCount.toLocaleString()}/${workflow.reconciliationLinks.length.toLocaleString()} reconciliation ready`,
-    auditLabel: `${workflow.auditHistory.length.toLocaleString()} audit event(s)`,
+    sourceEvidenceLabel: `${formatCount((movement.sourceEvidenceLinks ?? []).length)} source evidence link(s)`,
+    approvalLabel: `${formatCount(approvedCount)}/${formatCount(workflow.approvalChain.length)} approved`,
+    bankEvidenceLabel: `${formatCount(bankConfirmedCount)} confirmed / ${formatCount(bankRetainedCount)} retained / ${formatCount(bankReturnedCount)} returned`,
+    reconciliationLabel: `${formatCount(reconciliationReadyCount)}/${formatCount(workflow.reconciliationLinks.length)} reconciliation ready`,
+    auditLabel: `${formatCount(workflow.auditHistory.length)} audit event(s)`,
     readinessReasonLabel: workflow.readinessReason || "Payment intent readiness requires review.",
     executionDeferredLabel: workflow.executionDeferredReason || "Full payment execution is deferred.",
     evidenceRouteLabel: workflow.evidenceRoute || "No evidence route",
     workbenchRouteLabel: workflow.workbenchRoute || "No workbench route",
     approvalSteps: workflow.approvalChain.map((step) => ({
       id: `${workflow.paymentIntentId}-approval-${step.sequence}-${step.role}`,
-      sequenceLabel: `Step ${step.sequence.toLocaleString()}`,
+      sequenceLabel: `Step ${formatCount(step.sequence)}`,
       roleLabel: step.role || "Approval",
       actorLabel: step.actor || "No actor assigned",
       statusLabel: step.status || "No status",
@@ -1317,7 +1316,7 @@ function buildManualJournalPaymentIntentWorkflowRow(
       actorLabel: event.actor || "No actor",
       recordedLabel: formatDateTimeLabel(event.recordedAtUtc),
       summaryLabel: event.summary || "No audit summary",
-      evidenceLabel: `${event.evidenceLinks.length.toLocaleString()} evidence link(s)`,
+      evidenceLabel: `${formatCount(event.evidenceLinks.length)} evidence link(s)`,
       evidenceRouteLabels: event.evidenceLinks
     }))
   };
@@ -1332,7 +1331,7 @@ function buildManualJournalPrivateCapitalEvidenceCategoryRow(
     statusLabel: category.isReady ? "Ready" : "Missing",
     tone: category.isReady ? "success" : "warning",
     summaryLabel: category.summary || "No category summary",
-    evidenceLabel: `${category.evidenceLinkCount.toLocaleString()} evidence`,
+    evidenceLabel: `${formatCount(category.evidenceLinkCount)} evidence`,
     requiredEvidenceLabel: (category.requiredEvidence ?? []).filter(Boolean).join(" / ") || "No required evidence listed"
   };
 }
@@ -1360,7 +1359,7 @@ export function buildManualJournalPaymentIntentEvidenceView(
     formatPaymentIntentEvidenceStatus(evidence),
     evidence.direction,
     formatCurrencyWithCode(Math.abs(evidence.amount), evidence.currency),
-    `${cashEvidenceCount.toLocaleString()} cash evidence`,
+    `${formatCount(cashEvidenceCount)} cash evidence`,
     evidence.settlementReference ? "settlement linked" : "no settlement"
   ].filter(Boolean);
 
@@ -1409,13 +1408,13 @@ function buildManualJournalPrivateCapitalFundEventRow(
     statusLabel: event.isPosted ? "Posted" : event.journalStatus,
     statusTone: event.isPosted ? "success" : manualJournalPrivateCapitalStatusTone(event.journalStatus),
     effectiveDateLabel: event.effectiveDate,
-    amountLabel: formatCurrencyWithCode(event.netCapitalActivity, event.currency, true),
+    amountLabel: formatCurrencyWithCode(event.netCapitalActivity, event.currency, { signed: true }),
     grossAmountLabel: formatCurrencyWithCode(event.grossAmount, event.currency),
-    evidenceLabel: `${event.evidenceLinks.length.toLocaleString()} evidence`,
+    evidenceLabel: `${formatCount(event.evidenceLinks.length)} evidence`,
     memoLabel: event.memo || event.journalEntryId,
     paymentLabel: [event.paymentIntentId, event.settlementReference].filter((value): value is string => Boolean(value)).join(" / ") || "No payment link",
     validationLabel: event.validationIssues.length > 0
-      ? `${event.validationIssues.length.toLocaleString()} validation issues`
+      ? `${formatCount(event.validationIssues.length)} validation issues`
       : "No validation issues"
   };
 }
@@ -1427,13 +1426,13 @@ function buildManualJournalPrivateCapitalAccountRow(
     id: `${account.capitalAccountId}-${account.currency}`,
     title: account.capitalAccountId,
     subtitle: account.investorId ?? "Investor not assigned",
-    netActivityLabel: formatCurrencyWithCode(account.netActivity, account.currency, true),
+    netActivityLabel: formatCurrencyWithCode(account.netActivity, account.currency, { signed: true }),
     contributionLabel: formatCurrencyWithCode(account.contributions, account.currency),
     distributionLabel: formatCurrencyWithCode(account.distributions, account.currency),
     subscriptionLabel: formatCurrencyWithCode(account.subscriptions, account.currency),
     redemptionLabel: formatCurrencyWithCode(account.redemptions, account.currency),
     managementFeeLabel: formatCurrencyWithCode(account.managementFees, account.currency),
-    eventCountLabel: `${account.fundEventCount.toLocaleString()} events`,
+    eventCountLabel: `${formatCount(account.fundEventCount)} events`,
     lastEventLabel: account.lastEffectiveDate
       ? `${account.lastFundEventType ?? "Fund event"} / ${account.lastEffectiveDate}`
       : "No effective date"
@@ -1450,13 +1449,13 @@ function buildManualJournalPrivateCapitalSubledgerEntryRow(
     statusLabel: entry.isPosted ? "Posted" : entry.approvalState,
     statusTone: entry.isPosted ? "success" : manualJournalPrivateCapitalStatusTone(entry.approvalState),
     effectiveDateLabel: entry.effectiveDate,
-    netActivityLabel: formatCurrencyWithCode(entry.netCapitalActivity, entry.currency, true),
-    runningBalanceLabel: formatCurrencyWithCode(entry.runningNetActivity, entry.currency, true),
+    netActivityLabel: formatCurrencyWithCode(entry.netCapitalActivity, entry.currency, { signed: true }),
+    runningBalanceLabel: formatCurrencyWithCode(entry.runningNetActivity, entry.currency, { signed: true }),
     grossAmountLabel: formatCurrencyWithCode(entry.grossAmount, entry.currency),
-    evidenceLabel: `${entry.evidenceLinks.length.toLocaleString()} evidence`,
+    evidenceLabel: `${formatCount(entry.evidenceLinks.length)} evidence`,
     memoLabel: entry.memo || entry.journalEntryId,
     issueLabel: entry.validationIssues.length > 0
-      ? `${entry.validationIssues.length.toLocaleString()} subledger issues`
+      ? `${formatCount(entry.validationIssues.length)} subledger issues`
       : "No subledger issues"
   };
 }
@@ -1473,11 +1472,11 @@ function buildManualJournalPrivateCapitalLedgerImpactRow(
     effectiveDateLabel: impact.effectiveDate,
     debitLabel: formatCurrencyWithCode(impact.totalDebits, impact.currency),
     creditLabel: formatCurrencyWithCode(impact.totalCredits, impact.currency),
-    imbalanceLabel: formatCurrencyWithCode(impact.imbalance, impact.currency, true),
-    evidenceLabel: `${impact.evidenceLinks.length.toLocaleString()} evidence`,
-    lineLabel: `${impact.lineCount.toLocaleString()} GL lines`,
+    imbalanceLabel: formatCurrencyWithCode(impact.imbalance, impact.currency, { signed: true }),
+    evidenceLabel: `${formatCount(impact.evidenceLinks.length)} evidence`,
+    lineLabel: `${formatCount(impact.lineCount)} GL lines`,
     issueLabel: impact.validationIssues.length > 0
-      ? `${impact.validationIssues.length.toLocaleString()} ledger issues`
+      ? `${formatCount(impact.validationIssues.length)} ledger issues`
       : "No ledger issues"
   };
 }
@@ -1495,17 +1494,17 @@ function buildManualJournalPrivateCapitalReportOutputRow(
     nextActionLabel: output.nextAction || "No next action",
     nextActionRouteLabel: output.nextActionRoute ?? output.reportOutputRoute ?? output.reportRoute,
     effectiveDateLabel: output.effectiveDate,
-    amountLabel: formatCurrencyWithCode(output.netCapitalActivity, output.currency, true),
-    evidenceLabel: `${output.evidenceLinkCount.toLocaleString()} evidence`,
+    amountLabel: formatCurrencyWithCode(output.netCapitalActivity, output.currency, { signed: true }),
+    evidenceLabel: `${formatCount(output.evidenceLinkCount)} evidence`,
     routeLabel: output.reportOutputRoute ?? output.reportRoute,
     issueLabel: output.validationIssues.length > 0
-      ? `${output.validationIssues.length.toLocaleString()} readiness issues`
+      ? `${formatCount(output.validationIssues.length)} readiness issues`
       : "No readiness issues",
     workflowLabel: [output.reportPackId, output.reportWorkflowState].filter((value): value is string => Boolean(value)).join(" / ") || output.reportOutputType,
     publicationLabel: output.publishedAtUtc
       ? `${output.publishedBy ?? "publisher"} / ${formatDateTimeLabel(output.publishedAtUtc)}`
       : output.publicationManifestId ?? "No publication manifest",
-    provenanceLabel: `${(output.reportLineProvenanceCount ?? 0).toLocaleString()} provenance line(s)`
+    provenanceLabel: `${formatCount((output.reportLineProvenanceCount ?? 0))} provenance line(s)`
   };
 }
 
@@ -1685,15 +1684,15 @@ function buildManualJournalBalanceImpactRows(
         ? totals.debit - totals.credit
         : totals.credit - totals.debit;
       const direction = netEffect > 0 ? "increases" : netEffect < 0 ? "decreases" : "does not change";
-      const absoluteEffect = formatCurrency(Math.abs(netEffect));
+      const absoluteEffect = formatPrefixedCurrency(Math.abs(netEffect));
 
       return {
         id: accountPath,
         accountPath,
         accountName: account?.accountName ?? accountPath,
         accountType: account?.accountType ?? "Unclassified",
-        debitLabel: formatCurrency(totals.debit),
-        creditLabel: formatCurrency(totals.credit),
+        debitLabel: formatPrefixedCurrency(totals.debit),
+        creditLabel: formatPrefixedCurrency(totals.credit),
         netEffectLabel: `${netEffect >= 0 ? "+" : "-"}${absoluteEffect}`,
         balanceDirectionLabel: `This draft ${direction} the ${normalBalanceSide.toLowerCase()}-normal account balance by ${absoluteEffect}.`,
         lineCountLabel: `${totals.count} line${totals.count === 1 ? "" : "s"}`,

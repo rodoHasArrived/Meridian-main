@@ -449,10 +449,10 @@ public sealed class ScheduleSpecFactoryTests
     [Fact]
     public void AnUnreadableStamp_ComesBeforeLegs()
     {
-        var terms = Json(Flat(5, BondBody + ",\"cashFlowLegs\":[" + PlainLeg + "],\"scheduleConventions\":{\"accrualAdjusted\":false}"));
+        var terms = Json(Flat(6, BondBody + ",\"cashFlowLegs\":[" + PlainLeg + "],\"scheduleConventions\":{\"accrualAdjusted\":false}"));
         SecurityTermsEnvelope.TryGetReadRefusal("Bond", terms, out var reason).Should().BeTrue();
 
-        const string message = "Declared schedule conventions cannot be read: Unsupported assetClassTermsVersion '5' for asset class 'Bond'; this node reads versions 1 through 4.";
+        const string message = "Declared schedule conventions cannot be read: Unsupported assetClassTermsVersion '6' for asset class 'Bond'; this node reads versions 1 through 5.";
         message.Should().Be($"Declared schedule conventions cannot be read: {reason}");
         ShouldRefuse(Resolve(Security("Bond", terms)), DeclaredScheduleRefusalCode.TermsVersionUnreadable, message);
         Resolve(Security("Bond", terms)).Conventions.Should().BeSameAs(ScheduleConventionTerms.Empty);
@@ -532,10 +532,12 @@ public sealed class ScheduleSpecFactoryTests
     [Fact]
     public void ASwapStampedAboveWhatTheNodeReads_IsUnreadable()
     {
+        var readableVersion = SecurityAssetClassCatalog.GetReadsTermsThrough("Swap");
+        var futureVersion = readableVersion + 1;
         ShouldRefuse(
-            Resolve(Security("Swap", Json(Flat(4, SwapBody + ",\"legs\":[" + PlainLeg + "]")))),
+            Resolve(Security("Swap", Json(Flat(futureVersion, SwapBody + ",\"legs\":[" + PlainLeg + "]")))),
             DeclaredScheduleRefusalCode.TermsVersionUnreadable,
-            "Declared schedule conventions cannot be read: Unsupported assetClassTermsVersion '4' for asset class 'Swap'; this node reads versions 1 through 3.");
+            $"Declared schedule conventions cannot be read: Unsupported assetClassTermsVersion '{futureVersion}' for asset class 'Swap'; this node reads versions 1 through {readableVersion}.");
     }
 
     [Fact]
@@ -675,8 +677,8 @@ public sealed class ScheduleSpecFactoryTests
         { "Bond", Flat(99, BondBody + ",\"scheduleConventions\":{\"accrualAdjusted\":false}"), DeclaredScheduleRefusalCode.TermsVersionUnreadable },
         { "Bond", Flat(0, BondBody), DeclaredScheduleRefusalCode.TermsVersionUnreadable },
         { "Bond", Flat(-3, BondBody), DeclaredScheduleRefusalCode.TermsVersionUnreadable },
-        { "Swap", Flat(4, SwapBody + ",\"legs\":7"), DeclaredScheduleRefusalCode.TermsVersionUnreadable },
-        { "StructuredCredit", Flat(6, "\"tranche\":\"A-1\""), DeclaredScheduleRefusalCode.TermsVersionUnreadable },
+        { "Swap", Flat(SecurityAssetClassCatalog.GetReadsTermsThrough("Swap") + 1, SwapBody + ",\"legs\":7"), DeclaredScheduleRefusalCode.TermsVersionUnreadable },
+        { "StructuredCredit", Flat(SecurityAssetClassCatalog.GetReadsTermsThrough("StructuredCredit") + 1, "\"tranche\":\"A-1\""), DeclaredScheduleRefusalCode.TermsVersionUnreadable },
         { "Bond", "{\"termsFormat\":\"Economic\",\"assetClassTermsVersion\":9,\"scheduleConventions\":{\"accrualAdjusted\":false}}", null },
         { "NotAClass", Flat(2, BondBody + ",\"scheduleConventions\":{\"accrualAdjusted\":false}"), null },
     };

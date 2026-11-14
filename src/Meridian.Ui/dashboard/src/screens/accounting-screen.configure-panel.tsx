@@ -3,14 +3,12 @@ import { useEffect, useMemo, useRef, useState, type JSX } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Combobox } from "@/components/ui/combobox";
 import { Drawer, DrawerBody, DrawerFooter } from "@/components/ui/drawer";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Stepper } from "@/components/ui/stepper";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
-import { accountingToolingBadgeVariant, accountingToolingBorderClass } from "@/screens/accounting-screen.styles";
 import type {
   AccountingChartAccountEditorViewModel,
   AccountingConfigurationViewModel
@@ -28,6 +26,10 @@ import {
   type ConfigureKeyValuePair,
   type ConfigureTone
 } from "@/screens/accounting-screen.configure-panel.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import { TextArea } from "@/components/ui/text-area";
+import { Checkbox } from "@/components/ui/checkbox";
+import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
 
 function toneTextClass(tone: ConfigureTone): string {
   switch (tone) {
@@ -136,7 +138,7 @@ export function ConfigureCommandBar(): JSX.Element {
                     className="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-secondary/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <span className="text-foreground">{entry.label}</span>
-                    <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{entry.sectionLabel}</span>
+                    <span className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(entry.sectionLabel) && "font-mono uppercase tracking-[0.08em]")}>{entry.sectionLabel}</span>
                   </button>
                 </li>
               ))}
@@ -348,13 +350,16 @@ export function ConfigureComboField({ id, label, value, onChange, options, place
   const mergedOptions = value && !options.includes(value) ? [value, ...options] : options;
   return (
     <FormRow label={label} labelFor={id}>
-      <Combobox
+      <Input
         id={id}
-        options={mergedOptions}
+        list={`${id}-suggestions`}
         value={value}
-        onChange={onChange}
+        onChange={(event) => onChange(event.currentTarget.value)}
         placeholder={placeholder ?? "Select or type…"}
       />
+      <datalist id={`${id}-suggestions`}>
+        {mergedOptions.map((option) => <option key={option} value={option} />)}
+      </datalist>
     </FormRow>
   );
 }
@@ -494,7 +499,7 @@ export function LedgerBookSetupWizard({ view }: { view: AccountingConfigurationV
               <div className="grid gap-2">
                 {view.setupReadinessRows.map((row) => (
                   <div key={row.id} className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
-                    <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{row.label}</div>
+                    <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(row.label) && "uppercase tracking-[0.12em]")}>{row.label}</div>
                     <div className={cn("mt-1 text-sm font-semibold", toneTextClass(row.tone))}>{row.value}</div>
                     <p className="mt-1 text-xs text-muted-foreground">{row.detail}</p>
                   </div>
@@ -602,7 +607,7 @@ export function ConfigureChangePreviewPanel({ view }: { view: AccountingConfigur
           <div className="text-sm font-semibold text-foreground">Review pending draft changes</div>
           <p className="text-xs text-muted-foreground">{preview.currentVersionLabel} · {preview.headline}</p>
         </div>
-        <Badge variant={accountingToolingBadgeVariant(preview.activationTone)} dot>
+        <Badge variant={statusBadgeVariant(preview.activationTone)} dot>
           {preview.activationBadgeLabel}
         </Badge>
       </div>
@@ -612,7 +617,7 @@ export function ConfigureChangePreviewPanel({ view }: { view: AccountingConfigur
           <li key={row.id} className="rounded-md border border-border/60 bg-secondary/15 px-3 py-2">
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm font-semibold text-foreground">{row.label}</span>
-              <Badge variant={accountingToolingBadgeVariant(row.tone)}>{row.tone === "warning" ? "Pending" : "Saved"}</Badge>
+              <Badge variant={statusBadgeVariant(row.tone)}>{row.tone === "warning" ? "Pending" : "Saved"}</Badge>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">{row.statusLabel}</p>
           </li>
@@ -647,7 +652,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
               <CardDescription>Selected accounting scope and all activation evidence.</CardDescription>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={accountingToolingBadgeVariant(readinessSummary.tone)} dot>
+              <Badge variant={statusBadgeVariant(readinessSummary.tone)} dot>
                 {readinessSummary.statusLabel}
               </Badge>
               <Badge variant="outline">{readinessSummary.gateLabel}</Badge>
@@ -657,7 +662,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
         <CardContent className="space-y-4">
           <div className={cn(
             "rounded-md border px-3 py-3",
-            accountingToolingBorderClass(readinessSummary.tone)
+            statusPanelClass(readinessSummary.tone)
           )} role="status" aria-label="Accounting configuration overall readiness">
             <div className={cn("text-sm font-semibold", toneTextClass(readinessSummary.tone))}>
               {readinessSummary.issueSummaryLabel}
@@ -690,7 +695,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                   onClick={() => scrollToConfigureAnchor(item.anchorId)}
                   className={cn(
                     "flex w-full items-start justify-between gap-3 rounded-md border px-3 py-2 text-left transition-colors hover:bg-secondary/25 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
-                    accountingToolingBorderClass(item.tone)
+                    statusPanelClass(item.tone)
                   )}
                 >
                   <span>
@@ -769,13 +774,13 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
           {view.productionReadiness.productionGapRows.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5" role="region" aria-label="Accounting production gap checklist">
               {view.productionReadiness.productionGapRows.map((gap) => (
-                <div key={gap.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(gap.tone))}>
+                <div key={gap.id} className={cn("rounded-md border px-3 py-3", statusPanelClass(gap.tone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <div className="font-semibold text-foreground">{gap.label}</div>
                       <div className="mt-1 font-mono text-[11px] text-muted-foreground">{gap.id}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(gap.tone)}>{gap.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(gap.tone)}>{gap.statusLabel}</Badge>
                   </div>
                   <div className="mt-2 text-[11px] text-muted-foreground">{gap.severityLabel} | {gap.areaLabel}</div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{gap.summary}</p>
@@ -791,10 +796,10 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
           {view.productionReadiness.tenantAdministrationControls.length > 0 ? (
             <div className="grid gap-2 md:grid-cols-4" role="region" aria-label="Accounting tenant administration readiness controls">
               {view.productionReadiness.tenantAdministrationControls.map((control) => (
-                <div key={control.id} className={cn("rounded-md border px-3 py-2", accountingToolingBorderClass(control.tone))}>
+                <div key={control.id} className={cn("rounded-md border px-3 py-2", statusPanelClass(control.tone))}>
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-semibold text-foreground">{control.label}</span>
-                    <Badge variant={accountingToolingBadgeVariant(control.tone)}>{control.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(control.tone)}>{control.statusLabel}</Badge>
                   </div>
                 </div>
               ))}
@@ -896,7 +901,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
               ))}
             </div>
             <div className="mt-3 grid gap-3 rounded-md border border-border/70 bg-background/45 px-3 py-3" role="region" aria-label="Accounting approval queue setup editor">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">Approval queue setup</div>
+              <div className="text-xs font-semibold text-muted-foreground">Approval queue setup</div>
               <div className="grid gap-3 md:grid-cols-3">
                 <FormRow label="Queue id" labelFor="accounting-approval-queue-id">
                   <Input
@@ -954,7 +959,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
               />
             </div>
             <div className="mt-3 grid gap-3 rounded-md border border-border/70 bg-background/45 px-3 py-3" role="region" aria-label="Accounting dimension mapping setup editor">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">Dimension mapping setup</div>
+              <div className="text-xs font-semibold text-muted-foreground">Dimension mapping setup</div>
               <div className="grid gap-3 md:grid-cols-3">
                 <FormRow label="Mapping id" labelFor="accounting-dimension-mapping-id">
                   <Input
@@ -993,11 +998,11 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                   <details className="text-xs">
                     <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
                     <FormRow label="Meridian dimensions" labelFor="accounting-dimension-mapping-meridian-dimensions">
-                      <textarea
+                      <TextArea rows={2}
                         id="accounting-dimension-mapping-meridian-dimensions"
                         value={view.tenantAdministrationProfile.dimensionMappingSetup.meridianDimensionsValue}
                         onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ meridianDimensionsText: event.currentTarget.value })}
-                        className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                        className="min-h-28 w-full font-mono text-sm"
                         placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;costCenterId=fund-accounting"
                       />
                     </FormRow>
@@ -1017,11 +1022,11 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                   <details className="text-xs">
                     <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
                     <FormRow label="Provider dimensions" labelFor="accounting-dimension-mapping-provider-dimensions">
-                      <textarea
+                      <TextArea rows={2}
                         id="accounting-dimension-mapping-provider-dimensions"
                         value={view.tenantAdministrationProfile.dimensionMappingSetup.providerDimensionsValue}
                         onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ providerDimensionsText: event.currentTarget.value })}
-                        className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                        className="min-h-28 w-full font-mono text-sm"
                         placeholder="Class=fund-alpha&#10;Book=book-primary&#10;Department=fund-accounting"
                       />
                     </FormRow>
@@ -1111,22 +1116,22 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                 <details className="text-xs">
                   <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
                   <FormRow label="Account mappings" labelFor="accounting-external-gl-account-mappings">
-                    <textarea
+                    <TextArea rows={2}
                       id="accounting-external-gl-account-mappings"
                       value={view.externalGlMappingProfile.accountMappingsValue}
                       onChange={(event) => view.externalGlMappingProfile.updateAccountMappings(event.currentTarget.value)}
-                      className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                      className="min-h-24 w-full font-mono text-sm"
                       placeholder="Meridian:Account=external-account-id"
                     />
                   </FormRow>
                 </details>
               </div>
               <FormRow label="Retained mapping evidence" labelFor="accounting-external-gl-mapping-evidence">
-                <textarea
+                <TextArea rows={2}
                   id="accounting-external-gl-mapping-evidence"
                   value={view.externalGlMappingProfile.evidenceValue}
                   onChange={(event) => view.externalGlMappingProfile.updateEvidence(event.currentTarget.value)}
-                  className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                  className="min-h-24 w-full font-mono text-sm"
                   placeholder="approval:external-gl-mapping:profile-id"
                 />
               </FormRow>
@@ -1146,11 +1151,11 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                 <details className="text-xs">
                   <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
                   <FormRow label="Meridian dimensions" labelFor="accounting-external-gl-meridian-dimensions">
-                    <textarea
+                    <TextArea rows={2}
                       id="accounting-external-gl-meridian-dimensions"
                       value={view.externalGlMappingProfile.meridianDimensionsValue}
                       onChange={(event) => view.externalGlMappingProfile.updateMeridianDimensions(event.currentTarget.value)}
-                      className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                      className="min-h-28 w-full font-mono text-sm"
                       placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;Provider=quickbooks-fixture"
                     />
                   </FormRow>
@@ -1170,29 +1175,25 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                 <details className="text-xs">
                   <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
                   <FormRow label="External dimensions" labelFor="accounting-external-gl-provider-dimensions">
-                    <textarea
+                    <TextArea rows={2}
                       id="accounting-external-gl-provider-dimensions"
                       value={view.externalGlMappingProfile.externalDimensionsValue}
                       onChange={(event) => view.externalGlMappingProfile.updateExternalDimensions(event.currentTarget.value)}
-                      className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                      className="min-h-28 w-full font-mono text-sm"
                       placeholder="Class=fund-alpha&#10;Book=book-primary&#10;customerId=qbo-customer"
                     />
                   </FormRow>
                 </details>
               </div>
             </div>
-            <label className="mt-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-              <input
-                type="checkbox"
-                checked={view.externalGlMappingProfile.certified}
-                onChange={(event) => view.externalGlMappingProfile.updateCertified(event.currentTarget.checked)}
-              />
+            <Checkbox className="mt-3 flex items-center gap-2 text-sm font-semibold text-foreground" checked={view.externalGlMappingProfile.certified} onChange={(event) => view.externalGlMappingProfile.updateCertified(event.currentTarget.checked)} label={<>
+
               Certify mapping profile for guarded export readiness
-            </label>
+            </>} />
             {view.externalGlMappingProfile.mappingRows.length > 0 ? (
               <div className="mt-3 grid gap-2 md:grid-cols-3" role="region" aria-label="Retained external GL mapping profiles">
                 {view.externalGlMappingProfile.mappingRows.map((row) => (
-                  <div key={row.id} className={cn("rounded-md border px-3 py-2", accountingToolingBorderClass(row.tone))}>
+                  <div key={row.id} className={cn("rounded-md border px-3 py-2", statusPanelClass(row.tone))}>
                     <div className="text-sm font-semibold text-foreground">{row.label}</div>
                     <div className="mt-1 text-xs text-muted-foreground">{row.statusLabel}</div>
                   </div>
@@ -1209,13 +1210,13 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
           {view.productionReadiness.migrationPlanRows.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" role="region" aria-label="Accounting migration rollout plan">
               {view.productionReadiness.migrationPlanRows.map((item) => (
-                <div key={item.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(item.tone))}>
+                <div key={item.id} className={cn("rounded-md border px-3 py-3", statusPanelClass(item.tone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <div className="font-semibold text-foreground">{item.title}</div>
                       <div className="mt-1 font-mono text-[11px] text-muted-foreground">{item.id}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(item.tone)}>{item.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(item.tone)}>{item.statusLabel}</Badge>
                   </div>
                   <div className="mt-2 font-mono text-[11px] text-muted-foreground">{item.certificationLabel} | {item.latestRunLabel}</div>
                   <div className="mt-1 text-[11px] text-muted-foreground">{item.scopeLabel}</div>
@@ -1230,13 +1231,13 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
           {view.productionReadiness.migrationArtifactRows.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" role="region" aria-label="Retained accounting migration run artifacts">
               {view.productionReadiness.migrationArtifactRows.map((artifact) => (
-                <div key={artifact.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(artifact.tone))}>
+                <div key={artifact.id} className={cn("rounded-md border px-3 py-3", statusPanelClass(artifact.tone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <div className="font-semibold text-foreground">{artifact.kindLabel}</div>
                       <div className="mt-1 font-mono text-[11px] text-muted-foreground">{artifact.id}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(artifact.tone)}>{artifact.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(artifact.tone)}>{artifact.statusLabel}</Badge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{artifact.title}</p>
                   <div className="mt-2 font-mono text-[11px] text-muted-foreground">{artifact.recordCountLabel} | {artifact.issueCountLabel} | {artifact.evidenceLabel}</div>
@@ -1248,18 +1249,18 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
 
           {view.productionReadiness.migrationWorkerPlanRows.length > 0 ? (
             <div className="space-y-2" role="region" aria-label="Retained accounting migration worker plans">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(view.productionReadiness.migrationWorkerPlanSummaryLabel) && "uppercase tracking-[0.14em]")}>
                 {view.productionReadiness.migrationWorkerPlanSummaryLabel}
               </div>
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {view.productionReadiness.migrationWorkerPlanRows.map((plan) => (
-                  <div key={plan.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(plan.tone))}>
+                  <div key={plan.id} className={cn("rounded-md border px-3 py-3", statusPanelClass(plan.tone))}>
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
                         <div className="font-semibold text-foreground">{plan.kindLabel}</div>
                         <div className="mt-1 font-mono text-[11px] text-muted-foreground">{plan.id}</div>
                       </div>
-                      <Badge variant={accountingToolingBadgeVariant(plan.tone)}>{plan.tone === "success" ? "Reconciled" : "Mismatch"}</Badge>
+                      <Badge variant={statusBadgeVariant(plan.tone)}>{plan.tone === "success" ? "Reconciled" : "Mismatch"}</Badge>
                     </div>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{plan.title}</p>
                     <div className="mt-2 font-mono text-[11px] text-muted-foreground">{plan.countLabel} | {plan.evidenceLabel}</div>
@@ -1274,10 +1275,10 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
           {view.productionReadiness.components.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4" aria-label="Accounting production readiness components">
               {view.productionReadiness.components.map((component) => (
-                <div key={component.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(component.tone))}>
+                <div key={component.id} className={cn("rounded-md border px-3 py-3", statusPanelClass(component.tone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="font-semibold text-foreground">{component.label}</div>
-                    <Badge variant={accountingToolingBadgeVariant(component.tone)}>{component.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(component.tone)}>{component.statusLabel}</Badge>
                   </div>
                   <div className="mt-2 font-mono text-xs text-muted-foreground">{component.scoreLabel} | {component.issueCountLabel}</div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{component.summary}</p>
@@ -1292,10 +1293,10 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
           {view.productionReadiness.blockerIssues.length > 0 ? (
             <div className="space-y-2" aria-label="Accounting production readiness blockers">
               {view.productionReadiness.blockerIssues.map((issue) => (
-                <div key={issue.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(issue.tone))}>
+                <div key={issue.id} className={cn("rounded-md border px-3 py-2 text-sm", statusPanelClass(issue.tone))}>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="font-semibold text-foreground">{issue.label}</span>
-                    <Badge variant={accountingToolingBadgeVariant(issue.tone)}>{issue.tone === "danger" ? "Blocker" : "Review"}</Badge>
+                    <Badge variant={statusBadgeVariant(issue.tone)}>{issue.tone === "danger" ? "Blocker" : "Review"}</Badge>
                   </div>
                   <p className="mt-1 text-muted-foreground">{issue.message}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{issue.suggestedAction} | {issue.evidenceLabel}</p>

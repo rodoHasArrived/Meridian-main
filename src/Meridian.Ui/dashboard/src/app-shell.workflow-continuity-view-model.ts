@@ -108,12 +108,15 @@ export function buildWorkflowContinuityViewModel(
     : routeResolution.mode === "choose-task"
       ? `No continuity step is selected for ${activeWorkspace.label}. Choose a task from the local workspace navigation; the current operating scope will be preserved.`
       : "The requested route is not part of a Meridian workspace. Open the Daily Control Tower to choose a task.";
-  const contextOwnerLabel = isShellHome ? "Daily Control Tower" : activeWorkspace.label;
+  // The home page is named "Today" in the sidebar and the breadcrumb, so the context says so too.
+  const contextOwnerLabel = isShellHome ? "Today" : activeWorkspace.label;
   const contextValue = subjectSymbol
     ? `${contextOwnerLabel} / ${subjectSymbol}`
     : operatingScope.hasScope
       ? `${contextOwnerLabel} / Scoped workflow`
-      : `${contextOwnerLabel} / ${activeStep?.label ?? "Choose a task"}`;
+      : activeStep?.label === contextOwnerLabel
+        ? contextOwnerLabel
+        : `${contextOwnerLabel} / ${activeStep?.label ?? "Choose a task"}`;
   const nextActionLabel = routeResolution.mode === "matched"
     ? activeStep && nextStep && activeStep.id === nextStep.id
       ? `Stay on ${activeStep.label}`
@@ -149,7 +152,7 @@ export function buildWorkflowContinuityViewModel(
     title,
     summary,
     primaryOperatorFlowLabel: "Primary operator workflow",
-    primaryOperatorFlowSummary: "Import -> Validate -> Reconcile -> Investigate -> Approve -> Report",
+    primaryOperatorFlowSummary: "Import → Validate → Reconcile → Investigate → Approve → Report",
     primaryOperatorFlowStepsLabel: "Primary operator workflow steps",
     primaryOperatorFlowSteps,
     contextLabel: "Operating context",
@@ -159,7 +162,6 @@ export function buildWorkflowContinuityViewModel(
     operatingScope,
     routeLabel: currentRoute || "/",
     stepsLabel: trail ? `${trail.title} workflow steps` : `${contextOwnerLabel} task workflow steps`,
-    ariaLabel: trail ? `${trail.title} continuity` : `${contextOwnerLabel} task choice`,
     nextActionLabel,
     nextActionAriaLabel,
     nextActionHref,
@@ -172,6 +174,7 @@ export function buildWorkflowContinuityViewModel(
     operatorFocusOverflowLabel: operatorFocus.overflowLabel,
     operatorFocusItems: operatorFocus.items,
     operatorFocusCommandItems: operatorFocus.commandItems,
+    leadingOperatorFocusItemId: operatorFocus.leadingItem?.id ?? null,
     evidenceTimelineLabel: "Evidence timeline",
     evidenceTimelineSummary: evidenceTimeline.summary,
     evidenceTimelineEmptyText: evidenceTimeline.emptyText,
@@ -398,6 +401,13 @@ interface OperatorFocusViewModel {
   overflowLabel: string | null;
   items: AppShellOperatorFocusItem[];
   commandItems: AppShellOperatorFocusItem[];
+  /**
+   * The worst queued item by tone, then source priority, whatever order the queue is listed in.
+   * Today lists the queue finance-first while every other route lists it worst-first; the
+   * leading decision must not change with the route, or the masthead would name one issue on
+   * Today and another everywhere else.
+   */
+  leadingItem: AppShellOperatorFocusItem | null;
 }
 
 interface EvidenceTimelineViewModel {
@@ -443,7 +453,7 @@ function buildDecisionBriefViewModel({
   subjectSymbol
 }: DecisionBriefInput): AppShellDecisionBrief {
   const latestEvidence = evidenceTimeline.items[0] ?? null;
-  const focusItem = operatorFocus.commandItems[0] ?? operatorFocus.items[0] ?? null;
+  const focusItem = operatorFocus.leadingItem ?? operatorFocus.commandItems[0] ?? operatorFocus.items[0] ?? null;
 
   if (focusItem) {
     return {
@@ -540,7 +550,8 @@ function buildOperatorFocusViewModel(
       emptyText: "Ranked focus actions will appear after workspace data loads.",
       overflowLabel: null,
       items: [],
-      commandItems: []
+      commandItems: [],
+      leadingItem: null
     };
   }
 
@@ -557,6 +568,9 @@ function buildOperatorFocusViewModel(
     ...buildStrategyOperatorFocusItems(context.payload.strategy)
   ]).sort((left, right) => compareOperatorFocusCandidates(left, right, financeFirst));
 
+  const leadingCandidate = financeFirst
+    ? [...candidates].sort((left, right) => compareOperatorFocusCandidates(left, right))[0] ?? null
+    : candidates[0] ?? null;
   const visibleItems = candidates.slice(0, OPERATOR_FOCUS_VISIBLE_LIMIT).map((candidate) => toOperatorFocusItem(candidate, operatingScope));
   const blockedCount = candidates.filter((item) => item.tone === "blocked").length;
   const reviewCount = candidates.filter((item) => item.tone === "review").length;
@@ -569,7 +583,8 @@ function buildOperatorFocusViewModel(
     emptyText: "Loaded workspaces have no ranked blockers.",
     overflowLabel: overflowCount > 0 ? `+${overflowCount} more focus ${overflowCount === 1 ? "item" : "items"}` : null,
     items: visibleItems,
-    commandItems: candidates.map((candidate) => toOperatorFocusItem(candidate, operatingScope))
+    commandItems: candidates.map((candidate) => toOperatorFocusItem(candidate, operatingScope)),
+    leadingItem: leadingCandidate ? toOperatorFocusItem(leadingCandidate, operatingScope) : null
   };
 }
 

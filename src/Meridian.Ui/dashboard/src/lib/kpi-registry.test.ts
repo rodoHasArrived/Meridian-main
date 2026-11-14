@@ -4,12 +4,12 @@ import type { FinancialRecordExplorerDto, PortfolioWorkspaceResponse, TradingPos
 
 function portfolio(positions: Partial<TradingPosition>[], metrics: PortfolioWorkspaceResponse["metrics"] = []): PortfolioWorkspaceResponse {
   return {
-    positions: positions.map((position, index) => ({
+    positions: positions.map<TradingPosition>((position, index) => ({
       symbol: `SYMBOL-${index}`, side: "Long", quantity: "1", averagePrice: "1", markPrice: "1", dayPnl: "$0", unrealizedPnl: "$0", exposure: "$1", ...position
     })), metrics,
     brokerage: { account: "PAPER-1", provider: "Example", environment: "paper", connection: "Connected", lastHeartbeat: "now", orderIngress: "healthy", fillFeed: "healthy", notes: "" },
-    risk: null, cashFlow: null, runs: []
-  } as PortfolioWorkspaceResponse;
+    risk: { state: "Healthy", summary: "Synthetic test portfolio", netExposure: "$0", grossExposure: "$0", var95: "$0", maxDrawdown: "0%", buyingPowerUsed: "0%", activeGuardrails: [] }, cashFlow: null, runs: []
+  };
 }
 
 function retained(overrides: Partial<FinancialRecordExplorerDto> = {}): FinancialRecordExplorerDto {
@@ -72,6 +72,12 @@ describe("KPI registry ownership and financial meaning", () => {
     expect(resolveKpi("portfolio.total-exposure", { portfolio: portfolio([{ exposure: "EUR 100" }, { exposure: "€1.50" }]) }).value).toBe("€101.50");
   });
 
+  it("honors supplied holding currency without silently changing it to USD", () => {
+    expect(resolveKpi("portfolio.total-exposure", { portfolio: portfolio([{ exposure: "$100", currency: "CAD" }, { exposure: "25", currency: "CAD" }]) })).toMatchObject({ value: "CAD 125", currency: "CAD" });
+    expect(resolveKpi("portfolio.total-exposure", { portfolio: portfolio([{ exposure: "USD 100", currency: "CAD" }]) }).status).toBe("unavailable");
+    expect(resolveKpi("portfolio.total-exposure", { portfolio: portfolio([{ exposure: "$100", currency: "CAD" }, { exposure: "$25", currency: "USD" }]) }).status).toBe("unavailable");
+  });
+
   it("never uses another monetary headline to fill absent portfolio cash", () => {
     const model = portfolio([], [{ id: "portfolio-value", label: "Portfolio value", value: "$300", delta: "", tone: "default" }]);
     expect(resolveKpi("portfolio.cash", { portfolio: model }).status).toBe("unavailable");
@@ -118,6 +124,24 @@ describe("KPI registry ownership and financial meaning", () => {
     const models = { portfolio: {} } as KpiReadModels;
     expect(resolveKpi("portfolio.open-positions", models).status).toBe("unavailable");
     expect(resolveKpi("portfolio.total-exposure", models).status).toBe("unavailable");
+  });
+
+  it("uses shared cross-screen definitions for providers, open orders and open breaks", () => {
+    const models = {
+      crossScreenCounts: { asOf: "2026-11-14T12:00:00Z", providers: { healthy: 3, total: 4, definition: "Healthy status" }, openOrders: { count: 7, definition: "Open order manager rows" }, openBreaks: { count: 2, definition: "Unresolved breaks" } },
+      overview: { providersOnline: 9, providersTotal: 9 }, trading: { openOrders: [{}] }, data: { providers: [{ status: "Healthy" }] },
+      accounting: { workspace: { openBreaks: 10 }, breakQueue: [], metrics: [{ id: "breaks", value: "10", label: "Open breaks", tone: "warning", delta: "2 new since your last visit" }] }
+    } as unknown as KpiReadModels;
+    expect(resolveKpi("system.providers-online", models).value).toBe("3 / 4");
+    expect(resolveKpi("data.providers-healthy", models).value).toBe("1 / 1");
+    expect(resolveKpi("trading.open-orders", models).value).toBe("1");
+    expect(resolveKpi("accounting.open-breaks", models)).toMatchObject({ value: "10", delta: "2 new since your last visit" });
+  });
+
+  it("preserves the owning metric's trust and number-passport fields", () => {
+    const metric = { id: "trading-net-pnl", value: "$100", label: "Net P&L", tone: "success", delta: "+2%", baseline: "vs prior session", provenance: { source: "Trading workspace", asOf: "2026-11-14T12:00:00Z", scope: "Account A" }, freshness: "stale", comparisonPeriod: "prior session", basis: "net", asOf: "2026-11-14T12:00:00Z", source: "OMS", numberPassport: { schemaVersion: 1, subjectType: "portfolio", subjectId: "account-A", scope: null } } as const;
+    const result = resolveKpi("trading.net-pnl", { trading: { metrics: [metric] } as unknown as KpiReadModels["trading"] });
+    expect(result).toMatchObject({ baseline: metric.baseline, provenance: metric.provenance, freshness: "stale", comparisonPeriod: metric.comparisonPeriod, basis: metric.basis, asOf: metric.asOf, source: metric.source, numberPassport: metric.numberPassport });
   });
 
   it("publishes canonical observations from the exact rendered resolution", () => {

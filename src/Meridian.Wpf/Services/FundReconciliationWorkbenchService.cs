@@ -2,6 +2,7 @@ using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.Services;
 
@@ -802,7 +803,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
 
     private static string FormatTimestamp(DateTimeOffset? value)
         => value.HasValue
-            ? value.Value.LocalDateTime.ToString("g")
+            ? UtcFormat.FormatUtcTimestamp(value.Value)
             : "\u2014";
 
     private static string TrimMiddle(string? value)

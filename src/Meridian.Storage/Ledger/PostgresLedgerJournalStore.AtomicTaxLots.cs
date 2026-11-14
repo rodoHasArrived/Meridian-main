@@ -53,210 +53,233 @@ public sealed partial class PostgresLedgerJournalStore
         command = NormalizeAndValidateAtomicTaxLotCommand(command);
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var transaction = await connection
-            .BeginTransactionAsync(IsolationLevel.Serializable, ct)
-            .ConfigureAwait(false);
-
-        // Take this table lock before the first MVCC read so a preceding deferral writer is
-        // visible in this serializable snapshot. Replay still precedes carry validation below.
-        if (command.MutationKind == AtomicTaxLotMutationKind.CorporateAction)
-            await LockSuccessorCarryBoundaryAsync(connection, transaction, forSuccessorPosting: true, ct).ConfigureAwait(false);
-
-        await EnsureBookWriteAuthorityAsync(connection, transaction, command.LedgerBookId, ct).ConfigureAwait(false);
-        await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id",
-            command.Journal.PeriodId, false, ct).ConfigureAwait(false);
-
-        await AcquireAtomicTaxLotIdentityLocksAsync(connection, transaction, command, ct)
-            .ConfigureAwait(false);
-
-        var collisions = await LoadAtomicTaxLotBatchCollisionsAsync(connection, transaction, command, ct)
-            .ConfigureAwait(false);
-        if (collisions.Count > 0)
+        await EnsureTenantRowAsync(connection, null, "accounting_periods", "period_id", command.Journal.PeriodId, false, ct,
+            retainLock: false).ConfigureAwait(false);
+        var observedPeriod = await LoadPeriodAsync(connection, null, command.Journal.PeriodId, forUpdate: false,
+            callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null, ct: ct).ConfigureAwait(false)
+            ?? throw new LedgerValidationException("The atomic posting period does not exist.");
+        if (observedPeriod.LedgerBookId != command.LedgerBookId)
+            throw new LedgerValidationException("Atomic tax-lot posting ledger book does not match the retained accounting period.");
+        IAsyncDisposable? entitlement = null;
+        try
         {
-            if (collisions.Count != 1 || !IsExactBatchIdentity(collisions[0], command) ||
-                !string.Equals(
-                    collisions[0].CanonicalFingerprint,
-                    command.CanonicalFingerprint,
-                    StringComparison.Ordinal))
+            await using var transaction = await connection
+                .BeginTransactionAsync(IsolationLevel.Serializable, ct)
+                .ConfigureAwait(false);
+
+            await LockCouponHistoryBoundaryAsync(connection, transaction, NeedsCouponHistoryBoundary(command.Journal), ct).ConfigureAwait(false);
+            // Take this table lock before the first MVCC read so a preceding deferral writer is
+            // visible in this serializable snapshot. Replay still precedes carry validation below.
+            if (command.MutationKind == AtomicTaxLotMutationKind.CorporateAction)
+                await LockSuccessorCarryBoundaryAsync(connection, transaction, forSuccessorPosting: true, ct).ConfigureAwait(false);
+
+            // Both table gates are snapshot-neutral and precede dividend authority everywhere.
+            // Only now may the advisory SELECT establish a snapshot containing prior writers.
+            entitlement = await CashDividendEntitlementLock.AcquireSessionSharedAsync(connection, observedPeriod.LedgerBookId!.Value, ct).ConfigureAwait(false);
+            await EnsureBookWriteAuthorityAsync(connection, transaction, command.LedgerBookId, ct).ConfigureAwait(false);
+            await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id",
+                command.Journal.PeriodId, false, ct).ConfigureAwait(false);
+
+            await AcquireAtomicTaxLotIdentityLocksAsync(connection, transaction, command, ct)
+                .ConfigureAwait(false);
+
+            var collisions = await LoadAtomicTaxLotBatchCollisionsAsync(connection, transaction, command, ct)
+                .ConfigureAwait(false);
+            if (collisions.Count > 0)
             {
-                throw new LedgerValidationException(
-                    "Atomic tax-lot posting identity collision: the retained batch does not match the complete canonical fingerprint.");
+                if (collisions.Count != 1 || !IsExactBatchIdentity(collisions[0], command) ||
+                    !string.Equals(
+                        collisions[0].CanonicalFingerprint,
+                        command.CanonicalFingerprint,
+                        StringComparison.Ordinal))
+                {
+                    throw new LedgerValidationException(
+                        "Atomic tax-lot posting identity collision: the retained batch does not match the complete canonical fingerprint.");
+                }
+
+                _ = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
+                var replay = await LoadAtomicTaxLotResultAsync(
+                        connection,
+                        transaction,
+                        collisions[0].MutationBatchId,
+                        isExactReplay: true,
+                        ct)
+                    .ConfigureAwait(false);
+                await transaction.CommitAsync(ct).ConfigureAwait(false);
+                return replay;
             }
 
-            _ = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
-            var replay = await LoadAtomicTaxLotResultAsync(
+            await using var postingAuthority = await AcquirePostingAuthorityAsync(connection, transaction, [command.Journal], ct).ConfigureAwait(false);
+
+            // Historical receipts may predate canonical acquisition facts. Exact replay above must
+            // retain that shape, but a new lot cannot create another legacy-backfill exception.
+            if (command.Direction == OpenLotDirection.Short
+                && command.MutationKind is not (AtomicTaxLotMutationKind.Acquisition or AtomicTaxLotMutationKind.Disposal))
+                throw new LedgerValidationException("Short lots currently support governed opening and cover only.");
+            if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition && command.AcquisitionLot!.Acquisition is null)
+                throw new LedgerValidationException("New atomic acquisitions require complete canonical acquisition facts.");
+            if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition
+                && !OpenLotCarryingAccounts.Matches(command.AcquisitionLot!.Account, command.Direction))
+                throw new LedgerValidationException("New long-lot acquisitions require an asset carrying account; short opening requires a liability carrying account.");
+
+            // Unversioned instructions preserve historical receipt fingerprints and calculations,
+            // but only an existing exact receipt may use them. New writes require a fresh preview.
+            if (command.MutationKind == AtomicTaxLotMutationKind.Amortization
+                && !OpenLotAmortization.IsCurrentVersion(command.Amortization!.CalculationVersion))
+                throw new LedgerValidationException("New amortization postings require a fresh preview using the current calculation version.");
+
+            // Tenant-scoped writes already hold the book. Keep compatibility writes in the same
+            // book-before-reference order as backfill, without adding a gate to exact replay above.
+            if (!_tenantScope.IsFailClosed)
+                _ = await LoadLedgerBookAsync(connection, transaction, command.LedgerBookId, ct).ConfigureAwait(false);
+
+            var period = await LoadPeriodAsync(
                     connection,
                     transaction,
-                    collisions[0].MutationBatchId,
-                    isExactReplay: true,
+                    command.Journal.PeriodId,
+                    forUpdate: true,
+                    callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null,
+                    ct: ct)
+                .ConfigureAwait(false);
+            if (period is null)
+            {
+                throw new LedgerValidationException(
+                    $"Ledger period '{command.Journal.PeriodId}' was not found for atomic tax-lot posting.");
+            }
+
+            if (period.LedgerBookId != command.LedgerBookId)
+            {
+                throw new LedgerValidationException(
+                    "Atomic tax-lot posting ledger book does not match the retained accounting period.");
+            }
+
+            if (period.Version != command.ExpectedPeriodVersion)
+            {
+                throw new LedgerValidationException(
+                    $"Accounting period version {period.Version} does not match atomic tax-lot expected version {command.ExpectedPeriodVersion}.");
+            }
+
+            await ValidateCorrectionBatchAsync(connection, transaction, command, ct).ConfigureAwait(false);
+            await LockAcquisitionDisposalAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
+            AverageCostReliefPlan? averageCostPlan = null;
+            if (command.MutationKind == AtomicTaxLotMutationKind.Disposal)
+            {
+                averageCostPlan = await ValidateAuthoritativeDisposalPolicyAsync(connection, transaction, command, ct)
+                    .ConfigureAwait(false);
+            }
+
+            // This is the existing governed journal append path, deliberately using the same connection
+            // and transaction as the lot CAS and append-only mutation evidence below.
+            LedgerTaxLotRecord? amortizationLot = null;
+            if (command.MutationKind == AtomicTaxLotMutationKind.Amortization)
+                amortizationLot = await LockAmortizationAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
+            LedgerTaxLotRecord? corporateActionLot = null;
+            if (command.MutationKind == AtomicTaxLotMutationKind.CorporateAction)
+                corporateActionLot = await LockCorporateActionAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
+            LedgerTaxLotRecord? capitalReturnLot = null;
+            if (command.MutationKind == AtomicTaxLotMutationKind.CapitalReturn)
+                capitalReturnLot = await LockCapitalReturnAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
+            IReadOnlyList<LedgerTaxLotRecord>? factorPaydownLots = null;
+            if (command.MutationKind == AtomicTaxLotMutationKind.FactorPaydown)
+                factorPaydownLots = await LockFactorPaydownAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
+            // LockAmortizationAuthorityAsync has already checked the immutable original receipt,
+            // exact inverse lines and current reference hash before this private exception is set.
+            await AppendJournalWithinTransactionAsync(connection, transaction, command.Journal, ct,
+                verifiedAmortizationReversal: amortizationLot is not null && command.Amortization!.Reversal is not null)
+                .ConfigureAwait(false);
+
+            var recordedAt = DateTimeOffset.UtcNow;
+            await InsertAtomicTaxLotBatchAsync(connection, transaction, command, recordedAt, ct)
+                .ConfigureAwait(false);
+
+            if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition)
+            {
+                var mutation = await ApplyAcquisitionAsync(connection, transaction, command, recordedAt, ct)
+                    .ConfigureAwait(false);
+                ValidateAtomicJournalLotEconomics(command, [mutation]);
+                await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
+            }
+            else if (command.MutationKind == AtomicTaxLotMutationKind.Amortization)
+            {
+                var mutation = await ApplyAmortizationAsync(connection, transaction, command, amortizationLot!, recordedAt, ct)
+                    .ConfigureAwait(false);
+                ValidateAtomicJournalLotEconomics(command, [mutation]);
+                await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
+            }
+            else if (command.MutationKind == AtomicTaxLotMutationKind.CapitalReturn)
+            {
+                var mutation = await ApplyCapitalReturnAsync(connection, transaction, command, capitalReturnLot!, recordedAt, ct)
+                    .ConfigureAwait(false);
+                await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
+            }
+            else if (command.MutationKind == AtomicTaxLotMutationKind.FactorPaydown)
+            {
+                var mutations = await ApplyFactorPaydownAsync(connection, transaction, command, factorPaydownLots!, recordedAt, ct)
+                    .ConfigureAwait(false);
+                ValidateAtomicJournalLotEconomics(command, mutations);
+                foreach (var mutation in mutations)
+                    await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
+            }
+            else if (command.MutationKind == AtomicTaxLotMutationKind.CorporateAction)
+            {
+                var mutations = await ApplyCorporateActionAsync(connection, transaction, command, corporateActionLot!, recordedAt, ct)
+                    .ConfigureAwait(false);
+                foreach (var mutation in mutations)
+                    await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
+            }
+            else
+            {
+                var mutations = new List<LedgerTaxLotMutationRecord>(command.DisposalSelections!.Count);
+                foreach (var selection in command.DisposalSelections!)
+                {
+                    var mutation = await ApplyDisposalAsync(
+                            connection,
+                            transaction,
+                            command,
+                            selection,
+                            recordedAt,
+                            averageCostPlan,
+                            ct)
+                        .ConfigureAwait(false);
+                    mutations.Add(mutation);
+                }
+
+                ValidateAtomicJournalLotEconomics(command, mutations);
+                ValidateDisposalProceedsAllocation(command, mutations);
+                if (averageCostPlan is not null)
+                {
+                    mutations.AddRange(await RestateAverageCostSurvivorsAsync(
+                            connection,
+                            transaction,
+                            command,
+                            averageCostPlan,
+                            recordedAt,
+                            ct)
+                        .ConfigureAwait(false));
+                }
+
+                foreach (var mutation in mutations)
+                {
+                    await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
+                }
+            }
+
+            var result = await LoadAtomicTaxLotResultAsync(
+                    connection,
+                    transaction,
+                    command.MutationBatchId,
+                    isExactReplay: false,
                     ct)
                 .ConfigureAwait(false);
             await transaction.CommitAsync(ct).ConfigureAwait(false);
-            return replay;
+            return result;
         }
-
-        // Historical receipts may predate canonical acquisition facts. Exact replay above must
-        // retain that shape, but a new lot cannot create another legacy-backfill exception.
-        if (command.Direction == OpenLotDirection.Short
-            && command.MutationKind is not (AtomicTaxLotMutationKind.Acquisition or AtomicTaxLotMutationKind.Disposal))
-            throw new LedgerValidationException("Short lots currently support governed opening and cover only.");
-        if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition && command.AcquisitionLot!.Acquisition is null)
-            throw new LedgerValidationException("New atomic acquisitions require complete canonical acquisition facts.");
-        if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition
-            && !OpenLotCarryingAccounts.Matches(command.AcquisitionLot!.Account, command.Direction))
-            throw new LedgerValidationException("New long-lot acquisitions require an asset carrying account; short opening requires a liability carrying account.");
-
-        // Unversioned instructions preserve historical receipt fingerprints and calculations,
-        // but only an existing exact receipt may use them. New writes require a fresh preview.
-        if (command.MutationKind == AtomicTaxLotMutationKind.Amortization
-            && !OpenLotAmortization.IsCurrentVersion(command.Amortization!.CalculationVersion))
-            throw new LedgerValidationException("New amortization postings require a fresh preview using the current calculation version.");
-
-        // Tenant-scoped writes already hold the book. Keep compatibility writes in the same
-        // book-before-reference order as backfill, without adding a gate to exact replay above.
-        if (!_tenantScope.IsFailClosed)
-            _ = await LoadLedgerBookAsync(connection, transaction, command.LedgerBookId, ct).ConfigureAwait(false);
-
-        var period = await LoadPeriodAsync(
-                connection,
-                transaction,
-                command.Journal.PeriodId,
-                forUpdate: true,
-                callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null,
-                ct: ct)
-            .ConfigureAwait(false);
-        if (period is null)
+        finally
         {
-            throw new LedgerValidationException(
-                $"Ledger period '{command.Journal.PeriodId}' was not found for atomic tax-lot posting.");
+            // The transaction is disposed/rolled back before releasing its session authority.
+            if (entitlement is not null)
+                await entitlement.DisposeAsync().ConfigureAwait(false);
         }
-
-        if (period.LedgerBookId != command.LedgerBookId)
-        {
-            throw new LedgerValidationException(
-                "Atomic tax-lot posting ledger book does not match the retained accounting period.");
-        }
-
-        if (period.Version != command.ExpectedPeriodVersion)
-        {
-            throw new LedgerValidationException(
-                $"Accounting period version {period.Version} does not match atomic tax-lot expected version {command.ExpectedPeriodVersion}.");
-        }
-
-        await ValidateCorrectionBatchAsync(connection, transaction, command, ct).ConfigureAwait(false);
-        await LockAcquisitionDisposalAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
-        AverageCostReliefPlan? averageCostPlan = null;
-        if (command.MutationKind == AtomicTaxLotMutationKind.Disposal)
-        {
-            averageCostPlan = await ValidateAuthoritativeDisposalPolicyAsync(connection, transaction, command, ct)
-                .ConfigureAwait(false);
-        }
-
-        // This is the existing governed journal append path, deliberately using the same connection
-        // and transaction as the lot CAS and append-only mutation evidence below.
-        LedgerTaxLotRecord? amortizationLot = null;
-        if (command.MutationKind == AtomicTaxLotMutationKind.Amortization)
-            amortizationLot = await LockAmortizationAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
-        LedgerTaxLotRecord? corporateActionLot = null;
-        if (command.MutationKind == AtomicTaxLotMutationKind.CorporateAction)
-            corporateActionLot = await LockCorporateActionAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
-        LedgerTaxLotRecord? capitalReturnLot = null;
-        if (command.MutationKind == AtomicTaxLotMutationKind.CapitalReturn)
-            capitalReturnLot = await LockCapitalReturnAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
-        IReadOnlyList<LedgerTaxLotRecord>? factorPaydownLots = null;
-        if (command.MutationKind == AtomicTaxLotMutationKind.FactorPaydown)
-            factorPaydownLots = await LockFactorPaydownAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
-        // LockAmortizationAuthorityAsync has already checked the immutable original receipt,
-        // exact inverse lines and current reference hash before this private exception is set.
-        await AppendJournalWithinTransactionAsync(connection, transaction, command.Journal, ct,
-            verifiedAmortizationReversal: amortizationLot is not null && command.Amortization!.Reversal is not null)
-            .ConfigureAwait(false);
-
-        var recordedAt = DateTimeOffset.UtcNow;
-        await InsertAtomicTaxLotBatchAsync(connection, transaction, command, recordedAt, ct)
-            .ConfigureAwait(false);
-
-        if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition)
-        {
-            var mutation = await ApplyAcquisitionAsync(connection, transaction, command, recordedAt, ct)
-                .ConfigureAwait(false);
-            ValidateAtomicJournalLotEconomics(command, [mutation]);
-            await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
-        }
-        else if (command.MutationKind == AtomicTaxLotMutationKind.Amortization)
-        {
-            var mutation = await ApplyAmortizationAsync(connection, transaction, command, amortizationLot!, recordedAt, ct)
-                .ConfigureAwait(false);
-            ValidateAtomicJournalLotEconomics(command, [mutation]);
-            await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
-        }
-        else if (command.MutationKind == AtomicTaxLotMutationKind.CapitalReturn)
-        {
-            var mutation = await ApplyCapitalReturnAsync(connection, transaction, command, capitalReturnLot!, recordedAt, ct)
-                .ConfigureAwait(false);
-            await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
-        }
-        else if (command.MutationKind == AtomicTaxLotMutationKind.FactorPaydown)
-        {
-            var mutations = await ApplyFactorPaydownAsync(connection, transaction, command, factorPaydownLots!, recordedAt, ct)
-                .ConfigureAwait(false);
-            ValidateAtomicJournalLotEconomics(command, mutations);
-            foreach (var mutation in mutations)
-                await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
-        }
-        else if (command.MutationKind == AtomicTaxLotMutationKind.CorporateAction)
-        {
-            var mutations = await ApplyCorporateActionAsync(connection, transaction, command, corporateActionLot!, recordedAt, ct)
-                .ConfigureAwait(false);
-            foreach (var mutation in mutations)
-                await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
-        }
-        else
-        {
-            var mutations = new List<LedgerTaxLotMutationRecord>(command.DisposalSelections!.Count);
-            foreach (var selection in command.DisposalSelections!)
-            {
-                var mutation = await ApplyDisposalAsync(
-                        connection,
-                        transaction,
-                        command,
-                        selection,
-                        recordedAt,
-                        averageCostPlan,
-                        ct)
-                    .ConfigureAwait(false);
-                mutations.Add(mutation);
-            }
-
-            ValidateAtomicJournalLotEconomics(command, mutations);
-            ValidateDisposalProceedsAllocation(command, mutations);
-            if (averageCostPlan is not null)
-            {
-                mutations.AddRange(await RestateAverageCostSurvivorsAsync(
-                        connection,
-                        transaction,
-                        command,
-                        averageCostPlan,
-                        recordedAt,
-                        ct)
-                    .ConfigureAwait(false));
-            }
-
-            foreach (var mutation in mutations)
-            {
-                await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
-            }
-        }
-
-        var result = await LoadAtomicTaxLotResultAsync(
-                connection,
-                transaction,
-                command.MutationBatchId,
-                isExactReplay: false,
-                ct)
-            .ConfigureAwait(false);
-        await transaction.CommitAsync(ct).ConfigureAwait(false);
-        return result;
     }
 
     private AtomicTaxLotJournalCommand NormalizeAndValidateAtomicTaxLotCommand(

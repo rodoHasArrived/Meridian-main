@@ -1,6 +1,11 @@
 name: Generated Repair Publisher
 
 on:
+  # Explicitly refresh after a PR merge; pushes also cover other main advances.
+  # No pull-request checkout or code runs in this credentialed workflow.
+  pull_request_target:
+    types: [closed]
+    branches: [main]
   push:
     branches: [main]
   schedule:
@@ -97,10 +102,18 @@ jobs:
           retention-days: 30
 
   refresh:
-    if: github.event_name != 'workflow_run'
+    if: >-
+      github.event_name != 'workflow_run'
+      && (github.event_name != 'pull_request_target' || github.event.pull_request.merged == true)
     name: Refresh stale open PR branches after main advances
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
+    # Merge and push deliveries may overlap. Coalescing pending refresh scans is
+    # safe: each scan reads the latest base and all open PRs, not event-local data.
+    # Keep publication's independent per-source-run concurrency above.
+    concurrency:
+      group: generated-repair-refresh-${{ github.event.repository.default_branch }}
+      cancel-in-progress: false
     environment: generated-repair
     steps:
       - name: Check out trusted orchestration
@@ -120,7 +133,7 @@ jobs:
           permission-actions: write
           permission-contents: read
           permission-pull-requests: read
-      - name: Dispatch at most ten new head/base pairs
+      - name: Dispatch every stale open PR head/base pair
         if: steps.app.outputs.token != ''
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}

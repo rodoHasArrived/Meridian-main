@@ -113,6 +113,64 @@ public sealed class DroppedEventAuditTrailTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task RecordDroppedEvent_AppendsOnlyTheNewRecord_NotTheWholeFile()
+    {
+        var batches = new List<int>();
+        await using var trail = new DroppedEventAuditTrail(_testDir, logger: null, (_, lines, _) =>
+        {
+            batches.Add(lines.Count);
+            return Task.CompletedTask;
+        });
+
+        for (var index = 0; index < 5; index++)
+            await trail.RecordDroppedEventAsync(CreateTestEvent("SPY"), "backpressure_queue_full");
+
+        // The previous implementation re-wrote every earlier record on each call.
+        batches.Should().Equal(1, 1, 1, 1, 1);
+    }
+
+    [Fact]
+    public async Task RecordDroppedEvent_DiskSlowerThanDrops_BoundsPendingRecordsAndStillCountsEveryDrop()
+    {
+        // The pipeline records drops without awaiting them. With the disk stalled, every record
+        // used to pile up behind the write lock without limit.
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var written = 0;
+        await using var trail = new DroppedEventAuditTrail(_testDir, logger: null, async (_, lines, _) =>
+        {
+            await release.Task;
+            Interlocked.Add(ref written, lines.Count);
+        });
+        const int overflow = 250;
+        var total = DroppedEventAuditTrail.MaxPendingRecords + overflow;
+
+        var pending = new List<Task>(total);
+        for (var index = 0; index < total; index++)
+            pending.Add(trail.RecordDroppedEventAsync(CreateTestEvent("SPY"), "backpressure_queue_full").AsTask());
+
+        trail.TotalDropped.Should().Be(total, "every drop is counted even when its audit line is skipped");
+        trail.AuditRecordsNotWritten.Should().Be(overflow);
+        pending.Count(task => !task.IsCompleted).Should().Be(DroppedEventAuditTrail.MaxPendingRecords);
+
+        release.SetResult();
+        await Task.WhenAll(pending);
+
+        written.Should().Be(DroppedEventAuditTrail.MaxPendingRecords);
+        trail.GetStatistics().AuditRecordsNotWritten.Should().Be(overflow);
+    }
+
+    [Fact]
+    public async Task RecordDroppedEvent_WriteFails_CountsTheDropAndReportsTheMissingAuditLine()
+    {
+        await using var trail = new DroppedEventAuditTrail(_testDir, logger: null, (_, _, _) => throw new IOException("disk unavailable"));
+
+        await trail.RecordDroppedEventAsync(CreateTestEvent("SPY"), "backpressure_queue_full");
+
+        trail.TotalDropped.Should().Be(1);
+        trail.AuditRecordsNotWritten.Should().Be(1);
+    }
+
+    [Fact]
     public void Constructor_ThrowsOnNullOrEmptyDirectory()
     {
         // Act & Assert

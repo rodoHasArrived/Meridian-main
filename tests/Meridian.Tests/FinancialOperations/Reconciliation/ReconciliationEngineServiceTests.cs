@@ -101,6 +101,51 @@ public sealed class ReconciliationEngineServiceTests
             "a symbol wholly absent from the ledger is genuinely missing coverage");
     }
 
+    [Fact]
+    public async Task RunAsync_CancelledDuringSecurityLookup_PropagatesCancellation()
+    {
+        // The per-security catch used to swallow cancellation, log a warning, and continue the
+        // run with a partial lookup as though resolution had merely failed.
+        using var cts = new CancellationTokenSource();
+        var securityMaster = new Moq.Mock<ISecurityMasterQueryService>();
+        securityMaster
+            .Setup(s => s.GetByIdentifierAsync(
+                Moq.It.IsAny<SecurityIdentifierKind>(),
+                Moq.It.IsAny<string>(),
+                Moq.It.IsAny<string?>(),
+                Moq.It.IsAny<CancellationToken>(),
+                Moq.It.IsAny<DateTimeOffset?>()))
+            .Returns<SecurityIdentifierKind, string, string?, CancellationToken, DateTimeOffset?>((_, _, _, token, _) =>
+            {
+                cts.Cancel();
+                token.ThrowIfCancellationRequested();
+                return Task.FromResult<SecurityDetailDto?>(null);
+            });
+        var service = new ReconciliationEngineService(
+            securityMaster.Object,
+            NullLogger<ReconciliationEngineService>.Instance);
+        var request = new EngineReconciliationRequest(
+            PortfolioId: "portfolio-cancel",
+            AsOf: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            PortfolioPositions: [new PortfolioPositionInput("AAPL", 100m)],
+            LedgerBalances: new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase) { ["AAPL"] = 100m },
+            SecurityIdentifiers:
+            [
+                new SecurityLookupKey(SecurityIdentifierKind.Ticker, "AAPL"),
+                new SecurityLookupKey(SecurityIdentifierKind.Ticker, "MSFT"),
+            ]);
+
+        var act = () => service.RunAsync(request, cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        securityMaster.Verify(s => s.GetByIdentifierAsync(
+            Moq.It.IsAny<SecurityIdentifierKind>(),
+            Moq.It.IsAny<string>(),
+            Moq.It.IsAny<string?>(),
+            Moq.It.IsAny<CancellationToken>(),
+            Moq.It.IsAny<DateTimeOffset?>()), Moq.Times.Once(), "no further securities are probed after cancellation");
+    }
+
     private sealed class EmptySecurityMasterQueryService : ISecurityMasterQueryService
     {
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)

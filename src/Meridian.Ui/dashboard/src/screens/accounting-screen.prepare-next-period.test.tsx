@@ -266,3 +266,56 @@ it("shows retained template version and creation history when a prepared plan is
   await user.click(within(provenance).getByText("Retained creation history (1)"));
   expect(within(provenance).getByText("Prepared October with fresh tasks and required sign-offs.")).toBeVisible();
 });
+
+it("marks target period boundaries and task deadlines up as calendar dates without changing their text", async () => {
+  const { user, container } = await selectTarget();
+  const target = screen.getByText((_, element) => element?.tagName === "P" && (element.textContent ?? "").startsWith("Target period: "));
+  expect(target).toHaveTextContent(`Target period: ${targetPeriod.label}, 2026-10-01 – 2026-10-31. Status: Open.`);
+  expect(within(target).getByText("2026-10-01")).toHaveAttribute("datetime", "2026-10-01");
+  expect(within(target).getByText("2026-10-31")).toHaveAttribute("datetime", "2026-10-31");
+
+  await user.click(screen.getByRole("button", { name: "Preview next period" }));
+  const preview = await screen.findByRole("region", { name: "Next-period preview" });
+  const summary = within(preview).getByText((_, element) => element?.tagName === "P" && (element.textContent ?? "").includes(" · Calendar "));
+  expect(summary).toHaveTextContent(`${preparationPreview.targetBook.displayName} · 2026-10-01 – 2026-10-31 · Calendar ${preparationPreview.calendar.calendarId} v${preparationPreview.calendar.version}`);
+  expect(within(summary).getByText("2026-10-01").tagName).toBe("TIME");
+  expect(within(summary).getByText("2026-10-31")).toHaveAttribute("datetime", "2026-10-31");
+
+  const deadlines = within(preview).getByRole("table", { name: "Prepared task deadlines and requirements" });
+  const [, reconcile, review] = within(deadlines).getAllByRole("row");
+  expect(reconcile).toHaveTextContent("2026-10-02 → 2026-11-04");
+  expect(within(reconcile).getByText("2026-10-02")).toHaveAttribute("datetime", "2026-10-02");
+  const prepared = within(reconcile).getByText("2026-11-04");
+  expect(prepared).toHaveAttribute("datetime", "2026-11-04");
+  expect(prepared.parentElement?.tagName).toBe("STRONG");
+  expect(review).toHaveTextContent("2026-10-05 → 2026-11-05");
+  expect((await axe(container)).violations).toEqual([]);
+});
+
+it("prints a deadline the service did not send as a calendar date exactly as received", async () => {
+  service.previewClosePreparation.mockResolvedValue({ ...preparationPreview,
+    tasks: preparationPreview.tasks.map((task, index) => index === 0 ? { ...task, sourceDueDate: "2026-10-02T00:00:00Z", dueDate: "2026-02-30" } : task) });
+  const { user } = await selectTarget();
+  await user.click(screen.getByRole("button", { name: "Preview next period" }));
+  const preview = await screen.findByRole("region", { name: "Next-period preview" });
+  const [, reconcile, review] = within(preview).getAllByRole("row");
+  expect(reconcile).toHaveTextContent("2026-10-02T00:00:00Z → 2026-02-30");
+  expect(reconcile.querySelector("time")).toBeNull();
+  expect(within(reconcile).getByText("2026-02-30").parentElement?.tagName).toBe("STRONG");
+  expect(review.querySelectorAll("time")).toHaveLength(2);
+});
+
+it("marks each source deadline in the reusable rule table up as a calendar date", async () => {
+  service.listClosePlanTemplates.mockResolvedValue([]);
+  const user = userEvent.setup();
+  const { container } = render(<MemoryRouter><PrepareNextPeriodPanel initialWorkflowId={sourceWorkflow.workflowId} /></MemoryRouter>);
+  await user.click(screen.getByRole("button", { name: "Prepare next period" }));
+  const rules = await screen.findByRole("table", { name: "Reusable deadline rules" });
+  const reconcile = within(rules).getByRole("rowheader", { name: /Reconcile cash/ });
+  const due = within(reconcile).getByText("2026-10-02");
+  expect(due.tagName).toBe("TIME");
+  expect(due).toHaveAttribute("datetime", "2026-10-02");
+  expect(due.parentElement).toHaveClass("font-mono", "text-xs", "text-muted-foreground");
+  expect(within(within(rules).getByRole("rowheader", { name: /Review close/ })).getByText("2026-10-05")).toHaveAttribute("datetime", "2026-10-05");
+  expect((await axe(container)).violations).toEqual([]);
+});

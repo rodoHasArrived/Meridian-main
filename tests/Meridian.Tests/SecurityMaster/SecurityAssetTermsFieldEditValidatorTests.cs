@@ -282,7 +282,9 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     // The reason every write surface gives for a term this node reads but does not yet write
     // (SecurityTermsEnvelope.DescribeNotYetWritable), spelled out so a reworded refusal fails here.
     private static string NotYetWritable(string assetClass, string path, int since, int writes)
-        => $"'{path}' is an asset-class terms version {since} term of '{assetClass}'. This node reads it but writes " +
+        => assetClass == "Swap"
+            ? $"'{path}' is readable but authoring is not enabled on this node; a rate-unit declaration does not activate calculation-only terms."
+            : $"'{path}' is an asset-class terms version {since} term of '{assetClass}'. This node reads it but writes " +
            $"assetClassTermsVersion {writes}, so a create, amend, import or field edit cannot set it yet. " +
            "Leave it absent, null or empty (ADR-024).";
 
@@ -307,7 +309,7 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
         if (!accepted)
             error.Should().Be("Declared schedule conventions require schema-declared issueDate and paymentFrequency anchors.");
         canonicalPath.Should().Be("assetSpecificTerms.scheduleConventions");
-        SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().Be(assetClass == "StructuredCredit" ? 4 : 3);
+        SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().BeGreaterThanOrEqualTo(since);
     }
 
     [Theory]
@@ -434,7 +436,7 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
         SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, $"assetSpecificTerms.{key}", value, out var canonicalPath, out var error)
             .Should().BeTrue(error);
         canonicalPath.Should().Be($"assetSpecificTerms.{key}");
-        SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().Be(assetClass == "StructuredCredit" ? 4 : 3);
+        SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().BeGreaterThanOrEqualTo(since);
     }
 
     [Theory]

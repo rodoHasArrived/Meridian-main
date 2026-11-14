@@ -2,8 +2,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<title>Meridian — Surface ladder</title>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
 <style>
   body { margin: 0; padding: 14px; background: var(--bg); font-family: var(--font-body); }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -20,21 +22,21 @@
   .light .raised { background: var(--card-surface-raised); border: 1px solid var(--border-divider); margin-top: 8px; }
   .light .menu { position: absolute; right: 14px; bottom: 14px; background: var(--card-surface); border: 1px solid var(--border-hover); box-shadow: var(--shadow-menu); }
   .light .n { color: var(--text-primary); } .light .tok { color: var(--text-muted); }
-  /* dark — literal dark-scope values (dark tokens bind at :root) */
-  .dark { background: #14120F; border-color: #4A443C; }
-  .dark .lbl { color: #B5AEA4; }
-  .dark .band { background: #292520; border-bottom: 1px solid #4A443C; border-radius: 0; margin: 0 0 8px; }
-  .dark .panel { display: block; background: #201D19; border: 1px solid #4A443C; }
-  .dark .raised { background: #252119; border: 1px solid #302B25; margin-top: 8px; }
-  .dark .menu { position: absolute; right: 14px; bottom: 14px; background: #201D19; border: 1px solid #5F584E; box-shadow: 0 2px 6px rgba(0,0,0,.55); }
-  .dark .n { color: #EFEBE4; } .dark .tok { color: #9A9289; }
+  /* Separate documents resolve the real canonical light and dark tokens. */
+  .dark { background: var(--bg); border-color: var(--border); }
+  .dark .lbl { color: var(--text-secondary); }
+  .dark .band { background: var(--bg-medium); border-bottom: 1px solid var(--border); border-radius: 0; margin: 0 0 8px; }
+  .dark .panel { display: block; background: var(--card-surface); border: 1px solid var(--border); }
+  .dark .raised { background: var(--card-surface-raised); border: 1px solid var(--border-divider); margin-top: 8px; }
+  .dark .menu { position: absolute; right: 14px; bottom: 14px; background: var(--card-surface); border: 1px solid var(--border-hover); box-shadow: var(--shadow-menu); }
+  .dark .n { color: var(--text-primary); } .dark .tok { color: var(--text-muted); }
   .rule { margin-top: 12px; font-size: 11px; color: var(--text-secondary); }
   .rule code { font-family: var(--font-data); font-size: 10px; color: var(--text-primary); }
 </style>
 </head>
-<body>
+<body class="mds-specimen">
   <div class="cols">
-    <div class="theme light">
+    <div class="theme light" data-theme-specimen="light">
       <div class="lbl">Light — concrete</div>
       <div class="band"><span class="n">structural band</span><span class="tok">--bg-medium</span></div>
       <div class="panel">
@@ -43,7 +45,7 @@
       </div>
       <div class="menu"><span class="n">menu</span><span class="tok">--shadow-menu</span></div>
     </div>
-    <div class="theme dark">
+    <div class="theme dark" data-theme-specimen="dark">
       <div class="lbl">Dark — graphite</div>
       <div class="band"><span class="n">structural band</span><span class="tok">--bg-medium</span></div>
       <div class="panel">
@@ -54,5 +56,6 @@
     </div>
   </div>
   <p class="rule">Surfaces are flat — <code>--shadow-card: none</code>. Depth is the border ladder: <code>--border-divider</code> → <code>--border</code> → <code>--border-hover</code> → <code>--border-strong</code>. The one shadow, <code>--shadow-menu</code>, belongs to detached overlays only.</p>
+  <script src="./specimen-themes.js"></script>
 </body>
 </html>

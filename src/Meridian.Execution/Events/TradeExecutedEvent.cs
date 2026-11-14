@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using Meridian.Execution.Sdk;
+using Meridian.Ledger;
 
 namespace Meridian.Execution.Events;
 
@@ -31,6 +33,18 @@ namespace Meridian.Execution.Events;
 ///     <paramref name="FillPrice"/> as a percentage of par (fixed income). Booking consumers
 ///     must not multiply the two raw: 100,000 face at 101.25 is $101,250, not $10,125,000.
 /// </param>
+/// <param name="ContractMultiplier">
+///     Value of one unit of <paramref name="FilledQuantity"/> per unit of <paramref name="FillPrice"/>
+///     (100 for a standard equity option). <paramref name="RealizedPnl"/> is already in money terms,
+///     so <see cref="GrossValue"/> applies the same multiplier; one contract at 3.00 with multiplier
+///     100 is $300 of proceeds. Events serialized before this member existed read as 1.
+/// </param>
+/// <param name="SettlesVariationMargin">
+///     The paper book booked the fill under daily variation margin (futures): no notional changed
+///     hands, and <paramref name="RealizedPnl"/> is the whole cash movement (the change since the
+///     last settlement on a reduce or close, zero on an open). Booking consumers must post that
+///     cash flow rather than a securities purchase or sale at <see cref="GrossValue"/>.
+/// </param>
 public sealed record TradeExecutedEvent(
     Guid FillId,
     string OrderId,
@@ -43,14 +57,38 @@ public sealed record TradeExecutedEvent(
     decimal NewCash,
     DateTimeOffset OccurredAt,
     string? FinancialAccountId = null,
-    bool UsesFaceValuePercentageOfPar = false)
+    bool UsesFaceValuePercentageOfPar = false,
+    decimal ContractMultiplier = 1m,
+    bool SettlesVariationMargin = false,
+    string? StrategyId = null,
+    string? RunId = null)
 {
+    /// <summary>
+    /// Accounting-evidence contract used by the producer. Zero identifies historical events;
+    /// current OMS fills use version one even when their accounting context is unavailable.
+    /// An absent version-one payload must block posting rather than imply a position direction.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int AccountingEvidenceVersion { get; init; }
+
+    /// <summary>
+    /// Exact opening and closing economics captured while the portfolio applies this fill.
+    /// A null value does not authorize reconstructing basis or short direction from realized P&amp;L.
+    /// Historical event JSON and the positional constructor remain unchanged when absent.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public TradeFillAccountingEvidence? AccountingEvidence { get; init; }
+
     /// <summary>
     /// Gross trade value, always positive. For a face-value fill the clean price is a
     /// percentage of par, so the price is scaled to a fraction of par before multiplying —
     /// the same convention pre-trade risk uses to measure the order — keeping the booked
-    /// cash movement equal to the notional the risk gate approved.
+    /// cash movement equal to the notional the risk gate approved. Otherwise the quoted price is
+    /// scaled by <see cref="ContractMultiplier"/>, matching the paper portfolio's cash and
+    /// realized P&amp;L.
     /// </summary>
     public decimal GrossValue =>
-        FilledQuantity * (UsesFaceValuePercentageOfPar ? FillPrice / 100m : FillPrice);
+        FilledQuantity * (UsesFaceValuePercentageOfPar
+            ? FillPrice / 100m
+            : FillPrice * (ContractMultiplier > 0m ? ContractMultiplier : 1m));
 }

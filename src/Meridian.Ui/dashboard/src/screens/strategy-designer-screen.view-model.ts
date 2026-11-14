@@ -1,6 +1,6 @@
 import { BACKTEST_EVIDENCE_BLOCKER } from "@/screens/strategy-designer-screen.copy";
 import { useCallback, useMemo, useState } from "react";
-import { formatPrefixedCurrency } from "@/lib/format";
+import { formatFixed, formatMoney, formatNumber, formatPercent, formatPnl, formatPrefixedCurrency } from "@/lib/format";
 import { STRATEGY_DESIGNER_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 
 export type StrategyLegKind =
@@ -1417,7 +1417,7 @@ export function buildStrategyBuilderWorkbenchViewModel({
       },
       {
         id: "builder-proof",
-        label: "Proof lane",
+        label: "Proof path",
         value: "Backtest",
         detail: "No live trading from builder v1",
         tone: "default"
@@ -1700,8 +1700,8 @@ export function buildParticipationViewModel(legs: StrategyLeg[], spotPrice: numb
       instrument: leg.instrument,
       notional,
       share,
-      sharePercent: `${(share * 100).toFixed(1)}%`,
-      barWidth: `${(share * 100).toFixed(2)}%`,
+      sharePercent: formatPercent(share * 100, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+      barWidth: `${formatFixed(share * 100, 2)}%`,
       tone: leg.direction === "Long" ? "long" : "short",
       detail: buildSliceDetail(leg)
     };
@@ -1709,7 +1709,7 @@ export function buildParticipationViewModel(legs: StrategyLeg[], spotPrice: numb
 
   return {
     totalNotional,
-    totalNotionalLabel: formatCurrency(totalNotional),
+    totalNotionalLabel: formatPrefixedCurrency(totalNotional, { maximumFractionDigits: 0 }),
     longNotional,
     shortNotional,
     netDirection,
@@ -2181,7 +2181,7 @@ function buildStrategyBuilderTransitionViewModels(
     const to = cells.get(transition.toCellId) ?? transition.toCellId;
     return {
       ...transition,
-      label: `${from} -> ${to}`,
+      label: `${from} → ${to}`,
       status: hasError ? "blocked" : transition.kind === "loop" ? "warning" : "ready",
       statusLabel: hasError ? "Blocked" : transition.kind === "loop" ? "Guarded loop" : "Ready",
       detail: transition.kind === "loop"
@@ -2350,30 +2350,17 @@ function buildSliceDetail(leg: StrategyLeg): string {
 
 function buildNetDirectionLabel(direction: "Long" | "Short" | "Flat", longNotional: number, shortNotional: number): string {
   if (direction === "Flat") return "Balanced long/short notional";
-  if (direction === "Long") return `Long-biased by ${formatCurrency(longNotional - shortNotional)} notional`;
-  return `Short-biased by ${formatCurrency(shortNotional - longNotional)} notional`;
+  if (direction === "Long") return `Long-biased by ${formatPrefixedCurrency(longNotional - shortNotional, { maximumFractionDigits: 0 })} notional`;
+  return `Short-biased by ${formatPrefixedCurrency(shortNotional - longNotional, { maximumFractionDigits: 0 })} notional`;
 }
 
 function formatPrice(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return `$${value.toFixed(2)}`;
-}
-
-function formatPnl(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  const sign = value > 0 ? "+" : value < 0 ? "−" : "";
-  return `${sign}$${Math.abs(value).toFixed(2)}`;
+  return formatMoney(value, { decimals: 2 });
 }
 
 function formatQuantity(value: number): string {
   if (!Number.isFinite(value)) return "—";
-  return value.toLocaleString(undefined, {
-    maximumFractionDigits: 4
-  });
-}
-
-function formatCurrency(value: number): string {
-  return formatPrefixedCurrency(value, { maximumFractionDigits: 0 });
+  return formatNumber(value, { maximumFractionDigits: 4 });
 }
 
 function slugifyId(value: string): string {

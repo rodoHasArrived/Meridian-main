@@ -2,6 +2,7 @@ import importlib.util
 import io
 import json
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -71,8 +72,11 @@ class RunDotnetCiTestsTests(unittest.TestCase):
                 "core-market-instruments",
                 "core-platform-domain-root",
                 "core-reporting",
+                "storage-unit",
+                "execution-unit",
                 "contracts-unit",
                 "core-unit",
+                "demo",
                 "fsharp",
                 "ui",
                 "backtesting",
@@ -108,7 +112,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
     def test_verify_test_project_coverage_flags_unwired_projects(self):
         import tempfile
 
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             repo_root = Path(tmp)
             wired = repo_root / "tests" / "Meridian.Wired.Tests"
             unwired = repo_root / "tests" / "Meridian.Orphan.Tests"
@@ -194,7 +198,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
     def test_solution_filter_contains_exactly_default_roots_with_solution_relative_paths(self):
         projects = MODULE.parse_project_entries([])
         repo_root = SCRIPT_PATH.parents[3]
-        with tempfile.TemporaryDirectory(prefix="meridian build results ") as tmp:
+        with tempfile.TemporaryDirectory(prefix="meridian build results ", ignore_cleanup_errors=True) as tmp:
             filter_path = Path(tmp) / "custom results" / "test build.slnf"
             MODULE.write_build_solution_filter(projects, repo_root=repo_root, filter_path=filter_path)
             solution = json.loads(filter_path.read_text(encoding="utf-8"))["solution"]
@@ -203,12 +207,12 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             self.assertEqual(solution["projects"], [
                 project.path.replace("/", "\\") for project in MODULE.get_unique_build_projects(projects)
             ])
-            self.assertEqual(len(solution["projects"]), 11)
+            self.assertEqual(len(solution["projects"]), 14)
             self.assertTrue(all((resolved_solution.parent / path.replace("\\", "/")).is_file()
                                 for path in solution["projects"]))
 
     def test_solution_filter_preserves_spaces_and_resolves_relative_results_directory(self):
-        with tempfile.TemporaryDirectory(prefix="meridian repo ") as tmp:
+        with tempfile.TemporaryDirectory(prefix="meridian repo ", ignore_cleanup_errors=True) as tmp:
             repo_root = Path(tmp) / "source tree"
             repo_root.mkdir()
             project_path = "tests/My Tests/My Tests.csproj"
@@ -230,7 +234,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             self.assertEqual(solution["projects"], [solution_entry])
 
     def test_solution_filter_uses_absolute_solution_when_results_are_on_another_drive(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             filter_path = Path(tmp) / "build.slnf"
             with patch.object(MODULE.os.path, "relpath", side_effect=ValueError("different drives")):
                 MODULE.write_build_solution_filter(
@@ -240,7 +244,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             self.assertEqual(Path(solution["path"]), SCRIPT_PATH.parents[3] / "Meridian.sln")
 
     def test_solution_filter_rejects_missing_roots_before_writing_filter(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             filter_path = Path(tmp) / "build.slnf"
             with self.assertRaisesRegex(ValueError, "missing from Meridian.sln"):
                 MODULE.write_build_solution_filter(
@@ -256,7 +260,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
         }
         for invalid_mapping in valid_mappings:
             for value in (None, "Debug|Any CPU", "Release|x64"):
-                with self.subTest(mapping=invalid_mapping, value=value), tempfile.TemporaryDirectory() as tmp:
+                with self.subTest(mapping=invalid_mapping, value=value), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
                     repo_root = Path(tmp)
                     mappings = valid_mappings | {invalid_mapping: value}
                     (repo_root / "Meridian.sln").write_text(
@@ -353,7 +357,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
                 with lock:
                     active -= 1
 
-        with tempfile.TemporaryDirectory() as tmp, patch.object(MODULE.subprocess, "run", side_effect=complete_shard):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, patch.object(MODULE.subprocess, "run", side_effect=complete_shard):
             results = self.run_projects(projects, tmp, max_parallel=2)
 
         self.assertEqual(peak_active, 2)
@@ -377,7 +381,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             self.write_trx(command)
             return subprocess.CompletedProcess(command, 0)
 
-        with tempfile.TemporaryDirectory() as tmp, patch.object(MODULE.subprocess, "run", side_effect=complete_shard):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, patch.object(MODULE.subprocess, "run", side_effect=complete_shard):
             with ThreadPoolExecutor(max_workers=1) as coordinator:
                 future = coordinator.submit(self.run_projects, projects, tmp)
                 try:
@@ -409,7 +413,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             self.write_trx(command)
             return subprocess.CompletedProcess(command, 1 if name == "failed" else 0)
 
-        with tempfile.TemporaryDirectory() as tmp, patch.object(MODULE.subprocess, "run", side_effect=complete_shard):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, patch.object(MODULE.subprocess, "run", side_effect=complete_shard):
             output = io.StringIO()
             with redirect_stdout(output):
                 results = self.run_projects(projects, tmp, max_parallel=2)
@@ -449,7 +453,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             result_directories.append(kwargs["results_dir"])
             return [sys.executable, "-c", child_script, project.name, str(kwargs["results_dir"] / f"{project.name}.trx")]
 
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             with patch.dict(os.environ, {"MERIDIAN_TEST_SENTINEL": "preserved"}):
                 parent_temps = {name: os.environ.get(name) for name in ("TMPDIR", "TMP", "TEMP")}
                 with patch.object(MODULE, "build_dotnet_test_command", side_effect=child_command):
@@ -491,7 +495,7 @@ target.write_text('retained fixture')
 print(json.dumps({'temporary': temporary}), flush=True)
 """
         project = MODULE.TestProject("long-path", "tests/long-path.csproj")
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             with patch.object(MODULE, "build_dotnet_test_command", return_value=[sys.executable, "-c", child_script, str(Path(tmp) / "long-path" / "long-path.trx")]):
                 result = self.run_projects([project], tmp)[0]
             self.assertEqual(result.exit_code, 0, Path(result.log_path).read_text(encoding="utf-8"))
@@ -510,7 +514,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
             self.write_trx(command)
             return subprocess.CompletedProcess(command, 1)
 
-        with tempfile.TemporaryDirectory() as tmp, patch.object(MODULE.subprocess, "run", side_effect=noisy_failure):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, patch.object(MODULE.subprocess, "run", side_effect=noisy_failure):
             output = io.StringIO()
             with redirect_stdout(output):
                 results = self.run_projects([project], tmp, max_parallel=2)
@@ -518,9 +522,74 @@ print(json.dumps({'temporary': temporary}), flush=True)
             self.assertLess(len(output.getvalue()), 18_000)
             self.assertIn("final failure detail", output.getvalue())
 
+    def test_unicode_failure_tail_on_legacy_console_preserves_failure_and_runs_later_shards(self):
+        projects = [MODULE.TestProject(name, f"tests/{name}.csproj") for name in ("failed", "later")]
+        failure = "xUnit failure: expected \u2193 but found \u2191; caf\u00e9\n"
+        attempted = []
+
+        def complete(command, **kwargs):
+            name = Path(command[2]).stem
+            attempted.append(name)
+            self.write_trx(command)
+            if name == "failed":
+                kwargs["stdout"].write(failure)
+                directory = Path(command[command.index("--results-directory") + 1])
+                for trx in directory.glob("*.trx"):
+                    document = ET.parse(trx)
+                    ET.SubElement(document.getroot().find("Results"), "UnitTestResult",
+                                  testName="FailedExample", outcome="Failed")
+                    document.write(trx, encoding="utf-8")
+            return subprocess.CompletedProcess(command, 7 if name == "failed" else 0)
+
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, \
+                patch.object(MODULE.subprocess, "run", side_effect=complete):
+            raw_console = io.BytesIO()
+            with io.TextIOWrapper(raw_console, encoding="cp1252", errors="strict") as console:
+                with redirect_stdout(console):
+                    results = self.run_projects(projects, tmp)
+                console.flush()
+                displayed = raw_console.getvalue().decode("cp1252")
+                self.assertEqual(console.errors, "strict", "the caller's console policy must remain unchanged")
+                self.assertIn("expected \\u2193 but found \\u2191; caf\u00e9", displayed)
+                self.assertIn("Finished later: passed", displayed)
+            self.assertEqual(attempted, ["failed", "later"])
+            self.assertEqual([result.exit_code for result in results], [7, 0])
+            self.assertEqual([result.status for result in results], ["failed", "passed"])
+            self.assertEqual(results[0].evidence["counts"]["failed"], 1)
+            self.assertIn(failure.encode("utf-8"), Path(results[0].log_path).read_bytes())
+            summary = Path(tmp) / "summary.json"
+            MODULE.write_summaries(results, summary_output=Path(tmp) / "summary.md", json_output=summary)
+            payload = json.loads(summary.read_text(encoding="utf-8"))
+            self.assertEqual(payload["failed"], 1)
+            self.assertEqual([result["exit_code"] for result in payload["results"]], [7, 0])
+
+    def test_default_build_unicode_failure_preserves_log_and_exit_code_for_console_encodings(self):
+        failure = "Build failed: expected \u2193; caf\u00e9\n"
+
+        def fail(command, **kwargs):
+            kwargs["stdout"].write(failure)
+            return subprocess.CompletedProcess(command, 7)
+
+        for encoding in ("cp1252", "utf-8"):
+            with self.subTest(encoding=encoding), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, \
+                    patch.object(MODULE.subprocess, "run", side_effect=fail):
+                raw_console = io.BytesIO()
+                with io.TextIOWrapper(raw_console, encoding=encoding, errors="strict") as console:
+                    with redirect_stdout(console):
+                        result = MODULE.run_default_build(
+                            MODULE.parse_project_entries([]), repo_root=SCRIPT_PATH.parents[3],
+                            configuration="Release", results_dir=Path(tmp), dry_run=False)
+                    console.flush()
+                    displayed = raw_console.getvalue().decode(encoding)
+                    self.assertIn("Build failed: expected " + ("\\u2193" if encoding == "cp1252" else "\u2193")
+                                  + "; caf\u00e9", displayed)
+                self.assertEqual(result.exit_code, 7)
+                self.assertEqual(result.status, "failed")
+                self.assertIn(failure.encode("utf-8"), Path(result.log_path).read_bytes())
+
     def test_parallel_default_roster_preserves_every_filter_timeout_and_result_directory(self):
         projects = MODULE.parse_project_entries([])
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             results = MODULE.run_tests(
                 projects, configuration="Release", test_filter="Category!=Integration&Category!=Performance",
                 results_dir=Path(tmp), dry_run=True, max_parallel=2,
@@ -546,7 +615,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
             self.write_trx(command)
             return subprocess.CompletedProcess(command, 0)
 
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             args = self.main_args(tmp, project=["custom=tests/shared.csproj"], max_parallel=2)
             with patch.object(MODULE, "parse_args", return_value=args), patch.object(MODULE, "parse_project_entries", return_value=projects):
                 with patch.object(MODULE.subprocess, "run", side_effect=complete):
@@ -564,7 +633,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
             self.write_trx(command)
             return subprocess.CompletedProcess(command, 0)
 
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             args = self.main_args(tmp, project=[])
             with patch.object(MODULE, "parse_args", return_value=args):
                 with patch.object(MODULE.subprocess, "run", side_effect=complete):
@@ -598,7 +667,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
         projects = MODULE.parse_project_entries([])
         roots = MODULE.get_unique_build_projects(projects)
         for failure in (7, OSError("dotnet executable missing")):
-            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as tmp:
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
                 args = self.main_args(tmp, project=[])
                 commands = []
 
@@ -631,7 +700,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
     def test_default_non_release_configuration_builds_serially_without_solution_filter(self):
         projects = MODULE.parse_project_entries([])
         roots = MODULE.get_unique_build_projects(projects)
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             args = self.main_args(tmp, project=[])
             args.configuration = "CustomConfiguration"
             with patch.object(MODULE, "parse_args", return_value=args):
@@ -648,7 +717,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
 
     def test_invalid_release_mapping_retains_failure_after_serial_diagnostics_and_never_tests(self):
         roots = MODULE.get_unique_build_projects(MODULE.parse_project_entries([]))
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             args = self.main_args(tmp, project=[])
             with patch.object(MODULE, "parse_args", return_value=args):
                 with patch.object(MODULE, "write_build_solution_filter", side_effect=ValueError("invalid Release mapping")):
@@ -665,7 +734,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
 
     def test_default_group_and_diagnostic_launch_failures_attempt_all_builds_and_never_tests(self):
         roots = MODULE.get_unique_build_projects(MODULE.parse_project_entries([]))
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             args = self.main_args(tmp, project=[])
             with patch.object(MODULE, "parse_args", return_value=args):
                 with patch.object(MODULE.subprocess, "run", side_effect=OSError("dotnet missing")) as run:
@@ -678,7 +747,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
             self.assertTrue(all(result["exit_code"] == 127 for result in payload["results"]))
 
     def test_default_build_filter_error_produces_failed_result_and_evidence_without_launch(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             with patch.object(MODULE.subprocess, "run") as run:
                 result = MODULE.run_default_build(
                     [MODULE.TestProject("missing", "tests/Missing.csproj")],
@@ -697,7 +766,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
             self.write_trx(command)
             return subprocess.CompletedProcess(command, 1)
 
-        with tempfile.TemporaryDirectory() as tmp, patch.object(MODULE.subprocess, "run", side_effect=noisy_failure):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, patch.object(MODULE.subprocess, "run", side_effect=noisy_failure):
             output = io.StringIO()
             with redirect_stdout(output):
                 result = MODULE.run_default_build(
@@ -709,7 +778,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
             self.assertIn("last build error", output.getvalue())
 
     def test_default_dry_run_writes_filter_log_and_all_test_evidence_without_processes(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             args = self.main_args(tmp, project=[])
             args.dry_run = True
             with patch.object(MODULE, "parse_args", return_value=args):
@@ -732,7 +801,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
 
     def test_build_failure_or_launch_error_attempts_remaining_builds_and_prevents_tests(self):
         for first_result in (1, OSError("dotnet missing")):
-            with self.subTest(first_result=first_result), tempfile.TemporaryDirectory() as tmp:
+            with self.subTest(first_result=first_result), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
                 args = self.main_args(tmp, project=["first=tests/first.csproj", "second=tests/second.csproj"])
                 def complete(command, **kwargs):
                     if command[2] == "tests/first.csproj":
@@ -752,7 +821,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
                 self.assertEqual(payload["total"], 2)
 
     def test_unwired_project_stops_default_run_before_builds_or_tests(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             args = self.main_args(tmp, project=[])
             with patch.object(MODULE, "parse_args", return_value=args):
                 with patch.object(MODULE, "verify_test_project_coverage", return_value=["tests/Orphan.csproj"]):
@@ -763,7 +832,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
                     run.assert_not_called()
 
     def test_summary_reproduction_command_preserves_shell_sensitive_arguments(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             probe = root / "argv probe.py"
             probe.write_text("import json, sys\nprint(json.dumps(sys.argv[1:]))\n", encoding="utf-8")
@@ -802,6 +871,49 @@ print(json.dumps({'temporary': temporary}), flush=True)
             self.assertIn("tests/Meridian.Tests/Meridian.Tests.csproj", summary)
             self.assertIn("tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj", summary)
             self.assertIn("❌ failed", summary)
+
+
+class ExtractedDemoProjectTests(unittest.TestCase):
+    REPO = Path(__file__).resolve().parents[2]
+    PROJECT_PATH = "tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj"
+
+    def test_demo_project_runs_every_test_without_building_the_monolithic_test_project(self):
+        projects = MODULE.parse_project_entries([])
+        demo = next(project for project in projects if project.path == self.PROJECT_PATH)
+        self.assertEqual(demo.name, "demo")
+        self.assertIsNone(demo.filter_expression)
+        project = ET.parse(self.REPO / self.PROJECT_PATH).getroot()
+        references = {
+            item.get("Include").replace("\\", "/") for item in project.iter("ProjectReference")
+        }
+        self.assertEqual(references, {
+            "../../src/Meridian/Meridian.csproj",
+            "../Meridian.TestSupport/Meridian.TestSupport.csproj",
+        })
+        self.assertFalse(list(project.iter("EnableDefaultCompileItems")))
+        links = {item.get("Include").replace("\\", "/") for item in project.iter("Compile")}
+        self.assertIn("../Meridian.Tests/TestCollections.cs", links)
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
+            path = Path(temporary) / "build.slnf"
+            MODULE.write_build_solution_filter(projects, repo_root=self.REPO, filter_path=path)
+            roots = json.loads(path.read_text(encoding="utf-8"))["solution"]["projects"]
+            self.assertIn(self.PROJECT_PATH.replace("/", "\\"), roots)
+
+    def test_demo_sources_have_exactly_one_compile_owner(self):
+        directory = self.REPO / "tests/Meridian.Demo.Tests/Demo"
+        expected = {
+            "DemoWorkspaceGuardTests.cs", "DemoWorkspaceSeederTests.cs",
+            "DemoWorkspaceSmokeTests.cs", "DemoWorkstationAssetTreeTests.cs",
+        }
+        self.assertEqual({source.name for source in directory.glob("*.cs")}, expected)
+        self.assertFalse((self.REPO / "tests/Meridian.Tests/Demo").exists())
+        for project in (self.REPO / "tests").glob("*/*.csproj"):
+            for item in ET.parse(project).getroot().iter("Compile"):
+                include = item.get("Include", "").replace("\\", "/")
+                if include and "$(" not in include:
+                    linked = {source.resolve() for source in project.parent.glob(include)}
+                    self.assertFalse(linked.intersection(directory.glob("*.cs")),
+                                     f"{project} links an already owned demo source")
 
 
 class ExtractedUnitProjectTests(unittest.TestCase):
@@ -874,7 +986,7 @@ class ExtractedUnitProjectTests(unittest.TestCase):
         self.assertIn('[CollectionDefinition("Sequential", DisableParallelization = true)]', definition)
 
     def test_isolation_key_reaches_all_runner_commands(self):
-        with tempfile.TemporaryDirectory(prefix="meridian isolated ") as temporary:
+        with tempfile.TemporaryDirectory(prefix="meridian isolated ", ignore_cleanup_errors=True) as temporary:
             root = Path(temporary)
             isolation_key = "local-cold-run-1"
             projects = [MODULE.TestProject("unit", "tests/unit.csproj")]
@@ -903,6 +1015,53 @@ class ExtractedUnitProjectTests(unittest.TestCase):
                          ["/p:MeridianBuildIsolationKey=cold-run_1"])
 
 
+class LinkedUnitProjectCoverageTests(unittest.TestCase):
+    REPO = Path(__file__).resolve().parents[2]
+
+    def test_linked_unit_suites_do_not_strand_service_backed_integration_tests(self):
+        spec = importlib.util.spec_from_file_location(
+            "linked_unit_integration_evidence", self.REPO / "build/scripts/ci/integration_evidence.py")
+        evidence = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(evidence)
+        service_backed_projects = {suite["project"] for suite in evidence.SUITES.values()}
+        main_project = "tests/Meridian.Tests/Meridian.Tests.csproj"
+        self.assertIn(main_project, service_backed_projects)
+        main_xml = ET.parse(self.REPO / main_project).getroot()
+
+        for subsystem, item_name in (("Storage", "StorageCoreTestSource"),
+                                     ("Execution", "ExecutionTestSource")):
+            project = f"tests/Meridian.{subsystem}.Tests/Meridian.{subsystem}.Tests.csproj"
+            manifest = self.REPO / "tests" / f"Meridian.{subsystem}.Tests" / f"{item_name}s.props"
+            with self.subTest(project=project):
+                self.assertNotIn(project, service_backed_projects)
+                # Both assemblies use this item list: linked sources compile in the
+                # focused suite and are removed from the service-backed main suite.
+                self.assertIn(f"../Meridian.{subsystem}.Tests/{manifest.name}",
+                              [item.get("Project") for item in main_xml.iter("Import")])
+                self.assertIn(f"@({item_name})", [item.get("Remove") for item in main_xml.iter("Compile")])
+                project_xml = ET.parse(self.REPO / project).getroot()
+                self.assertIn(manifest.name, [item.get("Project") for item in project_xml.iter("Import")])
+                self.assertTrue({f"@({item_name})", f"@({item_name}->Distinct())"}.intersection(
+                    item.get("Include") for item in project_xml.iter("Compile")))
+
+                def expand(patterns):
+                    return {source.resolve() for pattern in patterns.split(";") if pattern
+                            for source in manifest.parent.glob(
+                                pattern.removeprefix("$(MSBuildThisFileDirectory)"))}
+
+                sources = set()
+                for item in ET.parse(manifest).getroot().iter(item_name):
+                    sources.update(expand(item.get("Include", "")) - expand(item.get("Exclude", "")))
+                    sources.difference_update(expand(item.get("Remove", "")))
+                self.assertTrue(sources, "the ownership guard must inspect the linked sources")
+                stranded = [source.relative_to(self.REPO).as_posix() for source in sorted(sources)
+                            if re.search(r'\[\s*Trait\s*\(\s*"Category"\s*,\s*"Integration"\s*\)\s*\]',
+                                         source.read_text(encoding="utf-8-sig"))]
+                self.assertEqual(stranded, [],
+                                 "integration sources must stay in the service-backed main assembly")
+
+
 class UnitAggregateCommandTests(unittest.TestCase):
     REPO = Path(__file__).resolve().parents[2]
     DEFAULTS = [
@@ -915,7 +1074,7 @@ class UnitAggregateCommandTests(unittest.TestCase):
         make = shutil.which("make")
         if make is None:
             self.skipTest("GNU Make is an optional wrapper and is not installed")
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
             directory = Path(temporary)
             stub = directory / "buildctl_stub.py"
             log = directory / "commands.jsonl"
@@ -970,7 +1129,7 @@ class UnitAggregateCommandTests(unittest.TestCase):
         powershell = shutil.which("pwsh")
         if powershell is None:
             self.skipTest("PowerShell is not installed")
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
             directory = Path(temporary)
             harness = directory / "local-quality-harness.ps1"
             log = directory / "commands.jsonl"

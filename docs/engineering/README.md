@@ -41,6 +41,7 @@ Use the source-module registry and source README workflow before changing code:
 - [Architecture](../architecture/README.md) *(canonical system design and rationale)*
 - [Module map](../architecture/module-map.md) *(maintained boundary reference; module ownership is registered in `source/data/source-modules.yml`)*
 - [Project structure](../architecture/project-structure.md) *(maintained repository overview)*
+- [Execution workflows](execution-workflows.md) *(preview, operational journal, alerts, controlled strategy comparison and opt-in paper probe)*
 - [Live trading engine](live-trading-engine.md) *(promotion → execution loop: feed tap, strategy sessions, OMS routing)*
 - [ETL execution ownership](etl-execution-ownership.md) *(single-run admission, guarded publication, takeover, and commit ordering)*
 
@@ -316,6 +317,11 @@ python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
+
+Tests that call real external market-data providers (`Category=LiveProvider`, such as the Yahoo
+Finance integration tests) are excluded from deterministic runs by their `Category` filters
+(`Category!=Integration`, `Category!=LiveProvider`). When a run invokes them, an unreachable
+provider fails the test instead of passing silently.
 
 ### Python automation environment
 

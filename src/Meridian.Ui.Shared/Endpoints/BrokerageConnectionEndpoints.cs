@@ -82,20 +82,21 @@ public static class BrokerageConnectionEndpoints
         .Produces<BrokerageConnectionStatusDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
+        // Alpaca credentials are owned by one retained connection (tenant, connection, external
+        // account and environment). ?connectionId= names it; without it the tenant's single owned
+        // paper connection is used. No Alpaca route reads or writes the provider-wide record.
         group.MapGet("/alpaca/status", async (HttpContext context) =>
         {
             if (!HasViewBrokeragePermission(context))
                 return PermissionDenied();
 
-            var service = ResolveAlpacaConnectionService(context);
-            if (service is null)
-                return ServiceUnavailable();
-
-            var status = await service.GetStatusAsync(context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(status, jsonOptions);
+            return await RunAlpacaAsync(context, jsonOptions, (service, connectionId, tenantId) =>
+                service.GetStatusAsync(connectionId, tenantId, context.RequestAborted)).ConfigureAwait(false);
         })
         .WithName("GetAlpacaBrokerageConnectionStatus").RequirePermission(UserPermission.ViewTrades)
         .Produces<BrokerageConnectionStatusDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
 
         group.MapPost("/alpaca/connect", async (AlpacaBrokerageConnectionRequestDto request, HttpContext context) =>
@@ -103,15 +104,13 @@ public static class BrokerageConnectionEndpoints
             if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
                 return PermissionDenied();
 
-            var service = ResolveAlpacaConnectionService(context);
-            if (service is null)
-                return ServiceUnavailable();
-
-            var status = await service.ConnectAsync(request, context.RequestAborted, actor).ConfigureAwait(false);
-            return Results.Json(status, jsonOptions);
+            return await RunAlpacaAsync(context, jsonOptions, (service, connectionId, tenantId) =>
+                service.ConnectAsync(connectionId, tenantId, request, context.RequestAborted, actor)).ConfigureAwait(false);
         })
         .WithName("ConnectAlpacaBrokerageConnection").RequirePermission(UserPermission.ManageCredentials)
         .Produces<BrokerageConnectionStatusDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
 
         group.MapDelete("/alpaca", async (HttpContext context) =>
@@ -119,16 +118,51 @@ public static class BrokerageConnectionEndpoints
             if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
                 return PermissionDenied();
 
-            var service = ResolveAlpacaConnectionService(context);
-            if (service is null)
-                return ServiceUnavailable();
-
-            var status = await service.RevokeAsync(context.RequestAborted, actor).ConfigureAwait(false);
-            return Results.Json(status, jsonOptions);
+            return await RunAlpacaAsync(context, jsonOptions, (service, connectionId, tenantId) =>
+                service.RevokeAsync(connectionId, tenantId, context.RequestAborted, actor)).ConfigureAwait(false);
         })
         .WithName("RevokeAlpacaBrokerageConnection").RequirePermission(UserPermission.ManageCredentials)
         .Produces<BrokerageConnectionStatusDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
+    }
+
+    private static async Task<IResult> RunAlpacaAsync(
+        HttpContext context,
+        JsonSerializerOptions jsonOptions,
+        Func<AlpacaBrokerageConnectionService, string?, string, Task<BrokerageConnectionStatusDto>> operation)
+    {
+        var service = ResolveAlpacaConnectionService(context);
+        if (service is null)
+            return ServiceUnavailable();
+
+        string? connectionId = null;
+        if (context.Request.Query.TryGetValue("connectionId", out var connectionIds))
+        {
+            if (connectionIds.Count != 1 || string.IsNullOrWhiteSpace(connectionIds[0]))
+                return Results.BadRequest(new { error = "Name exactly one owned Alpaca connection in the connectionId query parameter." });
+            connectionId = connectionIds[0];
+        }
+
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        if (!tenant.HasTenantScope)
+            return PermissionDenied();
+
+        try
+        {
+            var status = await operation(service, connectionId, tenant.TenantId!).ConfigureAwait(false);
+            return Results.Json(status, jsonOptions);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Unknown, foreign and wrong-provider connections are indistinguishable to the caller.
+            return PermissionDenied();
+        }
+        catch (InvalidDataException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
     }
 
     private static BrokerageConnectionService? ResolveConnectionService(HttpContext context)

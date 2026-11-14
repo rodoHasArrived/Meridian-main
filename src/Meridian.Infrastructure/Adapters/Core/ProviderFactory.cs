@@ -15,7 +15,6 @@ using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Adapters.Tiingo;
 using Meridian.Infrastructure.Adapters.TwelveData;
-using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
 using Meridian.Infrastructure.Contracts;
 using Serilog;
@@ -25,8 +24,6 @@ using NasdaqBackfillConfig = Meridian.Core.Config.NasdaqDataLinkConfig;
 using PolygonBackfillConfig = Meridian.Core.Config.PolygonConfig;
 using StooqBackfillConfig = Meridian.Core.Config.StooqConfig;
 using TiingoBackfillConfig = Meridian.Core.Config.TiingoConfig;
-// Type aliases for clarity when dealing with backfill provider configs
-using YahooBackfillConfig = Meridian.Core.Config.YahooFinanceConfig;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 
@@ -74,10 +71,27 @@ public sealed partial class ProviderFactory
         CancellationToken ct = default)
         => CreateAndRegisterAllAsync(registry, ct, includeModuleOwned: true);
 
-    internal Task<ProviderCreationResult> CreateAndRegisterAllAsync(
+    internal async Task<ProviderCreationResult> CreateAndRegisterAllAsync(
         ProviderRegistry registry,
         CancellationToken ct,
         bool includeModuleOwned)
+    {
+        ArgumentNullException.ThrowIfNull(registry);
+
+        // Read the credentials first, without blocking; construction below then uses them.
+        var prepared = await PrepareCredentialsAsync(ct).ConfigureAwait(false);
+        using (prepared.Activate())
+        {
+            return CreateAndRegisterAll(registry, includeModuleOwned);
+        }
+    }
+
+    /// <summary>
+    /// Synchronous construction and registration. It performs no credential storage I/O when the
+    /// caller is inside a scope prepared by <see cref="PrepareCredentialsAsync"/>; a
+    /// dependency-injection factory, which cannot await, calls this directly.
+    /// </summary>
+    internal ProviderCreationResult CreateAndRegisterAll(ProviderRegistry registry, bool includeModuleOwned)
     {
         ArgumentNullException.ThrowIfNull(registry);
 
@@ -109,8 +123,15 @@ public sealed partial class ProviderFactory
             result.BackfillProviders.Count,
             result.SymbolSearchProviders.Count);
 
-        return Task.FromResult(result);
+        return result;
     }
+
+    /// <summary>
+    /// Asynchronously reads the credentials provider construction will need. Await it at an
+    /// asynchronous entry point and construct inside <see cref="IPreparedProviderCredentials.Activate"/>.
+    /// </summary>
+    public ValueTask<IPreparedProviderCredentials> PrepareCredentialsAsync(CancellationToken ct = default)
+        => _credentialResolver.PrepareAsync(providerTypes: null, ct);
 
     /// <summary>
     /// Creates all configured backfill providers.
@@ -119,11 +140,35 @@ public sealed partial class ProviderFactory
         => CreateProviders<IHistoricalDataProvider>(static p => p.Priority, "backfill");
 
     /// <summary>
+    /// Creates all configured backfill providers, reading their credentials without blocking.
+    /// </summary>
+    public async Task<IReadOnlyList<IHistoricalDataProvider>> CreateBackfillProvidersAsync(CancellationToken ct = default)
+    {
+        var prepared = await PrepareCredentialsAsync(ct).ConfigureAwait(false);
+        using (prepared.Activate())
+        {
+            return CreateBackfillProviders();
+        }
+    }
+
+    /// <summary>
     /// Creates all configured symbol search providers.
     /// Symbol search uses the same credentials as backfill providers.
     /// </summary>
     public IReadOnlyList<ISymbolSearchProvider> CreateSymbolSearchProviders()
         => CreateProviders<ISymbolSearchProvider>(static p => p.Priority, "symbol search");
+
+    /// <summary>
+    /// Creates all configured symbol search providers, reading their credentials without blocking.
+    /// </summary>
+    public async Task<IReadOnlyList<ISymbolSearchProvider>> CreateSymbolSearchProvidersAsync(CancellationToken ct = default)
+    {
+        var prepared = await PrepareCredentialsAsync(ct).ConfigureAwait(false);
+        using (prepared.Activate())
+        {
+            return CreateSymbolSearchProviders();
+        }
+    }
 
     private IReadOnlyList<T> CreateProviders<T>(
         Func<T, int> priority,
@@ -219,46 +264,39 @@ public sealed partial class ProviderFactory
             log: _log);
     }
 
-    internal IHistoricalDataProvider? CreateYahooBackfillProvider(YahooBackfillConfig? cfg)
-    {
-        if (!EnabledByDefault(cfg?.Enabled))
-            return null;
-        return new YahooFinanceHistoricalDataProvider(log: _log);
-    }
-
     internal IHistoricalDataProvider? CreatePolygonBackfillProvider(PolygonBackfillConfig? cfg)
         => CreateCredentialGatedBackfillProvider<PolygonHistoricalDataProvider>(
             EnabledByDefault(cfg?.Enabled),
             "POLYGON_API_KEY",
             cfg?.ApiKey,
-            apiKey => new PolygonHistoricalDataProvider(apiKey: apiKey, log: _log));
+            apiKey => new PolygonHistoricalDataProvider(apiKey: apiKey, log: _log, runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "polygon")));
 
     internal IHistoricalDataProvider? CreateTiingoBackfillProvider(TiingoBackfillConfig? cfg)
         => CreateCredentialGatedBackfillProvider<TiingoHistoricalDataProvider>(
             EnabledByDefault(cfg?.Enabled),
             "TIINGO_API_TOKEN",
             cfg?.ApiToken,
-            token => new TiingoHistoricalDataProvider(apiToken: token, log: _log));
+            token => new TiingoHistoricalDataProvider(apiToken: token, log: _log, runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "tiingo")));
 
     internal IHistoricalDataProvider? CreateTwelveDataBackfillProvider()
         => CreateCredentialGatedBackfillProvider<TwelveDataHistoricalDataProvider>(
-            enabled: true,
+            enabled: _config.Backfill?.Providers?.TwelveData?.Enabled ?? true,
             "TWELVEDATA_API_KEY",
             configuredValue: null,
-            apiKey => new TwelveDataHistoricalDataProvider(apiKey: apiKey, log: _log));
+            apiKey => new TwelveDataHistoricalDataProvider(apiKey: apiKey, log: _log, runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "twelvedata")));
 
     internal IHistoricalDataProvider? CreateFinnhubBackfillProvider(FinnhubBackfillConfig? cfg)
         => CreateCredentialGatedBackfillProvider<FinnhubHistoricalDataProvider>(
             EnabledByDefault(cfg?.Enabled),
             "FINNHUB_API_KEY",
             cfg?.ApiKey,
-            apiKey => new FinnhubHistoricalDataProvider(apiKey: apiKey, log: _log));
+            apiKey => new FinnhubHistoricalDataProvider(apiKey: apiKey, log: _log, runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "finnhub")));
 
     internal IHistoricalDataProvider? CreateStooqBackfillProvider(StooqBackfillConfig? cfg)
     {
         if (!EnabledByDefault(cfg?.Enabled))
             return null;
-        return new StooqHistoricalDataProvider(log: _log);
+        return new StooqHistoricalDataProvider(log: _log, runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "stooq"));
     }
 
     internal IHistoricalDataProvider? CreateAlphaVantageBackfillProvider(AlphaVantageBackfillConfig? cfg)
@@ -267,7 +305,7 @@ public sealed partial class ProviderFactory
             EnabledWhenOptedIn(cfg?.Enabled),
             "ALPHA_VANTAGE_API_KEY",
             cfg?.ApiKey,
-            apiKey => new AlphaVantageHistoricalDataProvider(apiKey: apiKey, log: _log));
+            apiKey => new AlphaVantageHistoricalDataProvider(apiKey: apiKey, log: _log, runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "alphavantage")));
 
     internal IHistoricalDataProvider? CreateNasdaqBackfillProvider(NasdaqBackfillConfig? cfg)
     {
@@ -282,7 +320,8 @@ public sealed partial class ProviderFactory
         return new NasdaqDataLinkHistoricalDataProvider(
             apiKey: apiKey,
             database: cfg?.Database ?? "WIKI",
-            log: _log);
+            log: _log,
+            runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "nasdaqdatalink"));
     }
 
     internal IHistoricalDataProvider? CreateRobinhoodBackfillProvider(RobinhoodConfig? cfg)
@@ -318,7 +357,8 @@ public sealed partial class ProviderFactory
         if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey))
             return null;
 
-        return new AlpacaSymbolSearchProvider(keyId, secretKey, httpClient: null, log: _log);
+        return new AlpacaSymbolSearchProvider(keyId, secretKey, httpClient: null, log: _log,
+            useSandbox: SelectedAlpacaReferenceEnvironment(credentials));
     }
 
     internal ISymbolSearchProvider? CreateFinnhubSearchProvider(FinnhubBackfillConfig? cfg)
@@ -345,10 +385,10 @@ public sealed partial class ProviderFactory
 
     internal ISymbolSearchProvider? CreateTwelveDataSearchProvider()
         => CreateCredentialGatedSearchProvider<TwelveDataHistoricalDataProvider>(
-            enabled: true,
+            enabled: _config.Backfill?.Providers?.TwelveData?.Enabled ?? true,
             "TWELVEDATA_API_KEY",
             configuredValue: null,
-            apiKey => new TwelveDataSymbolSearchProvider(apiKey, httpClient: null, log: _log));
+            apiKey => new TwelveDataSymbolSearchProvider(apiKey, httpClient: null, log: _log, runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "twelvedata")));
 
     internal ISymbolSearchProvider? CreateNasdaqSearchProvider(NasdaqBackfillConfig? cfg)
         => CreateCredentialGatedSearchProvider<NasdaqDataLinkHistoricalDataProvider>(
@@ -377,7 +417,8 @@ public sealed partial class ProviderFactory
             providers,
             enableSymbolResolution ? _symbolResolver : null,
             enableCrossValidation: false,
-            log: _log);
+            log: _log,
+            validationProfiles: _config.Backfill?.ValidationProfiles);
     }
 
     /// <summary>
@@ -482,7 +523,63 @@ public sealed class ProviderCreationResult
 /// </summary>
 public interface IProviderCredentialResolver
 {
+    /// <summary>
+    /// Builds the credential context a provider is constructed with. Provider construction is
+    /// synchronous (dependency-injection factories and adapter constructors cannot await), so
+    /// this never awaits. A resolver backed by storage serves it from credentials an enclosing
+    /// <see cref="PrepareAsync"/> read; with none prepared it has to wait for the read.
+    /// </summary>
     ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary<string, string?>? configuredValues = null);
+
+    /// <summary>
+    /// Asynchronously reads everything <see cref="CreateContext"/> will need, so the synchronous
+    /// construction that follows does no storage I/O. Await this at an asynchronous entry point,
+    /// then construct providers inside <see cref="IPreparedProviderCredentials.Activate"/>:
+    /// <code>
+    /// var prepared = await resolver.PrepareAsync(ct: ct);
+    /// using (prepared.Activate())
+    /// {
+    ///     // synchronous provider construction
+    /// }
+    /// </code>
+    /// The prepared credentials are a point-in-time read and are only valid for the
+    /// construction that immediately follows; do not keep them.
+    /// </summary>
+    /// <param name="providerTypes">
+    /// Provider types about to be constructed, or <see langword="null"/> for every provider the
+    /// resolver manages.
+    /// </param>
+    /// <param name="ct">Cancellation token.</param>
+    ValueTask<IPreparedProviderCredentials> PrepareAsync(
+        IReadOnlyCollection<Type>? providerTypes = null,
+        CancellationToken ct = default)
+        => ValueTask.FromResult(PreparedProviderCredentials.None);
+}
+
+/// <summary>Credentials read ahead of a synchronous provider construction.</summary>
+public interface IPreparedProviderCredentials
+{
+    /// <summary>
+    /// Makes the prepared credentials visible to <see cref="IProviderCredentialResolver.CreateContext"/>
+    /// on the current execution flow until the returned scope is disposed.
+    /// </summary>
+    IDisposable Activate();
+}
+
+/// <summary>Shared no-op for resolvers that need no storage read.</summary>
+public static class PreparedProviderCredentials
+{
+    /// <summary>Nothing to prepare: <see cref="IPreparedProviderCredentials.Activate"/> does nothing.</summary>
+    public static IPreparedProviderCredentials None { get; } = new NoPreparedCredentials();
+
+    private sealed class NoPreparedCredentials : IPreparedProviderCredentials, IDisposable
+    {
+        public IDisposable Activate() => this;
+
+        public void Dispose()
+        {
+        }
+    }
 }
 
 /// <summary>

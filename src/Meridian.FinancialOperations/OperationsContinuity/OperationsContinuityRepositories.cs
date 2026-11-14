@@ -87,7 +87,11 @@ public sealed record OperationsWorkflowAuditDraft(
     string? CorrelationId,
     IReadOnlyList<OperationsEvidenceLinkDto> References,
     OperationsContinuityCorrelationKeysDto? CorrelationKeys = null,
-    Meridian.Contracts.Operations.VerifiedOperationOutcome? Outcome = null);
+    Meridian.Contracts.Operations.VerifiedOperationOutcome? Outcome = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public OperationsCloseChecklistSnapshotDto? CloseChecklistSnapshot { get; init; }
+}
 
 /// <summary>
 /// Stores operations workflow snapshots in process and derives their status on reads.
@@ -252,7 +256,7 @@ internal sealed class InMemoryOperationsContinuityWorkflowStartCommitStore(
                 repository.EnsureWorkflowStartAvailableUnsafe(workflow);
                 if (auditStore.HasTimelineUnsafe(workflow.WorkflowId))
                     throw new InvalidOperationException("The workflow identity already has retained audit evidence.");
-                var audit = auditStore.AppendUnsafe(auditDraft);
+                var audit = auditStore.AppendUnsafe(OperationsWorkflowChecklistSnapshots.ForCommit(auditDraft, workflow));
                 workflow.Touch(audit.OccurredAtUtc);
                 repository.SaveUnsafe(workflow);
                 return Task.FromResult(new OperationsContinuityTransactionalCommitResult(workflow, audit));
@@ -281,7 +285,8 @@ internal sealed class InMemoryOperationsContinuityTransitionCommitStore(
             {
                 lock (inMemoryAuditStore.SyncRoot)
                 {
-                    var audit = inMemoryAuditStore.AppendUnsafe(auditDraft);
+                    var audit = inMemoryAuditStore.AppendUnsafe(persistWorkflowState
+                        ? OperationsWorkflowChecklistSnapshots.ForCommit(auditDraft, workflow) : auditDraft);
                     if (persistWorkflowState)
                     {
                         workflow.Touch(audit.OccurredAtUtc);
@@ -295,7 +300,8 @@ internal sealed class InMemoryOperationsContinuityTransitionCommitStore(
 
         // The in-memory repository cannot fail after validation. Append first so an injected audit
         // failure leaves no state change, then publish the snapshot while still in this admitted call.
-        var appendedAudit = await auditStore.AppendAsync(auditDraft, ct).ConfigureAwait(false);
+        var appendedAudit = await auditStore.AppendAsync(persistWorkflowState
+            ? OperationsWorkflowChecklistSnapshots.ForCommit(auditDraft, workflow) : auditDraft, ct).ConfigureAwait(false);
         if (persistWorkflowState)
         {
             workflow.Touch(appendedAudit.OccurredAtUtc);
@@ -462,7 +468,8 @@ public sealed class FileOperationsContinuityRepository :
                     $"Operations continuity workflow '{workflow.WorkflowId}' already has retained state or audit evidence.");
             }
 
-            var audit = OperationsWorkflowAuditHashing.Create(auditDraft, previousHash: null, DateTimeOffset.UtcNow);
+            var audit = OperationsWorkflowAuditHashing.Create(
+                OperationsWorkflowChecklistSnapshots.ForCommit(auditDraft, workflow), previousHash: null, DateTimeOffset.UtcNow);
             workflow.Touch(audit.OccurredAtUtc);
             var envelope = new OperationsContinuityFileCommitEnvelope(workflow, [audit]);
             var json = JsonSerializer.Serialize(envelope, _jsonOptions);
@@ -495,7 +502,7 @@ public sealed class FileOperationsContinuityRepository :
                 .LoadTimelineAsync(_dataDirectory, workflow.WorkflowId, _jsonOptions, ct)
                 .ConfigureAwait(false);
             var audit = OperationsWorkflowAuditHashing.Create(
-                auditDraft,
+                persistWorkflowState ? OperationsWorkflowChecklistSnapshots.ForCommit(auditDraft, workflow) : auditDraft,
                 timeline.LastOrDefault()?.CurrentHash,
                 DateTimeOffset.UtcNow);
             if (persistWorkflowState)
@@ -550,7 +557,9 @@ public sealed class FileOperationsContinuityRepository :
         }
         catch (JsonException ex)
         {
-            _logger.LogError(ex, "Operations continuity workflow snapshot is corrupt at {Path}", path);
+            _logger.LogError(
+                "Operations continuity workflow snapshot is corrupt ({ErrorType})",
+                ex.GetType().Name);
             throw new InvalidDataException(
                 $"Operations continuity workflow snapshot '{path}' is corrupt.",
                 ex);

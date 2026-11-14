@@ -30,6 +30,23 @@ public interface ISecurityMasterRevisionStore
         SecurityMasterRevisionFieldValue? fieldValue = null,
         CancellationToken ct = default);
 
+    /// <summary>
+    /// Creates a field-edit Draft that also records the canonical state the proposal was drafted
+    /// against (<paramref name="fieldBase"/>), so publish can refuse it if that field changed since.
+    /// Stores that do not persist the base fall back to the overload without it.
+    /// </summary>
+    Task<SecurityMasterRevisionRecord> CreateDraftAsync(
+        Guid securityId,
+        string actor,
+        string fieldPath,
+        DateTimeOffset fieldEffectiveFrom,
+        string fieldJustification,
+        string? fundProfileId,
+        SecurityMasterRevisionFieldValue? fieldValue,
+        SecurityMasterRevisionFieldBase fieldBase,
+        CancellationToken ct = default)
+        => CreateDraftAsync(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, fieldValue, ct);
+
     /// <summary>Returns the revision, or <c>null</c> when no revision with that id exists.</summary>
     Task<SecurityMasterRevisionRecord?> GetAsync(Guid revisionId, CancellationToken ct = default);
 
@@ -65,6 +82,13 @@ public interface ISecurityMasterRevisionStore
 /// </summary>
 public sealed record SecurityMasterRevisionFieldValue(string? Value);
 
+/// <summary>
+/// The canonical state a field-edit proposal was drafted against: the security version the edit was
+/// staged at and a canonical snapshot of every stored key the approved merge would overwrite for that
+/// field (<see cref="SecurityAssetTermsFieldSnapshot"/>).
+/// </summary>
+public sealed record SecurityMasterRevisionFieldBase(long BaseVersion, string FieldSnapshot);
+
 /// <summary>Durable record of a passport revision's governed lifecycle state.</summary>
 public sealed record SecurityMasterRevisionRecord(
     Guid RevisionId,
@@ -79,7 +103,15 @@ public sealed record SecurityMasterRevisionRecord(
     string? FieldJustification = null,
     string? FundProfileId = null,
     string? FieldValue = null,
-    bool FieldValueRecorded = false);
+    bool FieldValueRecorded = false,
+    // The canonical base the proposal was drafted against; null on revisions recorded before the
+    // base was captured (and on non-field drafts), which then publish without a stale check.
+    long? BaseVersion = null,
+    string? FieldBaseSnapshot = null)
+{
+    /// <summary>True when the revision recorded the canonical base its proposal was drafted against.</summary>
+    public bool FieldBaseRecorded => BaseVersion is not null && FieldBaseSnapshot is not null;
+}
 
 /// <summary>
 /// Raised when a revision lifecycle transition is attempted out of order — e.g. publishing a revision
@@ -101,8 +133,9 @@ public sealed class SecurityMasterRevisionStateException : Exception
 /// <c>SecurityMasterConflictService</c>; the durable Postgres-backed implementation is wired in the
 /// subsequent slice. State transitions are compare-and-set so concurrent lifecycle calls are safe.
 /// </summary>
-public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisionStore
+public sealed class InMemorySecurityMasterRevisionStore(TimeProvider? timeProvider = null) : ISecurityMasterRevisionStore
 {
+    private readonly TimeProvider _timeProvider = timeProvider ?? TimeProvider.System;
     private readonly ConcurrentDictionary<Guid, SecurityMasterRevisionRecord> _revisions = new();
 
     public Task<SecurityMasterRevisionRecord> CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default)
@@ -119,6 +152,18 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
         CancellationToken ct = default)
         => CreateDraftCore(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, fieldValue);
 
+    public Task<SecurityMasterRevisionRecord> CreateDraftAsync(
+        Guid securityId,
+        string actor,
+        string fieldPath,
+        DateTimeOffset fieldEffectiveFrom,
+        string fieldJustification,
+        string? fundProfileId,
+        SecurityMasterRevisionFieldValue? fieldValue,
+        SecurityMasterRevisionFieldBase fieldBase,
+        CancellationToken ct = default)
+        => CreateDraftCore(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, fieldValue, fieldBase);
+
     private Task<SecurityMasterRevisionRecord> CreateDraftCore(
         Guid securityId,
         string actor,
@@ -126,9 +171,10 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
         DateTimeOffset? fieldEffectiveFrom,
         string? fieldJustification,
         string? fundProfileId,
-        SecurityMasterRevisionFieldValue? fieldValue)
+        SecurityMasterRevisionFieldValue? fieldValue,
+        SecurityMasterRevisionFieldBase? fieldBase = null)
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = _timeProvider.GetUtcNow();
         var record = new SecurityMasterRevisionRecord(
             RevisionId: Guid.NewGuid(),
             SecurityId: securityId,
@@ -142,7 +188,9 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
             FieldJustification: fieldJustification,
             FundProfileId: string.IsNullOrWhiteSpace(fundProfileId) ? null : fundProfileId.Trim(),
             FieldValue: fieldValue?.Value,
-            FieldValueRecorded: fieldValue is not null);
+            FieldValueRecorded: fieldValue is not null,
+            BaseVersion: fieldBase?.BaseVersion,
+            FieldBaseSnapshot: fieldBase?.FieldSnapshot);
         _revisions[record.RevisionId] = record;
         return Task.FromResult(record);
     }
@@ -182,7 +230,7 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
         var workflowId = next == SecurityMasterRevisionStateDto.Submitted && workflowIdForSubmit.HasValue
             ? workflowIdForSubmit
             : existing.WorkflowId;
-        var updated = existing with { State = next, Actor = actor, UpdatedAt = DateTimeOffset.UtcNow, WorkflowId = workflowId };
+        var updated = existing with { State = next, Actor = actor, UpdatedAt = _timeProvider.GetUtcNow(), WorkflowId = workflowId };
 
         // Compare-and-set: only the caller whose view still matches the stored record wins; a
         // concurrent transition that already advanced the revision loses and is rejected.

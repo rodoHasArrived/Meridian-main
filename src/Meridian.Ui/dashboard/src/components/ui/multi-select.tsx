@@ -44,7 +44,7 @@ export function MultiSelect({
     <div
       className={cn(
         "flex flex-wrap items-center gap-3 border-b border-border px-3 py-2 text-sm",
-        selectedCount > 0 ? "bg-primary/10" : "bg-transparent",
+        selectedCount > 0 ? "bg-[var(--interaction-selected-surface)]" : "bg-transparent",
         className
       )}
       {...props}

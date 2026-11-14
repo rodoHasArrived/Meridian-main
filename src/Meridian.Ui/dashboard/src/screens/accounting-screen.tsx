@@ -1,82 +1,54 @@
-import { AssetAccountingWorkflowPanel } from "./accounting-screen.asset-workflow-panel";
-import { BookCheck, Copy, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, UserCheck, WalletCards, X } from "lucide-react";
+import { BookCheck, Landmark, Network, RefreshCcw, Search, ShieldCheck, WalletCards } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "@/styles/accounting-screen.css";
-import { useAccountingCloseSources, type CloseWorkflowQuery } from "./accounting-screen.close-sources";
+import { selectCurrentDailyValuationSchedule, useAccountingCloseSources, type CloseWorkflowQuery } from "./accounting-screen.close-sources";
 import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
-import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
+import { formatCount } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { KpiProvider } from "@/lib/kpi-context";
 import { workspaceKpiIds } from "@/lib/kpi-registry";
+import { CloseChecklistProgressChart, ReconciliationAgingChart } from "@/components/meridian/workstation-evidence-charts";
+import { CloseChecklistHistoryChart } from "@/components/meridian/close-checklist-history-chart";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RecurringJournalQueue } from "@/components/accounting/RecurringJournalQueue";
 import { PrepareNextPeriodPanel } from "@/screens/accounting-screen.prepare-next-period";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
+import { SecurityCurveWorkbench } from "@/components/meridian/security-curve-workbench";
+import { SecurityCurveValuationPanel } from "@/components/meridian/security-curve-valuation-panel";
+import { BondDiscoveryPanel } from "@/components/meridian/bond-discovery-panel";
 import { BondAnalyticsPanel } from "@/components/meridian/bond-analytics-panel";
+import { BondWorkflowPanel } from "@/components/meridian/bond-workflow-panel";
+import { BondIncomePanel } from "@/components/meridian/bond-income-panel";
 import { BondMigrationPreviewPanel } from "@/components/meridian/bond-migration-preview-panel";
+import { SecurityRatesIngestionPanel } from "@/components/meridian/security-rates-ingestion-panel";
+import { BondObservedFixingPanel } from "@/components/meridian/bond-observed-fixing-panel";
+import type { BondObservedFixingReceipt } from "@/lib/api/bond-observed-fixings.api";
 import { BondReferenceLadderPanel } from "@/components/meridian/bond-reference-ladder-panel";
 import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
 import { ReconciliationComparisonPanel } from "@/components/accounting";
-import {
-  approveAndPostDailyValuationBatch,
-  approveOperationsContinuityWorkflow,
-  certifyAccountingSystemExportPackage,
-  configureDailyValuationSchedule,
-  createAccountingSystemExportPackage,
-  getAccountingSystemExportPackageManifest,
-  getAccountingSystemMappingProfiles,
-  getAccountingSystemProviders,
-  getLatestAccountingSystemImport,
-  getLatestAccountingSystemReconciliation,
-  getFinancialRecordExplorer,
-  getOperationsContinuityWorkflow,
-  getOperationsContinuityWorkflows,
-  listAccountingSystemExportPackages,
-  previewAccountingSystemImport,
-  rejectOperationsContinuityWorkflow,
-  runDueDailyValuationSchedules,
-  saveFinancialRecordExplorerView
-} from "@/lib/api";
+import { TieOutPanel } from "@/components/accounting/TieOutPanel";
+import { approveAndPostDailyValuationBatch, certifyAccountingSystemExportPackage, configureDailyValuationSchedule, createAccountingSystemExportPackage, getAccountingSystemExportPackageManifest, getAccountingSystemMappingProfiles, getAccountingSystemProviders, getLatestAccountingSystemImport, getLatestAccountingSystemReconciliation, getFinancialRecordExplorer, listAccountingSystemExportPackages, previewAccountingSystemImport, runDueDailyValuationSchedules, saveFinancialRecordExplorerView } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { accountingToolingBadgeVariant, accountingToolingBorderClass, cashFlowBadgeClass, cashFlowTextClass, reportingBadgeClass } from "@/screens/accounting-screen.styles";
-import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
+import { StatusBadge, toneToSeverity } from "@/design-system/status";
+import { workspaceForPath } from "@/lib/workspace";
 import { CapitalAccountWorkbenchPanel } from "@/screens/accounting-screen.capital-account-workbench-panel";
 import { AccountingPostedLedgerSection } from "@/screens/accounting-screen.posted-ledger-panel";
 import { CorporateActionsPanel } from "@/screens/accounting-screen.corporate-actions-panel";
 import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, CloseCommandCenterPanel } from "@/screens/accounting-screen.close-cockpit-panels";
 import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels";
 import { CalibrationSummaryPanel } from "@/screens/accounting-screen.calibration-panel";
-import {
-  focusManualJournalCell,
-  handleManualJournalCellKeyDown,
-  ManualJournalDimensionsInspector,
-  ManualJournalHealthBar,
-  ManualJournalValidationNavigator
-} from "@/screens/accounting-screen.journal-entry-enhancements";
-import {
-  InstrumentPassportPanel,
-  ReferenceDataWorkbenchPanel,
-  SecurityOpenLotReadModelPanel,
-} from "@/screens/accounting-screen.security-master-detail-panels";
+import { InstrumentPassportPanel, ReferenceDataWorkbenchPanel, SecurityOpenLotReadModelPanel } from "@/screens/accounting-screen.security-master-detail-panels";
 import { AccountingChip, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
-import {
-  OperationalExceptionWorkbenchPanel,
-  ReconciliationQueueSummaryCard,
-  TradingParametersPanel,
-  reconciliationQueueColumns,
-} from "@/screens/accounting-screen.operations-panels";
+import { OperationalExceptionWorkbenchPanel, ReconciliationQueueSummaryCard, TradingParametersPanel, reconciliationQueueColumns } from "@/screens/accounting-screen.operations-panels";
 import { BankingPaymentApprovalsPanel } from "@/screens/accounting-screen.payment-approvals";
-import { BreakAuditRebuildCheck } from "@/screens/accounting-screen.break-audit-rebuild";
 import { AuditChainIntegrityPanel } from "@/screens/accounting-screen.audit-integrity";
 import { BondCutoverConsolePanel } from "@/screens/accounting-screen.bond-cutover";
 import { ReconciliationReadinessPanel } from "@/screens/accounting-screen.reconciliation-readiness";
@@ -84,80 +56,24 @@ import { AccountingOnboardingPanel } from "@/screens/accounting-screen.onboardin
 import { ReconciliationWorkbench, ReconciliationStatementRuns } from "./accounting-screen.reconciliation-workbench";
 import { useReconciliationViewState } from "./reconciliation-view-state";
 import { AccountOversightPanel } from "@/screens/accounting-screen.account-oversight";
-import {
-  ChartAccountPathBuilder,
-  ConfigureActivationRail,
-  ConfigureChangePreviewPanel,
-  ConfigureCommandBar,
-  ConfigureProductionReadinessCard,
-  LedgerBookSetupWizard
-} from "@/screens/accounting-screen.configure-panel";
-import {
-  buildAccountingSectionVisibility,
-  buildAccountingTaskMode,
-  resolveAccountingWorkstream
-} from "@/screens/accounting-screen.task-mode-view-model";
-import {
-  buildAccountingLoadingViewState,
-  buildCloseCommandCenterViewState,
-  buildAccountingWorkflowLaunchViewState,
-  SECURITY_IDENTITY_DETAIL_PANEL_ID,
-  useAccountingCloseReportPackageViewModel,
-  useCapitalAccountWorkbenchViewModel,
-  useAccountingConfigurationViewModel,
-  useAccountingCashFlowViewModel,
-  useManualJournalEntryWorkbenchViewModel,
-  useAccountingReconciliationViewModel,
-  useAccountingReportingViewModel,
-  useReconciliationResolveDialogViewModel,
-  useSecurityMasterViewModel
-} from "@/screens/accounting-screen.view-model";
+import { buildAccountingSectionVisibility, buildAccountingTaskMode, resolveAccountingWorkstream } from "@/screens/accounting-screen.task-mode-view-model";
+import { buildAccountingLoadingViewState, buildCloseCommandCenterViewState, buildAccountingWorkflowLaunchViewState, SECURITY_IDENTITY_DETAIL_PANEL_ID, useAccountingCloseReportPackageViewModel, useCapitalAccountWorkbenchViewModel, useAccountingConfigurationViewModel, useAccountingCashFlowViewModel, useManualJournalEntryWorkbenchViewModel, useAccountingReconciliationViewModel, useAccountingReportingViewModel, useReconciliationResolveDialogViewModel, useSecurityMasterViewModel } from "@/screens/accounting-screen.view-model";
 import { buildMultiAssetCoveragePanel } from "@/screens/portfolio-screen.view-model";
-import type {
-  AccountingConfigurationViewModel,
-  AccountingRulesStudioPromotionReadinessViewModel,
-  ManualJournalEntryWorkbenchViewModel,
-  ReconciliationBreakRowViewModel,
-  ReconciliationBreakDetailViewModel,
-  ReconciliationDetailActionsViewModel,
-  CloseCommandCenterViewState,
-  SecuritySearchResultRowViewModel,
-} from "@/screens/accounting-screen.view-model";
-import type {
-  AccountingSystemImportDetail,
-  AccountingSystemExportPackageRequest,
-  AccountingSystemReconciliationEvidencePackage,
-  ExternalGlExportPackage,
-  ExternalGlExportPackageManifest,
-  ExternalGlMappingProfile,
-  AccountingSystemProvider,
-  AccountingSystemReconciliationSummary,
-  AccountingWorkspaceResponse,
-  DailyValuationScheduleWorkItem,
-  FinancialRecordExplorerDto,
-  FinancialRecordExplorerSavedViewSaveRequestDto,
-  MultiAssetCoverageSummary,
-  OperationsApproval,
-  OperationsContinuityWorkflow,
-  OperationsContinuityWorkflowSummary,
-  OperationsTimelineEntry,
-  PrivateCapitalCloseCockpit,
-  SessionInfo,
-} from "@/types";
-import {
-  approvalBlockedReason,
-  approvalEvidenceSummary,
-  approvalNextAction,
-  approvalSignerLabel,
-  approvalWorkflowStatusLabel,
-  approvalWorkflowStatusTone,
-  buildApprovalActionDisabledReason,
-  formatApprovalDate,
-  formatApprovalError,
-  missingApprovalEvidenceLabel,
-  resolveApprovalReportPackId,
-  splitApprovalWords
-} from "@/screens/accounting-screen.approvals";
+import type { CloseCommandCenterViewState, SecuritySearchResultRowViewModel } from "@/screens/accounting-screen.view-model";
+import type { AccountingSystemImportDetail, AccountingSystemExportPackageRequest, ExternalGlExportPackage, ExternalGlExportPackageManifest, ExternalGlMappingProfile, AccountingSystemProvider, AccountingSystemReconciliationSummary, AccountingWorkspaceResponse, FinancialRecordExplorerDto, FinancialRecordExplorerSavedViewSaveRequestDto, MultiAssetCoverageSummary, SessionInfo } from "@/types";
+import { formatApprovalError } from "@/screens/accounting-screen.approvals";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { applyCrossScreenCounts, applyOpenBreakDelta, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
+import { BREAK_QUEUE_VISIT_SURFACE, sinceLastVisitDelta, summarizeSinceLastVisit, useSinceLastVisit } from "@/lib/since-last-visit";
+import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
+import { IntercompanyAgreementsPanel } from "@/screens/accounting-screen.intercompany-agreements";
+import { AccountingSystemReconciliationPanel, mergeExternalGlExportPackage } from "@/screens/accounting-screen.external-gl-panel";
+import { AccountingCaseWorkbench } from "@/screens/accounting-screen.case-workbench";
+import { AccountingConfigurationPanel } from "@/screens/accounting-screen.configuration-panel";
+import { ManualJournalEntryWorkbenchPanel } from "@/screens/accounting-screen.manual-journal-panel";
+import { AccountingApprovalsWorkstream } from "@/screens/accounting-screen.approvals-workstream";
+import { AccountingValue } from "@/screens/accounting-screen.accounting-value";
+import { statusTextClass } from "@/design-system/status-styles";
 
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
@@ -166,6 +82,7 @@ interface AccountingScreenProps {
 }
 
 const SECURITY_MASTER_DRILL_IN_TAB_IDS = ["identity", "reference", "schedules", "lots", "passport", "evidence"] as const;
+
 type SecurityMasterDrillInTabId = (typeof SECURITY_MASTER_DRILL_IN_TAB_IDS)[number];
 
 function isSecurityMasterDrillInTabId(value: string | null): value is SecurityMasterDrillInTabId {
@@ -191,811 +108,6 @@ function resolveExplorerSecurityId(recordId: string): string | null {
     : null;
 }
 
-// trialBalanceColumns moved to components/accounting/TrialBalanceRowDetail.tsx for reuse by trial-balance-screen.tsx.
-
-const accountingSystemStatusVariant = {
-  Matched: "success",
-  Variance: "warning",
-  MissingExternal: "warning",
-  MissingMeridian: "danger",
-  ReviewRequired: "warning"
-} as const;
-
-const accountingSystemEvidencePackageVariant = {
-  Ready: "success",
-  ReviewRequired: "warning",
-  Missing: "danger"
-} as const;
-
-const externalGlStateLabels: Record<string, string> = {
-  available: "Available",
-  blocked: "Blocked",
-  certified: "Certified",
-  disabled: "Disabled",
-  draft: "Draft",
-  failed: "Failed",
-  imported: "Imported",
-  matched: "Matched",
-  missing: "Missing",
-  missingevidence: "Evidence missing",
-  missingexternal: "Missing from external GL",
-  missingmeridian: "Missing from Meridian",
-  notstarted: "Not started",
-  planned: "Planned",
-  previewed: "Previewed",
-  ready: "Ready",
-  readyforreview: "Ready for review",
-  rejected: "Rejected",
-  reviewrequired: "Review required",
-  superseded: "Superseded",
-  variance: "Amount variance"
-};
-
-function presentExternalGlState(value: string | null | undefined, fallback = "Not available"): string {
-  const trimmed = value?.trim();
-  if (!trimmed) {
-    return fallback;
-  }
-
-  const normalized = trimmed.replace(/[^a-z0-9]+/gi, "").toLowerCase();
-  if (externalGlStateLabels[normalized]) {
-    return externalGlStateLabels[normalized];
-  }
-
-  const words = trimmed
-    .replace(/[_-]+/g, " ")
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
-  return words ? `${words.charAt(0).toUpperCase()}${words.slice(1)}` : fallback;
-}
-
-function presentExternalGlProviderName(displayName: string): string {
-  return displayName.replace(/\s+fixture\b/gi, " import");
-}
-
-function presentExternalGlProviderEvidenceLabel(displayName: string): string {
-  return /\s+fixture\b/i.test(displayName)
-    ? `Imported ${displayName.replace(/\s+fixture\b/gi, "")} evidence`
-    : `${presentExternalGlProviderName(displayName)} evidence`;
-}
-
-function presentExternalGlProviderStatus(value: string): string {
-  const normalized = value.trim().toLowerCase();
-  if (normalized.includes("fixture") && normalized.includes("import")) {
-    return "Read-only import ready";
-  }
-  if (normalized.includes("oauth") && normalized.includes("planned")) {
-    return "Direct connection unavailable";
-  }
-  return presentExternalGlState(value);
-}
-
-function formatExternalGlPeriodRange(start: string, end: string): string {
-  return `${formatExternalGlPeriodDate(start)} – ${formatExternalGlPeriodDate(end)}`;
-}
-
-function formatExternalGlPeriodDate(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC"
-  }).format(date);
-}
-
-function formatExternalGlTimestamp(value: string | null | undefined): string {
-  if (!value) {
-    return "not recorded";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "UTC",
-    timeZoneName: "short"
-  }).format(date);
-}
-
-function AccountingSystemReconciliationPanel({
-  providers,
-  importDetail,
-  reconciliation,
-  mappingProfiles,
-  exportPackage,
-  exportManifest,
-  exportPackages,
-  exportBusy,
-  certifyBusy,
-  actionMessage,
-  actionTone,
-  loading,
-  error,
-  onRefresh,
-  onCreateExportPackage,
-  onCertifyExportPackage
-}: {
-  providers: AccountingSystemProvider[];
-  importDetail: AccountingSystemImportDetail | null;
-  reconciliation: AccountingSystemReconciliationSummary | null;
-  mappingProfiles: ExternalGlMappingProfile[];
-  exportPackage: ExternalGlExportPackage | null;
-  exportManifest: ExternalGlExportPackageManifest | null;
-  exportPackages: ExternalGlExportPackage[];
-  exportBusy: boolean;
-  certifyBusy: boolean;
-  actionMessage: string | null;
-  actionTone: "success" | "warning" | "danger" | null;
-  loading: boolean;
-  error: string | null;
-  onRefresh: () => void;
-  onCreateExportPackage: () => void;
-  onCertifyExportPackage: () => void;
-}) {
-  const activeProvider = providers.find((provider) => provider.providerId === importDetail?.summary.providerId)
-    ?? providers.find((provider) => provider.providerId === "quickbooks" && provider.state === "Available")
-    ?? providers.find((provider) => provider.providerId === "quickbooks-fixture")
-    ?? providers[0]
-    ?? null;
-  const quickBooksProvider = providers.find((provider) => provider.providerId === "quickbooks");
-  const selectedCompanyLabel = activeProvider?.connection?.companyName ?? activeProvider?.connection?.companyId ?? null;
-  const rows = reconciliation?.rows.slice(0, 5) ?? [];
-  const evidencePackages = reconciliation?.evidencePackages?.slice(0, 4) ?? [];
-  const mappedProviderIds = new Set(mappingProfiles.map((profile) => profile.providerId));
-  const selectedMappingProfile = activeProvider
-    ? mappingProfiles.find((profile) => profile.providerId === activeProvider.providerId) ?? null
-    : mappingProfiles[0] ?? null;
-  const statementBalance = reconciliation ? reconciliation.totalExternalDebits - reconciliation.totalExternalCredits : 0;
-  const ledgerBalance = reconciliation ? reconciliation.totalMeridianDebits - reconciliation.totalMeridianCredits : 0;
-  const varianceBalance = statementBalance - ledgerBalance;
-  const reconciliationCleared = Boolean(reconciliation && varianceBalance === 0 && reconciliation.breakCount === 0);
-  const exportSafeguards = reconciliation
-    ? buildExternalGlExportSafeguards(reconciliation, selectedMappingProfile, exportPackage, exportManifest)
-    : [];
-  const retainedExportPackages = exportPackages.slice(0, 5);
-  const reconciliationEvidenceReferences = reconciliation
-    ? Array.from(new Set([
-        ...reconciliation.evidenceReferences,
-        ...reconciliation.rows.flatMap((row) => [
-          row.evidenceRef,
-          ...(row.externalEvidenceReferences ?? []),
-          ...(row.meridianEvidenceReferences ?? []),
-          ...(row.evidenceReferences ?? [])
-        ])
-      ].filter((reference): reference is string => Boolean(reference))))
-    : [];
-  const exportDisabledReason = !reconciliation
-    ? "Load external GL reconciliation before creating an export package."
-    : !selectedMappingProfile
-      ? "Create or certify an external GL mapping profile before export package preparation."
-      : "";
-  const certificationState = exportPackage?.certification?.state ?? null;
-  const certifyDisabledReason = !exportPackage
-    ? "Create an external GL export package before certification."
-    : certificationState === "Certified"
-      ? "This external GL export package is already certified."
-      : certificationState !== "ReadyForReview"
-        ? `Certification requires Ready for review state; current state is ${presentExternalGlState(certificationState, "missing")}.`
-        : exportPackage.validationIssues.some((issue) => issue.severity === "Critical")
-          ? "Critical export package validation issues must be cleared before certification."
-          : "";
-
-  return (
-    <Card id="external-gl-reconciliation" className="panel-surface scroll-mt-6" role="region" aria-label="External GL reconciliation">
-      <CardHeader>
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <div className="eyebrow-label">External GL reconciliation</div>
-            <CardTitle className="mt-2 flex items-center gap-2 text-base">
-              <BookCheck className="h-4 w-4 text-primary" aria-hidden="true" />
-              {activeProvider ? presentExternalGlProviderEvidenceLabel(activeProvider.displayName) : "External GL evidence"}
-            </CardTitle>
-            <CardDescription className="mt-2">
-              External accounting-system records are imported as read-only evidence against Meridian-owned ledger truth; posting back to the external GL remains disabled.
-            </CardDescription>
-            {selectedCompanyLabel ? (
-              <div className="mt-2 text-xs text-muted-foreground">
-                Selected company: {activeProvider?.connection?.companyName ?? "Connected company"}
-              </div>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {activeProvider ? <Badge variant="success">{presentExternalGlProviderStatus(activeProvider.statusLabel)}</Badge> : null}
-            {quickBooksProvider && quickBooksProvider !== activeProvider ? <Badge variant="outline">{presentExternalGlProviderStatus(quickBooksProvider.statusLabel)}</Badge> : null}
-            <Button size="sm" variant="outline" onClick={onRefresh} disabled={loading} busy={loading} busyLabel="Refreshing GL evidence">
-              <RefreshCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden="true" />
-              Refresh
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {error ? (
-          <StatusBanner tone="danger" role="alert" title={error} />
-        ) : null}
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <AccountingValue label="Import state" value={presentExternalGlState(importDetail?.summary.state, loading ? "Loading" : "Not loaded")} />
-          <AccountingValue label="Trial balance lines" value={String(importDetail?.summary.trialBalanceLineCount ?? 0)} />
-          <AccountingValue label="Matched rows" value={String(reconciliation?.matchedCount ?? 0)} />
-          <AccountingValue label="Break rows" value={String(reconciliation?.breakCount ?? 0)} />
-        </div>
-        {providers.length > 0 ? (
-          <div className="overflow-x-auto rounded-md border border-border/70 bg-background/70 shadow-xs">
-            <table className="w-full min-w-[900px] text-sm" aria-label="External GL provider import posture">
-              <thead className="bg-secondary/35 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Provider</th>
-                  <th className="px-3 py-2 text-left">State</th>
-                  <th className="px-3 py-2 text-left">Connection</th>
-                  <th className="px-3 py-2 text-left">Import</th>
-                  <th className="px-3 py-2 text-left">Mapping</th>
-                  <th className="px-3 py-2 text-left">Posting</th>
-                </tr>
-              </thead>
-              <tbody>
-                {providers.slice(0, 6).map((provider) => {
-                  const hasMappingProfile = mappedProviderIds.has(provider.providerId);
-                  const importKinds = [
-                    provider.supportsChartOfAccounts ? "chart" : null,
-                    provider.supportsJournalEntries ? "journals" : null,
-                    provider.supportsTrialBalance ? "trial balance" : null
-                  ].filter((item): item is string => Boolean(item));
-                  const connectionLabel = provider.connection?.statusLabel
-                    ?? (provider.state === "Planned"
-                      ? "Direct connection unavailable"
-                      : provider.requiresCredentials ? "Credentials required" : "No credentials required");
-                  const postingLabel = provider.supportsPosting
-                    ? "Posting gated by export certification"
-                    : "Live posting disabled";
-                  const mappingRequirementLabels = (provider.mappingRequirements ?? [])
-                    .filter((requirement) => requirement.requiredForGuardedExport)
-                    .slice(0, 2)
-                    .map((requirement) => requirement.label);
-
-                  return (
-                    <tr
-                      key={provider.providerId}
-                      className={cn(
-                        "border-t border-border/60 align-top",
-                        provider.providerId === activeProvider?.providerId ? "bg-primary/5" : "bg-background/30"
-                      )}
-                    >
-                      <td className="px-3 py-2">
-                        <div className="font-semibold text-foreground">{presentExternalGlProviderName(provider.displayName)}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant={provider.state === "Available" ? "success" : provider.state === "Planned" ? "outline" : "warning"}>
-                          {presentExternalGlState(provider.state)}
-                        </Badge>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">{connectionLabel}</td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">{importKinds.length > 0 ? `Import: ${importKinds.join(", ")}` : "Import: not configured"}</td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">
-                        <div>{hasMappingProfile ? "Mapping profile retained" : "Mapping profile needed"}</div>
-                        <div className="mt-1">{mappingRequirementLabels.length > 0 ? `Requires: ${mappingRequirementLabels.join(", ")}` : "Requires: mapping evidence"}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">{postingLabel}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            <TechnicalDetails label="Provider identifiers" className="m-3">
-              <dl className="grid gap-3 text-xs sm:grid-cols-2">
-                {providers.slice(0, 6).map((provider) => (
-                  <div key={provider.providerId}>
-                    <dt className="font-semibold text-foreground">{presentExternalGlProviderName(provider.displayName)}</dt>
-                    <dd className="mt-1 break-all font-mono text-muted-foreground">Provider: {provider.providerId}</dd>
-                    {provider.connection?.companyId ? (
-                      <dd className="mt-1 break-all font-mono text-muted-foreground">Company: {provider.connection.companyId}</dd>
-                    ) : null}
-                  </div>
-                ))}
-              </dl>
-            </TechnicalDetails>
-          </div>
-        ) : null}
-        {mappingProfiles.length > 0 ? (
-          <div className="overflow-x-auto rounded-md border border-border/70 bg-background/70 shadow-xs">
-            <table className="w-full min-w-[760px] text-sm" aria-label="External GL mapping profiles">
-              <thead className="bg-secondary/35 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Profile</th>
-                  <th className="px-3 py-2 text-left">Provider</th>
-                  <th className="px-3 py-2 text-right">Accounts</th>
-                  <th className="px-3 py-2 text-right">Dimensions</th>
-                  <th className="px-3 py-2 text-left">Certification</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mappingProfiles.slice(0, 4).map((profile) => {
-                  const accountMappingCount = Object.keys(profile.accountMappings).length;
-                  const externalDimensionCount = profile.dimensionMappings.reduce((count, mapping) => (
-                    count + Object.keys(mapping.externalDimensions.externalGlDimensions ?? {}).length
-                  ), 0);
-                  const isSelected = profile.profileId === selectedMappingProfile?.profileId;
-
-                  return (
-                    <tr
-                      key={profile.profileId}
-                      className={cn(
-                        "border-t border-border/60 align-top",
-                        isSelected ? "bg-primary/5" : "bg-background/30"
-                      )}
-                    >
-                      <td className="px-3 py-2">
-                        <div className="font-semibold text-foreground">{profile.displayName}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">
-                        {presentExternalGlProviderName(providers.find((provider) => provider.providerId === profile.providerId)?.displayName ?? "External GL provider")}
-                      </td>
-                      <td className="px-3 py-2 text-right font-mono text-xs text-foreground">{accountMappingCount}</td>
-                      <td className="px-3 py-2 text-right font-mono text-xs text-foreground">{`${profile.dimensionMappings.length}/${externalDimensionCount}`}</td>
-                      <td className="px-3 py-2">
-                        <Badge variant={profile.certificationState === "Certified" ? "success" : "warning"}>
-                          {presentExternalGlState(profile.certificationState)}
-                        </Badge>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            <TechnicalDetails label="Mapping profile identifiers" className="m-3">
-              <dl className="grid gap-3 text-xs sm:grid-cols-2">
-                {mappingProfiles.slice(0, 4).map((profile) => (
-                  <div key={profile.profileId}>
-                    <dt className="font-semibold text-foreground">{profile.displayName}</dt>
-                    <dd className="mt-1 break-all font-mono text-muted-foreground">Profile: {profile.profileId}</dd>
-                    <dd className="mt-1 break-all font-mono text-muted-foreground">Provider: {profile.providerId}</dd>
-                  </div>
-                ))}
-              </dl>
-            </TechnicalDetails>
-          </div>
-        ) : (
-          <p className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-            No external GL mapping profile is loaded for this provider.
-          </p>
-        )}
-        {reconciliation ? (
-          <div className="grid min-w-0 gap-3 2xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.34fr)]">
-            <div className="h-fit min-w-0 overflow-hidden rounded-md border border-border/70 bg-background/70 shadow-xs">
-              <div className="border-b border-border/70 bg-secondary/35 px-4 py-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Cash reconciliation - broker statement vs. ledger
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="success">{reconciliation.matchedCount} matched</Badge>
-                    <Badge variant={reconciliation.breakCount > 0 ? "warning" : "success"}>{reconciliation.breakCount} open</Badge>
-                  </div>
-                </div>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[820px] text-sm" aria-label="External GL reconciliation rows">
-                  <thead className="border-b border-border/70 bg-secondary/20 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                    <tr>
-                      <th className="px-4 py-2 text-left">Statement</th>
-                      <th className="px-4 py-2 text-right">Statement amount</th>
-                      <th className="px-4 py-2 text-left">Ledger</th>
-                      <th className="px-4 py-2 text-right">Ledger amount</th>
-                      <th className="px-4 py-2 text-left">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row) => {
-                      const isMatched = row.status === "Matched";
-                      return (
-                        <tr
-                          key={row.rowId}
-                          className={cn(
-                            "border-b border-border/60 last:border-b-0",
-                            isMatched ? "bg-background/50" : "bg-warning/5"
-                          )}
-                        >
-                          <td className={cn("border-l-4 px-4 py-3", isMatched ? "border-l-success" : "border-l-warning")}>
-                            <div className="font-semibold text-foreground">{row.accountName}</div>
-                            <div className="mt-1 font-mono text-[11px] text-muted-foreground">{row.accountCode}</div>
-                          </td>
-                          <td className="px-4 py-3 text-right font-mono tabular-nums text-foreground">
-                            {formatGlAmount(row.externalDebit - row.externalCredit, row.currency)}
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="font-semibold text-foreground">{row.accountName}</div>
-                            <div className="mt-1 font-mono text-[11px] text-muted-foreground">Meridian ledger · {row.accountCode}</div>
-                          </td>
-                          <td className="px-4 py-3 text-right font-mono tabular-nums text-foreground">
-                            {formatGlAmount(row.meridianDebit - row.meridianCredit, row.currency)}
-                          </td>
-                          <td className="px-4 py-3">
-                            <Badge variant={accountingSystemStatusVariant[row.status]}>{presentExternalGlState(row.status)}</Badge>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <TechnicalDetails label="Reconciliation technical details" className="m-3">
-                <dl className="grid gap-3 text-xs sm:grid-cols-2">
-                  <div>
-                    <dt className="font-semibold text-foreground">Reconciliation</dt>
-                    <dd className="mt-1 break-all font-mono text-muted-foreground">{reconciliation.reconciliationId}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-semibold text-foreground">Import</dt>
-                    <dd className="mt-1 break-all font-mono text-muted-foreground">{reconciliation.importId}</dd>
-                  </div>
-                </dl>
-                {reconciliationEvidenceReferences.length > 0 ? (
-                  <div className="mt-3">
-                    <div className="font-semibold text-foreground">Evidence references</div>
-                    <ul className="mt-1 space-y-1">
-                      {reconciliationEvidenceReferences.map((reference) => (
-                        <li key={reference} className="break-all font-mono text-xs text-muted-foreground">{reference}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-              </TechnicalDetails>
-              <div className="grid gap-3 border-t border-border/80 bg-secondary/30 px-4 py-3 text-sm sm:grid-cols-[1fr_1fr_auto]">
-                <AccountingValue label="Statement balance" value={formatGlAmount(statementBalance, rows[0]?.currency ?? "USD")} />
-                <AccountingValue label="Ledger balance" value={formatGlAmount(ledgerBalance, rows[0]?.currency ?? "USD")} />
-                <div className="flex items-center justify-start sm:justify-end">
-                  <Badge variant={reconciliationCleared ? "success" : "warning"} dot>
-                    {reconciliationCleared
-                      ? "Balanced"
-                      : reconciliation.breakCount > 0
-                        ? `${reconciliation.breakCount} open break${reconciliation.breakCount === 1 ? "" : "s"}`
-                        : `Out by ${formatGlAmount(Math.abs(varianceBalance), rows[0]?.currency ?? "USD")}`}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-            <div className="row-detail-panel h-fit min-w-0 text-sm" data-selected-source="Selected external GL scope">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="font-semibold text-foreground">Posting/export</div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">
-                    {selectedMappingProfile ? `Mapping: ${selectedMappingProfile.displayName}` : "Mapping profile required"}
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={onCreateExportPackage}
-                  disabled={exportBusy || certifyBusy || Boolean(exportDisabledReason)}
-                  disabledReason={exportDisabledReason}
-                  busy={exportBusy}
-                  busyLabel="Creating export package"
-                >
-                  Create export package
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={onCertifyExportPackage}
-                  disabled={certifyBusy || Boolean(certifyDisabledReason)}
-                  disabledReason={certifyDisabledReason}
-                  busy={certifyBusy}
-                  busyLabel="Certifying export package"
-                >
-                  Certify export
-                </Button>
-              </div>
-              <p className="mt-2 text-xs leading-5 text-muted-foreground">{reconciliation.postingDisabledReason}</p>
-              <div className="mt-3 rounded-md border border-border/70 bg-background/50 px-2.5 py-2" aria-label="External GL export safeguards">
-                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Export safeguards</div>
-                <div className="mt-2 grid gap-2">
-                  {exportSafeguards.map((safeguard) => (
-                    <div key={safeguard.id} className="flex items-start justify-between gap-3 rounded border border-border/60 bg-secondary/20 px-2 py-1.5 text-xs">
-                      <div className="min-w-0">
-                        <div className="font-semibold text-foreground">{safeguard.label}</div>
-                        <div className="mt-0.5 text-muted-foreground">{safeguard.detail}</div>
-                      </div>
-                      <Badge variant={safeguard.tone}>{safeguard.value}</Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {actionMessage ? (
-                <div
-                  role={actionTone === "danger" ? "alert" : "status"}
-                  className={cn(
-                    "mt-3 rounded-md border px-2.5 py-2 text-xs leading-5",
-                    actionTone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : null,
-                    actionTone === "warning" ? "border-warning/30 bg-warning/10 text-warning" : null,
-                    actionTone === "success" ? "border-success/30 bg-success/10 text-success" : null
-                  )}
-                >
-                  {actionMessage}
-                </div>
-              ) : null}
-              {exportPackage ? (
-                <div className="mt-3 rounded-md border border-border/70 bg-background/50 px-2.5 py-2" aria-label="External GL export package">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="text-xs font-semibold text-foreground">Guarded export package</div>
-                      <div className="mt-1 text-[11px] text-muted-foreground">
-                        {formatExternalGlPeriodRange(exportPackage.periodStart, exportPackage.periodEnd)}
-                      </div>
-                    </div>
-                    <Badge variant={exportPackage.postingEnabled ? "success" : "warning"}>
-                      {exportPackage.postingEnabled ? "Posting enabled" : "Posting disabled"}
-                    </Badge>
-                  </div>
-                  <p className="mt-2 text-[11px] leading-4 text-muted-foreground">{exportPackage.postingDisabledReason}</p>
-                  <div className="mt-2 grid gap-2">
-                    <AccountingValue label="Certification" value={presentExternalGlState(exportPackage.certification?.state, "Not certified")} />
-                    <AccountingValue label="Evidence" value={String(exportPackage.evidenceLinks.length)} />
-                    <AccountingValue label="Validation issues" value={String(exportPackage.validationIssues.length)} />
-                    <AccountingValue label="Manifest lines" value={String(exportManifest?.generatedLines.length ?? exportPackage.generatedLines?.length ?? 0)} />
-                    <AccountingValue label="External posting" value={exportManifest?.externalPostingAllowed === false ? "Disabled" : "Not allowed"} />
-                  </div>
-                  <ExternalGlExportPackageTechnicalDetails exportPackage={exportPackage} exportManifest={exportManifest} />
-                </div>
-              ) : null}
-              <div className="mt-3 rounded-md border border-border/70 bg-background/50 px-2.5 py-2" aria-label="External GL export package history">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Retained package history</div>
-                    <div className="mt-1 text-[11px] text-muted-foreground">
-                      {exportPackages.length} retained package{exportPackages.length === 1 ? "" : "s"} for the selected provider, fund, and ledger book.
-                    </div>
-                  </div>
-                  <Badge variant={exportPackages.length > 0 ? "success" : "outline"}>{exportPackages.length}</Badge>
-                </div>
-                {retainedExportPackages.length > 0 ? (
-                  <div className="mt-2 space-y-2">
-                    {retainedExportPackages.map((packageRow) => (
-                      <div key={packageRow.exportPackageId} className="rounded border border-border/60 bg-secondary/20 px-2 py-1.5 text-xs">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <div className="font-semibold text-foreground">Guarded export package</div>
-                            <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">
-                              {formatExternalGlPeriodRange(packageRow.periodStart, packageRow.periodEnd)} | Created {formatExternalGlTimestamp(packageRow.createdAtUtc)}
-                            </div>
-                          </div>
-                          <Badge variant={packageRow.certification?.state === "Certified" ? "success" : packageRow.certification?.state === "ReadyForReview" ? "warning" : "outline"}>
-                            {presentExternalGlState(packageRow.certification?.state, "Uncertified")}
-                          </Badge>
-                        </div>
-                        <div className="mt-1 grid gap-1 sm:grid-cols-3">
-                          <AccountingValue label="Evidence" value={String(packageRow.evidenceLinks.length)} />
-                          <AccountingValue label="Issues" value={String(packageRow.validationIssues.length)} />
-                          <AccountingValue label="Posting" value={packageRow.postingEnabled ? "Enabled" : "Disabled"} />
-                        </div>
-                        <ExternalGlExportPackageTechnicalDetails exportPackage={packageRow} exportManifest={null} />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                    No retained guarded export packages have been loaded for this scope.
-                  </p>
-                )}
-              </div>
-              {evidencePackages.length > 0 ? (
-                <div className="mt-3 space-y-2" aria-label="External GL evidence packages">
-                  {evidencePackages.map((evidencePackage) => (
-                    <AccountingSystemEvidencePackageRow key={evidencePackage.packageId} evidencePackage={evidencePackage} />
-                  ))}
-                </div>
-              ) : (
-                <p className="mt-3 rounded-md border border-border/70 bg-background/50 px-2.5 py-2 text-xs text-muted-foreground">
-                  {reconciliationEvidenceReferences.length > 0
-                    ? `${reconciliationEvidenceReferences.length} technical evidence reference${reconciliationEvidenceReferences.length === 1 ? " is" : "s are"} retained in reconciliation details.`
-                    : "No reconciliation evidence references are retained for this scope."}
-                </p>
-              )}
-            </div>
-          </div>
-        ) : (
-          <p className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
-            External GL reconciliation has not been loaded yet.
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function ExternalGlExportPackageTechnicalDetails({
-  exportPackage,
-  exportManifest
-}: {
-  exportPackage: ExternalGlExportPackage;
-  exportManifest: ExternalGlExportPackageManifest | null;
-}) {
-  return (
-    <TechnicalDetails label="Export package technical details" className="mt-2">
-      <dl className="grid gap-3 text-xs sm:grid-cols-2">
-        <div>
-          <dt className="font-semibold text-foreground">Package identifier</dt>
-          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.exportPackageId}</dd>
-        </div>
-        <div>
-          <dt className="font-semibold text-foreground">Provider identifier</dt>
-          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.providerId}</dd>
-        </div>
-        <div>
-          <dt className="font-semibold text-foreground">Fund profile</dt>
-          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.fundProfileId}</dd>
-        </div>
-        <div>
-          <dt className="font-semibold text-foreground">Ledger book</dt>
-          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.ledgerBookId ?? "Not assigned"}</dd>
-        </div>
-        <div>
-          <dt className="font-semibold text-foreground">Mapping profile</dt>
-          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.mappingProfileId ?? "Not retained"}</dd>
-        </div>
-        <div>
-          <dt className="font-semibold text-foreground">Reconciliation</dt>
-          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.reconciliationId ?? "Not retained"}</dd>
-        </div>
-        {exportManifest ? (
-          <>
-            <div>
-              <dt className="font-semibold text-foreground">Manifest file</dt>
-              <dd className="mt-1 break-all font-mono text-muted-foreground">{exportManifest.fileName}</dd>
-            </div>
-            <div>
-              <dt className="font-semibold text-foreground">Manifest hash</dt>
-              <dd className="mt-1 break-all font-mono text-muted-foreground">{exportManifest.contentHash}</dd>
-            </div>
-          </>
-        ) : null}
-      </dl>
-      {exportPackage.evidenceLinks.length > 0 ? (
-        <div className="mt-3">
-          <div className="font-semibold text-foreground">Evidence references</div>
-          <ul className="mt-1 space-y-1">
-            {exportPackage.evidenceLinks.map((reference) => (
-              <li key={reference} className="break-all font-mono text-xs text-muted-foreground">{reference}</li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-    </TechnicalDetails>
-  );
-}
-
-function AccountingSystemEvidencePackageRow({
-  evidencePackage
-}: {
-  evidencePackage: AccountingSystemReconciliationEvidencePackage;
-}) {
-  const requiredActions = evidencePackage.requiredActions.slice(0, 2);
-
-  return (
-    <div className="rounded-md border border-border/60 bg-background/40 px-2.5 py-2">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="truncate text-xs font-semibold text-foreground">{evidencePackage.label}</div>
-          <div className="mt-1 text-[11px] text-muted-foreground">
-            {evidencePackage.evidenceReferenceCount} retained evidence item{evidencePackage.evidenceReferenceCount === 1 ? "" : "s"}
-          </div>
-        </div>
-        <Badge variant={accountingSystemEvidencePackageVariant[evidencePackage.status]}>
-          {presentExternalGlState(evidencePackage.status)}
-        </Badge>
-      </div>
-      {requiredActions.length > 0 ? (
-        <ul className="mt-2 list-disc space-y-1 pl-4 text-[11px] leading-4 text-muted-foreground">
-          {requiredActions.map((action) => (
-            <li key={action}>{action}</li>
-          ))}
-        </ul>
-      ) : evidencePackage.evidenceReferenceCount > 0 ? (
-        <p className="mt-2 text-[11px] leading-4 text-muted-foreground">Evidence is retained and ready for operator review.</p>
-      ) : null}
-      <TechnicalDetails label="Evidence package technical details" className="mt-2">
-        <dl className="text-xs">
-          <dt className="font-semibold text-foreground">Package identifier</dt>
-          <dd className="mt-1 break-all font-mono text-muted-foreground">{evidencePackage.packageId}</dd>
-        </dl>
-        {evidencePackage.evidenceReferences.length > 0 ? (
-          <div className="mt-3">
-            <div className="font-semibold text-foreground">Evidence references</div>
-            <ul className="mt-1 space-y-1">
-              {evidencePackage.evidenceReferences.map((reference) => (
-                <li key={reference} className="break-all font-mono text-xs text-muted-foreground">{reference}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-      </TechnicalDetails>
-    </div>
-  );
-}
-
-function buildExternalGlExportSafeguards(
-  reconciliation: AccountingSystemReconciliationSummary,
-  mappingProfile: ExternalGlMappingProfile | null,
-  exportPackage: ExternalGlExportPackage | null,
-  exportManifest: ExternalGlExportPackageManifest | null
-): Array<{ id: string; label: string; value: string; detail: string; tone: "outline" | "success" | "warning" | "danger" }> {
-  const criticalIssueCount = exportPackage?.validationIssues.filter((issue) => issue.severity === "Critical").length ?? 0;
-  const mappingCertified = mappingProfile?.certificationState === "Certified";
-  const manifestLineCount = exportManifest?.generatedLines.length ?? exportPackage?.generatedLines?.length ?? 0;
-  const externalPostingAllowed = exportManifest?.externalPostingAllowed === true || exportPackage?.postingEnabled === true;
-
-  return [
-    {
-      id: "balanced-reconciliation",
-      label: "Balanced reconciliation required",
-      value: reconciliation.breakCount === 0 ? "Ready" : "Blocked",
-      detail: reconciliation.breakCount === 0
-        ? "No open reconciliation breaks are returned for this external GL period."
-        : `${reconciliation.breakCount} reconciliation break(s) must clear before certification.`,
-      tone: reconciliation.breakCount === 0 ? "success" : "warning"
-    },
-    {
-      id: "mapping-certification",
-      label: "Certified mapping profile",
-      value: presentExternalGlState(mappingProfile?.certificationState, "Missing"),
-      detail: mappingProfile
-        ? `${mappingProfile.displayName} maps ${Object.keys(mappingProfile.accountMappings).length} account(s) and ${mappingProfile.dimensionMappings.length} dimension set(s).`
-        : "A retained account and dimension mapping profile is required before export.",
-      tone: mappingCertified ? "success" : "warning"
-    },
-    {
-      id: "validation-blockers",
-      label: "Critical validation blockers",
-      value: String(criticalIssueCount),
-      detail: exportPackage
-        ? criticalIssueCount > 0
-          ? "Critical package issues must clear before certification."
-          : `${exportPackage.validationIssues.length} package validation issue(s) retained; none are critical.`
-        : "No export package has been retained yet.",
-      tone: criticalIssueCount > 0 ? "danger" : exportPackage ? "success" : "outline"
-    },
-    {
-      id: "manifest-control",
-      label: "Controlled export manifest",
-      value: exportManifest ? "Retained" : "Not loaded",
-      detail: `${manifestLineCount} generated mapped export line(s) retained for review.`,
-      tone: exportManifest ? "success" : "outline"
-    },
-    {
-      id: "live-posting-gate",
-      label: "Live external posting gate",
-      value: externalPostingAllowed ? "Enabled" : "Disabled",
-      detail: exportManifest?.postingDisabledReason ?? exportPackage?.postingDisabledReason ?? reconciliation.postingDisabledReason,
-      tone: externalPostingAllowed ? "danger" : "success"
-    }
-  ];
-}
-
-function formatGlAmount(value: number, currency: string): string {
-  return formatCurrencyAmount(value, { currency });
-}
-
-function mergeExternalGlExportPackage(
-  packages: ExternalGlExportPackage[],
-  nextPackage: ExternalGlExportPackage
-): ExternalGlExportPackage[] {
-  const remaining = packages.filter((packageRow) => packageRow.exportPackageId !== nextPackage.exportPackageId);
-  return [nextPackage, ...remaining].sort((left, right) => right.createdAtUtc.localeCompare(left.createdAtUtc));
-}
-
 function parseCloseWorkflowQuery(search: string): CloseWorkflowQuery {
   const params = new URLSearchParams(search);
   return {
@@ -1008,577 +120,28 @@ function parseCloseWorkflowQuery(search: string): CloseWorkflowQuery {
   };
 }
 
-function selectCurrentDailyValuationSchedule(
-  schedules: DailyValuationScheduleWorkItem[],
-  status: PrivateCapitalCloseCockpit["dailyValuationStatus"] | null | undefined,
-  query: CloseWorkflowQuery
-): DailyValuationScheduleWorkItem | null {
-  const expectedScheduleId = status?.scheduleId?.trim() || null;
-  const expectedFundProfileId = status?.fundProfileId?.trim() || query.fundProfileId || null;
-  const expectedLedgerBookId = status?.ledgerBookId?.trim() || query.ledgerBookId || null;
-  const expectedPeriodId = status?.periodId?.trim() || query.periodId || null;
-  const expectedEntityId = status?.entityId?.trim() || null;
-  const expectedTenantId = status?.tenantId?.trim() || null;
-  const expectedCompanyId = status?.companyId?.trim() || null;
-  const matches = (actual: string | null | undefined, expected: string | null) =>
-    !expected || actual?.trim().localeCompare(expected, undefined, { sensitivity: "accent" }) === 0;
-
-  return schedules.find((schedule) =>
-    matches(schedule.scheduleId, expectedScheduleId) &&
-    matches(schedule.fundProfileId, expectedFundProfileId) &&
-    matches(schedule.ledgerBookId, expectedLedgerBookId) &&
-    matches(schedule.periodId, expectedPeriodId) &&
-    matches(schedule.entityId, expectedEntityId) &&
-    matches(schedule.tenantId, expectedTenantId) &&
-    matches(schedule.companyId, expectedCompanyId)
-  ) ?? null;
-}
-
 function normalizeOptionalQueryValue(value: string | null): string | undefined {
   const normalized = value?.trim();
   return normalized ? normalized : undefined;
 }
 
-function AccountingApprovalsWorkstream() {
-  const { search } = useLocation();
-  const [workflows, setWorkflows] = useState<OperationsContinuityWorkflowSummary[]>([]);
-  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
-  const [detail, setDetail] = useState<OperationsContinuityWorkflow | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [detailError, setDetailError] = useState<string | null>(null);
-  const [action, setAction] = useState<"approve" | "reject" | "request-changes" | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const requestedApprovalId = useMemo(() => new URLSearchParams(search).get("approvalId"), [search]);
-
-  const refreshWorkflows = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const rows = await getOperationsContinuityWorkflows();
-      const sorted = [...rows].sort((left, right) => right.updatedAtUtc.localeCompare(left.updatedAtUtc));
-      setWorkflows(sorted);
-      setSelectedWorkflowId((current) => current && sorted.some((row) => row.workflowId === current)
-        ? current
-        : sorted[0]?.workflowId ?? null);
-    } catch (err) {
-      setError(formatApprovalError(err, "Approval queue could not be loaded."));
-      setWorkflows([]);
-      setSelectedWorkflowId(null);
-      setDetail(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void refreshWorkflows();
-  }, []);
-
-  useEffect(() => {
-    if (!selectedWorkflowId) {
-      setDetail(null);
-      return;
-    }
-
-    let cancelled = false;
-    setDetailLoading(true);
-    setDetailError(null);
-    getOperationsContinuityWorkflow(selectedWorkflowId)
-      .then((workflow) => {
-        if (!cancelled) {
-          setDetail(workflow);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setDetail(null);
-          setDetailError(formatApprovalError(err, "Approval detail could not be loaded."));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setDetailLoading(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedWorkflowId]);
-
-  const selectedApproval = selectApproval(detail, requestedApprovalId);
-  const selectedWorkflow = detail ?? workflows.find((workflow) => workflow.workflowId === selectedWorkflowId) ?? null;
-  const approveDisabledReason = buildApprovalActionDisabledReason(selectedWorkflow, selectedApproval, action);
-  const rejectDisabledReason = action ? "Wait for the current approval action to finish." : selectedWorkflow ? null : "Select an approval before rejecting.";
-  const requestChangesDisabledReason = action ? "Wait for the current approval action to finish." : selectedWorkflow ? null : "Select an approval before requesting changes.";
-
-  const runDecision = async (decision: "approve" | "reject" | "request-changes") => {
-    if (!selectedWorkflow) {
-      return;
-    }
-
-    setAction(decision);
-    setActionError(null);
-    try {
-      const rationale = decision === "approve"
-        ? "Approved from Accounting approvals workstream."
-        : decision === "request-changes"
-          ? "Request changes from Accounting approvals workstream."
-          : "Rejected from Accounting approvals workstream.";
-      if (decision === "approve") {
-        const reportPackId = resolveApprovalReportPackId(selectedWorkflow);
-        if (!reportPackId) {
-          throw new Error("Approval requires a report pack id from the selected workflow.");
-        }
-
-        await approveOperationsContinuityWorkflow(selectedWorkflow.workflowId, {
-          expectedVersion: selectedWorkflow.version,
-          actor: "browser-operator",
-          reviewer: "browser-operator",
-          rationale,
-          reportPackId
-        });
-      } else {
-        await rejectOperationsContinuityWorkflow(selectedWorkflow.workflowId, {
-          expectedVersion: selectedWorkflow.version,
-          actor: "browser-operator",
-          reviewer: "browser-operator",
-          rationale,
-          reasonCode: decision === "request-changes" ? "request-changes" : "operator-rejected"
-        });
-      }
-
-      await refreshWorkflows();
-      const refreshedDetail = await getOperationsContinuityWorkflow(selectedWorkflow.workflowId);
-      setSelectedWorkflowId(refreshedDetail.workflowId);
-      setDetail(refreshedDetail);
-    } catch (err) {
-      setActionError(formatApprovalError(err, "Approval action failed."));
-    } finally {
-      setAction(null);
-    }
-  };
-
-  return (
-    <section id="accounting-approvals" className="workspace-section-band" aria-labelledby="accounting-approvals-heading">
-      <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Approvals</p>
-          <h3 id="accounting-approvals-heading" className="workspace-section-title">Approval queue and audit gate</h3>
-          <p className="workspace-section-summary">Close approvals, missing evidence, signer context, and audit history come from the operations-continuity workflow.</p>
-        </div>
-        <Button type="button" size="sm" variant="outline" disabled={loading} busy={loading} busyLabel="Refreshing approvals" onClick={() => void refreshWorkflows()}>
-          <RefreshCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden="true" />
-          Refresh
-        </Button>
-      </div>
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_26rem]">
-        <Card className="panel-surface">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <UserCheck className="h-4 w-4 text-primary" aria-hidden="true" />
-              Approval queue
-            </CardTitle>
-            <CardDescription>Pending, blocked, approved, and rejected close workflows ready for sign-off review.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <ApprovalStatusMessage loading={loading} error={error} empty={!loading && workflows.length === 0} />
-            {workflows.length > 0 ? (
-              <div className="overflow-hidden rounded-md border border-border/70" role="region" aria-label="Accounting approval queue">
-                <table className="w-full text-left text-sm">
-                  <caption className="sr-only">Accounting approval queue backed by operations continuity workflows.</caption>
-                  <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                    <tr>
-                      <th className="px-3 py-2 font-medium">Period</th>
-                      <th className="px-3 py-2 font-medium">Status</th>
-                      <th className="px-3 py-2 font-medium">Signer</th>
-                      <th className="px-3 py-2 font-medium">Evidence</th>
-                      <th className="px-3 py-2 font-medium">Updated</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {workflows.map((workflow) => {
-                      const selected = workflow.workflowId === selectedWorkflowId;
-                      return (
-                        <tr
-                          key={workflow.workflowId}
-                          tabIndex={0}
-                          aria-selected={selected}
-                          className={cn("cursor-pointer border-t border-border/60 hover:bg-secondary/30", selected && "bg-primary/10")}
-                          onClick={() => setSelectedWorkflowId(workflow.workflowId)}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter" || event.key === " ") {
-                              event.preventDefault();
-                              setSelectedWorkflowId(workflow.workflowId);
-                            }
-                          }}
-                        >
-                          <td className="px-3 py-2">
-                            <span className="block font-semibold text-foreground">{workflow.periodId}</span>
-                          </td>
-                          <td className="px-3 py-2">
-                            <Badge variant={approvalWorkflowStatusTone(workflow, detail)}>
-                              {approvalWorkflowStatusLabel(workflow, detail)}
-                            </Badge>
-                          </td>
-                          <td className="px-3 py-2 text-muted-foreground">{approvalSignerLabel(detail?.workflowId === workflow.workflowId ? detail.approvals : [])}</td>
-                          <td className="px-3 py-2 text-muted-foreground">{approvalEvidenceSummary(detail?.workflowId === workflow.workflowId ? detail : null)}</td>
-                          <td className="px-3 py-2 font-mono text-muted-foreground">{formatApprovalDate(workflow.updatedAtUtc)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
-
-        <Card className="panel-surface" role="region" aria-label="Selected approval detail">
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <CardTitle className="text-base">Selected item detail</CardTitle>
-                <CardDescription>{selectedWorkflow ? `${selectedWorkflow.periodId} close workflow` : "Select an approval queue row."}</CardDescription>
-              </div>
-              {selectedWorkflow ? (
-                <Badge variant={approvalWorkflowStatusTone(selectedWorkflow, detail)}>
-                  {approvalWorkflowStatusLabel(selectedWorkflow, detail)}
-                </Badge>
-              ) : null}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm">
-            {detailLoading ? <p role="status" className="text-muted-foreground">Loading selected approval detail...</p> : null}
-            {detailError ? <StatusBanner tone="danger" role="alert" title={detailError} /> : null}
-            {actionError ? <StatusBanner tone="danger" role="alert" title={actionError} /> : null}
-            {selectedWorkflow ? (
-              <>
-                <div className="grid gap-2">
-                  <AccountingValue label="Period" value={selectedWorkflow.periodId} />
-                  <AccountingValue label="Workflow state" value={approvalWorkflowStatusLabel(selectedWorkflow, detail)} />
-                  <AccountingValue label="Approval decision" value={selectedApproval ? splitApprovalWords(selectedApproval.status) : "Not submitted"} />
-                  <AccountingValue label="Required signers" value={approvalSignerLabel(detail?.approvals ?? [])} />
-                  <AccountingValue label="Missing evidence" value={missingApprovalEvidenceLabel(detail)} />
-                </div>
-                <TechnicalDetails label="Workflow identifiers">
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <AccountingValue label="Workflow" value={selectedWorkflow.workflowId} />
-                    <AccountingValue label="Approval ID" value={selectedApproval?.approvalId ?? requestedApprovalId ?? "Not yet created"} />
-                    <AccountingValue label="Fund account" value={selectedWorkflow.fundAccountId} />
-                  </div>
-                </TechnicalDetails>
-                <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-                  <div className="text-xs font-semibold uppercase text-muted-foreground">Why blocked</div>
-                  <p className="mt-2 leading-6 text-muted-foreground">{approvalBlockedReason(detail)}</p>
-                </div>
-                <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-                  <div className="text-xs font-semibold uppercase text-muted-foreground">Next action</div>
-                  <p className="mt-2 leading-6 text-muted-foreground">{approvalNextAction(detail, selectedWorkflow)}</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button size="sm" disabled={approveDisabledReason !== null} disabledReason={approveDisabledReason} busy={action === "approve"} busyLabel="Approving" onClick={() => void runDecision("approve")}>Approve</Button>
-                  <Button size="sm" variant="outline" disabled={rejectDisabledReason !== null} disabledReason={rejectDisabledReason} busy={action === "reject"} busyLabel="Rejecting" onClick={() => void runDecision("reject")}>Reject</Button>
-                  <Button size="sm" variant="ghost" disabled={requestChangesDisabledReason !== null} disabledReason={requestChangesDisabledReason} busy={action === "request-changes"} busyLabel="Requesting changes" onClick={() => void runDecision("request-changes")}>Request changes</Button>
-                </div>
-              </>
-            ) : (
-              <p className="text-muted-foreground">No approval workflow is selected.</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="panel-surface" role="region" aria-label="Approval audit trail">
-        <CardHeader>
-          <CardTitle className="text-base">Full audit trail</CardTitle>
-          <CardDescription>Hash-linked workflow timeline for the selected approval item.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {detail?.timeline.length ? (
-            <div className="space-y-2">
-              {detail.timeline.map((entry) => <ApprovalTimelineRow key={entry.auditId} entry={entry} />)}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">{detailLoading ? "Loading audit trail..." : "No audit trail rows are available for the selected approval."}</p>
-          )}
-        </CardContent>
-      </Card>
-    </section>
-  );
-}
-
-function ApprovalStatusMessage({ loading, error, empty }: { loading: boolean; error: string | null; empty: boolean }) {
-  if (loading) {
-    return <p role="status" className="text-sm text-muted-foreground">Loading approval queue...</p>;
-  }
-
-  if (error) {
-    return <StatusBanner tone="danger" role="alert" title={error} />;
-  }
-
-  if (empty) {
-    return <p className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">No approval workflows are available.</p>;
-  }
-
-  return null;
-}
-
-function ApprovalTimelineRow({ entry }: { entry: OperationsTimelineEntry }) {
-  return (
-    <div className="rounded-md border border-border/70 px-3 py-2 text-sm">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="font-semibold text-foreground">{splitApprovalWords(entry.eventType)}</span>
-        <span className="font-mono text-[11px] text-muted-foreground">{formatApprovalDate(entry.occurredAtUtc)}</span>
-      </div>
-      <p className="mt-1 text-muted-foreground">{entry.rationale || `${splitApprovalWords(entry.fromState)} -> ${splitApprovalWords(entry.toState)}`}</p>
-      <div className="mt-2 text-[11px] text-muted-foreground">Evidence: {entry.references.length}</div>
-      <TechnicalDetails label="Audit metadata" className="mt-2">
-        <div className="grid gap-1 text-[11px] text-muted-foreground sm:grid-cols-2">
-          <span>Actor: {entry.actor || "unknown"}</span>
-          <span className="break-all">Hash: {entry.currentHash || "pending"}</span>
-          <span className="break-all sm:col-span-2">Audit ID: {entry.auditId}</span>
-        </div>
-      </TechnicalDetails>
-    </div>
-  );
-}
-
-function selectApproval(workflow: OperationsContinuityWorkflow | null, requestedApprovalId: string | null): OperationsApproval | null {
-  if (!workflow) {
-    return null;
-  }
-
-  if (requestedApprovalId) {
-    const requested = workflow.approvals.find((approval) => approval.approvalId === requestedApprovalId);
-    if (requested) {
-      return requested;
-    }
-  }
-
-  return [...workflow.approvals].sort((left, right) => {
-    const leftTime = left.decidedAtUtc ?? left.submittedAtUtc ?? "";
-    const rightTime = right.decidedAtUtc ?? right.submittedAtUtc ?? "";
-    return rightTime.localeCompare(leftTime);
-  })[0] ?? null;
-}
-
-
-interface AccountingCaseWorkbenchProps {
-  breakRows: ReconciliationBreakRowViewModel[];
-  selectedBreakId: string | null;
-  selectedBreakDetail: ReconciliationBreakDetailViewModel | null;
-  closeCommandCenter: CloseCommandCenterViewState | null;
-  detailActions: ReconciliationDetailActionsViewModel | null;
-  onSelectBreak: (breakId: string) => void;
-  onAssignBreak: (breakId: string) => void;
-  onResolveBreak: (breakId: string) => void;
-  onDismissBreak: (breakId: string) => void;
-}
-
-function AccountingCaseWorkbench({
-  breakRows,
-  selectedBreakId,
-  selectedBreakDetail,
-  closeCommandCenter,
-  detailActions,
-  onSelectBreak,
-  onAssignBreak,
-  onResolveBreak,
-  onDismissBreak
-}: AccountingCaseWorkbenchProps) {
-  const selectedBreak = breakRows.find((row) => row.breakId === selectedBreakId) ?? breakRows[0] ?? null;
-  const selectedBlocker = closeCommandCenter?.blockerRows[0] ?? null;
-  const queueEmpty = breakRows.length === 0 && !selectedBlocker;
-  const dueWorkCount = closeCommandCenter?.blockerRows.length ?? 0;
-
-  return (
-    <section
-      id="accounting-case-workbench"
-      className="workspace-section-band"
-      aria-labelledby="accounting-case-workbench-heading"
-    >
-      <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Today</p>
-          <h3 id="accounting-case-workbench-heading" className="workspace-section-title">Accounting case workbench</h3>
-          <p className="workspace-section-summary">
-            Status -&gt; Queue -&gt; Selected item -&gt; Evidence -&gt; Action for breaks, approvals, and close tasks.
-          </p>
-        </div>
-        <Badge variant={closeCommandCenter?.statusTone === "danger" ? "danger" : closeCommandCenter?.statusTone === "warning" ? "warning" : closeCommandCenter?.statusTone === "success" ? "success" : "outline"}>
-          {closeCommandCenter?.statusLabel ?? "Loading"}
-        </Badge>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-[minmax(15rem,0.72fr)_minmax(0,1.1fr)_minmax(16rem,0.82fr)]">
-        <Card className="panel-surface" role="region" aria-label="Accounting case queue">
-          <CardHeader>
-            <CardTitle className="text-base">Queue</CardTitle>
-            <CardDescription>Breaks, approvals, and close tasks needing finance review.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
-              <AccountingValue label="Exceptions" value={String(breakRows.length)} tone={breakRows.length > 0 ? "text-warning" : "text-success"} />
-              <AccountingValue label="Due work" value={String(dueWorkCount)} tone={dueWorkCount > 0 ? "text-warning" : "text-success"} />
-              <AccountingValue label="Close" value={closeCommandCenter?.periodLabel ?? "Current period"} />
-            </div>
-            {queueEmpty ? (
-              <div role="status" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3 text-sm text-muted-foreground">
-                No accounting cases need review. Open reconciliation or close evidence when new work arrives.
-              </div>
-            ) : (
-              <div role="list" aria-label="Accounting case queue rows" className="grid gap-2">
-                {breakRows.slice(0, 6).map((row) => (
-                  <div role="listitem" key={row.breakId} className="grid">
-                  <button
-                    type="button"
-                    className={cn(
-                      "rounded-md border px-3 py-2 text-left transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
-                      row.breakId === selectedBreak?.breakId ? "border-primary/45 bg-primary/10" : "border-border/70 bg-secondary/20 hover:bg-secondary/35"
-                    )}
-                    aria-pressed={row.breakId === selectedBreak?.breakId}
-                    onClick={() => onSelectBreak(row.breakId)}
-                  >
-                    <span className="block text-sm font-semibold text-foreground">{row.financeLabel}</span>
-                    <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                      {row.strategyName} · {row.varianceLabel} · {row.ownerLabel}
-                    </span>
-                  </button>
-                  </div>
-                ))}
-                {selectedBlocker ? (
-                  <Link
-                    to={selectedBlocker.href ?? WORKSTATION_ROUTE_CATALOG.accountingApprovals}
-                    className="rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-left text-sm text-warning transition-colors hover:bg-warning/15 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
-                  >
-                    <span className="block font-semibold">{selectedBlocker.label}</span>
-                    <span className="mt-1 block text-xs leading-5">{selectedBlocker.actionLabel}</span>
-                  </Link>
-                ) : null}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="panel-surface-strong" role="region" aria-label="Selected accounting case">
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0">
-                <CardTitle className="text-base">
-                  {selectedBreakDetail?.title ?? selectedBlocker?.label ?? "No case selected"}
-                </CardTitle>
-                <CardDescription className="mt-2">
-                  {selectedBreakDetail?.description ?? selectedBlocker?.detail ?? "Select a case to inspect facts, variance, affected books, reports, and next action."}
-                </CardDescription>
-              </div>
-              {selectedBreakDetail ? <Badge variant={selectedBreakDetail.statusBadgeVariant}>{selectedBreakDetail.statusLabel}</Badge> : null}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm">
-            {selectedBreakDetail ? (
-              <>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {selectedBreakDetail.fields.filter((field) => field.label !== "Run").slice(0, 6).map((field) => (
-                    <AccountingValue key={field.label} label={field.label} value={field.value} />
-                  ))}
-                </div>
-                {selectedBreakDetail.analysisText ? (
-                  <div className="rounded-md border border-border/70 bg-background/55 px-3 py-3 text-muted-foreground">
-                    {selectedBreakDetail.analysisText}
-                  </div>
-                ) : null}
-                <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-                  <div className="text-xs font-semibold uppercase text-muted-foreground">Next action</div>
-                  <p className="mt-1 leading-6 text-foreground">
-                    {selectedBreakDetail.recommendedActionText ?? "Review the selected case evidence before taking action."}
-                  </p>
-                </div>
-              </>
-            ) : selectedBlocker ? (
-              <div className="grid gap-3">
-                <AccountingValue label="Status" value={selectedBlocker.statusLabel} />
-                <AccountingValue label="Owner" value={selectedBlocker.ownerLabel ?? "Unassigned"} />
-                <AccountingValue label="Impact" value={selectedBlocker.impactLabel} />
-                <AccountingValue label="Due" value={selectedBlocker.dueLabel ?? "No due date"} />
-              </div>
-            ) : (
-              <div role="status" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3 text-muted-foreground">
-                No selected accounting case.
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="panel-surface" role="region" aria-label="Selected case evidence and actions">
-          <CardHeader>
-            <CardTitle className="text-base">Evidence and action</CardTitle>
-            <CardDescription>Stored support, approvals, audit details, and the primary action for the selected case.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm">
-            <div className="grid gap-2">
-              <AccountingValue label="Evidence status" value={selectedBlocker?.evidenceLabel ?? selectedBreakDetail?.subtitle ?? "Select a case"} />
-              <AccountingValue label="Evidence workspace" value={detailActions ? "Packet available for review" : selectedBlocker?.evidenceLabel ?? "No stored support selected"} />
-              <AccountingValue label="Affected output" value={selectedBlocker?.impactLabel ?? "Close and reconciliation"} />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {selectedBreak?.canAssign ? (
-                <Button type="button" size="sm" variant="outline" onClick={() => onAssignBreak(selectedBreak.breakId)}>
-                  {selectedBreak.assignLabel}
-                </Button>
-              ) : null}
-              {selectedBreak?.canResolve ? (
-                <Button type="button" size="sm" onClick={() => onResolveBreak(selectedBreak.breakId)}>
-                  {selectedBreak.resolveLabel}
-                </Button>
-              ) : null}
-              {selectedBreak?.canDismiss ? (
-                <Button type="button" size="sm" variant="ghost" onClick={() => onDismissBreak(selectedBreak.breakId)}>
-                  {selectedBreak.dismissLabel}
-                </Button>
-              ) : null}
-              {detailActions ? (
-                <Button asChild size="sm" variant="outline">
-                  <Link to={detailActions.evidencePacketHref} aria-label={detailActions.evidencePacketAriaLabel}>
-                    {detailActions.evidencePacketLabel}
-                  </Link>
-                </Button>
-              ) : null}
-              {selectedBlocker?.href ? (
-                <Button asChild size="sm" variant="outline">
-                  <Link to={selectedBlocker.href}>{selectedBlocker.actionLabel}</Link>
-                </Button>
-              ) : null}
-            </div>
-            <TechnicalDetails label="Audit details">
-              <div className="grid gap-2" role="group" aria-label="Audit detail values">
-                <AccountingValue label="Case ID" value={selectedBreak?.breakId ?? selectedBlocker?.id ?? "No case"} />
-                <AccountingValue label="Run reference" value={selectedBreak?.runId ?? "No run selected"} />
-                <AccountingValue label="Route" value={selectedBreakDetail?.routingActionHref ?? selectedBlocker?.href ?? "No route"} />
-                <AccountingValue label="Raw category" value={selectedBreakDetail?.rawCategoryLabel ?? "No category"} />
-                <AccountingValue label="Audit packet" value={detailActions?.auditPacketLabel ?? "Open after selecting a break"} />
-              </div>
-              <BreakAuditRebuildCheck breakId={selectedBreak?.breakId ?? null} />
-            </TechnicalDetails>
-          </CardContent>
-        </Card>
-      </div>
-    </section>
-  );
-}
-
 export function AccountingScreen(props: AccountingScreenProps) {
+  const crossScreenCounts = useSharedCrossScreenCounts();
   return (
-    <KpiProvider models={{ accounting: props.data }}>
+    <KpiProvider models={{ accounting: props.data, crossScreenCounts }}>
       <AccountingScreenContent {...props} />
     </KpiProvider>
   );
 }
 
 function AccountingScreenContent({ data, multiAssetCoverage, session = null }: AccountingScreenProps) {
+  const [curvesOpen, setCurvesOpen] = useState(false);
+  const [bondDiscoveryOpen, setBondDiscoveryOpen] = useState(false);
   const { pathname, search, hash } = useLocation();
+  const sharedCounts = useSharedCrossScreenCounts();
+  // The same baseline the break queue marks rows against (C3), read without recording a visit:
+  // only opening the queue itself advances it, not any other Accounting route.
+  const breakQueueVisit = useSinceLastVisit(BREAK_QUEUE_VISIT_SURFACE, undefined, { record: false });
   const navigate = useNavigate();
   const operatorIdentity = session?.displayName.trim() || null;
   const workstream = resolveAccountingWorkstream(pathname);
@@ -1598,14 +161,45 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
   const journalEntries = useManualJournalEntryWorkbenchViewModel(workstream === "journal-entries", undefined, search, session?.displayName.trim() ? JSON.stringify([session.displayName, session.role, session.environment]) : null);
   const capitalAccountWorkbench = useCapitalAccountWorkbenchViewModel(workstream === "capital-accounts", search);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
+  const selectSecurityById = securityMaster.selectSecurity;
+  const requestedSecurityId = new URLSearchParams(search).get("securityId")?.trim() || null;
+  const selectSecurityWithRoute = useCallback((securityId: string, replace = false) => {
+    const next = new URLSearchParams(search);
+    if (requestedSecurityId && requestedSecurityId !== securityId) next.delete("bondAction");
+    next.set("securityId", securityId);
+    if (requestedSecurityId === securityId) void selectSecurityById(securityId);
+    else navigate({ pathname, search: `?${next}`, hash }, { replace });
+  }, [hash, navigate, pathname, requestedSecurityId, search, selectSecurityById]);
+  const [observedFixingSelection, setObservedFixingSelection] = useState<{ securityId: string; receipts: BondObservedFixingReceipt[] } | null>(null);
+  const observedFixingReceiptIds = useMemo(() => observedFixingSelection?.securityId === securityMaster.selectedSecurityId
+    ? observedFixingSelection.receipts.map(receipt => receipt.receiptId) : [], [observedFixingSelection, securityMaster.selectedSecurityId]);
+  const [ladderReturnAvailable, setLadderReturnAvailable] = useState(false);
+  const ladderScroll = useRef<Array<{ element: Element; top: number; left: number }>>([]);
+  const returnToLadder = () => {
+    const selectedRow = ladderScroll.current[0]?.element;
+    // The shell and local restoration must target the same row, regardless of effect timing.
+    const returnHash = selectedRow instanceof HTMLElement && selectedRow.id ? `#${encodeURIComponent(selectedRow.id)}` : "#bond-ladders";
+    navigate({ pathname, search: buildSecurityMasterDrillInSearch(search, "reference"), hash: returnHash },
+      { replace: true, preventScrollReset: true });
+    requestAnimationFrame(() => {
+      for (const position of ladderScroll.current)
+        position.element.scrollTo({ top: position.top, left: position.left, behavior: "instant" });
+      if (selectedRow instanceof HTMLElement && selectedRow.isConnected)
+        selectedRow.focus({ preventScroll: true });
+    });
+  };
   const selectSecurityFromExplorer = useCallback((recordId: string) => {
     const securityId = resolveExplorerSecurityId(recordId);
-    // Explorer selection changes drive this callback. Depending on the detail selection would
-    // replay the explorer's old row after every manual search selection and overwrite it.
-    if (securityId) {
-      securityMaster.selectSecurity(securityId);
+    if (!securityId) return;
+    // The explorer selects its default row on mount. Synchronize that initial selection
+    // without adding a Back destination that would immediately select and push it again.
+    selectSecurityWithRoute(securityId, requestedSecurityId === null);
+  }, [requestedSecurityId, selectSecurityWithRoute]);
+  useEffect(() => {
+    if (workstream === "security-master" && requestedSecurityId) {
+      void selectSecurityById(requestedSecurityId);
     }
-  }, [securityMaster.selectSecurity]);
+  }, [workstream, requestedSecurityId, selectSecurityById]);
   const [accountingSystemProviders, setAccountingSystemProviders] = useState<AccountingSystemProvider[]>([]);
   const [accountingSystemImport, setAccountingSystemImport] = useState<AccountingSystemImportDetail | null>(null);
   const [accountingSystemMappingProfiles, setAccountingSystemMappingProfiles] = useState<ExternalGlMappingProfile[]>([]);
@@ -1658,7 +252,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           item.label.toLowerCase().includes("coverage")
             ? { ...item, value: coveragePosture.label, detail: coveragePosture.detail, tone: coverageTone }
             : item.label.toLowerCase().includes("conflict")
-            ? { ...item, value: openConflictCount.toLocaleString(), tone: conflictTone }
+            ? { ...item, value: formatCount(openConflictCount), tone: conflictTone }
             : item
         )),
         ...(hasCoverageSummary ? [] : [{
@@ -1669,7 +263,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
         }]),
         ...(hasConflictSummary ? [] : [{
           label: "Open conflicts",
-          value: openConflictCount.toLocaleString(),
+          value: formatCount(openConflictCount),
           detail: openConflictCount > 0 ? "Identifier conflicts require operator review." : "No open identifier conflicts.",
           tone: conflictTone
         }])
@@ -1693,10 +287,27 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
   const identity = securityMaster.identityView;
   const identityPrimaryFields = identity?.summaryFields.filter((field) => field.label === "Asset class" || field.label === "Effective") ?? [];
   const identityTechnicalFields = identity?.summaryFields.filter((field) => !identityPrimaryFields.includes(field)) ?? [];
-  const selectedSecurityEntry = securityMaster.selectedSecurityId
-    ? securityMaster.results?.find((entry) => entry.securityId === securityMaster.selectedSecurityId) ?? null
-    : null;
+  const selectedSecurityEntry = securityMaster.selectedEntry;
   const securityMasterActiveTab = resolveSecurityMasterDrillInTab(search);
+  const bondAction = new URLSearchParams(search).get("bondAction");
+  const focusedBondAction = useRef<string | null>(null);
+  useEffect(() => {
+    if (securityMasterActiveTab !== "evidence" || !bondAction || !["analytics", "migration"].includes(bondAction)) {
+      focusedBondAction.current = null;
+      return;
+    }
+    if (!selectedSecurityEntry) return;
+    const focusKey = `${selectedSecurityEntry.securityId.toLowerCase()}:${bondAction}`;
+    if (focusedBondAction.current === focusKey) return;
+    const target = document.getElementById(`bond-${bondAction}-action`);
+    if (target) {
+      const explorerHeader = target.closest(".workspace-section-band")?.querySelector(".workspace-section-subheader");
+      target.style.scrollMarginTop = `${(explorerHeader?.getBoundingClientRect().height ?? 0) + 16}px`;
+      target.focus({ preventScroll: true });
+      target.scrollIntoView?.({ block: "start" });
+      focusedBondAction.current = focusKey;
+    }
+  }, [bondAction, securityMasterActiveTab, selectedSecurityEntry]);
   const securityMasterDrillInTabs = useMemo(() => [
     {
       id: "identity",
@@ -2114,7 +725,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0">
-              <div className="eyebrow-label">{loading.eyebrow}</div>
+              <div className={eyebrowClassName(loading.eyebrow)}>{loading.eyebrow}</div>
               <CardTitle id={loading.titleId} className="mt-2 text-base">{loading.title}</CardTitle>
               <CardDescription id={loading.detailId} className="mt-2">{loading.detail}</CardDescription>
             </div>
@@ -2125,7 +736,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           </div>
           <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.38fr)]">
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">{loading.statusItemsLabel}</div>
+              <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(loading.statusItemsLabel) && "uppercase")}>{loading.statusItemsLabel}</div>
               <div role="list" className="mt-3 grid gap-2 md:grid-cols-3">
                 {loading.statusItems.map((item) => (
                   <div key={item.id} role="listitem" className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
@@ -2136,7 +747,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
               </div>
             </div>
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">{loading.actionsLabel}</div>
+              <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(loading.actionsLabel) && "uppercase")}>{loading.actionsLabel}</div>
               <div className="mt-3 grid gap-2">
                 {loading.actions.map((action) => (
                   <Button key={action.id} asChild size="sm" variant="outline" className="h-auto justify-start py-2 text-left">
@@ -2161,29 +772,38 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
 
   return (
     <div className="space-y-5">
-      <StatStrip ids={workspaceKpiIds("accounting", data.metrics)} label="Accounting headline metrics" />
-      {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
-
+      {/* Route heading first ("where am I?"); workspace-wide metrics follow. */}
       <AccountingWorkbenchContext
         workspace={workspace}
         workstream={workstream}
         taskMode={taskMode}
       />
 
+      <KpiProvider models={{ accounting: { ...data, metrics: applyOpenBreakDelta(
+        applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, breakQueue: data.breakQueue, openBreakCount: data.workspace?.openBreaks })),
+        sinceLastVisitDelta(summarizeSinceLastVisit(data.breakQueue ?? [], breakQueueVisit.baseline))
+      ) } }}>
+        <StatStrip ids={workspaceKpiIds("accounting", data.metrics)} label="Accounting headline metrics" source="Accounting workspace" figureSource="accounting" />
+      </KpiProvider>
+      {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
+
       {workstream === "reconciliation" ? (
         <>
           <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice}
             runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />}
           />
-          <TechnicalDetails label="Account oversight"><AccountOversightPanel /></TechnicalDetails>
+          <TechnicalDetails label="Break aging"><ReconciliationAgingChart breaks={reconciliation.sourceRows} /></TechnicalDetails>
+          <AccountOversightPanel />
           <TechnicalDetails id="accounting-history" label="Calibration and history"><CalibrationSummaryPanel view={reconciliation.calibrationView} /></TechnicalDetails>
         </>
       ) : null}
 
-      {sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails ? <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} /> : null}
+      {/* On the landing the queue leads and preparation follows it (below); elsewhere it stays here. */}
+      {sectionVisibility.showWorkflowDetails && !sectionVisibility.showCloseCockpitLanding ? <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} /> : null}
 
       {sectionVisibility.showCloseCockpitLanding ? (
         <>
+          {closeWorkflow?.closeChecklist ? <TechnicalDetails label="Close task progress"><CloseChecklistProgressChart tasks={closeWorkflow.closeChecklist} /></TechnicalDetails> : null}
           <AccountingCaseWorkbench
             breakRows={reconciliation.rows}
             selectedBreakId={reconciliation.selectedBreakId}
@@ -2204,6 +824,8 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
               resolveDialog.open(breakId, "Dismissed");
             }}
           />
+          <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} />
+          {closeWorkflow ? <CloseChecklistHistoryChart workflowId={closeWorkflow.workflowId} workflowVersion={closeWorkflow.version} /> : null}
           <TechnicalDetails label="System details" className="panel-surface">
             <div className="space-y-4">
               {workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
@@ -2331,6 +953,10 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {sectionVisibility.showConfiguration ? (
+        <IntercompanyAgreementsPanel key={JSON.stringify([session?.displayName, session?.role, session?.environment, search])} initialEntityId={closeWorkflowQuery.entityId ?? ""} initialAgreementId={new URLSearchParams(search).get("agreementId")} initialLedgerBookId={new URLSearchParams(search).get("ledgerBookId") ?? undefined} />
+      ) : null}
+
+      {sectionVisibility.showConfiguration ? (
         <AuditChainIntegrityPanel />
       ) : null}
 
@@ -2339,7 +965,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {sectionVisibility.showJournalEntries ? (
-        <ManualJournalEntryWorkbenchPanel view={journalEntries} search={search} />
+        <ManualJournalEntryWorkbenchPanel key={JSON.stringify([session?.displayName, session?.role, session?.environment])} view={journalEntries} search={search} />
       ) : null}
 
       {sectionVisibility.showCapitalAccounts ? (
@@ -2364,7 +990,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           <div className="min-w-0">
             <p className="eyebrow-label">Posture</p>
             <h3 id="accounting-posture-heading" className="workspace-section-title">Accounting close posture</h3>
-            <p className="workspace-section-summary">Close metrics, control center, cash flow, and lane context stay grouped for monitoring.</p>
+            <p className="workspace-section-summary">Close metrics, control center, cash flow, and workspace context stay grouped for monitoring.</p>
           </div>
           <a className="workspace-section-jump" href="#accounting-exceptions">Exceptions</a>
         </div>
@@ -2432,7 +1058,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="panel-surface">
           <CardHeader>
-            <div className="eyebrow-label">{workspace.label} Lane</div>
+            <div className="eyebrow-label">{workspace.label}</div>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-primary" />
               {focus.label}
@@ -2462,21 +1088,19 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="eyebrow-label">{cashFlow.eyebrow}</div>
+                <div className={eyebrowClassName(cashFlow.eyebrow)}>{cashFlow.eyebrow}</div>
                 <CardTitle>{cashFlow.title}</CardTitle>
                 <CardDescription className="mt-2 text-muted-foreground">
                   {cashFlow.description}
                 </CardDescription>
               </div>
-              <span
+              <StatusBadge
                 aria-label={cashFlow.statusAriaLabel}
-                className={cn(
-                  "w-fit rounded-sm border px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]",
-                  cashFlowBadgeClass(cashFlow.statusTone)
-                )}
-              >
-                {cashFlow.statusLabel}
-              </span>
+                // Cash-flow "default" was the neutral chip, not the primary one.
+                status={cashFlow.statusTone === "default" ? "info" : toneToSeverity(cashFlow.statusTone)}
+                dot={false}
+                label={cashFlow.statusLabel}
+              />
             </div>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
@@ -2487,7 +1111,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                   key={row.id}
                   label={row.label}
                   value={row.value}
-                  tone={cashFlowTextClass(row.tone)}
+                  tone={statusTextClass(row.tone)}
                   ariaLabel={row.ariaLabel}
                 />
               ))}
@@ -2514,8 +1138,13 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
             <ReconciliationReadinessPanel />
           </div>
 
-          <div className="xl:col-span-2">
+          <div className="space-y-3 xl:col-span-2">
             <ReconciliationComparisonPanel view={reconciliation.comparisonView} />
+            {/* Proof of the summary above, built from the same numbers and the same balanced rule.
+                Its heading stays at the panel default (h3), level with the sibling cards in this band. */}
+            {reconciliation.comparisonView.tieOut ? (
+              <TieOutPanel {...reconciliation.comparisonView.tieOut} />
+            ) : null}
           </div>
 
 
@@ -2578,7 +1207,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                       key={field.label}
                       label={field.label}
                       value={field.value}
-                      tone={cashFlowTextClass(field.tone)}
+                      tone={statusTextClass(field.tone)}
                       ariaLabel={field.ariaLabel}
                     />
                   ))}
@@ -2774,15 +1403,13 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                 </CardTitle>
                 <CardDescription className="mt-2">{reporting.description}</CardDescription>
               </div>
-              <span className="w-fit rounded-sm border border-primary/35 bg-primary/10 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-primary">
-                {reporting.countLabel}
-              </span>
+              <StatusBadge status="review" dot={false} label={reporting.countLabel} />
             </div>
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="min-w-0">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-                <span className="font-medium uppercase tracking-[0.14em] text-muted-foreground">{reporting.listLabel}</span>
+                <span className={cn("font-medium text-muted-foreground", usesTrackedCaps(reporting.listLabel) && "uppercase tracking-[0.14em]")}>{reporting.listLabel}</span>
                 <span className="font-mono text-muted-foreground">{reporting.visibleCountLabel}</span>
               </div>
               <div role="list" aria-label={reporting.listLabel} className="space-y-2">
@@ -2806,16 +1433,12 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                           <div className="font-semibold text-foreground">{profile.name}</div>
                           <div className="mt-1 truncate font-mono text-xs text-muted-foreground">{profile.targetLabel}</div>
                         </div>
-                        <span className="shrink-0 rounded-sm border border-primary/30 bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-primary">
-                          {profile.formatLabel}
-                        </span>
+                        <StatusBadge className="shrink-0" status="review" dot={false} label={profile.formatLabel} />
                       </div>
                       <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">{profile.description}</p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {profile.badges.map((badge) => (
-                          <span key={`${profile.id}-${badge.label}`} className={reportingBadgeClass(badge.tone)}>
-                            {badge.label}
-                          </span>
+                          <StatusBadge key={`${profile.id}-${badge.label}`} status={toneToSeverity(badge.tone)} dot={false} label={badge.label} />
                         ))}
                       </div>
                     </button>
@@ -2836,7 +1459,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
               data-testid="reporting-profile-detail"
               className="min-w-0 overflow-hidden rounded-lg border border-border/70 bg-background/35 p-4"
             >
-              <div className="eyebrow-label">{reporting.statusTitle}</div>
+              <div className={eyebrowClassName(reporting.statusTitle)}>{reporting.statusTitle}</div>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{reporting.statusDetail}</p>
               <p className="mt-2 font-mono text-xs text-muted-foreground">{reporting.nextAction}</p>
               {reporting.selectedProfile ? (
@@ -2929,14 +1552,34 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
             }
           ]}
           explorer={securityInstrumentExplorerView}
+          activeRecordId={requestedSecurityId
+            ? securityInstrumentExplorer?.rows.find((row) => resolveExplorerSecurityId(row.recordId)?.toLowerCase() === requestedSecurityId.toLowerCase())?.recordId ?? `security-instrument:${requestedSecurityId}`
+            : undefined}
           onSaveView={(request) => saveAccountingExplorerView("security-instrument", request)}
           onSelectRecord={selectSecurityFromExplorer}
         >
         <section className="space-y-6">
+          <div id="bond-ladders" className="scroll-mt-6">
+            <BondReferenceLadderPanel onSelectSecurity={(securityId) => {
+              ladderScroll.current = [];
+              let element: Element | null = document.activeElement;
+              while (element) {
+                ladderScroll.current.push({ element, top: element.scrollTop, left: element.scrollLeft });
+                element = element.parentElement;
+              }
+              setLadderReturnAvailable(true);
+              const next = new URLSearchParams(search);
+              next.set("securityId", securityId);
+              next.set("tab", "evidence");
+              next.delete("bondAction");
+              if (requestedSecurityId === securityId) void selectSecurityById(securityId);
+              navigate({ pathname, search: `?${next}`, hash: "#security-detail-page-title" }, { preventScrollReset: true });
+            }} />
+          </div>
           <section className="panel-surface-strong space-y-4 p-5" aria-label={securityMaster.pageView.ariaLabel}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
-                <div className="eyebrow-label">{securityMaster.pageView.eyebrow}</div>
+                <div className={eyebrowClassName(securityMaster.pageView.eyebrow)}>{securityMaster.pageView.eyebrow}</div>
                 <h2 className="mt-2 text-2xl font-semibold tracking-normal text-foreground">{securityMaster.pageView.title}</h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{securityMaster.pageView.description}</p>
               </div>
@@ -2950,7 +1593,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {securityMaster.pageView.metrics.map((metric) => (
                 <div key={metric.id} className="rounded-lg border border-border/60 bg-secondary/25 p-4">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{metric.label}</div>
+                  <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-[0.14em]")}>{metric.label}</div>
                   <div
                     className={cn(
                       "mt-2 min-w-0 break-words font-mono text-lg font-semibold tabular-nums",
@@ -2964,6 +1607,17 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
               ))}
             </div>
           </section>
+
+          <div className="grid gap-4" aria-label="Security Master market inputs and discovery">
+            <details className="rounded border border-border p-4" onToggle={(event) => setCurvesOpen(event.currentTarget.open)}>
+              <summary className="cursor-pointer font-semibold">Curves: definitions, pillars and historical versions</summary>
+              {curvesOpen ? <div className="mt-4"><SecurityCurveWorkbench key={JSON.stringify([search, session?.displayName, session?.role, session?.environment])} /></div> : null}
+            </details>
+            <details className="rounded border border-border p-4" onToggle={(event) => setBondDiscoveryOpen(event.currentTarget.open)}>
+              <summary className="cursor-pointer font-semibold">Discover provider bonds and stage candidate imports</summary>
+              {bondDiscoveryOpen ? <div className="mt-4"><BondDiscoveryPanel key={JSON.stringify([search, session?.displayName, session?.role, session?.environment])} /></div> : null}
+            </details>
+          </div>
 
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(24rem,0.8fr)]">
           {/* Search panel */}
@@ -2983,7 +1637,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                 <label htmlFor="security-master-search" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                   Search securities
                 </label>
-                <input
+                <Input
                   id="security-master-search"
                   type="text"
                   value={securityMaster.query}
@@ -2992,7 +1646,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                   aria-controls={securityMaster.hasResults ? "security-master-results" : undefined}
                   aria-describedby="security-master-search-help security-master-search-status"
                   aria-invalid={securityMaster.searchErrorText ? true : undefined}
-                  className="w-full rounded-lg border border-border/70 bg-secondary/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/50"
+                  className="w-full text-sm"
                 />
                 <p id="security-master-search-help" className="text-xs text-muted-foreground">
                   Search by ticker, ISIN, CUSIP, FIGI, or display name.
@@ -3031,7 +1685,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                   getRowSelectAriaLabel={(row) => row.selectAriaLabel}
                   getRowAriaControls={(row) => row.detailPanelId}
                   getRowAriaExpanded={(row) => row.isExpanded}
-                  onRowSelect={(row) => void securityMaster.selectSecurity(row.securityId)}
+                  onRowSelect={(row) => selectSecurityWithRoute(row.securityId)}
                   selectedRowId={securityMaster.selectedSecurityId ? `security-result-${securityMaster.selectedSecurityId}` : null}
                   emptyText={securityMaster.searchStatusText ?? "No Security Master results returned."}
                   ariaLabel={securityMaster.resultsTableLabel}
@@ -3051,9 +1705,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                     <ShieldCheck className="h-5 w-5 text-primary" />
                     Identifier conflicts
                     {securityMaster.openConflictCount > 0 && (
-                      <span className="inline-flex items-center rounded-sm border border-warning/35 bg-warning/10 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-warning">
-                        {securityMaster.conflictCountLabel}
-                      </span>
+                      <StatusBadge status="action" dot={false} label={securityMaster.conflictCountLabel} />
                     )}
                   </CardTitle>
                   <CardDescription className="mt-2">
@@ -3132,9 +1784,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold">{conflict.fieldLabel}</span>
-                            <span className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]", conflict.statusTone === "warning" ? "border-warning/35 bg-warning/10 text-warning" : "border-border/70 bg-secondary text-muted-foreground")}>
-                              {conflict.statusLabel}
-                            </span>
+                            <StatusBadge status={conflict.statusTone === "warning" ? "action" : "info"} dot={false} label={conflict.statusLabel} />
                           </div>
                           <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                             <span><span className="font-semibold text-foreground">Provider A:</span> {conflict.providerASummary}</span>
@@ -3175,11 +1825,11 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
             <section className="panel-surface-strong space-y-4 p-5" aria-labelledby="security-detail-page-title">
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0">
-                  <div className="eyebrow-label">{securityMaster.pageView.detailEyebrow}</div>
+                  <div className={eyebrowClassName(securityMaster.pageView.detailEyebrow)}>{securityMaster.pageView.detailEyebrow}</div>
                   <h2 id="security-detail-page-title" className="mt-2 text-xl font-semibold tracking-normal text-foreground">
                     {securityMaster.pageView.detailTitle}
                   </h2>
-                  <p className="mt-1 break-words font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className={cn("mt-1 break-words text-xs text-muted-foreground", usesTrackedCaps(securityMaster.pageView.detailSubtitle) && "font-mono uppercase tracking-[0.12em]")}>
                     {securityMaster.pageView.detailSubtitle}
                   </p>
                   <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">
@@ -3261,7 +1911,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                         ]}
                       />
                       <div>
-                        <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{identity.identifiersTitle}</div>
+                        <div className={cn("mb-2 text-xs font-semibold text-muted-foreground", usesTrackedCaps(identity.identifiersTitle) && "uppercase tracking-[0.14em]")}>{identity.identifiersTitle}</div>
                         {identity.identifiers.length === 0 ? (
                           <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
                             {identity.identifierEmptyText}
@@ -3280,7 +1930,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                       </div>
 
                       <div>
-                        <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{identity.aliasesTitle}</div>
+                        <div className={cn("mb-2 text-xs font-semibold text-muted-foreground", usesTrackedCaps(identity.aliasesTitle) && "uppercase tracking-[0.14em]")}>{identity.aliasesTitle}</div>
                         {identity.aliases.length === 0 ? (
                           <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
                             {identity.aliasEmptyText}
@@ -3307,7 +1957,6 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                       view={securityMaster.referenceDataWorkbenchView}
                       onSelect={securityMaster.selectReferenceDataEndpoint}
                     />
-                    <BondReferenceLadderPanel />
                   </div>
                 </TabPanel>
                 <TabPanel>
@@ -3342,6 +1991,9 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                 </TabPanel>
                 <TabPanel>
                   <div className="flex flex-col gap-4">
+                    {ladderReturnAvailable ? <Button type="button" variant="outline" size="sm" className="w-fit" onClick={returnToLadder}>Return to bond ladder</Button> : null}
+                    {securityMaster.detailLoading ? <p role="status">Loading authoritative security terms…</p> : null}
+                    {securityMaster.detailErrorText ? <StatusBanner tone="danger" title="Security terms unavailable" detail={securityMaster.detailErrorText} role="alert" /> : null}
                     <SecurityDetailsPanel
                       entry={selectedSecurityEntry}
                       identity={securityMaster.identity}
@@ -3351,14 +2003,68 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                       selectedSecurityEntry.classification.assetClass.toLowerCase().replace(/[\s_-]/g, "")
                     ) ? (
                       <>
-                        <BondAnalyticsPanel key={securityMaster.selectedSecurityId} securityId={securityMaster.selectedSecurityId} />
+                        <div id="bond-analytics-action" tabIndex={-1} aria-label="Bond analytics" className="scroll-mt-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                        <div id="bond-calculation-context" tabIndex={-1}>
+                          <BondAnalyticsPanel key={securityMaster.selectedSecurityId} securityId={securityMaster.selectedSecurityId}
+                            observedFixingReceiptIds={observedFixingReceiptIds}
+                            onClearObservedFixings={() => setObservedFixingSelection(null)}
+                            onReviewConventions={() => {
+                              const panel = document.getElementById("bond-conventions-review");
+                              panel?.focus({ preventScroll: true });
+                              panel?.scrollIntoView({ block: "nearest" });
+                            }}
+                            onSelectFixing={() => {
+                              const panel = document.getElementById("bond-observed-fixings");
+                              panel?.focus({ preventScroll: true });
+                              panel?.scrollIntoView({ block: "nearest" });
+                            }}
+                            onSelectForwardCurve={() => {
+                              const panel = document.getElementById("bond-rates-fixings");
+                              panel?.focus({ preventScroll: true });
+                              panel?.scrollIntoView({ block: "nearest" });
+                            }} />
+                        </div>
+                        </div>
+                        <SecurityCurveValuationPanel key={`curve-valuation-${securityMaster.selectedSecurityId}`} securityId={securityMaster.selectedSecurityId} />
+                        <BondWorkflowPanel securityId={securityMaster.selectedSecurityId} />
+                        <BondIncomePanel key={`income-${securityMaster.selectedSecurityId}`} />
+                        <section id="bond-conventions-review" tabIndex={-1} aria-label="Bond convention review">
+                          <Button type="button" variant="outline" size="sm" onClick={() => {
+                            const panel = document.getElementById("bond-calculation-context");
+                            panel?.focus({ preventScroll: true });
+                            panel?.scrollIntoView({ block: "nearest" });
+                          }}>Return to calculation</Button>
+                        <div id="bond-migration-action" tabIndex={-1} aria-label="Bond convention migration" className="scroll-mt-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
                         <BondMigrationPreviewPanel
                           key={`migration-${securityMaster.selectedSecurityId}`}
+                          initiallyOpen={bondAction === "migration"}
                           securityId={securityMaster.selectedSecurityId}
-                          expectedVersion={securityMaster.identity?.securityId === securityMaster.selectedSecurityId
+                          expectedVersion={securityMaster.identity?.securityId.toLowerCase() === securityMaster.selectedSecurityId.toLowerCase()
                             ? securityMaster.identity.version
                             : null}
                         />
+                        </div>
+                        </section>
+                        <div>
+                          <Button type="button" variant="outline" size="sm" onClick={() => {
+                            const panel = document.getElementById("bond-calculation-context");
+                            panel?.focus({ preventScroll: true }); panel?.scrollIntoView({ block: "nearest" });
+                          }}>Return to calculation from observed fixings</Button>
+                          <BondObservedFixingPanel key={`observed-fixings-${securityMaster.selectedSecurityId}`}
+                            securityId={securityMaster.selectedSecurityId} securityVersion={securityMaster.identity?.securityId === securityMaster.selectedSecurityId ? securityMaster.identity.version : null}
+                            selectedReceiptIds={observedFixingReceiptIds}
+                            onSelect={(receipt) => setObservedFixingSelection(current => ({ securityId: receipt.fixing.securityId,
+                              receipts: [...(current?.securityId === receipt.fixing.securityId ? current.receipts.filter(prior => prior.fixing.resetDate !== receipt.fixing.resetDate) : []), receipt] }))}
+                            onRemove={(receiptId) => setObservedFixingSelection(current => current ? { ...current, receipts: current.receipts.filter(receipt => receipt.receiptId !== receiptId) } : null)} />
+                        </div>
+                        <div>
+                          <Button type="button" variant="outline" size="sm" onClick={() => {
+                            const panel = document.getElementById("bond-calculation-context");
+                            panel?.focus({ preventScroll: true });
+                            panel?.scrollIntoView({ block: "nearest" });
+                          }}>Return to calculation from fixings</Button>
+                          <SecurityRatesIngestionPanel key={`rates-${securityMaster.selectedSecurityId}`} securityId={securityMaster.selectedSecurityId} />
+                        </div>
                       </>
                     ) : null}
                   </div>
@@ -3396,2108 +2102,6 @@ function AccountingHighlight({
       <Icon className="mb-3 h-5 w-5 text-primary" />
       <div className="font-semibold text-foreground">{title}</div>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
-    </div>
-  );
-}
-
-
-function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: ManualJournalEntryWorkbenchViewModel["privateCapitalActivity"] }) {
-  return (
-    <Card className="panel-surface">
-      <CardHeader>
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-0">
-            <CardTitle className="text-base">{activity.title}</CardTitle>
-            <CardDescription>{activity.statusLabel} / {activity.projectedAtLabel}</CardDescription>
-          </div>
-          <Badge variant={activity.validationIssues.length > 0 ? "warning" : activity.fundEvents.length > 0 ? "success" : "outline"} dot>
-            {activity.validationIssues.length > 0 ? "Review" : activity.fundEvents.length > 0 ? "Projected" : "Empty"}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid gap-2 sm:grid-cols-2">
-          {activity.summaryCards.map((metric) => (
-            <div
-              key={metric.id}
-              className={cn(
-                "rounded-md border px-3 py-2 text-sm",
-                metric.tone === "success" ? "border-success/30 bg-success/10 text-success" :
-                  metric.tone === "warning" ? "border-warning/30 bg-warning/10 text-warning" :
-                    metric.tone === "danger" ? "border-danger/30 bg-danger/10 text-danger" :
-                      "border-border/70 bg-secondary/20 text-muted-foreground"
-              )}
-            >
-              <div className="text-[11px] font-semibold uppercase">{metric.label}</div>
-              <div className="mt-1 font-mono text-base text-foreground">{metric.value}</div>
-              <div className="mt-1 text-xs">{metric.detail}</div>
-            </div>
-          ))}
-        </div>
-
-        {activity.validationIssues.length > 0 ? (
-          <div className="space-y-2">
-            {activity.validationIssues.map((issue) => (
-              <div key={issue.id} className="rounded border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-                <div className="font-semibold">{issue.label}</div>
-                <div className="mt-1">{issue.message}</div>
-                <div className="mt-1 text-xs">{issue.detail}</div>
-              </div>
-            ))}
-          </div>
-        ) : null}
-
-        {activity.paymentIntents.length > 0 ? (
-          <>
-            <div className="overflow-x-auto rounded-md border border-border/70">
-              <table className="w-full min-w-[1040px] text-sm" aria-label="Payment intent and cash evidence workflows">
-                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Payment intent</th>
-                    <th className="px-3 py-2 text-left">Status</th>
-                    <th className="px-3 py-2 text-left">Expected cash</th>
-                    <th className="px-3 py-2 text-left">Approvals</th>
-                    <th className="px-3 py-2 text-left">Cash evidence</th>
-                    <th className="px-3 py-2 text-left">Reconciliation</th>
-                    <th className="px-3 py-2 text-left">Audit</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activity.paymentIntents.map((intent) => (
-                    <tr key={intent.id} className="border-t border-border/60 bg-background/30 align-top">
-                      <td className="px-3 py-2">
-                        <div className="break-all font-mono text-xs text-foreground">{intent.title}</div>
-                        <div className="mt-1 break-all text-[11px] text-muted-foreground">{intent.subtitle}</div>
-                        <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestedLabel}</div>
-                        {intent.workbenchRouteLabel !== "No workbench route" ? (
-                          <a
-                            className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                            href={intent.workbenchRouteLabel}
-                            target="_blank"
-                            rel="noreferrer"
-                            aria-label={`Open payment intent workbench route for ${intent.title}`}
-                          >
-                            {intent.workbenchRouteLabel}
-                          </a>
-                        ) : null}
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant={intent.statusTone} dot>{intent.statusLabel}</Badge>
-                        <div className="mt-1 text-xs text-muted-foreground">{intent.readinessReasonLabel}</div>
-                        <div className="mt-1 text-[11px] text-muted-foreground">{intent.executionDeferredLabel}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs">
-                        <div className="font-mono">{intent.expectedCashLabel}</div>
-                        <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestMetadataLabel}</div>
-                        <div className="mt-1 text-[11px] text-muted-foreground">{intent.sourceEvidenceLabel}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs">{intent.approvalLabel}</td>
-                      <td className="px-3 py-2 text-xs">
-                        <div>{intent.bankEvidenceLabel}</div>
-                        {intent.evidenceRouteLabel !== "No evidence route" ? (
-                          <a
-                            className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                            href={intent.evidenceRouteLabel}
-                            target="_blank"
-                            rel="noreferrer"
-                            aria-label={`Open payment intent evidence packet for ${intent.title}`}
-                          >
-                            {intent.evidenceRouteLabel}
-                          </a>
-                        ) : null}
-                      </td>
-                      <td className="px-3 py-2 text-xs">{intent.reconciliationLabel}</td>
-                      <td className="px-3 py-2 text-xs">{intent.auditLabel}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <section className="space-y-3" aria-label="Payment intent cash evidence drilldowns">
-              {activity.paymentIntents.map((intent) => (
-                <section
-                  key={`${intent.id}-cash-evidence-drilldown`}
-                  className="rounded-md border border-border/70 bg-background/30 px-3 py-3"
-                  aria-label={`Cash evidence drilldown for ${intent.title}`}
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <div className="break-all font-mono text-xs text-foreground">{intent.title}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{intent.expectedCashLabel}</div>
-                      <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestMetadataLabel}</div>
-                      <div className="mt-1 text-[11px] text-muted-foreground">{intent.sourceEvidenceLabel}</div>
-                    </div>
-                    <Badge variant={intent.statusTone} dot>{intent.statusLabel}</Badge>
-                  </div>
-                  <div className="mt-3 grid gap-3 lg:grid-cols-4">
-                    <div>
-                      <div className="text-[11px] font-semibold uppercase text-muted-foreground">Approval chain</div>
-                      {intent.approvalSteps.length > 0 ? (
-                        <ol className="mt-2 space-y-2">
-                          {intent.approvalSteps.map((step) => (
-                            <li key={step.id} className="text-xs">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="font-semibold text-foreground">{step.sequenceLabel}</span>
-                                <Badge variant="outline">{step.statusLabel}</Badge>
-                              </div>
-                              <div className="mt-1 text-muted-foreground">{step.roleLabel} / {step.actorLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{step.decidedLabel}</div>
-                              {step.evidenceRouteLabel !== "No approval evidence route" ? (
-                                <a
-                                  className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                                  href={step.evidenceRouteLabel}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  aria-label={`Open approval evidence for ${intent.title} ${step.sequenceLabel}`}
-                                >
-                                  {step.evidenceRouteLabel}
-                                </a>
-                              ) : null}
-                            </li>
-                          ))}
-                        </ol>
-                      ) : (
-                        <div className="mt-2 text-xs text-muted-foreground">No approval chain</div>
-                      )}
-                    </div>
-
-                    <div>
-                      <div className="text-[11px] font-semibold uppercase text-muted-foreground">Bank evidence</div>
-                      {intent.bankEvidence.length > 0 ? (
-                        <div className="mt-2 space-y-2">
-                          {intent.bankEvidence.map((item) => (
-                            <div key={item.id} className="text-xs">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="font-semibold text-foreground">{item.title}</span>
-                                <Badge variant="outline">{item.statusLabel}</Badge>
-                              </div>
-                              <div className="mt-1 text-muted-foreground">{item.summaryLabel}</div>
-                              <div className="mt-1 font-mono text-[11px] text-muted-foreground">{item.amountLabel} / {item.effectiveDateLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{item.referenceLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{item.recordedLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{item.recorderLabel}</div>
-                              {item.evidenceRouteLabel !== "No bank evidence route" ? (
-                                <a
-                                  className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                                  href={item.evidenceRouteLabel}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  aria-label={`Open bank evidence for ${intent.title} ${item.title}`}
-                                >
-                                  {item.evidenceRouteLabel}
-                                </a>
-                              ) : null}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="mt-2 text-xs text-muted-foreground">No bank evidence</div>
-                      )}
-                    </div>
-
-                    <div>
-                      <div className="text-[11px] font-semibold uppercase text-muted-foreground">Reconciliation</div>
-                      {intent.reconciliationLinks.length > 0 ? (
-                        <div className="mt-2 space-y-2">
-                          {intent.reconciliationLinks.map((link) => (
-                            <div key={link.id} className="text-xs">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="break-all font-mono text-[11px] text-foreground">{link.id}</span>
-                                <Badge variant="outline">{link.statusLabel}</Badge>
-                              </div>
-                              <div className="mt-1 text-muted-foreground">{link.summaryLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{link.caseLabel}</div>
-                              {link.routeLabel !== "No reconciliation evidence route" ? (
-                                <a
-                                  className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                                  href={link.routeLabel}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  aria-label={`Open reconciliation evidence for ${intent.title} ${link.id}`}
-                                >
-                                  {link.routeLabel}
-                                </a>
-                              ) : null}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="mt-2 text-xs text-muted-foreground">No reconciliation link</div>
-                      )}
-                    </div>
-
-                    <div>
-                      <div className="text-[11px] font-semibold uppercase text-muted-foreground">Audit trail</div>
-                      {intent.auditEvents.length > 0 ? (
-                        <div className="mt-2 space-y-2">
-                          {intent.auditEvents.map((event) => (
-                            <div key={event.id} className="text-xs">
-                              <div className="font-semibold text-foreground">{event.actionLabel}</div>
-                              <div className="mt-1 text-muted-foreground">{event.summaryLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{event.actorLabel} / {event.recordedLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{event.evidenceLabel}</div>
-                              {event.evidenceRouteLabels.map((route, index) => (
-                                <a
-                                  key={`${event.id}-${route}`}
-                                  className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                                  href={route}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  aria-label={`Open audit evidence ${index + 1} for ${intent.title} ${event.actionLabel}`}
-                                >
-                                  {route}
-                                </a>
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="mt-2 text-xs text-muted-foreground">No audit trail</div>
-                      )}
-                    </div>
-                  </div>
-                </section>
-              ))}
-            </section>
-          </>
-        ) : null}
-
-        {activity.fundEventLedgerRecords.length > 0 ? (
-          <div className="overflow-x-auto rounded-md border border-border/70">
-            <table className="w-full min-w-[980px] text-sm" aria-label="Private-capital fund event ledger records">
-              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Fund event</th>
-                  <th className="px-3 py-2 text-left">Approval</th>
-                  <th className="px-3 py-2 text-left">Effective</th>
-                  <th className="px-3 py-2 text-left">Net</th>
-                  <th className="px-3 py-2 text-left">Subledger</th>
-                  <th className="px-3 py-2 text-left">GL impact</th>
-                  <th className="px-3 py-2 text-left">Report output</th>
-                  <th className="px-3 py-2 text-left">Evidence</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.fundEventLedgerRecords.map((record) => (
-                  <tr key={record.id} className="border-t border-border/60 bg-background/30 align-top">
-                    <td className="px-3 py-2">
-                      <div className="font-semibold text-foreground">{record.title}</div>
-                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.subtitle}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{record.memoLabel}</div>
-                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.referenceLabel}</div>
-                      <div className="mt-2 rounded border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground">
-                        <div className="flex flex-wrap items-center gap-1">
-                          <Badge variant={record.paymentEvidenceTone} dot>{record.paymentEvidenceLabel}</Badge>
-                        </div>
-                        <div className="mt-1">{record.paymentEvidenceSummaryLabel}</div>
-                        <div className="mt-1">{record.paymentEvidenceRequiredLabel}</div>
-                      </div>
-                      <a
-                        className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                        href={record.activityRouteLabel}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`Open private-capital activity record for ${record.title}`}
-                      >
-                        {record.activityRouteLabel}
-                      </a>
-                      <a
-                        className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                        href={record.commandCenterRouteLabel}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`Open fund event command center for ${record.title}`}
-                      >
-                        {record.commandCenterRouteLabel}
-                      </a>
-                    </td>
-                    <td className="px-3 py-2">
-                      <Badge variant={record.statusTone} dot>{record.statusLabel}</Badge>
-                      <div className="mt-2">
-                        <Badge variant={record.readinessTone} dot>{record.readinessLabel}</Badge>
-                      </div>
-                      <div className="mt-1 text-xs text-muted-foreground">{record.readinessReasonLabel}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{record.issueLabel}</div>
-                      {record.nextActionRouteLabel !== "No next-action route" ? (
-                        <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                          href={record.nextActionRouteLabel}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`Open next action for ${record.title}`}
-                        >
-                          {record.nextActionLabel}
-                        </a>
-                      ) : (
-                        <div className="mt-1 text-[11px] text-muted-foreground">{record.nextActionLabel}</div>
-                      )}
-                      {record.approvalRouteLabel !== "No approval route" ? (
-                        <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                          href={record.approvalRouteLabel}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`Open approval route for ${record.title}`}
-                        >
-                          {record.approvalRouteLabel}
-                        </a>
-                      ) : null}
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs">{record.effectiveDateLabel}</td>
-                    <td className="px-3 py-2 font-mono text-xs">
-                      <div>{record.netActivityLabel}</div>
-                      <div className="mt-1 text-[11px] text-muted-foreground">{record.grossActivityLabel} gross</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">
-                      <div>{record.subledgerLabel}</div>
-                      <div className="mt-1 text-muted-foreground">{record.capitalAccountRollForwardLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">{record.ledgerImpactLabel}</td>
-                    <td className="px-3 py-2 text-xs">
-                      <div>{record.reportOutputLabel}</div>
-                      <div className="mt-1 text-muted-foreground">{record.reportOutputDetailLabel}</div>
-                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.reportOutputRouteLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">
-                      <div>{record.evidenceLabel}</div>
-                      {record.evidenceRouteLabel !== "No evidence route" ? (
-                        <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                          href={record.evidenceRouteLabel}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`Open evidence packet for ${record.title}`}
-                        >
-                          {record.evidenceRouteLabel}
-                        </a>
-                      ) : null}
-                      {record.evidenceCategories.length > 0 ? (
-                        <div className="mt-2 space-y-1" aria-label={`Evidence readiness categories for ${record.title}`}>
-                          <div className="text-[11px] font-semibold uppercase text-muted-foreground">
-                            {record.evidenceCategorySummaryLabel}
-                          </div>
-                          {record.evidenceCategories.map((category) => (
-                            <div key={category.id} className="rounded border border-border/60 bg-secondary/20 px-2 py-1">
-                              <div className="flex flex-wrap items-center gap-1">
-                                <Badge variant={category.tone} dot>{category.label}</Badge>
-                                <span className="text-[11px] text-muted-foreground">{category.statusLabel}</span>
-                                <span className="font-mono text-[11px] text-muted-foreground">{category.evidenceLabel}</span>
-                              </div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{category.summaryLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{category.requiredEvidenceLabel}</div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="mt-2 text-[11px] text-muted-foreground">{record.evidenceCategorySummaryLabel}</div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
-
-        {activity.capitalAccounts.length > 0 ? (
-          <div className="overflow-x-auto rounded-md border border-border/70">
-            <table className="w-full min-w-[760px] text-sm" aria-label="Private-capital capital account activity">
-              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Capital account</th>
-                  <th className="px-3 py-2 text-left">Net</th>
-                  <th className="px-3 py-2 text-left">Calls</th>
-                  <th className="px-3 py-2 text-left">Distributions</th>
-                  <th className="px-3 py-2 text-left">Other</th>
-                  <th className="px-3 py-2 text-left">Last event</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.capitalAccounts.map((account) => (
-                  <tr key={account.id} className="border-t border-border/60 bg-background/30 align-top">
-                    <td className="px-3 py-2">
-                      <div className="break-all font-mono text-xs text-foreground">{account.title}</div>
-                      <div className="mt-1 break-all text-[11px] text-muted-foreground">{account.subtitle}</div>
-                    </td>
-                    <td className="px-3 py-2 font-mono">{account.netActivityLabel}</td>
-                    <td className="px-3 py-2 font-mono">{account.contributionLabel}</td>
-                    <td className="px-3 py-2 font-mono">{account.distributionLabel}</td>
-                    <td className="px-3 py-2 text-xs">
-                      <div>Subscriptions {account.subscriptionLabel}</div>
-                      <div>Redemptions {account.redemptionLabel}</div>
-                      <div>Fees {account.managementFeeLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">
-                      <div>{account.eventCountLabel}</div>
-                      <div className="mt-1 text-muted-foreground">{account.lastEventLabel}</div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
-
-        {activity.capitalAccountSubledgers.length > 0 ? (
-          <div className="overflow-x-auto rounded-md border border-border/70">
-            <table className="w-full min-w-[980px] text-sm" aria-label="Private-capital capital account subledgers">
-              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Capital account</th>
-                  <th className="px-3 py-2 text-left">Status</th>
-                  <th className="px-3 py-2 text-left">Roll-forward</th>
-                  <th className="px-3 py-2 text-left">Activity</th>
-                  <th className="px-3 py-2 text-left">Counts</th>
-                  <th className="px-3 py-2 text-left">Evidence</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.capitalAccountSubledgers.map((subledger) => (
-                  <tr key={subledger.id} className="border-t border-border/60 bg-background/30 align-top">
-                    <td className="px-3 py-2">
-                      <div className="break-all font-mono text-xs text-foreground">{subledger.title}</div>
-                      <div className="mt-1 break-all text-[11px] text-muted-foreground">{subledger.subtitle}</div>
-                      {subledger.activityRouteLabel !== "No subledger route" ? (
-                        <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                          href={subledger.activityRouteLabel}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`Open capital-account subledger for ${subledger.title}`}
-                        >
-                          {subledger.activityRouteLabel}
-                        </a>
-                      ) : null}
-                    </td>
-                    <td className="px-3 py-2">
-                      <Badge variant={subledger.statusTone} dot>{subledger.statusLabel}</Badge>
-                      <div className="mt-1 text-xs text-muted-foreground">{subledger.issueLabel}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{subledger.dateRangeLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs">
-                      <div>{subledger.openingLabel} opening</div>
-                      <div className="mt-1">{subledger.netActivityLabel} net</div>
-                      <div className="mt-1">{subledger.endingLabel} ending</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">
-                      <div>Calls {subledger.contributionLabel}</div>
-                      <div>Distributions {subledger.distributionLabel}</div>
-                      <div className="mt-1 text-muted-foreground">{subledger.otherActivityLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">
-                      <div>{subledger.eventCountLabel}</div>
-                      <div className="mt-1">{subledger.approvalQueueLabel}</div>
-                      <div className="mt-1">{subledger.postedEventLabel}</div>
-                      <div className="mt-1">{subledger.publishedReportLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">
-                      <div>{subledger.evidenceLabel}</div>
-                      <div className="mt-2 rounded border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground">
-                        <div className="flex flex-wrap items-center gap-1">
-                          <Badge variant={subledger.paymentEvidenceTone} dot>{subledger.paymentEvidenceLabel}</Badge>
-                        </div>
-                        <div className="mt-1">{subledger.paymentEvidenceSummaryLabel}</div>
-                        <div className="mt-1">{subledger.paymentEvidenceRequiredLabel}</div>
-                      </div>
-                      {subledger.evidenceCategories.length > 0 ? (
-                        <div className="mt-2 space-y-1" aria-label={`Subledger evidence readiness categories for ${subledger.title}`}>
-                          <div className="text-[11px] font-semibold uppercase text-muted-foreground">
-                            {subledger.evidenceCategorySummaryLabel}
-                          </div>
-                          {subledger.evidenceCategories.map((category) => (
-                            <div key={category.id} className="rounded border border-border/60 bg-secondary/20 px-2 py-1">
-                              <div className="flex flex-wrap items-center gap-1">
-                                <Badge variant={category.tone} dot>{category.label}</Badge>
-                                <span className="text-[11px] text-muted-foreground">{category.statusLabel}</span>
-                                <span className="font-mono text-[11px] text-muted-foreground">{category.evidenceLabel}</span>
-                              </div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{category.summaryLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{category.requiredEvidenceLabel}</div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="mt-2 text-[11px] text-muted-foreground">{subledger.evidenceCategorySummaryLabel}</div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
-
-        {activity.capitalAccountSubledgerEntries.length > 0 ? (
-          <div className="overflow-x-auto rounded-md border border-border/70">
-            <table className="w-full min-w-[820px] text-sm" aria-label="Private-capital capital account subledger">
-              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Event</th>
-                  <th className="px-3 py-2 text-left">Status</th>
-                  <th className="px-3 py-2 text-left">Effective</th>
-                  <th className="px-3 py-2 text-left">Net</th>
-                  <th className="px-3 py-2 text-left">Running</th>
-                  <th className="px-3 py-2 text-left">Gross</th>
-                  <th className="px-3 py-2 text-left">Evidence</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.capitalAccountSubledgerEntries.map((entry) => (
-                  <tr key={entry.id} className="border-t border-border/60 bg-background/30 align-top">
-                    <td className="px-3 py-2">
-                      <div className="font-semibold text-foreground">{entry.title}</div>
-                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{entry.subtitle}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{entry.memoLabel}</div>
-                    </td>
-                    <td className="px-3 py-2">
-                      <Badge variant={entry.statusTone} dot>{entry.statusLabel}</Badge>
-                      <div className="mt-1 text-xs text-muted-foreground">{entry.issueLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs">{entry.effectiveDateLabel}</td>
-                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{entry.netActivityLabel}</td>
-                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{entry.runningBalanceLabel}</td>
-                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{entry.grossAmountLabel}</td>
-                    <td className="px-3 py-2 text-xs">{entry.evidenceLabel}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
-
-        {activity.ledgerImpacts.length > 0 ? (
-          <div className="overflow-x-auto rounded-md border border-border/70">
-            <table className="w-full min-w-[820px] text-sm" aria-label="Private-capital ledger impacts">
-              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Impact</th>
-                  <th className="px-3 py-2 text-left">Readiness</th>
-                  <th className="px-3 py-2 text-left">Effective</th>
-                  <th className="px-3 py-2 text-left">Debits</th>
-                  <th className="px-3 py-2 text-left">Credits</th>
-                  <th className="px-3 py-2 text-left">Imbalance</th>
-                  <th className="px-3 py-2 text-left">Evidence</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.ledgerImpacts.map((impact) => (
-                  <tr key={impact.id} className="border-t border-border/60 bg-background/30 align-top">
-                    <td className="px-3 py-2">
-                      <div className="font-semibold text-foreground">{impact.title}</div>
-                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{impact.subtitle}</div>
-                    </td>
-                    <td className="px-3 py-2">
-                      <Badge variant={impact.readinessTone} dot>{impact.readinessLabel}</Badge>
-                      <div className="mt-1 text-xs text-muted-foreground">{impact.issueLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs">{impact.effectiveDateLabel}</td>
-                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{impact.debitLabel}</td>
-                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{impact.creditLabel}</td>
-                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{impact.imbalanceLabel}</td>
-                    <td className="px-3 py-2 text-xs">
-                      <div>{impact.evidenceLabel}</div>
-                      <div className="mt-1 text-muted-foreground">{impact.lineLabel}</div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
-
-        {activity.reportOutputs.length > 0 ? (
-          <div className="overflow-x-auto rounded-md border border-border/70">
-            <table className="w-full min-w-[960px] text-sm" aria-label="Private-capital report outputs">
-              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Output</th>
-                  <th className="px-3 py-2 text-left">Readiness</th>
-                  <th className="px-3 py-2 text-left">Effective</th>
-                  <th className="px-3 py-2 text-left">Amount</th>
-                  <th className="px-3 py-2 text-left">Evidence</th>
-                  <th className="px-3 py-2 text-left">Workflow</th>
-                  <th className="px-3 py-2 text-left">Route</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.reportOutputs.map((output) => (
-                  <tr key={output.id} className="border-t border-border/60 bg-background/30 align-top">
-                    <td className="px-3 py-2">
-                      <div className="font-semibold text-foreground">{output.title}</div>
-                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{output.subtitle}</div>
-                    </td>
-                    <td className="px-3 py-2">
-                      <Badge variant={output.readinessTone} dot>{output.readinessLabel}</Badge>
-                      <div className="mt-1 text-xs text-muted-foreground">{output.issueLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs">{output.effectiveDateLabel}</td>
-                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{output.amountLabel}</td>
-                    <td className="px-3 py-2 text-xs">{output.evidenceLabel}</td>
-                    <td className="px-3 py-2 text-xs">
-                      <div className="break-all font-mono text-[11px] text-foreground">{output.workflowLabel}</div>
-                      <div className="mt-1 text-muted-foreground">{output.publicationLabel}</div>
-                      <div className="mt-1 text-muted-foreground">{output.provenanceLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 break-all font-mono text-[11px] text-muted-foreground">{output.routeLabel}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
-
-        {activity.fundEvents.length > 0 ? (
-          <div className="space-y-2">
-            {activity.fundEvents.map((event) => (
-              <div key={event.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="font-semibold text-foreground">{event.title}</div>
-                    <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{event.subtitle}</div>
-                  </div>
-                  <Badge variant={event.statusTone} dot>{event.statusLabel}</Badge>
-                </div>
-                <dl className="mt-2 grid gap-2 text-xs sm:grid-cols-2">
-                  <div><dt className="text-muted-foreground">Effective</dt><dd className="font-mono">{event.effectiveDateLabel}</dd></div>
-                  <div><dt className="text-muted-foreground">Net</dt><dd className="font-mono tabular-nums">{event.amountLabel}</dd></div>
-                  <div><dt className="text-muted-foreground">Gross</dt><dd className="font-mono tabular-nums">{event.grossAmountLabel}</dd></div>
-                  <div><dt className="text-muted-foreground">Evidence</dt><dd>{event.evidenceLabel}</dd></div>
-                  <div><dt className="text-muted-foreground">Payment</dt><dd className="break-all">{event.paymentLabel}</dd></div>
-                  <div><dt className="text-muted-foreground">Validation</dt><dd>{event.validationLabel}</dd></div>
-                </dl>
-                <div className="mt-2 text-xs text-muted-foreground">{event.memoLabel}</div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p role="status" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm text-muted-foreground">
-            {activity.emptyText}
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function ManualJournalLineBadges({ badges }: { badges: ReturnType<ManualJournalEntryWorkbenchViewModel["getLineBadges"]> }) {
-  return (
-    <div className="mt-2 flex flex-wrap gap-1" aria-label="Line validation badges">
-      {badges.map((badge) => (
-        <span
-          key={badge.id}
-          title={badge.message}
-          className={cn(
-            "inline-flex max-w-full items-center rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-tight",
-            badge.tone === "danger"
-              ? "border-danger/30 bg-danger/10 text-danger"
-              : badge.tone === "warning"
-                ? "border-warning/30 bg-warning/10 text-warning"
-                : badge.tone === "success"
-                  ? "border-success/30 bg-success/10 text-success"
-                  : "border-border/70 bg-secondary/40 text-muted-foreground"
-          )}
-        >
-          {badge.label}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJournalEntryWorkbenchViewModel; search: string }) {
-  const [recurringEntitySelection, setRecurringEntitySelection] = useState<{ scopeKey: string; entityId: string } | null>(null);
-  const scopeQuery = new URLSearchParams(search);
-  const recurringFund = scopeQuery.get("fundProfileId") || view.draft.fundProfileId;
-  const recurringBook = scopeQuery.get("ledgerBookId") || view.draft.ledgerBookId;
-  const recurringScopeKey = JSON.stringify([recurringFund, recurringBook, search]);
-  const recurringEntity = recurringEntitySelection?.scopeKey === recurringScopeKey
-    ? recurringEntitySelection.entityId : scopeQuery.get("entityId") || view.draft.entityId || "";
-  const recurringQueue = <div className="space-y-2">
-    <label className="block text-xs font-semibold">Recurring journal entity scope
-      <Input value={recurringEntity} placeholder="Select an entity ID" className="mt-1"
-        onChange={(event) => setRecurringEntitySelection({ scopeKey: recurringScopeKey, entityId: event.target.value })} />
-    </label>
-    <RecurringJournalQueue
-      scope={recurringFund && recurringBook && recurringEntity.trim()
-        ? { fundProfileId: recurringFund, ledgerBookId: recurringBook, entityId: recurringEntity.trim() }
-        : null}
-      availableDraftIds={view.drafts.map((draft) => draft.journalEntryId)}
-      onSelectDraft={view.selectDraft}
-    />
-  </div>;
-  // While an amount input holds unparseable text, its raw string is kept here (keyed
-  // `${lineId}:${side}`) and mirrored back as the controlled value. Mirroring what the DOM
-  // reports means React never rewrites the node, so the user's in-progress text survives while
-  // the inline error shows - and the unparseable text is never coerced into the draft as zero.
-  // A key's presence is also the invalid marker; a successful parse clears the line's keys.
-  const [amountDrafts, setAmountDrafts] = useState<Readonly<Record<string, string>>>({});
-  // Pending raw text belongs to one revision of one draft. Switching drafts, refreshing, or
-  // applying a server result replaces the rows, so stale mirrors must not survive to mask the
-  // committed amount of a freshly mounted line. Local line edits leave these fields untouched.
-  const draftIdentity = `${view.draft?.journalEntryId ?? ""}:${view.draft?.version ?? 0}:${view.draft?.updatedAtUtc ?? ""}`;
-  useEffect(() => {
-    setAmountDrafts({});
-  }, [draftIdentity]);
-  const hasInvalidAmountEdits = Object.keys(amountDrafts).length > 0;
-  const invalidAmountReason = "Correct the flagged amount entries before continuing.";
-  const handleAmountChange = (lineId: string, side: "Debit" | "Credit", input: HTMLInputElement) => {
-    const amount = parseJournalAmount(input.value, input.validity.badInput);
-    setAmountDrafts((current) => {
-      if (amount === null) {
-        return { ...current, [`${lineId}:${side}`]: input.value };
-      }
-      const debitKey = `${lineId}:Debit`;
-      const creditKey = `${lineId}:Credit`;
-      if (!(debitKey in current) && !(creditKey in current)) {
-        return current;
-      }
-      const next = { ...current };
-      delete next[debitKey];
-      delete next[creditKey];
-      return next;
-    });
-    if (amount === null) {
-      return;
-    }
-    view.updateLine(lineId, { side, amount });
-  };
-  const handleAmountBlur = (lineId: string, side: "Debit" | "Credit", input: HTMLInputElement) => {
-    // React swallows the badInput -> genuinely-empty transition (the node reports "" in both
-    // states, so no change event fires when the user clears bad text); re-evaluate on blur so a
-    // cleared field commits as zero and drops its error instead of staying flagged forever. The
-    // guard keeps ordinary blurs from re-running updateLine and voiding a fresh validation pass.
-    if (`${lineId}:${side}` in amountDrafts) {
-      handleAmountChange(lineId, side, input);
-    }
-  };
-  if (!view.available) {
-    return (
-      <section className="workspace-section-band" aria-labelledby="manual-je-heading">
-        <div className="workspace-section-subheader">
-          <div className="min-w-0">
-            <p className="eyebrow-label">Manual journal entries</p>
-            <h3 id="manual-je-heading" className="workspace-section-title">{view.title}</h3>
-            <p className="workspace-section-summary">{view.description}</p>
-          </div>
-        </div>
-        <StatusBanner
-          role={view.errorText ? "alert" : "status"}
-          tone={view.errorText ? "danger" : "info"}
-          title={view.errorText ? "Journal workbench unavailable" : "Loading journal workbench"}
-          detail={view.errorText ?? "Loading the chart of accounts, governed draft state, validation rules, and retained evidence before editing is enabled."}
-        />
-        <div>
-          <Button size="sm" variant="outline" disabled={view.loading} busy={view.loading} onClick={() => void view.refresh()}>
-            <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
-            {view.loading ? "Loading" : "Retry"}
-          </Button>
-        </div>
-        {recurringQueue}
-      </section>
-    );
-  }
-
-  const nextLineSide = view.draft.totalDebits <= view.draft.totalCredits ? "Debit" : "Credit";
-  const evidenceAttachments = view.draft.evidenceAttachments ?? [];
-  const attachmentUris = new Set(evidenceAttachments.map((attachment) => attachment.uri));
-  const retainedEvidenceLinks = Array.from(new Set(view.draft.evidenceLinks ?? []))
-    .filter((link) => link.trim().length > 0 && !attachmentUris.has(link));
-  const evidenceCount = new Set([
-    ...evidenceAttachments.map((attachment) => attachment.uri),
-    ...retainedEvidenceLinks
-  ]).size;
-  return (
-    <section className="workspace-section-band" aria-labelledby="manual-je-heading">
-      <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Manual journal entries</p>
-          <h3 id="manual-je-heading" className="workspace-section-title">{view.title}</h3>
-          <p className="workspace-section-summary">{view.description}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={view.draft.status === "Submitted" ? "success" : view.draft.status === "NeedsFix" ? "warning" : "outline"} dot>
-            {view.statusLabel}
-          </Badge>
-          <Button size="sm" variant="outline" disabled={view.loading} onClick={() => void view.refresh()}>
-            <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
-            Refresh
-          </Button>
-        </div>
-      </div>
-
-      {view.errorText ? (
-        <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-          {view.errorText}
-        </div>
-      ) : null}
-
-      {view.draft.assetAccountingDraft ? <p role="status" className="rounded border border-warning/30 bg-warning/10 p-3 text-sm">{view.assetWorkflow?.capability ? "This asset accounting draft is immutable. Available approval and posting decisions use the authenticated governed asset workflow below. Corrections remain unavailable here." : "This is an immutable asset accounting review draft. Validate and submit it for review here. Approval, posting and corrections require retained approval evidence through the governed asset workflow and remain unavailable until supported workflow capabilities are loaded."}</p> : null}
-      <ManualJournalHealthBar view={view} hasInvalidAmountEdits={hasInvalidAmountEdits} invalidAmountReason={invalidAmountReason} />
-
-      <div className="grid gap-4 xl:grid-cols-[minmax(14rem,0.28fr)_minmax(0,1fr)]">
-        <div className="space-y-4">
-          <section className="accounting-draft-rail" data-appearance="light" aria-label="Manual journal draft queue">
-            <div className="accounting-reference-heading">
-              <div>
-                <p className="accounting-reference-kicker">Draft queue</p>
-                <p className="accounting-reference-subtitle">Saved drafts and approval records</p>
-              </div>
-            </div>
-            <div className="space-y-2">
-              {view.drafts.length > 0 ? view.drafts.map((draft) => (
-                <button
-                  key={draft.journalEntryId}
-                  type="button"
-                  className={cn(
-                    "accounting-draft-button",
-                    draft.journalEntryId === view.draft.journalEntryId && "is-active"
-                  )}
-                  onClick={() => view.selectDraft(draft.journalEntryId)}
-                >
-                  <span className="block font-semibold text-foreground">{draft.memo || "Untitled journal entry"}</span>
-                  <span className="mt-1 block text-[11px] text-muted-foreground">{draft.entryType}</span>
-                  <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{draft.status} / v{draft.version}</span>
-                  <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{draft.accountingDate} / {draft.currency}</span>
-                </button>
-              )) : (
-                <p role="status" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm text-muted-foreground">
-                  No saved drafts yet. Save the current entry to add it to the queue.
-                </p>
-              )}
-            </div>
-          </section>
-
-          {recurringQueue}
-          <ManualJournalPrivateCapitalActivityPanel activity={view.privateCapitalActivity} />
-        </div>
-
-        <div className="space-y-4">
-          <section className="accounting-reference-panel accounting-journal-panel" data-appearance="light" aria-label="Manual journal entry - balanced double-entry">
-            <fieldset disabled={Boolean(view.draft.assetAccountingDraft)} className="min-w-0" aria-label="Journal source fields">
-            <div className="accounting-reference-heading">
-              <div className="min-w-0">
-                <p className="accounting-reference-kicker">Manual journal entry - balanced double-entry</p>
-                <p className="accounting-reference-subtitle">{view.draft.entryType} / {view.treasuryContextLabel}</p>
-              </div>
-              <div className={cn("accounting-reference-balance-badge", view.balanceStatusTone === "success" ? "is-balanced" : "is-out")}>
-                <span aria-hidden="true" />
-                {view.balanceStatusLabel}
-              </div>
-            </div>
-
-            <div className="accounting-journal-header-grid">
-              <label>
-                <span>Date</span>
-                <input
-                  id="manual-je-header-accountingDate"
-                  type="date"
-                  value={view.draft.accountingDate}
-                  onChange={(event) => view.updateHeader("accountingDate", event.target.value)}
-                />
-              </label>
-              <label>
-                <span>Prepared by</span>
-                <input
-                  id="manual-je-header-preparedBy"
-                  readOnly
-                  value={view.draft.preparedBy || "Current operator"}
-                />
-              </label>
-              <label className="md:col-span-2 xl:col-span-1">
-                <span>Memo</span>
-                <input
-                  id="manual-je-header-memo"
-                  value={view.draft.memo}
-                  onChange={(event) => view.updateHeader("memo", event.target.value)}
-                />
-              </label>
-              <label>
-                <span>Fund profile</span>
-                <input id="manual-je-header-fundProfileId" className="font-mono" value={view.draft.fundProfileId} onChange={(event) => view.updateHeader("fundProfileId", event.target.value)} />
-              </label>
-              <label>
-                <span>Period</span>
-                <input id="manual-je-header-periodId" className="font-mono" value={view.draft.periodId ?? ""} onChange={(event) => view.updateHeader("periodId", event.target.value)} />
-              </label>
-              <label>
-                <span>Currency</span>
-                <input id="manual-je-header-currency" className="font-mono" value={view.draft.currency} onChange={(event) => view.updateHeader("currency", event.target.value.toUpperCase())} />
-              </label>
-            </div>
-
-            <TechnicalDetails
-              label="Journal system details"
-              className="mt-3"
-              description="Identifiers and ledger scope used for audit and support follow-up."
-            >
-              <dl className="grid gap-3 text-xs sm:grid-cols-2 xl:grid-cols-3">
-                <div><dt className="text-muted-foreground">Journal reference</dt><dd className="mt-1 break-all font-mono text-foreground">{view.draft.journalEntryId}</dd></div>
-                <div><dt className="text-muted-foreground">Ledger book</dt><dd className="mt-1 break-all font-mono text-foreground">{view.draft.ledgerBookId ?? "Default ledger book"}</dd></div>
-                <div><dt className="text-muted-foreground">Record version</dt><dd className="mt-1 font-mono text-foreground">{view.draft.version}</dd></div>
-              </dl>
-            </TechnicalDetails>
-
-            <p className="accounting-journal-keyboard-hint" id="manual-je-keyboard-hint">
-              Keyboard: Arrow Up or Down and Enter move within a column; Ctrl+Enter inserts a line beneath the current row.
-            </p>
-
-            </fieldset>
-            <div className="accounting-journal-table-wrap" tabIndex={view.draft.assetAccountingDraft ? 0 : undefined} role="region" aria-label="Journal source lines">
-              <table className="accounting-journal-table">
-                <thead>
-                  <tr>
-                    <th>Account</th>
-                    <th>Debit</th>
-                    <th>Credit</th>
-                    <th>Support</th>
-                    <th><span className="sr-only">Line actions</span></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {view.draft.lines.map((line) => {
-                    const badges = view.getLineBadges(line.lineId);
-                    const isDebit = line.side === "Debit";
-                    return (
-                      <tr
-                        key={line.lineId}
-                        id={`manual-je-line-${line.lineId}`}
-                        className={cn(line.lineId === view.selectedLineId && "is-selected")}
-                        tabIndex={-1}
-                      >
-                        <td>
-                          <select disabled={Boolean(view.draft.assetAccountingDraft)}
-                            id={`manual-je-account-${line.lineId}`}
-                            value={line.accountPath}
-                            onChange={(event) => view.updateLine(line.lineId, { accountPath: event.target.value })}
-                            onFocus={() => view.selectLine(line.lineId)}
-                            onKeyDown={(event) => {
-                              if (event.ctrlKey && event.key === "Enter") {
-                                handleManualJournalCellKeyDown(event, view, line.lineId, "account", line.side);
-                              }
-                            }}
-                            aria-label={`GL account for line ${line.lineId}`}
-                            aria-describedby="manual-je-keyboard-hint"
-                          >
-                            <option value="">Select GL account</option>
-                            {view.accountOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                          </select>
-                          {badges.length > 0 ? <ManualJournalLineBadges badges={badges} /> : null}
-                        </td>
-                        <td>
-                          <input disabled={Boolean(view.draft.assetAccountingDraft)}
-                            id={`manual-je-debit-${line.lineId}`}
-                            aria-label={`Debit amount for line ${line.lineId}`}
-                            aria-describedby="manual-je-keyboard-hint"
-                            className="text-right font-mono"
-                            type="number"
-                            value={amountDrafts[`${line.lineId}:Debit`] ?? (isDebit ? line.amount : 0)}
-                            aria-invalid={`${line.lineId}:Debit` in amountDrafts || undefined}
-                            onChange={(event) => handleAmountChange(line.lineId, "Debit", event.target)}
-                            onBlur={(event) => handleAmountBlur(line.lineId, "Debit", event.target)}
-                            onFocus={() => view.selectLine(line.lineId)}
-                            onKeyDown={(event) => handleManualJournalCellKeyDown(event, view, line.lineId, "debit", "Debit")}
-                          />
-                          {`${line.lineId}:Debit` in amountDrafts ? (
-                            <p id={`manual-je-debit-error-${line.lineId}`} className="mt-1 text-right text-[11px] text-danger" role="alert">Enter a valid amount.</p>
-                          ) : null}
-                        </td>
-                        <td>
-                          <input disabled={Boolean(view.draft.assetAccountingDraft)}
-                            id={`manual-je-credit-${line.lineId}`}
-                            aria-label={`Credit amount for line ${line.lineId}`}
-                            aria-describedby={`${line.lineId}:Credit` in amountDrafts ? `manual-je-keyboard-hint manual-je-credit-error-${line.lineId}` : "manual-je-keyboard-hint"}
-                            className="text-right font-mono"
-                            type="number"
-                            value={amountDrafts[`${line.lineId}:Credit`] ?? (isDebit ? 0 : line.amount)}
-                            aria-invalid={`${line.lineId}:Credit` in amountDrafts || undefined}
-                            onChange={(event) => handleAmountChange(line.lineId, "Credit", event.target)}
-                            onBlur={(event) => handleAmountBlur(line.lineId, "Credit", event.target)}
-                            onFocus={() => view.selectLine(line.lineId)}
-                            onKeyDown={(event) => handleManualJournalCellKeyDown(event, view, line.lineId, "credit", "Credit")}
-                          />
-                          {`${line.lineId}:Credit` in amountDrafts ? (
-                            <p id={`manual-je-credit-error-${line.lineId}`} className="mt-1 text-right text-[11px] text-danger" role="alert">Enter a valid amount.</p>
-                          ) : null}
-                        </td>
-                        <td>
-                          <button
-                            type="button"
-                            className="accounting-journal-support-button"
-                            onClick={() => view.selectLine(line.lineId)}
-                          >
-                            <span className="block truncate font-semibold text-foreground">{line.securityDisplayName || (view.draft.assetAccountingDraft ? "Inspect line attribution" : "Choose security")}</span>
-                            <span className="block truncate font-mono text-[11px] text-muted-foreground">{line.securityId || "No Security Master reference"}</span>
-                          </button>
-                          <input disabled={Boolean(view.draft.assetAccountingDraft)}
-                            id={`manual-je-description-${line.lineId}`}
-                            className="mt-2"
-                            aria-label={`Description for line ${line.lineId}`}
-                            aria-describedby="manual-je-keyboard-hint"
-                            value={line.description ?? ""}
-                            onChange={(event) => view.updateLine(line.lineId, { description: event.target.value })}
-                            onFocus={() => view.selectLine(line.lineId)}
-                            onKeyDown={(event) => handleManualJournalCellKeyDown(event, view, line.lineId, "description", line.side)}
-                          />
-                        </td>
-                        <td>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              disabled={Boolean(view.draft.assetAccountingDraft)} aria-label={`Duplicate journal line ${line.lineId}`}
-                              onClick={() => {
-                                const duplicateId = view.duplicateLine(line.lineId);
-                                if (duplicateId) {
-                                  focusManualJournalCell(duplicateId, "account");
-                                }
-                              }}
-                            >
-                              <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              aria-label={`Remove journal line ${line.lineId}`}
-                              disabled={Boolean(view.draft.assetAccountingDraft) || view.draft.lines.length <= 2}
-                              disabledReason={view.draft.lines.length <= 2 ? "A balanced journal entry needs at least two lines." : null}
-                              onClick={() => view.removeLine(line.lineId)}
-                            >
-                              <X className="h-3.5 w-3.5" aria-hidden="true" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  <tr className="accounting-journal-total-row">
-                    <td>Totals</td>
-                    <td>{view.totalDebitsLabel}</td>
-                    <td>{view.totalCreditsLabel}</td>
-                    <td colSpan={2}>{view.imbalanceLabel}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div className="accounting-journal-footer">
-              <Button size="sm" variant="outline" disabled={Boolean(view.draft.assetAccountingDraft)} onClick={() => view.addLine(nextLineSide)}>
-                + Add line
-              </Button>
-              <div className={cn("accounting-reference-balance-badge", view.balanceStatusTone === "success" ? "is-balanced" : "is-out")}>
-                <span aria-hidden="true" />
-                {view.balanceStatusLabel}
-              </div>
-            </div>
-
-          </section>
-
-          <section className="rounded-md border border-border/70 bg-secondary/20 p-3" aria-labelledby="manual-je-balance-impact-heading">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div>
-                <h4 id="manual-je-balance-impact-heading" className="text-sm font-semibold text-foreground">Balance impact preview</h4>
-                <p className="text-xs text-muted-foreground">
-                  See how the draft will move each ledger account before saving, validating, or submitting approval.
-                </p>
-              </div>
-              <Badge variant={view.balanceImpactRows.length > 0 ? "success" : "warning"} dot>
-                {view.balanceImpactRows.length} account{view.balanceImpactRows.length === 1 ? "" : "s"}
-              </Badge>
-            </div>
-            <div className="mt-3 overflow-x-auto" tabIndex={view.draft.assetAccountingDraft ? 0 : undefined} role="region" aria-label="Journal balance impact">
-              {view.balanceImpactRows.length > 0 ? (
-                <table className="accounting-journal-table">
-                  <thead>
-                    <tr>
-                      <th>Ledger account</th>
-                      <th>Debit entry</th>
-                      <th>Credit entry</th>
-                      <th>Balance effect</th>
-                      <th>Agency cue</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {view.balanceImpactRows.map((row) => (
-                      <tr key={row.id}>
-                        <td>
-                          <div className="font-semibold text-foreground">{row.accountName}</div>
-                          <div className="font-mono text-[11px] text-muted-foreground">{row.accountPath} / {row.accountType}</div>
-                        </td>
-                        <td className="font-mono tabular-nums text-right">{row.debitLabel}</td>
-                        <td className="font-mono tabular-nums text-right">{row.creditLabel}</td>
-                        <td>
-                          <Badge variant={row.tone === "warning" ? "warning" : row.tone === "success" ? "success" : "outline"}>
-                            {row.netEffectLabel}
-                          </Badge>
-                        </td>
-                        <td className="text-xs text-muted-foreground">
-                          <span className="block">{row.balanceDirectionLabel}</span>
-                          <span className="mt-1 block font-mono">{row.lineCountLabel}</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <p role="status" className="rounded border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-                  Select at least one GL account and amount to preview account-level balance impact.
-                </p>
-              )}
-            </div>
-          </section>
-
-          <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground">Source evidence</h4>
-                  <p className="text-xs text-muted-foreground">Attach source support before approval submission.</p>
-                </div>
-                <Badge variant={evidenceCount > 0 ? "success" : "warning"} dot>
-                  {evidenceCount} linked
-                </Badge>
-              </div>
-              <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,0.22fr)_minmax(0,0.34fr)_minmax(0,0.18fr)_minmax(0,0.16fr)_auto]">
-                <label className="space-y-1 text-sm">
-                  <span className="text-xs font-semibold uppercase text-muted-foreground">Label</span>
-                  <input className="min-h-9 w-full rounded border border-border bg-background px-2" value={view.attachmentDraft.displayName} onChange={(event) => view.updateAttachmentDraft({ displayName: event.target.value })} />
-                </label>
-                <label className="space-y-1 text-sm">
-                  <span className="text-xs font-semibold uppercase text-muted-foreground">Route or path</span>
-                  <input className="min-h-9 w-full rounded border border-border bg-background px-2 font-mono" value={view.attachmentDraft.uri} onChange={(event) => view.updateAttachmentDraft({ uri: event.target.value })} />
-                </label>
-                <label className="space-y-1 text-sm">
-                  <span className="text-xs font-semibold uppercase text-muted-foreground">Kind</span>
-                  <select className="min-h-9 w-full rounded border border-border bg-background px-2" value={view.attachmentDraft.evidenceKind} onChange={(event) => view.updateAttachmentDraft({ evidenceKind: event.target.value })}>
-                    <option value="SourceDocument">Source document</option>
-                    <option value="ApprovalSupport">Approval support</option>
-                    <option value="ReconciliationEvidence">Reconciliation</option>
-                    <option value="ValuationSupport">Valuation support</option>
-                  </select>
-                </label>
-                <label className="space-y-1 text-sm">
-                  <span className="text-xs font-semibold uppercase text-muted-foreground">Scope</span>
-                  <select className="min-h-9 w-full rounded border border-border bg-background px-2" value={view.attachmentDraft.lineId ?? ""} onChange={(event) => view.updateAttachmentDraft({ lineId: event.target.value || null })}>
-                    <option value="">Header</option>
-                    {view.draft.lines.map((line) => <option key={line.lineId} value={line.lineId}>{line.side} {line.accountPath || line.lineId}</option>)}
-                  </select>
-                </label>
-                <div className="flex items-end">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    busy={view.attachEvidenceBusy}
-                    disabled={!!view.assetWorkflow?.pendingAction || view.assetWorkflow?.hasPendingPost}
-                    busyLabel="Attaching evidence"
-                    onClick={() => void view.addAttachment()}
-                  >
-                    <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
-                    Attach
-                  </Button>
-                </div>
-              </div>
-              {view.attachEvidenceStatusText ? (
-                <p role="status" className="mt-3 rounded border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary">
-                  {view.attachEvidenceStatusText}
-                </p>
-              ) : null}
-              <div className="mt-3 grid gap-2 md:grid-cols-2">
-                {evidenceAttachments.map((attachment) => (
-                  <div key={attachment.attachmentId} className="flex items-start justify-between gap-3 rounded border border-border/70 bg-background/50 px-3 py-2 text-sm">
-                    <div className="min-w-0">
-                      <div className="font-semibold text-foreground">{attachment.displayName}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{attachment.lineId ? "Supports one journal line" : "Supports the full journal entry"}</div>
-                      <TechnicalDetails label="Evidence details" className="mt-2" contentClassName="space-y-2 text-xs">
-                        <div><span className="text-muted-foreground">Route or path</span><div className="mt-1 break-all font-mono text-foreground">{attachment.uri}</div></div>
-                        <div><span className="text-muted-foreground">Evidence kind</span><div className="mt-1 break-all font-mono text-foreground">{attachment.evidenceKind}</div></div>
-                        <div><span className="text-muted-foreground">Source system</span><div className="mt-1 break-all font-mono text-foreground">{attachment.sourceSystem}</div></div>
-                      </TechnicalDetails>
-                    </div>
-                    <Button size="icon" variant="ghost" aria-label={`Remove evidence ${attachment.displayName}`} disabled={Boolean(view.draft.assetAccountingDraft)} disabledReason={view.draft.assetAccountingDraft ? "Evidence retained on an asset source draft cannot be removed here." : null} onClick={() => view.removeAttachment(attachment.attachmentId)}>
-                      <X className="h-3.5 w-3.5" aria-hidden="true" />
-                    </Button>
-                  </div>
-                ))}
-                {retainedEvidenceLinks.map((link, index) => (
-                  <div key={link} className="rounded border border-border/70 bg-background/50 px-3 py-2 text-sm">
-                    <div className="font-semibold text-foreground">Retained evidence link {index + 1}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">Available to validation and approval controls.</div>
-                    <TechnicalDetails label="Evidence route" className="mt-2">
-                      <div className="break-all font-mono text-xs text-foreground">{link}</div>
-                    </TechnicalDetails>
-                  </div>
-                ))}
-                {evidenceCount === 0 ? (
-                  <p className="rounded border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-                    No source evidence is attached yet. Approval submission remains blocked until at least one evidence route or source document is linked.
-                  </p>
-                ) : null}
-              </div>
-          </div>
-
-          <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div>
-                <h4 className="text-sm font-semibold text-foreground">Lifecycle controls</h4>
-                <p className="text-xs text-muted-foreground">Approve, post, reverse, rebook, and close-lock actions follow the journal-entry lifecycle controls.</p>
-              </div>
-              <Badge variant={view.draft.status === "Posted" || view.draft.status === "CloseLocked" ? "success" : view.draft.status === "Rejected" || view.draft.status === "NeedsFix" ? "danger" : view.draft.status === "Submitted" || view.draft.status === "Approved" ? "warning" : "outline"} dot>
-                {view.statusLabel}
-              </Badge>
-            </div>
-            {view.draft.assetAccountingDraft && view.assetWorkflow ? <AssetAccountingWorkflowPanel view={view.assetWorkflow} /> : null}
-            <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-              {view.lifecycleCommands.map((command) => (
-                <Button
-                  key={command.action}
-                  size="sm"
-                  variant="outline"
-                  busy={command.busy}
-                  disabled={command.disabledReason !== null}
-                  disabledReason={command.disabledReason}
-                  onClick={() => void view.applyLifecycleAction(command.action)}
-                >
-                  {command.label}
-                </Button>
-              ))}
-            </div>
-            <div className="mt-3 rounded-md border border-border/70 bg-background/50 px-3 py-3" aria-label="Manual journal lifecycle checklist">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Lifecycle checklist</div>
-              <div role="list" className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
-                {view.lifecycleChecklist.map((item) => (
-                  <div key={item.id} role="listitem" className={cn("rounded border bg-secondary/20 px-2.5 py-2 text-xs", accountingToolingBorderClass(item.tone))}>
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <span className="font-semibold text-foreground">{item.label}</span>
-                      <Badge variant={accountingToolingBadgeVariant(item.tone)}>{item.value}</Badge>
-                    </div>
-                    <p className="mt-2 leading-5 text-muted-foreground">{item.detail}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {view.lifecycleStatusText ? (
-              <p role="status" className="mt-3 rounded border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary">
-                {view.lifecycleStatusText}
-              </p>
-            ) : null}
-            {view.lifecycleCorrectionRows.length > 0 ? (
-              <div className="mt-3">
-                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generated correction drafts</div>
-                <div className="mt-2 grid gap-2 md:grid-cols-2">
-                  {view.lifecycleCorrectionRows.map((row) => (
-                    <div key={row.id} className="rounded border border-border/70 bg-background/50 px-3 py-2 text-sm">
-                      <div className="font-semibold text-foreground">{row.title}</div>
-                      <div className="mt-1 font-mono text-xs text-muted-foreground">{row.subtitle}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{row.balanceLabel}</div>
-                      <div className="mt-1 break-all text-xs text-muted-foreground">{row.sourceLabel}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-            <div className="mt-3">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Transition audit</div>
-              <div className="mt-2 space-y-2">
-                {view.lifecycleTransitions.length > 0 ? view.lifecycleTransitions.map((transition) => (
-                  <div key={transition.id} className="rounded border border-border/70 bg-background/50 px-3 py-2 text-sm">
-                    <div className="font-semibold text-foreground">{transition.title}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">{transition.detail}</div>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      <Badge variant="outline" className="font-mono text-[11px]">{transition.auditLabel}</Badge>
-                      <Badge variant="outline" className="font-mono text-[11px]">{transition.correlationLabel}</Badge>
-                      <Badge variant={transition.evidenceTone}>{transition.evidenceLabel}</Badge>
-                    </div>
-                    <div className="mt-2 space-y-1">
-                      {transition.evidenceRows.map((evidence) => (
-                        <div key={`${transition.id}-${evidence}`} className="break-all rounded border border-border/60 bg-secondary/30 px-2 py-1 font-mono text-[11px] text-muted-foreground">
-                          {evidence}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )) : (
-                  <p className="rounded border border-border/70 bg-background/50 px-3 py-2 text-sm text-muted-foreground">
-                    No lifecycle transition audit events are retained on this journal entry yet.
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,0.45fr)]">
-            <ManualJournalValidationNavigator view={view} />
-            <fieldset disabled={Boolean(view.draft.assetAccountingDraft)} className="min-w-0" aria-label="Journal attribution"><ManualJournalDimensionsInspector view={view} /></fieldset>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/**
- * Parses a journal amount from a number input. Returns null (never a silent zero) when the field
- * holds unparseable text - the DOM reports that via validity.badInput with an empty value - so a
- * pasted "1,234.00" can never post a line as zero. A genuinely cleared field still parses as 0.
- */
-function parseJournalAmount(value: string, badInput: boolean): number | null {
-  if (badInput) {
-    return null;
-  }
-  const trimmed = value.trim();
-  if (trimmed.length === 0) {
-    return 0;
-  }
-  const parsed = Number(trimmed);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationViewModel }) {
-  return (
-    <section className="workspace-section-band" aria-labelledby="accounting-configure-heading">
-      <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Configure</p>
-          <h3 id="accounting-configure-heading" className="workspace-section-title">{view.title}</h3>
-          <p className="workspace-section-summary">{view.description}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={view.statusTone === "success" ? "success" : view.statusTone === "danger" ? "danger" : view.statusTone === "warning" ? "warning" : "outline"} dot>
-            {view.statusLabel}
-          </Badge>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={view.loading}
-            disabledReason={view.loading ? "Configuration refresh is already in progress." : null}
-            onClick={() => void view.refresh()}
-          >
-            <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
-            Refresh
-          </Button>
-          <Button
-            size="sm"
-            disabled={!view.canActivate}
-            disabledReason={view.activateDisabledReason}
-            busy={view.activateBusy}
-            busyLabel={view.activateButtonLabel}
-            onClick={() => void view.activate()}
-          >
-            {view.activateButtonLabel}
-          </Button>
-        </div>
-      </div>
-
-      <ConfigureCommandBar />
-
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="min-w-0 space-y-4">
-      {view.errorText ? (
-        <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-          <div className="font-semibold">{view.errorText}</div>
-          {view.errorDetails.length > 0 ? (
-            <ul className="mt-2 list-disc pl-4">
-              {view.errorDetails.map((detail) => <li key={detail}>{detail}</li>)}
-            </ul>
-          ) : null}
-        </div>
-      ) : null}
-
-      <div id="configure-section-setup" className="configure-anchor scroll-mt-20 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        {view.metricRows.map((metric) => (
-          <div key={metric.id} className="panel-surface px-4 py-3">
-            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{metric.label}</div>
-            <div className={cn("mt-2 font-mono text-xl font-semibold", cashFlowTextClass(metric.tone))}>{metric.value}</div>
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        {view.setupReadinessRows.map((row) => (
-          <div key={row.id} className="rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
-            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{row.label}</div>
-            <div className={cn("mt-2 text-sm font-semibold", cashFlowTextClass(row.tone))}>{row.value}</div>
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.detail}</p>
-          </div>
-        ))}
-      </div>
-      <div className="flex flex-wrap items-center gap-3 rounded-md border border-border/70 bg-background px-4 py-3">
-        <Button
-          size="sm"
-          variant="secondary"
-          disabled={!view.canCreateLedgerBook}
-          disabledReason={view.createLedgerBookDisabledReason}
-          busy={view.createLedgerBookBusy}
-          busyLabel={view.createLedgerBookButtonLabel}
-          onClick={() => void view.createLedgerBookFromSetupCandidate()}
-        >
-          {view.createLedgerBookButtonLabel}
-        </Button>
-        <LedgerBookSetupWizard view={view} />
-        {view.createLedgerBookStatusText ? (
-          <p className="text-xs leading-5 text-muted-foreground">{view.createLedgerBookStatusText}</p>
-        ) : null}
-      </div>
-
-      <Card id="configure-section-books" className="panel-surface configure-anchor scroll-mt-20" aria-labelledby="accounting-ledger-books-heading">
-        <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <CardTitle id="accounting-ledger-books-heading">Ledger book administration</CardTitle>
-              <CardDescription>{view.ledgerBookSummaryLabel}</CardDescription>
-            </div>
-            <Badge variant={view.ledgerBookRows.some((book) => book.statusLabel === "Selected") ? "success" : view.ledgerBookRows.length > 0 ? "warning" : "outline"}>
-              {view.ledgerBookRows.length} book{view.ledgerBookRows.length === 1 ? "" : "s"}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {view.ledgerBookEmptyText ? (
-            <p className="text-sm text-muted-foreground">{view.ledgerBookEmptyText}</p>
-          ) : (
-            <div className="grid gap-3 lg:grid-cols-2" role="region" aria-label="Accounting ledger book catalog">
-              {view.ledgerBookRows.map((book) => (
-                <div key={book.id} className={cn("rounded-md border px-4 py-3", accountingToolingBorderClass(book.tone))}>
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="font-semibold text-foreground">{book.title}</div>
-                      <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground">{book.id}</div>
-                    </div>
-                    <Badge variant={accountingToolingBadgeVariant(book.tone)}>{book.statusLabel}</Badge>
-                  </div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{book.description}</p>
-                  <dl className="mt-3 grid gap-2 text-xs md:grid-cols-2">
-                    <div>
-                      <dt className="font-semibold text-muted-foreground">Basis</dt>
-                      <dd className="mt-1 text-foreground">{book.subtitle}</dd>
-                    </div>
-                    <div>
-                      <dt className="font-semibold text-muted-foreground">Policy</dt>
-                      <dd className="mt-1 text-foreground">{book.policyLabel}</dd>
-                    </div>
-                    <div>
-                      <dt className="font-semibold text-muted-foreground">Currency</dt>
-                      <dd className="mt-1 text-foreground">{book.currencyLabel}</dd>
-                    </div>
-                    <div>
-                      <dt className="font-semibold text-muted-foreground">Scope</dt>
-                      <dd className="mt-1 break-words text-foreground">{book.scopeLabel}</dd>
-                    </div>
-                    <div>
-                      <dt className="font-semibold text-muted-foreground">Updated</dt>
-                      <dd className="mt-1 text-foreground">{book.updatedLabel}</dd>
-                    </div>
-                  </dl>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card id="configure-section-chart" className="panel-surface configure-anchor scroll-mt-20" aria-labelledby="accounting-chart-account-editor-heading">
-        <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <CardTitle id="accounting-chart-account-editor-heading">Chart account setup</CardTitle>
-              <CardDescription>Author ledger-book chart nodes through the shared accounting configuration API.</CardDescription>
-            </div>
-            <Button
-              size="sm"
-              disabled={!view.chartAccountEditor.canSave}
-              disabledReason={view.chartAccountEditor.saveDisabledReason}
-              busy={view.chartAccountEditor.saveBusy}
-              busyLabel={view.chartAccountEditor.saveButtonLabel}
-              onClick={() => void view.chartAccountEditor.save()}
-            >
-              {view.chartAccountEditor.saveButtonLabel}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid gap-3 md:grid-cols-3">
-            <FormRow label="Account path" labelFor="accounting-chart-path">
-              <Input
-                id="accounting-chart-path"
-                value={view.chartAccountEditor.pathValue}
-                onChange={(event) => view.chartAccountEditor.updateDraft({ path: event.currentTarget.value })}
-              />
-            </FormRow>
-            <FormRow label="Account name" labelFor="accounting-chart-account-name">
-              <Input
-                id="accounting-chart-account-name"
-                value={view.chartAccountEditor.accountNameValue}
-                onChange={(event) => view.chartAccountEditor.updateDraft({ accountName: event.currentTarget.value })}
-              />
-            </FormRow>
-            <FormRow label="Account type" labelFor="accounting-chart-account-type">
-              <Input
-                id="accounting-chart-account-type"
-                value={view.chartAccountEditor.accountTypeValue}
-                onChange={(event) => view.chartAccountEditor.updateDraft({ accountType: event.currentTarget.value })}
-              />
-            </FormRow>
-          </div>
-          <div className="grid gap-3 md:grid-cols-2">
-            <FormRow label="Parent path" labelFor="accounting-chart-parent-path">
-              <Input
-                id="accounting-chart-parent-path"
-                value={view.chartAccountEditor.parentPathValue}
-                onChange={(event) => view.chartAccountEditor.updateDraft({ parentPath: event.currentTarget.value })}
-              />
-            </FormRow>
-          </div>
-          <TechnicalDetails
-            label="Chart account identifiers and evidence"
-            description="Stable node identity, linked financial account, and retained evidence reference for audit and support use."
-          >
-            <div className="grid gap-3 md:grid-cols-3">
-              <FormRow label="Node id" labelFor="accounting-chart-node-id">
-                <Input
-                  id="accounting-chart-node-id"
-                  value={view.chartAccountEditor.nodeIdValue}
-                  onChange={(event) => view.chartAccountEditor.updateDraft({ nodeId: event.currentTarget.value })}
-                />
-              </FormRow>
-              <FormRow label="Financial account id" labelFor="accounting-chart-financial-account-id">
-                <Input
-                  id="accounting-chart-financial-account-id"
-                  value={view.chartAccountEditor.financialAccountIdValue}
-                  onChange={(event) => view.chartAccountEditor.updateDraft({ financialAccountId: event.currentTarget.value })}
-                />
-              </FormRow>
-              <FormRow label="Retained evidence" labelFor="accounting-chart-evidence">
-                <Input
-                  id="accounting-chart-evidence"
-                  value={view.chartAccountEditor.evidenceValue}
-                  onChange={(event) => view.chartAccountEditor.updateDraft({ evidenceText: event.currentTarget.value })}
-                />
-              </FormRow>
-            </div>
-          </TechnicalDetails>
-          <ChartAccountPathBuilder editor={view.chartAccountEditor} />
-          {view.chartAccountEditor.statusText ? (
-            <p className="text-sm text-muted-foreground">{view.chartAccountEditor.statusText}</p>
-          ) : null}
-        </CardContent>
-      </Card>
-
-      <ConfigureProductionReadinessCard view={view} />
-
-      <Card id="configure-section-rules" className="panel-surface configure-anchor scroll-mt-20">
-        <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <BookCheck className="h-5 w-5 text-primary" />
-                Accounting Rules Studio
-              </CardTitle>
-              <CardDescription>Effective-dated posting rules, predicates, formulas, allocations, generated postings, versions, promotion approvals, and dry-run previews use the shared configuration API.</CardDescription>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                size="sm"
-                disabled={!view.canDryRun}
-                disabledReason={view.dryRunDisabledReason}
-                busy={view.dryRunBusy}
-                busyLabel={view.dryRunButtonLabel}
-                onClick={() => void view.dryRunSelectedRule()}
-              >
-                {view.dryRunButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled={!view.canBuildJournalCandidate}
-                disabledReason={view.journalCandidateDisabledReason}
-                busy={view.journalCandidateBusy}
-                busyLabel={view.journalCandidateButtonLabel}
-                onClick={() => void view.buildJournalCandidate()}
-              >
-                {view.journalCandidateButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canApplyThreshold}
-                disabledReason={view.applyThresholdDisabledReason}
-                busy={view.applyThresholdBusy}
-                busyLabel={view.applyThresholdButtonLabel}
-                onClick={() => void view.applyDryRunAmountThreshold()}
-              >
-                {view.applyThresholdButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canApplyEventPredicate}
-                disabledReason={view.applyEventPredicateDisabledReason}
-                busy={view.applyEventPredicateBusy}
-                busyLabel={view.applyEventPredicateButtonLabel}
-                onClick={() => void view.applyDryRunEventPredicate()}
-              >
-                {view.applyEventPredicateButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canApplyEffectiveStart}
-                disabledReason={view.applyEffectiveStartDisabledReason}
-                busy={view.applyEffectiveStartBusy}
-                busyLabel={view.applyEffectiveStartButtonLabel}
-                onClick={() => void view.applyDryRunEffectiveStart()}
-              >
-                {view.applyEffectiveStartButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canCapturePostings}
-                disabledReason={view.capturePostingsDisabledReason}
-                busy={view.capturePostingsBusy}
-                busyLabel={view.capturePostingsButtonLabel}
-                onClick={() => void view.captureDryRunGeneratedPostings()}
-              >
-                {view.capturePostingsButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canApplyFormula}
-                disabledReason={view.applyFormulaDisabledReason}
-                busy={view.applyFormulaBusy}
-                busyLabel={view.applyFormulaButtonLabel}
-                onClick={() => void view.applyDryRunFormulaAmount()}
-              >
-                {view.applyFormulaButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canApplyAllocation}
-                disabledReason={view.applyAllocationDisabledReason}
-                busy={view.applyAllocationBusy}
-                busyLabel={view.applyAllocationButtonLabel}
-                onClick={() => void view.applyDryRunAllocationTargets()}
-              >
-                {view.applyAllocationButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canApplyScope}
-                disabledReason={view.applyScopeDisabledReason}
-                busy={view.applyScopeBusy}
-                busyLabel={view.applyScopeButtonLabel}
-                onClick={() => void view.applyDryRunScope()}
-              >
-                {view.applyScopeButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canDuplicateRule}
-                disabledReason={view.duplicateRuleDisabledReason}
-                busy={view.duplicateRuleBusy}
-                busyLabel={view.duplicateRuleButtonLabel}
-                onClick={() => void view.duplicateSelectedRule()}
-              >
-                {view.duplicateRuleButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canRaisePriority}
-                disabledReason={view.raisePriorityDisabledReason}
-                busy={view.raisePriorityBusy}
-                busyLabel={view.raisePriorityButtonLabel}
-                onClick={() => void view.raiseSelectedRulePriority()}
-              >
-                {view.raisePriorityButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canSaveDryRunAsRuleTest}
-                disabledReason={view.saveDryRunAsRuleTestDisabledReason}
-                busy={view.saveDryRunAsRuleTestBusy}
-                busyLabel={view.saveDryRunAsRuleTestButtonLabel}
-                onClick={() => void view.saveDryRunAsRuleTest()}
-              >
-                {view.saveDryRunAsRuleTestButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canArchiveRule}
-                disabledReason={view.archiveRuleDisabledReason}
-                busy={view.archiveRuleBusy}
-                busyLabel={view.archiveRuleButtonLabel}
-                onClick={() => void view.archiveSelectedRule()}
-              >
-                {view.archiveRuleButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canRunRuleTests}
-                disabledReason={view.ruleTestDisabledReason}
-                busy={view.ruleTestBusy}
-                busyLabel={view.ruleTestButtonLabel}
-                onClick={() => void view.runRuleTests()}
-              >
-                {view.ruleTestButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled={!view.canApproveRulePromotion}
-                disabledReason={view.approveRulePromotionDisabledReason}
-                busy={view.approveRulePromotionBusy}
-                busyLabel={view.approveRulePromotionButtonLabel}
-                onClick={() => void view.approveRulePromotion()}
-              >
-                {view.approveRulePromotionButtonLabel}
-              </Button>
-              {view.dryRunStatusText ? <span className="text-sm text-muted-foreground">{view.dryRunStatusText}</span> : null}
-              {view.journalCandidateStatusText ? <span className="text-sm text-muted-foreground">{view.journalCandidateStatusText}</span> : null}
-              {view.applyEventPredicateStatusText ? <span className="text-sm text-muted-foreground">{view.applyEventPredicateStatusText}</span> : null}
-              {view.applyThresholdStatusText ? <span className="text-sm text-muted-foreground">{view.applyThresholdStatusText}</span> : null}
-              {view.applyEffectiveStartStatusText ? <span className="text-sm text-muted-foreground">{view.applyEffectiveStartStatusText}</span> : null}
-              {view.capturePostingsStatusText ? <span className="text-sm text-muted-foreground">{view.capturePostingsStatusText}</span> : null}
-              {view.applyFormulaStatusText ? <span className="text-sm text-muted-foreground">{view.applyFormulaStatusText}</span> : null}
-              {view.applyAllocationStatusText ? <span className="text-sm text-muted-foreground">{view.applyAllocationStatusText}</span> : null}
-              {view.applyScopeStatusText ? <span className="text-sm text-muted-foreground">{view.applyScopeStatusText}</span> : null}
-              {view.duplicateRuleStatusText ? <span className="text-sm text-muted-foreground">{view.duplicateRuleStatusText}</span> : null}
-              {view.raisePriorityStatusText ? <span className="text-sm text-muted-foreground">{view.raisePriorityStatusText}</span> : null}
-              {view.archiveRuleStatusText ? <span className="text-sm text-muted-foreground">{view.archiveRuleStatusText}</span> : null}
-              {view.saveDryRunAsRuleTestStatusText ? <span className="text-sm text-muted-foreground">{view.saveDryRunAsRuleTestStatusText}</span> : null}
-              {view.ruleTestStatusText ? <span className="text-sm text-muted-foreground">{view.ruleTestStatusText}</span> : null}
-              {view.approveRulePromotionStatusText ? <span className="text-sm text-muted-foreground">{view.approveRulePromotionStatusText}</span> : null}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {view.rules.length > 0 ? (
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-              <div className="space-y-2" role="list" aria-label="Accounting posting rules">
-                {view.rules.map((rule) => (
-                  <div key={rule.id} role="listitem">
-                    <button
-                      type="button"
-                      aria-label={rule.selectAriaLabel}
-                      aria-pressed={rule.isSelected}
-                      className={cn(
-                        "w-full rounded-lg border px-3 py-3 text-left transition hover:bg-secondary/35",
-                        rule.isSelected ? "border-primary/45 bg-primary/10" : "border-border/70 bg-secondary/20"
-                      )}
-                      onClick={() => view.selectRule(rule.id)}
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <div className="font-semibold text-foreground">{rule.title}</div>
-                          <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{rule.subtitle}</div>
-                        </div>
-                        <Badge variant={rule.statusTone}>{rule.statusLabel}</Badge>
-                      </div>
-                      <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
-                        <span className="font-mono">{rule.eventLabel}</span>
-                        <span className="font-mono">{rule.effectiveLabel}</span>
-                        <span className="font-mono">{rule.priorityLabel}</span>
-                      </div>
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <div className="rounded-lg border border-border/70 bg-background/35 p-3">
-                {view.selectedRule ? (
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <div className="font-semibold text-foreground">{view.selectedRule.title}</div>
-                        <div className="mt-1 font-mono text-xs text-muted-foreground">{view.selectedRule.eventLabel} | {view.selectedRule.effectiveLabel} | {view.selectedRule.priorityLabel}</div>
-                      </div>
-                      <Badge variant={view.selectedRule.promotionTone}>{view.selectedRule.promotionLabel}</Badge>
-                    </div>
-                    <div className="rounded-lg border border-border/70 bg-secondary/10 p-3" role="region" aria-label="Posting rule promotion readiness">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Promotion readiness</div>
-                        <Badge variant={accountingToolingBadgeVariant(hasPromotionReadinessBlocker(view.selectedRule.promotionReadiness) ? "warning" : "success")}>
-                          {view.selectedRule.promotionReadiness.find((item) => item.id === "activation-gate")?.value ?? "Review"}
-                        </Badge>
-                      </div>
-                      <div className="mt-3 grid gap-2 md:grid-cols-2">
-                        {view.selectedRule.promotionReadiness.map((item) => (
-                          <div key={item.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(item.tone))}>
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <span className="font-semibold text-foreground">{item.label}</span>
-                              <Badge variant={accountingToolingBadgeVariant(item.tone)}>{item.value}</Badge>
-                            </div>
-                            <div className="mt-1 text-xs text-muted-foreground">{item.detail}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <TechnicalDetails
-                      label="Rule scope and posting internals"
-                      description="Inspect effective scope, predicates, formula logic, allocations, generated postings, and retained versions for the selected rule."
-                      contentClassName="space-y-4"
-                    >
-                      <RulesStudioList title="Scope" rows={view.selectedRule.scopeLabels.length > 0 ? view.selectedRule.scopeLabels : ["No dimensional scope configured."]} />
-                      <RulesStudioList title="Predicates" rows={view.selectedRule.conditionRows} />
-                      <RulesStudioList title="Formulas" rows={view.selectedRule.formulaRows} />
-                      <RulesStudioList title="Allocations" rows={view.selectedRule.allocationRows} />
-                      <RulesStudioList title="Generated postings" rows={view.selectedRule.generatedPostingRows} />
-                      <RulesStudioList title="Version history" rows={view.selectedRule.versionRows} />
-                    </TechnicalDetails>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Select a posting rule to inspect its effective dating, predicates, formula logic, allocation behavior, generated postings, and promotion evidence.</p>
-                )}
-              </div>
-            </div>
-          ) : (
-            <p role="status" className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">{view.emptyText}</p>
-          )}
-
-          {view.dryRunPreview ? (
-            <div className="rounded-lg border border-primary/25 bg-primary/5 p-3" role="region" aria-label="Accounting rule dry-run preview">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <div className="font-semibold text-foreground">{view.dryRunPreview.title}</div>
-                  <div className="mt-1 font-mono text-xs text-muted-foreground">{view.dryRunPreview.selectedRuleLabel}</div>
-                </div>
-                <Badge variant={view.dryRunPreview.balanceLabel.startsWith("Balanced") ? "success" : "warning"}>{view.dryRunPreview.balanceLabel}</Badge>
-              </div>
-              <div className="mt-3 grid gap-3 xl:grid-cols-3">
-                <RulesStudioList title="Rule resolution" rows={view.dryRunPreview.matchRows.length > 0 ? view.dryRunPreview.matchRows : ["No rule matches were returned."]} />
-                <RulesStudioList title="Generated journal lines" rows={view.dryRunPreview.generatedLineRows.length > 0 ? view.dryRunPreview.generatedLineRows : ["No generated journal lines were returned."]} />
-                <RulesStudioList title="Generated posting metadata" rows={view.dryRunPreview.generatedPostingRows} />
-              </div>
-              {view.dryRunPreview.validationRows.length > 0 ? (
-                <div className="mt-3 space-y-2">
-                  {view.dryRunPreview.validationRows.map((issue) => (
-                    <div key={issue.id} className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-                      <div className="font-semibold">{issue.label}</div>
-                      <div className="mt-1">{issue.message}</div>
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-
-          {view.journalCandidatePreview ? (
-            <div className="rounded-lg border border-border/70 bg-secondary/15 p-3" role="region" aria-label="Accounting rule journal draft candidate">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <div className="font-semibold text-foreground">{view.journalCandidatePreview.title}</div>
-                  <div className="mt-1 font-mono text-xs text-muted-foreground">{view.journalCandidatePreview.selectedRuleLabel}</div>
-                </div>
-                <Badge variant={view.journalCandidatePreview.balanceLabel.startsWith("Balanced") ? "success" : "warning"}>{view.journalCandidatePreview.balanceLabel}</Badge>
-              </div>
-              <div className="mt-3 grid gap-3 xl:grid-cols-3">
-                <RulesStudioList title="Draft command" rows={[view.journalCandidatePreview.commandLabel, view.journalCandidatePreview.approvalLabel, view.journalCandidatePreview.evidenceLabel]} />
-                <RulesStudioList title="Candidate posting lines" rows={view.journalCandidatePreview.generatedLineRows} />
-                <RulesStudioList
-                  title="Candidate issues"
-                  rows={view.journalCandidatePreview.issueRows.length > 0
-                    ? view.journalCandidatePreview.issueRows.map((issue) => `${issue.label}: ${issue.message}`)
-                    : ["No blocking candidate issues returned."]}
-                />
-              </div>
-            </div>
-          ) : null}
-
-          <div className="rounded-lg border border-border/70 bg-background p-3" role="region" aria-label="Saved accounting rule test cases">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <div className="font-semibold text-foreground">Saved regression cases</div>
-                <div className="mt-1 text-xs text-muted-foreground">Persisted dry-run assertions used for rule promotion checks.</div>
-              </div>
-              <Badge variant={view.ruleTestCases.length > 0 ? "success" : "warning"}>{view.ruleTestCases.length} saved</Badge>
-            </div>
-            <div className="mt-3 grid gap-2 md:grid-cols-2">
-              {view.ruleTestCases.length > 0 ? view.ruleTestCases.map((testCase) => (
-                <div key={testCase.id} className="rounded-md border border-border/70 bg-secondary/10 px-3 py-2 text-sm">
-                  <div className="font-semibold text-foreground">{testCase.title}</div>
-                  <div className="mt-1 font-mono text-xs text-muted-foreground">{testCase.subtitle}</div>
-                  <div className="mt-1 text-xs text-muted-foreground">{testCase.assertionLabel}</div>
-                  <Badge variant={testCase.evidenceTone} className="mt-2">{testCase.evidenceLabel}</Badge>
-                </div>
-              )) : (
-                <p className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning md:col-span-2">
-                  No saved rule test cases. Running tests will generate temporary cases from active posting rules.
-                </p>
-              )}
-            </div>
-          </div>
-
-          {view.ruleTestSuite ? (
-            <div className="rounded-lg border border-border/70 bg-secondary/15 p-3" role="region" aria-label="Accounting rule test cases">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <div className="font-semibold text-foreground">{view.ruleTestSuite.title}</div>
-                  <div className="mt-1 font-mono text-xs text-muted-foreground">{view.ruleTestSuite.executedLabel}</div>
-                </div>
-                <Badge variant={view.ruleTestSuite.statusTone}>{view.ruleTestSuite.summaryLabel}</Badge>
-              </div>
-              <div className="mt-3 grid gap-3 xl:grid-cols-2">
-                <RulesStudioList title="Regression cases" rows={view.ruleTestSuite.resultRows} />
-                <RulesStudioList
-                  title="Assertion issues"
-                  rows={view.ruleTestSuite.validationRows.length > 0
-                    ? view.ruleTestSuite.validationRows.map((issue) => `${issue.label}: ${issue.message}`)
-                    : ["No rule-test assertion issues returned."]}
-                />
-              </div>
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="panel-surface">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Network className="h-5 w-5 text-primary" />
-              Journal templates and preview
-            </CardTitle>
-            <CardDescription>Preview uses accounting configuration services and does not persist journal entries.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                size="sm"
-                disabled={!view.canPreview}
-                disabledReason={view.previewDisabledReason}
-                busy={view.previewBusy}
-                busyLabel={view.previewButtonLabel}
-                onClick={() => void view.previewFirstTemplate()}
-              >
-                {view.previewButtonLabel}
-              </Button>
-              {view.previewStatusText ? <span className="text-sm text-muted-foreground">{view.previewStatusText}</span> : null}
-            </div>
-
-            <div className="space-y-2">
-              {view.templates.length > 0 ? view.templates.map((template) => (
-                <div key={template.id} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="font-semibold text-foreground">{template.title}</div>
-                      <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{template.subtitle}</div>
-                    </div>
-                    <Badge variant={template.statusLabel === "Balanced" ? "success" : template.statusLabel === "Archived" ? "outline" : "warning"}>
-                      {template.statusLabel}
-                    </Badge>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    <span>{template.lineCountLabel}</span>
-                    <span>{template.balanceLabel}</span>
-                  </div>
-                </div>
-              )) : (
-                <p role="status" className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">{view.emptyText}</p>
-              )}
-            </div>
-
-            {view.preview ? (
-              <div className="rounded-lg border border-border/70 bg-background/35 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <div className="font-semibold text-foreground">{view.preview.title}</div>
-                    <div className="mt-1 font-mono tabular-nums text-xs text-muted-foreground">{view.preview.balanceLabel}</div>
-                  </div>
-                  <Badge variant={view.preview.statusLabel.startsWith("Balanced") ? "success" : "warning"}>{view.preview.statusLabel}</Badge>
-                </div>
-                <div className="mt-3 space-y-2">
-                  {view.preview.lineRows.map((line) => (
-                    <div key={line.id} className="grid gap-2 rounded border border-border/60 px-2 py-2 text-xs sm:grid-cols-[1fr_auto_auto]">
-                      <span className="min-w-0 break-words font-mono text-foreground">{line.account}</span>
-                      <span className="font-mono text-muted-foreground">{line.side}</span>
-                      <span className="font-mono tabular-nums text-foreground">{line.amount}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
-
-        <Card className="panel-surface">
-          <CardHeader>
-            <CardTitle>Validation and audit trail</CardTitle>
-            <CardDescription>Configuration readiness and append-only mutation evidence stay visible before activation.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              {view.validationIssues.length > 0 ? view.validationIssues.map((issue) => (
-                <div key={issue.id} className={cn(
-                  "rounded-lg border px-3 py-2 text-sm",
-                  issue.tone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : "",
-                  issue.tone === "warning" ? "border-warning/30 bg-warning/10 text-warning" : "",
-                  issue.tone === "default" ? "border-border/70 bg-secondary/25 text-muted-foreground" : ""
-                )}>
-                  <div className="font-semibold">{issue.label}</div>
-                  <div className="mt-1">{issue.message}</div>
-                  <div className="mt-1 font-mono text-xs">{issue.detail}</div>
-                </div>
-              )) : (
-                <div className="rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
-                  No critical configuration validation issues.
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <div className="eyebrow-label">Recent audit events</div>
-              {view.auditTrail.length > 0 ? view.auditTrail.map((event) => (
-                <div key={event.id} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2 text-sm">
-                  <div className="font-semibold text-foreground">{event.title}</div>
-                  <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{event.subtitle}</div>
-                  <div className="mt-1 font-mono text-xs text-muted-foreground">{event.hashLabel}</div>
-                </div>
-              )) : (
-                <p className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">{view.emptyText}</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-          <ConfigureChangePreviewPanel view={view} />
-        </div>
-        <ConfigureActivationRail view={view} />
-      </div>
-    </section>
-  );
-}
-
-function RulesStudioList({ title, rows }: { title: string; rows: string[] }) {
-  return (
-    <div>
-      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{title}</div>
-      <div className="mt-2 space-y-1.5">
-        {rows.map((row, index) => (
-          <div key={`${title}-${index}-${row}`} className="rounded border border-border/60 bg-secondary/20 px-2 py-1.5 text-xs leading-5 text-muted-foreground">
-            {row}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function hasPromotionReadinessBlocker(items: AccountingRulesStudioPromotionReadinessViewModel[]): boolean {
-  return items.some((item) => item.tone === "danger" || (item.id === "activation-gate" && item.tone === "warning"));
-}
-
-function AccountingValue({ label, value, tone, ariaLabel }: { label: string; value: string; tone?: string; ariaLabel?: string }) {
-  return (
-    <div aria-label={ariaLabel} className="data-grid-surface flex min-w-0 items-center justify-between gap-4 px-3 py-2">
-      <span className="min-w-0 flex-1 text-muted-foreground">{label}</span>
-      <span className={cn("min-w-0 flex-1 break-words text-right font-mono tabular-nums text-foreground", tone)}>{value}</span>
     </div>
   );
 }

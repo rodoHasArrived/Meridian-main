@@ -114,14 +114,343 @@ public sealed class AccrualLedgerServiceTests
             .WithMessage("*No ledger accounting period accepts Originating posting date '2026-03-24'*");
     }
 
-    private static AccrualLedgerService CreateService(LedgerAccountingPeriod period)
+    [Fact]
+    public async Task AccrueAsync_PostsDeferredPikToPikReceivable_UnderCapitalizationPolicy()
     {
-        var projector = new LoanAccountingProjector(
+        var service = CreateService(BuildOpenPeriod());
+        var loanId = Guid.NewGuid();
+        var accrual = BuildAccrualEntry() with
+        {
+            InterestAmount = 166.66m,
+            CommitmentFeeAmount = 0m,
+            PikInterestAmount = 55.56m,
+            PikCapitalizationDeferred = true
+        };
+
+        var writes = await service.AccrueAsync(
+            loanId,
+            BuildContract(loanId),
+            new PostDailyAccrualRequest(accrual.AccrualDate),
+            accrual,
+            Guid.NewGuid(),
+            BuildMetadata());
+
+        var lines = writes.Should().ContainSingle().Subject.Entry.Lines;
+        lines.Should().Contain(line => line.Account.Name == "PikInterestReceivable" && line.Debit == 55.56m);
+        lines.Should().Contain(line => line.Account.Name == "PikInterestIncome" && line.Credit == 55.56m);
+        lines.Should().Contain(line => line.Account.Name == "AccruedInterestReceivable" && line.Debit == 166.66m);
+        lines.Should().NotContain(line => line.Account.Name == "LoanPrincipal" && line.Debit > 0m,
+            "deferred PIK is not principal until a capitalization date");
+    }
+
+    [Fact]
+    public async Task AccrueAsync_KeepsLegacyPikToggleCapitalizingIntoPrincipal()
+    {
+        var service = CreateService(BuildOpenPeriod());
+        var loanId = Guid.NewGuid();
+        var accrual = BuildAccrualEntry() with { InterestAmount = 0m, CommitmentFeeAmount = 0m, PikInterestAmount = 222.22m };
+
+        var writes = await service.AccrueAsync(
+            loanId,
+            BuildContract(loanId),
+            new PostDailyAccrualRequest(accrual.AccrualDate),
+            accrual,
+            Guid.NewGuid(),
+            BuildMetadata());
+
+        var lines = writes.Should().ContainSingle().Subject.Entry.Lines;
+        lines.Should().Contain(line => line.Account.Name == "LoanPrincipal" && line.Debit == 222.22m);
+        lines.Should().Contain(line => line.Account.Name == "InterestIncome" && line.Credit == 222.22m);
+        lines.Should().NotContain(line => line.Account.Name.StartsWith("PikInterest", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task CapitalizePikAsync_MovesPikReceivableIntoLoanPrincipal()
+    {
+        var service = CreateService(BuildOpenPeriod());
+        var loanId = Guid.NewGuid();
+        var capitalization = new PikCapitalizationDto(
+            new DateOnly(2026, 3, 24),
+            new DateOnly(2026, 3, 1),
+            new DateOnly(2026, 3, 24),
+            1_333.44m,
+            DateTimeOffset.Parse("2026-03-24T23:00:00Z"));
+
+        var writes = await service.CapitalizePikAsync(loanId, BuildContract(loanId), capitalization, Guid.NewGuid(), BuildMetadata());
+
+        var entry = writes.Should().ContainSingle().Subject.Entry;
+        entry.IsBalanced.Should().BeTrue();
+        entry.Lines.Should().HaveCount(2);
+        entry.Lines.Should().Contain(line => line.Account.Name == "LoanPrincipal" && line.Debit == 1_333.44m);
+        entry.Lines.Should().Contain(line => line.Account.Name == "PikInterestReceivable" && line.Credit == 1_333.44m);
+    }
+
+    // ── PRD-115 increment 5: split journals ─────────────────────────────────
+
+    private const string SplitPaymentJson = """
+        {"amount":257000,"effectiveDate":"2026-03-24","resolution":{"breakdown":{"toInterest":1000,"toCommitmentFee":200,"toFees":300,"toPenalty":400,"toPrincipal":500},
+         "resolutionBasis":"WaterfallAuto","ruleVersion":"waterfall-v1","unappliedAmount":1600,"excessToPrincipal":250000,"excessToPrepaidInterest":3000,
+         "excessRuleApplied":1,"excessRuleNote":null,"prepaymentPenaltyCharged":5000}}
+        """;
+
+    [Fact]
+    public async Task Projector_MixedPayment_SplitsByAllocationAndBalances()
+    {
+        // The amounts are illustrative: one payment touching every line the split can post.
+        var entry = await ProjectSingleAsync("loan.mixed-payment-applied", SplitPaymentJson);
+
+        entry.IsBalanced.Should().BeTrue();
+        entry.Lines.Select(line => (line.Account.Name, line.Debit, line.Credit)).Should().BeEquivalentTo(new[]
+        {
+            ("Cash", 257_000m, 0m),
+            ("AccruedInterestReceivable", 0m, 1_000m),
+            ("CommitmentFeeReceivable", 0m, 200m),
+            ("FeeReceivable", 0m, 300m),
+            ("PenaltyReceivable", 0m, 400m),
+            ("LoanPrincipal", 0m, 250_500m),
+            ("PrepaidInterestLiability", 0m, 3_000m),
+            ("UnappliedCashLiability", 0m, 1_600m),
+            ("PenaltyReceivable", 5_000m, 0m),
+            ("PenaltyIncome", 0m, 5_000m),
+        });
+        entry.Lines.Single(line => line.Account.Name == "PrepaidInterestLiability").Account.AccountType.Should().Be(LedgerAccountType.Liability);
+        entry.Lines.Single(line => line.Account.Name == "UnappliedCashLiability").Account.AccountType.Should().Be(LedgerAccountType.Liability);
+    }
+
+    [Fact]
+    public async Task Projector_MixedPayment_RecordedBeforePrd115_KeepsTheClearingPosting()
+    {
+        var entry = await ProjectSingleAsync(
+            "loan.mixed-payment-applied",
+            """{"amount":5000,"resolution":{"breakdown":{"toInterest":100,"toCommitmentFee":0,"toFees":0,"toPenalty":0,"toPrincipal":4900},"resolutionBasis":"Manual","ruleVersion":"v1","unappliedAmount":0}}""");
+
+        entry.Lines.Select(line => (line.Account.Name, line.Debit, line.Credit))
+            .Should().Equal(("Cash", 5_000m, 0m), ("LoanAndAccrualsClearing", 0m, 5_000m));
+    }
+
+    [Fact]
+    public async Task Projector_MixedPayment_WhoseResolutionDoesNotSumToTheReceipt_IsRejected()
+    {
+        var act = () => ProjectSingleAsync("loan.mixed-payment-applied", SplitPaymentJson.Replace("\"amount\":257000", "\"amount\":257001", StringComparison.Ordinal));
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*would not balance*");
+    }
+
+    [Fact]
+    public async Task AccrueAsync_SettlesInterestFromPrepaidInterestFirst()
+    {
+        var service = CreateService(BuildOpenPeriod());
+        var loanId = Guid.NewGuid();
+        var accrual = BuildAccrualEntry();
+
+        var entry = (await service.AccrueAsync(
+            loanId, BuildContract(loanId), new PostDailyAccrualRequest(accrual.AccrualDate), accrual, Guid.NewGuid(), BuildMetadata(),
+            prepaidInterestConsumed: 10m)).Should().ContainSingle().Subject.Entry;
+
+        entry.IsBalanced.Should().BeTrue();
+        entry.Lines.Should().ContainSingle(line => line.Account.Name == "PrepaidInterestLiability" && line.Debit == 10m);
+        entry.Lines.Should().ContainSingle(line => line.Account.Name == "AccruedInterestReceivable" && line.Debit == accrual.InterestAmount - 10m);
+        entry.Lines.Should().ContainSingle(line => line.Account.Name == "InterestIncome" && line.Credit == accrual.InterestAmount);
+    }
+
+    [Fact]
+    public async Task ReverseAccrualAsync_OfInterestSettledFromPrepaidInterest_IsTheExactInverseOfThePosting()
+    {
+        var service = CreateService(BuildOpenPeriod());
+        var loanId = Guid.NewGuid();
+        var accrual = BuildAccrualEntry();
+
+        var posted = (await service.AccrueAsync(
+            loanId, BuildContract(loanId), new PostDailyAccrualRequest(accrual.AccrualDate), accrual, Guid.NewGuid(), BuildMetadata(),
+            prepaidInterestConsumed: 10m)).Should().ContainSingle().Subject.Entry;
+        var reversed = (await service.ReverseAccrualAsync(
+            loanId, BuildContract(loanId), accrual, Guid.NewGuid(), BuildMetadata(),
+            prepaidInterestConsumed: 10m)).Should().ContainSingle().Subject.Entry;
+
+        reversed.IsBalanced.Should().BeTrue();
+        static Dictionary<string, decimal> Net(JournalEntry entry)
+            => entry.Lines.GroupBy(line => line.Account.Name).ToDictionary(group => group.Key, group => group.Sum(line => line.Debit - line.Credit));
+        var postedNet = Net(posted);
+        var reversedNet = Net(reversed);
+        reversedNet.Keys.Should().BeEquivalentTo(postedNet.Keys);
+        foreach (var (account, net) in postedNet)
+        {
+            reversedNet[account].Should().Be(-net, $"the reversal undoes {account} exactly");
+        }
+
+        reversedNet["PrepaidInterestLiability"].Should().Be(-10m, "the prepaid liability is restored");
+    }
+
+    [Fact]
+    public async Task Projector_FeeAssessed_PostsTheReceivableAndIncome()
+    {
+        var entry = await ProjectSingleAsync("loan.fee-assessed", """{"feeType":1,"amount":250,"effectiveDate":"2026-03-24"}""");
+
+        entry.IsBalanced.Should().BeTrue();
+        entry.Lines.Select(line => (line.Account.Name, line.Debit, line.Credit))
+            .Should().BeEquivalentTo(new[] { ("FeeReceivable", 250m, 0m), ("FeeIncome", 0m, 250m) });
+    }
+
+    [Fact]
+    public async Task Projector_PrepaymentPenaltyCharged_PostsTheReceivableAndIncome()
+    {
+        var entry = await ProjectSingleAsync("loan.prepayment-penalty-charged", """{"outstandingPrincipal":100000,"penaltyAmount":2000,"effectiveDate":"2026-03-24"}""");
+
+        entry.IsBalanced.Should().BeTrue();
+        entry.Lines.Select(line => (line.Account.Name, line.Debit, line.Credit))
+            .Should().BeEquivalentTo(new[] { ("PenaltyReceivable", 2_000m, 0m), ("PenaltyIncome", 0m, 2_000m) });
+    }
+
+    private async Task<JournalEntry> ProjectSingleAsync(string eventType, string payloadJson)
+    {
+        var loanId = Guid.NewGuid();
+        using var payload = JsonDocument.Parse(payloadJson);
+        var writes = await CreateProjector(BuildOpenPeriod()).ProjectAsync(
+            loanId, BuildContract(loanId), eventType, new DateOnly(2026, 3, 24), payload, Guid.NewGuid(), BuildMetadata(), CancellationToken.None);
+        return writes.Should().ContainSingle().Subject.Entry;
+    }
+
+    [Theory]
+    [InlineData("loan.drawdown-booked", "amount")]
+    [InlineData("loan.fee-assessed", "amount")]
+    [InlineData("loan.prepayment-penalty-charged", "penaltyAmount")]
+    [InlineData("loan.pik-capitalized", "amount")]
+    [InlineData("loan.principal-payment-applied", "AppliedAmount")]
+    [InlineData("loan.write-off-applied", "AppliedAmount")]
+    public async Task ProjectAsync_FailsClosed_WhenRequiredAmountIsMissing(string eventType, string requiredMember)
+    {
+        var act = () => ProjectAsync(eventType, """{"loanId":"not-an-amount"}""");
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage($"*'{eventType}'*missing required amount '{requiredMember}'*");
+    }
+
+    [Fact]
+    public async Task ProjectAsync_FailsClosed_WhenAmountIsNotANumber()
+    {
+        var act = () => ProjectAsync("loan.drawdown-booked", """{"amount":"1000.00"}""");
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage("*'amount' must be a JSON number*");
+    }
+
+    [Theory]
+    [InlineData("loan.drawdown-booked", """{"amount":-1000.00}""")]
+    [InlineData("loan.daily-accrual-posted", """{"interestAmount":10.00,"commitmentFeeAmount":-2.50}""")]
+    [InlineData("loan.restructured", """{"principalHaircut":-5.00}""")]
+    public async Task ProjectAsync_FailsClosed_WhenAmountIsNegative(string eventType, string payloadJson)
+    {
+        var act = () => ProjectAsync(eventType, payloadJson);
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage($"*'{eventType}' produced a negative amount*");
+    }
+
+    [Fact]
+    public async Task ProjectAsync_PostsBalancedJournal_ForValidDrawdown()
+    {
+        var writes = await ProjectAsync("loan.drawdown-booked", """{"amount":1000.00}""");
+
+        var entry = writes.Should().ContainSingle().Subject.Entry;
+        entry.Lines.Sum(line => line.Debit).Should().Be(1000.00m);
+        entry.Lines.Sum(line => line.Credit).Should().Be(1000.00m);
+        entry.Lines.Should().OnlyContain(line => line.Currency != null &&
+            line.Currency.TransactionCurrency == "USD" && line.Currency.FunctionalCurrency == "USD" &&
+            line.Currency.FxRateToFunctional == 1m &&
+            line.Currency.TransactionDebit == line.Debit && line.Currency.TransactionCredit == line.Credit);
+    }
+
+    [Theory]
+    [InlineData("loan.drawdown-booked", """{"amount":1000}""", true)]
+    [InlineData("loan.drawdown-booked", """{"amount":0}""", false)]
+    [InlineData("loan.daily-accrual-posted", """{"interestAmount":10,"commitmentFeeAmount":0}""", true)]
+    [InlineData("loan.daily-accrual-posted", """{"interestAmount":0,"commitmentFeeAmount":0}""", false)]
+    [InlineData("loan.status-transitioned", """{"status":"Active"}""", false)]
+    public async Task AccountingImpactManifest_UsesThePostingKernel(string eventType, string payloadJson, bool expected)
+    {
+        using var payload = JsonDocument.Parse(payloadJson);
+
+        LoanAccountingProjector.HasAccountingImpact(eventType, payload.RootElement).Should().Be(expected);
+        var writes = await ProjectAsync(eventType, payloadJson);
+        (writes.Count > 0).Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("""{"amount":-1}""")]
+    [InlineData("""{"amount":"1"}""")]
+    [InlineData("""{}""")]
+    public void AccountingImpactManifest_RefusesMalformedSourceInsteadOfCallingItNonAccounting(string payloadJson)
+    {
+        using var payload = JsonDocument.Parse(payloadJson);
+        var inspect = () => LoanAccountingProjector.HasAccountingImpact("loan.drawdown-booked", payload.RootElement);
+
+        inspect.Should().Throw<DirectLendingCommandException>();
+    }
+
+    [Fact]
+    public async Task ProjectAsync_UsesSharedCashAndLoanAccountsWithRetainedScope()
+    {
+        var writes = await ProjectAsync("loan.drawdown-booked", """{"amount":1000.00}""");
+        var entry = writes.Should().ContainSingle().Subject.Entry;
+        var chart = StandardChartOfAccounts.Instance;
+        var accountId = entry.Metadata.FinancialAccountId;
+
+        entry.Lines.Should().ContainSingle(line =>
+            line.Account == chart.Resolve(LedgerAccountRole.Cash, accountId) && line.Credit == 1000m);
+        entry.Lines.Should().ContainSingle(line =>
+            line.Account == chart.Resolve(LedgerAccountRole.LoanPrincipal, accountId, "NWTERM26") && line.Debit == 1000m);
+        entry.Lines.Should().OnlyContain(line => line.Account.FinancialAccountId == accountId);
+    }
+
+    [Fact]
+    public async Task ProjectAsync_RejectsNegativeInterestInsteadOfPostingOnlyThePositiveFee()
+    {
+        var act = () => ProjectAsync(
+            "loan.daily-accrual-posted",
+            """{"interestAmount":-10,"commitmentFeeAmount":2.50}""");
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage("*'interestAmount' cannot be negative*");
+    }
+
+    [Theory]
+    [InlineData("loan.drawdown-booked", """{"amount":0}""")]
+    [InlineData("loan.restructured", """{"reason":"covenant reset"}""")]
+    [InlineData("loan.status-transitioned", """{"status":"Active"}""")]
+    public async Task ProjectAsync_ProducesNoJournal_ForZeroAmountOrNonLedgerEvents(string eventType, string payloadJson)
+    {
+        var writes = await ProjectAsync(eventType, payloadJson);
+
+        writes.Should().BeEmpty();
+    }
+
+    private static async Task<IReadOnlyList<LedgerJournalEntryWrite>> ProjectAsync(string eventType, string payloadJson)
+    {
+        var loanId = Guid.NewGuid();
+        using var payload = JsonDocument.Parse(payloadJson);
+        return await CreateProjector(BuildOpenPeriod()).ProjectAsync(
+            loanId,
+            BuildContract(loanId),
+            eventType,
+            new DateOnly(2026, 3, 24),
+            payload,
+            Guid.NewGuid(),
+            BuildMetadata(),
+            CancellationToken.None);
+    }
+
+    private static LoanAccountingProjector CreateProjector(LedgerAccountingPeriod period)
+        => new(
             new PeriodOnlyLedgerJournalStore(period),
             new AccountingPolicyService(),
             BuildSecurityMasterQueryService());
-        return new AccrualLedgerService(projector);
-    }
+
+    private static AccrualLedgerService CreateService(LedgerAccountingPeriod period)
+        => new(CreateProjector(period));
 
     private static Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService BuildSecurityMasterQueryService()
     {

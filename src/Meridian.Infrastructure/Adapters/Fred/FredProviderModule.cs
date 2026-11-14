@@ -1,4 +1,5 @@
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -34,6 +35,7 @@ public sealed class FredProviderModule : ConfigurableProviderModuleBase,
         services.AddSingleton<FredSymbolSearchProvider>(provider =>
             CreateSearch(provider.GetRequiredService<ProviderFactory>(), GetApiKey())
             ?? throw new InvalidOperationException("FRED has no configured symbol-search capability."));
+        services.AddSingleton<ISecurityRateObservationProvider>(provider => provider.GetRequiredService<FredHistoricalDataProvider>());
     }
 
     public bool IsCapabilityConfigured(Type contract, IServiceProvider services)

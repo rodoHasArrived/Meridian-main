@@ -15,14 +15,14 @@ import type {
   CoveredCallTrade
 } from "@/lib/covered-call";
 import { buildShortCallPayoffCurve, shortCallBreakEven } from "@/lib/covered-call/payoff";
+import { formatFixed, formatPrefixedCurrency } from "@/lib/format";
 import {
   formatCount,
   formatDecimal,
   formatExitReason,
   formatRatioAsPercent,
   formatPrice,
-  formatSignedMoney,
-  formatUtcDateTime
+  formatCoveredCallDateTime
 } from "@/screens/covered-call-screen.formatters";
 
 export type CoveredCallStage = "configure" | "run" | "results";
@@ -1191,7 +1191,7 @@ function buildCoveredCallPayoffChart(
     };
   }
   const path = samples
-    .map((sample, index) => `${index === 0 ? "M" : "L"}${xScale(sample.spot).toFixed(1)},${yScale(sample.payoff).toFixed(1)}`)
+    .map((sample, index) => `${index === 0 ? "M" : "L"}${formatFixed(xScale(sample.spot), 1)},${formatFixed(yScale(sample.payoff), 1)}`)
     .join(" ");
 
   return {
@@ -1210,7 +1210,7 @@ function buildCoveredCallTradeTimelineRow(
   selectedIndex: number
 ): CoveredCallTradeTimelineRowViewModel {
   const strikeLabel = formatPrice(trade.strike);
-  const pnlLabel = formatSignedMoney(trade.totalNetPnl);
+  const pnlLabel = formatPrefixedCurrency(trade.totalNetPnl);
   const statusLabel = trade.wasAssigned ? "Assigned" : trade.isWin ? "Closed gain" : "Closed loss";
   const exitReasonLabel = formatExitReason(trade.exitReason);
   const statusBadgeVariant: CoveredCallBadgeVariant = trade.wasAssigned
@@ -1219,7 +1219,7 @@ function buildCoveredCallTradeTimelineRow(
       ? "success"
       : "danger";
   const id = coveredCallTradeRowId(trade, index);
-  const summary = `${underlyingSymbol} trade ${index + 1}, entry ${trade.entryDate}, exit ${trade.exitDate}, strike ${strikeLabel}, PnL ${pnlLabel}, status ${statusLabel}.`;
+  const summary = `${underlyingSymbol} trade ${index + 1}, entry ${trade.entryDate}, exit ${trade.exitDate}, strike ${strikeLabel}, P&L ${pnlLabel}, status ${statusLabel}.`;
 
   return {
     id,
@@ -1256,22 +1256,22 @@ function buildCoveredCallTradeTimelineDetail(
     : trade.isWin
       ? "success"
       : "danger";
-  const totalPnl = formatSignedMoney(trade.totalNetPnl);
+  const totalPnl = formatPrefixedCurrency(trade.totalNetPnl);
 
   return {
     panelId: COVERED_CALL_TRADE_DETAIL_PANEL_ID,
     eyebrow: "Selected trade",
     title: `${underlyingSymbol} ${strikeLabel} call`,
     subtitle: `${trade.entryDate} to ${trade.exitDate} · ${trade.contracts} contract${trade.contracts === 1 ? "" : "s"}`,
-    description: `${statusLabel}; exit reason ${exitReasonLabel}; ${totalPnl} total net PnL.`,
+    description: `${statusLabel}; exit reason ${exitReasonLabel}; ${totalPnl} total net P&L.`,
     statusLabel,
     statusBadgeVariant,
     fields: [
       { label: "Exit reason", value: exitReasonLabel },
-      { label: "Entry credit", value: formatSignedMoney(trade.entryCredit) },
-      { label: "Exit debit", value: formatSignedMoney(trade.exitDebit) },
-      { label: "Net per contract", value: formatSignedMoney(trade.netPnlPerContract) },
-      { label: "Total net PnL", value: totalPnl },
+      { label: "Entry credit", value: formatPrefixedCurrency(trade.entryCredit) },
+      { label: "Exit debit", value: formatPrefixedCurrency(trade.exitDebit) },
+      { label: "Net per contract", value: formatPrefixedCurrency(trade.netPnlPerContract) },
+      { label: "Total net P&L", value: totalPnl },
       { label: "Holding days", value: formatCount(trade.holdingDays) },
       { label: "Multiplier", value: formatCount(trade.multiplier) },
       { label: "Entry IV", value: trade.entryImpliedVolatility === null ? "—" : formatRatioAsPercent(trade.entryImpliedVolatility) },
@@ -1373,7 +1373,7 @@ function buildChainPreviewRow(
 ): CoveredCallChainPreviewRowViewModel {
   const strikeLabel = formatPrice(row.strike);
   const bidLabel = formatPrice(row.bid);
-  const deltaLabel = formatDecimal(row.delta, 2);
+  const deltaLabel = row.deltaAvailable === false ? "Unavailable" : formatDecimal(row.delta, 2);
   const statusLabel = row.meetsAllFilters ? "Pass" : row.rejectReason ?? "Reject";
   const statusBadgeVariant: CoveredCallBadgeVariant = row.meetsAllFilters ? "success" : "outline";
   const rowBase = `${preview.underlyingSymbol} ${strikeLabel} call expiring ${row.expiration}`;
@@ -1386,7 +1386,7 @@ function buildChainPreviewRow(
     daysToExpirationLabel: formatCount(row.daysToExpiration),
     bidLabel,
     deltaLabel,
-    openInterestLabel: formatCount(row.openInterest),
+    openInterestLabel: row.openInterestAvailable === false ? "Unavailable" : formatCount(row.openInterest),
     statusLabel,
     statusBadgeVariant,
     statusAriaLabel: row.meetsAllFilters
@@ -1423,10 +1423,13 @@ function buildChainPreviewDetail(
       { label: "Expiration", value: row.expiration },
       { label: "DTE", value: formatCount(row.daysToExpiration) },
       { label: "Bid / Ask", value: `${formatPrice(row.bid)} / ${formatPrice(row.ask)}` },
-      { label: "Delta", value: formatDecimal(row.delta, 2) },
+      { label: "Delta", value: row.deltaAvailable === false ? "Unavailable" : formatDecimal(row.delta, 2) },
       { label: "Implied volatility", value: row.impliedVolatility === null ? "—" : formatRatioAsPercent(row.impliedVolatility) },
-      { label: "Open interest", value: formatCount(row.openInterest) },
-      { label: "Volume", value: formatCount(row.volume) }
+      { label: "Open interest", value: row.openInterestAvailable === false ? "Unavailable" : formatCount(row.openInterest) },
+      { label: "Volume", value: row.volumeAvailable === false ? "Unavailable" : formatCount(row.volume) },
+      { label: "Spread / midpoint", value: row.spreadFraction == null ? "Unavailable" : formatRatioAsPercent(row.spreadFraction) },
+      { label: "Quoted bid premium / unit", value: formatPrice(row.bid) },
+      { label: "Contract multiplier", value: row.multiplier == null ? "Unavailable" : formatCount(row.multiplier) }
     ],
     ariaLabel: `Selected covered-call candidate: ${preview.underlyingSymbol} ${strikeLabel} call expiring ${row.expiration}`
   };
@@ -1440,7 +1443,7 @@ function clampIndex(index: number, length: number): number {
 
 export function buildCoveredCallHistoryRows(history: CoveredCallRunSummary[]): CoveredCallHistoryRowViewModel[] {
   return history.map((row) => {
-    const startedAtLabel = formatUtcDateTime(row.startedAt);
+    const startedAtLabel = formatCoveredCallDateTime(row.startedAt);
     const rangeLabel = `${row.from} to ${row.to}`;
     const statusBadgeVariant = statusBadgeVariantForHistory(row.status);
     const cagrLabel = row.cagr === null ? "—" : formatRatioAsPercent(row.cagr);
@@ -1522,7 +1525,7 @@ export interface CoveredCallScreenViewModel extends CoveredCallScreenState {
   selectChainRow: (index: number) => void;
   startRun: () => Promise<void>;
   cancelRun: () => Promise<void>;
-  loadHistory: () => Promise<void>;
+  loadHistory: (signal?: AbortSignal) => Promise<void>;
   openRun: (runId: string) => Promise<void>;
   selectTradeRow: (index: number) => void;
   selectOpenPosition: (index: number) => void;
@@ -1586,6 +1589,10 @@ export function useCoveredCallScreenViewModel(
   const [pendingCancelRunId, setPendingCancelRunId] = useState<string | null>(null);
 
   const setField = useCallback(<K extends keyof CoveredCallFormState>(key: K, value: CoveredCallFormState[K]) => {
+    if (["underlyingSymbol", "from", "minStrike", "maxDelta", "minDte", "maxDte", "minOpenInterest", "minVolume", "maxSpreadPct"].includes(key)) {
+      chainAbortRef.current?.abort();
+      setChainPreview({ status: "idle", data: null, error: null, selectedIndex: 0 });
+    }
     setForm((prev) => ({ ...prev, [key]: value }));
     setFormErrors((prev) => {
       if (!(key in prev)) return prev;
@@ -1596,6 +1603,8 @@ export function useCoveredCallScreenViewModel(
   }, []);
 
   const resetForm = useCallback(() => {
+    chainAbortRef.current?.abort();
+    setChainPreview({ status: "idle", data: null, error: null, selectedIndex: 0 });
     setForm(DEFAULT_COVERED_CALL_FORM);
     setFormErrors({});
     setPendingCancelRunId(null);
@@ -1644,9 +1653,9 @@ export function useCoveredCallScreenViewModel(
         maxSpreadPct: Number(form.maxSpreadPct)
       }, controller.signal);
 
-      setChainPreview({ status: "ready", data, error: null, selectedIndex: 0 });
+      if (!controller.signal.aborted) setChainPreview({ status: "ready", data, error: null, selectedIndex: 0 });
     } catch (error) {
-      if ((error as Error).name === "AbortError") return;
+      if (controller.signal.aborted || (error as Error).name === "AbortError") return;
       setChainPreview({
         status: "error",
         data: null,
@@ -1677,6 +1686,7 @@ export function useCoveredCallScreenViewModel(
       void refreshChainPreview();
     }, chainDebounceMs);
     return () => {
+      chainAbortRef.current?.abort();
       if (chainDebounceRef.current !== null) {
         clearTimeout(chainDebounceRef.current);
         chainDebounceRef.current = null;
@@ -1810,17 +1820,19 @@ export function useCoveredCallScreenViewModel(
     }
   }, [pendingCancelRunId, run.isCancelling, run.runId, services, stopPolling]);
 
-  const loadHistory = useCallback(async () => {
+  const loadHistory = useCallback(async (signal?: AbortSignal) => {
     setHistoryLoading(true);
     setHistoryError(null);
     try {
-      const items = await services.listRuns(50);
-      setHistory(items);
+      const items = await services.listRuns(50, signal);
+      if (!signal?.aborted) setHistory(items);
     } catch (error) {
-      setHistoryError(describeApiError(error, "Previous covered-call runs failed to load."));
+      if (!signal?.aborted) setHistoryError(describeApiError(error, "Previous covered-call runs failed to load."));
     } finally {
-      setHistoryLoaded(true);
-      setHistoryLoading(false);
+      if (!signal?.aborted) {
+        setHistoryLoaded(true);
+        setHistoryLoading(false);
+      }
     }
   }, [services]);
 

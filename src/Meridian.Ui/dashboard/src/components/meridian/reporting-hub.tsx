@@ -1,11 +1,11 @@
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
-import { AlertTriangle, ArrowUpRight, FileText, PanelRight, TableProperties } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, FileText, TableProperties } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useInRouterContext, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SeverityBadge } from "@/components/operations";
-import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
+import { DetailPane } from "@/components/meridian/detail-pane";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   readReportingWorkSelection,
@@ -13,8 +13,8 @@ import {
   withReportingWorkSelection
 } from "@/components/meridian/reporting-hub.selection";
 import { cn } from "@/lib/utils";
-import { badgeVariantToSeverityStatus, semanticToneToTextClass } from "@/lib/shared-tone-mappings";
-import type { ReportingHubDailyWorkItem, ReportingHubModel, ReportingHubTone } from "@/lib/reporting-hub";
+import type { ReportingHubCard, ReportingHubDailyWorkItem, ReportingHubModel } from "@/lib/reporting-hub";
+import { statusTextClass, toSeverity } from "@/design-system/status-styles";
 
 export interface ReportingHubProps {
   model: ReportingHubModel;
@@ -36,10 +36,62 @@ const reportingWorkColumns: DenseDataTableColumn<ReportingHubDailyWorkItem>[] = 
   {
     id: "state",
     label: "State",
-    render: (item) => <SeverityBadge status={badgeVariantToSeverityStatus(item.badgeVariant)} label={item.statusLabel} />
+    render: (item) => <SeverityBadge status={toSeverity(item.badgeVariant)} label={item.statusLabel} />
   },
   { id: "owner", label: "Owner", render: (item) => <span className="text-xs text-muted-foreground">{item.owner}</span> },
   { id: "due", label: "Due", render: (item) => <span className="text-xs text-muted-foreground">{item.dueLabel ?? "Not supplied"}</span> }
+];
+
+const reportFamilyColumns: DenseDataTableColumn<ReportingHubCard>[] = [
+  {
+    id: "family",
+    label: "Family",
+    sortValue: (card) => card.family,
+    render: (card) => <span className="font-semibold text-foreground">{card.family}</span>
+  },
+  {
+    id: "readiness",
+    label: "Readiness",
+    // Families that need attention come first in ascending order.
+    sortValue: (card) => `${card.needsAttention ? 0 : 1} ${card.statusLabel}`,
+    render: (card) => <SeverityBadge status={toSeverity(card.badgeVariant)} label={card.statusLabel} />
+  },
+  {
+    id: "approved",
+    label: "Latest approved",
+    hideable: true,
+    render: (card) => <span className={cn("text-xs", statusTextClass(card.statusTone))}>{card.approvedAsOfLabel}</span>
+  },
+  {
+    id: "activity",
+    label: "Activity",
+    hideable: true,
+    sortValue: (card) => card.runCount,
+    render: (card) => (
+      <span className="text-xs text-muted-foreground">
+        {card.detail}
+        {card.latestRunId ? (
+          <>
+            {" · latest "}
+            <span className="font-mono">{card.latestAsOfLabel}</span>
+          </>
+        ) : null}
+      </span>
+    )
+  },
+  {
+    id: "action",
+    label: "Action",
+    render: (card) => (
+      <Button asChild variant="outline" size="sm">
+        <a href={card.nextActionHref} aria-label={`${card.nextActionLabel} for ${card.family}`}>
+          <FileText className="h-4 w-4" aria-hidden="true" />
+          {card.nextActionLabel}
+          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </a>
+      </Button>
+    )
+  }
 ];
 
 /**
@@ -151,51 +203,57 @@ function ReportingHubContent({
       </div>
 
       <WorkspaceWorkbenchShell label="Reporting review workbench" switchInspector inspectorRole="region" inspectorLabel="Reporting inspection" inspector={(
-        <DenseRowDetailPanel id={REPORTING_WORK_DETAIL_ID} className="rounded-md border border-border/70 bg-background/75 p-3" ariaLabel="Selected reporting work detail" selectedSourceLabel={selectedWork?.title ?? "No reporting work selected"}>
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <PanelRight className="h-4 w-4 text-primary" aria-hidden="true" />
-            Selected work
-          </div>
+        <DetailPane
+          id={REPORTING_WORK_DETAIL_ID}
+          ariaLabel="Selected reporting work detail"
+          objectType={selectedWork?.kindLabel ?? "Reporting work"}
+          title={selectedWork?.title}
+          status={selectedWork ? { label: selectedWork.statusLabel, tone: selectedWork.badgeVariant } : null}
+          summary={selectedWork?.detail}
+          actions={selectedWork && (selectedWork.primaryActionHref || (selectedWork.secondaryActionHref && selectedWork.secondaryActionLabel)) ? (
+            <>
+              {selectedWork.primaryActionHref ? (
+                <Button asChild size="sm">
+                  <a href={selectedWork.primaryActionHref} aria-label={`${selectedWork.primaryActionLabel}: ${selectedWork.title}`}>
+                    <FileText className="h-4 w-4" aria-hidden="true" />
+                    {selectedWork.primaryActionLabel}
+                  </a>
+                </Button>
+              ) : null}
+              {selectedWork.secondaryActionHref && selectedWork.secondaryActionLabel ? (
+                <Button asChild variant="outline" size="sm">
+                  <a href={selectedWork.secondaryActionHref} aria-label={`${selectedWork.secondaryActionLabel}: ${selectedWork.title}`}>
+                    {selectedWork.secondaryActionLabel}
+                    <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </a>
+                </Button>
+              ) : null}
+            </>
+          ) : null}
+          fields={selectedWork
+            ? [
+                { label: "Blocked", value: selectedWork.blockedLabel, tone: selectedWork.tone },
+                { label: "Owner", value: selectedWork.owner },
+                { label: "Affected output", value: selectedWork.affectedOutputLabel },
+                { label: "Next action", value: selectedWork.nextActionLabel },
+                { label: "Proof posture", value: selectedWork.proofLabel, tone: selectedWork.evidenceGaps.length > 0 ? "warning" : "success" }
+              ]
+            : undefined}
+          fieldsLabel={selectedWork ? `${selectedWork.title} decision facts` : undefined}
+          empty={{
+            text: unavailableSelection ?? "No urgent reporting work is queued. Use the report family organizer to run, review, or set up the next output."
+          }}
+          className="bg-background/75"
+        >
           {selectedWork ? (
-            <div className="mt-3 space-y-3">
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <SeverityBadge status={badgeVariantToSeverityStatus(selectedWork.badgeVariant)} label={selectedWork.statusLabel} />
-                  <Badge variant="outline">{selectedWork.kindLabel}</Badge>
+            <div className="space-y-3">
+              {selectedWork.context.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedWork.context.map((context) => (
+                    <Badge key={context} variant="outline">{context}</Badge>
+                  ))}
                 </div>
-                <h3 className="mt-3 text-base font-semibold leading-snug text-foreground">{selectedWork.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{selectedWork.detail}</p>
-              </div>
-              <div className="flex flex-wrap gap-2 pt-1">
-                {selectedWork.primaryActionHref ? (
-                  <Button asChild size="sm">
-                    <a href={selectedWork.primaryActionHref} aria-label={`${selectedWork.primaryActionLabel}: ${selectedWork.title}`}>
-                      <FileText className="h-4 w-4" aria-hidden="true" />
-                      {selectedWork.primaryActionLabel}
-                    </a>
-                  </Button>
-                ) : null}
-                {selectedWork.secondaryActionHref && selectedWork.secondaryActionLabel ? (
-                  <Button asChild variant="outline" size="sm">
-                    <a href={selectedWork.secondaryActionHref} aria-label={`${selectedWork.secondaryActionLabel}: ${selectedWork.title}`}>
-                      {selectedWork.secondaryActionLabel}
-                      <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-                    </a>
-                  </Button>
-                ) : null}
-              </div>
-              <dl className="grid gap-2 text-xs" aria-label={`${selectedWork.title} decision facts`}>
-                <ReportingHubFact label="Blocked" value={selectedWork.blockedLabel} tone={selectedWork.tone} />
-                <ReportingHubFact label="Owner" value={selectedWork.owner} />
-                <ReportingHubFact label="Affected output" value={selectedWork.affectedOutputLabel} />
-                <ReportingHubFact label="Next action" value={selectedWork.nextActionLabel} />
-                <ReportingHubFact label="Proof posture" value={selectedWork.proofLabel} tone={selectedWork.evidenceGaps.length > 0 ? "warning" : "success"} />
-              </dl>
-              <div className="flex flex-wrap gap-1.5">
-                {selectedWork.context.map((context) => (
-                  <Badge key={context} variant="outline">{context}</Badge>
-                ))}
-              </div>
+              ) : null}
               {selectedWork.evidenceGaps.length > 0 ? (
                 <ul className="grid gap-1 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning" aria-label={`${selectedWork.title} evidence gaps`}>
                   {selectedWork.evidenceGaps.map((gap) => (
@@ -203,14 +261,9 @@ function ReportingHubContent({
                   ))}
                 </ul>
               ) : null}
-
             </div>
-          ) : (
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              {unavailableSelection ?? "No urgent reporting work is queued. Use the report family organizer to run, review, or set up the next output."}
-            </p>
-          )}
-        </DenseRowDetailPanel>
+          ) : null}
+        </DetailPane>
       )}>
 
         <div className="space-y-4">
@@ -257,70 +310,21 @@ function ReportingHubContent({
                 </div>
                 <Badge variant="outline">{model.summaryLabel}</Badge>
               </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-secondary/30 text-xs uppercase text-muted-foreground">
-                    <tr>
-                      <th className="px-3 py-2 text-left">Family</th>
-                      <th className="px-3 py-2 text-left">Readiness</th>
-                      <th className="px-3 py-2 text-left">Latest approved</th>
-                      <th className="px-3 py-2 text-left">Activity</th>
-                      <th className="px-3 py-2 text-left">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {model.cards.map((card) => (
-                      <tr key={card.familyKey} aria-label={card.ariaLabel} className="border-t border-border/70">
-                        <td className="px-3 py-2 font-semibold text-foreground">{card.family}</td>
-                        <td className="px-3 py-2">
-                          <SeverityBadge status={badgeVariantToSeverityStatus(card.badgeVariant)} label={card.statusLabel} />
-                        </td>
-                        <td className={cn("px-3 py-2 text-xs", semanticToneToTextClass(card.statusTone))}>{card.approvedAsOfLabel}</td>
-                        <td className="px-3 py-2 text-xs text-muted-foreground">
-                          {card.detail}
-                          {card.latestRunId ? (
-                            <>
-                              {" · latest "}
-                              <span className="font-mono">{card.latestAsOfLabel}</span>
-                            </>
-                          ) : null}
-                        </td>
-                        <td className="px-3 py-2">
-                          <Button asChild variant={card.needsAttention ? "default" : "outline"} size="sm">
-                            <a href={card.nextActionHref} aria-label={`${card.nextActionLabel} for ${card.family}`}>
-                              <FileText className="h-4 w-4" aria-hidden="true" />
-                              {card.nextActionLabel}
-                              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-                            </a>
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DenseDataTable
+                tableId="report-family-organizer"
+                columns={reportFamilyColumns}
+                rows={model.cards}
+                getRowId={(card) => card.familyKey}
+                getRowAriaLabel={(card) => card.ariaLabel}
+                emptyText="No report families are configured."
+                ariaLabel="Report families"
+                maxVisibleRows={null}
+              />
             </section>
           ) : null}
         </div>
 
       </WorkspaceWorkbenchShell>
     </section>
-  );
-}
-
-function ReportingHubFact({
-  label,
-  value,
-  tone = "muted"
-}: {
-  label: string;
-  value: string;
-  tone?: ReportingHubTone;
-}) {
-  return (
-    <div className="rounded-md border border-border/60 bg-background/50 px-2.5 py-2">
-      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
-      <dd className={cn("mt-1 break-words text-xs leading-5", semanticToneToTextClass(tone))}>{value}</dd>
-    </div>
   );
 }

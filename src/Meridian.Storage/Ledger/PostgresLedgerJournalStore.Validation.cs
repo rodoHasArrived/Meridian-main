@@ -9,6 +9,17 @@ public sealed partial class PostgresLedgerJournalStore
         LedgerJournalEntryWrite entry,
         LedgerBookRecord book)
     {
+        foreach (var line in entry.Entry.Lines)
+        {
+            if (line.Currency is { } currency &&
+                !RequiredAuthoritativeTextEquals(currency.FunctionalCurrency, book.BaseCurrency))
+            {
+                throw new LedgerValidationException(
+                    $"Journal entry '{entry.Entry.JournalEntryId}' line functional currency '{currency.FunctionalCurrency}' " +
+                    $"does not match retained ledger book '{book.DisplayName}' currency '{book.BaseCurrency}'.");
+            }
+        }
+
         // The retained book designation is authoritative. Omitting reserved tags or claiming a
         // different caller policy cannot turn a dedicated elimination book into a manual book.
         if (RequiredAuthoritativeTextEquals(book.AccountingPolicyId, "consolidation-v1")

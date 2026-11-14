@@ -12,11 +12,39 @@ describe("FinancialRecordExplorerShell", () => {
     window.history.replaceState(null, "", "/");
   });
 
+  it("formats run names for display while preserving raw filter, share and save identities", async () => {
+    const user = userEvent.setup();
+    const rawRunId = "portfolio-retained-run-42";
+    const filter = { filterId: "run", label: "Run", value: rawRunId, operator: "equals", tone: "Info" as const };
+    const explorer = createExplorerDto();
+    explorer.scopeItems = [{ label: "Run", value: rawRunId, tone: "Info" }];
+    explorer.filters = [filter];
+    explorer.savedViews[0]!.filters = [filter];
+    explorer.rows = explorer.rows.map((row) => ({ ...row, cells: [...row.cells, { columnId: "run", displayValue: rawRunId, rawValue: rawRunId, tone: "Info", linkHref: "" }] }));
+    explorer.recordGraph.nodes = [{ nodeId: rawRunId, nodeType: "run", label: rawRunId, tone: "Info", href: "/portfolio" }];
+    const onSaveView = vi.fn().mockResolvedValue(undefined);
+    renderExplorer(onSaveView, explorer, undefined, () => "Retained strategy");
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Retained strategy");
+    expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("Retained strategy");
+    expect(screen.getByLabelText("Record graph")).toHaveTextContent("Retained strategy");
+    expect(screen.getByRole("row", { name: /cash assets/i })).toBeInTheDocument();
+    const share = screen.getByRole("link", { name: /^Share state/ }).getAttribute("href")!;
+    expect(new URL(share, "http://localhost").searchParams.getAll("frexFilter")).toContain(`run:${rawRunId}`);
+    await user.type(screen.getByRole("textbox", { name: "Saved view name" }), "Retained view");
+    await user.click(screen.getByRole("button", { name: "Save view" }));
+    expect(onSaveView).toHaveBeenCalledWith(expect.objectContaining({ filters: [filter] }));
+    expect(explorer.scopeItems[0]!.value).toBe(rawRunId);
+    expect(explorer.filters[0]!.value).toBe(rawRunId);
+  });
+
   it("renders source-backed DTO rows and opens row proof detail", async () => {
     const user = userEvent.setup();
     renderExplorer();
 
     expect(screen.getByRole("heading", { name: "Ledger Explorer" })).toBeInTheDocument();
+    const inspect = screen.getByRole("link", { name: "Inspect record — selected record" });
+    expect(inspect).toHaveTextContent("Inspect record");
+    expect(inspect).toHaveAttribute("href", expect.stringMatching(/^\/accounting\/ledger/));
     expect(screen.getByLabelText("Explorer summary")).toHaveTextContent("$1,000.00");
     expect(screen.getByRole("cell", { name: "Cash" })).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -42,7 +70,7 @@ describe("FinancialRecordExplorerShell", () => {
     expect(within(detail).getByText("Impacts")).toBeInTheDocument();
     expect(within(detail).getByRole("link", { name: "Full record" })).toHaveAttribute("href", "/api/workstation/runs/run-1/ledger/trial-balance");
     expect(screen.getByRole("link", {
-      name: "Share Ledger Explorer evidence state: view Controller review; record Revenue"
+      name: "Share state — Ledger Explorer evidence state: view Controller review; record Revenue"
     })).toHaveAttribute(
       "href",
       "/?frexExplorer=ledger&frexView=system-ledger-default&frexRecord=ledger%3Arun-1%3Arevenue"
@@ -55,6 +83,42 @@ describe("FinancialRecordExplorerShell", () => {
     renderExplorer(undefined, createSecurityInstrumentExplorerDto(), onSelectRecord);
 
     await waitFor(() => expect(onSelectRecord).toHaveBeenCalledWith("security:11111111-1111-1111-1111-111111111111"));
+  });
+
+  it("keeps a linked record authoritative until an explicit row selection and controlled update", async () => {
+    const user = userEvent.setup();
+    const explorer = createExplorerDto();
+    const onSelectRecord = vi.fn();
+    const controlledExplorer = (activeRecordId: string) => <FinancialRecordExplorerShell
+      explorerLabel="Accounting" title="Ledger Explorer" description="Linked record"
+      scopeItems={[]} savedViews={[]} summaryItems={[]} appliedFilters={[]}
+      explorer={explorer} activeRecordId={activeRecordId} onSelectRecord={onSelectRecord}
+    ><div>Fallback static content</div></FinancialRecordExplorerShell>;
+    const { rerender } = render(controlledExplorer("ledger:linked-outside-rows"));
+
+    const cash = screen.getByRole("row", { name: /cash assets/i });
+    const revenue = screen.getByRole("row", { name: /revenue income aapl/i });
+    expect(cash).toHaveAttribute("aria-selected", "false");
+    expect(revenue).toHaveAttribute("aria-selected", "false");
+    expect(onSelectRecord).not.toHaveBeenCalled();
+
+    // The source's default row must still be explicitly selectable while a linked record is absent.
+    await user.click(cash);
+    expect(onSelectRecord).toHaveBeenCalledExactlyOnceWith("ledger:run-1:cash");
+    expect(cash).toHaveAttribute("aria-selected", "false");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    rerender(controlledExplorer("ledger:run-1:cash"));
+    expect(cash).toHaveAttribute("aria-selected", "true");
+    expect(revenue).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByRole("dialog", { name: "Cash proof detail" })).toBeInTheDocument();
+    expect(onSelectRecord).toHaveBeenCalledTimes(1);
+
+    rerender(controlledExplorer("ledger:run-1:revenue"));
+    expect(cash).toHaveAttribute("aria-selected", "false");
+    expect(revenue).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
+    expect(onSelectRecord).toHaveBeenCalledTimes(1);
   });
 
   it("opens row proof detail via keyboard activation", async () => {
@@ -410,7 +474,7 @@ describe("FinancialRecordExplorerShell", () => {
     expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
     expect(screen.queryByRole("row", { name: /cash assets/i })).not.toBeInTheDocument();
     expect(screen.getByRole("link", {
-      name: "Share Ledger Explorer evidence state: view Income symbols; search aapl; filter Account Type equals Income; record Revenue"
+      name: "Share state — Ledger Explorer evidence state: view Income symbols; search aapl; filter Account Type equals Income; record Revenue"
     })).toHaveAttribute(
       "href",
       "/accounting?frexExplorer=ledger&frexView=operator-income-symbols&frexSearch=aapl&frexFilter=accountType%3AIncome&frexRecord=ledger%3Arun-1%3Arevenue"
@@ -430,7 +494,7 @@ describe("FinancialRecordExplorerShell", () => {
     expect(screen.queryByRole("row", { name: /cash assets/i })).not.toBeInTheDocument();
     expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
     expect(screen.getByRole("link", {
-      name: "Share Ledger Explorer evidence state: filter Type equals Income; record Revenue"
+      name: "Share state — Ledger Explorer evidence state: filter Type equals Income; record Revenue"
     })).toHaveAttribute(
       "href",
       "/accounting?frexExplorer=ledger&frexFilter=accountType%3AIncome&frexRecord=ledger%3Arun-1%3Arevenue"
@@ -479,7 +543,7 @@ describe("FinancialRecordExplorerShell", () => {
 
     expect(window.location.pathname).toBe("/accounting");
     expect(window.location.search).toBe("?period=2026-06");
-    expect(screen.getByRole("link", { name: /share ledger explorer evidence state/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /share state.*ledger explorer evidence state/i })).toHaveAttribute(
       "href",
       "/accounting?period=2026-06&frexExplorer=ledger&frexView=system-ledger-default&frexSearch=aapl&frexRecord=ledger%3Arun-1%3Arevenue"
     );
@@ -566,7 +630,8 @@ describe("FinancialRecordExplorerShell", () => {
 function renderExplorer(
   onSaveView?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSaveView"],
   explorer: FinancialRecordExplorerDto = createExplorerDto(),
-  onSelectRecord?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSelectRecord"]
+  onSelectRecord?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSelectRecord"],
+  formatRunLabel?: Parameters<typeof FinancialRecordExplorerShell>[0]["formatRunLabel"]
 ) {
   return render(
     <FinancialRecordExplorerShell
@@ -580,6 +645,7 @@ function renderExplorer(
       explorer={explorer}
       onSaveView={onSaveView}
       onSelectRecord={onSelectRecord}
+      formatRunLabel={formatRunLabel}
     >
       <div>Fallback static content</div>
     </FinancialRecordExplorerShell>

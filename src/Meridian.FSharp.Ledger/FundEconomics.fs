@@ -8,8 +8,9 @@ open System
 /// calculators in Meridian.Ledger intentionally do NOT cover: a day-weighted management fee, a
 /// straight-line expense accrual, and a performance fee with a hurdle, high-water mark, and
 /// crystallization. Callers convert the returned amounts into governed ledger postings; nothing
-/// here touches I/O. Currency amounts round to 2 decimals, banker's rounding, matching the C#
-/// LedgerCurrencyRounding used by the sibling kernels.
+/// here touches I/O. Currency amounts round to 2 decimals with away-from-zero midpoint rounding,
+/// the same policy as the C# LedgerCurrencyRounding.RoundCurrency(decimal) used for posted ledger
+/// amounts. The kernels take no currency, so they do not apply per-currency minor units.
 [<RequireQualifiedAccess>]
 module FundEconomics =
 
@@ -17,7 +18,7 @@ module FundEconomics =
     let private CurrencyDecimals = 2
 
     let private roundCurrency (value: decimal) : decimal =
-        Math.Round(value, CurrencyDecimals, MidpointRounding.ToEven)
+        Math.Round(value, CurrencyDecimals, MidpointRounding.AwayFromZero)
 
     /// Outcome of a performance-fee accrual against the high-water mark.
     type PerformanceFeeAccrual =

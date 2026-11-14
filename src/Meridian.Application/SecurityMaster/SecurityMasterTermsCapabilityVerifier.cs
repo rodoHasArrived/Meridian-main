@@ -78,7 +78,7 @@ public sealed class SecurityMasterTermsCapabilityVerifier : ISecurityMasterTerms
                     ? postgres.SqlState : "unavailable";
             _logger.LogError("Security Master capability-floor verification failed ({FailureType}, SQLSTATE {SqlState}); refusing configured writer startup.",
                 exception.GetType().Name, sqlState);
-            throw new StartupRefusedException(
+            throw new SecurityMasterTermsCapabilityRefusedException(
                 "Security Master minimum terms capability could not be verified; refusing configured writer startup. Verify connectivity, permissions and migration 057.");
         }
         if (verifyFloor)
@@ -103,13 +103,13 @@ public sealed class SecurityMasterTermsCapabilityVerifier : ISecurityMasterTerms
         ILogger logger)
     {
         if (state is null)
-            throw new StartupRefusedException("Security Master minimum terms capability state is missing; refusing writer startup.");
+            throw new SecurityMasterTermsCapabilityRefusedException("Security Master minimum terms capability state is missing; refusing writer startup.");
         if (!state.TableExists && state.Floor is not null)
-            throw new StartupRefusedException("Security Master minimum terms capability state is inconsistent; refusing writer startup.");
+            throw new SecurityMasterTermsCapabilityRefusedException("Security Master minimum terms capability state is inconsistent; refusing writer startup.");
         if (state.Floor is not { } floor)
         {
             if (writesDeclaredTerms)
-                throw new StartupRefusedException(
+                throw new SecurityMasterTermsCapabilityRefusedException(
                     "Security Master declared-term writes require an installed and activated minimum capability floor; refusing writer startup.");
             logger.LogWarning(
                 "Security Master minimum terms capability floor is {FloorState}; this node writes only pre-contract terms. Migration 057 and reviewed floor activation must precede any declared-term write-version raise.",
@@ -123,7 +123,7 @@ public sealed class SecurityMasterTermsCapabilityVerifier : ISecurityMasterTerms
             || !string.Equals(floor.MinimumKernelVersion, ScheduleGenerator.KernelVersion, StringComparison.Ordinal)
             || string.IsNullOrWhiteSpace(floor.ChangeRecord)
             || string.IsNullOrWhiteSpace(floor.UpdatedBy))
-            throw new StartupRefusedException(
+            throw new SecurityMasterTermsCapabilityRefusedException(
                 "Security Master minimum terms capability is unknown, newer, or invalid for this node; refusing writer startup.");
         logger.LogInformation(
             "Security Master minimum terms capability accepted: declared mapping {DeclaredMappingVersion}, schedule kernel {KernelVersion}",

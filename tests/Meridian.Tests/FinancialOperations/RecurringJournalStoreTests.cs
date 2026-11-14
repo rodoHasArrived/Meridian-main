@@ -241,6 +241,22 @@ public sealed class RecurringJournalStoreTests : IDisposable
         session.Schedules.Select(item => item.Version).Should().Equal(1, 2, 3);
     }
 
+    [Fact]
+    public async Task CalculatedDefinitions_CanBeRestoredAfterAnEdit()
+    {
+        var calculated = new JournalTemplate("fee", "Management fee", "Calculated", [],
+            calculation: new JournalTemplateCalculation("management-fee-accrual"));
+        await Store().InitializeAsync();
+        await using var session = await Store().OpenSessionAsync();
+        await session.ConfigureAsync(Schedule(), calculated, Scope, [Evidence()], "controller", 0, 0, At);
+        await session.ConfigureAsync(Schedule(200), calculated, Scope, [Evidence()], "controller", 1, 1, At);
+
+        // A calculated template has no fixed lines to plan, which must not stop the restore.
+        await session.ActivateDefinitionsAsync("schedule-a", 1, 1, "controller", "Restore original", At);
+
+        session.GetCurrentSchedule("schedule-a").Version.Should().Be(1);
+    }
+
     [Theory]
     [InlineData(LedgerViewKind.Historical, null)]
     [InlineData(LedgerViewKind.Actual, "simulation-1")]
@@ -322,5 +338,23 @@ public sealed class RecurringJournalStoreTests : IDisposable
     {
         if (Directory.Exists(_directory))
             Directory.Delete(_directory, recursive: true);
+    }
+
+    [Fact]
+    public void FixedLineTemplateDefinition_SerializesWithoutACalculationMember()
+    {
+        // Retained definitions are fingerprinted from this JSON; adding calculated templates must
+        // not change the bytes of any fixed-line definition registered before them.
+        var definition = new RecurringTemplateDefinition("fixed", 1, "", new JournalTemplate("fixed", "Fixed", "",
+            [new JournalTemplateLine(LedgerAccounts.Cash, JournalTemplateSide.Debit, FixedAmount: 1m),
+             new JournalTemplateLine(LedgerAccounts.RealizedGain, JournalTemplateSide.Credit, FixedAmount: 1m)]),
+            "controller", DateTimeOffset.UnixEpoch);
+        var calculated = definition with
+        {
+            Template = new JournalTemplate("fixed", "Fixed", "", [], calculation: new JournalTemplateCalculation("fx-revaluation"))
+        };
+
+        RecurringJournalIdentity.SerializeTemplate(definition).Should().NotContain("alculation");
+        RecurringJournalIdentity.SerializeTemplate(calculated).Should().Contain("\"calculation\":{\"kind\":\"fx-revaluation\"");
     }
 }

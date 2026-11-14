@@ -38,12 +38,18 @@ public sealed partial class WorkstationEndpointsTests
                 "template-manual-csv-upload-v1",
                 "template-custodian-positions-v1",
                 "template-brokerage-transactions-v1",
-                "template-fixed-income-security-master-v1");
+                "template-fixed-income-security-master-v1",
+                "template-fixed-income-security-master-v2");
             templates.Should().Contain(template =>
                 template.ManifestId == "template-manual-csv-upload-v1" &&
                 template.IntegrationType == IntegrationTypeDto.ManualUpload &&
                 template.Capabilities.Contains(ProviderCapabilityKindDto.Positions) &&
                 template.Capabilities.Contains(ProviderCapabilityKindDto.Transactions));
+            templates.Should().ContainSingle(template =>
+                template.ManifestId == "template-fixed-income-security-master-v2" &&
+                template.IntegrationType == IntegrationTypeDto.ManualUpload &&
+                template.Capabilities.Contains(ProviderCapabilityKindDto.SecurityReferenceData) &&
+                template.Capabilities.Contains(ProviderCapabilityKindDto.Holdings));
         }
         finally
         {

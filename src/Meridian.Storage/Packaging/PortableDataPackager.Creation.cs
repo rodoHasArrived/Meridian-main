@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Core.Serialization;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Storage.Packaging;
 
@@ -395,6 +396,7 @@ public sealed partial class PortableDataPackager
         List<SourceFileInfo> sourceFiles,
         PackageManifest manifest,
         PackageOptions options,
+        string? ledgerContent,
         CancellationToken ct)
     {
         var compressionLevel = options.CompressionLevel switch
@@ -406,16 +408,19 @@ public sealed partial class PortableDataPackager
             _ => CompressionLevel.Optimal
         };
 
-        await using var packageStream = File.Create(packagePath);
+        if (options.Format != PackageFormat.Zip)
+        {
+            // Defense in depth behind CreatePackageAsync's format guard: silently writing nothing
+            // (SevenZip) or a corrupting pseudo-tar text stream (TarGz) must never recur.
+            throw new NotSupportedException(
+                $"Package format '{options.Format}' is not implemented; only Zip packages can be created.");
+        }
 
-        if (options.Format == PackageFormat.Zip)
+        // Written to a temp file and renamed into place only once complete, so a cancelled or
+        // failed run never leaves a truncated .zip under the final package name.
+        await AtomicFileWriter.WriteStreamAsync(packagePath, async packageStream =>
         {
             using var archive = new ZipArchive(packageStream, ZipArchiveMode.Create, leaveOpen: true);
-
-            // Add manifest
-            await AddFileToZipAsync(archive, ManifestFileName,
-                JsonSerializer.Serialize(manifest, MarketDataJsonContext.PrettyPrintOptions),
-                compressionLevel, ct);
 
             // Add data files
             var processedCount = 0;
@@ -433,14 +438,18 @@ public sealed partial class PortableDataPackager
 
             // Add supplementary files
             await AddSupplementaryFilesAsync(archive, manifest, options, compressionLevel, ct);
-        }
-        else
-        {
-            // Defense in depth behind CreatePackageAsync's format guard: silently writing nothing
-            // (SevenZip) or a corrupting pseudo-tar text stream (TarGz) must never recur.
-            throw new NotSupportedException(
-                $"Package format '{options.Format}' is not implemented; only Zip packages can be created.");
-        }
+            if (ledgerContent is not null)
+            {
+                await using var ledgerStream = archive.CreateEntry(manifest.LedgerSnapshotPath!, compressionLevel).Open();
+                await ledgerStream.WriteAsync(Encoding.UTF8.GetBytes(ledgerContent), ct);
+            }
+
+            // The manifest goes in last so it carries the supplementary-file inventory that
+            // AddSupplementaryFilesAsync just populated. Readers locate it by name, not position.
+            await AddFileToZipAsync(archive, ManifestFileName,
+                JsonSerializer.Serialize(manifest, MarketDataJsonContext.PrettyPrintOptions),
+                compressionLevel, ct);
+        }, ct);
     }
 
     private async Task AddFileToZipAsync(
@@ -545,30 +554,4 @@ public sealed partial class PortableDataPackager
 
         manifest.SupplementaryFiles = supplementaryFiles.ToArray();
     }
-
-    private async Task UpdateManifestInPackageAsync(
-        string packagePath,
-        PackageManifest manifest,
-        PackageFormat format,
-        CancellationToken ct)
-    {
-        if (format != PackageFormat.Zip)
-            return;
-
-        // Reopen and update manifest
-        using var stream = new FileStream(packagePath, FileMode.Open, FileAccess.ReadWrite);
-        using var archive = new ZipArchive(stream, ZipArchiveMode.Update);
-
-        var manifestEntry = archive.GetEntry(ManifestFileName);
-        if (manifestEntry != null)
-        {
-            manifestEntry.Delete();
-        }
-
-        var newEntry = archive.CreateEntry(ManifestFileName, CompressionLevel.Optimal);
-        await using var entryStream = newEntry.Open();
-        await JsonSerializer.SerializeAsync(entryStream, manifest,
-            MarketDataJsonContext.PrettyPrintOptions, ct);
-    }
-
 }

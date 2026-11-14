@@ -23,6 +23,7 @@ import {
   type StatementRunValidation,
   type StatementValidationIssue
 } from "@/types/statement-run-detail.types";
+import { formatNumber } from "@/lib/format";
 
 export type StatementRunDetailTone = "default" | "success" | "warning" | "danger";
 
@@ -158,7 +159,7 @@ export function buildStatementRunBreaksViewModel(
 
 export function buildStatementRunBreakRow(item: StatementRunBreak): StatementRunBreakRowViewModel {
   const typeLabel = resolveOrdinalLabel(item.breakType, STATEMENT_BREAK_TYPE_LABELS, "Break type");
-  const deltaLabel = formatSignedAmount(item.delta);
+  const deltaLabel = formatNumber(item.delta, { signed: true, minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const toleranceLabel = formatAmount(item.tolerance);
 
   return {
@@ -215,7 +216,7 @@ function resolveReconcileDisabledReason(input: {
   }
 
   if (input.forbidden) {
-    return "This account does not hold reconciliation mutation permission; the server declined the last attempt.";
+    return "This account does not hold permission to change reconciliations; the server declined the last attempt.";
   }
 
   if (input.inFlight) {
@@ -286,14 +287,5 @@ function resolveOrdinalLabel(
 }
 
 function formatAmount(value: number): string {
-  return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function formatSignedAmount(value: number): string {
-  const formatted = formatAmount(Math.abs(value));
-  if (value > 0) {
-    return `+${formatted}`;
-  }
-
-  return value < 0 ? `-${formatted}` : formatted;
+  return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }

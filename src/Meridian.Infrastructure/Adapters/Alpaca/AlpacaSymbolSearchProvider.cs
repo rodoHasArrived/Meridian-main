@@ -14,20 +14,28 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 /// Provides asset search for US equities with trading status information.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Extends <see cref="BaseSymbolSearchProvider"/> for HTTP client management,
 /// rate limiting, disposal, and consistent error handling.
+/// </para>
+/// <para>
+/// Assets are served by the Trading API, so requests go to the paper or live Trading API host
+/// that matches the credentials' trading environment. A paper key pair is rejected by the live
+/// host, which previously left every paper-credentialed search and detail lookup empty.
+/// </para>
 /// </remarks>
 [ImplementsAdr("ADR-001", "Alpaca symbol search provider implementation")]
 public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
 {
     private readonly string? _secretKey;
+    private readonly string _tradingApiBaseUrl;
 
     public override string Name => "alpaca";
     public override string DisplayName => "Alpaca Markets";
     public override int Priority => 5;
 
     protected override string HttpClientName => HttpClientNames.AlpacaSymbolSearch;
-    protected override string BaseUrl => "https://api.alpaca.markets/v2";
+    protected override string BaseUrl => _tradingApiBaseUrl;
     protected override string ApiKeyEnvVar => "ALPACA_KEY_ID";
     protected override IReadOnlyList<string> AlternateApiKeyEnvVars => new[] { "ALPACA__KEYID" };
 
@@ -38,13 +46,24 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
     public override IReadOnlyList<string> SupportedAssetTypes => new[] { "us_equity", "crypto", "us_option", "fixed_income" };
     public override IReadOnlyList<string> SupportedExchanges => new[] { "NASDAQ", "NYSE", "ARCA", "AMEX", "BATS" };
 
+    /// <param name="keyId">Alpaca API key ID (falls back to the environment).</param>
+    /// <param name="secretKey">Alpaca API secret key (falls back to the environment).</param>
+    /// <param name="httpClient">Optional pre-built HTTP client.</param>
+    /// <param name="log">Optional logger.</param>
+    /// <param name="useSandbox">
+    /// <see langword="true"/> for the paper Trading API, <see langword="false"/> for live. When
+    /// omitted, <c>ALPACA_TRADING_ENVIRONMENT</c> decides if it is set; otherwise a paper key ID
+    /// (<c>PK…</c>) selects paper and anything else keeps the live host these lookups always used.
+    /// </param>
     public AlpacaSymbolSearchProvider(
         string? keyId = null,
         string? secretKey = null,
         HttpClient? httpClient = null,
-        ILogger? log = null)
+        ILogger? log = null,
+        bool? useSandbox = null)
         : base(keyId, httpClient, log)
     {
+        _tradingApiBaseUrl = $"{AlpacaTradingApi.ResolveBaseUrl(useSandbox, ApiKey)}/v2";
         _secretKey = secretKey
             ?? Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY")
             ?? Environment.GetEnvironmentVariable("ALPACA__SECRETKEY");
@@ -107,9 +126,24 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
     }
 
     protected override IEnumerable<SymbolSearchResult> DeserializeSearchResults(string json, string query)
-    {
-        var assets = DeserializeJson<List<AlpacaAsset>>(json);
+        => MapSearchResults(DeserializeJson<List<AlpacaAsset>>(json), query);
 
+    protected override IEnumerable<SymbolSearchResult> DeserializeAuthoritativeSearchResults(string json, string query)
+    {
+        // An empty array is a successful search. Malformed JSON, an error object, JSON null or
+        // unidentifiable array members are unavailable evidence, not proof of zero matches.
+        var assets = JsonSerializer.Deserialize<List<AlpacaAsset>>(json)
+            ?? throw new JsonException("Alpaca asset search must return an asset array.");
+        if (assets.Any(static asset => asset is null || string.IsNullOrWhiteSpace(asset.Symbol) || string.IsNullOrWhiteSpace(asset.Name)
+            || string.IsNullOrWhiteSpace(asset.AssetClass) || !AuthoritativeAssetClasses.Contains(asset.AssetClass) || !asset.HasTradable))
+            throw new JsonException("Alpaca asset search requires each asset's symbol, name, class and explicit tradability.");
+        return MapSearchResults(assets, query).Select(static result =>
+            result.AssetType?.ToLowerInvariant() is "treasury" or "corporate"
+                ? result with { AssetType = "FixedIncome" } : result);
+    }
+
+    private IEnumerable<SymbolSearchResult> MapSearchResults(IReadOnlyList<AlpacaAsset>? assets, string query)
+    {
         if (assets is null || assets.Count == 0)
             return Enumerable.Empty<SymbolSearchResult>();
 
@@ -200,7 +234,21 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
         };
     }
 
+    // Vendor response classes are broader than the filters this adapter exposes. Preserve known
+    // non-bond classes, but do not let an unrecognized class hide a possible bond candidate.
+    // https://github.com/alpacahq/alpaca-py/blob/master/alpaca/trading/enums.py (AssetClass).
+    private static readonly HashSet<string> AuthoritativeAssetClasses = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "us_equity", "us_option", "crypto", "crypto_perp", "treasury", "corporate", "global_equity",
+        "us_index", "us_equity_chain", "ipo", "fixed_income"
+    };
 
+
+    /// <remarks>
+    /// The Trading API reports the crypto order increments as JSON strings and the maintenance
+    /// margin as a JSON number; both forms are accepted so one string-encoded field cannot
+    /// discard the whole asset list.
+    /// </remarks>
     private sealed class AlpacaAsset
     {
         [JsonPropertyName("id")]
@@ -222,7 +270,20 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
         public string? Status { get; set; }
 
         [JsonPropertyName("tradable")]
-        public bool Tradable { get; set; }
+        public bool Tradable
+        {
+            get => _tradable;
+            set
+            {
+                _tradable = value;
+                HasTradable = true;
+            }
+        }
+
+        private bool _tradable;
+
+        [JsonIgnore]
+        public bool HasTradable { get; private set; }
 
         [JsonPropertyName("marginable")]
         public bool Marginable { get; set; }
@@ -237,15 +298,19 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
         public bool Fractionable { get; set; }
 
         [JsonPropertyName("maintenance_margin_requirement")]
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal? MaintenanceMarginRequirement { get; set; }
 
         [JsonPropertyName("min_order_size")]
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal? MinOrderSize { get; set; }
 
         [JsonPropertyName("min_trade_increment")]
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal? MinTradeIncrement { get; set; }
 
         [JsonPropertyName("price_increment")]
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal? PriceIncrement { get; set; }
     }
 

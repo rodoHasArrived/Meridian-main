@@ -349,7 +349,7 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
 
         _logger.LogDebug(
             "Queued maintenance execution {ExecutionId} for schedule '{ScheduleName}'",
-            execution.ExecutionId, schedule.Name);
+            SanitizeLogText(execution.ExecutionId), SanitizeLogText(schedule.Name));
 
         return execution;
     }
@@ -703,6 +703,12 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
             {
                 ct.ThrowIfCancellationRequested();
 
+                // Quarantine is recovery evidence, never disposable orphan data. Keep this
+                // guard even for alternate IFileMaintenanceService implementations.
+                if (string.Equals(orphan.Reason, "quarantined_file", StringComparison.OrdinalIgnoreCase) ||
+                    IsQuarantinedPath(orphan.Path))
+                    continue;
+
                 // Only delete orphans older than threshold
                 if (orphan.LastModified < DateTime.UtcNow.AddDays(-options.OrphanAgeDays))
                 {
@@ -730,6 +736,8 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
                 foreach (var tempFile in tempFiles)
                 {
                     ct.ThrowIfCancellationRequested();
+                    if (IsQuarantinedPath(tempFile))
+                        continue;
                     try
                     {
                         var info = new FileInfo(tempFile);
@@ -765,6 +773,10 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
             IssuesResolved = deletedFiles
         };
     }
+
+    private static bool IsQuarantinedPath(string path) =>
+        Path.GetFullPath(path).Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            .Any(segment => segment.StartsWith("_quarantine", StringComparison.OrdinalIgnoreCase));
 
     private async Task<MaintenanceResult> RunDefragmentationAsync(
         MaintenanceTaskOptions options,
@@ -1313,7 +1325,7 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
 
         _logger.LogInformation(
             "Manually triggered maintenance schedule '{Name}' (ID: {ScheduleId})",
-            execution.ScheduleName, scheduleId);
+            SanitizeLogText(execution.ScheduleName), SanitizeLogText(scheduleId));
 
         return execution;
     }
@@ -1326,7 +1338,7 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
             {
                 _explicitCancellations[executionId] = 0;
                 cts.Cancel();
-                _logger.LogInformation("Cancelled maintenance execution {ExecutionId}", executionId);
+                _logger.LogInformation("Cancelled maintenance execution {ExecutionId}", SanitizeLogText(executionId));
                 return Task.FromResult(true);
             }
             catch (ObjectDisposedException)
@@ -1338,11 +1350,18 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         return Task.FromResult(false);
     }
 
+    private static string SanitizeLogText(string? value) =>
+        (value ?? string.Empty).Replace('\r', '_').Replace('\n', '_');
+
     public MaintenanceServiceStatus GetStatus()
     {
         var summary = _scheduleManager.GetStatusSummary();
+        // UtcNow.Date is a DateTime of unspecified kind; converting it back to DateTimeOffset
+        // applied the host's local offset, shifting "today" by that offset on non-UTC hosts.
+        var now = DateTimeOffset.UtcNow;
+        var startOfUtcDay = new DateTimeOffset(now.UtcDateTime.Date, TimeSpan.Zero);
         var executionsToday = _scheduleManager.ExecutionHistory
-            .GetExecutionsByTimeRange(DateTimeOffset.UtcNow.Date, DateTimeOffset.UtcNow)
+            .GetExecutionsByTimeRange(startOfUtcDay, now)
             .Count;
 
         return new MaintenanceServiceStatus(

@@ -3,9 +3,28 @@ import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import {
   ChartAccountPathBuilder,
+  ConfigureComboField,
   ConfigureKeyValueField
 } from "@/screens/accounting-screen.configure-panel";
 import type { AccountingChartAccountEditorViewModel } from "@/screens/accounting-screen.view-model";
+
+describe("ConfigureComboField", () => {
+  it("retains arbitrary string drafts while offering the standard choices as suggestions", () => {
+    const onChange = vi.fn();
+    const { rerender } = render(<ConfigureComboField id="approval-role" label="Approval role" value="ExternalReviewer"
+      options={["Preparer", "Controller"]} onChange={onChange} />);
+    const field = screen.getByRole("combobox", { name: "Approval role" });
+    expect(field).toHaveValue("ExternalReviewer");
+    const suggestions = document.getElementById(field.getAttribute("list")!);
+    expect(suggestions?.querySelector('option[value="ExternalReviewer"]')).not.toBeNull();
+    expect(suggestions?.querySelector('option[value="Controller"]')).not.toBeNull();
+    fireEvent.change(field, { target: { value: "IndependentApprover" } });
+    expect(onChange).toHaveBeenLastCalledWith("IndependentApprover");
+    rerender(<ConfigureComboField id="approval-role" label="Approval role" value="IndependentApprover"
+      options={["Preparer", "Controller"]} onChange={onChange} />);
+    expect(field).toHaveValue("IndependentApprover");
+  });
+});
 
 function ControlledKeyValue({ initial, onSerialized }: { initial: string; onSerialized: (value: string) => void }) {
   const [value, setValue] = useState(initial);

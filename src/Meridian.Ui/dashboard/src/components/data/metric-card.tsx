@@ -4,6 +4,8 @@ import { buildMetricCardViewModel } from "@/components/meridian/metric-card.view
 import { useKpi } from "@/lib/kpi-context";
 import { kpiAttributes, type KpiId, type KpiScope } from "@/lib/kpi-registry";
 import type { MetricSnapshot } from "@/types";
+import { MetricPassport } from "@/components/meridian/metric-passport";
+import { hasDeclaredMetricBasis, metricBasisLabel } from "@/lib/metric-context";
 
 export type MetricCardTone = MetricTileTone;
 
@@ -31,12 +33,15 @@ function MetricCardComponent({ id, scope }: MetricCardProps) {
     <div {...kpiAttributes(metric)}>
       <MetricTile
         label={view.label}
-        value={<span data-kpi-rendered-value>{view.value}</span>}
+        value={<span className="inline-flex items-center gap-1"><span data-kpi-rendered-value>{view.value}</span><MetricPassport metric={metric} /></span>}
         delta={view.delta ?? undefined}
         tone={metricTone[metric.tone]}
         trend={trend}
         ariaLabel={view.ariaLabel}
         deltaAriaLabel={view.deltaAriaLabel ?? undefined}
+        freshnessLabel={view.freshnessLabel ?? undefined}
+        provenance={view.provenanceText ?? undefined}
+        basis={hasDeclaredMetricBasis(metric) ? metricBasisLabel(metric) : metric.asOf?.trim() ? `As of ${metric.asOf}` : undefined}
       />
     </div>
   );

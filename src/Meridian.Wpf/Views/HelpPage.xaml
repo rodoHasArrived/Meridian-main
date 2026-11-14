@@ -1,4 +1,5 @@
 <Page x:Class="Meridian.Wpf.Views.HelpPage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -206,35 +207,35 @@
                                 </Grid.RowDefinitions>
 
                                 <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
-                                    <TextBlock Text="Ctrl + 1" FontFamily="Cascadia Code, Consolas"
+                                    <TextBlock Text="Ctrl + 1" FontFamily="{DynamicResource MeridianDataFontFamily}"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 </Border>
                                 <TextBlock Grid.Row="0" Grid.Column="1" Text="Go to Strategy Workspace" VerticalAlignment="Center"
                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
 
                                 <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
-                                    <TextBlock Text="Ctrl + 2" FontFamily="Cascadia Code, Consolas"
+                                    <TextBlock Text="Ctrl + 2" FontFamily="{DynamicResource MeridianDataFontFamily}"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 </Border>
                                 <TextBlock Grid.Row="1" Grid.Column="1" Text="Go to Symbols" VerticalAlignment="Center"
                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
 
                                 <Border Grid.Row="2" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
-                                    <TextBlock Text="Ctrl + 3" FontFamily="Cascadia Code, Consolas"
+                                    <TextBlock Text="Ctrl + 3" FontFamily="{DynamicResource MeridianDataFontFamily}"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 </Border>
                                 <TextBlock Grid.Row="2" Grid.Column="1" Text="Go to Storage" VerticalAlignment="Center"
                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
 
                                 <Border Grid.Row="3" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
-                                    <TextBlock Text="Ctrl + ," FontFamily="Cascadia Code, Consolas"
+                                    <TextBlock Text="Ctrl + ," FontFamily="{DynamicResource MeridianDataFontFamily}"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 </Border>
                                 <TextBlock Grid.Row="3" Grid.Column="1" Text="Open Settings" VerticalAlignment="Center"
                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
 
                                 <Border Grid.Row="4" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
-                                    <TextBlock Text="F1" FontFamily="Cascadia Code, Consolas"
+                                    <TextBlock Text="F1" FontFamily="{DynamicResource MeridianDataFontFamily}"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 </Border>
                                 <TextBlock Grid.Row="4" Grid.Column="1" Text="Open Help" VerticalAlignment="Center"
@@ -262,35 +263,35 @@
                                 </Grid.RowDefinitions>
 
                                 <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
-                                    <TextBlock Text="Ctrl + S" FontFamily="Cascadia Code, Consolas"
+                                    <TextBlock Text="Ctrl + S" FontFamily="{DynamicResource MeridianDataFontFamily}"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 </Border>
                                 <TextBlock Grid.Row="0" Grid.Column="1" Text="Start Collector" VerticalAlignment="Center"
                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
 
                                 <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
-                                    <TextBlock Text="Ctrl + Shift + S" FontFamily="Cascadia Code, Consolas"
+                                    <TextBlock Text="Ctrl + Shift + S" FontFamily="{DynamicResource MeridianDataFontFamily}"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 </Border>
                                 <TextBlock Grid.Row="1" Grid.Column="1" Text="Stop Collector" VerticalAlignment="Center"
                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
 
                                 <Border Grid.Row="2" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
-                                    <TextBlock Text="Ctrl + R" FontFamily="Cascadia Code, Consolas"
+                                    <TextBlock Text="Ctrl + R" FontFamily="{DynamicResource MeridianDataFontFamily}"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 </Border>
                                 <TextBlock Grid.Row="2" Grid.Column="1" Text="Refresh Status" VerticalAlignment="Center"
                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
 
                                 <Border Grid.Row="3" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
-                                    <TextBlock Text="Ctrl + N" FontFamily="Cascadia Code, Consolas"
+                                    <TextBlock Text="Ctrl + N" FontFamily="{DynamicResource MeridianDataFontFamily}"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 </Border>
                                 <TextBlock Grid.Row="3" Grid.Column="1" Text="Add New Symbol" VerticalAlignment="Center"
                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
 
                                 <Border Grid.Row="4" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">
-                                    <TextBlock Text="Ctrl + E" FontFamily="Cascadia Code, Consolas"
+                                    <TextBlock Text="Ctrl + E" FontFamily="{DynamicResource MeridianDataFontFamily}"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 </Border>
                                 <TextBlock Grid.Row="4" Grid.Column="1" Text="Export Data" VerticalAlignment="Center"

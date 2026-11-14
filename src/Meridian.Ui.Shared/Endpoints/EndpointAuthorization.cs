@@ -300,7 +300,8 @@ public static class EndpointAuthorization
     /// that declares itself honestly must still be refused, which is the capability the control was
     /// written for; overwriting the body outright would make the gate unforgeable and, in the same
     /// stroke, untriggerable for anything holding a session. So a declared non-human origin is
-    /// carried through as-is, keeping the specific kind for evidence, and only a declared
+    /// mapped to its recognized server value, keeping the specific kind for evidence; unrecognized
+    /// numeric values fail closed as automation. Only a declared
     /// <see cref="OperationsActionOriginDto.HumanOperator"/> is re-derived.
     /// </para>
     /// <para>
@@ -327,9 +328,15 @@ public static class EndpointAuthorization
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        return declaredOrigin == OperationsActionOriginDto.HumanOperator
-            ? DeriveActionOriginFromPrincipal(context)
-            : declaredOrigin;
+        // Construct the admitted value on the server. The declaration may narrow standing,
+        // but neither an unrecognised numeric enum nor the original bound value is authority.
+        return declaredOrigin switch
+        {
+            OperationsActionOriginDto.HumanOperator => DeriveActionOriginFromPrincipal(context),
+            OperationsActionOriginDto.AutomationSuggestion => OperationsActionOriginDto.AutomationSuggestion,
+            OperationsActionOriginDto.AssistantDraft => OperationsActionOriginDto.AssistantDraft,
+            _ => OperationsActionOriginDto.AutomationAssistant
+        };
     }
 
     /// <summary>

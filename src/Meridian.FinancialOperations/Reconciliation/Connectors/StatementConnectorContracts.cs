@@ -67,6 +67,17 @@ public sealed record StatementParseIssue(
 }
 
 /// <summary>
+/// Which booked balance a statement connector emits as its <see cref="StatementRecordKind.CashBalance"/> row.
+/// Reconciliation runs always use <see cref="Closing"/>; <see cref="Opening"/> is an explicit opt-in used only
+/// by shadow-mode onboarding to read the incumbent's opening booked balance (camt.053 OPBD, BAI2 010 only).
+/// </summary>
+public enum StatementBalanceRole
+{
+    Closing,
+    Opening
+}
+
+/// <summary>
 /// The kind of statement data a canonical record carries. Mirrors the Domain
 /// <c>StatementRowKind</c> taxonomy so mixed statements (positions + transactions +
 /// cash + fees + dividends) classify identically across every connector.
@@ -160,6 +171,11 @@ public sealed record StatementParseResult(
 /// stable row-ingestion contract; this sidecar preserves account, cursor, options, borrow,
 /// and tax-lot detail without flattening missing values into zeroes.
 /// </summary>
+/// <param name="FundAccountId">
+/// The ownership-checked fund account the import was committed for. Readers that expose this
+/// evidence across tenants scope it by this owner; evidence retained before it was recorded has
+/// no owner and is shown to no tenant.
+/// </param>
 public sealed record StatementCanonicalEvidenceArtifact(
     string ConnectorId,
     string? ProfileId,
@@ -170,7 +186,8 @@ public sealed record StatementCanonicalEvidenceArtifact(
     IReadOnlyList<BrokerageActivityEventDto> ActivityEvents,
     IReadOnlyList<BrokerageActivityCursorDto> ActivityCursors,
     IReadOnlyList<BrokerageTaxLotSnapshotDto> TaxLots,
-    IReadOnlyList<BrokerageBorrowPositionSnapshotDto> BorrowPositions);
+    IReadOnlyList<BrokerageBorrowPositionSnapshotDto> BorrowPositions,
+    string? FundAccountId = null);
 
 /// <summary>
 /// Parses a source statement document into normalized statement entities and parse issues.

@@ -53,6 +53,40 @@ class FakeCursor:
         self.closed = True
 
 
+class RepositoryMigrationRegistrationTests(unittest.TestCase):
+    """Exercise the actual registry so a newly shipped migration owner cannot be omitted."""
+
+    def test_every_repository_migration_directory_is_registered(self) -> None:
+        root = Path(__file__).resolve().parents[2]
+        config = json.loads((root / "database/schema-control.json").read_text(encoding="utf-8"))
+
+        inventory = build_migration_inventory(root, config)
+
+        self.assertFalse(inventory.has_errors, inventory.findings)
+        triage = next(item for item in inventory.files if item.filename == "001_operator_triage.sql")
+        self.assertEqual("src/Meridian.Storage/Workstation/Migrations/001_operator_triage.sql", triage.path)
+
+    def test_operator_triage_registration_matches_its_runtime_migration_owner(self) -> None:
+        root = Path(__file__).resolve().parents[2]
+        config = json.loads((root / "database/schema-control.json").read_text(encoding="utf-8"))
+        module = next(item for item in config["migration_sets"] if item["id"] == "operator-triage")
+        runner = (root / module["owner"] / "PostgresOperatorTriageStore.cs").read_text(encoding="utf-8")
+        options = (root / module["owner"] / "OperatorTriageStoreOptions.cs").read_text(encoding="utf-8")
+
+        self.assertEqual(module["owner"] + "/Migrations", module["directory"])
+        self.assertIn(f'LedgerTableName = "{module["ledger"]["table"]}"', runner)
+        self.assertIn(f'= "{module["schema"]}";', options)
+        for variable in module["connection_variables"]:
+            composition = (root / "src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs").read_text(encoding="utf-8")
+            self.assertIn(variable, composition)
+        # The runtime uses the shared runner's append-only, unquoted, filename-keyed defaults.
+        self.assertEqual("throw", module["drift_policy"])
+        self.assertFalse(module["quote_schema"])
+        self.assertFalse(module["track_ordinals"])
+        self.assertEqual("filename", module["ledger"]["key_column"])
+        self.assertEqual("checksum", module["ledger"]["checksum_column"])
+
+
 class FakeConnection:
     def __init__(self, cursor: FakeCursor | None = None) -> None:
         self.fake_cursor = cursor or FakeCursor()
@@ -95,7 +129,7 @@ class SchemaControlMigrationTests(unittest.TestCase):
     def test_inventory_is_sorted_and_allows_repeated_prefixes_when_ordinals_are_not_tracked(
         self,
     ) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             self._write(root, "src/Feature/Migrations/001_z.sql", "select 2;")
             self._write(root, "src/Feature/Migrations/001_a.sql", "select 1;")
@@ -111,7 +145,7 @@ class SchemaControlMigrationTests(unittest.TestCase):
         self.assertTrue(all(item.ordinal is None for item in inventory.files))
 
     def test_inventory_enforces_unique_ordinals_only_when_configured(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             self._write(root, "src/Feature/Migrations/001_alpha.sql", "select 1;")
             self._write(root, "src/Feature/Migrations/001_beta.sql", "select 2;")
@@ -131,7 +165,7 @@ class SchemaControlMigrationTests(unittest.TestCase):
         )
 
     def test_inventory_reports_unregistered_sql_migration_directory(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             self._write(root, "src/Feature/Migrations/001_feature.sql", "select 1;")
             self._write(root, "src/Other/Migrations/001_other.sql", "select 2;")
@@ -148,7 +182,7 @@ class SchemaControlMigrationTests(unittest.TestCase):
     def test_immutable_comparison_flags_changed_existing_file_but_not_added_file(
         self,
     ) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             self._write(
                 root, "src/Feature/Migrations/001_existing.sql", "select 'current';"
@@ -166,7 +200,7 @@ class SchemaControlMigrationTests(unittest.TestCase):
         self.assertTrue(findings[0].path.endswith("001_existing.sql"))
 
     def test_destructive_scan_checks_added_files_and_ignores_comments(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             self._write(
                 root,
@@ -194,7 +228,7 @@ class SchemaControlMigrationTests(unittest.TestCase):
     def test_apply_migrations_uses_injected_connector_schema_substitution_and_ledger(
         self,
     ) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             self._write(
                 root,
@@ -230,7 +264,7 @@ class SchemaControlMigrationTests(unittest.TestCase):
         self.assertTrue(connection.fake_cursor.closed)
 
     def test_apply_migrations_refuses_nonempty_database_before_writes(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             self._write(root, "src/Feature/Migrations/001_create.sql", "select 1;")
             inventory = build_migration_inventory(root, self._config())
@@ -257,7 +291,7 @@ class SchemaControlMigrationTests(unittest.TestCase):
     def test_ledger_shape_matches_configured_checksum_nullability_and_ordinal_name(
         self,
     ) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             self._write(root, "src/Feature/Migrations/001_create.sql", "select 1;")
             config = self._config(track_ordinals=True)
@@ -286,7 +320,7 @@ class SchemaControlMigrationTests(unittest.TestCase):
     def test_apply_migrations_fails_closed_on_inventory_errors_without_connecting(
         self,
     ) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             self._write(root, "src/Feature/Migrations/001_a.sql", "select 1;")
             self._write(root, "src/Feature/Migrations/001_b.sql", "select 2;")
@@ -308,7 +342,7 @@ class SchemaControlMigrationTests(unittest.TestCase):
     def test_apply_migrations_rolls_back_and_closes_connection_on_database_failure(
         self,
     ) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             self._write(
                 root,

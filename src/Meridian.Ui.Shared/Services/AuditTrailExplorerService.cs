@@ -1,4 +1,5 @@
 using System.Text;
+using System.Globalization;
 using Meridian.Contracts.Integrity;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.Workstation;
@@ -6,25 +7,46 @@ using Meridian.Execution.Services;
 
 namespace Meridian.Ui.Shared.Services;
 
+public sealed class AuditTrailExportLimitException(string message) : InvalidOperationException(message);
+
 /// <summary>
 /// Projects execution audit records into the shared cross-object audit timeline contract.
 /// </summary>
 public sealed class AuditTrailExplorerService
 {
+    public const int MaximumExportEntries = 250_000;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly IOperationsContinuityWorkflowService? _operationsContinuity;
+    private readonly PaperSessionPersistenceService? _paperSessions;
+    public bool HasSource => _auditTrail is not null || _operationsContinuity is not null;
 
     public AuditTrailExplorerService(
         ExecutionAuditTrailService? auditTrail = null,
-        IOperationsContinuityWorkflowService? operationsContinuity = null)
+        IOperationsContinuityWorkflowService? operationsContinuity = null,
+        PaperSessionPersistenceService? paperSessions = null)
     {
         _auditTrail = auditTrail;
         _operationsContinuity = operationsContinuity;
+        _paperSessions = paperSessions;
     }
 
-    public async Task<AuditTrailExplorerResultDto> SearchAsync(
+    public Task<AuditTrailExplorerResultDto> SearchAsync(
         AuditTrailExplorerQueryDto? query = null,
         CancellationToken ct = default)
+        => ReadAsync(query, null, complete: false, ct);
+
+    /// <summary>HTTP reads authorize each operations source before loading its timeline.</summary>
+    public Task<AuditTrailExplorerResultDto> SearchAuthorizedAsync(AuditTrailExplorerQueryDto? query,
+        Func<OperationsContinuityWorkflowSummaryDto, CancellationToken, Task<bool>> canReadWorkflow, CancellationToken ct = default)
+        => ReadAsync(query, canReadWorkflow ?? throw new ArgumentNullException(nameof(canReadWorkflow)), complete: false, ct);
+
+    /// <summary>Every authorized retained match; the browser/1,000-row browse cap is never an export limit.</summary>
+    public Task<AuditTrailExplorerResultDto> ExportAuthorizedAsync(AuditTrailExplorerQueryDto? query,
+        Func<OperationsContinuityWorkflowSummaryDto, CancellationToken, Task<bool>> canReadWorkflow, CancellationToken ct = default)
+        => ReadAsync(query, canReadWorkflow ?? throw new ArgumentNullException(nameof(canReadWorkflow)), complete: true, ct);
+
+    private async Task<AuditTrailExplorerResultDto> ReadAsync(AuditTrailExplorerQueryDto? query,
+        Func<OperationsContinuityWorkflowSummaryDto, CancellationToken, Task<bool>>? canReadWorkflow, bool complete, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         query ??= new AuditTrailExplorerQueryDto();
@@ -33,6 +55,8 @@ public sealed class AuditTrailExplorerService
         if (_auditTrail is not null)
         {
             var executionEntries = await _auditTrail.GetAllAsync(ct).ConfigureAwait(false);
+            if (complete && executionEntries.Count > MaximumExportEntries)
+                throw new AuditTrailExportLimitException("The complete retained audit source exceeds the export row quota. No partial export was produced.");
             entries.AddRange(executionEntries.Select(static (entry, index) => MapExecution(entry, index + 1)));
         }
 
@@ -42,25 +66,85 @@ public sealed class AuditTrailExplorerService
             foreach (var workflow in workflows)
             {
                 ct.ThrowIfCancellationRequested();
+                if (canReadWorkflow is not null && !await canReadWorkflow(workflow, ct).ConfigureAwait(false))
+                    continue;
                 var timeline = await _operationsContinuity.GetTimelineAsync(workflow.WorkflowId, ct).ConfigureAwait(false);
+                if (canReadWorkflow is not null && timeline.Any(entry => entry.WorkflowId != workflow.WorkflowId || entry.FundAccountId != workflow.FundAccountId))
+                    throw new InvalidDataException("An audit timeline did not match its authorized workflow/account identity.");
+                if (complete && timeline.Count > MaximumExportEntries - entries.Count)
+                    throw new AuditTrailExportLimitException("The complete retained audit source exceeds the export row quota. No partial export was produced.");
                 entries.AddRange(timeline.Select(static (entry, index) => MapOperations(entry, index + 1)));
             }
         }
 
-        var matched = entries
+        // The workstation fill rows are completed-order aggregates. Only actual session
+        // execution reports can claim per-fill identity and an event timestamp here.
+        if (_paperSessions is not null && !string.IsNullOrWhiteSpace(query.OrderId))
+        {
+            await _paperSessions.InitialiseAsync(ct).ConfigureAwait(false);
+            foreach (var summary in _paperSessions.GetSessions())
+            {
+                ct.ThrowIfCancellationRequested();
+                foreach (var fill in _paperSessions.GetSessionFillHistory(summary.SessionId))
+                {
+                    if (complete && entries.Count >= MaximumExportEntries)
+                        throw new AuditTrailExportLimitException("The complete retained audit source exceeds the export row quota. No partial export was produced.");
+                    var metadata = new Dictionary<string, string>
+                    {
+                        ["timestampBasis"] = "execution-report-event",
+                        ["sessionId"] = summary.SessionId,
+                        ["clientOrderId"] = fill.ClientOrderId ?? string.Empty,
+                        ["gatewayOrderId"] = fill.GatewayOrderId ?? string.Empty,
+                        ["reportOrderId"] = fill.OrderId,
+                        ["brokerAccountId"] = fill.BrokerAccountId ?? string.Empty,
+                        ["filledQuantity"] = fill.FilledQuantity.ToString(CultureInfo.InvariantCulture),
+                        ["lastFillQuantity"] = fill.LastFillQuantity?.ToString(CultureInfo.InvariantCulture) ?? "unreported",
+                        ["fillPrice"] = fill.FillPrice?.ToString(CultureInfo.InvariantCulture) ?? "unreported",
+                        ["priceBasis"] = fill.FillPriceIsCumulativeAverage ? "cumulative-average" : "reported-fill-price",
+                        ["source"] = "paper-session-execution-report"
+                    };
+                    entries.Add(new AuditTrailTimelineEntryDto(
+                        $"session-fill:{summary.SessionId}:{PaperSessionFillRecord.ComputeCanonicalFillId(fill):D}",
+                        fill.Timestamp,
+                        "Order",
+                        fill.ClientOrderId ?? fill.OrderId,
+                        "Fill",
+                        fill.ReportType.ToString(),
+                        fill.OrderStatus.ToString(),
+                        Symbol: fill.Symbol,
+                        Message: "Actual session execution report; recorded-at time is not exposed by this read model. Filled quantity may be cumulative; per-event quantity is shown only when reported.",
+                        Metadata: metadata,
+                        EvidenceRoute: $"/api/execution/sessions/{Uri.EscapeDataString(summary.SessionId)}",
+                        ActionLedgerSource: "PaperSessionFillHistory",
+                        ActionLedgerStatus: "SessionRecord",
+                        OrderId: FirstNonBlank(fill.ClientOrderId, fill.OrderId)));
+                }
+            }
+        }
+
+        var orderSelection = SelectOrderContext(entries, query.OrderId);
+        var matched = orderSelection.Entries
             .Where(entry => Matches(entry, query))
             .OrderByDescending(static entry => entry.OccurredAt)
             .ThenBy(static entry => entry.AuditId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static entry => entry.ActionLedgerSource, StringComparer.Ordinal)
+            .ThenBy(static entry => entry.ObjectId, StringComparer.Ordinal)
             .ToArray();
-        var returned = matched
-            .Take(Math.Clamp(query.Limit, 1, 1_000))
-            .ToArray();
+        var returned = complete ? matched : matched.Take(Math.Clamp(query.Limit, 1, 1_000)).ToArray();
 
         return new AuditTrailExplorerResultDto(
             DateTimeOffset.UtcNow,
             matched.Length,
             returned.Length,
-            returned);
+            returned,
+            SourceAvailability: new AuditTrailSourceAvailabilityDto(_auditTrail is not null, _operationsContinuity is not null),
+            Sources: [new("ExecutionAuditTrail", _auditTrail is null ? "Unavailable" : "RetainedRecordsOnly"),
+             new("OperationsContinuityTimeline", _operationsContinuity is null ? "Unavailable" : "RetainedRecordsOnly"),
+             new("PaperSessionFillHistory", _paperSessions is null ? "Unavailable" : string.IsNullOrWhiteSpace(query.OrderId) ? "SelectOrderToRead" : "SessionRecordsOnly")],
+            CoverageNote: "Retained evidence only. Missing events or passed checks are not proof that a stage did not occur. Recording timestamps may differ from broker event times. " +
+            (complete ? "Every matching record from available sources is included; source retention limits historical coverage." : "Browse results are capped at 1000; narrow the time range if truncated.") +
+            (orderSelection.Status == "Ambiguous" ? " Order identity is ambiguous across canonical orders or known source contexts; no events are returned. Use the canonical client/order ID and resolve conflicting evidence." : ""),
+            OrderIdentityStatus: orderSelection.Status);
     }
 
     private static bool Matches(AuditTrailTimelineEntryDto entry, AuditTrailExplorerQueryDto query)
@@ -87,6 +171,53 @@ public sealed class AuditTrailExplorerService
     private static bool MatchesValue(string? actual, string? expected)
         => string.IsNullOrWhiteSpace(expected) ||
            string.Equals(actual, expected.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private static (IEnumerable<AuditTrailTimelineEntryDto> Entries, string Status) SelectOrderContext(
+        IReadOnlyList<AuditTrailTimelineEntryDto> entries, string? orderId)
+    {
+        if (string.IsNullOrWhiteSpace(orderId))
+            return (entries, "NotRequested");
+        var requested = orderId.Trim();
+        // Canonical client/order identities take precedence over another order's coinciding
+        // broker alias. Never transitively union the two identifier namespaces.
+        var canonical = requested;
+        var matching = entries.Where(entry => string.Equals(entry.OrderId, canonical, StringComparison.Ordinal)).ToArray();
+        var status = "CanonicalOrder";
+        if (matching.Length == 0)
+        {
+            var aliases = entries.Where(entry => string.Equals(Metadata(entry, "gatewayOrderId"), requested, StringComparison.Ordinal)).ToArray();
+            if (aliases.Length == 0)
+                return ([], "NotFound");
+            var candidates = aliases.Select(entry => entry.OrderId).Where(value => !string.IsNullOrWhiteSpace(value)).Distinct(StringComparer.Ordinal).ToArray();
+            if (candidates.Length != 1 || aliases.Any(entry => string.IsNullOrWhiteSpace(entry.OrderId)))
+                return ([], "Ambiguous");
+            canonical = candidates[0]!;
+            matching = entries.Where(entry => string.Equals(entry.OrderId, canonical, StringComparison.Ordinal)).ToArray();
+            status = "UniqueBrokerAlias";
+        }
+        if (HasConflictingContext(matching))
+            return ([], "Ambiguous");
+        var direct = matching.Select(entry => entry.AuditId).ToHashSet(StringComparer.Ordinal);
+        var correlations = matching.Select(entry => entry.CorrelationId).Where(value => !string.IsNullOrWhiteSpace(value)).ToHashSet(StringComparer.Ordinal);
+        var references = matching.SelectMany(entry => new[] { Metadata(entry, "manualOverrideId"), Metadata(entry, "overrideId"), Metadata(entry, "escalationId") }).Where(value => !string.IsNullOrWhiteSpace(value)).ToHashSet(StringComparer.Ordinal);
+        return (entries.Where(entry => direct.Contains(entry.AuditId) ||
+            (string.IsNullOrWhiteSpace(entry.OrderId) &&
+             !HasConflictingContext(matching.Append(entry)) &&
+             ((!string.IsNullOrWhiteSpace(entry.CorrelationId) && correlations.Contains(entry.CorrelationId)) ||
+              references.Contains(entry.ObjectId) ||
+              references.Contains(Metadata(entry, "overrideId")) ||
+              references.Contains(Metadata(entry, "escalationId"))))), status);
+    }
+
+    private static bool HasConflictingContext(IEnumerable<AuditTrailTimelineEntryDto> entries)
+    {
+        var rows = entries.ToArray();
+        return rows.Select(entry => entry.BrokerName).Where(value => !string.IsNullOrWhiteSpace(value)).Distinct(StringComparer.OrdinalIgnoreCase).Skip(1).Any() ||
+            new[] { "sessionId", "brokerAccountId", "fundAccountId" }.Any(name => rows.Select(entry => Metadata(entry, name)).Where(value => !string.IsNullOrWhiteSpace(value)).Distinct(StringComparer.Ordinal).Skip(1).Any());
+    }
+
+    private static string? Metadata(AuditTrailTimelineEntryDto entry, string name)
+        => entry.Metadata?.FirstOrDefault(pair => pair.Key.Equals(name, StringComparison.OrdinalIgnoreCase)).Value;
 
     private static bool MatchesRelatedObjectId(AuditTrailTimelineEntryDto entry, string? expected)
         => string.IsNullOrWhiteSpace(expected) ||
@@ -152,7 +283,9 @@ public sealed class AuditTrailExplorerService
             ActionLedgerSource: "ExecutionAuditTrail",
             ActionLedgerSequence: sequence,
             CurrentActionHash: BuildExecutionActionHash(entry),
-            ActionLedgerStatus: "WalRetained");
+            ActionLedgerStatus: "WalRetained",
+            OrderId: FirstNonBlank(GetMetadata(entry, "clientOrderId"), entry.OrderId),
+            BrokerName: entry.BrokerName);
     }
 
     private static AuditTrailTimelineEntryDto MapOperations(OperationsTimelineEntryDto entry, int sequence)

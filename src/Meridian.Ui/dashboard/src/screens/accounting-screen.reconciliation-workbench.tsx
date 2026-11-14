@@ -1,17 +1,34 @@
-import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode, type UIEvent } from "react";
+import { useMemo, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode, type UIEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Landmark, Network, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Kbd } from "@/components/ui/kbd";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
-import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { TableWorkbench } from "@/components/meridian/table-workbench";
+import { DetailRail } from "@/components/meridian/detail-rail";
+import { DesignSystemStatus } from "@/design-system/status";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
+import { BREAK_QUEUE_KEYBOARD_MAP, resolveQueueShortcut } from "@/lib/queue-keyboard-map";
+import {
+  BREAK_QUEUE_VISIT_SURFACE,
+  classifySinceLastVisit,
+  describeSinceLastVisit,
+  summarizeSinceLastVisit,
+  useSinceLastVisit,
+  type SinceLastVisitMark,
+  type SurfaceVisitServices
+} from "@/lib/since-last-visit";
+import { ReconciliationCaseDiscussion } from "./accounting-screen.case-discussion";
 import { cn } from "@/lib/utils";
+import { ReconciliationBulkTriageBar, useReconciliationBulkTriage, type BulkTriageServices } from "./reconciliation-bulk-triage-bar";
 import { sourceObservationLabel, sourceObservationAge } from "./reconciliation-source-observation";
 import { StatementRunDetailTabs } from "./accounting-screen.statement-run-detail";
 import type {
@@ -22,6 +39,7 @@ import type {
 } from "./accounting-screen.view-model";
 import type { ReconciliationQueueStatus, ReconciliationQueueSort } from "./reconciliation-view-state";
 import "@/styles/reconciliation-workbench.css";
+import { Select } from "@/components/ui/select";
 
 type ReconciliationViewModel = ReturnType<typeof useAccountingReconciliationViewModel>;
 type Reconciliation = Pick<ReconciliationViewModel,
@@ -30,6 +48,7 @@ type Reconciliation = Pick<ReconciliationViewModel,
   | "selectedDetail"
   | "selectBreak"
   | "assignBreak"
+  | "beginBreakQueueUpdate"
   | "detailPanelId"
   | "detailEmptyAriaLabel"
   | "detailEmptyTitle"
@@ -44,7 +63,7 @@ type Reconciliation = Pick<ReconciliationViewModel,
   | "emptyText"
   | "tableLabel"
   | "tableCaption"
->;
+> & Partial<Pick<ReconciliationViewModel, "applyCaseworkUpdate" | "sourceRows">>;
 type StatementRuns = Pick<ReconciliationViewModel,
   "statementRunsView" | "refreshStatementRuns" | "selectedRunId" | "selectRun" | "reconciliationQueue"
 >;
@@ -53,6 +72,9 @@ export interface ReconciliationQueueControls {
   queueSearch: string;
   queueStatus: string;
   queueSort: string;
+  /** Hidden break-queue columns, kept in the link (C4). */
+  hiddenColumns?: string[];
+  setHiddenColumns?: (hiddenColumns: string[]) => void;
   setQueueSearch: (value: string) => void;
   setQueueStatus: (value: ReconciliationQueueStatus) => void;
   setQueueSort: (value: ReconciliationQueueSort) => void;
@@ -69,11 +91,11 @@ const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowVie
       </span>
     )
   },
-  { id: "category", label: "Case", render: (row) => <span className="text-foreground">{row.financeLabel}</span> },
+  { id: "category", label: "Case", hideable: true, render: (row) => <span className="text-foreground">{row.financeLabel}</span> },
   {
     id: "variance",
     label: "Variance",
-    align: "right",
+    numeric: true,
     render: (row) => (
       <span
         className={cn(
@@ -85,18 +107,22 @@ const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowVie
       </span>
     )
   },
-  { id: "owner", label: "Owner", render: (row) => <span className="font-mono text-muted-foreground">{row.ownerLabel}</span> },
-  { id: "updated", label: "Updated", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedAtLabel}</span> },
-  { id: "source", label: "Source observation", render: (row) => <span className="block"><span className="block">{sourceObservationLabel(row.lineage)}</span><span className="block text-muted-foreground">{sourceObservationAge(row.lineage)}</span></span> },
+  { id: "owner", label: "Owner", hideable: true, render: (row) => <span className="font-mono text-muted-foreground">{row.ownerLabel}</span> },
+  { id: "updated", label: "Updated", hideable: true, render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedAtLabel}</span> },
+  { id: "source", label: "Source observation", hideable: true, render: (row) => <span className="block"><span className="block">{sourceObservationLabel(row.lineage)}</span><span className="block text-muted-foreground">{sourceObservationAge(row.lineage)}</span></span> },
   { id: "status", label: "Case status", render: (row) => <Badge variant={row.statusBadgeVariant}>{row.status}</Badge> }
 ];
 
-export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice }: {
+export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice, bulkServices, visitServices }: {
   reconciliation: Reconciliation;
   resolveDialog: ResolveDialog;
   runSelector?: ReactNode;
   controls: ReconciliationQueueControls;
   selectionNotice?: string | null;
+  /** Bulk casework services; tests inject fakes. */
+  bulkServices?: BulkTriageServices;
+  /** Reads and records the operator's visit for "since your last visit" markers; tests inject fakes. */
+  visitServices?: Partial<SurfaceVisitServices>;
 }) {
   const location = useLocation();
   const queueRef = useRef<HTMLDivElement>(null);
@@ -107,6 +133,50 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
   const activeResolveBreak = resolveDialog.active
     ? reconciliation.rows.find((row) => row.breakId === resolveDialog.active?.breakId) ?? null : null;
   const visibleRows = filterReconciliationRows(reconciliation.rows, controls);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const triage = useReconciliationBulkTriage({
+    visibleBreakIds: visibleRows.map((row) => row.breakId),
+    beginItemsUpdate: reconciliation.beginBreakQueueUpdate,
+    services: bulkServices
+  });
+  const { isSelected: isBulkSelected, toggle: toggleBulkSelected } = triage;
+  // Since your last visit (C3): rows detected or updated after the operator's previous visit.
+  const sinceLastVisit = useSinceLastVisit(BREAK_QUEUE_VISIT_SURFACE, visitServices);
+  const visitBaseline = sinceLastVisit.baseline;
+  const sinceLastVisitLine = describeSinceLastVisit(sinceLastVisit, summarizeSinceLastVisit(reconciliation.rows, visitBaseline));
+  const withVisitMark = (row: ReconciliationBreakRowViewModel, label: string) => {
+    const mark = classifySinceLastVisit(row, visitBaseline);
+    return mark ? `${label}, ${mark} since your last visit` : label;
+  };
+  const breakColumns = useMemo<DenseDataTableColumn<ReconciliationBreakRowViewModel>[]>(() => [
+    {
+      id: "select",
+      label: "",
+      srLabel: "Bulk selection",
+      render: (row) => (
+        // The row selects on click; the checkbox only changes the bulk selection.
+        <span onClick={(event) => event.stopPropagation()}>
+          <Checkbox
+            aria-label={`Add ${row.strategyName} ${row.financeLabel} to the bulk selection`}
+            checked={isBulkSelected(row.breakId)}
+            onCheckedChange={() => toggleBulkSelected(row.breakId)}
+          />
+        </span>
+      )
+    },
+    ...reconciliationBreakColumns.map((column) => column.id !== "break" ? column : {
+      ...column,
+      render: (row: ReconciliationBreakRowViewModel) => {
+        const mark = classifySinceLastVisit(row, visitBaseline);
+        return (
+          <span className="flex items-start gap-2">
+            <span className="min-w-0 flex-1">{column.render(row)}</span>
+            {mark ? <SinceLastVisitBadge mark={mark} /> : null}
+          </span>
+        );
+      }
+    })
+  ], [isBulkSelected, toggleBulkSelected, visitBaseline]);
   const selectedOutsideFilter = selectedRow && !visibleRows.some((row) => row.breakId === selectedRow.breakId);
   useLayoutEffect(() => {
     const position = (window.history.state?.usr as { reconciliationQueueScroll?: number } | null)?.reconciliationQueueScroll;
@@ -206,8 +276,83 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
     requestAnimationFrame(() => document.getElementById(reconciliation.detailPanelId)?.focus());
   }
 
+  function focusQueueRow(breakId: string) {
+    requestAnimationFrame(() => {
+      const rows = queueRef.current?.querySelectorAll<HTMLElement>("tr[data-dense-row-id]") ?? [];
+      for (const row of rows) {
+        if (row.dataset.denseRowId === breakId) {
+          row.focus();
+          return;
+        }
+      }
+    });
+  }
+
+  function moveSelection(step: 1 | -1) {
+    if (visibleRows.length === 0) return;
+    const index = visibleRows.findIndex((row) => row.breakId === reconciliation.selectedBreakId);
+    const nextIndex = index < 0 ? 0 : Math.min(visibleRows.length - 1, Math.max(0, index + step));
+    const next = visibleRows[nextIndex];
+    if (!next) return;
+    reconciliation.selectBreak(next.breakId);
+    focusQueueRow(next.breakId);
+  }
+
+  // Keyboard triage (C2). The capture phase claims these keys before a focused row's type-ahead.
+  function handleQueueShortcut(event: KeyboardEvent<HTMLElement>): boolean {
+    const action = resolveQueueShortcut(event);
+    if (!action) return false;
+    const current = selectedRow && visibleRows.some((row) => row.breakId === selectedRow.breakId) ? selectedRow : null;
+    switch (action) {
+      case "next":
+        moveSelection(1);
+        break;
+      case "previous":
+        moveSelection(-1);
+        break;
+      case "toggle-select":
+        if (current) toggleBulkSelected(current.breakId);
+        break;
+      case "assign":
+        if (triage.selectedIds.length > 0) triage.start("assign");
+        else if (current?.canAssign) void reconciliation.assignBreak(current.breakId);
+        break;
+      case "evidence":
+        if (current) openInspector();
+        break;
+      case "help":
+        setShortcutsOpen(true);
+        break;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    return true;
+  }
+
   function handleWorkbenchKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (handleQueueShortcut(event)) return;
     const target = event.target as HTMLElement;
+    if (!event.ctrlKey && !event.metaKey && !event.altKey && target.matches("tr[data-dense-row-id]")) {
+      if (event.key === "j" || event.key === "k") {
+        event.preventDefault();
+        event.stopPropagation();
+        // Reuse DenseDataTable's navigation so virtualization, focus and selection
+        // follow the same path as arrow keys.
+        target.dispatchEvent(new globalThis.KeyboardEvent("keydown", { key: event.key === "j" ? "ArrowDown" : "ArrowUp", bubbles: true }));
+        return;
+      }
+      if (selectedRow && event.key === "a" && selectedRow.canAssign) {
+        event.preventDefault(); event.stopPropagation();
+        void reconciliation.assignBreak(selectedRow.breakId);
+        return;
+      }
+      if (selectedRow && ((event.key === "r" && selectedRow.canResolve) || (event.key === "d" && selectedRow.canDismiss))) {
+        event.preventDefault(); event.stopPropagation();
+        resolveDialog.open(selectedRow.breakId, event.key === "r" ? "Resolved" : "Dismissed");
+        openInspector();
+        return;
+      }
+    }
     if (
       (event.key === "Enter" || event.key === " ")
       && queueRef.current?.contains(target)
@@ -244,42 +389,20 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
         inspectorRole="region"
         className={cn("reconciliation-workbench-shell", detailOpen && "reconciliation-workbench--detail-open")}
         inspector={(
-          <DenseRowDetailPanel
+          <DetailRail
             id={reconciliation.detailPanelId}
-            ariaLabel="Selected reconciliation break"
+            ariaLabel={reconciliation.selectedDetail?.ariaLabel ?? "Selected reconciliation break"}
             className="reconciliation-inspector"
-            selectedSourceLabel="Selected from break queue"
+            title={reconciliation.selectedDetail?.title ?? reconciliation.detailEmptyTitle}
+            status={reconciliation.selectedDetail ? <DesignSystemStatus status={reconciliation.selectedDetail.statusLabel}>{reconciliation.selectedDetail.statusLabel}</DesignSystemStatus> : undefined}
+            actions={selectedRow ? renderBreakActions(selectedRow) : undefined}
+            fields={selectedBreakPrimaryFields.map((field) => ({ ...field, numeric: field.label === "Variance" }))}
           >
             <Button type="button" variant="outline" className="reconciliation-back-to-queue" onClick={returnToQueue}>
               Back to break queue
             </Button>
-            <div className="row-detail-panel">
-              {reconciliation.selectedDetail ? (
-                <EntitySummary
-                  eyebrow={reconciliation.selectedDetail.eyebrow}
-                  title={reconciliation.selectedDetail.title}
-                  subtitle={reconciliation.selectedDetail.subtitle}
-                  description={reconciliation.selectedDetail.description}
-                  ariaLabel={reconciliation.selectedDetail.ariaLabel}
-                  actions={selectedRow ? (
-                    <div className="panel-action-zone" aria-label="Selected break actions">
-                      {renderBreakActions(selectedRow)}
-                    </div>
-                  ) : null}
-                  fields={selectedBreakPrimaryFields}
-                  status={<Badge variant={reconciliation.selectedDetail.statusBadgeVariant}>{reconciliation.selectedDetail.statusLabel}</Badge>}
-                />
-              ) : (
-                <section
-                  role="region"
-                  aria-label={reconciliation.detailEmptyAriaLabel}
-                  className="rounded-lg border border-border/70 bg-secondary/20 px-4 py-3 text-sm text-muted-foreground"
-                >
-                  <div className="eyebrow-label">{reconciliation.detailEmptyTitle}</div>
-                  <p className="mt-1">{reconciliation.detailEmptyText}</p>
-                </section>
-              )}
-            </div>
+            {reconciliation.selectedDetail ? <p className="mt-3 text-sm text-muted-foreground">{reconciliation.selectedDetail.description}</p> : <p role="status" aria-label={reconciliation.detailEmptyAriaLabel} className="text-sm text-muted-foreground">{reconciliation.detailEmptyText}</p>}
+            {selectedRow ? <ReconciliationCaseDiscussion key={selectedRow.breakId} breakId={selectedRow.breakId} onUpdated={reconciliation.applyCaseworkUpdate} /> : null}
             {reconciliation.selectedDetail && selectedBreakTechnicalFields.length > 0 ? (
               <TechnicalDetails
                 label="Break metadata"
@@ -335,6 +458,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                   void resolveDialog.submit();
                 }}
               >
+                <p className="text-sm">Review {resolveDialog.active.status === "Dismissed" ? "dismissal" : "resolution"} of 1 case: {activeResolveBreak.financeLabel} · {activeResolveBreak.strategyName}. The decision note is retained in case history.</p>
                 <FormRow
                   label={resolveDialog.active.label}
                   labelFor={resolveDialog.active.inputId}
@@ -370,7 +494,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 </div>
               </form>
             ) : null}
-          </DenseRowDetailPanel>
+          </DetailRail>
         )}
       >
         <Card id="reconciliation-break-queue" role="region" aria-label="Reconciliation break checklist" className="panel-surface">
@@ -420,27 +544,34 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
               </label>
               <label>
                 Case status
-                <select value={controls.queueStatus} onChange={(e) => controls.setQueueStatus(e.target.value as ReconciliationQueueStatus)}>
+                <Select value={controls.queueStatus} onChange={(e) => controls.setQueueStatus(e.target.value as ReconciliationQueueStatus)}>
                   {["all", "Open", "InReview", "Resolved", "Dismissed", "SignedOff"].map((status) => (
                     <option key={status} value={status}>
                       {status === "all" ? "All statuses" : status === "InReview" ? "In review" : status === "SignedOff" ? "Signed off" : status}
                     </option>
                   ))}
-                </select>
+                </Select>
               </label>
               <label>
                 Sort breaks
-                <select value={controls.queueSort} onChange={(e) => controls.setQueueSort(e.target.value as ReconciliationQueueSort)}>
+                <Select value={controls.queueSort} onChange={(e) => controls.setQueueSort(e.target.value as ReconciliationQueueSort)}>
                   <option value="default">Service order</option>
                   <option value="oldest">Oldest detected</option>
                   <option value="newest">Newest detected</option>
                   <option value="severity">Highest urgency</option>
-                </select>
+                </Select>
               </label>
               <Button type="button" variant="ghost" onClick={controls.clearQueueFilters}>Clear filters</Button>
+              <Button type="button" variant="ghost" aria-keyshortcuts="?" onClick={() => setShortcutsOpen(true)}>
+                Keyboard shortcuts <Kbd keys="?" />
+              </Button>
             </div>
+            <ReconciliationBulkTriageBar triage={triage} visibleCount={visibleRows.length} />
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p role="status" className="text-xs text-muted-foreground">{visibleRows.length} of {reconciliation.rows.length} loaded breaks</p>
+              <div className="space-y-0.5">
+                <p role="status" className="text-xs text-muted-foreground">{visibleRows.length} of {reconciliation.rows.length} loaded breaks</p>
+                {sinceLastVisitLine ? <p className="text-xs text-muted-foreground">{sinceLastVisitLine}</p> : null}
+              </div>
               <Button
                 ref={toggleRef}
                 type="button"
@@ -455,12 +586,36 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
             </div>
             {selectedOutsideFilter ? <p role="status" className="text-sm text-muted-foreground">The selected break is outside these filters. Its evidence remains in the inspector.</p> : null}
             <div ref={queueRef} className="reconciliation-queue-scroll" onScroll={rememberQueueScroll}>
-              <DenseDataTable
-                columns={reconciliationBreakColumns}
+              <TableWorkbench
+                workbenchId="accounting-reconciliation-breaks"
+                sourceKey={reconciliation.sourceRows?.map((item) => `${item.tenantId}:${item.companyId}:${item.fundAccountId}:${item.runId}`).filter((item, index, values) => values.indexOf(item) === index).sort().join("|") ?? "unverified"}
+                sourceDescription="Authorized reconciliation casework queue for the selected scope. Variance units and currency are retained only where supplied by the casework source."
+                completePopulation={Boolean(reconciliation.sourceRows) && !reconciliation.loadingText && !reconciliation.errorText}
+                filterState={{ search: controls.queueSearch, status: controls.queueStatus, sort: controls.queueSort }}
+                onRestoreFilters={(filters) => {
+                  controls.setQueueSearch(filters.search ?? "");
+                  if (["all", "Open", "InReview", "Resolved", "Dismissed", "SignedOff"].includes(filters.status ?? "all")) controls.setQueueStatus((filters.status ?? "all") as ReconciliationQueueStatus);
+                  if (["default", "newest", "oldest", "severity"].includes(filters.sort ?? "default")) controls.setQueueSort((filters.sort ?? "default") as ReconciliationQueueSort);
+                }}
+                hiddenColumnIds={controls.hiddenColumns}
+                onHiddenColumnIdsChange={controls.setHiddenColumns}
+                columns={breakColumns.map((column) => column.id === "select" ? column : ({ ...column, exportValue: (row: ReconciliationBreakRowViewModel) => {
+                  const source = reconciliation.sourceRows?.find((item) => item.breakId === row.breakId);
+                  switch (column.id) {
+                    case "break": return source?.strategyName ?? row.strategyName;
+                    case "category": return source?.category ?? row.financeLabel;
+                    case "variance": return source?.variance ?? null;
+                    case "owner": return source?.assigneeDisplayName ?? source?.assignedTo ?? null;
+                    case "updated": return source?.lastUpdatedAt ?? null;
+                    case "source": return source?.lineage?.observationState ?? null;
+                    case "status": return source?.status ?? row.status;
+                    default: return null;
+                  }
+                } }))}
                 rows={visibleRows}
                 getRowId={(item) => item.breakId}
-                getRowAriaLabel={(item) => item.rowAriaLabel}
-                getRowSelectAriaLabel={(item) => item.rowSelectAriaLabel}
+                getRowAriaLabel={(item) => withVisitMark(item, item.rowAriaLabel)}
+                getRowSelectAriaLabel={(item) => withVisitMark(item, item.rowSelectAriaLabel)}
                 getRowAriaControls={(item) => item.detailPanelId}
                 getRowAriaExpanded={(item) => item.isExpanded}
                 onRowSelect={(item) => reconciliation.selectBreak(item.breakId)}
@@ -473,7 +628,44 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
           </CardContent>
         </Card>
       </WorkspaceWorkbenchShell>
+      <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
+        <DialogContent aria-labelledby="break-queue-shortcuts-title" aria-describedby="break-queue-shortcuts-description" className="max-w-md">
+          <DialogCloseButton label="Close keyboard shortcuts" onClick={() => setShortcutsOpen(false)} />
+          <DialogHeader>
+            <DialogTitle id="break-queue-shortcuts-title">Break queue shortcuts</DialogTitle>
+            <DialogDescription id="break-queue-shortcuts-description">
+              These keys work while focus is in the break queue, outside text fields. Actions follow the case
+              permissions and require the same rationale as the buttons.
+            </DialogDescription>
+          </DialogHeader>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+            {BREAK_QUEUE_KEYBOARD_MAP.map((shortcut) => (
+              <div key={shortcut.key} className="contents">
+                <dt><Kbd keys={[shortcut.key]} /></dt>
+                <dd>{shortcut.description}</dd>
+              </div>
+            ))}
+            <div className="contents">
+              <dt><Kbd keys={["Enter"]} /></dt>
+              <dd>Open the current break</dd>
+            </div>
+            <div className="contents">
+              <dt><Kbd keys={["Esc"]} /></dt>
+              <dd>Return from the drawer to the queue</dd>
+            </div>
+          </dl>
+        </DialogContent>
+      </Dialog>
     </section>
+  );
+}
+
+function SinceLastVisitBadge({ mark }: { mark: SinceLastVisitMark }) {
+  return (
+    <Badge variant="outline" className="shrink-0">
+      {mark === "new" ? "New" : "Updated"}
+      <span className="sr-only"> since your last visit</span>
+    </Badge>
   );
 }
 
@@ -511,10 +703,10 @@ const reconciliationStatementRunColumns: DenseDataTableColumn<ReconciliationStat
   { id: "account", label: "Account", render: (row) => <span title={row.unavailableReason ?? undefined}>{row.accountLabel}</span> },
   { id: "period", label: "Period", render: (row) => <span className="font-mono text-muted-foreground" title={row.unavailableReason ?? undefined}>{row.periodLabel}</span> },
   { id: "status", label: "Status", render: (row) => <Badge variant={row.statusLabel === "Matched" || row.statusLabel === "Balanced" ? "success" : "warning"}>{row.statusLabel}</Badge> },
-  { id: "validation", label: "Validation issues", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.validationIssueCountLabel}</span> },
-  { id: "matches", label: "Matches", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.matchCountLabel}</span> },
-  { id: "breaks", label: "Breaks", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.breakCountLabel}</span> },
-  { id: "cases", label: "Cases", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.caseCountLabel}</span> },
+  { id: "validation", label: "Validation issues", numeric: true, render: (row) => <span className="font-mono tabular-nums">{row.validationIssueCountLabel}</span> },
+  { id: "matches", label: "Matches", numeric: true, render: (row) => <span className="font-mono tabular-nums">{row.matchCountLabel}</span> },
+  { id: "breaks", label: "Breaks", numeric: true, render: (row) => <span className="font-mono tabular-nums">{row.breakCountLabel}</span> },
+  { id: "cases", label: "Cases", numeric: true, render: (row) => <span className="font-mono tabular-nums">{row.caseCountLabel}</span> },
   { id: "imported", label: "Imported", render: (row) => <span className="font-mono text-muted-foreground">{row.importedAtLabel}</span> }
 ];
 
@@ -523,10 +715,10 @@ export function ReconciliationStatementRuns({ reconciliation, initiallyOpen = fa
     <div className="reconciliation-run-context">
       <label className="reconciliation-run-picker">
         <span>Reconciliation run</span>
-        <select value={reconciliation.reconciliationQueue.some((run) => run.runId === reconciliation.selectedRunId) ? reconciliation.selectedRunId ?? "" : ""} onChange={(event) => reconciliation.selectRun(event.target.value || null)}>
+        <Select value={reconciliation.reconciliationQueue.some((run) => run.runId === reconciliation.selectedRunId) ? reconciliation.selectedRunId ?? "" : ""} onChange={(event) => reconciliation.selectRun(event.target.value || null)}>
           <option value="">Choose a reconciliation run</option>
           {reconciliation.reconciliationQueue.map((run) => <option key={run.runId} value={run.runId}>{run.strategyName} · {run.openBreakCount} open</option>)}
-        </select>
+        </Select>
       </label>
       <TechnicalDetails label="Statement runs and import evidence" open={initiallyOpen}>
       <Card className="panel-surface xl:col-span-2">

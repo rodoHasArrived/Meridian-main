@@ -23,12 +23,13 @@ public sealed class ProviderHealthService : IDisposable
     private readonly ConcurrentDictionary<string, ProviderHealthData> _providerHealth = new();
     private readonly ConcurrentDictionary<string, List<HealthHistoryPoint>> _healthHistory = new();
     private bool _disposed;
+    private int _timerRefreshInProgress;
 
     public static ProviderHealthService Instance => _instance.Value;
 
-    private ProviderHealthService()
+    public ProviderHealthService(ApiClientService? apiClient = null)
     {
-        _apiClient = ApiClientService.Instance;
+        _apiClient = apiClient ?? ApiClientService.Instance;
         _updateTimer = new Timer(5000);
         _updateTimer.Elapsed += OnTimerElapsed;
         _updateTimer.AutoReset = true;
@@ -61,8 +62,12 @@ public sealed class ProviderHealthService : IDisposable
     }
 
     private async void OnTimerElapsed(object? sender, ElapsedEventArgs e)
+        => await RefreshFromTimerAsync().ConfigureAwait(false);
+
+    // Keep the timer bridge observable in tests and prevent a slow request from overlapping ticks.
+    internal async Task RefreshFromTimerAsync()
     {
-        if (_disposed)
+        if (_disposed || Interlocked.CompareExchange(ref _timerRefreshInProgress, 1, 0) != 0)
             return;
 
         try
@@ -72,6 +77,10 @@ public sealed class ProviderHealthService : IDisposable
         catch (Exception ex)
         {
             System.Diagnostics.Trace.TraceWarning("ProviderHealthService: unhandled error during health refresh: {0}", ex.Message);
+        }
+        finally
+        {
+            Volatile.Write(ref _timerRefreshInProgress, 0);
         }
     }
 

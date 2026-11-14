@@ -23,7 +23,6 @@ import {
 } from "./accounting-screen.task-mode-view-model";
 import {
   formatCount,
-  formatCurrencyWithCode,
   formatDateOnly,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
@@ -98,6 +97,7 @@ import type {
   UpsertClosePeriodPlanConfigurationRequest,
   AccountingCertificationState,
 } from "@/types";
+import { formatCount as formatCountValue, formatCurrencyWithCode } from "@/lib/format";
 
 const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageServices = {
   getClosePlan: (workflowId) => getLedgerCloseManagementPeriodPlan(workflowId),
@@ -973,7 +973,7 @@ export function buildAccountingWorkflowLaunchViewState({
       caption: "Investor evidence, allocation rules, statements, and audit support.",
       href: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts,
       metricLabel: "Investor rows",
-      metricValue: data.manualJournalWorkbench?.privateCapitalActivity?.capitalAccountCount.toLocaleString() ?? "0",
+      metricValue: formatCountValue(data.manualJournalWorkbench?.privateCapitalActivity?.capitalAccountCount) ?? "0",
       statusLabel: (data.manualJournalWorkbench?.privateCapitalActivity?.capitalAccountCount ?? 0) > 0 ? "Evidence ready" : "No activity",
       tone: (data.manualJournalWorkbench?.privateCapitalActivity?.capitalAccountCount ?? 0) > 0 ? "success" : "warning",
       workstream
@@ -1084,7 +1084,7 @@ export function buildAccountingWorkflowLaunchViewState({
 
   return {
     title: "Accounting workflow",
-    description: "Books-before-broker accounting, reconciliation, approvals, and retained report evidence are grouped in one operator lane.",
+    description: "Books-before-broker accounting, reconciliation, approvals, and retained report evidence are grouped in one operator workflow.",
     ariaLabel: "Accounting workflow launch paths",
     taskMode: activeTaskMode,
     activeLabel: `${activeStepLabel} active`,
@@ -1913,7 +1913,7 @@ function buildAccountingCloseWorkflowSteps({
       label: "Period lock",
       statusLabel: locked ? "Locked" : closePlan ? "Open" : "Pending",
       detail: locked
-        ? "The close period is locked; new close mutations require a governed reopen workflow."
+        ? "The close period is locked; new close changes require a governed reopen workflow."
         : closePlan
           ? "Period lock submits workflow version, report package, checklist approvals, manifest route, and ledger-book evidence to the shared service."
           : "Load a close plan before period-lock review.",
@@ -2082,7 +2082,7 @@ function buildClosePostingGateViewModel(closePlan: ClosePeriodPlan): AccountingC
       ? `${balance.accountName} (${balance.symbol.trim()})`
       : balance.accountName,
     accountTypeLabel: balance.accountType,
-    balanceLabel: formatCurrencyWithCode(balance.balance, currency, true),
+    balanceLabel: formatCurrencyWithCode(balance.balance, currency, { signed: true }),
     scopeLabel: formatClosePostingBalanceScope(balance.dimensions),
     financialAccountLabel: balance.financialAccountId?.trim() || "No financial-account id"
   }));
@@ -2093,7 +2093,7 @@ function buildClosePostingGateViewModel(closePlan: ClosePeriodPlan): AccountingC
     statusLabel,
     statusTone,
     isReadyForLock: isClosePostingGateReadyForHardLock(gate),
-    netIncomeRollLabel: formatCurrencyWithCode(gate.netIncomeRoll, currency, true),
+    netIncomeRollLabel: formatCurrencyWithCode(gate.netIncomeRoll, currency, { signed: true }),
     temporaryAccountBalanceLabel: formatCount(gate.temporaryAccountBalanceCount, "temporary-account balance"),
     detail: gate.detail,
     draftLabel: gate.draftJournalEntryId
@@ -2160,6 +2160,8 @@ function formatClosePostingBalanceScope(dimensions: LedgerDimensionSet | null | 
     ["Tax lot", dimensions?.taxLotId],
     ["Cost center", dimensions?.costCenterId],
     ["Counterparty", dimensions?.counterpartyId],
+    ["Agreement", dimensions?.intercompanyAgreementId],
+    ["Agreement version", dimensions?.intercompanyAgreementVersion == null ? null : String(dimensions.intercompanyAgreementVersion)],
     ["Organization", dimensions?.organizationId],
     ["Portfolio", dimensions?.portfolioId],
     ["Book", dimensions?.bookId],
@@ -2292,7 +2294,7 @@ function buildLateAdjustmentRow(
   return {
     requestId: adjustment.requestId,
     journalEntryId: adjustment.journalEntryId,
-    amountLabel: formatCurrencyWithCode(adjustment.amount, adjustment.currency, true),
+    amountLabel: formatCurrencyWithCode(adjustment.amount, adjustment.currency, { signed: true }),
     requestedByLabel: `${adjustment.requestedBy} on ${formatDateTimeLabel(adjustment.requestedAtUtc)}`,
     statusLabel: adjustment.approvalState,
     decisionLabel: adjustment.decidedBy
@@ -2331,11 +2333,7 @@ function buildAccountingReportPackageRow(
     certificationTone: accountingCertificationTone(certificationState),
     navLabel: formatCurrencyWithCode(bundle.navPackage.nav, bundle.navPackage.currency),
     investorStatementLabel: formatCount(bundle.investorCapitalStatements.length, "investor statement"),
-    realizedGainLossLabel: formatCurrencyWithCode(
-      bundle.realizedGainLoss.realizedGainLoss,
-      bundle.realizedGainLoss.currency,
-      true
-    ),
+    realizedGainLossLabel: formatCurrencyWithCode(bundle.realizedGainLoss.realizedGainLoss, bundle.realizedGainLoss.currency, { signed: true }),
     restatementLabel: restatement
       ? `${restatement.reasonCode} | ${restatement.approvalState}`
       : "No restatement",

@@ -1,5 +1,7 @@
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
 using Meridian.Contracts.Integrity;
@@ -23,7 +25,7 @@ public static partial class AtomicFileWriter
     private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
 
     // Share the same bounded publication gates between sync and async overwrite surfaces.
-    // Temp-file creation and fsync stay concurrent; only Windows publication/recovery is serialized.
+    // Temp-file creation and fsync stay concurrent; only publication and backup ownership are serialized.
     private static readonly SemaphoreSlim[] WindowsPublicationLocks = Enumerable.Range(0, 64)
         .Select(static _ => new SemaphoreSlim(1, 1))
         .ToArray();
@@ -525,6 +527,7 @@ public static partial class AtomicFileWriter
         bool keepBackup = true,
         CancellationToken ct = default)
     {
+        destinationPath = Path.GetFullPath(destinationPath);
         var directory = Path.GetDirectoryName(destinationPath);
         if (!string.IsNullOrEmpty(directory))
         {
@@ -536,57 +539,116 @@ public static partial class AtomicFileWriter
 
         try
         {
-            // Write new content to temp
-            await File.WriteAllTextAsync(tempPath, newContent, Encoding.UTF8, ct);
+            await File.WriteAllTextAsync(tempPath, newContent, Utf8NoBom, ct);
             await SyncFileAsync(tempPath, ct);
+            ct.ThrowIfCancellationRequested();
 
-            // If destination exists, create backup
-            if (File.Exists(destinationPath))
+            // Serialize backup ownership with all other publishers for this destination.
+            var gate = WindowsPublicationGate(Path.GetFullPath(destinationPath));
+            await gate.WaitAsync(ct).ConfigureAwait(false);
+            try
             {
-                if (File.Exists(backupPath))
+                ct.ThrowIfCancellationRequested();
+                for (var attempt = 1; ; attempt++)
                 {
-                    File.Delete(backupPath);
+                    try
+                    {
+                        if (OperatingSystem.IsWindows())
+                            await ReplaceWindowsAsync(tempPath, destinationPath, backupPath, keepBackup, ct);
+                        else if (File.Exists(destinationPath))
+                            File.Replace(tempPath, destinationPath, keepBackup ? backupPath : null);
+                        else
+                            File.Move(tempPath, destinationPath, overwrite: false);
+                        break;
+                    }
+                    catch (Exception exception) when (attempt < ReplaceAttempts && IsTransientReplaceFailure(exception))
+                    {
+                        await Task.Delay(ReplaceRetryDelay * attempt).ConfigureAwait(false);
+                    }
                 }
-                await MoveWithRetryAsync(destinationPath, backupPath, overwrite: false);
-
-                // Make the backup rename durable before the destination is overwritten, so a
-                // crash mid-sequence can never leave both the original and its backup missing.
-                await SyncDirectoryAsync(directory!, ct);
+                // Commit has happened; cancellation or backup cleanup must not report a
+                // committed replacement as a failed write.
+                await SyncCommittedDirectoryAsync(directory!);
+                if (!keepBackup)
+                    TryDeleteFile(backupPath);
             }
-
-            // Move temp to destination
-            await MoveWithRetryAsync(tempPath, destinationPath, overwrite: false);
-
-            // Sync directory (post-commit: non-cancellable)
-            await SyncCommittedDirectoryAsync(directory!);
-
-            // Optionally remove backup
-            if (!keepBackup && File.Exists(backupPath))
+            finally
             {
-                File.Delete(backupPath);
+                gate.Release();
             }
-
             Log.Debug("Atomically replaced file");
         }
-        catch (Exception writeException)
+        catch
         {
-            // On failure, try to restore the backup without masking the original exception.
-            if (File.Exists(backupPath) && !File.Exists(destinationPath))
+            TryDeleteFile(tempPath);
+            throw;
+        }
+    }
+
+    [SupportedOSPlatform("windows")]
+    private static async Task ReplaceWindowsAsync(
+        string tempPath, string destinationPath, string backupPath, bool keepBackup, CancellationToken ct)
+    {
+        string? backupTempPath = null;
+        WindowsRename? backupPublication = null;
+        try
+        {
+            var destinationExists = File.Exists(destinationPath);
+            FileSecurity? destinationSecurity = null;
+            if (destinationExists)
+            {
+                // File.Replace used to preserve the destination DACL. Keep that contract when
+                // publishing by rename, and fail before commit if it cannot be preserved.
+                destinationSecurity = new FileInfo(destinationPath).GetAccessControl();
+                ApplyWindowsAccessRules(tempPath, destinationSecurity);
+            }
+
+            using var publication = WindowsRename.Prepare(tempPath, destinationPath);
+            if (destinationExists && keepBackup)
+            {
+                backupTempPath = Path.Combine(Path.GetDirectoryName(destinationPath)!,
+                    $".atomic-recovery.{Guid.NewGuid():N}.bak");
+                await using (var source = new FileStream(destinationPath, FileMode.Open, FileAccess.Read,
+                    FileShare.Read | FileShare.Delete, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan))
+                await using (var backup = new FileInfo(backupTempPath).Create(FileMode.CreateNew,
+                    FileSystemRights.Write, FileShare.None, 65536, FileOptions.Asynchronous, destinationSecurity))
+                {
+                    await source.CopyToAsync(backup, ct).ConfigureAwait(false);
+                    backup.Flush(flushToDisk: true);
+                }
+                // Creation enforces the original DACL immediately, but Windows can drop its
+                // auto-inherited flag. Persist the complete access descriptor before publication.
+                ApplyWindowsAccessRules(backupTempPath, destinationSecurity!);
+                // Acquire both source and destination handles before the live commit, so a
+                // denied/read-only backup fails without changing either published generation.
+                backupPublication = WindowsRename.Prepare(backupTempPath, backupPath);
+            }
+
+            ct.ThrowIfCancellationRequested();
+            publication.Publish();
+            if (backupPublication is not null)
             {
                 try
                 {
-                    MoveWithRetry(backupPath, destinationPath, overwrite: false);
+                    backupPublication.Publish();
                 }
-                catch (Exception restoreException)
+                catch (Exception exception)
                 {
-                    Log.Error("Failed to restore file backup ({FailureType})", restoreException.GetType().Name);
+                    // The live rename already committed. Retain the flushed old generation if
+                    // a later filesystem fault prevents backup publication; never invite a retry
+                    // by reporting the committed live write as failed.
+                    Log.Error("Committed replacement retained its previous generation in {BackupName} " +
+                        "because backup publication failed (error {ErrorCode})",
+                        Path.GetFileName(backupTempPath), exception.HResult);
+                    backupTempPath = null;
                 }
             }
-
-            TryDeleteFile(tempPath);
-
-            // Re-throw the original failure with its stack trace intact.
-            ExceptionDispatchInfo.Throw(writeException);
+        }
+        finally
+        {
+            backupPublication?.Dispose();
+            if (backupTempPath is not null)
+                TryDeleteFile(backupTempPath);
         }
     }
 
@@ -618,13 +680,13 @@ public static partial class AtomicFileWriter
         {
             for (var attempt = 1; ; attempt++)
             {
-                var retrySafe = true;
                 try
                 {
-                    PublishWindowsTempFile(tempPath, destination, out retrySafe);
+                    using var publication = WindowsRename.Prepare(tempPath, destination);
+                    publication.Publish();
                     return;
                 }
-                catch (Exception exception) when (attempt < ReplaceAttempts && retrySafe && IsTransientReplaceFailure(exception))
+                catch (Exception exception) when (attempt < ReplaceAttempts && IsTransientReplaceFailure(exception))
                 {
                     Thread.Sleep(ReplaceRetryDelay * attempt);
                 }
@@ -652,13 +714,13 @@ public static partial class AtomicFileWriter
         {
             for (var attempt = 1; ; attempt++)
             {
-                var retrySafe = true;
                 try
                 {
-                    PublishWindowsTempFile(tempPath, destination, out retrySafe);
+                    using var publication = WindowsRename.Prepare(tempPath, destination);
+                    publication.Publish();
                     return;
                 }
-                catch (Exception exception) when (attempt < ReplaceAttempts && retrySafe && IsTransientReplaceFailure(exception))
+                catch (Exception exception) when (attempt < ReplaceAttempts && IsTransientReplaceFailure(exception))
                 {
                     await Task.Delay(ReplaceRetryDelay * attempt).ConfigureAwait(false);
                 }
@@ -671,54 +733,21 @@ public static partial class AtomicFileWriter
     }
 
     private static SemaphoreSlim WindowsPublicationGate(string destinationPath)
-        => WindowsPublicationLocks[(StringComparer.OrdinalIgnoreCase.GetHashCode(destinationPath) & int.MaxValue)
-            % WindowsPublicationLocks.Length];
-
-    // One publication attempt: File.Replace immediately supports a retained deletion-sharing
-    // reader. A temporary reader denying deletion still gets the bounded outer retry. Never
-    // retry after a partial replacement leaves a retained backup that could not be restored.
-    private static void PublishWindowsTempFile(string tempPath, string destinationPath, out bool retrySafe)
     {
-        retrySafe = true;
-        try
+        // Extended Win32 spellings address the same file as ordinary drive/UNC paths.
+        // Normalize them before choosing a gate, including any dot segments after the prefix.
+        if (OperatingSystem.IsWindows())
         {
-            File.Move(tempPath, destinationPath, overwrite: true);
+            if (destinationPath.StartsWith(@"\\?\UNC\", StringComparison.OrdinalIgnoreCase))
+                destinationPath = @"\\" + destinationPath[8..];
+            else if (destinationPath.StartsWith(@"\\?\", StringComparison.Ordinal)
+                && destinationPath.Length >= 7 && char.IsAsciiLetter(destinationPath[4])
+                && destinationPath[5] == ':' && destinationPath[6] == '\\')
+                destinationPath = destinationPath[4..];
+            destinationPath = Path.GetFullPath(destinationPath);
         }
-        catch (UnauthorizedAccessException) when (File.Exists(destinationPath))
-        {
-            var backupName = $".atomic-recovery.{Guid.NewGuid():N}.tmp";
-            var backupPath = Path.Combine(Path.GetDirectoryName(destinationPath)!, backupName);
-            try
-            {
-                File.Replace(tempPath, destinationPath, backupPath);
-            }
-            catch
-            {
-                if (File.Exists(backupPath))
-                {
-                    retrySafe = false;
-                    if (!File.Exists(destinationPath))
-                    {
-                        try
-                        {
-                            // Preserve a generation another process may already have published.
-                            MoveWithRetry(backupPath, destinationPath, overwrite: false);
-                            retrySafe = true;
-                        }
-                        catch (Exception restoreException)
-                        {
-                            Log.Error(
-                                "Failed to restore interrupted atomic publication (error {ErrorCode}); " +
-                                "its previous generation is retained in {BackupName}",
-                                restoreException.HResult, backupName);
-                        }
-                    }
-                }
-                throw;
-            }
-            // Publication committed; best-effort cleanup cannot turn success into failure.
-            TryDeleteFile(backupPath);
-        }
+        return WindowsPublicationLocks[(StringComparer.OrdinalIgnoreCase.GetHashCode(destinationPath) & int.MaxValue)
+            % WindowsPublicationLocks.Length];
     }
 
     private static void MoveWithRetry(string sourcePath, string destinationPath, bool overwrite)
@@ -750,7 +779,7 @@ public static partial class AtomicFileWriter
             }
             catch (Exception exception) when (attempt < ReplaceAttempts && IsTransientReplaceFailure(exception))
             {
-                await Task.Delay(ReplaceRetryDelay * attempt);
+                await Task.Delay(ReplaceRetryDelay * attempt).ConfigureAwait(false);
             }
         }
     }
@@ -791,7 +820,7 @@ public static partial class AtomicFileWriter
             if (OperatingSystem.IsWindows())
             {
                 var sourceSecurity = new FileInfo(sourcePath).GetAccessControl();
-                new FileInfo(targetPath).SetAccessControl(sourceSecurity);
+                ApplyWindowsAccessRules(targetPath, sourceSecurity);
                 return;
             }
 

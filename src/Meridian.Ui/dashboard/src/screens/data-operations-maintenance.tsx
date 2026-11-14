@@ -1,3 +1,5 @@
+import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
+import { exportTableQuery } from "@/lib/table-workbench";
 /**
  * Archive-maintenance operations panel for Data → Storage assurance.
  *
@@ -13,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { Select } from "@/components/ui/select";
 import {
   cancelMaintenanceExecution,
   executeMaintenanceTask,
@@ -26,6 +29,7 @@ import {
 import {
   buildMaintenanceExecutionRow,
   buildMaintenanceMetrics,
+  type MaintenanceExecutionRowViewModel,
   type MaintenanceTone
 } from "@/screens/data-operations-maintenance.view-model";
 import type {
@@ -35,8 +39,12 @@ import type {
   MaintenanceStatistics,
   MaintenanceTaskTypeOption
 } from "@/types/archive-maintenance.types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import { formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
 
 const EXECUTION_LIMIT = 25;
+type MaintenanceExecutionRow = MaintenanceExecutionRowViewModel & { source: ArchiveMaintenanceExecution };
 
 export function ArchiveMaintenanceOperations() {
   const [status, setStatus] = useState<MaintenanceServiceStatus | null>(null);
@@ -85,7 +93,7 @@ export function ArchiveMaintenanceOperations() {
     [status, statistics, scheduleSummary]
   );
   const rows = useMemo(
-    () => executions.map((execution) => buildMaintenanceExecutionRow(execution, taskTypes)),
+    () => executions.map((execution) => ({ ...buildMaintenanceExecutionRow(execution, taskTypes), source: execution })),
     [executions, taskTypes]
   );
   const runnableTaskType = selectedTaskType || taskTypes[0]?.value || "";
@@ -124,6 +132,38 @@ export function ArchiveMaintenanceOperations() {
     }
   }
 
+  const executionColumns: TableWorkbenchColumn<MaintenanceExecutionRow>[] = [
+    { id: "task", label: "Task", render: (row) => row.taskTypeLabel, exportValue: (row) => row.source.taskType },
+    {
+      id: "status", label: "Status", exportValue: (row) => row.source.status, render: (row) => (
+        <>
+          <Badge variant={badgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+          {row.errorMessage ? <div className="mt-1 text-xs text-danger">{row.errorMessage}</div> : null}
+        </>
+      )
+    },
+    { id: "trigger", label: "Trigger", render: (row) => row.triggerLabel, exportValue: (row) => row.source.manualTrigger },
+    { id: "started", label: "Started", render: (row) => <span className="font-mono text-xs">{formatTimestamp(row.startedAt)}</span>, exportValue: (row) => row.source.startedAt },
+    { id: "duration", label: "Duration", render: (row) => row.durationLabel, exportValue: (row) => row.source.duration },
+    { id: "files", label: "Files", numeric: true, render: (row) => row.filesProcessed, exportValue: (row) => row.source.filesProcessed },
+    { id: "issues", label: "Issues fixed", numeric: true, render: (row) => row.issuesLabel, exportValue: (row) => row.source.issuesResolved },
+    { id: "reclaimed", label: "Reclaimed", numeric: true, render: (row) => row.bytesSavedLabel, exportValue: (row) => row.source.bytesSaved },
+    {
+      id: "actions", label: "", srLabel: "Actions", align: "right", render: (row) => row.cancellable ? (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={busy === `cancel:${row.executionId}`}
+          disabledReason="Cancellation is already in progress for this execution."
+          onClick={() => void cancel(row.executionId)}
+        >
+          Cancel
+        </Button>
+      ) : null
+    }
+  ];
+
   return (
     <section aria-labelledby="archive-maintenance-title" className="workspace-region space-y-3">
       <CardHeader>
@@ -148,7 +188,7 @@ export function ArchiveMaintenanceOperations() {
         <div className="grid gap-2 md:grid-cols-4" aria-label="Archive maintenance posture">
           {metrics.map((metric) => (
             <div key={metric.id} className="rounded-[2px] border border-border bg-secondary/20 p-3">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">{metric.label}</div>
+              <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-wide")}>{metric.label}</div>
               <div className={toneTextClassName(metric.tone)}>{metric.value}</div>
               <div className="mt-1 text-xs text-muted-foreground">{metric.detail}</div>
             </div>
@@ -158,8 +198,7 @@ export function ArchiveMaintenanceOperations() {
         <div className="flex flex-wrap items-end gap-2">
           <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-muted-foreground">
             Task type
-            <select
-              className="h-9 rounded-[2px] border border-border bg-background px-2 text-sm text-foreground"
+            <Select
               aria-label="Maintenance task type"
               value={runnableTaskType}
               onChange={(event) => setSelectedTaskType(event.target.value)}
@@ -169,9 +208,14 @@ export function ArchiveMaintenanceOperations() {
                   {taskType.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
-          <Button size="sm" disabled={!runnableTaskType || busy === "execute"} onClick={() => void runMaintenance()}>
+          <Button
+            size="sm"
+            disabled={!runnableTaskType || busy === "execute"}
+            disabledReason={!runnableTaskType ? "No maintenance task types are available to run." : "A maintenance run is starting."}
+            onClick={() => void runMaintenance()}
+          >
             <Wrench className="mr-2 h-4 w-4" />
             {busy === "execute" ? "Starting…" : "Run maintenance now"}
           </Button>
@@ -185,58 +229,13 @@ export function ArchiveMaintenanceOperations() {
           </Button>
         </div>
 
-        <table className="w-full text-sm" aria-label="Maintenance execution history">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <th className="py-2">Task</th>
-              <th>Status</th>
-              <th>Trigger</th>
-              <th>Started</th>
-              <th>Duration</th>
-              <th>Files</th>
-              <th>Issues fixed</th>
-              <th>Reclaimed</th>
-              <th className="sr-only">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="py-4 text-center text-muted-foreground">
-                  {failedOnly ? "No failed maintenance executions recorded." : "No maintenance executions recorded."}
-                </td>
-              </tr>
-            ) : rows.map((row) => (
-              <tr key={row.executionId} className="border-t border-border/60">
-                <td className="py-2">{row.taskTypeLabel}</td>
-                <td>
-                  <Badge variant={badgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-                  {row.errorMessage ? (
-                    <div className="mt-1 text-xs text-danger">{row.errorMessage}</div>
-                  ) : null}
-                </td>
-                <td>{row.triggerLabel}</td>
-                <td className="font-mono text-xs">{formatTimestamp(row.startedAt)}</td>
-                <td>{row.durationLabel}</td>
-                <td>{row.filesProcessed}</td>
-                <td>{row.issuesLabel}</td>
-                <td>{row.bytesSavedLabel}</td>
-                <td className="text-right">
-                  {row.cancellable ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={busy === `cancel:${row.executionId}`}
-                      onClick={() => void cancel(row.executionId)}
-                    >
-                      Cancel
-                    </Button>
-                  ) : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TableWorkbench workbenchId="data-maintenance-executions" sourceKey={failedOnly ? "failed" : "all"}
+          sourceDescription="View shows the latest 25 executions. CSV includes all authorized retained matches; host retention applies."
+          filterState={{ failedOnly: String(failedOnly) }} onRestoreFilters={(filters) => setFailedOnly(filters.failedOnly === "true")}
+          onExportAll={(columns, search, sort, signal) => exportTableQuery("data-maintenance-executions", columns, search, sort?.columnId, sort?.direction, signal, { failedOnly: String(failedOnly) })}
+          rows={rows} getRowId={(row) => row.executionId} getSearchText={(row) => `${row.taskTypeLabel} ${row.statusLabel} ${row.triggerLabel} ${row.errorMessage ?? ""}`}
+          ariaLabel="Maintenance execution history" emptyText={failedOnly ? "No failed maintenance executions recorded." : "No maintenance executions recorded."}
+          columns={executionColumns} maxVisibleRows={null} />
       </CardContent>
     </section>
   );
@@ -247,7 +246,7 @@ function toneTextClassName(tone: MaintenanceTone): string {
     case "success":
       return "mt-1 text-xl font-semibold text-success";
     case "warning":
-      return "mt-1 text-xl font-semibold text-warning";
+      return "mt-1 text-xl font-semibold text-[var(--severity-action-fg)]";
     case "danger":
       return "mt-1 text-xl font-semibold text-danger";
     default:
@@ -260,7 +259,7 @@ function badgeVariant(tone: MaintenanceTone): "default" | "success" | "warning" 
 }
 
 function formatTimestamp(value: string): string {
-  return new Date(value).toLocaleString();
+  return formatDisplayTimestamp(new Date(value));
 }
 
 function errorMessage(reason: unknown): string {

@@ -25,7 +25,7 @@ class AgentToolchainInstallTests(unittest.TestCase):
         node_candidate_missing=False,
     ):
         """Real shell orchestration, with every externally mutating tool replaced."""
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             fixture = Path(temp)
             tools = fixture / "fake-bin"
             tools.mkdir()

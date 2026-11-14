@@ -49,17 +49,21 @@ header; the selected row carries a 4px left-inset accent, never a full-row backg
 
 ### Browser workstation header composition
 
-The dashboard adapter composes a compact `WorkspaceHeader` with persistent scope, followed by
-the working surface. Show breadcrumb/title and Refresh/Copy link at the top; use the `Views`
-disclosure for saved layouts and save-current-view controls. Keep view controls mounted so nested
-dialog state and focus restoration survive opening and closing. Tab moves through disclosed
+The dashboard adapter composes a one-row `WorkspaceHeader`, followed by the working surface.
+Left: the breadcrumb ending in the page name as the page heading (`Trading > Orders`). Centre: the
+operating-scope chip, which shows the scope values and opens the scope picker. Right: Refresh, the
+`Views` disclosure for saved layouts and save-current-view controls, and an overflow disclosure
+holding Copy link and the About text. The route body's heading is the task title (`Orders
+blotter`); never repeat the workspace name as a second heading. Keep view controls mounted so
+nested dialog state and focus restoration survive opening and closing. Tab moves through disclosed
 controls; Escape closes the innermost layer first and restores its trigger. Do not assign ARIA
 menu semantics to a disclosure containing independent dialog launchers.
 
-`Workflow context` is collapsed initially; expanding it reveals steps, status and evidence links.
-Scope chips use explicit Applied here/Retained text. Never collapse live-environment, simulation,
-unknown-provenance or degraded-operation warnings into this disclosure. Descriptions belong in
-an About disclosure, rather than repeating a generic paragraph above every working surface.
+`Workflow context` lives in the scope picker, collapsed initially; expanding it reveals steps,
+status and evidence links. The scope chip mutes dimensions the current screen does not apply, and
+the picker states Applied/Retained per dimension. Never collapse live-environment, simulation,
+unknown-provenance or degraded-operation warnings into a disclosure. Descriptions belong in the
+overflow's About section, rather than repeating a generic paragraph above every working surface.
 At desktop/laptop widths the outer shell allocates available height to the work area, not warning
 banners; at browser zoom controls wrap without hiding scope or warnings. Reuse existing semantic
 colors, typography, focus indicators and spacing tokens rather than introducing a new theme.
@@ -79,6 +83,28 @@ holding: disclose the hidden selection and offer Clear filters. Reset controls a
 Use native labelled input/select controls, existing focus indicators, and wrapping toolbar groups
 at laptop widths/browser zoom. Search URL updates must not move focus or scroll the workbench.
 Copy link and Save view capture table controls through the existing view envelope.
+
+### Financial scanning aids and retained bridges
+
+Keep exact values primary when adding graphics inside dense tables. `PositionValueGraphic` in the
+browser workstation uses an exposure-magnitude bar and a signed P&L bar with a visible zero marker.
+The scale belongs to all loaded positions before filters, separately for each column and source
+currency. Rows without a currency remain a separate display-only group; the dollar-format limitation
+is disclosed. Unsupported formats are unavailable,
+never zero. Pair large displayed exposure with the shared mark-review state using explicit text;
+bar color alone must not carry review meaning. Do not use rounded display ratios for concentration,
+approval, financial totals, FX conversion, or accounting decisions.
+
+`ReportWriterChartPreview` is a **Signed value summary**, labeled separately from the configured
+chart type. Direct series labels, exact reported values, a common zero baseline and explicit
+unavailable observations preserve sign and missingness. Keep the retained grid alongside it.
+
+`IncomeMovementWaterfall` follows the start/delta/total bridge pattern with dashed level connectors.
+Keep currency, basis, period and population beside the chart, and exact amounts below each stage.
+Contribution buttons open retained support and restore focus on close. Missing, incompatible or
+internally inconsistent bridges withhold the drawing while preserving the exact evidence. Use
+exact decimal arithmetic before deriving drawing coordinates; never fold unexplained records into
+the residual twice or treat offsetting unsupported records as verified evidence.
 
 ### Selection inputs — which control?
 

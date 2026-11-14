@@ -6,6 +6,7 @@ import type {
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot
 } from "@/types";
+import { formatTimestamp } from "@/lib/format";
 
 export function joinProviderDetailSentences(...values: Array<string | null | undefined>): string {
   const sentences = values
@@ -240,10 +241,10 @@ export function formatProviderRoutingCapability(value: string): string {
 }
 
 export function formatLastGoodProviderResponse(connection: ProviderConnectionRow | null): string {
-  return formatProviderUtcMinute(connection?.lastSuccessfulAt ?? connection?.lastVerifiedAt);
+  return formatProviderMinute(connection?.lastSuccessfulAt ?? connection?.lastVerifiedAt);
 }
 
-export function formatProviderUtcMinute(value: string | null | undefined): string {
+export function formatProviderMinute(value: string | null | undefined): string {
   if (!value) {
     return "Never";
   }
@@ -253,14 +254,7 @@ export function formatProviderUtcMinute(value: string | null | undefined): strin
     return value;
   }
 
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "UTC",
-    timeZoneName: "short"
-  }).format(date);
+  return formatTimestamp(date);
 }
 
 export function normalizeProviderToken(value: string | null | undefined): string {
