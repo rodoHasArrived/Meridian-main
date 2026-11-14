@@ -14,7 +14,7 @@ import { usesTrackedCaps } from "@/design-system/label-case";
  * Single-row workspace header rendered above every route.
  *
  * Left: the breadcrumb, whose last crumb is the page name and the page heading
- * (`Trading > Orders`). Centre: the operating-scope chip. Right: Refresh, the shell actions
+ * (`Trading > Orders`). Centre: the permanent operating-scope bar. Right: Refresh, the shell actions
  * (Views) and an overflow menu holding Copy link and the About text. The route body carries the
  * task title ("Orders blotter"); the header never repeats the workspace name as a second heading.
  *
@@ -31,7 +31,7 @@ import { usesTrackedCaps } from "@/design-system/label-case";
  *   breadcrumbItems={[{ label: "Trading", onClick: openTrading }, { label: "Orders" }]}
  *   workspace={workspaceSummary}
  *   session={session}
- *   scope={<OperatingScopeChip viewModel={continuity} onEditOperatingContext={openScopePicker} />}
+ *   scope={<OperatingScopeBar operatingScope={continuity.operatingScope} onEditOperatingScope={openScopePicker} />}
  *   onRefresh={() => void refresh()}
  *   refreshing={isRefreshing}
  * />
@@ -49,7 +49,7 @@ interface WorkspaceHeaderProps {
   overflowActions?: ReactNode;
   /** Closes the overflow menu when the route changes. */
   routeKey?: string;
-  /** The operating-scope chip, centred in the row. */
+  /** The operating-scope bar, centred in the row. */
   scope?: ReactNode;
   /** Persistent scope and optional workflow disclosure in the compact header. */
   context?: ReactNode;
@@ -102,7 +102,7 @@ export function WorkspaceHeader({
         </div>
       ) : null}
       {/* One row, in visual and focus order: breadcrumb ending in the page heading, the scope
-          chip, then the actions. */}
+          bar, then the actions. */}
       <div className="workspace-header-shell workstation-header-row">
         <nav aria-label="Breadcrumb" className="workstation-header-crumbs">
           <ol>

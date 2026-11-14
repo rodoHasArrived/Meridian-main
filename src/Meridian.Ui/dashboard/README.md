@@ -503,8 +503,13 @@ The browser shell renders `WorkspaceHeader` as one row above every route:
 - **Left:** the breadcrumb, ending in the page name as the page's only `h1` (`Trading > Orders`;
   a workspace root reads `Trading`, the front door reads `Today`). The masthead shows only
   `Meridian` and announces the workspace to assistive technology, so the location is stated once.
-- **Centre:** the operating-scope chip. It shows the scope values (`All funds` when nothing is
-  set; dimensions the current screen does not apply are muted) and opens the scope picker.
+- **Centre:** the permanent operating-scope bar (`components/meridian/operating-scope-bar.tsx`),
+  `Scope  Account … › Period …`, with Subject, Run and Provider inserted when set. The scope model
+  has no entity or fund dimension of its own, so the bar does not invent one. An unset dimension
+  reads `All authorized` (never "None"); set dimensions the current screen does not apply are
+  muted and described as retained. It shows on every route and opens the scope picker. The empty
+  scope as a whole reads `All authorized scopes` (`OPERATING_SCOPE_EMPTY_SUMMARY`), the same words
+  Today prints.
 - **Right:** Refresh, `Views` (saved-layout and save-current-view controls) and an overflow menu
   holding Copy link and the workspace's About text.
 
@@ -524,7 +529,20 @@ Navigating to another workflow disposes nested view-control dialogs and their ke
 before the disclosure closes; screen-local table URL updates retain the current control session.
 Symbol suggestions support arrow keys, Enter, Escape, search progress, no matches and Retry.
 Escape dismisses suggestions before closing the dialog. Navigation reveals the active destination
-after route changes while respecting manual collapse until the next navigation.
+after route changes while respecting manual collapse until the next navigation. Applying a scope
+replaces the route's scope query parameters (`appendOperatingScopeToRoute`), so the URL, Copy link
+and every scope-carrying link hold it.
+
+Every figures strip (`StatStrip`) prints the scope it was counted over without per-screen wiring
+(`lib/operating-scope/figure-scope.ts`): a screen's own `scope` prop wins; otherwise the fund
+account the supplying payload was loaded for (`Account …`, or `All authorized accounts`), then
+`All authorized scopes` for a payload the shell loads without a scope filter (the selection does
+not narrow those figures, so they do not borrow it), then the scope the shell applies on the route
+(`OperatingScopeLabelProvider`). Figures that state their own scope keep it. Screens that need one
+fund account use `InlineFundAccountPicker`, which sets only the fund-account dimension through the
+shell (`FundAccountScopeSelectionProvider`); Trading uses it in place of its "Choose a fund
+account" empty state in a non-live environment, on the overview and in the one-line row on Orders
+and the other Trading routes. Live, unknown and failed brokerage states keep blocking.
 
 Focused regression coverage includes `app.test.tsx`, `workspace-header.test.tsx`,
 `workspace-views-menu.test.tsx`, `workflow-continuity-dock.test.tsx`, `scope-picker.test.tsx`,
@@ -2439,7 +2457,9 @@ The rendered workflow-continuity dock lives in
 `components/meridian/workflow-continuity-dock.tsx` with its stylesheet in
 `src/styles/workflow-continuity-dock.css`, leaving `app.tsx` to compose routes, shell chrome, route
 recovery, and the global workstation stylesheet while the dock owns its accessible links,
-operating-scope chips, and primary-operator-flow disclosure.
+operating-scope chips, and primary-operator-flow disclosure. The shell header no longer mounts the
+dock: it shows `OperatingScopeBar`, and the scope picker shows `WorkflowContextDisclosure` from
+the same module.
 Workspace navigation rail and drawer styles live in `src/styles/workspace-nav.css`, imported by
 `components/meridian/workspace-nav.tsx`, so root-workspace routing, preserved operating-scope chips,
 expand/collapse controls, status badges, and responsive drawer variants stay with the navigation

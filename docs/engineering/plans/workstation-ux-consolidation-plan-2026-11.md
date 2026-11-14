@@ -1,6 +1,6 @@
 # Browser Workstation UX Consolidation Plan (2026-11-13)
 
-> **Status:** In progress (Phase 0 and the first Phase 1 slice landed 2026-11-13) · **Created:** 2026-11-13 ·
+> **Status:** In progress (Phase 0 and the first Phase 1 slices landed 2026-11-13; P4 scope bar 2026-11-14) · **Created:** 2026-11-13 ·
 > **Owner lane:** Workstation Shell and UX
 > **Builds on:** [Browser Workstation UX Review and Improvement Plan (2026-11)](web-workstation-ux-review-plan-2026-11.md).
 > That plan's findings still apply. This plan is a newer review of the same surface. It is
@@ -104,10 +104,38 @@ items, which is a follow-up.
   - Decimal ties round on the shortest decimal form, so 0.35 at one digit reads 0.4.
   - "—" replaces "NaN" and "Infinity" where there was no guard.
 
+**P4 scope bar (landed 2026-11-14, dashboard source; host bundle not yet rebuilt):**
+- The header's "Context: …" control is replaced by a permanent, labelled scope bar,
+  `Scope  Account … › Period …`. Subject, Run and Provider are inserted when set. The scope model
+  has no entity or fund dimension yet, so the bar shows the dimensions it does have rather than
+  invent `entity › fund`. An unset dimension reads "All authorized"; the empty scope as a whole
+  reads "All authorized scopes", the same words Today prints. The bar opens the scope picker,
+  which still holds the workflow detail.
+- "No scope selected" (and the scope summary's "No operating scope selected") no longer appears.
+  A unit test covers the empty value, and a source scan fails if either phrase returns.
+- Every `StatStrip` prints the scope it was counted over, inherited from the shell. In order:
+  - the screen's own `scope`;
+  - else the account the supplying payload was loaded for;
+  - else "All authorized scopes" for a payload the shell loads without a scope filter (those
+    figures are not narrowed by the selection, so they do not borrow it);
+  - else the scope the route applies.
+
+  Trading's totals without a fund account now read "Brokerage account …".
+- Trading shows an inline fund-account picker in place of the "Choose a fund account" empty state
+  in a non-live environment. This covers the overview and the one-line row on Orders and the other
+  Trading routes. Live, unknown and failed states still block. Applying an account sets only that
+  dimension, through the same path as the scope picker, so it lands in the URL and links carry it.
+  Picking a scope already updated the URL; tests now prove links carry it.
+- Not done: an entity/fund dimension in the scope model; a period picker (the window is still set by
+  the originating workflow). Today's own "Scope …" line was left as is: it already reads
+  "All authorized scopes".
+
 **Remaining in Phase 1:**
 - Merge `lib/format.ts` `formatMoney` and the accounting one behind one API.
 - One date format with a time-zone preference.
-- A single interleaved Today grid (shared row model) and the P4 scope bar.
+- A single interleaved Today grid (shared row model).
+- P4: entity and fund scope dimensions (needs a shared scope seam), and inline account pickers on
+  other single-account screens as they are identified.
 
 Acceptance criteria:
 - Only the 5 canonical severities are exported. `shared-tone-mappings.ts`, the

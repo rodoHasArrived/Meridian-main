@@ -142,7 +142,7 @@ describe("OperationalTrustSummary", () => {
           action: <a href="/data/providers">Open provider posture</a>
         }}
         scope={{
-          value: "No operating scope selected",
+          value: "All authorized scopes",
           tone: "review",
           action: <button type="button">Set operating scope</button>
         }}
@@ -173,7 +173,7 @@ describe("OperationalTrustSummary", () => {
     const { container } = render(
       <OperationalTrustSummary
         source={{ label: "Connectivity", value: "1 warning", tone: "review" }}
-        scope={{ value: "No operating scope selected", tone: "review" }}
+        scope={{ value: "All authorized scopes", tone: "review" }}
         freshness={{ value: "Timestamp unavailable", tone: "review" }}
         completeness={{ value: "6 ranked items", tone: "ready" }}
         blocker={{ value: "Cash variance over tolerance.", tone: "blocked" }}

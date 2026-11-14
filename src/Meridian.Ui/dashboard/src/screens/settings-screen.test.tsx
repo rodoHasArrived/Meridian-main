@@ -648,7 +648,7 @@ describe("SettingsScreen", () => {
     const strip = screen.getByLabelText("Operator control posture metrics");
     expect(within(strip).getByText("3 / 4")).toHaveClass("text-muted-foreground");
     expect(strip.parentElement).toHaveTextContent(
-      "Stale figures · Active runs, Open positions, Storage health from System overview · As of Jun 30, 2026, 18:10 UTC; Providers healthy from Cross-screen counts · As of Jun 30, 2026, 17:40 UTC"
+      "Stale figures · Active runs, Open positions, Storage health from System overview · As of Jun 30, 2026, 18:10 UTC · Scope: All authorized scopes; Providers healthy from Cross-screen counts · As of Jun 30, 2026, 17:40 UTC"
     );
   });
 

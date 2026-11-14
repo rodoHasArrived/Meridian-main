@@ -156,6 +156,25 @@ It also carries the Phase 3 trust fixes from the same plan:
 
 No shared contract changed.
 
+Dashboard source carries the first P4 step of the
+[UX consolidation plan](../../docs/engineering/plans/workstation-ux-consolidation-plan-2026-11.md)
+(the host-served bundle is not yet rebuilt from it):
+- The top bar shows the operating scope as a permanent, labelled scope bar,
+  `Scope  Account … › Period …`, with Subject, Run and Provider added when set. An unset dimension
+  reads "All authorized"; the header no longer has a "Context: No scope selected" control, and the
+  empty scope reads "All authorized scopes" wherever it is summarized, as Today already did. The
+  bar opens the scope picker, which still holds the workflow detail.
+- Every figures strip prints the scope its figures were counted over, inherited from the shell: the
+  account the supplying payload was loaded for, "All authorized scopes" for a payload the shell
+  loads without a scope filter, or the scope the route applies. A screen can pass its own. Trading's
+  totals without a fund account read "Brokerage account …".
+- Trading (overview and the one-line row on Orders and the other Trading routes) offers an inline
+  fund-account picker in place of the "Choose a fund account" empty state in a non-live
+  environment; live, unknown and failed states still block. Applying an account sets it in the
+  operating scope and the URL, so links carry it.
+
+No shared contract changed.
+
 The host-served bundle carries the browser presentation correctness fixes: font stacks that end
 in a generic family (no serif fallback for data text), Ledger Explorer amounts at currency
 precision with journal-ID links, no invented Strategy metrics, and a masthead activation chip that
