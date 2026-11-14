@@ -39,7 +39,7 @@ describe("buildPortfolioFigureDifferenceNote", () => {
   it("explains header-strip and explorer figures that disagree, naming each source", () => {
     expect(buildPortfolioFigureDifferenceNote({ headerMetrics, headerProvenance, explorer: explorer() })).toEqual({
       title: "Why these differ",
-      summary: "Header strip and Portfolio Explorer read different records, so their figures are not expected to match.",
+      summary: "Live holdings and Retained run records read different records, so their figures are not expected to match.",
       unexplained: false,
       rows: [
         { key: "exposure", label: "Total exposure", first: "$18,900", second: "$25,587" },
@@ -47,8 +47,8 @@ describe("buildPortfolioFigureDifferenceNote", () => {
         { key: "positions", label: "Open positions", first: "1", second: "2" }
       ],
       sources: [
-        { name: "Header strip", text: "Source: Portfolio workspace · As of Jun 30, 2026, 18:05 UTC · Scope: All linked accounts" },
-        { name: "Portfolio Explorer", text: "Source: Retained run records (demo portfolio data) · As of Jan 2, 2026, 14:00 UTC · Scope: Mean reversion" }
+        { name: "Live holdings", text: "Source: Portfolio workspace · As of Jun 30, 2026, 18:05 UTC · Scope: All linked accounts" },
+        { name: "Retained run records", text: "Source: Retained run records (demo portfolio data) · As of Jan 2, 2026, 14:00 UTC · Scope: Mean reversion" }
       ]
     });
   });
@@ -95,11 +95,11 @@ describe("buildPortfolioFigureDifferenceNote", () => {
         label: "Total exposure",
         first: "$18,900",
         second: "$21,400",
-        detail: "Header strip is gross, Portfolio Explorer is net: different measures, so these would differ on the same records."
+        detail: "Live holdings is gross, Retained run records is net: different measures, so these would differ on the same records."
       },
       { key: "positions", label: "Open positions", first: "1", second: "3" }
     ]);
-    expect(note?.sources[1]).toEqual({ name: "Portfolio Explorer", text: "Source: Retained run records · Scope: run-1" });
+    expect(note?.sources[1]).toEqual({ name: "Retained run records", text: "Source: Retained run records · Scope: run-1" });
   });
 
   it("compares a gross explorer exposure with the header like for like", () => {

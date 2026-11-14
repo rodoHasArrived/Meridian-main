@@ -682,6 +682,33 @@ describe("SettingsScreen", () => {
     expect(within(eventDetail).getByText("Provider health / evt-1")).toBeInTheDocument();
   });
 
+  it("uses the holdings owner for access position facts instead of the system summary", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={{ ...overview, openPositions: 5 }} portfolio={portfolio} />, {
+      initialEntries: ["/settings/access"]
+    });
+
+    expect(screen.getByText("Open positions").parentElement).toHaveTextContent("Open positions0");
+    const count = screen.getByText("Positions").parentElement!;
+    expect(count).toHaveTextContent("Positions0");
+    expect(count).toHaveAttribute("data-kpi-id", "portfolio.open-positions");
+    expect(count).toHaveAttribute("data-kpi-display", "0");
+    expect(count.querySelector("[data-kpi-rendered-value]")).toHaveTextContent("0");
+    expect(screen.queryByLabelText("Operator control posture metrics")).not.toBeInTheDocument();
+  });
+
+  it("withholds access position facts when only the independent system summary is available", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={{ ...overview, openPositions: 5 }} />, {
+      initialEntries: ["/settings/access"]
+    });
+
+    expect(screen.getByText("Open positions").parentElement).toHaveTextContent("Open positionsUnavailable");
+    const count = screen.getByText("Positions").parentElement!;
+    expect(count).toHaveTextContent("PositionsUnavailable");
+    expect(count).toHaveAttribute("data-kpi-display", "Unavailable");
+    expect(count.querySelector("[data-kpi-rendered-value]")).toHaveTextContent("Unavailable");
+    expect(screen.getByText("Open positions").parentElement).not.toHaveTextContent("5");
+  });
+
   it("renders profile authentication posture with authority handoffs", () => {
     // The profile/system row is scoped to the Access view.
     renderWithRouter(

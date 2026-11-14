@@ -12,6 +12,31 @@ describe("FinancialRecordExplorerShell", () => {
     window.history.replaceState(null, "", "/");
   });
 
+  it.each([false, true])("formats run names for display while preserving raw filter, share and save identities (compact=%s)", async (compact) => {
+    const user = userEvent.setup();
+    const rawRunId = "portfolio-retained-run-42";
+    const filter = { filterId: "run", label: "Run", value: rawRunId, operator: "equals", tone: "Info" as const };
+    const explorer = createExplorerDto();
+    explorer.scopeItems = [{ label: "Run", value: rawRunId, tone: "Info" }];
+    explorer.filters = [filter];
+    explorer.savedViews[0]!.filters = [filter];
+    explorer.rows = explorer.rows.map((row) => ({ ...row, cells: [...row.cells, { columnId: "run", displayValue: rawRunId, rawValue: rawRunId, tone: "Info" as const, linkHref: "" }] }));
+    explorer.recordGraph.nodes = [{ nodeId: rawRunId, nodeType: "run", label: rawRunId, tone: "Info", href: "/portfolio" }];
+    const onSaveView = vi.fn().mockResolvedValue(undefined);
+    renderExplorer(onSaveView, explorer, undefined, compact, () => "Retained strategy");
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Retained strategy");
+    expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("Retained strategy");
+    expect(screen.getByLabelText("Record graph")).toHaveTextContent("Retained strategy");
+    expect(screen.getByRole("row", { name: /cash assets/i })).toBeInTheDocument();
+    const share = screen.getByRole("link", { name: /^Share state/ }).getAttribute("href")!;
+    expect(new URL(share, "http://localhost").searchParams.getAll("frexFilter")).toContain(`run:${rawRunId}`);
+    await user.type(screen.getByRole("textbox", { name: "Saved view name" }), "Retained view");
+    await user.click(screen.getByRole("button", { name: "Save view" }));
+    expect(onSaveView).toHaveBeenCalledWith(expect.objectContaining({ filters: [filter] }));
+    expect(explorer.scopeItems[0]!.value).toBe(rawRunId);
+    expect(explorer.filters[0]!.value).toBe(rawRunId);
+  });
+
   it("renders source-backed DTO rows and opens row proof detail", async () => {
     const user = userEvent.setup();
     renderExplorer();
@@ -628,7 +653,8 @@ function renderExplorer(
   onSaveView?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSaveView"],
   explorer: FinancialRecordExplorerDto = createExplorerDto(),
   onSelectRecord?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSelectRecord"],
-  compact = false
+  compact = false,
+  formatRunLabel?: Parameters<typeof FinancialRecordExplorerShell>[0]["formatRunLabel"]
 ) {
   return render(
     <FinancialRecordExplorerShell
@@ -643,6 +669,7 @@ function renderExplorer(
       explorer={explorer}
       onSaveView={onSaveView}
       onSelectRecord={onSelectRecord}
+      formatRunLabel={formatRunLabel}
     >
       <div>Fallback static content</div>
     </FinancialRecordExplorerShell>

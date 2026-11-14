@@ -6,6 +6,8 @@ import { selectCurrentDailyValuationSchedule, useAccountingCloseSources, type Cl
 import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
 import { formatCount } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { KpiProvider } from "@/lib/kpi-context";
+import { workspaceKpiIds } from "@/lib/kpi-registry";
 import { CloseChecklistProgressChart, ReconciliationAgingChart } from "@/components/meridian/workstation-evidence-charts";
 import { CloseChecklistHistoryChart } from "@/components/meridian/close-checklist-history-chart";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -123,7 +125,16 @@ function normalizeOptionalQueryValue(value: string | null): string | undefined {
   return normalized ? normalized : undefined;
 }
 
-export function AccountingScreen({ data, multiAssetCoverage, session = null }: AccountingScreenProps) {
+export function AccountingScreen(props: AccountingScreenProps) {
+  const crossScreenCounts = useSharedCrossScreenCounts();
+  return (
+    <KpiProvider models={{ accounting: props.data, crossScreenCounts }}>
+      <AccountingScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function AccountingScreenContent({ data, multiAssetCoverage, session = null }: AccountingScreenProps) {
   const [curvesOpen, setCurvesOpen] = useState(false);
   const [bondDiscoveryOpen, setBondDiscoveryOpen] = useState(false);
   const { pathname, search, hash } = useLocation();
@@ -768,15 +779,12 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         taskMode={taskMode}
       /> : null}
 
-      {taskMode.id === "close-cockpit" ? <StatStrip
-        metrics={applyOpenBreakDelta(
-          applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, breakQueue: data.breakQueue, openBreakCount: data.workspace?.openBreaks })),
-          sinceLastVisitDelta(summarizeSinceLastVisit(data.breakQueue ?? [], breakQueueVisit.baseline))
-        )}
-        label="Accounting headline metrics"
-        source="Accounting workspace"
-        figureSource="accounting"
-      /> : null}
+      {taskMode.id === "close-cockpit" ? <KpiProvider models={{ accounting: { ...data, metrics: applyOpenBreakDelta(
+        applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, breakQueue: data.breakQueue, openBreakCount: data.workspace?.openBreaks })),
+        sinceLastVisitDelta(summarizeSinceLastVisit(data.breakQueue ?? [], breakQueueVisit.baseline))
+      ) } }}>
+        <StatStrip ids={workspaceKpiIds("accounting", data.metrics)} label="Accounting headline metrics" source="Accounting workspace" figureSource="accounting" />
+      </KpiProvider> : null}
       {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
 
       {workstream === "reconciliation" ? (
