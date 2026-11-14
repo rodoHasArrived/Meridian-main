@@ -179,6 +179,25 @@ decisions:
       - W7-LIVE-001
 
 
+  - id: DEC-PRD014-FIRST-ENVELOPE-001
+    title: Bound v0.1.0 and its release candidates to Windows x64
+    status: accepted
+    decided_on: 2026-11-14
+    owner_lane: Runtime Host and Architecture
+    summary: >-
+      The owner requested a one-commit v0.1.0 release train and authorized either securing native
+      ARM64 capacity or formally scoping ARM64 out of the first envelope. The implementation
+      selects the bounded scope-out: Windows 11 x64 only for numeric version 0.1.0, including its
+      release candidates. ADR-019 records this amendment to DEC-PRD000-SUPPORT-MATRIX-001;
+      historical x64 and ARM64 receipts retain their original scope. Later versions retain the
+      native x64 and ARM64 certification requirement. No arbitrary architecture-skip input is
+      introduced. Protected signing, installed lifecycle, PostgreSQL zero-skip certification,
+      publish smoke, recovery acceptance, required-check activation and same-commit documentation
+      remain required. This decision does not provision secrets, certify a commit, accept a
+      recovery drill, close PRD-002 or authorize bypass of repository protections.
+    related_roadmap_items:
+      - W7-LIVE-001
+
   - id: DEC-FUND-OPERATIONS-DIRECTION-001
     title: Register bounded fund-operations functionality as planned W12 direction
     status: accepted
