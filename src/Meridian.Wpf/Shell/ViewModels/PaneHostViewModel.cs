@@ -162,6 +162,11 @@ public partial class PaneHostViewModel : BindableBase
 
     private void EnsurePaneCapacity(int requiredPaneCount)
     {
+        if (requiredPaneCount <= SelectedLayout.PaneCount)
+        {
+            return;
+        }
+
         var normalizedPaneCount = Math.Clamp(requiredPaneCount, 1, PaneLayouts.TradingCockpit.PaneCount);
         var desiredLayout = normalizedPaneCount switch
         {
