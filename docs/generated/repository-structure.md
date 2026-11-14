@@ -2614,6 +2614,7 @@ Meridian-main
 │   │   │   ├── web-trading-positions.png
 │   │   │   ├── web-trading-risk.png
 │   │   │   └── web-trading-workspace.png
+│   │   ├── capture-manifest.json
 │   │   ├── README.md
 │   │   └── web-audit.md
 │   ├── security
@@ -14789,6 +14790,7 @@ Meridian-main
 │   │   │   └── ShellRouteRegistryTests.cs
 │   │   ├── Support
 │   │   │   ├── AppServiceTestHost.cs
+│   │   │   ├── DesktopNavigationTestHost.cs
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
 │   │   │   ├── FakeWorkstationReconciliationApiClient.cs
