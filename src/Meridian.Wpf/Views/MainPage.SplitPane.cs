@@ -1,6 +1,8 @@
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using Meridian.Wpf.Models;
+using WpfNavigationService = Meridian.Wpf.Services.NavigationService;
 
 namespace Meridian.Wpf.Views;
 
@@ -78,7 +80,15 @@ public partial class MainPage
                 continue;
             }
 
-            frame.Content = _shellNavigationCoordinator.CreatePaneContent(state);
+            AutomationProperties.SetItemType(frame,
+                state.PaneIndex == _viewModel.PaneHost.ActivePaneIndex ? "ActiveWorkspacePane" : "WorkspacePane");
+            if (!string.Equals(
+                    WpfNavigationService.GetContentPageTag(frame.Content),
+                    state.CanonicalPageTag,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                frame.Content = _shellNavigationCoordinator.CreatePaneContent(state);
+            }
         }
 
         var activePane = _splitPaneHost.GetPaneFrame(_viewModel.PaneHost.ActivePaneIndex);

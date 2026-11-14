@@ -44,6 +44,11 @@ namespace Meridian.Wpf.Services;
 public sealed class NavigationService : NavigationServiceBase, INavigationService
 {
     private static readonly Lazy<NavigationService> _instance = new(() => new NavigationService());
+    private static readonly DependencyProperty ContentPageTagProperty = DependencyProperty.RegisterAttached(
+        "ContentPageTag", typeof(string), typeof(NavigationService), new PropertyMetadata(null));
+
+    internal static string? GetContentPageTag(object? content)
+        => content is DependencyObject element ? element.GetValue(ContentPageTagProperty) as string : null;
 
     private Frame? _frame;
     private IServiceProvider? _serviceProvider;
@@ -371,7 +376,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             page is Page wpfPage &&
             ShouldWrapWithWorkspaceChrome(pageTag, pageType))
         {
-            return new WorkspaceDeepPageHostPage(
+            element = new WorkspaceDeepPageHostPage(
                 this,
                 serviceProvider.GetService<WorkspaceShellContextService>(),
                 pageTag,
@@ -380,6 +385,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
                 presentationMode);
         }
 
+        // Keep rendered content identity separate from the shell's requested navigation state.
+        element.SetValue(ContentPageTagProperty, pageTag);
         return element;
     }
 

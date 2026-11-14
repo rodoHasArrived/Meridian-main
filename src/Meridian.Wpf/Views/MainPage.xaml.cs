@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Meridian.Wpf.Models;
@@ -75,6 +76,7 @@ public partial class MainPage : Page
 
     private void OnContentFrameNavigated(object sender, WpfNavigationEventArgs e)
     {
+        AutomationProperties.SetItemStatus(ContentFrame, WpfNavigationService.GetContentPageTag(ContentFrame.Content) ?? string.Empty);
         _viewModel.SyncNavigationState();
     }
 
@@ -102,7 +104,22 @@ public partial class MainPage : Page
     public bool NavigateToLaunchPage(string pageTag)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pageTag);
-        _navigationService.Initialize(ContentFrame, WorkspaceChromePresentationMode.Docked);
+        var targetFrame = ContentFrame;
+        if (ShellNavigationCatalog.IsWorkspaceShellPageTag(pageTag))
+        {
+            // Workspace homes are displayed by the split-pane surface, while leaf workflows use ContentFrame.
+            // Retain the assignment as well as the visible content so a later layout refresh cannot restore an old page.
+            _splitPaneHost ??= SplitPaneHost;
+            _viewModel.PaneHost.AssignPageToPane(pageTag, _viewModel.PaneHost.ActivePaneIndex);
+            SyncSplitPaneContent();
+            targetFrame = _splitPaneHost.GetPaneFrame(_viewModel.PaneHost.ActivePaneIndex);
+            if (targetFrame is null)
+            {
+                return false;
+            }
+        }
+
+        _navigationService.Initialize(targetFrame, WorkspaceChromePresentationMode.Docked);
         return _navigationService.NavigateTo(pageTag);
     }
 }

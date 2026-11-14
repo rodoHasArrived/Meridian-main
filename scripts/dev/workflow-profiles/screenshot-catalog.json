@@ -17,7 +17,7 @@
     "port": 8080
   },
   "screenshots": {
-    "outputRoot": "docs/screenshots/desktop",
+    "outputRoot": "artifacts/desktop-workflows",
     "retention": {
       "maxAgeDays": 14,
       "retainLatest": 10

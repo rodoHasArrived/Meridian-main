@@ -866,6 +866,12 @@ extra page-registration block.
 Shell coordinator, pane-host, and direct `NavigationService` paths accept compatibility aliases as
 inbound route requests but store and execute canonical page tags in active pane state, restored
 content creation, navigation history, navigation events, and pane-drop results.
+Forwarded `--page` requests render workspace homes in the active split pane and leaf workflows in
+the main content frame. Updating an existing pane preserves its layout and the other pane instances.
+Desktop capture readiness compares the shell tag with the visible active frame's `ItemStatus`,
+which is derived from the created page content after navigation rather than from shell labels.
+`MainPageLaunchNavigationTests` covers home/leaf transitions, aliases, rendered identity and retained panes;
+these native checks require Windows.
 Workspace id compatibility normalization and the canonical legacy-alias list are centralized through
 `WorkstationNavigationDefaults` instead of repeated shell-local switch expressions.
 The shared context-strip service normalizes legacy workspace titles before rendering owner copy, so

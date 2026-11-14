@@ -20,6 +20,12 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("Find-DescendantByAutomationId -Window $Window -AutomationId 'PageTitleText'");
         script.Should().Contain("Transient UI Automation timeouts are expected while WPF pages load");
         script.Should().Contain("function Get-ShellAutomationState");
+        script.Should().Contain("function Test-ShellRenderedPageReady");
+        script.Should().Contain("$frameState.IsOffscreen");
+        script.Should().Contain("$frameState.ItemType -ne 'ActiveWorkspacePane'");
+        script.Should().Contain("$renderedPageTag = $frameState.ItemStatus");
+        script.Should().Contain("[string]::Equals($State.RenderedPageTag, $State.PageTag, [System.StringComparison]::Ordinal)");
+        script.Should().Contain("desktop.content.not_active");
         script.Should().Contain("function Resolve-WorkflowPageTag");
         script.Should().Contain("'ResearchShell' { return 'StrategyShell' }");
         script.Should().Contain("'DataOperationsShell' { return 'DataShell' }");
@@ -35,6 +41,7 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("expectedPageTag = $expectedPageTag");
         script.Should().Contain("$pageReadiness = Wait-ForShellPage");
         script.Should().Contain("$stepResult.observedPageTag = $pageReadiness.State.PageTag");
+        script.Should().Contain("$stepResult.observedRenderedPageTag = $captureRetry.Value.state.RenderedPageTag");
     }
 
     [Fact]
@@ -271,16 +278,12 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
-    public void MainWindow_ShouldRebindLaunchNavigationToTheMainContentFrame()
+    public void MainWindow_ShouldDelegateLaunchNavigationToMainPage()
     {
         var mainWindow = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\MainWindow.xaml.cs"));
-        var mainPage = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\MainPage.xaml.cs"));
 
         mainWindow.Should().Contain("request.HasPageNavigation && RootFrame.Content is MainPage mainPage");
         mainWindow.Should().Contain("mainPage.NavigateToLaunchPage(request.PageTag!)");
-        mainPage.Should().Contain("public bool NavigateToLaunchPage(string pageTag)");
-        mainPage.Should().Contain("_navigationService.Initialize(ContentFrame, WorkspaceChromePresentationMode.Docked)");
-        mainPage.Should().Contain("return _navigationService.NavigateTo(pageTag)");
     }
 
     [Fact]
