@@ -342,6 +342,13 @@ public static class UiEndpoints
     public const string DirectLendingMutationRateLimitPolicy = "direct-lending-mutation";
 
     /// <summary>
+    /// Per-IP limiter for the unauthenticated sign-in endpoint. Bounds how quickly one client
+    /// can guess credentials or churn the bounded failed-attempt table in
+    /// <c>LoginSessionService</c>.
+    /// </summary>
+    public const string LoginRateLimitPolicy = "login";
+
+    /// <summary>
     /// Registers a per-IP fixed-window rate limiter for mutation endpoints.
     /// Allows 10 requests per minute per IP with a small queue for bursts.
     /// Set the <c>MDC_DISABLE_RATE_LIMIT=true</c> environment variable to bypass rate
@@ -378,6 +385,19 @@ public static class UiEndpoints
                         Window = TimeSpan.FromMinutes(1),
                         QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                         QueueLimit = 2
+                    }));
+
+            options.AddPolicy(LoginRateLimitPolicy, httpContext => !forceEnable && CanBypassRateLimiting(httpContext)
+                ? RateLimitPartition.GetNoLimiter<string>("login-global")
+                : RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: $"login:{httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"}",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 10,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0,
+                        AutoReplenishment = true
                     }));
 
             options.AddPolicy(DirectLendingMutationRateLimitPolicy, httpContext => !forceEnable && CanBypassRateLimiting(httpContext)
