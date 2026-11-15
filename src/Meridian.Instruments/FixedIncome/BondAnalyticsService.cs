@@ -104,7 +104,7 @@ public sealed partial class BondAnalyticsService : IBondAnalyticsService
         var inputs = new List<BondCalculationInput>
         {
             new("SecurityTerms", security.SecurityId.ToString("D"), security.Version,
-                Sha256Digest.ComputeUtf8(security.CommonTerms.GetRawText() + "\n" + security.AssetSpecificTerms.GetRawText())),
+                BondSecurityTermsDigest.Resolve(security.CommonTerms, security.AssetSpecificTerms, request.RetainedSecurityTermsSha256)),
             new("CalculationModel", model.Version), new("PricingModel", BondPricingMath.ModelVersion)
         };
         if (model.RecordsContractualEconomicsInput)

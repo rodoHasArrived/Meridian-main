@@ -724,7 +724,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Config.Credentials.OAuthTokenRefreshService</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:16](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L16).
+Source: [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:17](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L17).
 
 Background service for automatically refreshing OAuth tokens before they expire. Supports extensible provider registration for different OAuth implementations.
 
@@ -736,26 +736,26 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public event Action&lt;string, OAuthToken&gt;? OnTokenRefreshed;</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:42](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L42) |  |
-| <code>public event Action&lt;string, string&gt;? OnRefreshFailed;</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:43](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L43) |  |
-| <code>public event Action&lt;string, TimeSpan&gt;? OnTokenExpiringSoon;</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:44](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L44) |  |
-| <code>public OAuthTokenRefreshService(string dataRoot, CredentialExpirationConfig? config = null, HttpClient? httpClient = null, ILogger? logger = null, IOAuthTokenVault? vault = null, ProviderCredentialScope? ownershipScope = null);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:46](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L46) |  |
-| <code>public Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:65](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L65) | Loads and migrates retained tokens asynchronously before synchronous token inspection. |
-| <code>public void Start();</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:95](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L95) | Starts the background token refresh loop. |
-| <code>public Task StopAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:109](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L109) | Stops the refresh loop and clears its lifecycle state even after failure. |
-| <code>public void RegisterProvider(OAuthProviderConfig providerConfig);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:166](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L166) | Registers an OAuth provider configuration. |
-| <code>public async Task StoreTokenAsync(string providerName, OAuthToken token, CancellationToken ct = default);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:176](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L176) | Stores an OAuth token for a provider. |
-| <code>public OAuthToken? GetToken(string providerName);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:187](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L187) | Gets the current OAuth token for a provider. |
-| <code>public IReadOnlyDictionary&lt;string, (OAuthToken Token, TokenStatus Status)&gt; GetAllTokens();</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:196](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L196) | Gets all stored OAuth tokens with their status. |
-| <code>public async Task&lt;OAuthRefreshResult&gt; RefreshTokenAsync(string providerName, CancellationToken ct = default);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:208](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L208) | Manually triggers a token refresh for a provider. |
-| <code>public async Task RemoveTokenAsync(string providerName, CancellationToken ct = default);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:227](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L227) | Removes stored token for a provider. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:549](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L549) |  |
+| <code>public event Action&lt;string, OAuthToken&gt;? OnTokenRefreshed;</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:44](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L44) |  |
+| <code>public event Action&lt;string, string&gt;? OnRefreshFailed;</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:45](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L45) |  |
+| <code>public event Action&lt;string, TimeSpan&gt;? OnTokenExpiringSoon;</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:46](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L46) |  |
+| <code>public OAuthTokenRefreshService(string dataRoot, CredentialExpirationConfig? config = null, HttpClient? httpClient = null, ILogger? logger = null, IOAuthTokenVault? vault = null, ProviderCredentialScope? ownershipScope = null, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:48](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L48) |  |
+| <code>public Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:69](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L69) | Loads and migrates retained tokens asynchronously before synchronous token inspection. |
+| <code>public void Start();</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:106](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L106) | Starts the background token refresh loop. |
+| <code>public Task StopAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:121](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L121) | Stops the refresh loop and clears its lifecycle state even after failure. |
+| <code>public void RegisterProvider(OAuthProviderConfig providerConfig);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:178](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L178) | Registers an OAuth provider configuration. |
+| <code>public async Task StoreTokenAsync(string providerName, OAuthToken token, CancellationToken ct = default);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:188](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L188) | Stores an OAuth token for a provider. |
+| <code>public OAuthToken? GetToken(string providerName);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:199](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L199) | Gets the current OAuth token for a provider. |
+| <code>public IReadOnlyDictionary&lt;string, (OAuthToken Token, TokenStatus Status)&gt; GetAllTokens();</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:208](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L208) | Gets all stored OAuth tokens with their status. |
+| <code>public async Task&lt;OAuthRefreshResult&gt; RefreshTokenAsync(string providerName, CancellationToken ct = default);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:220](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L220) | Manually triggers a token refresh for a provider. |
+| <code>public async Task RemoveTokenAsync(string providerName, CancellationToken ct = default);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:239](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L239) | Removes stored token for a provider. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:561](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L561) |  |
 
 ## TokenStatus
 
 Qualified name: <code>Meridian.Application.Config.Credentials.OAuthTokenRefreshService.TokenStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:568](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L568).
+Source: [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:580](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L580).
 
 Token status enumeration for display purposes.
 
@@ -767,10 +767,10 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Valid</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:570](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L570) |  |
-| <code>ExpiringSoon</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:571](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L571) |  |
-| <code>Expired</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:572](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L572) |  |
-| <code>Refreshing</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:573](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L573) |  |
+| <code>Valid</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:582](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L582) |  |
+| <code>ExpiringSoon</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:583](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L583) |  |
+| <code>Expired</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:584](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L584) |  |
+| <code>Refreshing</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:585](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L585) |  |
 
 ## ProviderCredentialAuditReplayHostedService
 

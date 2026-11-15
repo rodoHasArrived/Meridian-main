@@ -10,6 +10,28 @@ public static partial class SecurityAssetPackRegistry
     /// </summary>
     public static IReadOnlyDictionary<string, string> ProfileAssetClasses { get; } = BuildProfileAssetClasses();
 
+    /// <summary>
+    /// Resolves a caller-supplied reclassifying profile id (matched case-insensitively) to the
+    /// catalog's own spelling, so logs and reports carry the catalog value rather than request text.
+    /// </summary>
+    public static bool TryGetCanonicalProfileId(string? profileId, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out string? canonicalProfileId)
+    {
+        if (!string.IsNullOrWhiteSpace(profileId))
+        {
+            foreach (var key in ProfileAssetClasses.Keys)
+            {
+                if (string.Equals(key, profileId, StringComparison.OrdinalIgnoreCase))
+                {
+                    canonicalProfileId = key;
+                    return true;
+                }
+            }
+        }
+
+        canonicalProfileId = null;
+        return false;
+    }
+
     private static IReadOnlyDictionary<string, string> BuildProfileAssetClasses()
     {
         var owners = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

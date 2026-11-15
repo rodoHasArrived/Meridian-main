@@ -20,6 +20,17 @@ checksums and duplicate identities. UTF-8 encoding, CSV row and unformatted XML 
 source-file hash casing and null rejection retain their existing contracts; retained imports remain
 discoverable under the same duplicate keys.
 
+Direct CSV and IB Flex imports now require replayable source retention from their canonical store.
+`JsonCanonicalStatementStore.SourceEvidence.cs` publishes the original bounded capture and exact
+parser-input bytes by SHA-256 before publishing the import envelope. Identical bytes share one
+immutable artifact; cross-process claims protect reuse. Reads verify retained hashes, and missing
+or corrupt evidence refuses complete imports. Failed or cancelled capture can leave unreferenced
+evidence but cannot publish a completed import. Legacy envelopes remain readable; their absent
+replay bytes are never reconstructed from a mutable original path.
+`CanonicalStatementSourceEvidenceTests` covers source removal, restart, concurrent duplicates,
+interrupted retention and corrupted evidence. Canonical CSV also refuses quotes inside unquoted
+fields and data after closing quotes instead of silently changing source identities.
+
 `IProviderVerificationHistoryReader` projects existing verification audit events for an exact
 tenant, connection, external account and environment. It exposes only recording time and pass/fail,
 keeps the newest bounded observations in time order, and reports truncation. An unappended pending

@@ -380,6 +380,7 @@ public static class UiApiRoutes
     public const string SecurityMasterSearch = "/api/security-master/search";
     public const string SecurityMasterAssetClasses = "/api/security-master/asset-classes";
     public const string SecurityMasterAssetClassDefinition = "/api/security-master/asset-classes/{assetClass}";
+    public const string SecurityMasterRegistryProjection = "/api/security-master/projections/{assetClass}/{securityId:guid}";
     public const string SecurityMasterAssetProfiles = "/api/security-master/asset-profiles";
     public const string SecurityMasterAssetProfilePromotionCandidates = "/api/security-master/asset-profiles/promotion-candidates";
     public const string SecurityMasterAssetProfileLineage = "/api/security-master/asset-profiles/{profileId}/lineage";
@@ -496,6 +497,9 @@ public static class UiApiRoutes
 
     // Structured-credit reclassification report (ADR-022, report first)
     public const string SecurityMasterStructuredCreditReclassificationReport = "/api/security-master/structured-credit-reclassification/report";
+
+    // CustomAsset profile promotion report (ADR-022, report first; promotion is an envelope amendment)
+    public const string SecurityMasterProfilePromotionReport = "/api/security-master/profile-promotion/{profileId}/report";
 
     // Exception aging / SLA
     public const string SecurityMasterExceptionsAging = "/api/security-master/exceptions/aging";
@@ -951,6 +955,9 @@ public static class UiApiRoutes
     public const string RunsLedgerSymbol = "/api/workstation/runs/{runId}/ledger/symbols/{symbol}";
     public const string LedgerPeriodJournalExport = "/api/ledger/periods/{periodId:guid}/journal-export";
     public const string LedgerBooks = "/api/ledger/books";
+    public const string LedgerAutomationGrants = "/api/ledger/automation/grants";
+    public const string LedgerAutomationGrant = LedgerAutomationGrants + "/{grantId:guid}";
+    public const string LedgerAutomationGrantRevoke = LedgerAutomationGrant + "/revoke";
     public const string LedgerBookRolloutAssessment = "/api/ledger/books/rollout-assessment";
     public const string LedgerBookById = "/api/ledger/books/{ledgerBookId:guid}";
     public const string LedgerAccountCashReconciliationRuns = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/runs";
@@ -1069,6 +1076,7 @@ public static class UiApiRoutes
     public const string LedgerReportsAccountingPackages = "/api/ledger/reports/accounting-packages";
     public const string LedgerReportsAccountingPackageExport = "/api/ledger/reports/accounting-packages/{packageId}/exports/{artifactId}";
     public const string LedgerReportsAccountingPackageCertification = "/api/ledger/reports/accounting-package/certification";
+    public const string LedgerGeneralLedgerExport = "/api/ledger/books/{ledgerBookId:guid}/periods/{periodId:guid}/exports/general-ledger";
     public const string WorkstationSecurityMasterSearch = "/api/workstation/security-master/securities";
     public const string WorkstationSecurityMasterById = "/api/workstation/security-master/securities/{securityId:guid}";
     public const string WorkstationSecurityMasterHistory = "/api/workstation/security-master/securities/{securityId:guid}/history";

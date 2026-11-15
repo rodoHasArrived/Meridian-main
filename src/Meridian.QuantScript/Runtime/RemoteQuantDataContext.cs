@@ -66,6 +66,17 @@ internal sealed class RemoteQuantDataContext(QuantScriptWorkerChannel channel) :
             new WorkerDataRequest(WorkerDataOperation.CorporateActions, symbol),
             ct).ConfigureAwait(false);
 
+    public Task<SecurityDetailDto> CanonicalSecurityMasterAsync(
+        string symbol, DateTimeOffset effectiveThroughUtc, CancellationToken ct = default)
+        => RequestAsync<SecurityDetailDto>(new WorkerDataRequest(
+            WorkerDataOperation.CanonicalSecurityMaster, symbol, Timestamp: effectiveThroughUtc), ct);
+
+    public async Task<IReadOnlyList<CorporateActionDto>> CanonicalCorporateActionsAsync(
+        string symbol, Guid expectedSecurityId, DateTimeOffset effectiveThroughUtc, CancellationToken ct = default)
+        => await RequestAsync<List<CorporateActionDto>>(new WorkerDataRequest(
+            WorkerDataOperation.CanonicalCorporateActions, symbol, Timestamp: effectiveThroughUtc,
+            ExpectedSecurityId: expectedSecurityId), ct).ConfigureAwait(false);
+
     private async Task<T> RequestAsync<T>(WorkerDataRequest request, CancellationToken ct)
     {
         var value = await RequestCoreAsync(request, ct).ConfigureAwait(false);

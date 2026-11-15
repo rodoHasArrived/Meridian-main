@@ -17,7 +17,7 @@ SPEC.loader.exec_module(generation)
 
 class ContractGenerationTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.temporary = tempfile.TemporaryDirectory()
+        self.temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         self.write_json("database/schema-control.json", {
@@ -67,11 +67,25 @@ class ContractGenerationTests(unittest.TestCase):
         result = subprocess.run([sys.executable, str(SCRIPT), "--repo", str(self.root), "--check"],
                                 capture_output=True, text=True)
         self.assertEqual(1, result.returncode, result.stderr)
-        self.assertIn("Stale: database/manifest/contracts.json", result.stdout)
+        self.assertNotIn("Stale: database/manifest/contracts.json", result.stdout)
         self.assertIn("Stale: docs/generated/database/contracts/ledger-contracts.md", result.stdout)
         self.assertEqual(before, self.snapshot())
         generation.generate(self.root)
         self.assertEqual([], generation.generate(self.root, check=True))
+
+    def test_missing_or_stale_machine_inventory_does_not_fail_reviewed_freshness(self) -> None:
+        generation.generate(self.root)
+        raw = self.root / "database/manifest/contracts.json"
+        raw.unlink()
+        self.assertEqual([], generation.generate(self.root, check=True))
+        raw.write_text("outdated machine inventory\n")
+        self.assertEqual([], generation.generate(self.root, check=True))
+        # A source comment changes mechanical source provenance, not reviewed
+        # contract structure or diagrams. Default generation still emits it.
+        path = self.root / "src/Contracts/Items.cs"
+        path.write_text(path.read_text() + "\n// implementation note\n")
+        self.assertEqual([], generation.generate(self.root, check=True))
+        self.assertEqual(["database/manifest/contracts.json"], generation.generate(self.root))
 
     def test_shrinking_contract_set_removes_obsolete_diagram_pages(self) -> None:
         self.write_contracts(81)
@@ -86,7 +100,7 @@ class ContractGenerationTests(unittest.TestCase):
 
     def test_symlink_output_is_rejected_without_writing_outside_checkout(self) -> None:
         generation.generate(self.root)
-        with tempfile.TemporaryDirectory() as outside:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as outside:
             target = Path(outside) / "reviewed.txt"
             target.write_text("unchanged")
             path = self.root / "docs/generated/database/data-object-catalog.md"

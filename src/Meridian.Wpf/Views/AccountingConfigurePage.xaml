@@ -1498,6 +1498,9 @@
                         </Border>
                     </Grid>
                 </TabItem>
+                <TabItem Header="Onboarding parallel run" AutomationProperties.AutomationId="AccountingConfigureShadowOnboardingTab">
+                    <views:OnboardingShadowControl DataContext="{Binding ShadowOnboarding}" />
+                </TabItem>
 
                 <TabItem Header="Close, Evidence, Reconciliation">
                     <Grid Margin="0,16,0,0">

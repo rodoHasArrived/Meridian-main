@@ -23,6 +23,7 @@ Usage:
     python3 build/python/cli/buildctl.py bisect --good <ref> --bad <ref>
     python3 build/python/cli/buildctl.py metrics
     python3 build/python/cli/buildctl.py history
+    python3 build/python/cli/buildctl.py regen [--fix] [--docs-only]
 """
 
 from __future__ import annotations
@@ -1911,6 +1912,24 @@ def cmd_history(_args: argparse.Namespace) -> int:
 # ---------------------------------------------------------------------------
 
 
+def cmd_regen(args: argparse.Namespace) -> int:
+    """Use the maintained catalog without staging or blessing review baselines."""
+    unmerged = _run(["git", "ls-files", "--unmerged", "-z"])
+    if unmerged.returncode:
+        print("Could not inspect the merge state; regeneration was not started.", file=sys.stderr)
+        return 2
+    if unmerged.stdout:
+        print("Resolve source/prose conflicts with the generated merge recovery procedure before regeneration.", file=sys.stderr)
+        return 2
+    command = [sys.executable, "build/scripts/run-maintained-generation.py"]
+    if args.docs_only:
+        command.append("--docs-only")
+    result = _run_passthrough(command)
+    if result or args.fix:
+        return result
+    return _run_passthrough([sys.executable, "build/scripts/ci/check-generated-output.py"])
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="buildctl",
@@ -2043,6 +2062,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_test.add_argument("--property", action="append", default=[])
 
+    # regen
+    p_regen = sub.add_parser("regen", help="Regenerate maintained outputs and check committed review material freshness")
+    p_regen.add_argument("--fix", action="store_true", help="Keep regenerated outputs for review without requiring an already-fresh commit; never stage or commit")
+    p_regen.add_argument("--docs-only", action="store_true", help="Run documentation generation without the browser build")
+
     # validation-status
     p_status = sub.add_parser("validation-status", help="Show local validation lock and active build/test processes")
     p_status.add_argument("--summary", action="store_true")
@@ -2114,6 +2138,7 @@ def cmd_recommend_validation(args: argparse.Namespace) -> int:
 
 
 _COMMANDS = {
+    "regen": cmd_regen,
     "recommend-validation": cmd_recommend_validation,
     "doctor": cmd_doctor,
     "build": cmd_build,

@@ -15,6 +15,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,20">
@@ -178,6 +179,78 @@
                     </StackPanel>
                 </Border>
             </Grid>
+
+            <!-- Scope options: entities, funds and fund accounts from the shared
+                 /api/workstation/scope-options seam (browser scope-picker parity). -->
+            <Border Grid.Row="2"
+                    Style="{StaticResource CardStyle}"
+                    Margin="0,20,0,0"
+                    Visibility="{Binding HasScopeOptions, Converter={StaticResource BoolToVisibility}}"
+                    AutomationProperties.AutomationId="ScopeOptionsCard">
+                <StackPanel>
+                    <TextBlock Text="Scope Options" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,4" />
+                    <TextBlock Text="{Binding ScopeOptions.StatusText}"
+                               Style="{StaticResource CardDescriptionStyle}"
+                               TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="ScopeOptionsStatusText"
+                               Margin="0,0,0,12" />
+
+                    <UniformGrid Columns="3" Margin="0,0,0,8">
+                        <StackPanel Margin="0,0,12,0">
+                            <TextBlock Text="Entity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <ComboBox ItemsSource="{Binding ScopeOptions.Entities}"
+                                      SelectedItem="{Binding ScopeOptions.SelectedEntity, Mode=TwoWay}"
+                                      DisplayMemberPath="Name"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      AutomationProperties.Name="Scope entity"
+                                      AutomationProperties.AutomationId="ScopeOptionsEntityComboBox"
+                                      Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel Margin="0,0,12,0">
+                            <TextBlock Text="Fund" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <ComboBox ItemsSource="{Binding ScopeOptions.Funds}"
+                                      SelectedItem="{Binding ScopeOptions.SelectedFund, Mode=TwoWay}"
+                                      DisplayMemberPath="Name"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      AutomationProperties.Name="Scope fund"
+                                      AutomationProperties.AutomationId="ScopeOptionsFundComboBox"
+                                      Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Fund Account" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <ComboBox ItemsSource="{Binding ScopeOptions.Accounts}"
+                                      SelectedItem="{Binding ScopeOptions.SelectedAccount, Mode=TwoWay}"
+                                      DisplayMemberPath="DisplayName"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      AutomationProperties.Name="Scope fund account"
+                                      AutomationProperties.AutomationId="ScopeOptionsAccountComboBox"
+                                      Margin="0,4,0,0" />
+                        </StackPanel>
+                    </UniformGrid>
+
+                    <TextBlock Text="{Binding ScopeOptions.NarrowingText}"
+                               FontSize="12"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="ScopeOptionsNarrowingText"
+                               Margin="0,0,0,12" />
+
+                    <WrapPanel>
+                        <Button Content="Use Scope"
+                                Command="{Binding UseScopeSelectionCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                AutomationProperties.AutomationId="ScopeOptionsUseScopeButton"
+                                Margin="0,0,8,0" />
+                        <Button Content="Clear"
+                                Command="{Binding ScopeOptions.ClearSelectionCommand}"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Margin="0,0,8,0" />
+                        <Button Content="Reload"
+                                Command="{Binding ScopeOptions.ReloadCommand}"
+                                Style="{StaticResource GhostButtonStyle}" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
         </Grid>
     </ScrollViewer>
 </Page>

@@ -33,6 +33,7 @@ export interface ProviderRateLimitRow {
   status: string;
   statusTone: "success" | "warning" | "danger";
   requestUsage: string;
+  dailyUsage: string;
   remaining: string;
   resetCountdown: string;
   failureReason: string;
@@ -184,6 +185,7 @@ function buildRateLimitRow(
   const resetCountdown = formatResetCountdown(provider.resetAt, now);
   const limited = provider.stateAvailable && provider.isRateLimited;
   const reason = normalizeReason(provider.reason);
+  const unit = provider.quotaUnit ?? "requests";
 
   return {
     source: provider,
@@ -193,9 +195,14 @@ function buildRateLimitRow(
     status: !provider.stateAvailable ? "State unavailable" : limited ? "Rate limited" : "Available",
     statusTone: !provider.stateAvailable ? "warning" : limited ? "danger" : "success",
     requestUsage: provider.requestsInWindow === null
-      ? `Unavailable / ${provider.maxRequestsPerWindow}`
-      : `${provider.requestsInWindow} / ${provider.maxRequestsPerWindow}`,
-    remaining: provider.remainingRequests === null ? "Unavailable" : provider.remainingRequests.toString(),
+      ? `Unavailable / ${provider.maxRequestsPerWindow} ${unit}`
+      : `${provider.requestsInWindow} / ${provider.maxRequestsPerWindow} ${unit}`,
+    remaining: provider.remainingRequests === null ? "Unavailable" : `${provider.remainingRequests} ${unit}`,
+    dailyUsage: !provider.stateAvailable || provider.dailyMaximum === undefined
+      ? "Unavailable"
+      : provider.dailyMaximum === null
+        ? "No daily cap modeled"
+        : `${provider.dailyUnitsUsed ?? "Unavailable"} / ${provider.dailyMaximum} ${unit} · ${provider.dailyResetPolicy === "utc-midnight" ? "midnight UTC" : provider.dailyResetPolicy === "rolling-24-hours" ? "rolling 24 hours" : "reset policy unavailable"}`,
     resetCountdown,
     failureReason: limited
       ? `Current rate-limit reason: ${reason ?? "reason unavailable"}.`

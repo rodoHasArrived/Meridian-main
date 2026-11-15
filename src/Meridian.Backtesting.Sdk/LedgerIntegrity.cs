@@ -82,6 +82,22 @@ public static class BacktestLedgerIntegrityValidator
         foreach (var (account, balance) in balances.Where(pair => IsClearingAccount(pair.Key)))
             Compare("TransferClearing", account, 0m, balance, "Transfer/clearing account has an unsettled balance.");
 
+        var dividendAccounts = balances.Where(pair => pair.Key.Name == "Dividend Receivable"
+                && pair.Key.AccountType == LedgerAccountType.Asset)
+            .ToArray();
+        foreach (var accountId in snapshot.Accounts.Keys.Concat(dividendAccounts
+                     .Select(static pair => pair.Key.FinancialAccountId).OfType<string>()).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            var expected = snapshot.Accounts.GetValueOrDefault(accountId)?.DividendReceivable ?? 0m;
+            var actual = dividendAccounts.Where(pair => string.Equals(pair.Key.FinancialAccountId, accountId, StringComparison.OrdinalIgnoreCase))
+                .Sum(static pair => pair.Value);
+            Compare("DividendReceivable", new LedgerAccount("Dividend Receivable", LedgerAccountType.Asset, FinancialAccountId: accountId),
+                expected, actual, "Ledger dividend receivables do not match frozen account entitlements.");
+        }
+        Compare("DividendReceivable", new LedgerAccount("Dividend Receivable", LedgerAccountType.Asset), 0m,
+            dividendAccounts.Where(static pair => pair.Key.FinancialAccountId is null).Sum(static pair => pair.Value),
+            "Unscoped dividend receivables have no retained financial-account entitlement.");
+
         return breaks.AsReadOnly();
     }
 

@@ -11,6 +11,10 @@ last_reviewed: 2026-09-28
 
 # src/Meridian.ProviderSdk
 
+`ProviderRateLimitDiagnosticSnapshot.QuotaUnit` identifies weighted credits versus requests.
+Optional daily usage, maximum, reset time and reset-policy fields preserve vendor account semantics
+alongside compatibility counters. Numeric request-named counters must be labeled with `QuotaUnit`.
+
 `Backfill/IBackfillBarWriter.cs` is the provider-facing persistence port for one historical-bar
 session batch. Storage implements it; application composition supplies it to the backfill worker.
 

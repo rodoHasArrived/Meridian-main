@@ -1,3 +1,4 @@
+using Meridian.Application.ProviderRouting;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
@@ -51,6 +52,10 @@ public static class ProviderConnectionEndpoints
                     : await service.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(rows, jsonOptions);
             }
+            catch (ProviderRuntimeCredentialQuiescenceException error)
+            {
+                return Results.Conflict(new { code = "ProviderCredentialMaintenanceRequired", error = error.Message });
+            }
             catch (UnauthorizedAccessException)
             {
                 return EndpointHelpers.Forbidden();
@@ -86,6 +91,10 @@ public static class ProviderConnectionEndpoints
             {
                 return Results.BadRequest(new { error = ex.Message, unknownFields = ex.UnknownFields });
             }
+            catch (ProviderRuntimeCredentialQuiescenceException error)
+            {
+                return Results.Conflict(new { code = "ProviderCredentialMaintenanceRequired", error = error.Message });
+            }
             catch (UnauthorizedAccessException)
             {
                 return EndpointHelpers.Forbidden();
@@ -119,6 +128,10 @@ public static class ProviderConnectionEndpoints
                 var result = await selectedService.VerifyAsync(providerId, context.RequestAborted, actor).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
+            catch (ProviderRuntimeCredentialQuiescenceException error)
+            {
+                return Results.Conflict(new { code = "ProviderCredentialMaintenanceRequired", error = error.Message });
+            }
             catch (UnauthorizedAccessException)
             {
                 return EndpointHelpers.Forbidden();
@@ -148,6 +161,10 @@ public static class ProviderConnectionEndpoints
                 var result = await selectedService.DeleteCredentialsAsync(providerId, actor, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
+            }
+            catch (ProviderRuntimeCredentialQuiescenceException error)
+            {
+                return Results.Conflict(new { code = "ProviderCredentialMaintenanceRequired", error = error.Message });
             }
             catch (UnauthorizedAccessException)
             {

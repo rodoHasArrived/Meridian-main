@@ -10,37 +10,32 @@ public sealed class PostgresFxSpotReferenceProjectionStore : IFxSpotReferencePro
 {
     internal const string AssetClass = "FxSpot";
 
-    private readonly PostgresReferenceProjectionReader _reader;
+    internal static readonly RegistryProjectionQuery ByPairCode = new(nameof(ByPairCode), "where pair_code = @pair_code");
+
+    internal static readonly RegistryProjectionQuery ByCurrency = new(nameof(ByCurrency),
+        """
+        where base_currency = @currency or quote_currency = @currency
+        order by pair_code
+        """);
+
+    private readonly RegistryReferenceProjectionStore<FxSpotProjectionRow> _store;
 
     public PostgresFxSpotReferenceProjectionStore(SecurityMasterOptions options)
     {
-        _reader = new PostgresReferenceProjectionReader(options);
+        _store = CreateStore(options);
     }
 
+    internal static RegistryReferenceProjectionStore<FxSpotProjectionRow> CreateStore(SecurityMasterOptions options)
+        => new(options, AssetClass, MapRow, [ByPairCode, ByCurrency]);
+
     public Task<FxSpotProjectionRow?> GetFxSpotAsync(Guid securityId, CancellationToken ct = default)
-        => _reader.QuerySingleAsync(
-            _reader.SelectSql(AssetClass, "where security_id = @security_id"),
-            [new NpgsqlParameter("security_id", securityId)],
-            MapRow,
-            ct);
+        => _store.GetBySecurityIdAsync(securityId, ct);
 
     public Task<FxSpotProjectionRow?> GetByPairCodeAsync(string pairCode, CancellationToken ct = default)
-        => _reader.QuerySingleAsync(
-            _reader.SelectSql(AssetClass, "where pair_code = @pair_code"),
-            [new NpgsqlParameter("pair_code", pairCode.Trim().ToUpperInvariant())],
-            MapRow,
-            ct);
+        => _store.SingleAsync(ByPairCode, [new NpgsqlParameter("pair_code", pairCode.Trim().ToUpperInvariant())], ct);
 
     public Task<IReadOnlyList<FxSpotProjectionRow>> GetByCurrencyAsync(string currency, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where base_currency = @currency or quote_currency = @currency
-                order by pair_code
-                """),
-            [new NpgsqlParameter("currency", currency.Trim().ToUpperInvariant())],
-            MapRow,
-            ct);
+        => _store.ListAsync(ByCurrency, [new NpgsqlParameter("currency", currency.Trim().ToUpperInvariant())], ct);
 
     internal static FxSpotProjectionRow MapRow(ProjectionRow row)
         => new(

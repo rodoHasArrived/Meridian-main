@@ -30,6 +30,15 @@ public sealed record BondAnalyticsRequest(
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? PriceAccountId { get; init; }
+
+    /// <summary>
+    /// The <c>SecurityTerms</c> content hash a retained receipt recorded, supplied when replaying it.
+    /// It is reported only when it equals the pre-invariant raw-text hash of exactly the terms resolved
+    /// now (<see cref="BondSecurityTermsDigest.Resolve"/>); otherwise the canonical hash is reported, so
+    /// it can never make changed terms verify.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? RetainedSecurityTermsSha256 { get; init; }
 }
 
 public sealed record BondAnalyticsBlocker(string Code, string Reason);

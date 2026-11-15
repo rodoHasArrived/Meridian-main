@@ -68,7 +68,7 @@ class MeridianCiCacheContractTests(unittest.TestCase):
                 job = self._job_block(lane)
                 step = self._step_block(job, step_name)
                 if lane == "verify-dotnet":
-                    self.assertIn("    needs: changes", job)
+                    self.assertIn("    needs: [changes, verify-browser]", job)
                     self.assertIn("    if: needs.changes.outputs.dotnet == 'true'", job)
                 else:
                     self.assertNotRegex(job, r"(?m)^    (?:if|needs):")

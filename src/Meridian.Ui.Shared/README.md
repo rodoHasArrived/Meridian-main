@@ -11,6 +11,9 @@ last_reviewed: 2026-11-14
 
 # src/Meridian.Ui.Shared
 
+Provider quota responses preserve the runtime's explicit credits/request unit and daily usage,
+cap and reset-policy evidence. They do not infer fundamentals entitlement from available credits.
+
 `IntercompanyObligationEndpoints` adds an owned-book advisory monitor at
 `/api/ledger/intercompany/obligations` and dates-only native agreement `/{id}/schedule` reads.
 Authenticated scope, retained evidence and existing legal read authority remain server-owned.
@@ -19,6 +22,13 @@ every observed entity; legal authoring or compliance grants alone cannot authori
 External-review evidence verifies accepted immutable documents, separately from the attesting
 operator. The close-readiness companion does not become a blocker. See
 [the intercompany procedure](../../docs/operators/intercompany-entity-controls.md).
+
+`IntercompanyAccrualDraftService` backs `/api/ledger/intercompany/accruals/preview` and `/drafts`
+(ADR-028). It resolves approved `LoanInterest` profile revisions, their pinned legal revisions and
+posted `Loan`-profile principal, calls the pure calculator, and retains a source-side journal draft
+through trusted workbench intake. It never submits, approves or posts. The workbench retains the
+accrual evidence against client saves, blocks review when lines no longer match it, refuses a draft
+whose window a posted accrual already covers, and carries the evidence onto the posted journal.
 
 Account/group close advisories require canonical exact-scope membership and retained evidence;
 the book node ID is not substituted for a legal-entity ID. Missing membership yields unknown.
@@ -59,6 +69,9 @@ changes to price adjustment or Canonical resolution require an explicit archive/
 change is never presented as an applied provider rebuild. Browser Settings and Data use the same
 status.
 
+Provider edits that require credential ownership validate a frozen snapshot before ordinary
+settings validation. Both data-source aliases return safe HTTP 400 errors for invalid settings.
+
 
 The browser's fixed-income journeys use shared permissioned adapters rather than calculation-only
 entry points. Bond settlement preparation resolves an optional service explicitly (503 when absent)
@@ -85,6 +98,18 @@ Alpaca's fixed-income filter and authoritative error propagation, and exposes mo
 separately for candidate staging. The browser stages the reviewed identity through the existing
 retained asset-information upload; discovery never supplies approved economic terms. Tests use
 synthetic fixtures; live provider behavior remains untested.
+
+Production and packaged/customer workstation credential setup and compatibility routes require
+explicit retained connection ownership. Provider-wide status cannot claim readiness from unassigned
+secrets; selected-connection status and mutations use the scoped vault. Legacy execution/module
+adapters refuse unowned credentials in these compositions, while unflagged development retains its
+legacy compatibility policy. Bound production operator mutations require proven runtime stop/drain;
+the default host returns an actionable maintenance conflict before changing credentials or ownership.
+Owned disabled connections support credential setup and status reads consistently; execution and
+verification still require an enabled connection. Refused maintenance leaves prior runtime status unchanged.
+Provider-owned conditional refresh remains scope/generation checked and can finish during drain.
+See [credential operations](../../docs/operators/provider-credentials.md).
+
 Completed empty bond lookups return `available: true`; failed lookups return HTTP 503 with
 `available: false`, no candidates and a stable `failureReason` describing unavailable credentials,
 transport, malformed payload, incomplete response or throttling.
@@ -95,6 +120,7 @@ Null configuration documents and noncanonical credential environments also repor
 credentials and release the configuration lease before returning.
 The complete lookup has a 20-second deadline and preserves caller cancellation. Expiry reports
 `lookupTimedOut` and releases the configuration lease; blank queries refuse before provider probes.
+
 Visualization services are registered through the existing workstation composition and endpoint
 map. Private-capital observation and broker-assessment imports use dedicated permissions and
 authenticated tenant/company plus entity/account checks. The former verifies retained source
@@ -579,6 +605,41 @@ Its shared read endpoint uses exact account/book/fund ownership, verifies mixed 
 chains, reports coverage and missing versions, and splits observations across unknown intervals.
 Legacy workflows remain history-unavailable until new committed observations exist; the endpoint
 never turns current gate state into invented historical progress.
+Reconciliation fee drafts receive server-selected `CurrencyEvidenceVersion = 1` and explicit
+native-currency journal legs through the existing materializer. Other manual drafts retain their
+existing functional and transaction-currency rules. Reconciliation fee drafts retain
+their economic source identity and adjusting-entry flag through approval and posting; copies and
+later comparison runs cannot book the same fee twice. Independent human review remains mandatory.
+Browser saves cannot introduce source fee authority; preparation uses the existing trusted draft
+intake, and later saves preserve that retained proof.
+Linked reversal/rebook drafts retain source-journal lineage and use separate correction identities.
+
+The opt-in `ThreeWayReconciliationService` retains independent posted-ledger, OMS and broker
+operands for an exact authorized account/book/period/cutoff. Its ledger source captures journals and
+full historical canonical lot basis in one database snapshot. The existing durable case queue and
+statement scheduler own casework and daily execution; stale or missing sources remain blockers.
+The browser reads the same protected service routes rather than supplying accounting snapshots.
+
+`GET /api/ledger/books/{ledgerBookId}/periods/{periodId}/exports/general-ledger` downloads one
+`general-ledger.v1` ZIP from a consistent journal/disposal/open-lot snapshot. CSV, exact text-cell
+XLSX, Parquet, symbol P&L and the agreement/hash/evidence manifest share the same captured inputs.
+The route requires an authenticated session, `ExportData`, ledger-report read authority,
+tenant/company scope, and retained ownership of the book's exact fund. It never falls back to an
+inconsistent store.
+Approved close marks additionally require Security Master read authority. With that permission,
+the latest exact-date close revision is used only if approved; `closePriceSnapshotId` can pin a
+specific retained approved revision. Historical Security Master identity/currency and historical
+open basis are bound into the export. Unsupported or incomplete P&L operands remain unavailable
+with explicit reasons. Responses use `Cache-Control: no-store` and `X-Ledger-Snapshot-Sha256`.
+
+Accounting exposes `POST /api/ledger/automation/grants`,
+`GET /api/ledger/automation/grants/{grantId}`, and
+`POST /api/ledger/automation/grants/{grantId}/revoke` to `AdminMaintenance` operators.
+Activation requires an authenticated actor, exact session tenant/company, an open retained USD
+book/period, the current accounting-mapping revision, and policy rules explicitly allowing
+evidence-backed automatic fills, commissions, and identified fees. Only synthetic source mode
+is supported. Actor and tenant come from the session; assistant activation is refused. Nothing
+automatically activates a grant, and historical exact replay remains available after revocation.
 
 Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced. The optional `engineVersion` query selects explicit `portfolio-cash-ladder-v1` replay; an unknown version returns a blocked ladder with no contributions that names the unsupported version rather than falling back silently.
 
@@ -799,7 +860,10 @@ incumbent opening balances, explain differences, issue the parallel-run certific
 positions. `IBookOfRecordGuard` is registered over the onboarding store. `ClosePublicationReadinessGuard`
 resolves it lazily and blocks hard-close with `CLOSE_SHADOW_BOOK`, and governed report release refuses
 a shadow book. `FileOnboardingWorkspaceStore` enforces one active shadow trial per ledger book inside the
-save's writer lease and returns a concurrency conflict to the losing designation.
+save's writer lease and returns a concurrency conflict to the losing designation. With a ledger
+database, storage composition replaces the file store with `PostgresOnboardingWorkspaceStore`, whose
+partial unique index enforces the same rule across processes. The command-center read service resolves
+the book-of-record guard lazily to report the `shadow-agreement` close-readiness contributor.
 
 `FileOnboardingWorkspaceStore` persists full comparison payloads and frozen readiness packets using
 atomic file replacement, writer leases and expected-version checks. Retained history cannot be
@@ -893,8 +957,11 @@ using the authenticated workstation tenant. Binding failover IDs are limited to 
 connection set. Each service applies ownership against its captured configuration before returning
 bindings or evaluating trust; foreign connections do not trigger health queries. Request headers and
 query parameters cannot select another tenant. Route preview uses the same authenticated tenant
-before candidate selection and failover expansion. Default setup ownership and remaining whole-configuration
-snapshot callers still require integration.
+before candidate selection and failover expansion. Production setup and default-runtime resolution
+require the retained connection, tenant, account and environment; missing or changed ownership cannot
+fall back to provider-wide credentials. Whole-configuration writes use the Application-owned final
+credential guard, including retained sections and backups, while legacy reads remain available for
+explicit migration and purge.
 
 The workstation Data payload (`/api/workstation/data` and `/api/workstation/data-operations`) reads
 routing connections, bindings and trust snapshots through the same tenant-scoped service methods, so
@@ -1175,7 +1242,10 @@ but the payload carries only nodes the caller could already read on an existing 
   (brokerage household and portfolio aggregation); `ViewLedgerReports` / `ManageLedgerReports` →
   entities (entity timeline).
 - A fund's entity ids and an account's fund and entity ids are dropped when they point outside the
-  visible set. A caller holding none of those permissions gets empty lists without the structure
+  visible set. When an account's fund or entity is dropped, the account's `fundWithheld` /
+  `entityWithheld` flag is set instead (additive, default false), so a client can say "not visible
+  to you" rather than "none recorded". The flag discloses only that the account has an active fund
+  or entity; never its id or name. It is always false for `AdminMaintenance`. A caller holding none of those permissions gets empty lists without the structure
   being read. A host without `IFundStructureService` answers 503.
 
 ## Operator surface visits
@@ -3737,6 +3807,13 @@ and deactivate routes, and `WorkstationEndpointsTests` on the ledger posting rou
 ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their proposed
 `StructuredCredit` terms and blockers. It is mapped only when the Postgres-backed service is
 registered and it never writes; applying a proposal is a governed amendment.
+
+`POST /api/security-master/profile-promotion/{profileId}/report` (AdminMaintenance) builds the
+ADR-022 promotion report for one reclassifying profile: the active `CustomAsset` records pinned to it,
+each Ready or Blocked after a dry run under the target class. A profile that does not reclassify
+returns 400. It is mapped only when the Postgres-backed service is registered and it never writes;
+promotion is any write that carries the pinned envelope
+([runbook](../../docs/operators/security-master-custom-asset-promotion.md)).
 
 ## Analytical read-model evidence
 

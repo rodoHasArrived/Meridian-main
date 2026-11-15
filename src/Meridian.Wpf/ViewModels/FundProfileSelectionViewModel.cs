@@ -26,10 +26,12 @@ public sealed class FundProfileSelectionViewModel : BindableBase
 
     public FundProfileSelectionViewModel(
         FundContextService fundContextService,
-        WorkstationOperatingContextService operatingContextService)
+        WorkstationOperatingContextService operatingContextService,
+        WorkstationScopeOptionsViewModel? scopeOptions = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _operatingContextService = operatingContextService ?? throw new ArgumentNullException(nameof(operatingContextService));
+        ScopeOptions = scopeOptions;
 
         Profiles = new ReadOnlyObservableCollection<FundProfileDetail>(_profiles);
         OperatingContexts = new ReadOnlyObservableCollection<WorkstationOperatingContext>(_operatingContexts);
@@ -39,6 +41,7 @@ public sealed class FundProfileSelectionViewModel : BindableBase
         CreateProfileCommand = new AsyncRelayCommand(CreateProfileAsync);
         DeleteSelectedProfileCommand = new AsyncRelayCommand(DeleteSelectedProfileAsync, () => SelectedProfile is not null);
         SeedProfilesCommand = new AsyncRelayCommand(SeedProfilesAsync);
+        UseScopeSelectionCommand = new RelayCommand(UseScopeSelection, () => ScopeOptions is not null);
     }
 
     public ReadOnlyObservableCollection<FundProfileDetail> Profiles { get; }
@@ -54,6 +57,20 @@ public sealed class FundProfileSelectionViewModel : BindableBase
     public IAsyncRelayCommand DeleteSelectedProfileCommand { get; }
 
     public IAsyncRelayCommand SeedProfilesCommand { get; }
+
+    /// <summary>
+    /// Picks the operating context that matches the scope chosen from the shared scope options
+    /// (account, else fund, else entity), when the desktop context catalog has one.
+    /// </summary>
+    public IRelayCommand UseScopeSelectionCommand { get; }
+
+    /// <summary>
+    /// Entity, fund and account options from the shared <c>/api/workstation/scope-options</c>
+    /// seam; null when the picker is not composed (for example in narrow tests).
+    /// </summary>
+    public WorkstationScopeOptionsViewModel? ScopeOptions { get; }
+
+    public bool HasScopeOptions => ScopeOptions is not null;
 
     public WorkstationOperatingContext? SelectedOperatingContext
     {
@@ -173,6 +190,34 @@ public sealed class FundProfileSelectionViewModel : BindableBase
         StatusText = _operatingContexts.Count == 0
             ? "No operating contexts exist yet. Create a fund profile or seed sample hybrid contexts to continue."
             : "Choose an operating context before entering the workstation.";
+
+        if (ScopeOptions is not null)
+        {
+            // The scope-options read reports its own failures in ScopeOptions.StatusText; it never
+            // blocks choosing an operating context.
+            await ScopeOptions.InitializeAsync(ct);
+        }
+    }
+
+    private void UseScopeSelection()
+    {
+        var contextKey = ScopeOptions?.SelectedScopeContextKey;
+        if (contextKey is null)
+        {
+            StatusText = "Choose an entity, fund or account from the scope options first.";
+            return;
+        }
+
+        var match = _operatingContexts.FirstOrDefault(context =>
+            string.Equals(context.ContextKey, contextKey, StringComparison.OrdinalIgnoreCase));
+        if (match is null)
+        {
+            StatusText = $"No operating context exists for '{ScopeOptions!.SelectedScopeDisplayName}' on this desktop yet. Choose a context from the list.";
+            return;
+        }
+
+        SelectedOperatingContext = match;
+        StatusText = $"Selected the '{match.DisplayName}' operating context. Enter the workstation to apply it.";
     }
 
     private bool CanEnterFund() => SelectedOperatingContext is not null;

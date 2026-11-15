@@ -267,8 +267,8 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static IServiceCollection AddBrokerageExecution(this IServiceCollection services, Action&lt;BrokerageConfiguration&gt;? configure = null);</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:29](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L29) | Registers the brokerage execution layer services. |
 | <code>public static IServiceCollection AddTradeFillLedgerPosting(this IServiceCollection services, TradeFillLedgerPostingContext postingContext, Func&lt;IServiceProvider, ITradeFillLedgerPostingTarget&gt; postingTargetFactory, Func&lt;IServiceProvider, ITradeFillPostingStore&gt; postingStoreFactory, Func&lt;IServiceProvider, ITradeFillHandoffFailureStore&gt; handoffFailureStoreFactory, Func&lt;IServiceProvider, Ledger.Ledger?&gt;? projectionLedgerFactory = null, Action&lt;TradeFillLedgerPostingOptions&gt;? configure = null);</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:127](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L127) | Explicitly composes accepted execution fills into one caller-owned ledger scope. This registration deliberately requires an authoritative durable posting target and durable handoff store because brokerage execution cannot infer or fake an accounting book. An in-memory ledger is optional and is updated only as a projection after persistence. |
-| <code>public static IServiceCollection AddBrokerageGateway&lt;TGateway&gt;(this IServiceCollection services, string gatewayId) where TGateway : class, IBrokerageGateway;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:252](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L252) | Registers a specific IBrokerageGateway implementation as a keyed named gateway. Use the same gatewayId when configuring BrokerageConfiguration.Gateway. |
-| <code>public static IServiceCollection AddBrokerageGateway(this IServiceCollection services, string gatewayId, Func&lt;IServiceProvider, IBrokerageGateway&gt; factory);</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:273](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L273) | Registers a factory-created IBrokerageGateway as a keyed named gateway. |
+| <code>public static IServiceCollection AddBrokerageGateway&lt;TGateway&gt;(this IServiceCollection services, string gatewayId) where TGateway : class, IBrokerageGateway;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:254](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L254) | Registers a specific IBrokerageGateway implementation as a keyed named gateway. Use the same gatewayId when configuring BrokerageConfiguration.Gateway. |
+| <code>public static IServiceCollection AddBrokerageGateway(this IServiceCollection services, string gatewayId, Func&lt;IServiceProvider, IBrokerageGateway&gt; factory);</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:275](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L275) | Registers a factory-created IBrokerageGateway as a keyed named gateway. |
 
 ## DerivativeKind
 
@@ -379,7 +379,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Events.AtomicTradeFillHandoffFailureStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:144](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L144).
+Source: [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:150](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L150).
 
 Atomic snapshot implementation of the independent OMS handoff-failure state.
 
@@ -391,19 +391,82 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public AtomicTradeFillHandoffFailureStore(TradeFillHandoffFailureStoreOptions options);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:161](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L161) |  |
-| <code>public string PostingScope =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:186](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L186) |  |
-| <code>public TradeFillPostingScopeIdentity ScopeIdentity =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:188](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L188) |  |
-| <code>public async Task RetainAsync(TradeExecutedEvent tradeEvent, string failure, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:190](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L190) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;RetainedTradeFillHandoffFailure&gt;&gt; LoadPendingAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:244](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L244) |  |
-| <code>public async Task MarkReplayedAsync(Guid fillId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:264](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L264) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:292](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L292) |  |
+| <code>public AtomicTradeFillHandoffFailureStore(TradeFillHandoffFailureStoreOptions options);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:167](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L167) |  |
+| <code>public string PostingScope =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:192](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L192) |  |
+| <code>public TradeFillPostingScopeIdentity ScopeIdentity =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:194](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L194) |  |
+| <code>public async Task RetainAsync(TradeExecutedEvent tradeEvent, string failure, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:196](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L196) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;RetainedTradeFillHandoffFailure&gt;&gt; LoadPendingAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:251](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L251) |  |
+| <code>public async Task MarkReplayedAsync(Guid fillId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:271](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L271) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:299](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L299) |  |
+
+## AutomatedTradeFillAccountingOptions
+
+Qualified name: <code>Meridian.Execution.Events.AutomatedTradeFillAccountingOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs:20](../../../../src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs#L20).
+
+Opt-in configuration for one reviewed synthetic accounting cutover.
+
+```csharp
+public sealed class AutomatedTradeFillAccountingOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AutomatedPostingGrantReferenceDto? Grant { get; set; }</code> | [src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs:22](../../../../src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs#L22) |  |
+| <code>public string CashAccountPath { get; set; } = &quot;&quot;;</code> | [src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs:23](../../../../src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs#L23) |  |
+| <code>public string SecuritiesAccountPath { get; set; } = &quot;&quot;;</code> | [src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs:24](../../../../src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs#L24) |  |
+| <code>public string RealizedGainAccountPath { get; set; } = &quot;&quot;;</code> | [src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs:25](../../../../src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs#L25) |  |
+| <code>public string RealizedLossAccountPath { get; set; } = &quot;&quot;;</code> | [src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs:26](../../../../src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs#L26) |  |
+| <code>public string CommissionAccountPath { get; set; } = &quot;&quot;;</code> | [src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs:27](../../../../src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs#L27) |  |
+| <code>public string FeeAccountPath { get; set; } = &quot;&quot;;</code> | [src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs:28](../../../../src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs#L28) |  |
+
+## AutomatedTradeFillAccountingService
+
+Qualified name: <code>Meridian.Execution.Events.AutomatedTradeFillAccountingService</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs:44](../../../../src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs#L44).
+
+Application adapter for synthetic, long USD fills. Its retained intent owns lot selection; accounting receipts, never OMS P&amp;L, prove completion. This is not a human-approved Asset Spine event.
+
+```csharp
+public sealed class AutomatedTradeFillAccountingService(AutomatedTradeFillAccountingOptions options, string intentRoot, ILedgerJournalStore journals, IAtomicTaxLotJournalStore atomicLots, IGovernedLedgerPostingTarget journalTarget, IConfiguredLedgerAccountResolver accounts, IAccountingAutomaticPostingPolicyValidator policies, ISecurityMasterQueryService securities, IAssetOperationsQueryService positions) : IAutomatedTradeFillAccountingService, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs:54](../../../../src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs#L54) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;JournalEntry&gt;?&gt; TryRecoverCompletedAsync(TradeExecutedEvent fill, TradeFillLedgerPostingContext context, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs:56](../../../../src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs#L56) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;JournalEntry&gt;&gt; PostAsync(TradeExecutedEvent fill, TradeFillLedgerPostingContext context, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs:93](../../../../src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs#L93) |  |
+
+## CanonicalPaperPortfolioBootstrapper
+
+Qualified name: <code>Meridian.Execution.Events.CanonicalPaperPortfolioBootstrapper</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Events/CanonicalPaperPortfolioBootstrapper.cs:17](../../../../src/Meridian.Execution/Events/CanonicalPaperPortfolioBootstrapper.cs#L17).
+
+Restores the runtime projection from the posted book before OMS or HTTP admission starts.
+
+```csharp
+public sealed class CanonicalPaperPortfolioBootstrapper(AutomatedTradeFillAccountingOptions options, TradeFillLedgerPostingContext context, PaperTradingPortfolio portfolio, ILedgerJournalStore journals, IConfiguredLedgerAccountResolver accounts, ISecurityMasterQueryService securities, LedgerPostingConsumer? consumer = null, ITradeFillHandoffFailureStore? fallbackStore = null, PaperTradingCostOptions? costs = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static PaperTradingPortfolio CreatePortfolio(AutomatedTradeFillAccountingOptions options, LiveMarketDataCache? cache = null);</code> | [src/Meridian.Execution/Events/CanonicalPaperPortfolioBootstrapper.cs:26](../../../../src/Meridian.Execution/Events/CanonicalPaperPortfolioBootstrapper.cs#L26) |  |
+| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/CanonicalPaperPortfolioBootstrapper.cs:38](../../../../src/Meridian.Execution/Events/CanonicalPaperPortfolioBootstrapper.cs#L38) |  |
 
 ## GovernedTradeFillLedgerPostingTarget
 
 Qualified name: <code>Meridian.Execution.Events.GovernedTradeFillLedgerPostingTarget</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:80](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L80).
+Source: [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:86](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L86).
 
 Bridges the governed durable posting target to trade-fill replay. A successful governed append is followed by an authoritative collision lookup; absence of the retained journal fails closed.
 
@@ -415,9 +478,26 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public GovernedTradeFillLedgerPostingTarget(IGovernedLedgerPostingTarget postingTarget, ILedgerJournalStore journalStore);</code> | [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:85](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L85) |  |
-| <code>public Task&lt;TradeFillLedgerPostingConfirmation&gt; PostAndConfirmAsync(LedgerJournalEntryWrite write, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:93](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L93) |  |
-| <code>public async Task&lt;TradeFillLedgerPostingConfirmation&gt; PostAndConfirmAsync(LedgerJournalEntryWrite write, LedgerJournalEntryWrite? retainedShapeAlternative, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:98](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L98) |  |
+| <code>public GovernedTradeFillLedgerPostingTarget(IGovernedLedgerPostingTarget postingTarget, ILedgerJournalStore journalStore);</code> | [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:91](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L91) |  |
+| <code>public Task&lt;TradeFillLedgerPostingConfirmation&gt; PostAndConfirmAsync(LedgerJournalEntryWrite write, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:99](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L99) |  |
+| <code>public async Task&lt;TradeFillLedgerPostingConfirmation&gt; PostAndConfirmAsync(LedgerJournalEntryWrite write, LedgerJournalEntryWrite? retainedShapeAlternative, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:104](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L104) |  |
+
+## IAutomatedTradeFillAccountingService
+
+Qualified name: <code>Meridian.Execution.Events.IAutomatedTradeFillAccountingService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs:31](../../../../src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs#L31).
+
+```csharp
+public interface IAutomatedTradeFillAccountingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;JournalEntry&gt;?&gt; TryRecoverCompletedAsync(TradeExecutedEvent fill, TradeFillLedgerPostingContext context, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs:33](../../../../src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs#L33) |  |
+| <code>Task&lt;IReadOnlyList&lt;JournalEntry&gt;&gt; PostAsync(TradeExecutedEvent fill, TradeFillLedgerPostingContext context, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs:36](../../../../src/Meridian.Execution/Events/AutomatedTradeFillAccountingService.cs#L36) |  |
 
 ## IScopedTradeEventPublisher
 
@@ -461,7 +541,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Events.ITradeFillHandoffFailureStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:121](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L121).
+Source: [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:127](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L127).
 
 Independent last-resort durable state for publisher acceptance failures. It is intentionally separate from the primary posting WAL/snapshot so an outage in that path can be surfaced and replayed rather than hidden in OMS process memory.
 
@@ -473,17 +553,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>string PostingScope { get; }</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:124](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L124) | The exact ledger posting scope whose rejected fills are retained. |
-| <code>TradeFillPostingScopeIdentity ScopeIdentity =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:130](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L130) | Exact accounting identity when the store was constructed from a posting context. Existing custom implementations remain label-only until they opt into the identifier fields. |
-| <code>Task RetainAsync(TradeExecutedEvent tradeEvent, string failure, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:132](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L132) |  |
-| <code>Task&lt;IReadOnlyList&lt;RetainedTradeFillHandoffFailure&gt;&gt; LoadPendingAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:137](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L137) |  |
-| <code>Task MarkReplayedAsync(Guid fillId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:140](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L140) |  |
+| <code>string PostingScope { get; }</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:130](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L130) | The exact ledger posting scope whose rejected fills are retained. |
+| <code>TradeFillPostingScopeIdentity ScopeIdentity =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:136](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L136) | Exact accounting identity when the store was constructed from a posting context. Existing custom implementations remain label-only until they opt into the identifier fields. |
+| <code>Task RetainAsync(TradeExecutedEvent tradeEvent, string failure, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:138](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L138) |  |
+| <code>Task&lt;IReadOnlyList&lt;RetainedTradeFillHandoffFailure&gt;&gt; LoadPendingAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:143](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L143) |  |
+| <code>Task MarkReplayedAsync(Guid fillId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:146](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L146) |  |
 
 ## ITradeFillLedgerPostingTarget
 
 Qualified name: <code>Meridian.Execution.Events.ITradeFillLedgerPostingTarget</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:56](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L56).
+Source: [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:62](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L62).
 
 Durable trade-fill posting boundary. Implementations must not complete until the authoritative journal store has persisted the write and can read the retained record back.
 
@@ -495,8 +575,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;TradeFillLedgerPostingConfirmation&gt; PostAndConfirmAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:58](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L58) |  |
-| <code>Task&lt;TradeFillLedgerPostingConfirmation&gt; PostAndConfirmAsync(LedgerJournalEntryWrite write, LedgerJournalEntryWrite? retainedShapeAlternative, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:69](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L69) | Posts write, or confirms an already retained journal. When the journal is already retained in the shape of retainedShapeAlternative (the form an earlier version posted for the same journal id), that alternative is confirmed instead. The alternative is never appended: it only ever matches a journal that is already there. Targets that cannot tell ignore it and behave as the two-argument overload. |
+| <code>Task&lt;TradeFillLedgerPostingConfirmation&gt; PostAndConfirmAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:64](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L64) |  |
+| <code>Task&lt;TradeFillLedgerPostingConfirmation&gt; PostAndConfirmAsync(LedgerJournalEntryWrite write, LedgerJournalEntryWrite? retainedShapeAlternative, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:75](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L75) | Posts write, or confirms an already retained journal. When the journal is already retained in the shape of retainedShapeAlternative (the form an earlier version posted for the same journal id), that alternative is confirmed instead. The alternative is never appended: it only ever matches a journal that is already there. Targets that cannot tell ignore it and behave as the two-argument overload. |
 
 ## ITradeFillPostingStore
 
@@ -537,19 +617,20 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string PostingScope =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:76](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L76) |  |
-| <code>public TradeFillPostingScopeIdentity ScopeIdentity =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:79](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L79) |  |
-| <code>public LedgerPostingConsumer(ITradeFillLedgerPostingTarget postingTarget, ILogger&lt;LedgerPostingConsumer&gt; logger, ITradeFillPostingStore postingStore, TradeFillLedgerPostingContext postingContext, Ledger.Ledger? projectionLedger = null, int channelCapacity = 10_000, ISecurityValidationGateService? securityValidationGate = null, bool requireSecurityMasterPostingGate = true, TimeSpan? drainTimeout = null, TimeSpan? cancellationTimeout = null) : this(postingTarget, logger, postingStore, postingContext, false, projectionLedger, channelCapacity, securityValidationGate, requireSecurityMasterPostingGate, drainTimeout, cancellationTimeout);</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:102](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L102) | Initialises a new LedgerPostingConsumer bound to one durable accounting scope. |
-| <code>public LedgerPostingConsumer(ITradeFillLedgerPostingTarget postingTarget, ILogger&lt;LedgerPostingConsumer&gt; logger, ITradeFillPostingStore postingStore, TradeFillLedgerPostingContext postingContext, bool requireCurrentAccountingEvidence, Ledger.Ledger? projectionLedger = null, int channelCapacity = 10_000, ISecurityValidationGateService? securityValidationGate = null, bool requireSecurityMasterPostingGate = true, TimeSpan? drainTimeout = null, TimeSpan? cancellationTimeout = null);</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:123](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L123) | Creates a consumer with explicit admission policy. Production composition requires current evidence on newly accepted fills; recovery still reads exact retained legacy events. |
-| <code>public void Publish(TradeExecutedEvent tradeEvent) =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:204](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L204) | Durably accepts a TradeExecutedEvent for asynchronous ledger posting. Returning means the fill can replay after restart. While the channel has capacity the call returns after the WAL append; when full it blocks until the consumer frees space. |
-| <code>public Task PublishAsync(TradeExecutedEvent tradeEvent) =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:219](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L219) | Durably accepts a TradeExecutedEvent for asynchronous ledger posting. Returning means the fill can replay after restart. While the channel has capacity the call returns after the WAL append; when full it awaits until the consumer frees space. Intentionally not cancellable: once called, the fill must reach the durable store. |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:297](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L297) | Stops accepting fills, gives accepted fills one bounded drain window, and then applies a bounded cancellation fallback. Repeated calls await the same shutdown operation. Once the method returns, no in-flight validation can cross the posting boundary into the ledger. |
+| <code>public string PostingScope =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:78](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L78) |  |
+| <code>public TradeFillPostingScopeIdentity ScopeIdentity =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:81](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L81) |  |
+| <code>public LedgerPostingConsumer(ITradeFillLedgerPostingTarget postingTarget, ILogger&lt;LedgerPostingConsumer&gt; logger, ITradeFillPostingStore postingStore, TradeFillLedgerPostingContext postingContext, Ledger.Ledger? projectionLedger = null, int channelCapacity = 10_000, ISecurityValidationGateService? securityValidationGate = null, bool requireSecurityMasterPostingGate = true, TimeSpan? drainTimeout = null, TimeSpan? cancellationTimeout = null) : this(postingTarget, logger, postingStore, postingContext, false, null, projectionLedger, channelCapacity, securityValidationGate, requireSecurityMasterPostingGate, drainTimeout, cancellationTimeout);</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:104](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L104) | Initialises a new LedgerPostingConsumer bound to one durable accounting scope. |
+| <code>public LedgerPostingConsumer(ITradeFillLedgerPostingTarget postingTarget, ILogger&lt;LedgerPostingConsumer&gt; logger, ITradeFillPostingStore postingStore, TradeFillLedgerPostingContext postingContext, bool requireCurrentAccountingEvidence, Ledger.Ledger? projectionLedger = null, int channelCapacity = 10_000, ISecurityValidationGateService? securityValidationGate = null, bool requireSecurityMasterPostingGate = true, TimeSpan? drainTimeout = null, TimeSpan? cancellationTimeout = null) : this(postingTarget, logger, postingStore, postingContext, requireCurrentAccountingEvidence, null, projectionLedger, channelCapacity, securityValidationGate, requireSecurityMasterPostingGate, drainTimeout, cancellationTimeout);</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:122](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L122) | Preserves current evidence admission for native paper fills and retained replay. |
+| <code>public static LedgerPostingConsumer CreateWithAccountingAdapter(ITradeFillLedgerPostingTarget postingTarget, ILogger&lt;LedgerPostingConsumer&gt; logger, ITradeFillPostingStore postingStore, TradeFillLedgerPostingContext postingContext, IAutomatedTradeFillAccountingService? automatedAccounting, bool requireCurrentAccountingEvidence = false, Ledger.Ledger? projectionLedger = null, int channelCapacity = 10_000, ISecurityValidationGateService? securityValidationGate = null, bool requireSecurityMasterPostingGate = true, TimeSpan? drainTimeout = null, TimeSpan? cancellationTimeout = null) =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:141](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L141) | Adds the opt-in adapter without adding an ambiguous native constructor overload. |
+| <code>public void Publish(TradeExecutedEvent tradeEvent) =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:245](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L245) | Durably accepts a TradeExecutedEvent for asynchronous ledger posting. Returning means the fill can replay after restart. While the channel has capacity the call returns after the WAL append; when full it blocks until the consumer frees space. |
+| <code>public Task PublishAsync(TradeExecutedEvent tradeEvent) =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:260](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L260) | Durably accepts a TradeExecutedEvent for asynchronous ledger posting. Returning means the fill can replay after restart. While the channel has capacity the call returns after the WAL append; when full it awaits until the consumer frees space. Intentionally not cancellable: once called, the fill must reach the durable store. |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:362](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L362) | Stops accepting fills, gives accepted fills one bounded drain window, and then applies a bounded cancellation fallback. Repeated calls await the same shutdown operation. Once the method returns, no in-flight validation can cross the posting boundary into the ledger. |
 
 ## PaperFinancingAdmissionException
 
 Qualified name: <code>Meridian.Execution.Events.PaperFinancingAdmissionException</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:359](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L359).
+Source: [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:361](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L361).
 
 This call failed before accepting a new durable source. An earlier acceptance can still exist on a retry. The original error preserves validation, cancellation and availability.
 
@@ -596,9 +677,9 @@ Declared public members:
 | <code>public TradeFillLedgerPostingContext PostingContext =&gt; …;</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:32](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L32) |  |
 | <code>public PaperFinancingPostingService(string rootDirectory, TradeFillLedgerPostingContext context, ITradeFillLedgerPostingTarget target, Func&lt;Guid, CancellationToken, Task&lt;LedgerAccountingPeriod?&gt;&gt; readPeriod, Func&lt;Guid, CancellationToken, Task&lt;LedgerBookRecord?&gt;&gt; readBook);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:34](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L34) |  |
 | <code>public async Task&lt;bool&gt; PostAsync(PaperFinancingCharge charge, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:62](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L62) | Durably accepts and confirms a cash-paid charge. Cancellation is observed before acceptance; after acceptance failures retain the assessment for an idempotent retry. |
-| <code>public async Task&lt;IReadOnlyList&lt;PaperFinancingCharge&gt;&gt; LoadAndRecoverAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:140](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L140) | Replays pending assessments before exposing a rebuilt session book. |
-| <code>public async Task&lt;IReadOnlyList&lt;PaperFinancingCharge&gt;&gt; LoadSourcesAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:161](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L161) | Reads independent accepted source assessments for completeness controls. This does not post or acknowledge any journal. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:334](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L334) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;PaperFinancingCharge&gt;&gt; LoadAndRecoverAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:142](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L142) | Replays pending assessments before exposing a rebuilt session book. |
+| <code>public async Task&lt;IReadOnlyList&lt;PaperFinancingCharge&gt;&gt; LoadSourcesAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:163](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L163) | Reads independent accepted source assessments for completeness controls. This does not post or acknowledge any journal. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:336](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L336) |  |
 
 Source: [src/Meridian.Execution/Events/PaperFinancingPostingService.HistoricalReads.cs:8](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.HistoricalReads.cs#L8).
 
@@ -622,7 +703,7 @@ public sealed record PendingTradeFillPosting(long StoreSequence, string PostingS
 
 Qualified name: <code>Meridian.Execution.Events.RetainedTradeFillHandoffFailure</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:109](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L109).
+Source: [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:115](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L115).
 
 Fill that the primary accounting publisher could not durably accept.
 
@@ -646,15 +727,30 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int AccountingEvidenceVersion { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:72](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L72) | Accounting-evidence contract used by the producer. Zero identifies historical events; current OMS fills use version one even when their accounting context is unavailable. An absent version-one payload must block posting rather than imply a position direction. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public TradeFillAccountingEvidence? AccountingEvidence { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:80](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L80) | Exact opening and closing economics captured while the portfolio applies this fill. A null value does not authorize reconstructing basis or short direction from realized P&amp;L. Historical event JSON and the positional constructor remain unchanged when absent. |
-| <code>public decimal GrossValue =&gt; …;</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:90](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L90) | Gross trade value, always positive. For a face-value fill the clean price is a percentage of par, so the price is scaled to a fraction of par before multiplying — the same convention pre-trade risk uses to measure the order — keeping the booked cash movement equal to the notional the risk gate approved. Otherwise the quoted price is scaled by ContractMultiplier, matching the paper portfolio&#x27;s cash and realized P&amp;L. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SettlementCurrency { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:67](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L67) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceMode { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:70](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L70) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;TradeExecutionFee&gt;? Fees { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:73](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L73) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int AccountingEvidenceVersion { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:92](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L92) | Accounting-evidence contract used by the producer. Zero identifies historical events; current OMS fills use version one even when their accounting context is unavailable. An absent version-one payload must block posting rather than imply a position direction. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public TradeFillAccountingEvidence? AccountingEvidence { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:100](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L100) | Exact opening and closing economics captured while the portfolio applies this fill. A null value does not authorize reconstructing basis or short direction from realized P&amp;L. Historical event JSON and the positional constructor remain unchanged when absent. |
+| <code>public decimal GrossValue =&gt; …;</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:110](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L110) | Gross trade value, always positive. For a face-value fill the clean price is a percentage of par, so the price is scaled to a fraction of par before multiplying — the same convention pre-trade risk uses to measure the order — keeping the booked cash movement equal to the notional the risk gate approved. Otherwise the quoted price is scaled by ContractMultiplier, matching the paper portfolio&#x27;s cash and realized P&amp;L. |
+
+## TradeExecutionFee
+
+Qualified name: <code>Meridian.Execution.Events.TradeExecutionFee</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Events/TradeExecutedEvent.cs:117](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L117).
+
+A separately identified source fee; commission is not repeated here.
+
+```csharp
+public sealed record TradeExecutionFee(string FeeId, string Kind, decimal Amount, string Currency);
+```
 
 ## TradeFillHandoffFailureStoreOptions
 
 Qualified name: <code>Meridian.Execution.Events.TradeFillHandoffFailureStoreOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:76](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L76).
+Source: [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:82](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L82).
 
 Configuration for the OMS-level last-resort accounting handoff state.
 
@@ -666,17 +762,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public TradeFillHandoffFailureStoreOptions(string rootDirectory, TradeFillLedgerPostingContext postingContext) : this(rootDirectory, (postingContext?? throw new ArgumentNullException(nameof(postingContext))).PostingScope);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:78](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L78) |  |
-| <code>public TradeFillPostingScopeIdentity ScopeIdentity { get; init; } = new (PostingScope);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:88](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L88) |  |
-| <code>public string ScopeDirectory { get; }</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:90](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L90) |  |
-| <code>public string SnapshotPath =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:99](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L99) |  |
-| <code>public string LockPath =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:105](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L105) | Persistent lock-file path used to coordinate independent store instances and processes. The file remains on disk; ownership is the lifetime of an exclusive file handle. |
+| <code>public TradeFillHandoffFailureStoreOptions(string rootDirectory, TradeFillLedgerPostingContext postingContext) : this(rootDirectory, (postingContext?? throw new ArgumentNullException(nameof(postingContext))).PostingScope);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:84](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L84) |  |
+| <code>public TradeFillPostingScopeIdentity ScopeIdentity { get; init; } = new (PostingScope);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:94](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L94) |  |
+| <code>public string ScopeDirectory { get; }</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:96](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L96) |  |
+| <code>public string SnapshotPath =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:105](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L105) |  |
+| <code>public string LockPath =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:111](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L111) | Persistent lock-file path used to coordinate independent store instances and processes. The file remains on disk; ownership is the lifetime of an exclusive file handle. |
 
 ## TradeFillLedgerPostingConfirmation
 
 Qualified name: <code>Meridian.Execution.Events.TradeFillLedgerPostingConfirmation</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:48](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L48).
+Source: [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:54](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L54).
 
 Confirmation that an authoritative ledger store retained the requested journal. The retained record is returned so replay can compare exact economics instead of trusting a fill-id hit.
 
@@ -693,14 +789,14 @@ Source: [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:12](../..
 Exact accounting scope for one trade-fill posting consumer. Period and book rollover must create a new context (and therefore a separately partitioned posting store) rather than reusing a prior period&#x27;s handoff.
 
 ```csharp
-public sealed record TradeFillLedgerPostingContext(string PostingScope, Guid AggregateId, Guid PeriodId, Guid LedgerBookId, string AccountingPolicyId = "execution-trade-fill", string AccountingPolicyVersion = "1", long? ExpectedPeriodVersion = null)
+public sealed record TradeFillLedgerPostingContext(string PostingScope, Guid AggregateId, Guid PeriodId, Guid LedgerBookId, string AccountingPolicyId = "execution-trade-fill", string AccountingPolicyVersion = "1", long? ExpectedPeriodVersion = null, int AccountingProtocolVersion = 1)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public TradeFillLedgerPostingContext Validate();</code> | [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:21](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L21) |  |
+| <code>public TradeFillLedgerPostingContext Validate();</code> | [src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs:22](../../../../src/Meridian.Execution/Events/TradeFillLedgerPostingTarget.cs#L22) |  |
 
 ## TradeFillPostingAcceptance
 
@@ -732,9 +828,10 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string? AccountingPolicyId { get; init; }</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:20](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L20) | Accounting policy identifier included in an exact posting identity. |
 | <code>public string? AccountingPolicyVersion { get; init; }</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:23](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L23) | Accounting policy version included in an exact posting identity. |
-| <code>[JsonIgnore] public bool IsExact =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:26](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L26) |  |
-| <code>public static TradeFillPostingScopeIdentity FromContext(TradeFillLedgerPostingContext postingContext);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:32](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L32) |  |
-| <code>public TradeFillPostingScopeIdentity Validate();</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:47](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L47) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int AccountingProtocolVersion { get; init; }</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:26](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L26) |  |
+| <code>[JsonIgnore] public bool IsExact =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:29](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L29) |  |
+| <code>public static TradeFillPostingScopeIdentity FromContext(TradeFillLedgerPostingContext postingContext);</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:35](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L35) |  |
+| <code>public TradeFillPostingScopeIdentity Validate();</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:51](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L51) |  |
 
 ## TradeFillPostingStoreOptions
 
@@ -782,10 +879,10 @@ Declared public members:
 | <code>public string PostingScope { get; }</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:203](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L203) |  |
 | <code>public TradeFillPostingScopeIdentity ScopeIdentity { get; }</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:205](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L205) |  |
 | <code>public async Task&lt;TradeFillPostingAcceptance&gt; AcceptAsync(TradeExecutedEvent tradeEvent, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:207](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L207) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;PendingTradeFillPosting&gt;&gt; LoadPendingAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:299](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L299) |  |
-| <code>public async Task MarkPostedAsync(Guid fillId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:315](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L315) |  |
-| <code>public async Task RecordFailureAsync(Guid fillId, string failure, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:394](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L394) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:478](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L478) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;PendingTradeFillPosting&gt;&gt; LoadPendingAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:300](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L300) |  |
+| <code>public async Task MarkPostedAsync(Guid fillId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:316](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L316) |  |
+| <code>public async Task RecordFailureAsync(Guid fillId, string failure, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:395](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L395) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:479](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L479) |  |
 
 ## UnsupportedOrderRequestException
 
@@ -941,91 +1038,3 @@ A single coherent observation of the last-known market data for one symbol: the 
 ```csharp
 public readonly record struct MarketDataSnapshot(BboQuotePayload? Quote, Trade? Trade, HistoricalBar? Bar);
 ```
-
-## IOrderManagementLifecycle
-
-Qualified name: <code>Meridian.Execution.IOrderManagementLifecycle</code>. Kind: `interface`.
-
-Source: [src/Meridian.Execution/IOrderManagementLifecycle.cs:7](../../../../src/Meridian.Execution/IOrderManagementLifecycle.cs#L7).
-
-Owns the OMS report intake and retained accounting-handoff replay. Construction and read-only recovery inspection do not start background work.
-
-```csharp
-public interface IOrderManagementLifecycle
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task StartAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Execution/IOrderManagementLifecycle.cs:13](../../../../src/Meridian.Execution/IOrderManagementLifecycle.cs#L13) | Starts report intake once and enables order operations. Repeated starts are idempotent; a stopped instance cannot be restarted. The token cancels startup, not the service lifetime. |
-| <code>Task StopAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Execution/IOrderManagementLifecycle.cs:20](../../../../src/Meridian.Execution/IOrderManagementLifecycle.cs#L20) | Closes admission, drains admitted operations and accepted fills, and stops background work. Repeated calls share one shutdown. Cancelling the token cancels the wait, not the drain; disposal still awaits it before dependencies can be released. |
-
-## ISecurityMasterGate
-
-Qualified name: <code>Meridian.Execution.ISecurityMasterGate</code>. Kind: `interface`.
-
-Source: [src/Meridian.Execution/ISecurityMasterGate.cs:14](../../../../src/Meridian.Execution/ISecurityMasterGate.cs#L14).
-
-Pre-trade governance gate: verifies that a symbol is registered and active in the Security Master before an order is accepted by the OMS.
-
-```csharp
-public interface ISecurityMasterGate
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterGateResult&gt; CheckAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Execution/ISecurityMasterGate.cs:25](../../../../src/Meridian.Execution/ISecurityMasterGate.cs#L25) | Checks whether symbol resolves to an active security in the Security Master. |
-
-## ILiveMarketEventFeed
-
-Qualified name: <code>Meridian.Execution.Live.ILiveMarketEventFeed</code>. Kind: `interface`.
-
-Source: [src/Meridian.Execution/Live/ILiveMarketEventFeed.cs:20](../../../../src/Meridian.Execution/Live/ILiveMarketEventFeed.cs#L20).
-
-In-process subscription surface for the live market event stream. The hosted app publishes every pipeline event into this feed so live strategy sessions can consume real-time events the same way BacktestEngine consumes replayed events.
-
-```csharp
-public interface ILiveMarketEventFeed
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IAsyncEnumerable&lt;LiveMarketEvent&gt; SubscribeAsync(IReadOnlyCollection&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Execution/Live/ILiveMarketEventFeed.cs:27](../../../../src/Meridian.Execution/Live/ILiveMarketEventFeed.cs#L27) | Subscribes to live events for the given symbols. The returned stream completes when ct is cancelled. Slow consumers drop the oldest queued events rather than back-pressuring the market data pipeline. |
-
-## LiveMarketEvent
-
-Qualified name: <code>Meridian.Execution.Live.LiveMarketEvent</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Live/ILiveMarketEventFeed.cs:10](../../../../src/Meridian.Execution/Live/ILiveMarketEventFeed.cs#L10).
-
-Provider-agnostic live market event carried into execution-time consumers. Wraps the shared contract payload types (Trade, BboQuotePayload, HistoricalBar, LOBSnapshot) without exposing pipeline or provider types.
-
-```csharp
-public sealed record LiveMarketEvent(DateTimeOffset Timestamp, string Symbol, MarketEventPayload Payload);
-```
-
-## LiveMarketEventHub
-
-Qualified name: <code>Meridian.Execution.Live.LiveMarketEventHub</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/Live/LiveMarketEventHub.cs:16](../../../../src/Meridian.Execution/Live/LiveMarketEventHub.cs#L16).
-
-In-process fan-out hub for live market events. The host publishes each pipeline event once via Publish; every active subscription receives the events matching its symbol set through its own bounded queue. Slow subscribers drop their oldest queued events (the hot publish path never blocks), mirroring the platform&#x27;s observer-channel backpressure policy.
-
-```csharp
-public sealed class LiveMarketEventHub : ILiveMarketEventFeed
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LiveMarketEventHub(ILogger&lt;LiveMarketEventHub&gt;? logger = null, int subscriberCapacity = DefaultSubscriberCapacity);</code> | [src/Meridian.Execution/Live/LiveMarketEventHub.cs:24](../../../../src/Meridian.Execution/Live/LiveMarketEventHub.cs#L24) |  |
-| <code>public int ActiveSubscriptionCount =&gt; …;</code> | [src/Meridian.Execution/Live/LiveMarketEventHub.cs:34](../../../../src/Meridian.Execution/Live/LiveMarketEventHub.cs#L34) | Number of active subscriptions (diagnostics only). |
-| <code>public void Publish(LiveMarketEvent evt);</code> | [src/Meridian.Execution/Live/LiveMarketEventHub.cs:40](../../../../src/Meridian.Execution/Live/LiveMarketEventHub.cs#L40) | Publishes one live event to all subscriptions whose symbol set contains the event&#x27;s symbol. Never blocks; full subscriber queues drop their oldest event. |
-| <code>public async IAsyncEnumerable&lt;LiveMarketEvent&gt; SubscribeAsync(IReadOnlyCollection&lt;string&gt; symbols, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/Live/LiveMarketEventHub.cs:51](../../../../src/Meridian.Execution/Live/LiveMarketEventHub.cs#L51) |  |

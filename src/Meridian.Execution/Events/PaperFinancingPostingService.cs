@@ -92,6 +92,8 @@ public sealed partial class PaperFinancingPostingService : IAsyncDisposable
     {
         try
         {
+            if (_context.AccountingProtocolVersion == 2)
+                throw new LedgerValidationException("New financing assessments are unsupported in canonical cash-equity accounting.");
             // New assessments must fit the authoritative numeric(38,10) amount exactly.
             // Do not retain a zero-rounded/overflowing leg or diverge from session cash.
             if (charge.Amount >= 10000000000000000000000000000m

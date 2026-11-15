@@ -257,7 +257,7 @@ internal sealed class OrderFillProcessor(
                     var fillOrderId = fillIncrement.ClientOrderId ?? fillIncrement.OrderId;
                     var result = paperPortfolio.ApplyFillWithAccountingEvidence(
                         fillIncrement,
-                        ownerAccountId: _context.GetFinancialAccountId(fillOrderId),
+                        ownerAccountId: ResolveFinancialAccountId(fillOrderId),
                         contractMultiplier: _context.GetContractMultiplier(fillOrderId),
                         usesFaceValuePercentageOfPar: usesFaceValuePercentageOfPar);
                     progress.AccountingEvidence = result.Evidence;
@@ -305,6 +305,19 @@ internal sealed class OrderFillProcessor(
                         AccountingEvidenceVersion = 1,
                         AccountingEvidence = progress.AccountingEvidence
                     };
+                    if (_context.CaptureAccountingSource)
+                    {
+                        var fees = new List<TradeExecutionFee>();
+                        if (_context.SyntheticSource && fillIncrement.Fees is > 0m)
+                            fees.Add(new($"{progress.TradeEvent.FillId:D}:paper-fees", "SyntheticModelFee", fillIncrement.Fees.Value, "USD"));
+                        if (_context.SyntheticSource && fillIncrement.SlippageCost is > 0m)
+                            fees.Add(new($"{progress.TradeEvent.FillId:D}:paper-slippage", "SyntheticSlippageCost", fillIncrement.SlippageCost.Value, "USD"));
+                        progress.TradeEvent = progress.TradeEvent with
+                        {
+                            SourceMode = _context.SyntheticSource ? "Synthetic" : "Live",
+                            Fees = fees.Count == 0 ? null : Array.AsReadOnly(fees.ToArray())
+                        };
+                    }
                 }
 
                 if (_accounting.HasPublisher && progress.IsTrackedOrder)
@@ -409,9 +422,8 @@ internal sealed class OrderFillProcessor(
     }
 
     private string? ResolveFinancialAccountId(string? orderId)
-        => !string.IsNullOrWhiteSpace(orderId)
-            ? _context.GetFinancialAccountId(orderId)
-            : null;
+        => (!string.IsNullOrWhiteSpace(orderId) ? _context.GetFinancialAccountId(orderId) : null)
+            ?? (_context.CaptureAccountingSource && _portfolioState is PaperTradingPortfolio paper ? paper.PrimaryAccountId : null);
 
     private async Task RecordSessionFillAsync(
         string? sessionId,

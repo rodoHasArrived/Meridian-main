@@ -6,6 +6,77 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TrueBreakEscalation
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TrueBreakEscalation</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:236](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L236).
+
+An escalation raised for a reconciliation break the platform classified as a genuine (BreakClassification.TrueBreak) or potential break. Carries an escalation level that advances when its SLA timer breaches, plus resolution provenance.
+
+```csharp
+public sealed record TrueBreakEscalation(string EscalationId, string BreakId, string SubjectId, BreakClassification Classification, ReconciliationBreakSeverity Severity, int Level, string AssignedTo, string Reason, TrueBreakEscalationStatus Status, DateTimeOffset RaisedAtUtc, WorkflowSlaTimer? Timer = null, DateTimeOffset? ResolvedAtUtc = null, string? ResolvedBy = null, string? ResolutionNote = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsOpen =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:253](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L253) | True when the escalation is still open or escalated (not yet resolved). |
+
+## TrueBreakEscalationRequest
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TrueBreakEscalationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:213](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L213).
+
+Request to raise a true-break escalation.
+
+```csharp
+public sealed record TrueBreakEscalationRequest(string BreakId, BreakClassification Classification, ReconciliationBreakSeverity Severity, string Reason, string AssignedTo, WorkflowSlaPolicy? SlaPolicy = null, string? SubjectId = null, DateTimeOffset? RaisedAtUtc = null);
+```
+
+## TrueBreakEscalationStatus
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TrueBreakEscalationStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:224](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L224).
+
+Lifecycle status of a TrueBreakEscalation.
+
+```csharp
+public enum TrueBreakEscalationStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Open</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:226](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L226) |  |
+| <code>Escalated</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:227](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L227) |  |
+| <code>Resolved</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:228](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L228) |  |
+
+## WorkflowSlaPolicy
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.WorkflowSlaPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:28](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L28).
+
+A generic service-level-agreement policy: how long a tracked activity has before it is due, and the fraction of that window after which it enters a warning state. Unlike the reconciliation-only ReconciliationSlaCalculator, this is a general middle-office timer usable for booking cut-offs, break resolution, and file-distribution deadlines.
+
+```csharp
+public sealed record WorkflowSlaPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkflowSlaPolicy(string policyId, TimeSpan duration, double warningFraction = 0.5);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:30](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L30) |  |
+| <code>public string PolicyId { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:44](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L44) |  |
+| <code>public TimeSpan Duration { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:46](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L46) |  |
+| <code>public double WarningFraction { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:48](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L48) |  |
+
 ## WorkflowSlaState
 
 Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.WorkflowSlaState</code>. Kind: `enum`.
@@ -135,6 +206,30 @@ Indicates invalid input for an accounting onboarding operation.
 ```csharp
 public sealed class OnboardingValidationException(string message) : ArgumentException(message);
 ```
+
+## OnboardingWorkspaceRetention
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.OnboardingWorkspaceRetention</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs:10](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs#L10).
+
+Retention rules every IOnboardingWorkspaceStore applies, whatever its storage medium: retained hash chains must verify on read, and a save may only append history and advance the version once.
+
+```csharp
+public static class OnboardingWorkspaceRetention
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void VerifyIntegrity(OnboardingWorkspaceDto? workspace);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs:15](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs#L15) | Refuses a retained workspace whose scope, comparison chain, packets, certificates or audit fail. |
+| <code>public static void RequireValidTransition(OnboardingWorkspaceDto? current, OnboardingWorkspaceDto retained, int? expectedVersion);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs:46](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs#L46) | Refuses a save that does not follow the retained copy: the expected version must match, the version must advance exactly once, scope and owner are fixed, retained history only grows, and final decisions stay final. |
+| <code>public const string ShadowBookHeldMessage = &quot;Another onboarding workspace already holds this ledger book in shadow mode or promoted it. Refresh before retrying.&quot;;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs:76](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs#L76) | The message for a designation refused because another workspace holds the book. |
+| <code>public static bool HoldsLedgerBook(string? shadowState) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs:80](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs#L80) | True when the state keeps a ledger book exclusive to one workspace. |
+| <code>public static OnboardingWorkspaceDto Detach(OnboardingWorkspaceDto workspace) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs:84](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs#L84) | A detached copy, so callers cannot mutate nested lists during persistence. |
+| <code>public static string Serialize(OnboardingWorkspaceDto workspace) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs:87](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs#L87) |  |
+| <code>public static OnboardingWorkspaceDto Deserialize(string json) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs:89](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceRetention.cs#L89) |  |
 
 ## OnboardingWorkspaceService
 
@@ -290,6 +385,28 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;OnboardingOpeningSourceDocument&gt; ReadAsync(OnboardingWorkspaceDto workspace, ImportOnboardingOpeningBalancesRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs:49](../../../../src/Meridian.FinancialOperations/Onboarding/OpeningBalances/OnboardingOpeningSources.cs#L49) |  |
 
+## PostgresOnboardingWorkspaceStore
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.PostgresOnboardingWorkspaceStore</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs:16](../../../../src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs#L16).
+
+Retains onboarding workspaces, including shadow-mode state, in the ledger database (V_ledger_072__onboarding_workspaces). Every save runs the shared retention rules against the row it replaces, inside one transaction holding that row. A partial unique index enforces that at most one workspace per tenant holds a ledger book in shadow mode or promoted it, across processes and hosts.
+
+```csharp
+public sealed class PostgresOnboardingWorkspaceStore : IOnboardingWorkspaceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresOnboardingWorkspaceStore(LedgerJournalStoreOptions options);</code> | [src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs:22](../../../../src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs#L22) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs:31](../../../../src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs#L31) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto?&gt; GetAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs:42](../../../../src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs#L42) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListByLedgerBookAsync(string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs:56](../../../../src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs#L56) |  |
+| <code>public async Task SaveAsync(OnboardingWorkspaceDto workspace, int? expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs:74](../../../../src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs#L74) |  |
+
 ## FileOperationsContinuityRepository
 
 Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.FileOperationsContinuityRepository</code>. Kind: `class`.
@@ -355,8 +472,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FinancialOperationsCommandCenterReadService(IOperationsContinuityWorkflowService workflowService, IOperationsCloseCalendarService? closeCalendarService = null, IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null, ILedgerBookService? ledgerBookService = null, IAccountingCloseManagementService? closeManagementService = null, ICloseReadinessSubjectSource? closeSubjectSource = null, IIntercompanyCloseAdvisorySource? intercompanyAdvisories = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:32](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L32) |  |
-| <code>public async Task&lt;FinancialOperationsCommandCenterDto&gt; GetCommandCenterAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:50](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L50) |  |
+| <code>public FinancialOperationsCommandCenterReadService(IOperationsContinuityWorkflowService workflowService, IOperationsCloseCalendarService? closeCalendarService = null, IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null, ILedgerBookService? ledgerBookService = null, IAccountingCloseManagementService? closeManagementService = null, ICloseReadinessSubjectSource? closeSubjectSource = null, IIntercompanyCloseAdvisorySource? intercompanyAdvisories = null, Func&lt;IBookOfRecordGuard?&gt;? bookOfRecordGuardFactory = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:33](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L33) |  |
+| <code>public async Task&lt;FinancialOperationsCommandCenterDto&gt; GetCommandCenterAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:53](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L53) |  |
 
 Source: [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.OutputEvidence.cs:5](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.OutputEvidence.cs#L5).
 
@@ -1043,102 +1160,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static decimal ComputeSimpleInterest(decimal principal, decimal annualRate, DateOnly from, DateOnly to, DefaultInterestConvention convention);</code> | [src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs:18](../../../../src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs#L18) | Computes simple interest on a defaulted principal from from (exclusive of the grace period, handled by the caller) to to under the given day-count convention, rounded to 2dp. |
 | <code>public static IReadOnlyList&lt;CapitalCallDefault&gt; Evaluate(InvestorCommitment commitment, IReadOnlyList&lt;DrawdownInstallment&gt; installments, IReadOnlyList&lt;CapitalCallFundingReceipt&gt; fundingReceipts, DateOnly asOf);</code> | [src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs:46](../../../../src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs#L46) | Evaluates each installment against its funding evidence and, where the call is unfunded past its grace period, produces a CapitalCallDefault with a single accrual span from the grace end to the cure date (if fully funded later) or to asOf. |
-
-## IAutomatedJournalCapitalAccountReconciliationResolver
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.IAutomatedJournalCapitalAccountReconciliationResolver</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:33](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L33).
-
-Server-side source for reviewed capital-account balances, confidence, source version, and retained evidence. Implementations must resolve from authoritative state; request payloads and persisted schedule assertions are never an implementation fallback.
-
-```csharp
-public interface IAutomatedJournalCapitalAccountReconciliationResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;AutomatedJournalCapitalAccountReconciliationDto?&gt; ResolveAsync(AutomatedJournalCapitalAccountReconciliationScope scope, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:35](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L35) |  |
-
-## LedgerCapitalAccountReconciliationResolver
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.LedgerCapitalAccountReconciliationResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:47](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L47).
-
-Reconstructs fee-basis NAV, capital-account equity, and high-water history from immutable, posted ledger journals. Tenant/company ownership, ledger-book identity, accounting period, entity dimensions, book currency, retained evidence, durable posting-command or adjustment approval provenance, and the evaluation-time boundary are all resolved from server-owned state before a reconciliation can be returned.
-
-```csharp
-public sealed class LedgerCapitalAccountReconciliationResolver : IAutomatedJournalCapitalAccountReconciliationResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerCapitalAccountReconciliationResolver(ILedgerJournalStore? journalStore, IFundProfileTenancyRegistry? tenancyRegistry);</code> | [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:55](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L55) |  |
-| <code>public async Task&lt;AutomatedJournalCapitalAccountReconciliationDto?&gt; ResolveAsync(AutomatedJournalCapitalAccountReconciliationScope scope, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:63](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L63) |  |
-
-## PostedPrivateCapitalActivityProjection
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PostedPrivateCapitalActivityProjection</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:22](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L22).
-
-```csharp
-public sealed record PostedPrivateCapitalActivityProjection(PrivateCapitalFundEventLedgerProjection Projection, IReadOnlyDictionary<Guid, string> JournalEntryCurrencies);
-```
-
-## PrivateCapitalActivityProjectionBuilder
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalActivityProjectionBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:29](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L29).
-
-Builds private-capital activity views from fund events and associated accounting evidence.
-
-```csharp
-public static class PrivateCapitalActivityProjectionBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static PrivateCapitalActivityProjectionDto Build(PrivateCapitalActivityProjectionInput input);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:63](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L63) |  |
-
-## PrivateCapitalActivityProjectionInput
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalActivityProjectionInput</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:9](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L9).
-
-```csharp
-public sealed record PrivateCapitalActivityProjectionInput(string FundProfileId, Guid? LedgerBookId, IReadOnlyList<ManualJournalEntryDraftDto> Drafts, IReadOnlyList<AccountingActionAuditEventDto> Audit, IReadOnlyList<BankTransactionDto> BankTransactions, PostedPrivateCapitalActivityProjection? PostedProjection, IReadOnlyList<ReportPackWorkflowRecordDto>? ReportPackWorkflowRecords = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; ReportPackWorkflowRecords { get; init; } = ReportPackWorkflowRecords??[];</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:18](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L18) |  |
-
-## PrivateCapitalCapitalAccountSubledgerBuilder
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalCapitalAccountSubledgerBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs#L8).
-
-Builds investor capital-account subledger views from private-capital activity.
-
-```csharp
-public static class PrivateCapitalCapitalAccountSubledgerBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerDto&gt; Build(string fundProfileId, Guid? ledgerBookId, DateTimeOffset projectedAtUtc, IReadOnlyList&lt;PrivateCapitalCapitalAccountActivityDto&gt; capitalAccounts, IReadOnlyList&lt;PrivateCapitalFundEventLedgerRecordDto&gt; fundEventRecords, IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerEntryDto&gt; subledgerEntries, IReadOnlyList&lt;PrivateCapitalLedgerImpactDto&gt; ledgerImpacts, IReadOnlyList&lt;PrivateCapitalReportOutputDto&gt; reportOutputs, IReadOnlyList&lt;AccountingConfigurationValidationIssueDto&gt; projectionValidationIssues) =&gt; …;</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs:10](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs#L10) |  |

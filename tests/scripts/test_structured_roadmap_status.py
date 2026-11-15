@@ -17,7 +17,7 @@ summary = load_script('structured_program_summary', ROOT / 'scripts/generate_pro
 
 class StructuredRoadmapStatusTests(unittest.TestCase):
     def errors_after(self, mutate, registry='roadmap-items.yml'):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             root = _registry_root(temp, None)
             path = root / 'docs/roadmap/data' / registry
             data = yaml.safe_load(path.read_text())

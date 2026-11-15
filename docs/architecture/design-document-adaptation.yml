@@ -299,7 +299,8 @@ mvp_screen_inventory:
 
 source_evidence:
   shared_workspace_catalog: src/Meridian.Contracts/Workstation/WorkstationWorkspaceCatalog.cs
-  dashboard_workspace_catalog: src/Meridian.Ui/dashboard/src/lib/workspace-catalog.generated.ts
+  # The generated mirror is ignored; its authored producer owns the browser order.
+  dashboard_workspace_catalog: build/scripts/generate-workspace-catalog-ts.py
   dashboard_route_catalog: src/Meridian.Ui/dashboard/src/lib/workspace.ts
   wpf_workspace_catalog: src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs
   source_module_registry: docs/source/data/source-modules.yml

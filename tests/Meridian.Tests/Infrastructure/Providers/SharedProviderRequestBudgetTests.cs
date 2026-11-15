@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Headers;
+using Meridian.Core.Config;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.TwelveData;
@@ -13,6 +14,8 @@ namespace Meridian.Tests.Infrastructure.Providers;
 
 public sealed class SharedProviderRequestBudgetTests
 {
+    private static readonly TwelveDataQuotaConfig Paid = new(55, FundamentalsEntitled: true, NoDailyLimit: true);
+    private static readonly TimeSpan PaidDelay = ProviderQuotaBudgets.TwelveData(Paid).MinimumDelay;
     [Fact]
     public async Task Registry_CoordinatesConcurrentCallers_ExpiresAtExactWindowBoundary()
     {
@@ -70,8 +73,8 @@ public sealed class SharedProviderRequestBudgetTests
         var clock = new RequestBudgetTimeProvider();
         using var registry = new RateLimiterRegistry(timeProvider: clock);
         using var handler = new RecordingHandler(clock);
-        using var history = new TwelveDataHistoricalDataProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
-        using var search = new TwelveDataSymbolSearchProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
+        using var history = new TwelveDataHistoricalDataProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry, quotaConfig: Paid);
+        using var search = new TwelveDataSymbolSearchProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry, quotaConfig: Paid);
         var actions = CreateActions(handler, registry, new MutableCredentials("synthetic-key"));
         var work = Task.WhenAll(
             history.GetDailyBarsAsync("AAPL", new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 2)),
@@ -81,8 +84,8 @@ public sealed class SharedProviderRequestBudgetTests
         for (var count = 1; count < 4; count++)
         {
             var expected = count;
-            await RequestBudgetTimeProvider.WaitUntilAsync(() => handler.Requests.Count == expected && clock.HasTimerDueWithin(TimeSpan.FromSeconds(7.5)));
-            clock.Advance(TimeSpan.FromSeconds(7.5));
+            await RequestBudgetTimeProvider.WaitUntilAsync(() => handler.Requests.Count == expected && clock.HasTimerDueWithin(PaidDelay));
+            clock.Advance(PaidDelay);
         }
         await work.WaitAsync(TimeSpan.FromSeconds(5));
         var requests = handler.Requests.ToArray();
@@ -92,12 +95,12 @@ public sealed class SharedProviderRequestBudgetTests
         Assert.Contains(requests, request => request.Path == "/dividends");
         Assert.Contains(requests, request => request.Path == "/splits");
         for (var i = 1; i < requests.Length; i++)
-            Assert.Equal(TimeSpan.FromSeconds(7.5), requests[i].Time - requests[i - 1].Time);
-        Assert.Equal(4, registry.GetOrCreate("twelvedata", "synthetic-key", "api-requests", 8, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(7.5)).GetStatus().RequestsInWindow);
+            Assert.Equal(PaidDelay, requests[i].Time - requests[i - 1].Time);
+        Assert.Equal(42, registry.GetOrCreate("twelvedata", "synthetic-key", "api-requests", ProviderQuotaBudgets.TwelveData(Paid)).GetBudgetStatus().UnitsInWindow);
 
         history.Dispose();
         var afterDisposal = search.SearchAsync("MSFT", 10, CancellationToken.None);
-        clock.Advance(TimeSpan.FromSeconds(7.5));
+        clock.Advance(PaidDelay);
         await afterDisposal.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.Equal(5, handler.Requests.Count);
     }
@@ -108,8 +111,8 @@ public sealed class SharedProviderRequestBudgetTests
         var clock = new RequestBudgetTimeProvider();
         using var registry = new RateLimiterRegistry(timeProvider: clock);
         using var handler = new RecordingHandler(clock) { ThrottleSearch = true };
-        using var search = new TwelveDataSymbolSearchProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
-        using var history = new TwelveDataHistoricalDataProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
+        using var search = new TwelveDataSymbolSearchProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry, quotaConfig: Paid);
+        using var history = new TwelveDataHistoricalDataProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry, quotaConfig: Paid);
         await Assert.ThrowsAsync<RateLimitException>(() => search.SearchAsync("AAPL", 10, CancellationToken.None));
         var pending = history.GetDailyBarsAsync("AAPL", new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 2));
         clock.Advance(TimeSpan.FromSeconds(19));
@@ -137,7 +140,7 @@ public sealed class SharedProviderRequestBudgetTests
                 ? new RetryConditionHeaderValue(clock.GetUtcNow() - TimeSpan.FromSeconds(10))
                 : new RetryConditionHeaderValue(TimeSpan.Zero)
         };
-        using var history = new TwelveDataHistoricalDataProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
+        using var history = new TwelveDataHistoricalDataProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry, quotaConfig: Paid);
         Task pending;
         if (corporateActions)
         {
@@ -145,13 +148,13 @@ public sealed class SharedProviderRequestBudgetTests
         }
         else
         {
-            using var search = new TwelveDataSymbolSearchProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
+            using var search = new TwelveDataSymbolSearchProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry, quotaConfig: Paid);
             var limited = await Assert.ThrowsAsync<RateLimitException>(() => search.SearchAsync("AAPL", 10, CancellationToken.None));
             Assert.Equal(TimeSpan.Zero, limited.RetryAfter);
             pending = history.GetDailyBarsAsync("AAPL", new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 2));
         }
-        await RequestBudgetTimeProvider.WaitUntilAsync(() => clock.HasTimerDueWithin(TimeSpan.FromSeconds(7.5)));
-        clock.Advance(TimeSpan.FromSeconds(7.5));
+        await RequestBudgetTimeProvider.WaitUntilAsync(() => clock.HasTimerDueWithin(PaidDelay));
+        clock.Advance(PaidDelay);
         await pending.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.Equal(2, handler.Requests.Count);
     }
@@ -161,19 +164,19 @@ public sealed class SharedProviderRequestBudgetTests
     {
         var clock = new RequestBudgetTimeProvider();
         using var registry = new RateLimiterRegistry(timeProvider: clock);
-        var old = registry.GetOrCreate("twelvedata", "old-key", "api-requests", 8, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(7.5));
+        var old = registry.GetOrCreate("twelvedata", "old-key", "api-requests", ProviderQuotaBudgets.TwelveData(Paid));
         await old.WaitForSlotAsync();
         using var handler = new RecordingHandler(clock);
         var credentials = new MutableCredentials("old-key");
         var provider = CreateActions(handler, registry, credentials);
         var pending = provider.FetchAsync("AAPL", Guid.NewGuid());
         credentials.Key = "new-key";
-        clock.Advance(TimeSpan.FromSeconds(7.5));
-        await RequestBudgetTimeProvider.WaitUntilAsync(() => handler.Requests.Count == 1 && clock.HasTimerDueWithin(TimeSpan.FromSeconds(7.5)));
-        clock.Advance(TimeSpan.FromSeconds(7.5));
+        clock.Advance(PaidDelay);
+        await RequestBudgetTimeProvider.WaitUntilAsync(() => handler.Requests.Count == 1 && clock.HasTimerDueWithin(PaidDelay));
+        clock.Advance(PaidDelay);
         await pending.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.All(handler.Requests, request => Assert.Contains("apikey=new-key", request.Query));
-        Assert.Equal(2, registry.GetOrCreate("twelvedata", "new-key", "api-requests", 8, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(7.5)).GetStatus().RequestsInWindow);
+        Assert.Equal(40, registry.GetOrCreate("twelvedata", "new-key", "api-requests", ProviderQuotaBudgets.TwelveData(Paid)).GetBudgetStatus().UnitsInWindow);
     }
 
     [Fact]
@@ -181,18 +184,18 @@ public sealed class SharedProviderRequestBudgetTests
     {
         var clock = new RequestBudgetTimeProvider();
         using var registry = new RateLimiterRegistry(timeProvider: clock);
-        await registry.GetOrCreate("twelvedata", "old-key", "api-requests", 8, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(7.5)).WaitForSlotAsync();
+        await registry.GetOrCreate("twelvedata", "old-key", "api-requests", ProviderQuotaBudgets.TwelveData(Paid)).WaitForSlotAsync();
         using var handler = new RecordingHandler(clock);
         var credentials = new MutableCredentials("old-key");
         var pending = CreateActions(handler, registry, credentials).FetchAsync("AAPL", Guid.NewGuid());
         credentials.Key = null;
-        clock.Advance(TimeSpan.FromSeconds(7.5));
+        clock.Advance(PaidDelay);
         Assert.Empty(await pending.WaitAsync(TimeSpan.FromSeconds(5)));
         Assert.Empty(handler.Requests);
     }
 
     private static TwelveDataCorporateActionProvider CreateActions(RecordingHandler handler, RateLimiterRegistry registry, ICredentialContext credentials)
-        => new(handler, new ConfigurationBuilder().Build(), NullLogger<TwelveDataCorporateActionProvider>.Instance, credentials, registry);
+        => new(handler, new ConfigurationBuilder().Build(), NullLogger<TwelveDataCorporateActionProvider>.Instance, credentials, registry, Paid);
 
     private sealed class MutableCredentials(string? key) : ICredentialContext
     {

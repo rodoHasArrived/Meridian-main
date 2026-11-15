@@ -2,7 +2,8 @@
 // account and for the inline account picker. Relationships come only from the organization graph
 // (`structure-options.ts`): an account the graph places under another fund or entity is left out;
 // an account the graph does not place is left out of a narrowed list too, but always counted so the
-// screen can say so; and without the graph (not loaded, or the operator lacks fund-structure
+// screen can say so — apart from one whose fund or entity exists but is withheld from the caller,
+// which is counted as such rather than as having none; and without the graph (not loaded, or the operator lacks fund-structure
 // access) nothing is narrowed and the screen says why.
 import type { AppShellOperatingScopeInput, OperatingScopeValueLabels } from "@/app-shell.operating-scope";
 import type { BrokerageHouseholdPortfolio } from "@/types";
@@ -11,6 +12,7 @@ import {
   accountConflictsWithScope,
   constrainScopeOptions,
   mergeScopeAccountOptions,
+  placeAccountsInScope,
   type ConstrainedScopeOptions,
   type ScopeStructureOptions
 } from "@/lib/operating-scope/structure-options";
@@ -35,6 +37,11 @@ export interface FundScopeRowNarrowing<T> {
   outsideCount: number;
   /** Rows left out because the graph does not say which fund (or entity) their account is under. */
   unknownCount: number;
+  /**
+   * Rows left out because their account's fund (or entity) exists but is not visible to the
+   * caller, so it cannot be placed. Optional so hand-built narrowings stay valid; absent means 0.
+   */
+  withheldCount?: number;
   /** Which dimension did the narrowing: the fund when one is chosen, else the entity. */
   dimension: "fund" | "entity" | null;
 }
@@ -67,34 +74,34 @@ export function narrowRowsToFundScope<T>(
   const fundId = normalizeOptional(selection.fundId);
   const dimension = status === "inactive" ? null : fundId ? "fund" : "entity";
   if (status !== "applied") {
-    return { status, rows: [...rows], totalCount: rows.length, outsideCount: 0, unknownCount: 0, dimension };
+    return { status, rows: [...rows], totalCount: rows.length, outsideCount: 0, unknownCount: 0, withheldCount: 0, dimension };
   }
 
   const rowAccounts = rows
     .map((row) => getFundAccountId(row)?.trim())
     .filter((id): id is string => Boolean(id))
     .map((id) => ({ id, label: id }));
-  const accounts = mergeScopeAccountOptions(structure, rowAccounts);
-  const byId = new Map(accounts.map((account) => [normalizeId(account.id), account]));
-  const kept = new Set(
-    constrainScopeOptions(structure, accounts, selection).accounts.map((account) => normalizeId(account.id))
-  );
+  // The same placement the scope picker narrows its account list by (`constrainScopeOptions`).
+  const placements = placeAccountsInScope(structure, mergeScopeAccountOptions(structure, rowAccounts), selection);
 
   let outsideCount = 0;
   let unknownCount = 0;
+  let withheldCount = 0;
   const narrowed = rows.filter((row) => {
     const id = normalizeOptional(getFundAccountId(row));
-    if (id && kept.has(id)) return true;
-    const account = id ? byId.get(id) : undefined;
-    if (!account || !relationshipKnown(account, selection)) {
-      unknownCount += 1;
-    } else {
+    const placement = id ? placements?.get(id) : undefined;
+    if (placement === "inside") return true;
+    if (placement === "outside") {
       outsideCount += 1;
+    } else if (placement === "withheld") {
+      withheldCount += 1;
+    } else {
+      unknownCount += 1;
     }
     return false;
   });
 
-  return { status, rows: narrowed, totalCount: rows.length, outsideCount, unknownCount, dimension };
+  return { status, rows: narrowed, totalCount: rows.length, outsideCount, unknownCount, withheldCount, dimension };
 }
 
 /**
@@ -102,7 +109,7 @@ export function narrowRowsToFundScope<T>(
  * entity or fund is chosen. `noun` is the plural row noun ("accounts", "close workflows").
  */
 export function describeFundScopeNarrowing(
-  narrowing: Pick<FundScopeRowNarrowing<unknown>, "status" | "rows" | "totalCount" | "unknownCount" | "dimension">,
+  narrowing: Pick<FundScopeRowNarrowing<unknown>, "status" | "rows" | "totalCount" | "unknownCount" | "withheldCount" | "dimension">,
   noun: string,
   /** Display names (or ids) for the chosen entity and fund, as the scope bar prints them. */
   names: Pick<OperatingScopeValueLabels, "entityId" | "fundId"> = {}
@@ -119,9 +126,7 @@ export function describeFundScopeNarrowing(
       const name = (dimension === "fund" ? names.fundId : names.entityId)?.trim();
       const target = name ? `${dimension} ${name}` : `the chosen ${dimension}`;
       const shown = `Narrowed to ${target}: showing ${narrowing.rows.length} of ${narrowing.totalCount} ${singularize(noun, narrowing.totalCount)}.`;
-      return narrowing.unknownCount > 0
-        ? `${shown} ${narrowing.unknownCount} with no recorded ${dimension} not shown.`
-        : shown;
+      return `${shown}${describeLeftOut(narrowing.unknownCount, narrowing.withheldCount ?? 0, dimension)}`;
     }
   }
 }
@@ -199,17 +204,34 @@ export function narrowInlineAccountOptions(
 
 /** The scope picker's account-list help ("Showing 2 accounts under the chosen fund. …"). */
 export function describeAccountListNarrowing(
-  constrained: Pick<ConstrainedScopeOptions, "accounts" | "accountsConstrained" | "accountsWithoutKnownRelationship">,
+  constrained: Pick<ConstrainedScopeOptions, "accounts" | "accountsConstrained" | "accountsWithoutKnownRelationship">
+    & Partial<Pick<ConstrainedScopeOptions, "accountsWithWithheldRelationship">>,
   selection: FundScopeSelection
 ): string | null {
   if (!constrained.accountsConstrained) return null;
   const dimension = normalizeOptional(selection.fundId) ? "fund" : "entity";
   const count = constrained.accounts.length;
-  return `Showing ${count} account${count === 1 ? "" : "s"} under the chosen ${dimension}.${
-    constrained.accountsWithoutKnownRelationship > 0
-      ? ` ${constrained.accountsWithoutKnownRelationship} with no recorded ${dimension} not shown.`
-      : ""
-  }`;
+  return `Showing ${count} account${count === 1 ? "" : "s"} under the chosen ${dimension}.${describeLeftOut(
+    constrained.accountsWithoutKnownRelationship,
+    constrained.accountsWithWithheldRelationship ?? 0,
+    dimension
+  )}`;
+}
+
+/**
+ * The trailing sentences on what a narrowing left out and could not place (with a leading space),
+ * or "" when nothing was: accounts with no recorded fund/entity, and accounts whose fund/entity
+ * exists but is not visible to the caller. The two are never merged: the second do have one.
+ */
+function describeLeftOut(unknownCount: number, withheldCount: number, dimension: "fund" | "entity"): string {
+  let text = "";
+  if (unknownCount > 0) text += ` ${unknownCount} with no recorded ${dimension} not shown.`;
+  // With an entity chosen, an account can go unplaced because its fund is withheld as well as its
+  // entity, so that note names both.
+  if (withheldCount > 0) {
+    text += ` ${withheldCount} whose ${dimension === "fund" ? "fund" : "fund or entity"} is not visible to you not shown.`;
+  }
+  return text;
 }
 
 /**
@@ -224,13 +246,6 @@ export function accountKnownOutsideFundScope(
 ): boolean {
   if (!normalizeOptional(selection.entityId) && !normalizeOptional(selection.fundId)) return false;
   return accountConflictsWithScope(structure, mergeScopeAccountOptions(structure, options), accountId, selection);
-}
-
-/** Mirrors `constrainScopeOptions`: what counts as "no recorded fund/entity" for the chosen scope. */
-function relationshipKnown(account: ScopeFundAccountOption, selection: FundScopeSelection): boolean {
-  const accountFund = normalizeOptional(account.fundId);
-  if (normalizeOptional(selection.fundId)) return Boolean(accountFund);
-  return Boolean(accountFund || normalizeOptional(account.entityId));
 }
 
 function singularize(noun: string, count: number): string {

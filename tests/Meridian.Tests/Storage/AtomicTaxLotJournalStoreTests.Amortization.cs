@@ -887,7 +887,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 couponType = coupon == 0m ? "ZeroCoupon" : "Fixed",
                 isCallable = false
             }),
-            empty, empty, 1, new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero), null, [], []);
+            SecurityTermsEnvelope.StampDeclaredFormat(empty), empty, 1, new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero), null, [], []);
     }
 
     private static RetainedEvidenceIdentityDto AmortSecurityEvidence(SecurityProjectionRecord security)
@@ -1030,6 +1030,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                     CommonTerms = JsonSerializer.SerializeToElement(new { }),
                     AssetSpecificTerms = JsonSerializer.SerializeToElement(new
                     {
+                        termsFormat = "flat",
                         assetClassTermsVersion = 3,
                         issueDate = "2025-01-01",
                         maturity = "2027-01-01",

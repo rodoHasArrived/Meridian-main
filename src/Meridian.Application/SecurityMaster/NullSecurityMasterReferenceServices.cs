@@ -131,3 +131,13 @@ public sealed class NullSecurityMasterStructuredCreditReclassificationService : 
         => throw new InvalidOperationException(
             "Security Master is not configured. Set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to enable the structured-credit reclassification report.");
 }
+
+/// <summary>
+/// Rejects CustomAsset profile promotion reports when Security Master is unavailable.
+/// </summary>
+public sealed class NullSecurityMasterProfilePromotionService : ISecurityMasterProfilePromotionService
+{
+    public Task<SecurityMasterProfilePromotionReportDto> BuildReportAsync(string profileId, CancellationToken ct = default)
+        => throw new InvalidOperationException(
+            "Security Master is not configured. Set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to enable the CustomAsset profile promotion report.");
+}

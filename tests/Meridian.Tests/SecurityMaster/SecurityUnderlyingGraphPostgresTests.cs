@@ -56,14 +56,14 @@ public sealed class SecurityUnderlyingGraphPostgresTests : IClassFixture<Securit
         await store.UpsertProjectionAsync(current! with
         {
             Version = current.Version + 1,
-            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            AssetSpecificTerms = SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(new
             {
                 underlyingId = otherUnderlyingId,
                 putCall = "Call",
                 strike = 100m,
                 expiry = "2027-01-15",
                 multiplier = 100m
-            })
+            }))
         });
 
         (await graph.GetUnderlyingsAsync(optionId)).Should().ContainSingle().Which.UnderlyingSecurityId.Should().Be(otherUnderlyingId);

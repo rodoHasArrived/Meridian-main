@@ -15,12 +15,14 @@ items:
   title: Declare one supported production envelope and make its final dependency graph valid.
   status: evidence_gated
   release_status: open
-  remaining_gate: Obtain clean installed publish/start/upgrade/rollback receipts from the corrected signed candidate on a green main head; ADR-019/ADR-020 sign-off is already recorded.
+  remaining_gate: Obtain same-commit signed installed publish/start/upgrade/rollback receipts on green main. ADR-019/ADR-020 sign-off is recorded; v0.1.0 and its candidates support Windows 11 x64 only, with ARM64 scoped out under the first-envelope amendment.
   decision_ids:
   - DEC-PRD000-SUPPORT-MATRIX-001
+  - DEC-PRD014-FIRST-ENVELOPE-001
   evidence_links:
   - docs/adr/019-production-support-matrix-and-deployment-posture.md
   - docs/adr/020-lifecycle-control-plane.md
+  - docs/operators/deployment-packaging.md#one-commit-candidate-train
   pr_references: []
   detail_anchor: p0--release-blockers
 - id: PRD-001
@@ -172,9 +174,12 @@ items:
   title: Certify every shipped artifact and its supply chain.
   status: evidence_gated
   release_status: open
-  remaining_gate: Provision protected signing secrets, native Windows ARM64 capacity and prior artifacts; obtain a green corrected tag run with complete clean-environment lifecycle receipts. The failed rc.1 tag cannot certify.
-  decision_ids: []
-  evidence_links: []
+  remaining_gate: Provision protected signing secrets; obtain same-commit native lifecycle evidence, successful predecessor lookup and a green corrected tag run. v0.1.0 and its candidates support x64 only; later versions require x64 and ARM64. First-release N-1 steps need explicit not-applicable proof. The failed rc.1 cannot certify.
+  decision_ids:
+  - DEC-PRD014-FIRST-ENVELOPE-001
+  evidence_links:
+  - docs/adr/019-production-support-matrix-and-deployment-posture.md#first-release-architecture-scope-2026-11-14
+  - docs/operators/deployment-packaging.md#one-commit-candidate-train
   pr_references: []
   detail_anchor: p0--release-blockers
 - id: PRD-015

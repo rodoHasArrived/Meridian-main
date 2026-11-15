@@ -209,6 +209,7 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(tradeEvent);
+        tradeEvent = tradeEvent.FreezeFees();
         if (tradeEvent.FillId == Guid.Empty)
             throw new ArgumentException("A durable fill id is required.", nameof(tradeEvent));
 
@@ -851,7 +852,7 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
 
     private static void EnsureSameEconomics(TradeExecutedEvent retained, TradeExecutedEvent candidate)
     {
-        if (retained != candidate)
+        if (!retained.HasSameEconomics(candidate))
         {
             throw new InvalidOperationException(
                 $"Fill '{candidate.FillId:D}' was replayed with different economic content.");

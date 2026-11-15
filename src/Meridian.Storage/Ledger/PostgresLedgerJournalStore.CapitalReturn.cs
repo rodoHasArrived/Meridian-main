@@ -75,7 +75,7 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Capital-return tenant must match the retained posting authority.");
         var security = await securities.LockForLotPostingAsync(connection, transaction, lot.SecurityId, ct).ConfigureAwait(false);
         if (security is null || security.Version != instruction.ExpectedSecurityVersion
-            || OpenLotAmortization.SecurityHash(security) != instruction.ExpectedSecurityHash
+            || !OpenLotAmortization.AcceptedSecurityHashes(security).Contains(instruction.ExpectedSecurityHash)
             || security.Currency != lot.Acquisition.AcquisitionCurrency || security.Status != SecurityStatusDto.Active
             || DateOnly.FromDateTime(security.EffectiveFrom.UtcDateTime) > effectiveDate
             || security.EffectiveTo is { } securityEnd && DateOnly.FromDateTime(securityEnd.UtcDateTime) < effectiveDate)

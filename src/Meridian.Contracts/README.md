@@ -11,12 +11,23 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Contracts
 
+`Api/ProviderRateLimits.cs` retains the existing counters and adds their explicit `quotaUnit`,
+daily usage/cap and vendor reset policy. Compatibility request-named counters can contain credits;
+clients display their unit rather than assume each HTTP request costs one. Missing daily evidence
+remains unavailable, while an explicit null daily cap means this runtime models no daily cap.
+
 Native intercompany agreement terms add an optional null-omitted `StructuredTerms` companion for
 declared rates, schedules, allocations and guarantee disclosure. New decimals serialize as exact
 strings; omitted companions preserve retained legal command/review hashes. Separate external-review
 attestations retain reviewer and operator identities, while obligation-monitor DTOs carry advisory
 source/freshness evidence outside blocking close contributors. See
 [the native legal contract](../../docs/domain/intercompany-agreements.md).
+
+Governed loan-interest accrual contracts (ADR-028) carry the computation input, slices and preview
+under rule `intercompany-accrual-v1`, plus the retained `IntercompanyAccrualEvidenceDto` and its
+guard. `ManualJournalEntryDraftDto` gains null-omitted `IntercompanyAccrualEvidenceJson` and digest
+fields, so historical drafts serialize unchanged. `LoanInterest` is appended to the accounting
+template kinds; `Loan` keeps its principal-only meaning.
 
 Optional legacy-attribution revocation records a reviewed exact-pin successor, preserving native
 legal hashes. Exact decimal strings are a transport convention of the new obligation-monitor
@@ -228,6 +239,14 @@ converting their labels or units; operational source names grant no calculation 
 per-item bulk outcomes and the metadata persistence seam; these commands do not resolve underlying
 financial work. `Ledger/PostedPeriodComparisonDtos.cs` carries explicit fiscal comparison ranges,
 accounting basis/policy/currency, exact decimal changes and posted-journal population identities.
+
+`AutomatedPostingGrantReferenceDto` binds deterministic synthetic fill posting to an operator's
+retained tenant/account/book/period/policy/mapping delegation. `AuthorizedSystem` is distinct
+from human and assistant origins; the nullable command reference is omitted on legacy commands
+to preserve historical fingerprints. Activation and revocation are explicit admin commands,
+and neither a grant reference nor a synthetic mark substitutes for durable authority validation.
+
+`BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
 
 `CashFlows/` owns the versioned calculation-only cash-flow contracts, exercise/notice resolution, standard make-whole formulas, structured coupon/principal walks, deterministic CPR/SMM/PSA prepayments, and replay verification. The `cashFlowContract` companion reads ahead of existing write ceilings; undeclared terms and existing call/put element shapes remain unchanged. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
@@ -463,7 +482,9 @@ with no scope in its link or local storage.
 calling operator may scope to (`GET /api/workstation/scope-options`), with each fund's visible
 entities and each account's fund and entity. Field names match the summaries in
 `OrganizationStructureGraphDto`, so one client parser reads both. A relationship that would name a
-fund or entity the caller may not see is null, and every list may be empty. Its source-generated
+fund or entity the caller may not see is null, and every list may be empty. On an account,
+`FundWithheld`/`EntityWithheld` (appended last, default false) are true when that null hides a
+fund or entity that exists but is not visible to the caller; they never carry its id or name. Its source-generated
 `WorkstationScopeOptionsJsonContext` is registered in the Ui.Shared endpoint JSON options.
 
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser
@@ -2477,6 +2498,11 @@ it. The dated `factorScheduleEntries` array is the schedule; a pointer with no e
 `CustomAsset` row with a `Ready` or `Blocked` disposition, the proposed `structuredCreditKind`, the
 derived asset-specific terms and the blocker codes the operator must clear. The report never applies
 a proposal.
+
+`ISecurityMasterProfilePromotionService` returns `SecurityMasterProfilePromotionReportDto` for one
+reclassifying profile: the target class, how many pinned records already carry it, and one candidate
+per active pinned `CustomAsset` with a `Ready` or `Blocked` disposition and its blocker codes. It
+throws `ArgumentException` for a profile no class declares in `ReclassifyingProfileIds`.
 
 The former Application resolver/adjuster interfaces and adjustment result retain their fully qualified
 names under `SecurityMaster/Compatibility/` in this assembly. Application forwards those type

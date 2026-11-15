@@ -23,6 +23,11 @@ import {
   type PrivateCapitalCloseCockpitQuery
 } from "@/lib/api";
 import { describeApiError, isAbortError } from "@/lib/api-errors";
+import {
+  narrowRowsWithFundScopeContext,
+  type FundScopeNarrowingContextValue
+} from "@/lib/operating-scope/fund-scope-context";
+import type { FundScopeNarrowingStatus } from "@/lib/operating-scope/fund-scope-narrowing";
 import { humanizeStatus } from "@/components/operations/status";
 import { normalizeLocalWorkstationRoute, workstationRouteWithQuery } from "@/lib/workspace";
 import {
@@ -634,6 +639,10 @@ export interface OperationsContinuityScreenViewModel {
   workflowsTableLabel: string;
   workflowsTableCaption: string;
   workflows: OperationsContinuityWorkflowRow[];
+  /** How the workflow list was narrowed by the scope's entity/fund (`inactive` when not). */
+  workflowsFundScopeStatus: FundScopeNarrowingStatus;
+  /** What that narrowing did, to print next to the list; null when no entity or fund is chosen. */
+  workflowsFundScopeNote: string | null;
   selectedWorkflowId: string | null;
   selectWorkflow: (workflowId: string) => void;
   selectedDetail: OperationsContinuityDetailPanel | null;
@@ -699,6 +708,9 @@ export interface BuildOperationsContinuityScreenViewModelOptions {
   commandCenter?: FinancialOperationsCommandCenter | null;
   expectedCloseScope?: PrivateCapitalCloseCockpitQuery;
   workflows: OperationsContinuityWorkflowSummary[];
+  /** How `workflows` was narrowed by the scope's entity/fund before it got here. */
+  workflowsFundScopeStatus?: FundScopeNarrowingStatus;
+  workflowsFundScopeNote?: string | null;
   selectedWorkflowId: string | null;
   detail: OperationsContinuityWorkflow | null;
   loading: boolean;
@@ -729,10 +741,26 @@ const emptyCloseScope: PrivateCapitalCloseCockpitQuery = {};
 export function useOperationsContinuityScreenViewModel(
   services: OperationsContinuityScreenServices = defaultServices,
   closeScope: PrivateCapitalCloseCockpitQuery = emptyCloseScope,
-  selection: OperationsContinuityScreenSelection = {}
+  selection: OperationsContinuityScreenSelection = {},
+  /**
+   * The shell's entity/fund narrowing inputs. When given, the workflow list is narrowed to the
+   * chosen fund (or entity) by each workflow's fund account, and selection, detail and close reads
+   * follow the kept workflows. Null (the default) keeps every workflow.
+   */
+  fundScope: FundScopeNarrowingContextValue | null = null
 ): OperationsContinuityScreenViewModel {
   const { initialWorkflowId, fundAccountId, ledgerBookId, periodId, status } = normalizeWorkflowSelection(selection);
-  const [workflows, setWorkflows] = useState<OperationsContinuityWorkflowSummary[]>([]);
+  const [loadedWorkflows, setWorkflows] = useState<OperationsContinuityWorkflowSummary[]>([]);
+  // Workflows narrowed to the scope's fund (or entity) when the organization graph places their
+  // fund accounts; workflows it does not place are counted in the note, never hidden silently.
+  const workflowsFundScope = useMemo(
+    () => narrowRowsWithFundScopeContext(fundScope, loadedWorkflows, (workflow) => workflow.fundAccountId, "close workflows"),
+    [fundScope, loadedWorkflows]
+  );
+  const workflows = workflowsFundScope.rows;
+  // An applied fund/entity narrowing that keeps no workflow leaves no scope to read the close
+  // calendar or cockpit for; an unscoped read would show other funds' items, so none is made.
+  const narrowedToNoWorkflow = workflowsFundScope.status === "applied" && workflows.length === 0;
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
   const [detail, setDetail] = useState<OperationsContinuityWorkflow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -745,7 +773,16 @@ export function useOperationsContinuityScreenViewModel(
   const [closeCockpitLoading, setCloseCockpitLoading] = useState(false);
   const [closeCockpitError, setCloseCockpitError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selectionError, setSelectionError] = useState<string | null>(null);
+  const [requestSelectionError, setSelectionError] = useState<string | null>(null);
+  // A requested workflow the server returned but the scope's fund/entity narrowed out is reported
+  // as out of scope, never replaced silently by the first kept workflow.
+  const requestedOutsideFundScope = !!initialWorkflowId
+    && !loading
+    && loadedWorkflows.some((workflow) => workflow.workflowId === initialWorkflowId)
+    && !workflows.some((workflow) => workflow.workflowId === initialWorkflowId);
+  const selectionError = requestSelectionError ?? (requestedOutsideFundScope
+    ? `Workflow ${initialWorkflowId} is outside the chosen fund or entity. Clear the fund or entity in the scope to open it.`
+    : null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const mountedRef = useRef(true);
   const listRevisionRef = useRef(0);
@@ -905,7 +942,20 @@ export function useOperationsContinuityScreenViewModel(
     closeScope.fundAccountId, closeScope.entityId, closeScope.periodId]);
 
   useEffect(() => {
-    if (loading || selectionError) {
+    if (loading) {
+      return;
+    }
+
+    // A blocked selection (a requested workflow unavailable or outside the scope) or a narrowing
+    // that keeps no workflow leaves nothing to read for: clear what an earlier scope loaded and
+    // invalidate reads still in flight, so another fund's close evidence never stays on screen.
+    if (selectionError || narrowedToNoWorkflow) {
+      closeCalendarRevisionRef.current += 1;
+      closeCalendarAbortRef.current?.abort();
+      closeCalendarAbortRef.current = null;
+      setCloseCalendar(null);
+      setCloseCalendarError(null);
+      setCloseCalendarLoading(false);
       return;
     }
 
@@ -943,10 +993,24 @@ export function useOperationsContinuityScreenViewModel(
           closeCalendarAbortRef.current = null;
         }
       });
-  }, [workflows, closeCockpitScope, loading, selectionError, services]);
+  }, [workflows, closeCockpitScope, loading, narrowedToNoWorkflow, selectionError, services]);
 
   useEffect(() => {
-    if (loading || selectionError) {
+    if (loading) {
+      return;
+    }
+
+    // A blocked selection (a requested workflow unavailable or outside the scope) or a narrowing
+    // that keeps no workflow leaves nothing to read for: clear what an earlier scope loaded and
+    // invalidate reads still in flight, so another fund's close evidence never stays on screen.
+    if (selectionError || narrowedToNoWorkflow) {
+      closeCockpitRevisionRef.current += 1;
+      closeCockpitAbortRef.current?.abort();
+      closeCockpitAbortRef.current = null;
+      setCloseCockpit(null);
+      setCommandCenter(null);
+      setCloseCockpitError(null);
+      setCloseCockpitLoading(false);
       return;
     }
 
@@ -989,7 +1053,7 @@ export function useOperationsContinuityScreenViewModel(
           closeCockpitAbortRef.current = null;
         }
       });
-  }, [workflows, closeCockpitScope, closeScope, loading, selectionError, services]);
+  }, [workflows, closeCockpitScope, closeScope, loading, narrowedToNoWorkflow, selectionError, services]);
 
   const selectWorkflow = useCallback((workflowId: string) => {
     setSelectedWorkflowId(workflowId);
@@ -999,6 +1063,8 @@ export function useOperationsContinuityScreenViewModel(
     commandCenter,
     expectedCloseScope: closeScope,
     workflows,
+    workflowsFundScopeStatus: workflowsFundScope.status,
+    workflowsFundScopeNote: workflowsFundScope.note,
     selectedWorkflowId,
     detail,
     loading,
@@ -1014,13 +1080,15 @@ export function useOperationsContinuityScreenViewModel(
     selectionBlocked: selectionError !== null,
     refresh,
     selectWorkflow
-  }), [commandCenter, closeScope, closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, selectionError, workflows]);
+  }), [commandCenter, closeScope, closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, selectionError, workflows, workflowsFundScope.status, workflowsFundScope.note]);
 }
 
 export function buildOperationsContinuityScreenViewModel({
   commandCenter = null,
   expectedCloseScope = emptyCloseScope,
   workflows,
+  workflowsFundScopeStatus = "inactive",
+  workflowsFundScopeNote = null,
   selectedWorkflowId,
   detail,
   loading,
@@ -1142,10 +1210,14 @@ export function buildOperationsContinuityScreenViewModel({
       ? "Loading operations continuity workflows..."
       : error
         ? "Operations continuity workflows could not be loaded."
-        : "No operations continuity workflows are available for this workstation context.",
+        : workflowsFundScopeStatus === "applied"
+          ? "No operations continuity workflows are under the chosen entity or fund."
+          : "No operations continuity workflows are available for this workstation context.",
     workflowsTableLabel: "Operations continuity workflows",
     workflowsTableCaption: "Operations continuity workflows. Select a row to inspect close-lane gates, blockers, next action, and timeline.",
     workflows: rows,
+    workflowsFundScopeStatus,
+    workflowsFundScopeNote,
     selectedWorkflowId: selectedSummary?.workflowId ?? null,
     selectWorkflow,
     selectedDetail,

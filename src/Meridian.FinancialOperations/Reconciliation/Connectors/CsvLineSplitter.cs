@@ -16,10 +16,16 @@ public static class CsvLineSplitter
         var values = new List<string>();
         var current = new StringBuilder();
         var inQuotes = false;
+        var closedQuote = false;
 
         for (var index = 0; index < line.Length; index++)
         {
             var character = line[index];
+            if (character == '\0')
+            {
+                throw new FormatException("Null characters are not accepted in CSV fields.");
+            }
+
             if (character == quote)
             {
                 if (inQuotes && index + 1 < line.Length && line[index + 1] == quote)
@@ -29,6 +35,12 @@ public static class CsvLineSplitter
                     continue;
                 }
 
+                if (!inQuotes && (current.Length != 0 || closedQuote))
+                {
+                    throw new FormatException("A CSV quote must begin at the start of a field.");
+                }
+
+                closedQuote = inQuotes;
                 inQuotes = !inQuotes;
                 continue;
             }
@@ -37,10 +49,21 @@ public static class CsvLineSplitter
             {
                 values.Add(current.ToString());
                 current.Clear();
+                closedQuote = false;
                 continue;
             }
 
+            if (closedQuote)
+            {
+                throw new FormatException("A CSV quoted field must end at its delimiter.");
+            }
+
             current.Append(character);
+        }
+
+        if (inQuotes)
+        {
+            throw new FormatException("A CSV quoted field is not terminated.");
         }
 
         values.Add(current.ToString());

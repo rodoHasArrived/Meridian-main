@@ -28,6 +28,7 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
     private readonly IAccountingCloseManagementService? _closeManagementService;
     private readonly ICloseReadinessSubjectSource? _closeSubjectSource;
     private readonly IIntercompanyCloseAdvisorySource? _intercompanyAdvisories;
+    private readonly Func<IBookOfRecordGuard?>? _bookOfRecordGuardFactory;
 
     public FinancialOperationsCommandCenterReadService(
         IOperationsContinuityWorkflowService workflowService,
@@ -36,7 +37,8 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
         ILedgerBookService? ledgerBookService = null,
         IAccountingCloseManagementService? closeManagementService = null,
         ICloseReadinessSubjectSource? closeSubjectSource = null,
-        IIntercompanyCloseAdvisorySource? intercompanyAdvisories = null)
+        IIntercompanyCloseAdvisorySource? intercompanyAdvisories = null,
+        Func<IBookOfRecordGuard?>? bookOfRecordGuardFactory = null)
     {
         _workflowService = workflowService ?? throw new ArgumentNullException(nameof(workflowService));
         _closeCalendarService = closeCalendarService;
@@ -45,6 +47,7 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
         _closeManagementService = closeManagementService;
         _closeSubjectSource = closeSubjectSource;
         _intercompanyAdvisories = intercompanyAdvisories;
+        _bookOfRecordGuardFactory = bookOfRecordGuardFactory;
     }
 
     public async Task<FinancialOperationsCommandCenterDto> GetCommandCenterAsync(

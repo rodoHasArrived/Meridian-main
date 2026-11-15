@@ -116,6 +116,7 @@ public static class WorkstationServiceCollectionExtensions
         });
         services.TryAddSingleton<IBResultQueryService>();
 
+        services.AddProviderCredentialOwnershipPolicy();
         var isProductionComposition = ProductionServiceRegistrationPolicy.IsProductionComposition(services);
         services.AddOperatorTriageStorage(configuration, isProductionComposition);
         services.AddIntercompanyEntityServices(configuration);
@@ -123,7 +124,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ConfigStore>(sp =>
         {
             var core = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>();
-            return new ConfigStore(core.ConfigPath);
+            return new ConfigStore(core.ConfigPath, sp.GetRequiredService<ProviderCredentialOwnershipPolicy>());
         });
 
         // The UI coordinator is a read-model façade over the core coordinator. Reuse the
@@ -328,13 +329,18 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<AlpacaBrokerageConnectionService>();
         services.AddDefaultProviderSetupHandlers();
         services.TryAddSingleton<IProviderSetupRegistry, ProviderSetupRegistry>();
+        services.TryAddSingleton<ProviderRuntimeCredentialMutationGuard>(sp => new(
+            sp.GetRequiredService<ConfigStore>().CoreStore,
+            sp.GetRequiredService<ProviderCredentialOwnershipPolicy>(),
+            sp.GetService<IProviderRuntimeCredentialApplier>(), sp.GetService<ProviderRuntimeCredentialApplicationTracker>()));
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
         services.TryAddSingleton<ProviderReadinessService>();
         // These runtimes do not carry a trusted tenant/connection per import, statement or Plaid item.
         // Keep them legacy-only until that ownership is propagated through their full workflows.
         services.TryAddSingleton<LegacyProviderRuntimeCredentialStore>(sp => new(
-            new Meridian.Application.UI.ConfigStore(sp.GetRequiredService<ConfigStore>().ConfigPath),
-            sp.GetRequiredService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>()));
+            sp.GetRequiredService<ConfigStore>().CoreStore,
+            sp.GetRequiredService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(),
+            sp.GetRequiredService<ProviderCredentialOwnershipPolicy>()));
         services.TryAddKeyedSingleton<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(
             ProviderCredentialStoreServiceKeys.LegacyRuntime, (sp, _) =>
                 sp.GetService<Meridian.Application.UI.ConfigStore>() is null
@@ -478,6 +484,8 @@ public static class WorkstationServiceCollectionExtensions
             return daily;
         });
         services.AddHostedService<ProviderLedgerDailyReconciliationWorker>();
+        services.AddThreeWayReconciliationServices(hostConfiguration,
+            sp => Path.Combine(ResolveWorkstationDataDirectory(sp), "three-way-reconciliation"));
         services.TryAddSingleton(sp => new MarginCertificationStore(ResolveWorkstationDataDirectory(sp)));
         services.TryAddSingleton<MarginControlCenterReadService>();
         // Reconcile statement runs against Meridian's own retained account records (positions + cash +
@@ -1237,6 +1245,20 @@ public static class WorkstationServiceCollectionExtensions
                     sp.GetRequiredService<IManualJournalEntryDraftStore>(), workbench,
                     sp.GetRequiredService<IFundProfileTenancyRegistry>(), sp.GetRequiredService<IConsolidationFxAuthority>(),
                     sp.GetRequiredService<TimeProvider>()) : null!);
+        services.TryAddSingleton<IIntercompanyAccrualPreviewService>(sp =>
+            sp.GetService<Meridian.Contracts.Calendars.IBusinessDayCalendarSource>() is { } calendars
+                ? new Meridian.Application.FundStructure.IntercompanyAccrualPreviewService(calendars) : null!);
+        // Accrual drafting needs the same durable authorities as counterpart delivery; without them it is unavailable.
+        services.TryAddSingleton<IntercompanyAccrualDraftService>(sp =>
+            sp.GetService<IIntercompanyProposalStore>() is not null &&
+            sp.GetService<ILedgerJournalStore>() is { } journals &&
+            sp.GetService<IIntercompanyAccountBindingStore>() is { } bindings &&
+            sp.GetService<ManualJournalEntryWorkbenchService>() is { } workbench &&
+            sp.GetService<IIntercompanyAccrualPreviewService>() is { } calculator
+                ? new IntercompanyAccrualDraftService(sp.GetRequiredService<IntercompanyAccountingArrangementService>(),
+                    journals, bindings, sp.GetRequiredService<IAccountingConfigurationService>(),
+                    sp.GetRequiredService<IManualJournalEntryDraftStore>(), workbench, calculator,
+                    sp.GetService<IConsolidationFxAuthority>(), sp.GetRequiredService<TimeProvider>()) : null!);
         if (services.Any(item => item.ServiceType == typeof(IIntercompanyProposalStore)
             && item.ImplementationType == typeof(PostgresIntercompanyProposalStore)))
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, IntercompanyProposalHostedService>());
@@ -1370,7 +1392,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ILedgerBookService>(),
                 sp.GetService<IAccountingCloseManagementService>(),
                 sp.GetService<ICloseReadinessSubjectSource>(),
-                sp.GetService<IIntercompanyCloseAdvisorySource>()));
+                sp.GetService<IIntercompanyCloseAdvisorySource>(),
+                () => sp.GetService<IBookOfRecordGuard>()));
         services.TryAddSingleton<SecurityMasterExceptionSlaConfig>();
         services.TryAddSingleton<IReconciliationSlaPolicyProvider>(sp =>
             new SecurityMasterReconciliationSlaPolicyProvider(

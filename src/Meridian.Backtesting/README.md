@@ -125,6 +125,35 @@ sharing a source is captured before any of those plans is prepared. `BacktestReq
 effective actions; it is not a transaction-time Security Master revision boundary. Only confirmed
 (or legacy confirmed-by-default), non-cancelled actions effective by that cutoff are eligible.
 
+`BacktestRequest.CorporateActionMode` defaults to `Legacy`, preserving the existing automatic stored
+action, explicit population, adjusted-price and supplied `AssetEvents` paths and their experiment identities.
+Opt-in `RawPricesWithCanonicalEvents` bypasses both mapped-action sources and cannot be combined with
+explicit `PopulateAssetEventsFromSecurityMaster`. It captures and validates the entire replay before
+strategy initialization: only historical
+bars explicitly stamped `IsAdjusted=false` are accepted. Adjusted, unknown-basis, and non-bar tape
+are rejected; this mode bypasses `AdjustForCorporateActions` rather than adjusting prices twice.
+It requires active mastered USD equities, fully funded long positions, and canonical cash dividends
+and splits. Manual `AssetEvents` are limited to fees. Other action treatments and splits producing
+fractional account-level entitlements fail explicitly.
+Pending orders crossing a split are refused; v1 does not infer broker order adjustment rules.
+
+Raw-mode dividends freeze held shares before ex-date trading, recognize receivable and income,
+and settle the frozen amount on pay date even after the shares are sold. Outstanding receivables
+are included in account/portfolio equity and snapshots without becoming spendable cash. Splits
+preserve aggregate basis and value; same-day splits precede dividend entitlement, whose terms
+are per post-split share. Missing dividend pay dates or non-USD/invalid terms are refused.
+
+`BacktestResult.CanonicalCorporateActions` retains one immutable effective-through action snapshot
+and content hash, with canonical source IDs and Security Master versions. Duplicate identical IDs
+collapse, conflicting duplicates fail, and amended/cancelled chains use the effective-state fold.
+`ToResolvedRealismDescriptor()` includes the snapshot hash for completed experiment identity;
+legacy descriptors omit the new fields. All existing positional constructors and deconstruction
+shapes are preserved through additive init-only properties. Agreeing economic observations retain
+their source IDs in the snapshot and execute only once; conflicting same-date/type terms and multiple
+same-day transformations are refused under the existing source policy. The snapshot provides repeatable
+source evidence, not transaction-time proof of the announcements known historically. No live or durable accounting
+book is posted by this simulation mode.
+
 Portfolio asset events fan out to every brokerage account holding the source symbol. Whole-unit
 transformations apportion successor shares through exact FIFO entitlements. Fractional entitlements
 carry their own basis across lot boundaries, and a combined whole share receives a deterministic

@@ -127,7 +127,21 @@ public interface ICanonicalStatementStore
     Task<bool> TrySaveImportAsync(CanonicalStatementImport import, IReadOnlyList<CanonicalStatementRow> rows, CancellationToken ct = default);
     Task<BrokerStatementImportResult?> GetImportAsync(string importId, CancellationToken ct = default);
     Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken ct = default);
+
+    /// <summary>Publishes an import only after its exact captured source and parser input are durable.</summary>
+    Task<bool> TrySaveImportWithSourceAsync(
+        CanonicalStatementImport import,
+        IReadOnlyList<CanonicalStatementRow> rows,
+        ReadOnlyMemory<byte> source,
+        ReadOnlyMemory<byte> parserInput,
+        CancellationToken ct = default)
+        => throw new NotSupportedException("The statement store cannot retain replayable source evidence.");
+
+    Task<CanonicalStatementSourceEvidence> ReadSourceEvidenceAsync(string importId, CancellationToken ct = default)
+        => throw new NotSupportedException("The statement store cannot read replayable source evidence.");
 }
+
+public sealed record CanonicalStatementSourceEvidence(byte[] Source, byte[] ParserInput);
 
 /// <summary>
 /// Maps record identifiers onto safe file names for the per-record JSON stores. The identifiers
@@ -166,7 +180,7 @@ internal static class ReconciliationRecordFileName
 /// <summary>
 /// Persists canonical statement imports and rows as JSON files under the data root.
 /// </summary>
-public sealed class JsonCanonicalStatementStore : ICanonicalStatementStore
+public sealed partial class JsonCanonicalStatementStore : ICanonicalStatementStore
 {
     private readonly IAtomicFileWriter _atomicFileWriter;
     private readonly string _folder;
@@ -201,10 +215,17 @@ public sealed class JsonCanonicalStatementStore : ICanonicalStatementStore
         }
     }
 
-    public async Task<bool> TrySaveImportAsync(
+    public Task<bool> TrySaveImportAsync(
         CanonicalStatementImport import,
         IReadOnlyList<CanonicalStatementRow> rows,
         CancellationToken ct = default)
+        => PublishImportAsync(import, rows, sourceEvidenceVersion: 0, ct);
+
+    private async Task<bool> PublishImportAsync(
+        CanonicalStatementImport import,
+        IReadOnlyList<CanonicalStatementRow> rows,
+        int sourceEvidenceVersion,
+        CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         var fileName = ReconciliationRecordFileName.For(import.ImportId);
@@ -216,7 +237,7 @@ public sealed class JsonCanonicalStatementStore : ICanonicalStatementStore
             await using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write,
                 FileShare.None, 64 * 1024, FileOptions.Asynchronous | FileOptions.WriteThrough))
             {
-                await JsonSerializer.SerializeAsync(stream, new { import, rows }, cancellationToken: ct).ConfigureAwait(false);
+                await JsonSerializer.SerializeAsync(stream, new { import, rows, sourceEvidenceVersion }, cancellationToken: ct).ConfigureAwait(false);
                 await stream.FlushAsync(ct).ConfigureAwait(false);
                 stream.Flush(flushToDisk: true);
             }
@@ -267,17 +288,20 @@ public sealed class JsonCanonicalStatementStore : ICanonicalStatementStore
         }
     }
 
-    public Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken ct = default)
     {
         if (!Directory.Exists(_folder))
-            return Task.FromResult<IReadOnlyList<CanonicalStatementImport>>([]);
-        var imports = Directory.EnumerateFiles(_folder, "*.json")
-            .Select(path => JsonSerializer.Deserialize<ImportEnvelope>(File.ReadAllText(path))?.import)
-            .Where(x => x is not null)
-            .Cast<CanonicalStatementImport>()
-            .OrderByDescending(x => x.ImportedAtUtc)
-            .ToList();
-        return Task.FromResult<IReadOnlyList<CanonicalStatementImport>>(imports);
+            return [];
+        var imports = new List<CanonicalStatementImport>();
+        foreach (var path in Directory.EnumerateFiles(_folder, "*.json"))
+        {
+            ct.ThrowIfCancellationRequested();
+            var envelope = JsonSerializer.Deserialize<ImportEnvelope>(await File.ReadAllTextAsync(path, ct).ConfigureAwait(false))
+                ?? throw new InvalidDataException("Canonical statement import retained a null envelope.");
+            await VerifySourceEvidenceAsync(envelope, ct).ConfigureAwait(false);
+            imports.Add(envelope.import);
+        }
+        return imports.OrderByDescending(import => import.ImportedAtUtc).ToList();
     }
 
     public async Task<BrokerStatementImportResult?> GetImportAsync(
@@ -311,12 +335,15 @@ public sealed class JsonCanonicalStatementStore : ICanonicalStatementStore
                 $"Canonical statement import '{importId}' retained mismatched identity '{envelope.import.ImportId}'.");
         }
 
+        await VerifySourceEvidenceAsync(envelope, ct).ConfigureAwait(false);
+
         return new BrokerStatementImportResult(envelope.import, envelope.rows ?? []);
     }
 
     private sealed record ImportEnvelope(
         CanonicalStatementImport import,
-        IReadOnlyList<CanonicalStatementRow>? rows = null);
+        IReadOnlyList<CanonicalStatementRow>? rows = null,
+        int sourceEvidenceVersion = 0);
 }
 
 /// <summary>
@@ -445,7 +472,8 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
             ExecutedMappingFingerprint = StatementExecutedMappingEvidence.Capture(normalizedRequest, "canonical-csv-parser-v1"),
             AccountingScope = normalizedRequest.AccountingScope
         };
-        if (!await store.TrySaveImportAsync(import, rows, ct).ConfigureAwait(false))
+        if (!await store.TrySaveImportWithSourceAsync(import, rows,
+            snapshots.Source.Content, snapshots.ParseArtifact.Content, ct).ConfigureAwait(false))
         {
             throw new StatementAlreadyImportedException(duplicateKey);
         }
@@ -659,6 +687,7 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         var fields = new List<string>();
         var field = new StringBuilder();
         var quoted = false;
+        var closedQuote = false;
         for (var index = 0; index < line.Length; index++)
         {
             var current = line[index];
@@ -671,6 +700,9 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 }
                 else
                 {
+                    if (!quoted && (field.Length != 0 || closedQuote))
+                        throw new InvalidDataException($"Statement CSV row {rowNumber} contains a quote inside an unquoted field.");
+                    closedQuote = quoted;
                     quoted = !quoted;
                 }
             }
@@ -678,9 +710,12 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
             {
                 fields.Add(field.ToString().Trim());
                 field.Clear();
+                closedQuote = false;
             }
             else
             {
+                if (closedQuote)
+                    throw new InvalidDataException($"Statement CSV row {rowNumber} contains data after a closing quote.");
                 field.Append(current);
             }
         }

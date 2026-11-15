@@ -422,7 +422,7 @@ and S2-B4 (codec single-purpose) land. Planned increments:
   `CanonicalizeDeclaredAliases` in write mode, ambiguous double-spellings refusing. The decode
   arm's real contract is now ledgered where it diverges from a naive schema reading: two-sided
   vocabulary enforcement, `ToleratedAbsenceDefaults` (eight Required booleans plus Bond
-  subclass), `ToleratedMistypes` (the legacy factorSchedule pointer). See the review record.
+  subclass; since 2026-11-13 declared on the schema as `AbsentReadDefault`), `ToleratedMistypes` (the legacy factorSchedule pointer). See the review record.
 - **S3-C — the encode-arm sweeps (implemented 2026-11-09).** 124 schema-generated cases:
   every written value carries its field's declared JSON kind (dates ISO, guids parseable);
   a minimal required-only submission writes every required key and invents no optional value

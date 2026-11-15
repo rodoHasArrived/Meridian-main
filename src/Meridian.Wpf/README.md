@@ -6,10 +6,18 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Wpf
+
+Protected production and packaged/customer configuration persistence uses the shared provider-secret
+scanner before writing either the primary file or last-known-good copy. Startup also refuses a
+secret-bearing or unparseable retained generation before creating backups, recovery receipts or
+replacement files. Reviewed migration and purge of both generations precedes retry; unflagged
+development keeps its existing invalid-configuration recovery behavior. Owned provider credentials
+remain in the protected vault. Windows persistence, refusal and purge/retry fixtures live in
+`DesktopConfigurationRecoveryServiceTests`.
 
 The existing agreement and entity controls expose native structured terms, date previews,
 external-review attestations, advisory obligations and reviewed legacy coverage successors.
@@ -252,7 +260,10 @@ credentials are required. The wizard and credential management use the service's
 not local catalog field names, and never read secrets back into editors or write environment variables.
 
 The desktop close publication guard also resolves the optional book-of-record guard lazily, so a shadow
-onboarding book cannot hard-close; the shadow onboarding panel itself is browser-only for now.
+onboarding book cannot hard-close. The Accounting Configure page's **Onboarding parallel run** tab
+(`Views/OnboardingShadowControl.xaml`) binds the shared `OnboardingShadowWorkspace` from
+`Meridian.Ui.Services`. Only the opening-file picker is in code-behind. Creating workspaces, criteria,
+comparison capture and reviews remain browser-only.
 
 Provider badges and selections join canonical IDs, including retained aliases. Credential management
 retains a selected connection's field schema when a status read finishes during or after verification,
@@ -1164,6 +1175,18 @@ feature module registers the canonical write scope next to the Security Master s
 The desktop passport editor loads the asset-class registry definition and offers a term picker,
 a choice list for vocabulary and convention terms, and the shared `SecurityAssetTermFormModel`
 pre-check; the free-text field path remains available.
+
+**Scope options (P4 parity, 2026-11-14).** The operating-context page (`Views/FundProfileSelectionPage.xaml`)
+has a Scope Options card with entity, fund and fund-account pickers fed by the shared
+`GET /api/workstation/scope-options` seam (`WorkstationScopeOptionsDto`), read through
+`Services/WorkstationScopeOptionsApiClient`. Picks narrow by the browser scope picker's rule
+(`Services/WorkstationScopeOptionsNarrowing`): an entity keeps the funds holding it and the accounts
+booked to it or held by those funds, a fund keeps its own accounts, and accounts with no stated
+fund or entity are left out of a narrowed list and counted in a note. On a 404 (a host older than
+the route) the client falls back to the in-process fund-structure graph and says that list is not
+filtered by grants; any other failure, 403 included, leaves the lists empty with a status message
+saying why. "Use Scope" selects the matching operating context (account, else fund, else entity)
+when the desktop context catalog has one; it does not create contexts or change the scope model.
 
 ## Security Master governance controls (2026-11)
 

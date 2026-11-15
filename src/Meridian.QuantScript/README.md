@@ -31,6 +31,13 @@ Security Master reads use Contracts-owned query interfaces. QuantScript does not
 
 Use this module for QuantScript execution, strategy scripting, and strategy analysis support.
 
+`Backtest.WithCorporateActionMode("RawPricesWithCanonicalEvents")` opts into canonical dividend
+and split accounting on explicitly unadjusted USD equity bars; `Legacy` remains the default.
+Canonical worker queries cross the existing bounded host-data RPC with an explicit effective
+cutoff and expected SecurityId. Missing/unavailable Security Master or action queries fail the
+run; they cannot be mistaken for an empty action set. Existing permissive notebook data helpers
+retain their behavior. Completed canonical results include the frozen action snapshot/hash.
+
 ### Isolated execution boundary
 
 `ScriptRunner` never executes Roslyn or user source in the workstation/server process. Each run
@@ -42,6 +49,9 @@ fail closed.
 The parent and worker communicate over inherited anonymous pipes with a length-prefixed,
 versioned, bounded JSON protocol. Standard output and error are separate bounded streams and are
 not protocol channels. Host market-data access crosses only a typed `IQuantDataContext` RPC seam.
+Backtest cash flows cross that boundary through a closed, source-generated discriminator for
+trade, commission, margin interest, short rebate, dividend, cash interest and asset-event records;
+unknown kinds are rejected rather than resolved as arbitrary runtime types.
 Run parameters are restricted to null, scalar numeric/Boolean/string/character values, dates,
 timestamps, and GUIDs; arbitrary host objects and delegates fail closed at the boundary.
 Notebook continuations replay prior successful source cells in a fresh worker, so a timeout,

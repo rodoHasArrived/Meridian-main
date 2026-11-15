@@ -568,6 +568,42 @@ Declared public members:
 | <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; ReviseAsync(string tenantId, string actor, Guid arrangementId, ReviseIntercompanyAccountingArrangementRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:93](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L93) |  |
 | <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; ApplyActionAsync(string tenantId, string actor, Guid arrangementId, IntercompanyAccountingArrangementActionDto action, IntercompanyAccountingArrangementActionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:149](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L149) |  |
 
+## IntercompanyAccrualPrincipalResult
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyAccrualPrincipalResult</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:10](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L10).
+
+Outstanding principal by day, read from posted journals of the reviewed loan profile.
+
+```csharp
+public sealed record IntercompanyAccrualPrincipalResult(IReadOnlyList<IntercompanyAccrualPrincipalSegmentDto> Segments, IntercompanyAccrualPrincipalEvidenceDto? Evidence, string? Refusal);
+```
+
+## IntercompanyAccrualSourceBuilder
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyAccrualSourceBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:17](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L17).
+
+Pure builders behind the governed accrual: profile authority by day, ledger principal, overlap detection and the source-side draft. None of them posts, approves or mutates anything.
+
+```csharp
+public static class IntercompanyAccrualSourceBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;(DateOnly From, DateOnly To, Guid RevisionId)&gt; ResolveAuthority(IntercompanyAccountingArrangementHistoryDto history, DateOnly from, DateOnly to);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:23](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L23) | The approved profile revision applicable on each day of &#91;from, to), using the same end-of-day resolution as posting. A day with no single approved revision refuses the whole window. |
+| <code>public static IntercompanyAccrualPrincipalResult BuildPrincipal(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, Guid principalArrangementId, Guid sourceBookId, IReadOnlySet&lt;string&gt; receivableNodes, IReadOnlySet&lt;string&gt; payableNodes, string agreementCurrency, string functionalCurrency, DateOnly from, DateOnly to);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:53](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L53) | A movement dated d changes the balance from d inclusive: a drawdown earns interest on its own date, a repayment stops earning on its own date. |
+| <code>public static string? FindPostedOverlap(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, Guid interestArrangementId, DateOnly from, DateOnly to);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:121](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L121) | A posted accrual of the profile whose window intersects &#91;from, to) and has not been reversed. Reversal is proved by correction lineage: a source-linked exact inverse of that journal. A settled receivable or payable nets to zero too, but its interest income stays posted, so balances prove nothing. |
+| <code>public static int PostedGeneration(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, Guid interestArrangementId, DateOnly from, DateOnly to);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:142](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L142) | How many accrual journals, originals and their corrections, are already posted for exactly this window. It only grows when a journal posts, so it is stable across retries and gives a recomputation after a reversal its own identity while the immutable original keeps its own. |
+| <code>public static Guid DraftId(string tenantId, IntercompanyAccrualRequestDto request, int generation = 0) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:202](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L202) | One window of one profile in one book has one live draft identity; a recomputation updates it. |
+| <code>public static string? VerifyPrincipal(IntercompanyAccrualEvidenceDto evidence, IReadOnlyList&lt;LedgerJournalEntryRecord&gt; principalJournals);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:212](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L212) | Null when posted principal still reads exactly as retained; otherwise why the accrual must be recomputed. A backdated repayment or correction after drafting changes the interest the window should carry. |
+| <code>public static IntercompanyAccrualProposalDto BuildDraft(IntercompanyAccrualRequestDto request, string tenantId, string? companyId, string actor, LedgerBookRecord book, LedgerAccountingPeriod period, ResolvedIntercompanyAccountingArrangementDto posting, IntercompanyAccrualPreviewDto computation, IntercompanyAccrualPrincipalEvidenceDto principal, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; bindings, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt; chart, ConsolidationFxAmountDto? fx, DateTimeOffset now, int generation = 0);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:229](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L229) | The source-side draft: the lender debits interest receivable and credits interest income; the borrower debits interest expense and credits interest payable. It is a draft for the source book&#x27;s ordinary review. Its counterpart is produced only by the existing proposal pipeline after the source posts. |
+
 ## IntercompanyBalanceScheduleService
 
 Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyBalanceScheduleService</code>. Kind: `class`.
@@ -643,9 +679,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ControlName =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:19](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L19) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAsync(IReadOnlyList&lt;LedgerPostingAuthorityContext&gt; contexts, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:21](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L21) |  |
-| <code>public async Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:194](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L194) |  |
+| <code>public async Task VerifyAccrualAuthorityAsync(string tenantId, IntercompanyAccrualEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:24](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L24) | Re-resolves every retained accrual slice under current profile and legal authority. The posted lines carry only the revision of the posting date, so an earlier slice whose revision was since retired, superseded or re-pinned would otherwise post on authority that no longer covers its days. |
+| <code>public string ControlName =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:48](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L48) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAsync(IReadOnlyList&lt;LedgerPostingAuthorityContext&gt; contexts, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:50](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L50) |  |
+| <code>public async Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:223](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L223) |  |
 
 ## IntercompanyObligationMonitorService
 
@@ -683,11 +720,30 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static ManualJournalEntryDraftDto Build(IntercompanyProposalDto proposal, ResolvedIntercompanyAccountingArrangementDto agreement, LedgerBookRecord target, LedgerAccountingPeriod period, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; sourceBindings, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; targetBindings, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt; chart, ConsolidationFxAmountDto? fx, DateTimeOffset now, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt;? sourceChart = null);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs:10](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs#L10) |  |
 
+## AccountingAutomaticPostingPolicyValidator
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingAutomaticPostingPolicyValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:31](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L31).
+
+```csharp
+public sealed class AccountingAutomaticPostingPolicyValidator(IAccountingPolicyService policies) : IAccountingAutomaticPostingPolicyValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireRetainedAuthorityAsync(AccountingPolicyDto snapshot, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:33](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L33) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:52](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L52) |  |
+| <code>public async Task ValidateAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:64](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L64) |  |
+| <code>public async Task&lt;AccountingPolicyRuleDto&gt; ResolveRuleAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, string sourceEventType, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:71](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L71) |  |
+
 ## AccountingBasisProjectionRequest
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:34](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L34).
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:40](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L40).
 
 ```csharp
 public sealed record AccountingBasisProjectionRequest(JournalEntry SourceEntry, Guid AggregateId, Guid PeriodId, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, DateOnly? EffectiveDate = null, Guid? CommandId = null, Guid? CorrelationId = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, string? FundProfileId = null, Guid? FundStructureNodeId = null, string? InstrumentId = null, string? PolicyId = null, string? RuleId = null, string? RuleVersion = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null, Guid? LedgerBookId = null, AccountingPostingCommandDto? PostingCommand = null, string? PolicyVersion = null);
@@ -697,7 +753,7 @@ public sealed record AccountingBasisProjectionRequest(JournalEntry SourceEntry, 
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionResult</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:56](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L56).
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:62](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L62).
 
 ```csharp
 public sealed record AccountingBasisProjectionResult(AccountingPolicyDto Policy, LedgerJournalEntryWrite Write);
@@ -707,7 +763,7 @@ public sealed record AccountingBasisProjectionResult(AccountingPolicyDto Policy,
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionService</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:334](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L334).
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:365](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L365).
 
 Builds accounting-basis projections using the resolved accounting policy.
 
@@ -719,7 +775,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;AccountingBasisProjectionResult&gt; ProjectAsync(AccountingBasisProjectionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:339](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L339) |  |
+| <code>public async Task&lt;AccountingBasisProjectionResult&gt; ProjectAsync(AccountingBasisProjectionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:370](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L370) |  |
 
 ## AccountingBasisProjectionSetService
 
@@ -793,7 +849,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingPolicyService</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:63](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L63).
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:69](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L69).
 
 Maintains accounting policies and resolves applicable rules under mutation and authority leases.
 
@@ -805,137 +861,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public AccountingPolicyService() : this(TimeProvider.System);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:70](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L70) |  |
-| <code>public AccountingPolicyService(TimeProvider timeProvider);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:80](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L80) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireConsolidationAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:91](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L91) |  |
-| <code>public async Task&lt;AccountingPolicyDto&gt; CreatePolicyAsync(CreateAccountingPolicyRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:97](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L97) |  |
-| <code>public Task&lt;AccountingPolicyDto&gt; ResolvePolicyAsync(AccountingPolicyQuery query, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:123](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L123) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountingPolicyDto&gt;&gt; ListPoliciesAsync(AccountingBasisKindDto? accountingBasis = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:153](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L153) |  |
-
-## AccountingPostingCandidatePostService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingPostingCandidatePostService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.ApprovalBoundary.cs:7](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.ApprovalBoundary.cs#L7).
-
-```csharp
-public sealed partial class AccountingPostingCandidatePostService
-```
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.BondAcquisition.cs:8](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.BondAcquisition.cs#L8).
-
-```csharp
-public sealed partial class AccountingPostingCandidatePostService
-```
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CapitalReturn.cs:8](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CapitalReturn.cs#L8).
-
-```csharp
-public sealed partial class AccountingPostingCandidatePostService
-```
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs:23](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs#L23).
-
-```csharp
-public sealed partial class AccountingPostingCandidatePostService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;PostedPostingRuleJournalCandidateResultDto&gt; PostAttestedCashDividendCandidateAsync(PostAttestedCashDividendPostingCandidateRequestDto request, CorporateActionCashDividendPostingLease lease, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs:25](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs#L25) |  |
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs:31](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs#L31).
-
-Posts reviewed accounting candidates while checking approval, reference, and ledger authority.
-
-```csharp
-public sealed partial class AccountingPostingCandidatePostService : IAccountingPostingCandidatePostService, IAccountingCashDividendAttestedPostService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AccountingPostingCandidatePostService(IAccountingPostingCandidateWriteBuilder candidateBuilder, ILedgerJournalStore? journalStore = null, IAtomicTaxLotJournalStore? atomicTaxLotStore = null, IAssetAccountingEventProjectionStore? assetAccountingEventStore = null, IAccountingPostingCandidateAuthorityBuilder? authorityBuilder = null, IBondCalculationPolicy? bondCalculationPolicy = null, IBondSettlementConsiderationService? bondSettlementConsiderationService = null, Func&lt;CancellationToken, Task&gt;? termsCapabilityCheck = null, IInstrumentPositionProjectionStore? instrumentPositions = null);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs:43](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs#L43) |  |
-| <code>public async Task&lt;PostedPostingRuleJournalCandidateResultDto&gt; PostCandidateAsync(PostPostingRuleJournalCandidateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs:67](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs#L67) |  |
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.Dimensions.cs:6](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.Dimensions.cs#L6).
-
-```csharp
-public sealed partial class AccountingPostingCandidatePostService
-```
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.FactorPaydown.cs:8](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.FactorPaydown.cs#L8).
-
-```csharp
-public sealed partial class AccountingPostingCandidatePostService
-```
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.FactorPaydownReplay.cs:8](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.FactorPaydownReplay.cs#L8).
-
-```csharp
-public sealed partial class AccountingPostingCandidatePostService
-```
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.JournalIntentBinding.cs:8](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.JournalIntentBinding.cs#L8).
-
-```csharp
-public sealed partial class AccountingPostingCandidatePostService
-```
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.ReferenceAuthority.cs:5](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.ReferenceAuthority.cs#L5).
-
-```csharp
-public sealed partial class AccountingPostingCandidatePostService
-```
-
-## AccountingPostingCandidateService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingPostingCandidateService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.BondAcquisition.cs:7](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.BondAcquisition.cs#L7).
-
-```csharp
-public sealed partial class AccountingPostingCandidateService
-```
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.BondIncome.cs:10](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.BondIncome.cs#L10).
-
-```csharp
-public sealed partial class AccountingPostingCandidateService
-```
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.CashFlow.cs:7](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.CashFlow.cs#L7).
-
-```csharp
-public sealed partial class AccountingPostingCandidateService
-```
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:70](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L70).
-
-Builds reviewable journal candidates and candidate writes from accounting-event evidence.
-
-```csharp
-public sealed partial class AccountingPostingCandidateService : IAccountingPostingCandidateService, IAccountingPostingCandidateWriteBuilder, IAccountingPostingCandidateAuthorityBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AccountingPostingCandidateService(IAccountingConfigurationService configurationService, IAccountingJournalDraftService journalDraftService, ILedgerBookService? ledgerBookService = null, IAccountingPolicyService? accountingPolicyService = null, IAssetOperationsQueryService? assetOperationsQueryService = null, IFactorPaydownProjectionService? factorPaydownProjector = null, ILedgerJournalStore? taxLotStore = null, Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore? instrumentPositions = null);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:84](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L84) |  |
-| <code>public async Task&lt;PostingRuleJournalCandidateResultDto&gt; BuildCandidateAsync(PostingRuleJournalCandidateRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:104](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L104) |  |
-| <code>public async Task&lt;AccountingPostingCandidateWriteResult&gt; BuildCandidateWriteAsync(PostingRuleJournalCandidateRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:109](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L109) |  |
-| <code>public async Task&lt;AccountingPostingCandidateWriteResult&gt; BuildAuthoritativeCandidateWriteAsync(PostingRuleJournalCandidateRequestDto request, AssetAccountingCandidateAuthorityContext authority, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:114](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L114) |  |
-
-## AccountingPostingCandidateWriteResult
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingPostingCandidateWriteResult</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:63](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L63).
-
-```csharp
-public sealed record AccountingPostingCandidateWriteResult(PostingRuleJournalCandidateResultDto Candidate, LedgerJournalEntryWrite? Write);
-```
+| <code>public AccountingPolicyService() : this(TimeProvider.System);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:76](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L76) |  |
+| <code>public AccountingPolicyService(TimeProvider timeProvider);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:86](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L86) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireConsolidationAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:97](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L97) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireRetainedPolicyAuthorityLeaseAsync(AccountingPolicyDto snapshot, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:103](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L103) |  |
+| <code>public async Task&lt;AccountingPolicyDto&gt; CreatePolicyAsync(CreateAccountingPolicyRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:128](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L128) |  |
+| <code>public Task&lt;AccountingPolicyDto&gt; ResolvePolicyAsync(AccountingPolicyQuery query, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:154](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L154) |  |
+| <code>public Task&lt;IReadOnlyList&lt;AccountingPolicyDto&gt;&gt; ListPoliciesAsync(AccountingBasisKindDto? accountingBasis = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:184](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L184) |  |

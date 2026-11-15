@@ -258,7 +258,7 @@ public sealed class AssetOperationsProjectionRoundTripTests : IClassFixture<Secu
                 displayName = $"Asset operations projection fixture {securityId:N}",
                 currency = "USD"
             }),
-            JsonSerializer.SerializeToElement(assetSpecificTerms),
+            SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(assetSpecificTerms)),
             JsonSerializer.SerializeToElement(new
             {
                 sourceSystem = "integration-test",

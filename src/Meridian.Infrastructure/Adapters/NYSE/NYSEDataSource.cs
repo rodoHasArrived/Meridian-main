@@ -142,6 +142,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         ILogger? logger = null)
         : base(sourceOptions ?? DataSourceOptions.Default, logger)
     {
+        NyseCredentialAccessPolicy.EnsureAccessAllowed();
         _options = options ?? throw new ArgumentNullException(nameof(options));
         ArgumentNullException.ThrowIfNull(httpClientFactory);
 

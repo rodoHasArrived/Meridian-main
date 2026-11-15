@@ -30,7 +30,7 @@ public sealed class ContractualCashFlowCompanionPostgresTests(SecurityMasterData
             }, json);
             var code = "CF" + id.ToString("N");
             var record = new SecurityProjectionRecord(id, assetClass, SecurityStatusDto.Active, "Contract companion", "USD", "InternalCode", code,
-                JsonSerializer.SerializeToElement(new { displayName = "Contract companion", currency = "USD" }), payload,
+                JsonSerializer.SerializeToElement(new { displayName = "Contract companion", currency = "USD" }), SecurityTermsEnvelope.StampDeclaredFormat(payload),
                 JsonSerializer.SerializeToElement(new { sourceSystem = "test" }), 1, at, null,
                 [new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, code, true, at)], []);
             await new PostgresSecurityMasterStore(fixture.Options).UpsertProjectionAsync(record);

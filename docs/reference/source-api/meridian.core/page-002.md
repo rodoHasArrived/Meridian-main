@@ -6,11 +6,23 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DerivativesConfig
+
+Qualified name: <code>Meridian.Core.Config.DerivativesConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/DerivativesConfig.cs:6](../../../../src/Meridian.Core/Config/DerivativesConfig.cs#L6).
+
+Domain configuration for derivatives (options) data collection.
+
+```csharp
+public sealed record DerivativesConfig(bool Enabled = false, string[]? Underlyings = null, int MaxDaysToExpiration = 90, int StrikeRange = 20, bool CaptureGreeks = true, bool CaptureChainSnapshots = false, int ChainSnapshotIntervalSeconds = 300, bool CaptureOpenInterest = true, string[]? ExpirationFilter = null, IndexOptionsConfig? IndexOptions = null);
+```
+
 ## DomainCutoverModeConfig
 
 Qualified name: <code>Meridian.Core.Config.DomainCutoverModeConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/AppConfig.cs:218](../../../../src/Meridian.Core/Config/AppConfig.cs#L218).
+Source: [src/Meridian.Core/Config/AppConfig.cs:222](../../../../src/Meridian.Core/Config/AppConfig.cs#L222).
 
 Serializable cutover mode for a single fund operations domain.
 
@@ -160,7 +172,7 @@ public sealed record FredConfig(bool Enabled = true, string? ApiKey = null, int 
 
 Qualified name: <code>Meridian.Core.Config.FundOperationsPersistenceConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/AppConfig.cs:209](../../../../src/Meridian.Core/Config/AppConfig.cs#L209).
+Source: [src/Meridian.Core/Config/AppConfig.cs:213](../../../../src/Meridian.Core/Config/AppConfig.cs#L213).
 
 Configuration for per-domain fund operations persistence cutover. Controls shadow write and read mode toggles for each fund operations domain.
 
@@ -333,7 +345,7 @@ public sealed record OpenFigiConfig(bool Enabled = true, string? ApiKey = null, 
 
 Qualified name: <code>Meridian.Core.Config.PipelineRuntimeConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/AppConfig.cs:101](../../../../src/Meridian.Core/Config/AppConfig.cs#L101).
+Source: [src/Meridian.Core/Config/AppConfig.cs:105](../../../../src/Meridian.Core/Config/AppConfig.cs#L105).
 
 Runtime tuning for the event pipeline&#x27;s flush behaviour. All fields are optional; unset values fall back to the pipeline&#x27;s built-in defaults (final flush 30s, periodic sink flush 60s), so existing configurations keep their current behaviour. Non-positive values are ignored (treated as unset) by the pipeline registration.
 
@@ -369,7 +381,7 @@ public sealed record PolygonOptions(string? ApiKey = null, bool UseDelayed = fal
 
 Qualified name: <code>Meridian.Core.Config.ProviderBindingConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:52](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L52).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:53](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L53).
 
 Capability binding targeting one connection and one scope.
 
@@ -381,7 +393,7 @@ public sealed record ProviderBindingConfig(string BindingId, ProviderCapabilityK
 
 Qualified name: <code>Meridian.Core.Config.ProviderCertificationConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:94](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L94).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:95](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L95).
 
 Stored certification state for a provider connection.
 
@@ -393,7 +405,7 @@ public sealed record ProviderCertificationConfig(string ConnectionId, string Sta
 
 Qualified name: <code>Meridian.Core.Config.ProviderConnectionConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:31](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L31).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:32](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L32).
 
 One credentialed provider relationship.
 
@@ -467,7 +479,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.ProviderPolicyConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:67](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L67).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:68](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L68).
 
 Policy override for a capability.
 
@@ -479,7 +491,7 @@ public sealed record ProviderPolicyConfig(string PolicyId, ProviderCapabilityKin
 
 Qualified name: <code>Meridian.Core.Config.ProviderPresetConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:81](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L81).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:82](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L82).
 
 Reusable provider operations preset.
 
@@ -487,11 +499,23 @@ Reusable provider operations preset.
 public sealed record ProviderPresetConfig(string PresetId, string Name, string Description, ProviderPolicyConfig[]? Policies = null, string[]? Highlights = null, bool IsBuiltIn = false, bool IsEnabled = false);
 ```
 
+## ProviderQuotasConfig
+
+Qualified name: <code>Meridian.Core.Config.ProviderQuotasConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/ProviderQuotasConfig.cs:4](../../../../src/Meridian.Core/Config/ProviderQuotasConfig.cs#L4).
+
+Explicit vendor account limits shared by every capability using the same API credential.
+
+```csharp
+public sealed record ProviderQuotasConfig(TwelveDataQuotaConfig? TwelveData = null, AlphaVantageQuotaConfig? AlphaVantage = null);
+```
+
 ## ProviderRegistryConfig
 
 Qualified name: <code>Meridian.Core.Config.ProviderRegistryConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/AppConfig.cs:115](../../../../src/Meridian.Core/Config/AppConfig.cs#L115).
+Source: [src/Meridian.Core/Config/AppConfig.cs:119](../../../../src/Meridian.Core/Config/AppConfig.cs#L119).
 
 Configuration for the unified provider registry (Phase 1.2). Controls how streaming, backfill, and symbol search providers are discovered and registered.
 
@@ -508,7 +532,7 @@ Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:26](../../../../s
 A host-selected provider connection; never a credential value or provider-wide fallback.
 
 ```csharp
-public sealed record ProviderRuntimeCredentialBinding(string ProviderId, string TenantId, string ConnectionId);
+public sealed record ProviderRuntimeCredentialBinding(string ProviderId, string TenantId, string ConnectionId, string? ExternalAccountId = null, string? Environment = null, string? SelectionId = null);
 ```
 
 ## ProviderValidationProfile
@@ -640,7 +664,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.SourceRegistryConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/AppConfig.cs:177](../../../../src/Meridian.Core/Config/AppConfig.cs#L177).
+Source: [src/Meridian.Core/Config/AppConfig.cs:181](../../../../src/Meridian.Core/Config/AppConfig.cs#L181).
 
 Source registry configuration - only PersistencePath is used.
 
@@ -664,7 +688,7 @@ public sealed record StooqConfig(bool Enabled = true, int Priority = BackfillPro
 
 Qualified name: <code>Meridian.Core.Config.StorageConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/AppConfig.cs:123](../../../../src/Meridian.Core/Config/AppConfig.cs#L123).
+Source: [src/Meridian.Core/Config/AppConfig.cs:127](../../../../src/Meridian.Core/Config/AppConfig.cs#L127).
 
 Storage configuration for file naming and organization. Conversion to StorageOptions is available via extension methods in the Application layer.
 
@@ -718,28 +742,4 @@ Configuration for a single symbol mapping.
 
 ```csharp
 public sealed record SymbolMappingConfig(string CanonicalSymbol, string? IbSymbol = null, string? AlpacaSymbol = null, string? PolygonSymbol = null, string? YahooSymbol = null, string? Name = null, string? Figi = null);
-```
-
-## SymbolMappingsConfig
-
-Qualified name: <code>Meridian.Core.Config.SymbolMappingsConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/DataSourceConfig.cs:301](../../../../src/Meridian.Core/Config/DataSourceConfig.cs#L301).
-
-Configuration for symbol mappings.
-
-```csharp
-public sealed record SymbolMappingsConfig(string? PersistencePath = null, SymbolMappingConfig[]? Mappings = null, SymbolResolutionMode ResolutionMode = SymbolResolutionMode.Compare, bool ReportMismatches = true, IReadOnlyDictionary<string, SymbolResolutionMode>? ProviderResolutionModes = null);
-```
-
-## SyntheticMarketDataConfig
-
-Qualified name: <code>Meridian.Core.Config.SyntheticMarketDataConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/SyntheticMarketDataConfig.cs:7](../../../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs#L7).
-
-Configuration for the built-in synthetic market data provider used for local development, offline integration testing, and historical replay without live credentials.
-
-```csharp
-public sealed record SyntheticMarketDataConfig(bool Enabled = false, int Seed = 1729, int Priority = 1, int EventsPerSecond = 8, int HistoricalTradeDensityPerDay = 120, int HistoricalQuoteDensityPerDay = 180, int DefaultDepthLevels = 10, bool IncludeCorporateActions = true, bool IncludeReferenceData = true, string[]? UniverseSymbols = null, DateOnly? DefaultHistoryStart = null, DateOnly? DefaultHistoryEnd = null, SyntheticScenarioConfig? Scenario = null);
 ```

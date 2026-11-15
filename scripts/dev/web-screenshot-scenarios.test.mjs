@@ -218,6 +218,23 @@ test("the Playwright adapter waits for the declared response delay", async () =>
 });
 
 
+test("ledger readiness checks the search control and loaded book and period before capture", async () => {
+  const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
+  const fixtures = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-fixtures.json"), "utf8"));
+  const capture = routeConfig.captures.find((item) => item.id === "W03I");
+  const book = fixtures.routes["/api/ledger/books"][0];
+  const period = fixtures.routes["/api/ledger/periods"].find((item) => item.ledgerBookId === book.ledgerBookId);
+  const searchLabel = "Search by account, amount, journal ID, source, security, entity";
+
+  assert.ok(capture.waitForSelectors.includes(`input#ledger-search[aria-label="${searchLabel}"]`));
+  assert.ok(!capture.waitForTexts.includes(searchLabel), "An input's accessible label is not rendered text");
+  assert.ok(capture.waitForSelectors.includes(`#ledger-book-select:has(option:checked[value="${book.ledgerBookId}"])`));
+  assert.ok(capture.waitForSelectors.includes(`#ledger-period-select:has(option:checked[value="${period.periodId}"])`));
+  assert.ok(capture.waitForTexts.includes("Cash sweep receipt"));
+  assert.ok(capture.waitForTexts.includes("Investor contribution recorded"));
+  assert.ok(capture.waitForAbsentTexts.includes("Loading posted journal entries for this period."));
+});
+
 test("journal readiness waits for the current heading and populated balanced draft", async () => {
   const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
   const fixtures = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-fixtures.json"), "utf8"));

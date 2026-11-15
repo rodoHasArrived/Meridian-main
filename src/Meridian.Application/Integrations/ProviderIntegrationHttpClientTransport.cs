@@ -232,6 +232,11 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
             await output.WriteAsync(buffer.AsMemory(0, read), ct).ConfigureAwait(false);
         }
 
+        if (content.Headers.ContentLength is { } expectedLength && output.Length != expectedLength)
+        {
+            throw new HttpRequestException("Provider response did not contain its declared number of bytes.");
+        }
+
         var charset = content.Headers.ContentType?.CharSet?.Trim('"');
         var encoding = string.IsNullOrWhiteSpace(charset) ? Encoding.UTF8 : Encoding.GetEncoding(charset);
         return encoding.GetString(output.GetBuffer(), 0, checked((int)output.Length));

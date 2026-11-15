@@ -332,10 +332,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:56](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L56) |  |
-| <code>public Task&lt;OnboardingWorkspaceDto?&gt; GetAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:64](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L64) |  |
-| <code>public Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListByLedgerBookAsync(string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:71](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L71) |  |
-| <code>public async Task SaveAsync(OnboardingWorkspaceDto workspace, int? expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:82](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L82) |  |
+| <code>public Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:36](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L36) |  |
+| <code>public Task&lt;OnboardingWorkspaceDto?&gt; GetAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:44](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L44) |  |
+| <code>public Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListByLedgerBookAsync(string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:51](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L51) |  |
+| <code>public async Task SaveAsync(OnboardingWorkspaceDto workspace, int? expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:62](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L62) |  |
 
 ## Snapshot
 
@@ -575,6 +575,30 @@ Declared public members:
 | <code>public FileReportTemplateGovernanceStore(ReportTemplateGovernanceStoreOptions options, ILogger&lt;FileReportTemplateGovernanceStore&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:119](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L119) |  |
 | <code>public IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:128](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L128) |  |
 | <code>public void Save(IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:157](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L157) |  |
+
+## FileThreeWayReconciliationEvidenceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileThreeWayReconciliationEvidenceStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs:13](../../../../src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs#L13).
+
+Immutable captured operands and run receipts; the existing case queue remains case authority.
+
+```csharp
+public sealed class FileThreeWayReconciliationEvidenceStore(ThreeWayReconciliationOptions options)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IAsyncDisposable&gt; AcquireOperationAsync(ThreeWayReconciliationScopeDto scope, string operationId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs:15](../../../../src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs#L15) |  |
+| <code>public Task&lt;IAsyncDisposable&gt; AcquireCaseAsync(ThreeWayReconciliationScopeDto scope, string caseId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs:19](../../../../src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs#L19) |  |
+| <code>public async Task SaveSourceAsync(ThreeWayReconciliationScopeDto scope, ThreeWaySourceSnapshotDto source, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs:40](../../../../src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs#L40) |  |
+| <code>public async Task&lt;ThreeWaySourceSnapshotDto?&gt; ReadSourceAsync(ThreeWayReconciliationScopeDto scope, string source, DateTimeOffset cutoff, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs:52](../../../../src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs#L52) |  |
+| <code>public async Task&lt;ThreeWayStoredRun?&gt; ReadRunAsync(ThreeWayReconciliationScopeDto scope, string operationId, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs:81](../../../../src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs#L81) |  |
+| <code>public Task SaveRunAsync(ThreeWayStoredRun run, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs:95](../../../../src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs#L95) |  |
+| <code>public async Task&lt;ThreeWayReconciliationResultDto?&gt; GetLatestAsync(ThreeWayReconciliationScopeDto scope, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs:99](../../../../src/Meridian.Ui.Shared/Services/FileThreeWayReconciliationEvidenceStore.cs#L99) |  |
 
 ## FinancialRecordExplorerReadScope
 
@@ -855,7 +879,7 @@ Declared public members:
 | <code>public async Task&lt;FundOperationsWorkspaceDto&gt; GetWorkspaceAsync(FundOperationsWorkspaceQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:92](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L92) |  |
 | <code>public async Task&lt;FundOperationsWorkspaceDto&gt; GetWorkspaceAsync(FundOperationsWorkspaceQuery query, ReportAccessQueryContext? accessContext, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:97](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L97) |  |
 
-Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs#L26).
+Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs:27](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs#L27).
 
 ```csharp
 public sealed partial class FundOperationsWorkspaceReadService
@@ -865,7 +889,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static FundLedgerReconciliationSnapshot ProjectReconciliationSnapshot(FundLedgerSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs:98](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs#L98) |  |
+| <code>public static FundLedgerReconciliationSnapshot ProjectReconciliationSnapshot(FundLedgerSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs:99](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs#L99) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.LiveViews.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.LiveViews.cs#L26).
 
@@ -1083,22 +1107,3 @@ Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:29](../../
 ```csharp
 public sealed record HaircutRule(string Counterparty, string CollateralType, decimal HaircutPercent);
 ```
-
-## HmacReportingDeliveryGrantCredentialDeriver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.HmacReportingDeliveryGrantCredentialDeriver</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L34).
-
-Derives repeatable reporting delivery access credentials from a binding key using HMAC.
-
-```csharp
-public sealed class HmacReportingDeliveryGrantCredentialDeriver : IReportingDeliveryGrantCredentialDeriver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public HmacReportingDeliveryGrantCredentialDeriver(ReadOnlySpan&lt;byte&gt; key);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L39) |  |
-| <code>public ReportingDerivedAccessGrantCredential Derive(string bindingKey);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:49](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L49) |  |

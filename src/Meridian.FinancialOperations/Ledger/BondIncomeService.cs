@@ -102,9 +102,10 @@ public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPosit
         var workflowModel = separatedAccrual ? BondIncomeCalculator.SeparatedAccrualWorkflowModelVersion : BondWorkflowModelVersions.Legacy;
         var security = await securities.GetProjectionAsync(lot.SecurityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Versioned Security Master terms are unavailable.");
+        var acceptedSecurityHashes = OpenLotAmortization.AcceptedSecurityHashes(security);
         var securityEvidence = acquisition.Evidence.LastOrDefault(e => e.SubjectType == "SecurityMasterProjection"
             && e.SubjectId == lot.SecurityId.ToString("D") && e.EvidenceVersion == security.Version
-            && Sha256Digest.FixedEquals(e.ContentHashSha256, OpenLotAmortization.SecurityHash(security)))
+            && acceptedSecurityHashes.Any(hash => Sha256Digest.FixedEquals(e.ContentHashSha256, hash)))
             ?? throw new InvalidOperationException("The acquisition requires reviewed retained evidence matching the current Security Master terms.");
         var reference = StructuredCashFlowTermsResolver.Resolve(security.ToDetail());
         var zeroCoupon = reference.CouponKind == SecurityCouponKind.ZeroCoupon;

@@ -11,6 +11,13 @@ export interface ScopeFundAccountOption {
   fundId?: string | null;
   /** The legal entity the account is booked to, when a loaded read model states it. */
   entityId?: string | null;
+  /**
+   * True when the account has a fund the caller may not see (`fundWithheld` on the scope-options
+   * payload): `fundId` is null because the fund is withheld, not because there is none.
+   */
+  fundWithheld?: boolean;
+  /** True when the account is booked to a legal entity the caller may not see (see `fundWithheld`). */
+  entityWithheld?: boolean;
 }
 
 /**
