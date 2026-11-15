@@ -46,6 +46,18 @@ public sealed class IntercompanyCounterpartQueueWorkspaceTests
     }
 
     [Fact]
+    public async Task SourceLinesLabelTransactionAndFunctionalCurrenciesSeparately()
+    {
+        var proposal = Proposal(IntercompanyProposalStatusDto.Pending);
+        proposal = proposal with { Source = proposal.Source with { SourceFunctionalCurrency = "USD" } };
+        using var view = Open(new Client { Proposals = [proposal] });
+        await view.LoadCommand.ExecuteAsync(null);
+        var line = Assert.Single(Assert.Single(view.Proposals).Lines);
+        Assert.Equal("EUR", line.TransactionCurrency);
+        Assert.Equal("USD", line.FunctionalCurrency);
+    }
+
+    [Fact]
     public async Task BreakOutageReadsAsUnknownRatherThanNoBreaks()
     {
         var client = new Client { Proposals = [Proposal(IntercompanyProposalStatusDto.Pending)], Breaks = ApiResponse<IntercompanyBreakDto[]>.Fail("Break authority unavailable", 503) };

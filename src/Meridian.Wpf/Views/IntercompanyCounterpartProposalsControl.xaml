@@ -72,9 +72,10 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Account" Binding="{Binding AccountName}" Width="240" />
                             <DataGridTextColumn Header="Type" Binding="{Binding AccountType}" Width="110" />
+                            <DataGridTextColumn Header="Transaction currency" Binding="{Binding TransactionCurrency}" Width="140" />
                             <DataGridTextColumn Header="Transaction debit" Binding="{Binding TransactionDebit}" Width="160" />
                             <DataGridTextColumn Header="Transaction credit" Binding="{Binding TransactionCredit}" Width="160" />
-                            <DataGridTextColumn Header="Functional currency" Binding="{Binding Currency}" Width="130" />
+                            <DataGridTextColumn Header="Functional currency" Binding="{Binding FunctionalCurrency}" Width="130" />
                             <DataGridTextColumn Header="Functional debit" Binding="{Binding FunctionalDebit}" Width="160" />
                             <DataGridTextColumn Header="Functional credit" Binding="{Binding FunctionalCredit}" Width="160" />
                         </DataGrid.Columns>

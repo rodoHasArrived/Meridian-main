@@ -347,7 +347,7 @@ public sealed class IntercompanyCounterpartProposalRow(IntercompanyProposalDto p
     public string DeliveryDetail => Proposal.LatestLink is not null ? $"Original delivery receipt: {Proposal.Status}" : Proposal.LastError ?? "";
     public string Target => Proposal.ResolvedTargetJournalId is { } journal
         ? $"{(IsResolved ? "Resolved counterpart" : "Target draft")} {journal:D} in book {Proposal.ResolvedTargetBookId:D}" : "Awaiting counterpart draft";
-    public IReadOnlyList<IntercompanyCounterpartSourceLineRow> Lines { get; } = [.. (proposal.Source.Lines ?? []).Select(x => new IntercompanyCounterpartSourceLineRow(x))];
+    public IReadOnlyList<IntercompanyCounterpartSourceLineRow> Lines { get; } = [.. (proposal.Source.Lines ?? []).Select(x => new IntercompanyCounterpartSourceLineRow(x, proposal.Source.SourceFunctionalCurrency))];
     public string Provenance
     {
         get
@@ -367,11 +367,13 @@ public sealed class IntercompanyCounterpartProposalRow(IntercompanyProposalDto p
     }
 }
 
-public sealed class IntercompanyCounterpartSourceLineRow(IntercompanyProposalSourceLineDto line)
+/// <summary>The retained line carries its transaction currency; the functional currency belongs to the source book.</summary>
+public sealed class IntercompanyCounterpartSourceLineRow(IntercompanyProposalSourceLineDto line, string functionalCurrency)
 {
     public string AccountName => line.AccountName;
     public string AccountType => line.AccountType;
-    public string Currency => line.Currency;
+    public string TransactionCurrency => line.Currency;
+    public string FunctionalCurrency => functionalCurrency;
     public string TransactionDebit => IntercompanyExactAmount.Text(line.TransactionDebit);
     public string TransactionCredit => IntercompanyExactAmount.Text(line.TransactionCredit);
     public string FunctionalDebit => IntercompanyExactAmount.Text(line.Debit);
