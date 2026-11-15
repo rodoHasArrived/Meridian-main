@@ -2,6 +2,8 @@ using FluentAssertions;
 using Meridian.Application.Reconciliation;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Tenancy;
+using Meridian.Storage.Ledger;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.PortfolioRecords.Accounts;
@@ -21,6 +23,109 @@ namespace Meridian.Tests.Reconciliation;
 public sealed class RetainedInternalReconciliationPopulationProviderTests
 {
     private static readonly Guid AccountId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+    [Fact]
+    public async Task GovernedStatement_UsesExactOwnerHistoryAndNeverLegacyFallback()
+    {
+        var fund = Guid.NewGuid();
+        var entity = Guid.NewGuid();
+        var bookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var context = Context(AccountId.ToString("D")) with
+        {
+            AccountingScope = new StatementAccountingScope(fund.ToString("D"), bookId, periodId, new DateOnly(2026, 5, 31))
+        };
+        var accounts = Substitute.For<IAccountQueryService>();
+        accounts.GetAccountAsync(AccountId, Arg.Any<CancellationToken>())
+            .Returns(Account("FUND-1", "run-1") with { FundId = fund, EntityId = entity });
+        var ledger = Substitute.For<ILedgerJournalStore>();
+        ledger.GetLedgerBookAsync(bookId, Arg.Any<CancellationToken>()).Returns(new LedgerBookRecord(bookId,
+            fund.ToString("D"), fund, FundStructureNodeKindDto.Fund, "Book", "USD", DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch));
+        ledger.GetPeriodAsync(periodId, Arg.Any<CancellationToken>()).Returns(new LedgerAccountingPeriod(periodId,
+            bookId, 2026, 5, "May", new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 31), "Open", DateTimeOffset.UnixEpoch, null, 0));
+        var tenancy = Substitute.For<IFundProfileTenancyRegistry>();
+        tenancy.ResolveAsync(fund.ToString("D"), Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership(fund.ToString("D"), "tenant-a", "company-a"));
+        var owner = new PositionSnapshotOwnerScope("tenant-a", "company-a", fund.ToString("D"), bookId, entity.ToString("D"));
+        var snapshots = Substitute.For<IPositionSnapshotStore>();
+        snapshots.GetSnapshotHistoryAsync("run-1", AccountId.ToString("D"), owner,
+            Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns(_ => AsyncStream(Snapshot(new DateTimeOffset(2026, 5, 31, 16, 0, 0, TimeSpan.Zero),
+                new PositionRecord("SPY", 12m, 500m, 0m, 0m)) with
+            {
+                TenantId = owner.TenantId,
+                CompanyId = owner.CompanyId,
+                FundProfileId = owner.FundProfileId,
+                LedgerBookId = bookId,
+                EntityId = owner.EntityId
+            }));
+        var provider = new RetainedInternalReconciliationPopulationProvider(accounts, snapshots,
+            ledgerStore: ledger, tenancy: tenancy);
+
+        var result = await provider.GetPopulationsAsync(context);
+
+        result.Positions.Should().ContainSingle().Which.Quantity.Should().Be(12m);
+        snapshots.DidNotReceive().GetSnapshotHistoryAsync(Arg.Any<string>(), Arg.Any<string>(),
+            Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AccountOwnedBook_ResolvesNamedProfileWithoutRequiringFundSpecialization()
+    {
+        var entity = Guid.NewGuid();
+        var bookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var accounts = Substitute.For<IAccountQueryService>();
+        accounts.GetAccountAsync(AccountId, Arg.Any<CancellationToken>())
+            .Returns(Account("ACCOUNT", "run-1") with { EntityId = entity });
+        var ledger = Substitute.For<ILedgerJournalStore>();
+        ledger.GetLedgerBookAsync(bookId, Arg.Any<CancellationToken>()).Returns(new LedgerBookRecord(bookId,
+            "named-profile", AccountId, FundStructureNodeKindDto.Account, "Account book", "USD", DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch));
+        ledger.GetPeriodAsync(periodId, Arg.Any<CancellationToken>()).Returns(new LedgerAccountingPeriod(periodId,
+            bookId, 2026, 5, "May", new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 31), "Open", DateTimeOffset.UnixEpoch, null, 0));
+        var tenancy = Substitute.For<IFundProfileTenancyRegistry>();
+        tenancy.ResolveAsync("named-profile", Arg.Any<CancellationToken>()).Returns(new FundProfileOwnership("named-profile", "tenant", "company"));
+        var owner = new PositionSnapshotOwnerScope("tenant", "company", "named-profile", bookId, entity.ToString("D"));
+        var positions = Substitute.For<IPositionSnapshotStore>();
+        positions.GetSnapshotHistoryAsync("run-1", AccountId.ToString("D"), owner,
+            Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns(_ => AsyncStream(Snapshot(new DateTimeOffset(2026, 5, 31, 16, 0, 0, TimeSpan.Zero),
+                new PositionRecord("SPY", 10m, 500m, 0m, 0m)) with
+            {
+                TenantId = owner.TenantId,
+                CompanyId = owner.CompanyId,
+                FundProfileId = owner.FundProfileId,
+                LedgerBookId = owner.LedgerBookId,
+                EntityId = owner.EntityId
+            }));
+        var provider = new RetainedInternalReconciliationPopulationProvider(accounts, positions, ledgerStore: ledger, tenancy: tenancy);
+
+        var result = await provider.GetPopulationsAsync(Context(AccountId.ToString("D")) with
+        { AccountingScope = new StatementAccountingScope("named-profile", bookId, periodId, new DateOnly(2026, 5, 31)) });
+
+        result.Positions.Should().ContainSingle().Which.Quantity.Should().Be(10m);
+    }
+
+    [Fact]
+    public async Task GovernedStatement_MissingOwnerCannotReadUnownedSnapshot()
+    {
+        var fund = Guid.NewGuid();
+        var accounts = Substitute.For<IAccountQueryService>();
+        accounts.GetAccountAsync(AccountId, Arg.Any<CancellationToken>())
+            .Returns(Account("FUND-1", "run-1") with { FundId = fund, EntityId = Guid.NewGuid() });
+        var snapshots = Substitute.For<IPositionSnapshotStore>();
+        var provider = new RetainedInternalReconciliationPopulationProvider(accounts, snapshots);
+        var context = Context(AccountId.ToString("D")) with
+        {
+            AccountingScope = new StatementAccountingScope(fund.ToString("D"), Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2026, 5, 31))
+        };
+
+        var result = await provider.GetPopulationsAsync(context);
+
+        result.Positions.Should().BeEmpty();
+        snapshots.DidNotReceive().GetSnapshotHistoryAsync(Arg.Any<string>(), Arg.Any<string>(),
+            Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>());
+    }
 
     [Fact]
     public async Task GetPopulationsAsync_ForwardsExactAccountingScopeForOwnedAccount()

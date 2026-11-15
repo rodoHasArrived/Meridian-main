@@ -160,3 +160,7 @@ The four-lane `Meridian CI / quality-gate` keeps its identity. The always-report
 `Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
 Production Certification, including pull requests and merge groups.
 All CI governance changes require human review.
+
+Generated-file delivery: run `python build/python/cli/buildctl.py regen --fix` after merging.
+Commit reviewed views only; declared machine inventories and workstation builds are CI artifacts.
+Preserve reviewed source hashes. See [generated output delivery](../docs/engineering/generated-output-delivery.md).

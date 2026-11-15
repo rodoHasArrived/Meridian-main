@@ -120,7 +120,7 @@ every POST.
 
 Onboarding workspaces, including shadow state, certificates and the shadow audit trail, use the ledger
 database whenever `MERIDIAN_LEDGER_CONNECTION_STRING` is configured. The `PostgresOnboardingWorkspaceStore`
-uses the `ledger.onboarding_workspaces` table from migration `V_ledger_069`. Retained rows cannot be
+uses the `ledger.onboarding_workspaces` table from migration `V_ledger_072`. Retained rows cannot be
 deleted.
 
 Without a ledger database the host falls back to the file store

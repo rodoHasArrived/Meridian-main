@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerSnapshot
+
+Qualified name: <code>Meridian.Ledger.LedgerSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerSnapshot.cs:6](../../../../src/Meridian.Ledger/LedgerSnapshot.cs#L6).
+
+Point-in-time view of ledger balances and posting counts.
+
+```csharp
+public sealed record LedgerSnapshot(DateTimeOffset Timestamp, IReadOnlyDictionary<LedgerAccount, decimal> Balances, int JournalEntryCount, int LedgerEntryCount);
+```
+
+## LedgerTaxLot
+
+Qualified name: <code>Meridian.Ledger.LedgerTaxLot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerTaxLot.cs:8](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L8).
+
+Open ledger tax lot available for realized-gain relief.
+
+```csharp
+public sealed record LedgerTaxLot : IUnitizedLot
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerTaxLot(string lotId, DateOnly acquiredDate, decimal quantity, decimal unitCost, Guid? securityId = null, DateOnly? holdingPeriodStartDate = null, decimal? costBasis = null);</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:13](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L13) |  |
+| <code>public string LotId { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:47](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L47) |  |
+| <code>public DateOnly AcquiredDate { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:49](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L49) |  |
+| <code>public decimal Quantity { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:51](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L51) |  |
+| <code>public decimal UnitCost { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:59](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L59) | Monetary cost per recorded quantity unit for realized-gain relief: quantity times unit cost is the implied whole-lot basis. For face-value lots this is cost per dollar of face when Multiplier is one, or cost per hundred of face when the multiplier is 100. A market quote must be converted to this monetary convention before relief. |
+| <code>public required SecurityLotUnitKind UnitKind { get; init; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:66](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L66) | What one unit of Quantity measures. Must be supplied explicitly; face-denominated debt lots (bonds, CDs, bills, loans, structured credit) carry SecurityLotUnitKind.FaceValue. Their Multiplier states the face carried by one recorded quantity unit. |
+| <code>public required decimal Multiplier { get; init; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:75](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L75) | Positive contract multiplier scaling one unit to economic exposure. Supply 1 for unscaled units. |
+| <code>public decimal? CostBasis { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:89](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L89) | Exact current basis of the whole lot, when it is known rather than implied by Quantity times UnitCost. Lot-discrete relief that consumes the entire lot relieves this amount exactly, so a governed current basis carrying fractional cents is not re-derived through a rounded unit cost. |
+| <code>public Guid? SecurityId { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:97](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L97) | Optional Security Master identity for this lot. When present, the relief engine can be fed day-count, factor, and corporate-action basis adjustments sourced from the master (see LedgerTaxLotBasisAdjustment), linking cost-basis accounting to authoritative reference data instead of relying on quantity/unit-cost alone. |
+| <code>public DateOnly? HoldingPeriodStartDate { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:105](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L105) | Holding-period start carried onto this lot by a prior wash sale, when one applied. Under IRC §1223(3) a replacement lot inherits the disallowed sale&#x27;s holding period, so a lot that absorbed a wash sale starts its clock before it was actually acquired. Null for a lot whose holding period simply starts at AcquiredDate. |
+| <code>public DateOnly HoldingPeriodStart =&gt; …;</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:111](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L111) | The date the lot&#x27;s holding period actually starts: HoldingPeriodStartDate when a wash sale extended it, otherwise AcquiredDate. |
+
 ## LedgerTaxLotBasisAdjuster
 
 Qualified name: <code>Meridian.Ledger.LedgerTaxLotBasisAdjuster</code>. Kind: `class`.
@@ -924,38 +964,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static AutomatedJournalDraft? BuildDraft(PeriodCloseProjection projection);</code> | [src/Meridian.Ledger/PeriodCloseDraftBuilder.cs:17](../../../../src/Meridian.Ledger/PeriodCloseDraftBuilder.cs#L17) | Builds a balanced closing-entry draft. Returns null when the period had no temporary-account balances to close. |
-
-## PeriodCloseInput
-
-Qualified name: <code>Meridian.Ledger.PeriodCloseInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/PeriodCloseInput.cs:17](../../../../src/Meridian.Ledger/PeriodCloseInput.cs#L17).
-
-Input for projecting period-close closing entries from a point-in-time trial balance.
-
-```csharp
-public sealed record PeriodCloseInput
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PeriodCloseInput(string periodId, DateTimeOffset closedAtUtc, IReadOnlyList&lt;PeriodCloseAccountBalance&gt; trialBalance, string closedBy);</code> | [src/Meridian.Ledger/PeriodCloseInput.cs:19](../../../../src/Meridian.Ledger/PeriodCloseInput.cs#L19) |  |
-| <code>public PeriodCloseInput(string periodId, DateTimeOffset closedAtUtc, IReadOnlyDictionary&lt;LedgerAccount, decimal&gt; trialBalance, string closedBy) : this(periodId, closedAtUtc, (trialBalance?? throw new ArgumentNullException(nameof(trialBalance))).Select(static pair =&gt; new PeriodCloseAccountBalance(pair.Key, pair.Value)).ToArray(), closedBy);</code> | [src/Meridian.Ledger/PeriodCloseInput.cs:42](../../../../src/Meridian.Ledger/PeriodCloseInput.cs#L42) | Convenience overload for a dimension-flat trial balance (for example the in-memory Ledger.TrialBalanceAsOf(DateTimeOffset, string?, LedgerLineDimensionSet?)), which carries no per-line dimensional scope. |
-| <code>public string PeriodId { get; }</code> | [src/Meridian.Ledger/PeriodCloseInput.cs:57](../../../../src/Meridian.Ledger/PeriodCloseInput.cs#L57) |  |
-| <code>public DateTimeOffset ClosedAtUtc { get; }</code> | [src/Meridian.Ledger/PeriodCloseInput.cs:59](../../../../src/Meridian.Ledger/PeriodCloseInput.cs#L59) |  |
-| <code>public IReadOnlyList&lt;PeriodCloseAccountBalance&gt; TrialBalance { get; }</code> | [src/Meridian.Ledger/PeriodCloseInput.cs:65](../../../../src/Meridian.Ledger/PeriodCloseInput.cs#L65) | Point-in-time trial balance with normal-balance values, one row per account + dimensional scope. |
-| <code>public string ClosedBy { get; }</code> | [src/Meridian.Ledger/PeriodCloseInput.cs:67](../../../../src/Meridian.Ledger/PeriodCloseInput.cs#L67) |  |
-
-## PeriodCloseLine
-
-Qualified name: <code>Meridian.Ledger.PeriodCloseLine</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/PeriodCloseLine.cs:7](../../../../src/Meridian.Ledger/PeriodCloseLine.cs#L7).
-
-One temporary (revenue or expense) account being closed to retained earnings, retaining the dimensional scope it was posted under.
-
-```csharp
-public sealed record PeriodCloseLine(LedgerAccount Account, decimal PeriodBalance, decimal ClosingDebit, decimal ClosingCredit, LedgerLineDimensionSet? Dimensions = null);
-```

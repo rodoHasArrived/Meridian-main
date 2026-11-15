@@ -44,5 +44,6 @@ public enum LedgerAccountRole
     LoanPremiumAmortizationIncome,
     LoanRestructuringLoss,
     MarginLoanPayable,
-    ShortSaleCollateralReceivable
+    ShortSaleCollateralReceivable,
+    DividendReceivable
 }

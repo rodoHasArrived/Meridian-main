@@ -19,6 +19,12 @@
 
 <!-- shared-context:begin — identical in .claude/, .codex/, and .agents/ copies; check-ai-inventory.py enforces it -->
 
+## Generated file delivery
+
+Run `python build/python/cli/buildctl.py regen --fix` after merging. Commit reviewed views only;
+declared machine inventories and workstation builds are CI artifacts. Preserve reviewed source
+hashes. See `docs/engineering/generated-output-delivery.md` for the exact ownership policy.
+
 ## Platform Snapshot
 
 - Meridian is a .NET 10 operational-finance and trading-platform codebase in active delivery; fund

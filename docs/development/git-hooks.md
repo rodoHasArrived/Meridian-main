@@ -68,3 +68,15 @@ python3 -m unittest discover -s tests/scripts -p test_git_hooks.py -v
 These tests exercise installation in ordinary checkouts and linked worktrees, staged source and
 configuration snapshots, partial staging, filenames with spaces or newlines, and unchanged
 working files and index contents on success and failure.
+
+## Regeneration after merges
+
+The installer also enables `.githooks/post-merge`. After a successful merge, including a
+fast-forward, it runs `python build/python/cli/buildctl.py regen --fix`. Install Python docs
+requirements and both root/dashboard npm dependencies first. It regenerates local CI outputs
+and reviewed snapshots without staging or committing anything. A failed hook prints the rerun
+command; it cannot undo a merge that has already completed. Resolve source conflicts before
+running regeneration manually. Hooks apply to this clone, not GitHub's merge service.
+
+See [generated output ownership](../engineering/generated-output-delivery.md) for which files
+remain subject to commit review and freshness checks.

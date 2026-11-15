@@ -41,6 +41,9 @@ public sealed class BacktestEngine(
     private readonly ISecurityIdentityQueryService? _securityIdentity =
         securityIdentityQueryService ?? securityMasterQueryService as ISecurityIdentityQueryService;
 
+    /// <summary>Optional canonical settlement query port; ignored by legacy replay and existing mapped event sources.</summary>
+    public ISecurityCorporateActionsQueryService? CanonicalCorporateActionQueries { get; init; }
+
     /// <summary>Optional authoritative action source; aggregate-query callers also receive the built-in bridge.</summary>
     public IBacktestAssetEventSource? AssetEventSource { get; init; }
 
@@ -59,6 +62,12 @@ public sealed class BacktestEngine(
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(strategy);
+        if (!Enum.IsDefined(request.CorporateActionMode))
+            throw new ArgumentOutOfRangeException(nameof(request), "Unknown corporate-action mode.");
+        var rawCanonical = request.CorporateActionMode == BacktestCorporateActionMode.RawPricesWithCanonicalEvents;
+        if (rawCanonical && request.PopulateAssetEventsFromSecurityMaster)
+            throw new InvalidOperationException("Canonical settlement mode cannot be combined with PopulateAssetEventsFromSecurityMaster; select one source accounting mode.");
+        await using var rawCapture = new CanonicalReplayCapture();
 
         var sw = Stopwatch.StartNew();
         var stageTimer = new StageTimer(BacktestStage.ValidatingRequest);
@@ -100,6 +109,9 @@ public sealed class BacktestEngine(
             catalogService, request.DataRoot, request.Symbols, request.From, request.To, ct)
             .ConfigureAwait(false);
 
+        if (rawCanonical && universe.Count == 0)
+            throw new InvalidOperationException("Canonical raw-price replay requires a nonempty historical-bar universe.");
+
         if (universe.Count == 0 && request.AssetEvents is not { Count: > 0 })
         {
             logger.LogWarning("No symbols found in data root '{DataRoot}' for the requested date range", request.DataRoot);
@@ -113,7 +125,7 @@ public sealed class BacktestEngine(
 
         // The explicit population mode retains its original request-event precedence and
         // adjusted-price refusal. Do not populate automatically first and bypass those guards.
-        var storedActionSource = request.ApplyStoredCorporateActions && !request.PopulateAssetEventsFromSecurityMaster
+        var storedActionSource = !rawCanonical && request.ApplyStoredCorporateActions && !request.PopulateAssetEventsFromSecurityMaster
             ? AssetEventSource ?? (_securityIdentity is not null && securityMasterQueryService is ISecurityCorporateActionsQueryService actions
                 ? new SecurityMasterBacktestAssetEventSource(_securityIdentity, actions,
                     securityMasterQueryService as ISecurityMasterQueryService)
@@ -149,6 +161,26 @@ public sealed class BacktestEngine(
         var tickSizes = await ResolveTickSizesAsync(universe, request.To.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), ct)
             .ConfigureAwait(false);
 
+        var canonicalQueries = CanonicalCorporateActionQueries ?? securityMasterQueryService as ISecurityCorporateActionsQueryService;
+        var canonicalActions = rawCanonical
+            ? await CanonicalBacktestActions.PrepareAsync(request, universe,
+                _securityIdentity ?? canonicalQueries as ISecurityIdentityQueryService, canonicalQueries, ct).ConfigureAwait(false)
+            : null;
+        // Own the entire validated raw replay before strategy callbacks or opening journals.
+        var replaySymbols = ResolveReplaySymbolOrder(universe, request.Symbols);
+        var symbolOrder = replaySymbols.Select((symbol, rank) => (symbol, rank))
+            .ToDictionary(static pair => pair.symbol, static pair => pair.rank, StringComparer.OrdinalIgnoreCase);
+
+        var resolvedAssetEvents = await ResolveAssetEventsAsync(request, universe, ct).ConfigureAwait(false);
+        var portfolioActionAccounting = !rawCanonical && (storedActionSource is not null || resolvedAssetEvents is { Count: > 0 });
+        IReadOnlyList<IAsyncEnumerable<MarketEvent>> streams = [];
+        if (rawCanonical)
+        {
+            streams = await BuildSymbolStreamsAsync(replaySymbols, request with { AdjustForCorporateActions = false }, ct).ConfigureAwait(false);
+            await rawCapture.CaptureAsync(streams, symbolOrder, ct).ConfigureAwait(false);
+            streams = [rawCapture.ReadAsync(ct)];
+        }
+
         // 3. Set up portfolio, fill models, context
         var commissionModel = BuildCommissionModel(request);
         var ledger = new BacktestLedger();
@@ -158,6 +190,8 @@ public sealed class BacktestEngine(
         {
             FailOnLedgerIntegrityBreak = request.FailOnLedgerIntegrityBreak
         };
+        if (canonicalActions is not null)
+            portfolio.ConfigureCanonicalActions(canonicalActions);
         var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId);
         var orderBookFillModel = new OrderBookFillModel(
             commissionModel,
@@ -176,7 +210,7 @@ public sealed class BacktestEngine(
         var allSnapshots = new List<PortfolioSnapshot>();
         var allCashFlows = new List<CashFlowEntry>();
         var allFills = new List<FillEvent>();
-        var resolvedAssetEvents = await ResolveAssetEventsAsync(request, universe, ct).ConfigureAwait(false);
+
         var assetEventsByDate = BuildAssetEventIndex(
             resolvedAssetEvents,
             request.From,
@@ -188,16 +222,13 @@ public sealed class BacktestEngine(
         strategy.Initialize(ctx);
         ApplyScheduledAssetEvents(request.From, assetEventsByDate, portfolio, ctx);
 
-        // 4. Build one replay stream per storage root (with corporate action adjustments if enabled)
+        // 4. Build legacy streams at their original boundary after strategy initialization.
         stageTimer.Transition(BacktestStage.LoadingData);
-        var replaySymbols = ResolveReplaySymbolOrder(universe, request.Symbols);
-        var symbolOrder = replaySymbols.Select((symbol, rank) => (symbol, rank))
-            .ToDictionary(static pair => pair.symbol, static pair => pair.rank, StringComparer.OrdinalIgnoreCase);
         // Position/cash economics and backwards-adjusted bars cannot both account for the same
         // action. Retain the original request and the captured events as run provenance.
-        var portfolioActionAccounting = storedActionSource is not null || resolvedAssetEvents is { Count: > 0 };
-        var streams = await BuildSymbolStreamsAsync(replaySymbols,
-            portfolioActionAccounting ? request with { AdjustForCorporateActions = false } : request, ct).ConfigureAwait(false);
+        if (!rawCanonical)
+            streams = await BuildSymbolStreamsAsync(replaySymbols,
+                portfolioActionAccounting ? request with { AdjustForCorporateActions = false } : request, ct).ConfigureAwait(false);
 
         // 5. Replay loop — multi-symbol chronological merge
         stageTimer.Transition(BacktestStage.Replaying);
@@ -251,7 +282,7 @@ public sealed class BacktestEngine(
         ProcessDayEnd(currentDay, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, delistingMonitor, allFills, logger, request.FillTiming, lastEventTimestamps, ct);
         for (var date = currentDay.AddDays(1); date <= request.To; date = date.AddDays(1))
         {
-            ApplyScheduledAssetEvents(date, assetEventsByDate, portfolio, ctx);
+            ApplyScheduledAssetEvents(date, assetEventsByDate, portfolio, ctx, pendingOrders);
             ProcessDayEnd(date, portfolio, pendingOrders, ctx, strategy, allSnapshots, allCashFlows, delistingMonitor, allFills, logger, request.FillTiming, lastEventTimestamps, ct);
         }
 
@@ -287,14 +318,15 @@ public sealed class BacktestEngine(
         var tcaReport = PostSimulationTcaReporter.Generate(request, allFills);
         var biasDisclosure = BuildBiasDisclosure(
             request,
-            corporateActionsApplied: request.AdjustForCorporateActions && corporateActionAdjustment is not null,
+            corporateActionsApplied: !rawCanonical && request.AdjustForCorporateActions && corporateActionAdjustment is not null,
             missingSecurityMasterSymbols,
             inactiveSecurityMasterSymbols,
             delistingMonitor,
             storedCorporateActionsApplied: portfolioActionAccounting);
         return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport, BiasDisclosure: biasDisclosure)
         {
-            LedgerIntegrityBreaks = portfolio.LedgerIntegrityBreaks
+            LedgerIntegrityBreaks = portfolio.LedgerIntegrityBreaks,
+            CanonicalCorporateActions = canonicalActions?.Snapshot
         };
     }
 
@@ -347,7 +379,7 @@ public sealed class BacktestEngine(
             // JsonlReplayer filters selected symbols before sorting and uses the same ranks as the
             // outer merge. Shared roots are therefore captured once, rather than once per symbol.
             var source = FilterBySymbolsAndDate(sourceFactory(sourceRoot, symbols, ct), symbols, request.From, request.To, ct);
-            if (request.AdjustForCorporateActions && corporateActionAdjustment != null)
+            if (request.CorporateActionMode == BacktestCorporateActionMode.Legacy && request.AdjustForCorporateActions && corporateActionAdjustment != null)
             {
                 streams.Add(CapturePrepareAndReplayAsync(source, symbols, request, ct));
                 continue;
@@ -555,7 +587,8 @@ public sealed class BacktestEngine(
         IReadOnlyCollection<string> universe,
         CancellationToken ct)
     {
-        if (request.AssetEvents is not null || !request.PopulateAssetEventsFromSecurityMaster)
+        if (request.CorporateActionMode == BacktestCorporateActionMode.RawPricesWithCanonicalEvents ||
+            request.AssetEvents is not null || !request.PopulateAssetEventsFromSecurityMaster)
         {
             return request.AssetEvents;
         }
@@ -608,8 +641,10 @@ public sealed class BacktestEngine(
         DateOnly date,
         IReadOnlyDictionary<DateOnly, List<AssetEvent>> assetEventsByDate,
         SimulatedPortfolio portfolio,
-        BacktestContext ctx)
+        BacktestContext ctx,
+        IReadOnlyList<Order>? pendingOrders = null)
     {
+        portfolio.ApplyCanonicalActions(date, pendingOrders);
         if (!assetEventsByDate.TryGetValue(date, out var assetEvents))
             return;
 
@@ -648,7 +683,7 @@ public sealed class BacktestEngine(
 
         for (var date = fromDay.AddDays(1); date <= toDay; date = date.AddDays(1))
         {
-            ApplyScheduledAssetEvents(date, assetEventsByDate, portfolio, ctx);
+            ApplyScheduledAssetEvents(date, assetEventsByDate, portfolio, ctx, pendingOrders);
 
             if (date < toDay)
                 ProcessDayEnd(date, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, delistingMonitor, allFills, logger, fillTiming, lastEventTimestamps, ct);
@@ -969,7 +1004,13 @@ public sealed class BacktestEngine(
                 "universe", BiasSeverity.Warning, "Universe discovered from local data",
                 "The tradeable universe is whatever has data on disk for the period. Unless the dataset includes delisted and acquired names, losers are silently excluded and the run has survivorship bias."));
 
-        if (storedCorporateActionsApplied)
+        if (request.CorporateActionMode == BacktestCorporateActionMode.RawPricesWithCanonicalEvents)
+        {
+            items.Add(new BiasDisclosureItem(
+                "corporate-actions", BiasSeverity.Info, "Raw prices with canonical accounting events",
+                "Explicitly unadjusted bars were replayed with frozen effective Security Master dividend and split terms, ex-date receivables and pay-date cash settlement. This snapshot does not establish which announcements were historically known."));
+        }
+        else if (storedCorporateActionsApplied)
         {
             items.Add(new BiasDisclosureItem(
                 "corporate-actions", BiasSeverity.Info, "Corporate-action portfolio accounting",

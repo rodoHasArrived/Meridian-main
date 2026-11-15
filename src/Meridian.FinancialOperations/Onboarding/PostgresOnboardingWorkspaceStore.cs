@@ -9,7 +9,7 @@ namespace Meridian.FinancialOperations.Onboarding;
 
 /// <summary>
 /// Retains onboarding workspaces, including shadow-mode state, in the ledger database
-/// (<c>V_ledger_069__onboarding_workspaces</c>). Every save runs the shared retention rules against the row it
+/// (<c>V_ledger_072__onboarding_workspaces</c>). Every save runs the shared retention rules against the row it
 /// replaces, inside one transaction holding that row. A partial unique index enforces that at most one
 /// workspace per tenant holds a ledger book in shadow mode or promoted it, across processes and hosts.
 /// </summary>

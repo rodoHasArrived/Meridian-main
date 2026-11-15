@@ -60,6 +60,8 @@ internal sealed class LedgerFeatureRegistration : IServiceFeatureRegistration
             sp.GetService<Meridian.Contracts.Accounting.Lots.IBondIncomeService>(),
             () => sp.GetService<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService>()));
         services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
+        services.TryAddSingleton<IConfiguredLedgerAccountResolver, ConfiguredLedgerAccountResolver>();
+        services.TryAddSingleton<IAccountingAutomaticPostingPolicyValidator, AccountingAutomaticPostingPolicyValidator>();
         services.TryAddSingleton<IAccountingPostingCandidateAuthorityBuilder>(sp =>
             sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>() as IAccountingPostingCandidateAuthorityBuilder
             ?? throw new InvalidOperationException(

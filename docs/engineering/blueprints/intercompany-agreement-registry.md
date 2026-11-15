@@ -60,7 +60,8 @@ Two defaults were confirmed for this design:
 - An amendment may take effect before approval, with a mandatory retrospective rationale. It changes
   authority for new postings on affected dates, never the references on already posted journals.
 
-P1 does not generate accruals, calculate allocation amounts, post paired entries, settle cash,
+P1 does not generate accruals (the later operator-requested loan-interest accrual is recorded in
+[ADR-028](../../adr/028-governed-intercompany-interest-accrual.md)), calculate allocation amounts, post paired entries, settle cash,
 implement FX translation, expand the consolidation perimeter or enforce legal-entity lifecycle
 posting restrictions. It does not add a document-upload platform, filing calendar or general entity
 master expansion. Those remain separate work, including proposals P2–P5.

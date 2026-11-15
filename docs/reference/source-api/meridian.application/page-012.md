@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MonitoredSymbolInfo
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:708](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L708).
+
+Information about a monitored symbol.
+
+```csharp
+public sealed record MonitoredSymbolInfo(string Symbol, bool SubscribeTrades, bool SubscribeDepth, int DepthLevels, string SecurityType, string Exchange, string Currency);
+```
+
 ## MonitoredSymbolsResult
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult</code>. Kind: `record`.

@@ -8,10 +8,15 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
+import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 from pathlib import PurePosixPath
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from generated_output_policy import POLICY, delivery
 
 
 EXCLUDED_DIR_NAMES = {
@@ -231,17 +236,47 @@ def _render_visible_files(files: list[PurePosixPath]) -> str:
     return "\n".join(lines)
 
 
+def load_ci_delivery(root: Path) -> tuple[frozenset[str], tuple[str, ...]]:
+    """Read delivery ownership once so build products cannot change a source map."""
+    path = root / POLICY
+    if not path.exists():
+        return frozenset(), ()
+    config = delivery(json.loads(path.read_text(encoding="utf-8")))
+    return frozenset(config.get("ci_files", [])), tuple(config.get("ci_trees", []))
+
+
 def render_tree(root: Path) -> str:
+    ci_files, ci_trees = load_ci_delivery(root)
+
+    def is_ci_output(relative: PurePosixPath) -> bool:
+        name = relative.as_posix()
+        return name in ci_files or any(name == tree or name.startswith(tree + "/") for tree in ci_trees)
+
     visible_files = _git_visible_files(root)
+    if visible_files is None and (ci_files or ci_trees):
+        # Build the same file-derived hierarchy when Git is unavailable. Empty
+        # parent directories left by ignored CI files are not repository input.
+        visible_files = []
+        for dirpath, dirnames, filenames in os.walk(root):
+            current = Path(dirpath)
+            dirnames[:] = [name for name in dirnames
+                           if not is_excluded(current / name, root)
+                           and not is_ci_output(PurePosixPath((current / name).relative_to(root).as_posix()))]
+            for name in filenames:
+                path = current / name
+                if not is_excluded(path, root):
+                    visible_files.append(PurePosixPath(path.relative_to(root).as_posix()))
     if visible_files is not None:
-        return _render_visible_files(visible_files)
+        return _render_visible_files([path for path in visible_files if not is_ci_output(path)])
 
     lines: list[str] = []
 
     def walk(current: Path, prefix: str = "") -> None:
         try:
             entries = sorted(
-                [p for p in current.iterdir() if not is_excluded(p, root)],
+                [p for p in current.iterdir()
+                 if not is_excluded(p, root)
+                 and not is_ci_output(PurePosixPath(p.relative_to(root).as_posix()))],
                 key=lambda p: (p.is_file(), p.name.casefold(), p.name),
             )
         except PermissionError:

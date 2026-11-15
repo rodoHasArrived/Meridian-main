@@ -206,7 +206,7 @@ public static class QuantLabEndpoints
                 CorrelationId: BuildCorrelationId(request.CorrelationId, index),
                 DatasetReference: backtest.Request.DataRoot,
                 ParameterSet: BuildParameterSet(backtest, index, scope),
-                ExecutionRealism: backtest.Request.ToRealismDescriptor());
+                ExecutionRealism: backtest.ToResolvedRealismDescriptor());
 
             try
             {

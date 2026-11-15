@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Meridian.Backtesting.Sdk;
 
@@ -148,6 +149,10 @@ public sealed record BacktestRequest(
     int DelistingGraceDays = 5,
     bool PopulateAssetEventsFromSecurityMaster = false)
 {
+    /// <summary>Opt-in receivable/pay-date accounting; Legacy retains the configured stored/manual action behavior.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public BacktestCorporateActionMode CorporateActionMode { get; init; } = BacktestCorporateActionMode.Legacy;
+
     /// <summary>Abort at day-end when ledger cash, lot basis, or clearing balances fail reconciliation.</summary>
     public bool FailOnLedgerIntegrityBreak { get; init; }
 
@@ -186,7 +191,8 @@ public sealed record BacktestRequest(
         // Only counts when it takes effect: explicit request events win over the source.
         PopulateAssetEventsFromSecurityMaster && AssetEvents is null)
     {
-        ApplyStoredCorporateActions = ApplyStoredCorporateActions
+        ApplyStoredCorporateActions = ApplyStoredCorporateActions,
+        CorporateActionMode = CorporateActionMode
     };
 
     /// <summary>

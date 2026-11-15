@@ -21,6 +21,9 @@ from pathlib import Path
 
 import yaml
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from generated_output_policy import ci_output_paths, delivery
+
 
 @dataclass(frozen=True)
 class Step:
@@ -70,6 +73,7 @@ DOCS_STEPS = (
         "python3", "build/scripts/docs/run-docs-automation.py", "--profile", "core",
         "--summary-output", "docs/status/docs-automation-summary.md",
         "--json-output", "docs/status/docs-automation-summary.json")),
+    Step("Export actual source hashes", ("python3", "build/scripts/docs/generate-source-inventory.py")),
 )
 
 
@@ -85,29 +89,31 @@ def discover_steps(root: Path, *, docs_only: bool = False) -> list[Step]:
 
 def load_policy(root: Path) -> dict:
     policy = json.loads((root / POLICY).read_text(encoding="utf-8"))
+    delivery(policy)
     modules = yaml.safe_load((root / "docs/source/data/source-modules.yml").read_text(encoding="utf-8"))
     for module in modules["modules"]:
         policy["hybrid_files"][module["readme"]] = [
             [f"<!-- {block}:begin module={module['id']} -->", f"<!-- {block}:end -->"]
             for block in ("source-roadmap-traceability", "source-todos")
         ]
+    delivery(policy)
     return policy
 
 
-def visible_paths(root: Path) -> list[str]:
+def visible_paths(root: Path, policy: dict | None = None, *, reject_symlinks: bool = True) -> list[str]:
     names = subprocess.check_output(
         ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"], cwd=root
     ).decode("utf-8").split("\0")
-    return sorted(set(names) - {""})
+    return sorted((set(names) - {""}) | set(ci_output_paths(root, policy or {}, reject_symlinks=reject_symlinks)))
 
 
-def snapshot(root: Path) -> dict[str, bytes]:
+def snapshot(root: Path, policy: dict | None = None) -> dict[str, bytes]:
     """Capture content, including nonignored new files and materialized deletions.
 
     Git status alone is insufficient: already-dirty files can change again.
     Ignored dependency caches and artifacts are deliberately outside this view.
     """
-    names = visible_paths(root)
+    names = visible_paths(root, policy)
     for name in names:
         if (root / name).is_symlink():
             raise ValueError(f"Symlinks are not supported in generation snapshots: {name}")
@@ -214,7 +220,7 @@ def run_generation(root: Path, steps: list[Step], policy: dict, max_passes: int 
                    runner=execute_step) -> dict:
     if max_passes < 1:
         raise ValueError("max_passes must be positive")
-    before = snapshot(root)
+    before = snapshot(root, policy)
     before_modes = {path: stat.S_IMODE((root / path).stat().st_mode) for path in before}
     # Check hybrid boundaries before any subprocess can use an append fallback.
     for path in policy["hybrid_files"]:
@@ -245,10 +251,10 @@ def run_generation(root: Path, steps: list[Step], policy: dict, max_passes: int 
             if code:
                 report["failed_steps"].append({**result, "pass": number})
                 print(f"  {'Advisory' if step.optional else 'Required'} step failed ({code}); see {result['log']}")
-            links = [path for path in visible_paths(root) if (root / path).is_symlink()]
+            links = [path for path in visible_paths(root, policy, reject_symlinks=False) if (root / path).is_symlink()]
             if links:
                 restore_paths(root, before, links)
-            after = snapshot(root)
+            after = snapshot(root, policy)
             violations = validate_changes(before, after, policy)
             mode_changes = [
                 path for path in after
@@ -264,7 +270,7 @@ def run_generation(root: Path, steps: list[Step], policy: dict, max_passes: int 
                     (root / path).chmod(before_modes[path])
                 report["protection_violations"] = sorted(set(violations + links))
                 break
-        current = snapshot(root)
+        current = snapshot(root, policy)
         iteration["changed_outputs"] = changes(previous, current)
         report["changed_outputs"] = changes(before, current)
         if report["protection_violations"] or any(not step["optional"] for step in report["failed_steps"]):

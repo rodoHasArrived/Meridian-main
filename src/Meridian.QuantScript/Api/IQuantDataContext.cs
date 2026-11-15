@@ -36,4 +36,13 @@ public interface IQuantDataContext
     /// </summary>
     Task<IReadOnlyList<CorporateActionDto>> CorporateActionsAsync(
         string symbol, CancellationToken ct = default);
+
+    /// <summary>Strict canonical replay identity. Unavailable sources fail instead of implying no actions.</summary>
+    Task<SecurityDetailDto> CanonicalSecurityMasterAsync(string symbol, DateTimeOffset effectiveThroughUtc, CancellationToken ct = default)
+        => throw new NotSupportedException("Canonical replay Security Master access is unavailable.");
+
+    /// <summary>Strict action terms for the exact security identity resolved at the replay cutoff.</summary>
+    Task<IReadOnlyList<CorporateActionDto>> CanonicalCorporateActionsAsync(
+        string symbol, Guid expectedSecurityId, DateTimeOffset effectiveThroughUtc, CancellationToken ct = default)
+        => throw new NotSupportedException("Canonical replay corporate-action access is unavailable.");
 }

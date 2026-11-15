@@ -263,6 +263,12 @@
       "rule_id": "migration-truncate",
       "reason": "The lexical TRUNCATE matches declare BEFORE TRUNCATE rejection triggers on the immutable balance checkpoint tables; this migration executes no data truncation. Separate AI schema review confirmed this bounded exception. PostgreSQL regression coverage attempts update, delete and truncate on both tables, requires the guard SQLSTATE 55000, and verifies that retained rows and balances remain unchanged.",
       "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_069__automated_posting_grants.sql",
+      "rule_id": "migration-drop-table-member",
+      "reason": "Scoped schema review exception for automatic synthetic fill accounting: replaces only ledger_event_audit_events_subject_kind_check with a strict superset preserving journal and period and admitting automation-grant. The migration runner performs drop and replacement within one transaction; no rows, columns, audit events or immutability triggers are removed. Failure rolls back the original constraint. PostgreSQL tests verify existing audit coverage and actor-attributed grant activation/revocation. Independent human schema/storage review remains pending before production activation; never narrow this check while grant audit events exist.",
+      "review_after": "2027-02-14"
     }
   ],
   "removed_migrations": [

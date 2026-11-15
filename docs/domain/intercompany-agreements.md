@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** Accounting and Ledger
-**Reviewed:** 2026-11-13
+**Reviewed:** 2026-11-14
 
 An intercompany agreement records the reviewed terms between two legal entities in one tenant.
 It explains the contractual source of intercompany activity; it is not a journal, a payment or
@@ -21,8 +21,9 @@ allows the preparing operator to record an external review without impersonating
 Authenticated server context supplies tenant and actor.
 
 The registry covers loans, management fees, cost shares, cash sweeps, guarantees and other documented
-bilateral arrangements. Rates, schedules and allocation descriptions are retained terms, not an
-accrual or settlement calculation. Legacy `SettlementDays` means calendar days. Evidence must resolve to an
+bilateral arrangements. Rates, schedules and allocation descriptions are retained terms. The registry
+itself calculates nothing; the one governed calculation over these terms is the
+[loan-interest accrual](#governed-loan-interest-accrual) below. Legacy `SettlementDays` means calendar days. Evidence must resolve to an
 accepted retained Evidence Vault document in the operator's tenant/company scope; an arbitrary URL,
 client-provided hash or inaccessible artifact cannot authorize approval.
 
@@ -55,8 +56,40 @@ an unavailable preview. `WEEKENDS` must be selected explicitly; no fallback or p
 supplies missing terms. Calendar-data changes affect preview evidence rather than rewriting the
 approved legal declaration.
 
-The preview calculates dates only. It does not calculate interest or fees, allocate costs, fetch
+The date preview calculates dates only. It does not calculate interest or fees, allocate costs, fetch
 fixings, generate counterpart proposals, settle balances or infer due dates for retained journals.
+
+## Governed loan-interest accrual
+
+A separate, operator-requested accrual turns a fixed-rate, simple-interest loan's approved structured
+terms into an amount for a half-open window `[AccrualFrom, AccrualTo)`. [ADR-028](../adr/028-governed-intercompany-interest-accrual.md)
+records the decision and the calculation rule `intercompany-accrual-v1`.
+
+Each day accrues under the approved `LoanInterest` accounting-profile revision applicable on that day
+and the legal revision it pins. The window is cut at every profile-revision boundary, schedule-period
+boundary and principal change; each slice is principal times annual rate times the day-count fraction
+of its own revision. A rate reset or amendment inside a period is therefore prorated by day. Slices are
+summed unrounded and rounded once, half away from zero, to the agreement currency's minor unit.
+
+Principal is not entered. It is the posted balance of the approved `Loan` profile of the same legal
+agreement in the source book, with a movement taking effect on its own date. A receivable balance
+makes the source book the lender and a payable balance makes it the borrower.
+
+The amount becomes a draft in the source book's ordinary journal review, dated on the last accrued
+day. It is not submitted, approved or posted for the operator. After a reviewer posts it, the existing
+proposal pipeline delivers the counterpart as a draft into the destination book's review queue. The
+draft retains the agreement version and payload hash and the profile revision of every slice, the
+principal journals, the calendar and kernel identity and any FX conversion, with a digest. A client
+save cannot replace that evidence, lines that no longer match it block review, and it is carried onto
+the posted journal.
+
+Nothing is estimated. The accrual is unavailable, with no amount, when any day lacks a single approved
+profile revision, falls outside the declared schedule or lacks provable principal; when terms are
+unstructured, floating-rate or compounding; when the calendar is missing; when a posted, unreversed
+accrual already covers part of the window; or when the source book has no single open period
+containing the posting date. A cross-currency loan converts through the governed FX authority or is
+unavailable. Fees are not calculated: a fixed fee has no declared amount period and a percentage fee
+has no measured base in terms schema v1.
 
 ## External-review attestation
 
@@ -125,6 +158,7 @@ Enable it after every reachable writer, worker and importer supports the referen
 validation. The gate controls authoring availability; it never disables validation of a supplied
 reference. Rollback must retain compatible writers and historical readers after references exist.
 
-Registry approval does not post either side of an entry. Automatic accruals, paired posting, cash
-allocation/settlement, wider consolidation and FX translation remain outside P1. Native WPF runtime
+Registry approval does not post either side of an entry. Automatic or scheduled accruals, automatic
+paired posting, cash allocation/settlement, wider consolidation and FX translation remain outside P1.
+The operator-requested loan-interest accrual above produces reviewed drafts only. Native WPF runtime
 validation requires Windows; Linux source checks do not establish native interaction acceptance.

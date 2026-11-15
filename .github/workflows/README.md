@@ -54,11 +54,17 @@ in `release-governance`, which exits with their real status. Neither job is a
 required check and the canonical lanes are unchanged. Its workflow changes require **human
 governance review**. See [ownership](../../docs/engineering/ci-cd-optimization.md#design-system-package).
 
-Canonical `verify-docs` owns automatic documentation checks, generation and freshness on all PRs,
+Canonical `verify-docs` owns automatic documentation checks, generation and reviewed-output freshness on all PRs,
 main pushes and merge groups. Documentation Automation uses the same catalog and checker only
 for manual refreshes. Generated conflict recovery has a separate explicit policy;
 protected prose and reviewed hashes retain their own merge and review rules. See the
 [recovery guide](../../docs/engineering/generated-merge-recovery.md).
+
+Machine-only outputs are ignored and exported under `artifacts/docs/generated/` with revision/digests.
+The browser lane builds and validates the bundle; the .NET lane consumes that same-run artifact
+before project evaluation. Local merges use `buildctl.py regen --fix` via the installed hook.
+See [file-by-file delivery](../../docs/engineering/generated-output-delivery.md). CI governance
+changes require human review; required lane identities and publisher write boundaries remain.
 
 Meridian keeps the Actions surface scoped to the current .NET 10 solution, browser workstation,
 retained Windows desktop shell, provider smoke checks, safe publish output, release packaging, and
