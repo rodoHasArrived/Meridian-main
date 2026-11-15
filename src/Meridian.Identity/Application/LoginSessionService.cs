@@ -222,7 +222,7 @@ public sealed class LoginSessionService
 
             if (_failedAttempts.Count >= MaximumTrackedFailedAttemptWindows)
             {
-                return FailedAttemptWindow.CapacityLocked(GetCapacityRetryAtNoLock(now));
+                EvictOldestFailedAttemptNoLock();
             }
 
             var first = FailedAttemptWindow.First(now);
@@ -243,22 +243,46 @@ public sealed class LoginSessionService
                     : null;
             }
 
-            // Do not perform password verification for an untracked target after the bounded
-            // state is saturated. Returning a deterministic retry window is deliberately
-            // fail-closed: the previous zero-count fallback allowed unlimited target churn.
-            return _failedAttempts.Count >= MaximumTrackedFailedAttemptWindows
-                ? LoginAttemptResult.Locked(GetCapacityRetryAtNoLock(now) - now)
-                : null;
+            // An untracked target is never throttled just because the bounded table is full:
+            // refusing it let any unauthenticated caller lock every user out by filling the
+            // table with throwaway usernames. RegisterFailedAttempt evicts instead.
+            return null;
         }
     }
 
-    private DateTimeOffset GetCapacityRetryAtNoLock(DateTimeOffset now)
+    // Caller must hold _failedAttemptGate. Makes room for a new window by dropping the
+    // oldest one. Windows that are not locked out go first so that churning throwaway
+    // usernames cannot cheaply lift an active lockout; a locked window is only evicted
+    // when every tracked window is locked.
+    private void EvictOldestFailedAttemptNoLock()
     {
-        var retryAt = _failedAttempts.Values
-            .Select(window => window.ExpiresAt)
-            .DefaultIfEmpty(now + AttemptWindow)
-            .Min();
-        return retryAt > now ? retryAt : now + TimeSpan.FromSeconds(1);
+        string? victimKey = null;
+        FailedAttemptWindow? victim = null;
+        foreach (var (key, window) in _failedAttempts)
+        {
+            if (victim is null || IsEvictedBefore(window, victim))
+            {
+                victimKey = key;
+                victim = window;
+            }
+        }
+
+        if (victimKey is not null)
+        {
+            _failedAttempts.TryRemove(victimKey, out _);
+        }
+
+        static bool IsEvictedBefore(FailedAttemptWindow candidate, FailedAttemptWindow current)
+        {
+            var candidateLocked = candidate.LockedUntil.HasValue;
+            var currentLocked = current.LockedUntil.HasValue;
+            if (candidateLocked != currentLocked)
+            {
+                return !candidateLocked;
+            }
+
+            return candidate.ExpiresAt < current.ExpiresAt;
+        }
     }
 
     private void PruneExpiredFailedAttempts(DateTimeOffset now)
@@ -407,9 +431,6 @@ public sealed class LoginSessionService
     private sealed record FailedAttemptWindow(int Count, DateTimeOffset WindowStartedAt, DateTimeOffset? LockedUntil)
     {
         public static FailedAttemptWindow First(DateTimeOffset now) => new(1, now, null);
-
-        public static FailedAttemptWindow CapacityLocked(DateTimeOffset retryAt)
-            => new(MaximumFailedAttempts, retryAt - AttemptWindow, retryAt);
 
         public DateTimeOffset ExpiresAt => LockedUntil ?? WindowStartedAt + AttemptWindow;
 

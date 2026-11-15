@@ -170,13 +170,38 @@ public sealed class LoginSessionServiceTests
                 .Status.Should().Be(LoginAttemptStatus.InvalidCredentials);
         }
 
-        var saturatedTarget = service.TryCreateSession("new-target", "wrong", "127.0.0.1");
+        var newTarget = service.TryCreateSession("new-target", "wrong", "127.0.0.1");
         var validButUntrackedTarget = service.TryCreateSession("operator", "pw-operator", "127.0.0.1");
 
-        saturatedTarget.Status.Should().Be(LoginAttemptStatus.LockedOut);
-        saturatedTarget.RetryAfter.Should().BeGreaterThan(TimeSpan.Zero);
-        validButUntrackedTarget.Status.Should().Be(LoginAttemptStatus.LockedOut,
-            "saturation must be checked before even valid credentials are verified");
+        newTarget.Status.Should().Be(LoginAttemptStatus.InvalidCredentials,
+            "a full table evicts its oldest window instead of locking out untracked targets");
+        validButUntrackedTarget.Status.Should().Be(LoginAttemptStatus.Succeeded,
+            "throwaway-username churn must never block a legitimate sign-in");
+        GetTrackedFailedAttemptWindowCount(service).Should().Be(1_024);
+    }
+
+    [Fact]
+    public void TryCreateSession_SaturatedTable_EvictsUnlockedWindowsBeforeAnActiveLockout()
+    {
+        using var env = ConfigureUsers(("operator", "pw-operator", UserRole.Accounting));
+        var service = CreateService("Production");
+
+        // The oldest window in the table is a real lockout on the operator account.
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            service.TryCreateSession("operator", "wrong", "127.0.0.1");
+        }
+
+        // Churn well past capacity with throwaway usernames.
+        for (var index = 0; index < 1_024 + 64; index++)
+        {
+            service.TryCreateSession($"unknown-{index}", "wrong", "127.0.0.1")
+                .Status.Should().Be(LoginAttemptStatus.InvalidCredentials);
+        }
+
+        service.TryCreateSession("operator", "pw-operator", "127.0.0.1").Status
+            .Should().Be(LoginAttemptStatus.LockedOut,
+                "churning the table must not lift an active lockout while unlocked windows remain");
         GetTrackedFailedAttemptWindowCount(service).Should().Be(1_024);
     }
 
