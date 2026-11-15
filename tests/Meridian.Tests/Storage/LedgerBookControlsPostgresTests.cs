@@ -5,7 +5,7 @@ using Npgsql;
 
 namespace Meridian.Tests.Storage;
 
-public sealed class LedgerBookControlsPostgresTests
+public sealed partial class LedgerBookControlsPostgresTests
 {
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]

@@ -6,6 +6,131 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UpdateMaintenanceScheduleRequest
+
+Qualified name: <code>Meridian.Ui.Services.UpdateMaintenanceScheduleRequest</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:322](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L322).
+
+Carries optional changes to a maintenance schedule&#x27;s timing, target, priority, and execution limits.
+
+```csharp
+public sealed class UpdateMaintenanceScheduleRequest
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? Name { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:324](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L324) |  |
+| <code>public string? Description { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:325](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L325) |  |
+| <code>public string? CronExpression { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:326](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L326) |  |
+| <code>public string? TargetPath { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:327](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L327) |  |
+| <code>public string? Priority { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:328](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L328) |  |
+| <code>public int? MaxDurationMinutes { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:329](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L329) |  |
+| <code>public int? MaxRetries { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:330](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L330) |  |
+
+## ValidationDetail
+
+Qualified name: <code>Meridian.Ui.Services.ValidationDetail</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:466](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L466).
+
+Describes one categorized readiness validation item and its outcome.
+
+```csharp
+public sealed class ValidationDetail
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Category { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:468](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L468) |  |
+| <code>public string Item { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:469](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L469) |  |
+| <code>public bool Valid { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:470](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L470) |  |
+| <code>public string? Message { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:471](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L471) |  |
+
+## ValidationIssue
+
+Qualified name: <code>Meridian.Ui.Services.ValidationIssue</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:920](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L920).
+
+Describes a portable-package validation finding and its severity.
+
+```csharp
+public sealed class ValidationIssue
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:922](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L922) |  |
+| <code>public string Severity { get; set; } = &quot;Warning&quot;;</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:923](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L923) |  |
+
+## ValidationResult
+
+Qualified name: <code>Meridian.Ui.Services.ValidationResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:548](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L548).
+
+Describes a validation outcome with an optional error and corrective suggestion.
+
+```csharp
+public sealed class ValidationResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Valid { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:550](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L550) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:551](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L551) |  |
+| <code>public string? Suggestion { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:552](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L552) |  |
+
+## VerifiedFile
+
+Qualified name: <code>Meridian.Ui.Services.VerifiedFile</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:173](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L173).
+
+A verified file with checksum.
+
+```csharp
+public sealed class VerifiedFile
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:175](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L175) |  |
+| <code>public string Checksum { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:176](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L176) |  |
+| <code>public bool IsVerified { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:177](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L177) |  |
+| <code>public long Size { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:178](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L178) |  |
+
+## ViolationSeverity
+
+Qualified name: <code>Meridian.Ui.Services.ViolationSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:73](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L73).
+
+Severity level for violations.
+
+```csharp
+public enum ViolationSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:75](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L75) |  |
+| <code>Warning</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:76](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L76) |  |
+| <code>Error</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:77](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L77) |  |
+
 ## VolumePriceLevel
 
 Qualified name: <code>Meridian.Ui.Services.VolumePriceLevel</code>. Kind: `class`.
