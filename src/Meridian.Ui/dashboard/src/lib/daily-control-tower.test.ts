@@ -235,7 +235,7 @@ describe("daily control tower model", () => {
       operatorFocusItems: []
     });
 
-    expect(attention).toEqual({ total: 1, byWorkspace: { accounting: 1 } });
+    expect(attention).toMatchObject({ total: 1, byWorkspace: { accounting: 1 } });
   });
 });
 

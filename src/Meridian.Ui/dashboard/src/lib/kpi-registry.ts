@@ -9,7 +9,7 @@ import type {
   TradingWorkspaceResponse
 } from "@/types";
 import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
-import { countOpenOrders, countOpenBreaks, countProviderHealth, selectSharedProviderHealth } from "@/lib/cross-screen-counts";
+import { countOpenOrders, countOpenBreaks, countProviderHealth, formatProviderHealth, selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 
 /** Read models are inputs, never competing fallbacks for the same figure. */
 export interface KpiReadModels {
@@ -174,7 +174,7 @@ const holdingCurrencyRule = "Sum only explicitly denominated amounts in one curr
 function crossScreenProviders(models: KpiReadModels): ComputedKpi {
   const providers = selectSharedProviderHealth(models.crossScreenCounts, models.data?.providers);
   if (!providers) return unavailable("Provider health count unavailable");
-  return scalar(`${providers.healthy} / ${providers.total}`, providers.total > 0 && providers.healthy === providers.total ? "success" : "warning");
+  return scalar(formatProviderHealth(providers), providers.total > 0 && providers.healthy === providers.total ? "success" : "warning");
 }
 
 const providerDefinition: KpiDefinition = {
@@ -189,7 +189,7 @@ const dataProviderDefinition: KpiDefinition = {
   compute: (models) => {
     const providers = countProviderHealth(models.data?.providers)
       ?? selectSharedProviderHealth(models.crossScreenCounts, undefined);
-    return providers ? scalar(`${providers.healthy} / ${providers.total}`, providers.total > 0 && providers.healthy === providers.total ? "success" : "warning") : unavailable("Provider health count unavailable");
+    return providers ? scalar(formatProviderHealth(providers), providers.total > 0 && providers.healthy === providers.total ? "success" : "warning") : unavailable("Provider health count unavailable");
   }
 };
 

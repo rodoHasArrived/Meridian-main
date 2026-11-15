@@ -225,6 +225,15 @@ export function pluralizeCount(count: number, singular: string, options: Plurali
   return `${renderedCount} ${count === 1 ? singular : plural}`;
 }
 
+/**
+ * A count out of a named population, e.g. "1 of 5 providers". Every KPI that shows a part of a
+ * whole uses this, so the denominator always says what it counts and two figures over different
+ * populations cannot be read as contradicting each other.
+ */
+export function formatCountOfTotal(count: number, total: number, singular: string, options: PluralizeCountOptions = {}): string {
+  return `${count} of ${pluralizeCount(total, singular, options)}`;
+}
+
 /** Amount with an ISO code suffix and no symbol, e.g. "1,234.56 USD"; `signed` gives "+1,234.56 USD". */
 export function formatAmountWithCode(
   value: NullableNumber,

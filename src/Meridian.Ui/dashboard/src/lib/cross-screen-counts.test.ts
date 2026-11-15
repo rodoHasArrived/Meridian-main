@@ -92,7 +92,7 @@ describe("applyCrossScreenCounts", () => {
     ];
     const applied = applyCrossScreenCounts(metrics, { openOrders: 2, providers: { healthy: 1, total: 4 }, openBreaks: null });
     expect(applied[0]).toMatchObject({ value: "2", delta: "" });
-    expect(applied[1]).toMatchObject({ value: "1/4", delta: "", tone: "warning" });
+    expect(applied[1]).toMatchObject({ value: "1 of 4 providers", delta: "", tone: "warning" });
     // Cards that are not cross-screen counts are left alone.
     expect(applied[2]).toEqual(metrics[2]);
   });

@@ -751,8 +751,10 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             <Stat label="State" value={data.risk.state} tone={riskTone[data.risk.state]} />
-            <Stat label="Net Exposure" value={data.risk.netExposure} />
-            <Stat label="Gross Exposure" value={data.risk.grossExposure} />
+            {/* Scope named on the label: these are the paper session's risk figures, not the
+                Portfolio header's gross exposure over live holdings. */}
+            <Stat label="Net exposure · paper session" value={data.risk.netExposure} />
+            <Stat label="Gross exposure · paper session" value={data.risk.grossExposure} />
             <Stat label="VaR (95%)" value={data.risk.var95} />
             <Stat label="Max Drawdown" value={data.risk.maxDrawdown} />
             <Stat label="Buying Power Used" value={data.risk.buyingPowerUsed} />

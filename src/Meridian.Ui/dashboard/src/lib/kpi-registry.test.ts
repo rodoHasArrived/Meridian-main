@@ -132,8 +132,8 @@ describe("KPI registry ownership and financial meaning", () => {
       overview: { providersOnline: 9, providersTotal: 9 }, trading: { openOrders: [{}] }, data: { providers: [{ status: "Healthy" }] },
       accounting: { workspace: { openBreaks: 10 }, breakQueue: [], metrics: [{ id: "breaks", value: "10", label: "Open breaks", tone: "warning", delta: "2 new since your last visit" }] }
     } as unknown as KpiReadModels;
-    expect(resolveKpi("system.providers-online", models).value).toBe("3 / 4");
-    expect(resolveKpi("data.providers-healthy", models).value).toBe("1 / 1");
+    expect(resolveKpi("system.providers-online", models).value).toBe("3 of 4 providers");
+    expect(resolveKpi("data.providers-healthy", models).value).toBe("1 of 1 provider");
     expect(resolveKpi("trading.open-orders", models).value).toBe("1");
     expect(resolveKpi("accounting.open-breaks", models)).toMatchObject({ value: "10", delta: "2 new since your last visit" });
   });

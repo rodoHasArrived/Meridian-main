@@ -118,9 +118,14 @@ export function selectSharedProviderHealth(
   return selectCrossScreenCounts({ shared }).providers ?? countProviderHealth(providers);
 }
 
-/** "2 of 4 healthy", or "—" when the count cannot be read. */
+/**
+ * Healthy providers with the population they are out of, "2 of 4 providers", or "—" when the
+ * count cannot be read. The label beside it says "healthy"; the value names the denominator.
+ */
 export function formatProviderHealth(count: ProviderHealthCount | null): string {
-  return count ? `${count.healthy} of ${count.total} healthy` : "—";
+  // Written out rather than through formatCountOfTotal: the Vite config loads this module (via the
+  // development fixtures) before path aliases exist, so it must not import runtime helpers.
+  return count ? `${count.healthy} of ${count.total} ${count.total === 1 ? "provider" : "providers"}` : "—";
 }
 
 /** A count as text, or "—" when it cannot be read. */
@@ -158,7 +163,7 @@ export function applyCrossScreenCounts<T extends { id: string; value: string; de
       const providers = values.providers;
       return {
         ...metric,
-        value: providers ? `${providers.healthy}/${providers.total}` : "—",
+        value: providers ? formatProviderHealth(providers) : "—",
         delta: "",
         tone: !providers ? "default" : providers.total > 0 && providers.healthy === providers.total ? "success" : "warning"
       };

@@ -117,6 +117,34 @@ items, which is a follow-up.
 - The screenshot catalog now waits on `table[aria-label="Today queue"]` and on
   `data-today-inbox-state` reaching `ready` or `unavailable`.
 
+**P1 fifth step (landed 2026-11-15): one attention count.** This supersedes the fourth step's
+"the sidebar badge still counts workspace signals only".
+- Item type: `AttentionItem` in `lib/attention-items.ts`, with a source, severity (`blocked`,
+  `action`, `info`, `clear`), owner, due time and snoozed flag. `buildAttentionItems` builds the
+  list from the Control Tower's workspace signals and the shared operator inbox. A workspace signal
+  whose id is `work-item:<workItemId>` and the inbox item with that `workItemId` are one work item:
+  it is listed and counted once, as the inbox item.
+- Count rule, stated once (`needsAttention`, `ATTENTION_COUNT_RULE`): blocked + action, excluding
+  snoozed. The sidebar badges, the masthead pill's "N more" and Today's queue all count the list
+  with it. Per-source and per-workspace counts are filtered views, so they add up to the total; an
+  item with no known workspace counts in the total only.
+- The shell (`app.tsx`) reads the shared inbox once with `useOperatorTriageInbox` and passes the
+  same state to Today, so the badge and the queue cannot count different reads. While the inbox is
+  loading or unavailable, every surface counts workspace signals alone and Today says so.
+- Today's default view ("Needs attention") lists exactly the counted items, so the row count, the
+  toolbar's match count, the Source filter counts and the sidebar badge are the same number. "All
+  items" adds informational and snoozed rows. The help line about what the badges count, the
+  per-source summary line and the seeded read-only inbox notice are gone from the normal view; a
+  real loss of durable triage still raises its alert.
+- KPI denominators name their population through `formatCountOfTotal` ("1 of 2 providers",
+  "4 of 5 schedules", "0 of 1 close task"). Trading's risk cockpit labels its exposure figures
+  "· paper session" so they do not read as the Portfolio header's gross exposure over live holdings.
+- Not done: the notification bell still counts unread notifications, which is a different
+  quantity from the attention count. The Data page's "Providers healthy" figure still counts the
+  shared cross-screen provider population (the Data payload's provider rows) while the cards below
+  it also list configured connections; making those one population needs the server's
+  cross-screen count to change with it.
+
 **P3 `.toFixed()` burn-down (landed 2026-11-13):** `handRolledNumberFormatting` is at 0 (was
 72), so both formatter ratchets in the Phase 1 criteria are met.
 - `@/lib/format` gained `formatDecimal(value, digits)` for displayed figures (grouped, signed
