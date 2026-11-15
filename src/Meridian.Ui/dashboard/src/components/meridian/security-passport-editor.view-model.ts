@@ -95,6 +95,8 @@ export function buildPassportActions(context: PassportActionContext): PassportAc
 
 export function buildWorkbenchErrorBanner(error: WorkbenchWriteError): PassportBannerViewModel {
   switch (error.kind) {
+    case "impact-review":
+      return { tone: "error", title: "Impact review required", message: error.message ?? "Create and inspect current impact evidence. An approved revision needs a fresh governed draft if its evidence is stale." };
     case "version-conflict":
       return {
         tone: "error",

@@ -590,9 +590,13 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
     // and digest, which the checkpoint hash covers; the replay payload stays in the server-side manifest,
     // so downloading a scoped report never discloses other audiences' journals.
     private static ReportingAuthoritativeSourceCheckpoint WithheldReplayInputs(ReportingAuthoritativeSourceCheckpoint source) =>
-        source.LedgerPopulation is { } population
-            ? source with { LedgerPopulation = population with { PayloadJson = string.Empty } }
-            : source;
+        source with
+        {
+            LedgerPopulation = source.LedgerPopulation is { } population ? population with { PayloadJson = string.Empty } : null,
+            // Calculation inputs share the whole-book population's privacy boundary. Public
+            // artifacts carry only their digest, never other securities' terms or journal IDs.
+            SecurityInputs = source.SecurityInputs is { } inputs ? inputs with { Bindings = [], Gaps = [] } : null
+        };
 
     private static byte[] RenderEvidenceVault(ReportingOutputManifest manifest)
     {

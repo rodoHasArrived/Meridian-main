@@ -635,7 +635,8 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
 
     public async Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
     {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+        var connection = lease.Connection;
 
         // Per-field attribution names the true incumbent: record-level provenance flips on every
         // amendment, so when providers amend DIFFERENT fields in sequence it can name a source
@@ -652,7 +653,8 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             return;
         }
 
-        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await using var ownedTransaction = lease.Transaction is null ? await connection.BeginTransactionAsync(ct).ConfigureAwait(false) : null;
+        var transaction = lease.Transaction ?? ownedTransaction!;
 
         int newConflicts = 0;
         foreach (var conflict in candidates)
@@ -668,7 +670,8 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             }
         }
 
-        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        if (ownedTransaction is not null)
+            await ownedTransaction.CommitAsync(ct).ConfigureAwait(false);
 
         if (newConflicts > 0)
         {

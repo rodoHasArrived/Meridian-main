@@ -855,6 +855,26 @@ Declared public members:
 | <code>public IReadOnlyList&lt;ReportPackSecurityLineIndexEntry&gt; Lookup(Guid securityId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:148](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L148) |  |
 | <code>public IReadOnlyList&lt;ReportPackSecurityLineIndexEntry&gt; LookupByFund(Guid securityId, string fundProfileId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:158](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L158) |  |
 
+## InstrumentCapabilityReadService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InstrumentCapabilityReadService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/InstrumentCapabilityReadService.cs:15](../../../../src/Meridian.Ui.Shared/Services/InstrumentCapabilityReadService.cs#L15).
+
+Passive, selected-version diagnostics. Cash-flow checks use the service&#x27;s explicit no-retention path; valuation, accounting and case operations stay under review without their execution context.
+
+```csharp
+public sealed class InstrumentCapabilityReadService(ISecurityMasterQueryService securities, ISecurityMasterCashFlowService? cashFlows = null, AssetClassValidatorRegistry? validators = null, TimeProvider? clock = null, ILogger<InstrumentCapabilityReadService>? logger = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumBatchSize = 200;</code> | [src/Meridian.Ui.Shared/Services/InstrumentCapabilityReadService.cs:22](../../../../src/Meridian.Ui.Shared/Services/InstrumentCapabilityReadService.cs#L22) |  |
+| <code>public async Task&lt;InstrumentCapabilityBatchDto&gt; GetBatchAsync(IReadOnlyCollection&lt;Guid&gt; securityIds, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/InstrumentCapabilityReadService.cs:27](../../../../src/Meridian.Ui.Shared/Services/InstrumentCapabilityReadService.cs#L27) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;InstrumentCapabilityAssessmentDto&gt;&gt; AssessSelectedAsync(SecurityDetailDto security, DateTimeOffset asOf, SecurityValidationReportDto? validation = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/InstrumentCapabilityReadService.cs:55](../../../../src/Meridian.Ui.Shared/Services/InstrumentCapabilityReadService.cs#L55) |  |
+
 ## IntercompanyAccrualDraftService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyAccrualDraftService</code>. Kind: `class`.
@@ -941,22 +961,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public InvestmentAccountingTransactionLabPreviewDto Preview(InvestmentAccountingTransactionLabRequestDto request);</code> | [src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs:11](../../../../src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs#L11) |  |
-
-## IOperationsContinuityReconciliationBridge
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IOperationsContinuityReconciliationBridge</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:11](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L11).
-
-Runs reconciliation through the Operations Continuity workflow and returns its transition result.
-
-```csharp
-public interface IOperationsContinuityReconciliationBridge
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:13](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L13) |  |
-| <code>Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:18](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L18) |  |

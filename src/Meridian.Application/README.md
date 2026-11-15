@@ -11,6 +11,48 @@ last_reviewed: 2026-11-14
 
 # src/Meridian.Application
 
+## Security Master operator evidence (2026-11-14)
+
+Governed drafts retain immutable maker/base authority. The rate-repair service freezes exact scalar
+and evidence cohorts, persists per-item revision/workflow progress, and exposes bounded live discovery
+with pagination and explicit source gaps. Stage, submit, independent review and publish remain separate
+commands. Matching request-ID retries recover the same frozen roster instead of selecting current data.
+
+`SecurityMasterImpactPreviewService` retains full base/proposed terms and typed old/new projections,
+conservative candidate books, known periods/reports and an explicit unverified-lot issue. Approval and
+publication revalidate the dependency fingerprint; stale approved evidence requires a fresh draft.
+Shared PostgreSQL participants hold the short dependency guard through atomic per-item canonical
+mutation, with dispatch after commit. This adds no exact affected-lot count or cross-fund completeness.
+
+Profile-promotion reads exact approved profile/version usage and required-field presence in one stored
+snapshot; developer export never populates active classes or copies record values as defaults.
+Report-input attribution uses exact retained event/revision/workflow identity and actual decisions;
+missing legacy lineage stays unavailable. See [operator procedure](../../docs/operators/security-master-repairs-and-evidence.md).
+
+`RetainedSecurityTermsReadBoundary` classifies pre-format terms only in an explicit frozen
+calculation/report input view after its retained packet is verified. Original receipt documents,
+digests and outputs stay unchanged. Malformed, duplicate or unsupported format declarations refuse;
+live Security Master reads and new captures keep the strict declared-format contract. This boundary
+does not turn historical residue into a new accrual-profile declaration.
+An unreadable live input can retain a typed blocked audit receipt with empty resolved terms and
+no cash events. It records unavailable calculation evidence, never an inferred format or zero-flow
+economic result.
+
+Security Master validation composes an explicit built-in contribution for each of the 32 asset
+classes through `SecurityAssetValidationModules`. Class-owned factories preserve their existing
+rules, while the central registry retains shared schema validation and its public custom-registry
+constructor. Compiled composition refuses duplicate, missing or mismatched class identities.
+This is a layer-owned contribution to the
+[asset-pack foundation](../../docs/engineering/plans/security-master-review-remediation-plan.md#1-complete-the-layered-asset-pack-foundation),
+without runtime class registration or new operational admission. Focused proof belongs to
+`SecurityAssetValidationModuleTests` and the existing schema/validation parity suites.
+
+`SecurityMasterMapping.AssetPackCodecs` composes executable decode contributions generated from
+the Contracts binding rows, with handwritten CustomAsset profile decoding and Bond's existing
+diagnostic-order hook. Closed composition checks exact catalog coverage before dispatch. The
+mapping facade retains its guards, refusal/fallback behavior and generated-code verification;
+the F# writer and historical replay semantics keep their existing contract.
+
 Native intercompany legal rules validate structured declarations without turning them into accrual
 or settlement calculations. The shared preview reuses schedule/day-count/calendar kernels for
 dates only. The separate pure `IntercompanyAccrualPreviewService` (ADR-028) reuses the same schedule
@@ -1753,6 +1795,10 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-APP -->
 | Roadmap item | Title |
 | --- | --- |
+| `W11-LEGS-001` | Reusable fixed and floating legs for vanilla interest-rate swaps |
+| `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
+| `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
+| `W11-PACK-001` | Governed contract-pack lifecycle on the Security Master asset-class registry |
 | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |

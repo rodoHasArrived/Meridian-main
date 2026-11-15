@@ -42,6 +42,7 @@ public sealed partial class SecurityMasterWorkbenchQueryService : ISecurityMaste
     private readonly IFundProfileTenancyRegistry? _tenancyRegistry;
     private readonly IHttpContextAccessor? _httpContextAccessor;
     private readonly ISecurityMasterGovernanceRequirements? _governanceRequirements;
+    private readonly InstrumentCapabilityReadService _capabilityReadService;
 
     public SecurityMasterWorkbenchQueryService(
         Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService queryService,
@@ -63,7 +64,8 @@ public sealed partial class SecurityMasterWorkbenchQueryService : ISecurityMaste
         Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null,
         TimeProvider? timeProvider = null,
         Microsoft.Extensions.Logging.ILogger<SecurityMasterWorkbenchQueryService>? logger = null,
-        ISecurityMasterGovernanceRequirements? governanceRequirements = null)
+        ISecurityMasterGovernanceRequirements? governanceRequirements = null,
+        InstrumentCapabilityReadService? capabilityReadService = null)
     {
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
@@ -76,6 +78,7 @@ public sealed partial class SecurityMasterWorkbenchQueryService : ISecurityMaste
         _reconciliationRunService = reconciliationRunService;
         _pricingService = pricingService;
         _cashFlowService = cashFlowService;
+        _capabilityReadService = capabilityReadService ?? new InstrumentCapabilityReadService(queryService, cashFlowService);
         _entitlementService = entitlementService;
         _dataQualityService = dataQualityService;
         _tenancyRegistry = tenancyRegistry;
@@ -204,7 +207,7 @@ public sealed partial class SecurityMasterWorkbenchQueryService : ISecurityMaste
 
         return snapshot with
         {
-            InstrumentPassport = await BuildInstrumentPassportAsync(snapshot, trading, fundProfileId, ct).ConfigureAwait(false)
+            InstrumentPassport = await BuildInstrumentPassportAsync(snapshot, trading, fundProfileId, ct, detail).ConfigureAwait(false)
         };
     }
 

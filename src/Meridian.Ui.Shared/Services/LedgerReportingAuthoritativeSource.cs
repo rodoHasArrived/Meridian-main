@@ -97,13 +97,15 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
         TimeProvider? timeProvider = null,
         ILedgerTaxLotDisposalHistory? taxLotDisposalHistory = null,
         ILedgerOpenLotSuccessorHistory? openLotSuccessorHistory = null,
-        CapitalCallNoticeSourceValidator? capitalCallNotices = null)
+        CapitalCallNoticeSourceValidator? capitalCallNotices = null,
+        Meridian.Contracts.SecurityMaster.ISecurityCashFlowReceiptStore? securityReceiptStore = null)
     {
         _journalStore = journalStore ?? throw new ArgumentNullException(nameof(journalStore));
         _tenancyRegistry = tenancyRegistry ?? throw new ArgumentNullException(nameof(tenancyRegistry));
         _fundStructure = fundStructure ?? throw new ArgumentNullException(nameof(fundStructure));
         _timeProvider = timeProvider ?? TimeProvider.System;
         _capitalCallNotices = capitalCallNotices;
+        _securityReceiptStore = securityReceiptStore;
 
         // The optional history arguments are retained for caller compatibility. Certified relief and
         // corporate-action successor evidence must come from the atomic reporting snapshot seam,
@@ -295,8 +297,10 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
             parameters.AsOfDate, cutoffUtc, highestSequence, ordered.Length, rows.Length,
             "", "", capturedAtUtc, [])
         {
-            LedgerPopulation = retainedPopulation
+            LedgerPopulation = retainedPopulation,
+            SecurityInputs = await CaptureSecurityInputsAsync(orderedHistory, cancellationToken).ConfigureAwait(false)
         };
+        ReportingSecurityInputEvidence.Validate(checkpoint, orderedHistory.Select(static record => record.Entry).ToArray());
         var checkpointHash = populationSnapshot.ComputeCheckpointHash(checkpoint);
         var checkpointId = ReportingRetainedLedgerPopulationValidation.BuildCheckpointId(checkpointHash);
         var evidence = ImmutableArray.CreateBuilder<string>();

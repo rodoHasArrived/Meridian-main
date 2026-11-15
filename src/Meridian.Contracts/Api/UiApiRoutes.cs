@@ -375,6 +375,7 @@ public static class UiApiRoutes
 
     // Security Master endpoints
     public const string SecurityMasterById = "/api/security-master/{securityId:guid}";
+    public const string SecurityMasterCapabilities = "/api/security-master/capabilities";
     public const string SecurityMasterValidation = "/api/security-master/{securityId:guid}/validation";
     public const string SecurityMasterResolve = "/api/security-master/resolve";
     public const string SecurityMasterSearch = "/api/security-master/search";
@@ -383,6 +384,10 @@ public static class UiApiRoutes
     public const string SecurityMasterRegistryProjection = "/api/security-master/projections/{assetClass}/{securityId:guid}";
     public const string SecurityMasterAssetProfiles = "/api/security-master/asset-profiles";
     public const string SecurityMasterAssetProfilePromotionCandidates = "/api/security-master/asset-profiles/promotion-candidates";
+    public const string SecurityMasterAssetProfilePromotionAssessments = "/api/security-master/asset-profiles/promotion-assessments";
+    public const string SecurityMasterAssetProfileCandidateExport = "/api/security-master/asset-profiles/{profileId}/versions/{version:int}/candidate-export";
+    public const string SecurityMasterReportInputs = "/api/security-master/{securityId:guid}/report-inputs";
+    public const string SecurityMasterReportInputLinks = "/api/security-master/report-runs/{runId}/security-inputs";
     public const string SecurityMasterAssetProfileLineage = "/api/security-master/asset-profiles/{profileId}/lineage";
     public const string SecurityMasterAssetProfileDrafts = "/api/security-master/asset-profiles/drafts";
     public const string SecurityMasterAssetProfileApprove = "/api/security-master/asset-profiles/approve";

@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerReportingSchedulePeriodResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingSchedulePeriodResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:48](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L48).
+
+Ledger-store-backed IReportingSchedulePeriodResolver.
+
+```csharp
+public sealed class LedgerReportingSchedulePeriodResolver : IReportingSchedulePeriodResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerReportingSchedulePeriodResolver(ILedgerJournalStore journalStore) : this((journalStore?? throw new ArgumentNullException(nameof(journalStore))).GetLedgerBookAsync, (fundId, ct) =&gt; journalStore.ListLedgerBooksAsync(fundProfileId : fundId, ct : ct), (bookId, ct) =&gt; journalStore.ListPeriodsAsync(ledgerBookId : bookId, ct : ct));</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:54](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L54) |  |
+| <code>public LedgerReportingSchedulePeriodResolver(Func&lt;Guid, CancellationToken, Task&lt;LedgerBookRecord?&gt;&gt; getBook, Func&lt;string, CancellationToken, Task&lt;IReadOnlyList&lt;LedgerBookRecord&gt;&gt;&gt; listFundBooks, Func&lt;Guid, CancellationToken, Task&lt;IReadOnlyList&lt;LedgerAccountingPeriod&gt;&gt;&gt; listBookPeriods);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:63](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L63) | Lookup-delegate constructor; lets the selection rules be exercised without a full store. |
+| <code>public async Task&lt;ReportingSchedulePeriodMatch?&gt; ResolvePeriodAsync(ReportingRunParametersDto parameters, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:73](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L73) |  |
+| <code>public async Task&lt;ReportingSchedulePeriodMatch?&gt; ResolveNextClosePeriodAsync(ReportingRunParametersDto parameters, DateOnly currentPeriodEnd, ReportingSchedulePeriodFrequencyDto frequency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:102](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L102) |  |
+
 ## LiquidityWarning
 
 Qualified name: <code>Meridian.Ui.Shared.Services.LiquidityWarning</code>. Kind: `record`.
@@ -89,7 +110,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ManagementFeeAccrualCalculation</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:205](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L205).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:208](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L208).
 
 Day-weighted management fee on the net assets the ledger held at the close of the day before the accrual window. Terms: annualRate, yearBasisDays.
 
@@ -101,10 +122,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;management-fee-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:207](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L207) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:209](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L209) |  |
-| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:211](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L211) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:213](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L213) |  |
+| <code>public const string CalculationKind = &quot;management-fee-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:210](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L210) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:212](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L212) |  |
+| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:214](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L214) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:216](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L216) |  |
 
 ## ManualJournalEntryWorkbenchService
 
@@ -686,7 +707,7 @@ public sealed record PaymentInstruction(string InstructionId, string AccountId, 
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PerformanceFeeAccrualCalculation</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:241](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L241).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:244](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L244).
 
 Performance fee accrued to its cumulative amount above the high-water mark and hurdle. Net asset value before the fee is the ledger&#x27;s net assets plus the performance fee already accrued and payable, and only the change from that accrued amount is drafted. Terms: performanceFeeRate, highWaterMark, hurdleAmount, crystallize (0 or 1). After a fee is crystallized and settled, register a new schedule version with the new mark.
 
@@ -698,10 +719,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;performance-fee-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:243](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L243) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:245](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L245) |  |
-| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:247](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L247) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:249](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L249) |  |
+| <code>public const string CalculationKind = &quot;performance-fee-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:246](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L246) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:248](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L248) |  |
+| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:250](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L250) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:252](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L252) |  |
 
 ## PeriodAdjustmentPreparationService
 
@@ -1014,13 +1035,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public PrivateCapitalFundEventCommandCenterService(IManualJournalEntryWorkbenchService manualJournalEntryWorkbenchService);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L28) |  |
 | <code>public async Task&lt;PrivateCapitalFundEventCommandCenterDto?&gt; GetCommandCenterAsync(string? fundProfileId, Guid? ledgerBookId, string fundEventId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:33](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L33) |  |
-
-## PrivateCapitalLifecycleRead
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalLifecycleRead</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:8](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L8).
-
-```csharp
-public sealed record PrivateCapitalLifecycleRead(IReadOnlyList<CapitalCommitmentDto> Commitments, IReadOnlyList<CapitalActivityDto> Activities, IReadOnlyList<string> Warnings, bool IsAvailable = true);
-```

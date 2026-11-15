@@ -6,10 +6,18 @@ module_id: SRC-REPORTING-READMODELS
 path: src/Meridian.Reporting.ReadModels
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.Reporting.ReadModels
+
+## Retained journal security-input bindings (2026-11-14)
+
+The frozen ledger-population snapshot can carry exact journal receipt input references for new report
+captures. Replay preserves the actual retained evidence rather than resolving current Security Master
+terms. Visible report-line comparison is composed in Ui.Shared with the same report authorization;
+this leaf read model supplies neither broad book input disclosure nor fabricated legacy lineage. See
+[security evidence](../../docs/domain/security.md#retained-review-impact-and-report-inputs).
 
 ## Purpose
 
@@ -47,6 +55,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-REPORTING-READMODELS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 <!-- source-roadmap-traceability:end -->

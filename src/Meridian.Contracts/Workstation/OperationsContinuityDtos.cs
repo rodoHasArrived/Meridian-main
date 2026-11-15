@@ -1087,6 +1087,19 @@ public sealed record OperationsContinuityWorkflowDto(
     OperationsReviewedAutomationSummaryDto? ReviewedAutomation = null,
     Guid? LedgerBookId = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public OperationsWorkflowPurposeDto Purpose { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SubjectRevisionId { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SubjectMaker { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SubjectEvidenceId { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SubjectEvidenceSha256 { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SubjectReviewState { get; init; }
+
     public IReadOnlyList<OperationsEvidencePackageSummaryDto> EvidencePackages { get; init; } =
         EvidencePackages ?? [];
 }

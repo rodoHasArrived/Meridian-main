@@ -432,27 +432,28 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FileReportingRunStore(ReportingRunStoreOptions options, ILogger&lt;FileReportingRunStore&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:92](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L92) |  |
-| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(int limit = 25) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:106](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L106) |  |
-| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, int limit = 25);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:114](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L114) |  |
-| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int limit = 25) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:129](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L129) |  |
-| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int offset, int limit);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:135](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L135) |  |
-| <code>public ReportingOutputManifest? GetManifest(string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:162](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L162) |  |
-| <code>public ReportingOutputManifest? GetManifest(string tenantId, string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:172](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L172) |  |
-| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:183](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L183) |  |
-| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string tenantId, string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:193](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L193) |  |
-| <code>public string? GetRevision(string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:204](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L204) |  |
-| <code>public string? GetRevision(string tenantId, string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:221](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L221) |  |
-| <code>public async Task&lt;ReportingRunCreateClaimResult&gt; TryClaimCreateAsync(string tenantId, string runId, string leaseOwner, DateTimeOffset nowUtc, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:242](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L242) |  |
-| <code>public async Task&lt;bool&gt; RenewCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:306](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L306) |  |
-| <code>public async Task ReleaseCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:349](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L349) |  |
-| <code>public Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:377](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L377) |  |
-| <code>public Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string? expectedRevision, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:383](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L383) |  |
-| <code>public Task SaveClaimedCreateAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string leaseOwner, long leaseVersion, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:396](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L396) |  |
-| <code>public bool HasLegacyRuns(ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:561](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L561) |  |
-| <code>public IReadOnlyList&lt;ReportingLegacyStateInventoryEntry&gt; ListLegacyRunInventory(ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:567](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L567) |  |
-| <code>public string ExportLegacyRun(string runId, ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:576](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L576) |  |
-| <code>public async Task&lt;ReportingLegacyArchiveReceipt&gt; ArchiveLegacySnapshotAsync(ReportAccessQueryContext recoveryAuthority, string reason, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:589](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L589) |  |
+| <code>public bool SupportsCompleteScopedPaging =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:71](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L71) |  |
+| <code>public FileReportingRunStore(ReportingRunStoreOptions options, ILogger&lt;FileReportingRunStore&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:93](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L93) |  |
+| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(int limit = 25) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:107](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L107) |  |
+| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, int limit = 25);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:115](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L115) |  |
+| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int limit = 25) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:130](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L130) |  |
+| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int offset, int limit);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:136](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L136) |  |
+| <code>public ReportingOutputManifest? GetManifest(string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:163](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L163) |  |
+| <code>public ReportingOutputManifest? GetManifest(string tenantId, string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:173](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L173) |  |
+| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:184](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L184) |  |
+| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string tenantId, string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:194](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L194) |  |
+| <code>public string? GetRevision(string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:205](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L205) |  |
+| <code>public string? GetRevision(string tenantId, string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:222](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L222) |  |
+| <code>public async Task&lt;ReportingRunCreateClaimResult&gt; TryClaimCreateAsync(string tenantId, string runId, string leaseOwner, DateTimeOffset nowUtc, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:243](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L243) |  |
+| <code>public async Task&lt;bool&gt; RenewCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:307](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L307) |  |
+| <code>public async Task ReleaseCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:350](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L350) |  |
+| <code>public Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:378](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L378) |  |
+| <code>public Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string? expectedRevision, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:384](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L384) |  |
+| <code>public Task SaveClaimedCreateAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string leaseOwner, long leaseVersion, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:397](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L397) |  |
+| <code>public bool HasLegacyRuns(ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:562](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L562) |  |
+| <code>public IReadOnlyList&lt;ReportingLegacyStateInventoryEntry&gt; ListLegacyRunInventory(ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:568](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L568) |  |
+| <code>public string ExportLegacyRun(string runId, ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:577](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L577) |  |
+| <code>public async Task&lt;ReportingLegacyArchiveReceipt&gt; ArchiveLegacySnapshotAsync(ReportAccessQueryContext recoveryAuthority, string reason, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:590](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L590) |  |
 
 ## FileReportingScheduleStore
 
@@ -775,7 +776,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FixedAssetDepreciationCalculation</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:316](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L316).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:319](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L319).
 
 Depreciation of every asset the fixed-asset register holds for the fund book: the scheduled charges whose period end falls inside the accrual window, in one draft. Each scheduled period belongs to exactly one window, so an asset&#x27;s life is depreciated once. Units-of-production assets need period output that the register does not hold, so they block the occurrence.
 
@@ -787,17 +788,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fixed-asset-depreciation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:318](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L318) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:321](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L321) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:323](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L323) |  |
+| <code>public const string CalculationKind = &quot;fixed-asset-depreciation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:321](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L321) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:324](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L324) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:326](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L326) |  |
 
 ## FixedIncomeAccrualCalculation
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FixedIncomeAccrualCalculation</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:19](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L19).
+Source: [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:20](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L20).
 
-Coupon accrual and premium/discount amortization for one Bond or StructuredCredit position, from the Security Master cash-flow projection and the position&#x27;s open lots. Each occurrence drafts the day-count share of every coupon period that falls inside its accrual window, and the premium or discount amortized over the same days. Projected principal paydowns are not drafted here: they are cash movements and arrive through cash activity. Inputs: securityId, ticker, optional financialAccountId.
+Coupon accrual and supported amortization for one descriptor-admitted fixed-income position, from the Security Master cash-flow projection and the position&#x27;s open lots. Each occurrence drafts the day-count share of every coupon period that falls inside its accrual window, and the premium or discount amortized over the same days. Projected principal paydowns are not drafted here: they are cash movements and arrive through cash activity. Inputs: securityId, ticker, optional financialAccountId.
 
 ```csharp
 public sealed class FixedIncomeAccrualCalculation(IRecurringJournalCalculationInputs inputs, ISecurityMasterAmortizationLedgerBridge? bridge = null, ISecurityMasterCashFlowService? cashFlows = null, ISecurityMasterQueryService? securities = null) : IRecurringJournalCalculation
@@ -807,11 +808,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fixed-income-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:25](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L25) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:28](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L28) |  |
-| <code>public bool ReadsClosingState =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:30](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L30) |  |
-| <code>public IReadOnlyList&lt;string&gt; RequiredInputs =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:34](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L34) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:36](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L36) |  |
+| <code>public const string CalculationKind = &quot;fixed-income-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:26](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L26) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:29](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L29) |  |
+| <code>public bool ReadsClosingState =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:31](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L31) |  |
+| <code>public IReadOnlyList&lt;string&gt; RequiredInputs =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:35](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L35) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:37](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L37) |  |
 
 ## FundAccountCloseReadinessService
 
@@ -837,7 +838,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FundExpenseAccrualCalculation</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:290](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L290).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:293](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L293).
 
 Straight-line accrual of an annual fund expense over the accrual window. Terms: annualAmount, yearBasisDays. Input: expenseId.
 
@@ -849,9 +850,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fund-expense-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:292](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L292) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:294](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L294) |  |
-| <code>public Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:296](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L296) |  |
+| <code>public const string CalculationKind = &quot;fund-expense-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:295](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L295) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:297](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L297) |  |
+| <code>public Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:299](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L299) |  |
 
 ## FundOperationsWorkspaceReadService
 
@@ -987,7 +988,7 @@ public sealed record FxConversionReference(string BaseCurrency, string QuoteCurr
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FxRevaluationCalculation</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:370](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L370).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:373](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L373).
 
 Unrealized FX revaluation of foreign-currency asset and liability accounts without a security symbol at the effective date. The foreign balance is the sum of the legs recorded in that currency. Its carrying value combines the book-currency amounts on those legs with earlier revaluations, so each occurrence drafts only the change since the last one. The rate must come with its evidence (quote date, derivation and table revision) and be no older than the schedule term maxRateAgeDays; a missing, undated or stale rate blocks the draft. The memo records the evidence of every rate used.
 
@@ -999,10 +1000,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fx-revaluation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:374](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L374) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:376](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L376) |  |
-| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:378](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L378) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:380](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L380) |  |
+| <code>public const string CalculationKind = &quot;fx-revaluation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:377](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L377) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:379](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L379) |  |
+| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:381](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L381) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:383](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L383) |  |
 
 ## GovernanceReportingReleaseAuthorizationVerifier
 

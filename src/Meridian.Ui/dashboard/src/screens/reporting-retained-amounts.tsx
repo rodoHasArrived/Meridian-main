@@ -9,6 +9,7 @@ import { getReportAmountBindings } from "@/lib/report-amount-proof-api";
 import type { LedgerAmountSelection } from "@/types/ledger-amount-proof";
 import type { ReportLedgerAmountBinding } from "@/types/report-amount-proof";
 import type { GovernedReportingRun } from "@/types/reporting-governance";
+import { ReportAmountSecurityInputs } from "./reporting-amount-security-inputs";
 
 interface AmountState {
   key: string;
@@ -119,6 +120,7 @@ export function ReportingRetainedAmountsPanel({ run }: { run: Pick<GovernedRepor
               </tbody>
             </table>
           </div>
+          <ReportAmountSecurityInputs key={scopeKey} runId={run.runId} bindings={current.bindings} />
           </>
         )}
         <LedgerAmountProofDrawer selection={selection} onClose={() => setSelected(null)} />

@@ -2,6 +2,8 @@ import { Briefcase, Network, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
+import { InstrumentCapabilityCard } from "@/components/meridian/instrument-capability-card";
+import { SecurityReportInputCompare } from "@/components/meridian/security-report-input-compare";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type {
@@ -337,6 +339,8 @@ export function InstrumentPassportPanel({ view }: { view: InstrumentPassportView
                 caption={view.providerTableCaption}
               />
             </div>
+            <InstrumentCapabilityCard capabilities={view.capabilities} />
+            <SecurityReportInputCompare key={view.securityId} securityId={view.securityId} />
             <section className="space-y-3" aria-label={view.operationsWorkbenchTitle}>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">

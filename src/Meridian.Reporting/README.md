@@ -6,10 +6,19 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.Reporting
+
+## Actual Security Master inputs in certified reports (2026-11-14)
+
+New private `CertifiedReportingSnapshot` captures retain exact journal calculation-receipt security
+inputs and their immutable references. Public legacy `ReportPack` shape remains unchanged. Retained
+validation and artifact production verify scoped journal support; whole-book input payloads do not
+leak through visible-line artifacts. Legacy absent inputs remain gaps rather than current-state
+backfills. Capturing a report input does not certify historical approval visibility. See
+[security evidence](../../docs/domain/security.md#retained-review-impact-and-report-inputs).
 
 New reconciliation receipt creation rejects reserved W14 preparer-assertion references in ordinary
 approval fields. Historical receipt validation preserves the retained classification and bytes;
@@ -231,6 +240,7 @@ released notice and delivered notice are distinct states.
 <!-- source-roadmap-traceability:begin module=SRC-DESIGN-REPORTING -->
 | Roadmap item | Title |
 | --- | --- |
+| `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
 | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |

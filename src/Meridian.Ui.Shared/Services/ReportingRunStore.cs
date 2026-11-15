@@ -68,6 +68,7 @@ public sealed class ReportingLegacyStateRequiresArchiveException : InvalidOperat
 /// </summary>
 public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOnlyService
 {
+    public bool SupportsCompleteScopedPaging => true;
     private const string SnapshotFileName = "reporting-runs.json";
     private const string SchemaVersion = "meridian.reporting.run-store.v2";
     private const string LegacySchemaVersion = "meridian.reporting.run-store.v1";

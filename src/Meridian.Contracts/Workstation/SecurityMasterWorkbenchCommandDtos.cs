@@ -104,7 +104,10 @@ public sealed record ApproveSecurityMasterRevisionRequest(
     string Reviewer,
     string Rationale,
     string ReportPackId,
-    string? CorrelationId = null);
+    string? CorrelationId = null)
+{
+    public string? ImpactReceiptId { get; init; }
+}
 
 /// <summary>
 /// Publishes an approved revision (durable append + downstream propagation).
@@ -118,7 +121,10 @@ public sealed record PublishSecurityMasterRevisionRequest(
     Guid RevisionId,
     string Actor,
     string ApproverActor,
-    string? CorrelationId = null);
+    string? CorrelationId = null)
+{
+    public string? ImpactReceiptId { get; init; }
+}
 
 /// <summary>Result of a field edit / submit transition.</summary>
 public sealed record SecurityMasterEditResultDto(

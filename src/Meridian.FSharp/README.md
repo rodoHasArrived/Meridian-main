@@ -6,10 +6,19 @@ module_id: SRC-FSHARP
 path: src/Meridian.FSharp
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.FSharp
+
+## Bounded CD terms compatibility (2026-11-14)
+
+The SecurityKind union cases remain unchanged. CD version 6 carries optional issue date, principal and
+payment frequency through the existing economic modules, generated flat writer and legacy upgrade
+path. Their introduction stamps prevent older residue from activating in an unrelated amendment.
+Existing event/module replay and absent-field serialization remain compatibility authorities; the
+new recurring calculation profile belongs to the shared C# policy/kernel consumers. See
+[CD accrual boundary](../../docs/domain/recurring-journal.md#declared-certificateofdeposit-accrual-profile).
 
 ## Purpose
 
@@ -171,6 +180,8 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-FSHARP -->
 | Roadmap item | Title |
 | --- | --- |
+| `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
+| `W11-PACK-001` | Governed contract-pack lifecycle on the Security Master asset-class registry |
 | `W3-CONT-001` | Research to paper continuity |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `W10-PERF-001` | Portfolio and investor return measurement |

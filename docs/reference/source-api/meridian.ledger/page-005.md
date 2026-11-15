@@ -530,19 +530,25 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Ledger.RecurringJournalEvidence</code>. Kind: `record`.
 
-Source: [src/Meridian.Ledger/RecurringJournalEvidence.cs:9](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L9).
+Source: [src/Meridian.Ledger/RecurringJournalEvidence.cs:10](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L10).
 
 The exact inputs and source references used for one retained recurring draft.
 
 ```csharp
-public sealed record RecurringJournalEvidence(string OccurrenceKey, Guid JournalEntryId, string ScheduleId, int ScheduleVersion, string TemplateId, int TemplateVersion, string ScheduleDefinitionJson, string TemplateDefinitionJson, string FundProfileId, Guid LedgerBookId, string EntityId, string TenantId, string CompanyId, string Currency, DateOnly EffectiveDate, string PeriodId, long PeriodVersion, IReadOnlyList<JournalEvidenceReference> SourceEvidence);
+public sealed record RecurringJournalEvidence(string OccurrenceKey, Guid JournalEntryId, string ScheduleId, int ScheduleVersion, string TemplateId, int TemplateVersion, string ScheduleDefinitionJson, string TemplateDefinitionJson, string FundProfileId, Guid LedgerBookId, string EntityId, string TenantId, string CompanyId, string Currency, DateOnly EffectiveDate, string PeriodId, long PeriodVersion, IReadOnlyList<JournalEvidenceReference> SourceEvidence)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? EconomicObligationDigest { get; init; }</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:19](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L19) | Exact daily-lot obligation set independently retained on the recurring claim. |
 
 ## RecurringJournalEvidenceGuard
 
 Qualified name: <code>Meridian.Ledger.RecurringJournalEvidenceGuard</code>. Kind: `class`.
 
-Source: [src/Meridian.Ledger/RecurringJournalEvidence.cs:17](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L17).
+Source: [src/Meridian.Ledger/RecurringJournalEvidence.cs:23](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L23).
 
 Source provenance is immutable across edits, human approval and posting.
 
@@ -554,14 +560,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string EvidenceTag = &quot;recurring.journalEvidence.v1&quot;;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:19](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L19) |  |
-| <code>public const string DigestTag = &quot;recurring.journalEvidence.sha256&quot;;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:20](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L20) |  |
-| <code>public static bool IsRecurring(string? key) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:21](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L21) |  |
-| <code>public static string Serialize(RecurringJournalEvidence evidence) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:23](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L23) |  |
-| <code>public static RecurringJournalEvidence? Deserialize(string json) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:24](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L24) |  |
-| <code>public static string? ValidateSources(IReadOnlyList&lt;JournalEvidenceReference&gt;? evidence);</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:26](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L26) |  |
-| <code>public static string? Validate(ManualJournalEntryDraftDto draft);</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:42](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L42) |  |
-| <code>public static string CorrectionKey(string occurrenceKey, Guid journalEntryId) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:73](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L73) |  |
+| <code>public const string EvidenceTag = &quot;recurring.journalEvidence.v1&quot;;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:25](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L25) |  |
+| <code>public const string DigestTag = &quot;recurring.journalEvidence.sha256&quot;;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:26](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L26) |  |
+| <code>public static bool IsRecurring(string? key) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:27](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L27) |  |
+| <code>public static string Serialize(RecurringJournalEvidence evidence) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:29](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L29) |  |
+| <code>public static RecurringJournalEvidence? Deserialize(string json) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:30](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L30) |  |
+| <code>public static string? ValidateSources(IReadOnlyList&lt;JournalEvidenceReference&gt;? evidence);</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:32](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L32) |  |
+| <code>public static string? Validate(ManualJournalEntryDraftDto draft);</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:48](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L48) |  |
+| <code>public static string CorrectionKey(string occurrenceKey, Guid journalEntryId) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:84](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L84) |  |
 
 ## RecurringJournalOccurrence
 

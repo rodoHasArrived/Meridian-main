@@ -296,17 +296,19 @@ W5-ACCT-001: done; health green; evidence complete. Accounting records and six e
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | complete |
-| Last reviewed | 2026-07-02 |
+| Last reviewed | 2026-11-14 |
 
 ### Current Summary
 
-W5-MASSET-001: done; health green; evidence complete. Shared multi-asset coverage projects validation, provider evidence, ledger classification, reconciliation and close blockers.
+W5-MASSET-001: done; health green; evidence complete. Shared coverage baseline is delivered. Passive selected-version capability cards and loaded-observation refusal rollups are source-implemented pending integration verification; missing context remains Review and this is not charter Verified Coverage.
 
 ### Status References
 
 - Decisions: none recorded
 - PR references (not inferred acceptance): none recorded
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W5-MASSET-001.md)
+- Evidence: [tests/Meridian.Tests/Ui/InstrumentCapabilityReadServiceTests.cs](../../../tests/Meridian.Tests/Ui/InstrumentCapabilityReadServiceTests.cs)
+- Evidence: [src/Meridian.Ui.Shared/Services/InstrumentCapabilityReadService.cs](../../../src/Meridian.Ui.Shared/Services/InstrumentCapabilityReadService.cs)
 - Evidence: [tests/Meridian.Tests/SecurityMaster/SecurityMasterOperationalReadinessServiceTests.cs](../../../tests/Meridian.Tests/SecurityMaster/SecurityMasterOperationalReadinessServiceTests.cs)
 - Evidence: [tests/Meridian.Tests/SecurityMaster/SecurityMasterAssetClassSupportTests.cs](../../../tests/Meridian.Tests/SecurityMaster/SecurityMasterAssetClassSupportTests.cs)
 - Evidence: [tests/Meridian.Tests/SecurityMaster/SecurityValidationServiceTests.cs](../../../tests/Meridian.Tests/SecurityMaster/SecurityValidationServiceTests.cs)
@@ -314,6 +316,7 @@ W5-MASSET-001: done; health green; evidence complete. Shared multi-asset coverag
 - Evidence: [tests/Meridian.FSharp.Tests/DomainTests.fs](../../../tests/Meridian.FSharp.Tests/DomainTests.fs)
 - Evidence: [tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs](../../../tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs)
 - Evidence: [src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts](../../../src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts)
+- Evidence: [docs/engineering/plans/security-master-review-remediation-plan.md](../../engineering/plans/security-master-review-remediation-plan.md)
 
 
 ### Exit Criteria
@@ -1361,19 +1364,24 @@ W9-CORPACT-011: accepted; health green; evidence complete. Unsupported branches 
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-10-31 |
+| Last reviewed | 2026-11-14 |
 
 ### Current Summary
 
-W10-BOND-001: in_progress; health green; evidence in_progress. Bond analytics and schedule/cutover tools are bounded implementation. Curve pins, batch staging, settlement posting and floating-rate analytics remain open; no live cutover or acceptance.
+W10-BOND-001: in_progress; health green; evidence in_progress. Paged evidence-cohort scalar repair and bounded CD-v6 fixed-bullet accrual are source-implemented pending integration verification. Per-record review/publication and stable daily-lot claims preserve authority; Bond schedule migration and live acceptance remain separate.
 
 ### Status References
 
 - Decisions: none recorded
 - PR references (not inferred acceptance): [#3328](https://github.com/rodoHasArrived/Meridian-main/pull/3328)
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W10-BOND-001.md)
+- Evidence: [docs/operators/security-master-repairs-and-evidence.md](../../operators/security-master-repairs-and-evidence.md)
+- Evidence: [tests/Meridian.Tests/Ui/RecurringJournalCalculationTests.CertificateOfDepositObligations.cs](../../../tests/Meridian.Tests/Ui/RecurringJournalCalculationTests.CertificateOfDepositObligations.cs)
+- Evidence: [src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs](../../../src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs)
+- Evidence: [src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs](../../../src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs)
 - Evidence: [docs/engineering/plans/bond-capability-expansion.md](../../engineering/plans/bond-capability-expansion.md)
 - Evidence: [docs/testing/evidence/next-work-20261029/README.md](../../testing/evidence/next-work-20261029/README.md)
+- Evidence: [docs/engineering/plans/security-master-review-remediation-plan.md](../../engineering/plans/security-master-review-remediation-plan.md)
 
 
 ### Exit Criteria
@@ -1385,6 +1393,9 @@ W10-BOND-001: in_progress; health green; evidence in_progress. Bond analytics an
 
 ### Source Modules
 
+- `SRC-LEDGER`
+- `SRC-FSHARP`
+- `SRC-APP`
 - `SRC-CONTRACTS`
 - `SRC-DESIGN-INSTRUMENTS`
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
@@ -1542,17 +1553,21 @@ W10-RECON-001: in_progress; health yellow; evidence in_progress. Stable business
 | Priority | high |
 | Owner lane | Workstation Shell and UX |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-10-28 |
+| Last reviewed | 2026-11-14 |
 
 ### Current Summary
 
-W10-PROV-001: in_progress; health green; evidence in_progress. Posted-ledger and governed-run proof slices are implemented. Other report families, NAV/portfolio amounts, current-candidate verification and live acceptance remain open.
+W10-PROV-001: in_progress; health green; evidence in_progress. Draft-bound impact and forward retained journal-input comparison are source-implemented pending integration verification. Conservative books, unverified lots and legacy input gaps stay explicit; other amount families and live acceptance remain open.
 
 ### Status References
 
 - Decisions: none recorded
 - PR references (not inferred acceptance): [#3041](https://github.com/rodoHasArrived/Meridian-main/pull/3041)
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W10-PROV-001.md)
+- Evidence: [docs/operators/security-master-repairs-and-evidence.md](../../operators/security-master-repairs-and-evidence.md)
+- Evidence: [tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterImpactPublicationPostgresTests.cs](../../../tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterImpactPublicationPostgresTests.cs)
+- Evidence: [src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs](../../../src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs)
+- Evidence: [src/Meridian.Application/SecurityMaster/SecurityMasterImpactPreviewService.cs](../../../src/Meridian.Application/SecurityMaster/SecurityMasterImpactPreviewService.cs)
 - Evidence: [src/Meridian.Wpf/Features/Reporting/ReportRetainedAmountsApiClient.cs](../../../src/Meridian.Wpf/Features/Reporting/ReportRetainedAmountsApiClient.cs)
 - Evidence: [src/Meridian.Wpf/Features/Reporting/ReportRetainedAmountsViewModel.cs](../../../src/Meridian.Wpf/Features/Reporting/ReportRetainedAmountsViewModel.cs)
 - Evidence: [src/Meridian.Wpf/Features/Reporting/ReportRetainedAmountsControl.xaml](../../../src/Meridian.Wpf/Features/Reporting/ReportRetainedAmountsControl.xaml)
@@ -1581,6 +1596,7 @@ W10-PROV-001: in_progress; health green; evidence in_progress. Posted-ledger and
 - Evidence: [src/Meridian.Ui/dashboard/src/components/meridian/proof-drawer.test.tsx](../../../src/Meridian.Ui/dashboard/src/components/meridian/proof-drawer.test.tsx)
 - Evidence: [src/Meridian.Ui/dashboard/src/screens/finance-standard-pages-screen.test.tsx](../../../src/Meridian.Ui/dashboard/src/screens/finance-standard-pages-screen.test.tsx)
 - Evidence: [docs/testing/w10-amount-provenance.md](../../testing/w10-amount-provenance.md)
+- Evidence: [docs/engineering/plans/security-master-review-remediation-plan.md](../../engineering/plans/security-master-review-remediation-plan.md)
 
 
 ### Exit Criteria
@@ -1594,6 +1610,10 @@ W10-PROV-001: in_progress; health green; evidence in_progress. Posted-ledger and
 
 ### Source Modules
 
+- `SRC-REPORTING-READMODELS`
+- `SRC-DESIGN-REPORTING`
+- `SRC-STORAGE-ACCOUNTING`
+- `SRC-APP`
 - `SRC-UI-SHARED`
 - `SRC-CONTRACTS`
 - `SRC-UI-DASHBOARD`
@@ -2129,6 +2149,49 @@ W10-LOT-002: in_progress; health green; evidence in_progress. Canonical lots and
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
 
+## W11-LEGS-001 - Reusable fixed and floating legs for vanilla interest-rate swaps
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | planned |
+| Health | green |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-11-14 |
+
+### Current Summary
+
+W11-LEGS-001: planned; health green; evidence planned_evidence. Optional vanilla-irs-v1 adapts bounded fixed/floating legs to the existing engine; source-implemented pending integration verification. Swap stays v4 and old requests remain stable. No posting, optionality, credit protection or cross-currency treatment is added.
+
+### Status References
+
+- Decisions: none recorded
+- PR references (not inferred acceptance): none recorded
+- Evidence: [tests/Meridian.Tests/SecurityMaster/SecurityVanillaSwapProfileTests.cs](../../../tests/Meridian.Tests/SecurityMaster/SecurityVanillaSwapProfileTests.cs)
+- Evidence: [src/Meridian.Contracts/SecurityMaster/SecurityVanillaSwapProfile.cs](../../../src/Meridian.Contracts/SecurityMaster/SecurityVanillaSwapProfile.cs)
+- Evidence: [docs/adr/025-contractual-schedule-kernel.md](../../adr/025-contractual-schedule-kernel.md)
+- Evidence: [docs/adr/027-single-economic-model-consolidation.md](../../adr/027-single-economic-model-consolidation.md)
+- Evidence: [docs/engineering/plans/security-master-review-remediation-plan.md](../../engineering/plans/security-master-review-remediation-plan.md)
+
+
+### Exit Criteria
+
+- Fixed and floating legs carry explicit schedule conventions, day count, currency/notional and declared rate units, using the ADR-025 schedule kernel and typed fixing/source evidence.
+- Existing vanilla interest-rate swap cash-flow consumers converge on the leg modules with signed fixed/floating golden cases, exact replay and typed missing-fixing or unsupported-structure refusals.
+- Retained payloads, event versions and historical receipts preserve their interpretation; leg reuse does not bypass instrument-level economics, approval or accounting gates.
+- Cross-currency exchanges, CDS events, caps/floors, swaptions, structured-note optionality and premium/protection/funding payoffs remain explicit later extensions.
+- Implementation evidence links shared contracts and consumers, browser validation, compatibility fixtures and refusal tests before row-level acceptance.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-FSHARP`
+- `SRC-DESIGN-INSTRUMENTS`
+- `SRC-APP`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+
 ## W11-PASSPORT-001 - Number Passport contract across amount surfaces
 | Field | Value |
 | --- | --- |
@@ -2317,23 +2380,28 @@ W11-SHADOW-001: in_progress; health green; evidence in_progress. Shadow onboardi
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-10-16 |
+| Last reviewed | 2026-11-14 |
 
 ### Current Summary
 
-W11-PACK-001: planned; health green; evidence planned_evidence. Govern asset-class contract packs from the existing registry; planned scope retains the recorded migration and acceptance requirements.
+W11-PACK-001: planned; health green; evidence planned_evidence. All 32 compiled layer contributions and approved-profile developer exports are source-implemented pending integration verification. Governed pack activation, record version pinning and rollback remain planned; export never registers runtime classes.
 
 ### Status References
 
 - Decisions: DEC-CHARTER-DIRECTION-001
 - PR references (not inferred acceptance): none recorded
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W11-PACK-001.md)
+- Evidence: [tests/Meridian.Tests/SecurityMaster/SecurityAssetProfilePromotionReadServiceTests.cs](../../../tests/Meridian.Tests/SecurityMaster/SecurityAssetProfilePromotionReadServiceTests.cs)
+- Evidence: [src/Meridian.Application/SecurityMaster/SecurityAssetProfilePromotionReadService.cs](../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfilePromotionReadService.cs)
+- Evidence: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassModules.cs](../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassModules.cs)
 - Evidence: [docs/product/meridian-design-document.md](../../product/meridian-design-document.md)
 - Evidence: [docs/architecture/security-master-extensibility-review.md](../../architecture/security-master-extensibility-review.md)
+- Evidence: [docs/engineering/plans/security-master-review-remediation-plan.md](../../engineering/plans/security-master-review-remediation-plan.md)
 
 
 ### Exit Criteria
 
+- The structural increment composes all 32 classes through layer-owned schema, upgrade, role/unit, validator, codec, projection and accounting contributions with independent parity and replay proof; compiled composition does not activate a governed pack.
 - A contract pack is a versioned, content-hashed unit that declares its asset class, term schema, lifecycle events, cash-flow behavior, valuation methods, accounting rule bindings, validations, and reporting taxonomy, and the existing asset-class registry is its first source.
 - A pack moves through Draft, Tested, Reviewed, Approved, Active, Superseded, and Retired, and activation requires passing pack tests and a recorded approval.
 - Records keep the pack version they were created under, so activating a new version never silently reinterprets existing terms; migrating records to a new version is an explicit, audited operation.
@@ -2342,10 +2410,14 @@ W11-PACK-001: planned; health green; evidence planned_evidence. Govern asset-cla
 
 ### Source Modules
 
+- `SRC-UI-DASHBOARD`
+- `SRC-UI-SHARED`
+- `SRC-APP`
 - `SRC-DESIGN-INSTRUMENTS`
 - `SRC-CONTRACTS`
 - `SRC-FSHARP`
 - `SRC-STORAGE`
+- `SRC-STORAGE-ACCOUNTING`
 - `SRC-LEDGER`
 
 ## W11-EXEC-001 - Trading and Execution bounded-context ownership

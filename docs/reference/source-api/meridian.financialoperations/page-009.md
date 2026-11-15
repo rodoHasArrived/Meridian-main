@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementProfileVersion
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementProfileVersion</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:168](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L168).
+
+```csharp
+public sealed record StatementProfileVersion(string ProfileId, string Version);
+```
+
+## StatementRawFileEvidenceReference
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRawFileEvidenceReference</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:170](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L170).
+
+```csharp
+public sealed record StatementRawFileEvidenceReference(StatementRawFileRetentionMode RetentionMode, string SourcePath, string OriginalFileName, string SourceFileHash, string? EvidenceUri = null, string PolicyNote = StatementRawFileEvidenceReference.DefaultPolicyNote)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string DefaultPolicyNote = &quot;Raw broker and custodian files are not copied by this repository. The manifest stores a source path or approved evidence-store reference plus the source file hash for reproducibility.&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:178](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L178) |  |
+| <code>public static StatementRawFileEvidenceReference ExternalReference(string sourcePath, string originalFileName, string sourceFileHash);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:180](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L180) |  |
+| <code>public static StatementRawFileEvidenceReference EvidenceStoreReference(string sourcePath, string originalFileName, string sourceFileHash, string evidenceUri);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:196](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L196) |  |
+
 ## StatementRawFileRetentionMode
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRawFileRetentionMode</code>. Kind: `enum`.

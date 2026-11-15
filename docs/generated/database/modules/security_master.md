@@ -2,9 +2,9 @@
 
 # `security_master` schema
 
-- Relations: 138
-- Functions/procedures: 15
-- Triggers: 37
+- Relations: 140
+- Functions/procedures: 17
+- Triggers: 42
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -1504,6 +1504,13 @@ erDiagram
         bigint base_version
         text field_base_value
         boolean field_base_recorded
+        text drafted_by
+        text submitted_by
+        uuid repair_batch_id
+        text repair_evidence_id
+        text repair_evidence_sha256
+        text reviewed_impact_receipt_id
+        bigint reviewed_canonical_version
     }
     security_master_security_master_terms_capability_floor {
         boolean singleton PK
@@ -1547,6 +1554,20 @@ erDiagram
         timestamp_with_time_zone as_of PK
         text updated_by
         timestamp_with_time_zone recorded_at
+    }
+    security_master_security_rate_repair_batches {
+        uuid batch_id PK
+        text tenant_id
+        text company_id
+        text command_sha256
+        text created_by
+        timestamp_with_time_zone created_at
+        jsonb manifest_json
+    }
+    security_master_security_rate_repair_state {
+        uuid batch_id PK,FK
+        bigint version
+        jsonb state_json
     }
     security_master_security_raw_prices {
         uuid security_id PK,FK
@@ -1937,6 +1958,7 @@ erDiagram
     security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_approvals : "security_close_price_approvals_snapshot_id_fkey"
     security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_snapshots : "security_close_price_snapshot_corrects_snapshot_id_account_fkey"
     security_master_security_curves ||--o{ security_master_security_curve_versions : "security_curve_versions_curve_id_fkey"
+    security_master_security_rate_repair_batches ||--o{ security_master_security_rate_repair_state : "security_rate_repair_state_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_position_report_line : "servicer_position_report_line_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_statement_import_batch : "servicer_statement_import_batch_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_transaction_report_line : "servicer_transaction_report_line_servicer_report_batch_id_fkey"
@@ -2060,12 +2082,14 @@ erDiagram
 | `security_master_conflicts` | table | 14 | `conflict_id` | 0 | 2 | - |
 | `security_master_quality_reports` | table | 3 | `id` | 0 | 2 | - |
 | `security_master_quality_reports_id_seq` | sequence | 0 | - | 0 | 0 | - |
-| `security_master_revisions` | table | 16 | `revision_id` | 0 | 2 | - |
+| `security_master_revisions` | table | 23 | `revision_id` | 0 | 2 | - |
 | `security_master_terms_capability_floor` | table | 6 | `singleton` | 0 | 1 | One reviewed minimum declared-mapping/kernel capability floor for configured Security Master writers. Empty during 5b-1; activated only after the fleet inventory and data gates, before 5b-2. Server and WPF writer startup refuse unknown/newer active floors. Does not enable declared terms or authorize deployment. |
 | `security_operator_overrides` | table | 9 | `security_id` | 1 | 1 | - |
 | `security_price_selection_receipts` | table | 6 | `receipt_id` | 1 | 2 | Immutable golden-copy evaluation result, exact hierarchy snapshot, and quote comparisons; scoped receipt replay is the reproducibility authority. |
 | `security_pricing_hierarchy` | table | 6 | `security_id`, `account_id` | 1 | 2 | - |
 | `security_pricing_hierarchy_history` | table | 6 | `security_id`, `account_id`, `as_of` | 1 | 1 | Dated account-specific pricing hierarchy evidence, retaining source priorities, effective timestamp, author, and recording timestamp for historical price selection. |
+| `security_rate_repair_batches` | table | 7 | `batch_id` | 0 | 2 | Immutable rate-unit repair manifest retaining the exact selected roster, base versions, declared interpretation and evidence scope for an authenticated batch. |
+| `security_rate_repair_state` | table | 3 | `batch_id` | 1 | 1 | Versioned compare-and-swap progress for a frozen repair batch, retaining each record draft, workflow, impact receipt and explicit item outcome while manifest authority remains immutable. |
 | `security_raw_prices` | table | 9 | `security_id`, `source_id`, `price_as_of` | 1 | 2 | - |
 | `security_snapshots` | table | 4 | `security_id` | 0 | 1 | - |
 | `security_underlying_links` | table | 12 | `link_id` | 1 | 3 | The underlying graph: one edge per row from an instrument to the security or named reference it depends on, in a stated role, with its validity window. Derived rows follow the terms; declared rows are governed through the graph API. |

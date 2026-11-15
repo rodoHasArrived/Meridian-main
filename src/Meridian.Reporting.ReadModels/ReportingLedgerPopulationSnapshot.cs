@@ -91,6 +91,7 @@ public sealed record ReportingLedgerPopulationSnapshot(
                     || line.Dimensions?.BookId != checkpoint.LedgerBookId
                     || line.Dimensions?.OrganizationId != checkpoint.OrganizationId)))
             throw new ReportingGovernanceException("The retained ledger population is outside the certified accounting scope or sequence boundary.");
+        ReportingSecurityInputEvidence.Validate(checkpoint, snapshot.Journals.Select(static journal => journal.Entry).ToArray());
         if (!Sha256Digest.FixedEquals(checkpoint.CheckpointHash, snapshot.ComputeCheckpointHash(checkpoint))
             || checkpoint.CheckpointId != ReportingRetainedLedgerPopulationValidation.BuildCheckpointId(checkpoint.CheckpointHash))
             throw new ReportingGovernanceException("The retained population does not reproduce the certified source checkpoint digest.");

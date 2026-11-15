@@ -26,7 +26,8 @@ public sealed partial class SecurityMasterWorkbenchQueryService
         SecurityMasterTrustSnapshotDto snapshot,
         TradingParametersDto? tradingParameters,
         string? fundProfileId,
-        CancellationToken ct)
+        CancellationToken ct,
+        SecurityDetailDto selectedDetail)
     {
         var identifierSummary = snapshot.IdentifierSummary ?? BuildFallbackIdentifierSummary(snapshot.Identity);
         var lifecycleEvents = snapshot.ChangeHistory
@@ -78,7 +79,9 @@ public sealed partial class SecurityMasterWorkbenchQueryService
                 pricing,
                 referenceDataWorkbench,
                 classificationProfile),
-            ClassificationProfile = classificationProfile
+            ClassificationProfile = classificationProfile,
+            Capabilities = await _capabilityReadService.AssessSelectedAsync(selectedDetail,
+                snapshot.RetrievedAtUtc, snapshot.ValidationReport, ct).ConfigureAwait(false)
         };
     }
 

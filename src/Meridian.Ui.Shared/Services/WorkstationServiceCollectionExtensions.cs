@@ -691,6 +691,19 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<BacktestToLivePromoter>();
         services.TryAddSingleton<PromotionService>();
         services.TryAddSingleton<ISecurityMasterWorkbenchQueryService, SecurityMasterWorkbenchQueryService>();
+        services.TryAddSingleton<ISecurityMasterImpactScopeAccessor, WorkstationImpactScopeAccessor>();
+        services.TryAddSingleton<ISecurityMasterImpactPreviewStore>(sp =>
+            new FileSecurityMasterImpactPreviewStore(Path.Combine(ResolveWorkstationDataDirectory(sp), "security-master", "impact-previews")));
+        services.TryAddScoped<ISecurityMasterImpactPreviewService>(sp =>
+            sp.GetService<Meridian.Storage.SecurityMaster.ISecurityMasterStore>() is { } securityStore
+                ? new SecurityMasterImpactPreviewService(sp.GetRequiredService<ISecurityMasterRevisionStore>(), securityStore,
+                    sp.GetRequiredService<ISecurityMasterWorkbenchQueryService>(), sp.GetRequiredService<IAffectedLedgerBookResolver>(),
+                    sp.GetRequiredService<ISecurityMasterCashFlowService>(), sp.GetRequiredService<ISecurityMasterImpactPreviewStore>(),
+                    sp.GetRequiredService<IFundProfileTenancyRegistry>(), sp.GetService<Meridian.Storage.Ledger.ILedgerJournalStore>(),
+                    sp.GetService<Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog>(),
+                    sp.GetService<ISecurityMasterReleasedReportImpactQuery>())
+                : null!);
+
         // Durable governed-revision lifecycle state is process-wide, so it is a singleton consulted by
         // the scoped command service (publish refuses to run unless the revision is durably Approved).
         services.TryAddSingleton<
@@ -709,6 +722,9 @@ public static class WorkstationServiceCollectionExtensions
         // policy over it on its operator-direct path, the command service reads independent review
         // from it, and the routes consult it so they can refuse before reading the request's security.
         services.AddSecurityMasterGovernanceRequirements();
+        services.TryAddSingleton<InstrumentCapabilityReadService>();
+        services.AddSecurityAssetProfilePromotionServices();
+        services.AddSecurityMasterOperatorWorkflows();
         // Phase 3 period-aware propagation: the ledger accounting-period status is the lock
         // authority (default-deny → HardClosed when indeterminate). The restatement resolver routes a
         // closed-period edit into a governed restatement proposal rather than a silent mutation; the
@@ -1020,7 +1036,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<IOperationsContinuityTransactionalCommitStore>(),
                 sp.GetService<ContractSecurityMasterQueryService>(),
-                closeReadinessGuard: sp.GetService<IClosePublicationReadinessGuard>()));
+                closeReadinessGuard: sp.GetService<IClosePublicationReadinessGuard>(),
+                revisionWorkflowAuthority: sp.GetService<ISecurityMasterRevisionWorkflowAuthority>()));
         services.TryAddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
@@ -1806,6 +1823,7 @@ internal sealed class ServiceProviderReportingAuthoritativeSource :
             fundStructure,
             _services.GetService<TimeProvider>(),
             journalStore,
-            capitalCallNotices: _services.GetService<CapitalCallNoticeSourceValidator>());
+            capitalCallNotices: _services.GetService<CapitalCallNoticeSourceValidator>(),
+            securityReceiptStore: _services.GetService<ISecurityCashFlowReceiptStore>());
     }
 }

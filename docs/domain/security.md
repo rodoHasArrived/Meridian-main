@@ -2,7 +2,7 @@
 
 **Status:** active guidance  
 **Owner:** core-team  
-**Reviewed:** 2026-10-30
+**Reviewed:** 2026-11-14
 
 ## Definition
 
@@ -206,3 +206,62 @@ lifecycle remain authoritative. The draft retains its template version and treat
 use the same mark fingerprint and corrected marks produce a new reviewable draft. Missing or
 stale marks cannot produce a draft. StructuredNote remains outside the coupon/accrual accounting
 event slice, so its FixedIncome taxonomy cannot authorize bond accruals or amortization.
+
+## Contextual capabilities and governed repairs
+
+The passport evaluates terms, cash flows, accrual, valuation, corporate actions and redemption
+against the selected retained security version. Applicability, freshness and Ready/Review/Blocked
+are separate facts. Ready requires the actual available execution preflight; a descriptor's declared
+coverage cannot supply missing book, lot, period, model or journal-template context. Unknown context
+or an unimplemented evaluator remains Review. Passive assessment does not retain calculation receipts
+or grant approval. An assigned external/provider schedule reports Review/RequiresContext; its source
+evidence requires the provider/maintained-schedule workflow. That source is Blocked for this recurring
+fixed-income operation, whose actual executor requires calculated fixed-rate evidence. Portfolio
+aggregates only authorized, loaded brokerage observations, with their
+observation times and unresolved identities visible; it is not an all-book holdings inventory or
+the charter's Verified Coverage measure.
+
+Scalar rate-unit repair freezes exact security IDs/base versions, source field/schema, rate role,
+chosen unit and evidence applicability. Vendor/class/issuer filters help discovery but do not prove
+a common interpretation. The retained numeric scalar never changes. Every selected item receives
+its own governed revision and subject-addressed workflow; the authenticated maker, submitter and
+independent assigned reviewer remain distinct authority facts. Explicit publication and resumable
+per-item outcomes preserve conflicts instead of extending an approval to changed records. Bond's
+coupon structure still uses the full schedule migration path. Discovery is a bounded live scan;
+projection gaps and changed overlapping rows cannot become zero missing records or a complete catalog.
+
+## Retained review impact and report inputs
+
+Impact previews bind a draft's exact base and proposed terms to typed before/after calculation
+evidence, conservative candidate books, known periods and retained released-report dependencies.
+Unavailable evidence remains unavailable. `LotImpactUnverified` explicitly prevents exact live-lot
+or cross-fund impact claims. Approval and publication recheck the retained dependency fingerprint;
+stale approved evidence requires a fresh draft and workflow. PostgreSQL participants share a short,
+broad dependency guard and canonical publication joins the ambient per-item mutation. Dispatch occurs
+after commit. This bounded path does not make every historical downstream handler transactional.
+
+An individual passport draft freezes an explicitly selected fund profile; server authorization
+establishes tenant/company ownership. The browser requires the retained content-hash receipt for that
+security/revision/fund to be loaded and inspected before approve or publish. A displayed identifier
+alone does not establish inspection, and the server still rechecks canonical/dependency authority.
+
+Released-report comparison starts from the actual journal calculation inputs retained prospectively
+in the private certified snapshot and authorized visible report-line bindings. It shows those inputs
+beside the current approved definition, with report valuation date and calculation context. Missing
+legacy input or attribution stays a gap; current terms never substitute for a missing report input.
+Exact retained event/revision/workflow links distinguish event actor, maker, submitter and actual
+independent approval. This supplemental audit lookup does not establish historical approval visibility,
+a complete effective-time terms query or commit-consistent timestamp history.
+
+Calculation replay, report input display and exact-event attribution share an explicit frozen
+retained-terms reader for historical packets that predate format declarations. It classifies only
+the verified retained view and preserves original receipt bytes and hashes. Current-state reads and
+new captures require the declared format; malformed or unsupported declarations remain refusals.
+
+CustomAsset promotion reads exact approved profile/version usage and required-field presence from one
+stored snapshot. Complete/Incomplete/Unknown describes presence on assessed active records, not type
+or economic validity; malformed and nonapproved references are separate. An authorized developer
+export contains the approved definition, approval metadata, usage and review tasks. Its candidate
+`AssetClasses` stays empty and `PlannedAssetClasses` names intended work. No observed value becomes a
+default, runtime class or active pack. See [asset-pack admission](security-asset-pack-admission.md)
+and [operator repairs and evidence](../operators/security-master-repairs-and-evidence.md).

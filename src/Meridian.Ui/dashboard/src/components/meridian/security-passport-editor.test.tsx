@@ -34,7 +34,7 @@ function editResult(overrides: Partial<SecurityMasterEditResult> = {}): Security
 
 function renderEditor(service: Partial<SecurityPassportWorkbenchService>) {
   return render(
-    <SecurityPassportEditor securityId={SECURITY_ID} symbol="ACME" assetClass="Equity" version={7} trustPosture="Review" service={service} />
+    <SecurityPassportEditor securityId={SECURITY_ID} symbol="ACME" assetClass="Equity" version={7} trustPosture="Review" fundProfileId="fund-reviewed" service={service} />
   );
 }
 
@@ -124,6 +124,7 @@ describe("SecurityPassportEditor", () => {
         securityId={SECURITY_ID}
         symbol="ACME"
         version={7}
+        fundProfileId="fund-reviewed"
         service={{ updateField }}
         onReloadRequested={onReloadRequested}
       />

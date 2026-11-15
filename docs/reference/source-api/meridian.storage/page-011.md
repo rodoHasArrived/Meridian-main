@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostgresEquityReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresEquityReferenceProjectionStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs#L9).
+
+Reads equity reference projections from PostgreSQL by security, exchange, and issuer.
+
+```csharp
+public sealed class PostgresEquityReferenceProjectionStore : IEquityReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresEquityReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs#L27) |  |
+| <code>public Task&lt;EquityProjectionRow?&gt; GetEquityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs#L35) |  |
+| <code>public Task&lt;IReadOnlyList&lt;EquityProjectionRow&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs#L38) |  |
+| <code>public Task&lt;IReadOnlyList&lt;EquityProjectionRow&gt;&gt; GetByIssuerAsync(string issuerName, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs:41](../../../../src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs#L41) |  |
+
+## PostgresFutureReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresFutureReferenceProjectionStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs#L9).
+
+Reads futures reference projections from PostgreSQL by security and root symbol.
+
+```csharp
+public sealed class PostgresFutureReferenceProjectionStore : IFutureReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresFutureReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs:21](../../../../src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs#L21) |  |
+| <code>public Task&lt;FutureProjectionRow?&gt; GetFutureAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs:29](../../../../src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs#L29) |  |
+| <code>public Task&lt;IReadOnlyList&lt;FutureProjectionRow&gt;&gt; GetByRootSymbolAsync(string rootSymbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs:32](../../../../src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs#L32) |  |
+
+## PostgresFxSpotReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresFxSpotReferenceProjectionStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs#L9).
+
+Reads spot foreign exchange reference projections from PostgreSQL by security, pair, and currency.
+
+```csharp
+public sealed class PostgresFxSpotReferenceProjectionStore : IFxSpotReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresFxSpotReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs:23](../../../../src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs#L23) |  |
+| <code>public Task&lt;FxSpotProjectionRow?&gt; GetFxSpotAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs:31](../../../../src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs#L31) |  |
+| <code>public Task&lt;FxSpotProjectionRow?&gt; GetByPairCodeAsync(string pairCode, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs:34](../../../../src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs#L34) |  |
+| <code>public Task&lt;IReadOnlyList&lt;FxSpotProjectionRow&gt;&gt; GetByCurrencyAsync(string currency, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs:37](../../../../src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs#L37) |  |
+
 ## PostgresMoneyMarketFundReferenceProjectionStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresMoneyMarketFundReferenceProjectionStore</code>. Kind: `class`.
@@ -266,16 +328,17 @@ Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore
 Persists security cash flow source definitions in PostgreSQL.
 
 ```csharp
-public sealed class PostgresSecurityMasterCashFlowStore : ISecurityMasterCashFlowStore
+public sealed class PostgresSecurityMasterCashFlowStore : ISecurityMasterCashFlowStore, ISecurityMasterImpactGuardParticipant
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PostgresSecurityMasterCashFlowStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs#L13) |  |
-| <code>public async Task&lt;SecurityCashFlowSourceDto?&gt; GetSourceAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs:18](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs#L18) |  |
-| <code>public async Task UpsertSourceAsync(SecurityCashFlowSourceDto source, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs:48](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs#L48) |  |
+| <code>public SecurityMasterOptions ImpactGuardOptions =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs:12](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs#L12) |  |
+| <code>public PostgresSecurityMasterCashFlowStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs:14](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs#L14) |  |
+| <code>public async Task&lt;SecurityCashFlowSourceDto?&gt; GetSourceAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs:19](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs#L19) |  |
+| <code>public async Task UpsertSourceAsync(SecurityCashFlowSourceDto source, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs:49](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterCashFlowStore.cs#L49) |  |
 
 ## PostgresSecurityMasterEventStore
 
@@ -306,9 +369,9 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresSecurityMasterMutation</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:18](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L18).
+Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:19](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L19).
 
-A transaction shared only by the overlay and governed revision stores. The durable generation fences readers on other instances, including the first edit (there need not be an overlay yet). No external workflow, event publication or downstream handler is enlisted in this transaction.
+A transaction shared by governed revisions, overlays and participating canonical writes. The durable generation fences other workbench instances. Canonical event/projection/provenance writes join an active scope; derived cache/history work waits for the outermost commit. External approval workflows remain separately committed and require exact-evidence reconciliation.
 
 ```csharp
 public static class PostgresSecurityMasterMutation
@@ -318,7 +381,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static async Task&lt;T&gt; ExecuteAsync&lt;T&gt;(SecurityMasterOptions options, Guid securityId, Func&lt;Task&lt;T&gt;&gt; operation, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:22](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L22) |  |
+| <code>public static async Task&lt;T&gt; ExecuteAsync&lt;T&gt;(SecurityMasterOptions options, Guid securityId, Func&lt;Task&lt;T&gt;&gt; operation, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:23](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L23) |  |
 
 ## PostgresSecurityMasterPricingStore
 
@@ -406,6 +469,18 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore</code>. Kind: `class`.
 
+Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterImpactGuardParticipant.cs:11](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterImpactGuardParticipant.cs#L11).
+
+```csharp
+public sealed partial class PostgresSecurityMasterStore : ISecurityMasterImpactGuardParticipant
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterOptions ImpactGuardOptions =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterImpactGuardParticipant.cs:13](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterImpactGuardParticipant.cs#L13) |  |
+
 Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Aliases.cs:13](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Aliases.cs#L13).
 
 Alias write and recorded-history paths. security_aliases holds the current alias row used by identifier resolution and posting authority. Every recorded change to an alias first appends a row to the append-only security_alias_revisions table without overwriting earlier revisions. Recorded-as-of reads filter stored timestamp eligibility; these are not historical commit-visibility snapshots.
@@ -421,7 +496,7 @@ Declared public members:
 | <code>public async Task&lt;SecurityAliasDto?&gt; UpsertAliasAsync(SecurityAliasDto alias, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Aliases.cs:23](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Aliases.cs#L23) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;SecurityAliasDto&gt;&gt; GetAliasesRecordedAsOfAsync(Guid securityId, DateTimeOffset recordedAsOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Aliases.cs:98](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Aliases.cs#L98) |  |
 
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L9).
+Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L10).
 
 ```csharp
 public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
@@ -431,19 +506,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PostgresSecurityMasterStore(SecurityMasterOptions options, SecurityMasterNodeIdentity? nodeIdentity = null);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:103](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L103) |  |
-| <code>public async Task UpsertProjectionAsync(SecurityProjectionRecord record, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:109](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L109) |  |
-| <code>public async Task PersistProjectionBatchAsync(string projectionName, long lastGlobalSequence, IReadOnlyList&lt;SecurityProjectionRecord&gt; records, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:141](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L141) |  |
-| <code>public async Task DeactivateProjectionAsync(Guid securityId, DateTimeOffset effectiveTo, long version, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:202](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L202) |  |
-| <code>public async Task&lt;SecurityDetailDto?&gt; GetDetailAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:260](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L260) |  |
-| <code>public async Task&lt;SecurityProjectionRecord?&gt; GetProjectionAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:266](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L266) |  |
-| <code>public async Task&lt;SecurityProjectionRecord?&gt; GetByIdentifierAsync(SecurityIdentifierKind kind, string value, string? provider, DateTimeOffset asOfUtc, bool includeInactive, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:272](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L272) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SecuritySummaryDto&gt;&gt; SearchAsync(SecuritySearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:279](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L279) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadAllAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:341](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L341) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadActiveAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:344](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L344) |  |
-| <code>public async Task&lt;int&gt; CountUntaggedAssetSpecificTermsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:389](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L389) | One aggregate over securities (ADR-024 decision 5): a row is untagged when its payload is not a JSON object or its termsFormat member is absent or not a string — the same verdict SecurityTermsEnvelope.GetDeclaredFormat reaches, without loading a single projection. SecurityMasterPostgresRoundTripTests pins the SQL to the C# semantics row by row. |
-| <code>public async Task&lt;long?&gt; GetCheckpointAsync(string projectionName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:403](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L403) |  |
-| <code>public async Task SaveCheckpointAsync(string projectionName, long lastGlobalSequence, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:418](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L418) |  |
+| <code>public PostgresSecurityMasterStore(SecurityMasterOptions options, SecurityMasterNodeIdentity? nodeIdentity = null);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:104](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L104) |  |
+| <code>public async Task UpsertProjectionAsync(SecurityProjectionRecord record, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:110](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L110) |  |
+| <code>public async Task PersistProjectionBatchAsync(string projectionName, long lastGlobalSequence, IReadOnlyList&lt;SecurityProjectionRecord&gt; records, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:142](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L142) |  |
+| <code>public async Task DeactivateProjectionAsync(Guid securityId, DateTimeOffset effectiveTo, long version, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:203](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L203) |  |
+| <code>public async Task&lt;SecurityDetailDto?&gt; GetDetailAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:261](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L261) |  |
+| <code>public async Task&lt;SecurityProjectionRecord?&gt; GetProjectionAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:267](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L267) |  |
+| <code>public async Task&lt;SecurityProjectionRecord?&gt; GetByIdentifierAsync(SecurityIdentifierKind kind, string value, string? provider, DateTimeOffset asOfUtc, bool includeInactive, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:278](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L278) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecuritySummaryDto&gt;&gt; SearchAsync(SecuritySearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:285](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L285) |  |
+| <code>public Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadAllAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:347](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L347) |  |
+| <code>public Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadActiveAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:350](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L350) |  |
+| <code>public async Task&lt;int&gt; CountUntaggedAssetSpecificTermsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:395](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L395) | One aggregate over securities (ADR-024 decision 5): a row is untagged when its payload is not a JSON object or its termsFormat member is absent or not a string — the same verdict SecurityTermsEnvelope.GetDeclaredFormat reaches, without loading a single projection. SecurityMasterPostgresRoundTripTests pins the SQL to the C# semantics row by row. |
+| <code>public async Task&lt;long?&gt; GetCheckpointAsync(string projectionName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:409](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L409) |  |
+| <code>public async Task SaveCheckpointAsync(string projectionName, long lastGlobalSequence, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:424](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L424) |  |
 
 Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.CustomAssetProfileFields.cs:8](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.CustomAssetProfileFields.cs#L8).
 
@@ -483,6 +558,19 @@ Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Posting
 ```csharp
 public sealed partial class PostgresSecurityMasterStore
 ```
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.ProfileUsage.cs:6](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.ProfileUsage.cs#L6).
+
+```csharp
+public sealed partial class PostgresSecurityMasterStore : ISecurityAssetProfileUsageStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IReadOnlyList&lt;SecurityAssetProfileUsageCount&gt;&gt; GetProfileUsageCountsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.ProfileUsage.cs:15](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.ProfileUsage.cs#L15) | Counts securities, including complete zero-field envelopes. The per-field projection cannot supply this population. One SQL statement observes one database snapshot and returns no values. |
+| <code>public async Task&lt;IReadOnlyList&lt;SecurityAssetProfileUsageCount&gt;&gt; GetProfileUsageSnapshotAsync(IReadOnlyList&lt;SecurityAssetProfileUsageRequirements&gt; requirements, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.ProfileUsage.cs:18](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.ProfileUsage.cs#L18) |  |
 
 Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.TermsProjection.cs:10](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.TermsProjection.cs#L10).
 
@@ -617,6 +705,35 @@ Declared public members:
 | --- | --- | --- |
 | <code>public RegistryProjectionReadService(SecurityMasterOptions options, ISecurityMasterStore store) : this(options, store, rows : null);</code> | [src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs:78](../../../../src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs#L78) |  |
 | <code>public async Task&lt;SecurityTermsProjectionReadDto?&gt; GetAsync(string assetClass, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs:109](../../../../src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs#L109) |  |
+
+## SecurityAssetProfileUsageCount
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityAssetProfileUsageCount</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ISecurityAssetProfileUsageStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/ISecurityAssetProfileUsageStore.cs#L15).
+
+```csharp
+public sealed record SecurityAssetProfileUsageCount(string? ProfileId, int? ProfileVersion, string? EnvelopeIssue, long ActiveRecordCount, long InactiveRecordCount, long UnknownStatusRecordCount)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public long? CompleteActiveRecordCount { get; init; }</code> | [src/Meridian.Storage/SecurityMaster/ISecurityAssetProfileUsageStore.cs:19](../../../../src/Meridian.Storage/SecurityMaster/ISecurityAssetProfileUsageStore.cs#L19) |  |
+| <code>public long? IncompleteActiveRecordCount { get; init; }</code> | [src/Meridian.Storage/SecurityMaster/ISecurityAssetProfileUsageStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/ISecurityAssetProfileUsageStore.cs#L20) |  |
+| <code>public long? UnknownActiveRecordCount { get; init; }</code> | [src/Meridian.Storage/SecurityMaster/ISecurityAssetProfileUsageStore.cs:21](../../../../src/Meridian.Storage/SecurityMaster/ISecurityAssetProfileUsageStore.cs#L21) |  |
+| <code>public IReadOnlyDictionary&lt;string, long&gt;? MissingRequiredFieldCounts { get; init; }</code> | [src/Meridian.Storage/SecurityMaster/ISecurityAssetProfileUsageStore.cs:22](../../../../src/Meridian.Storage/SecurityMaster/ISecurityAssetProfileUsageStore.cs#L22) |  |
+
+## SecurityAssetProfileUsageRequirements
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityAssetProfileUsageRequirements</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ISecurityAssetProfileUsageStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/ISecurityAssetProfileUsageStore.cs#L13).
+
+```csharp
+public sealed record SecurityAssetProfileUsageRequirements(string ProfileId, int ProfileVersion, IReadOnlyList<string> RequiredFieldKeys);
+```
 
 ## SecurityGovernanceEvent
 
@@ -850,7 +967,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterMutationConflictException</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:229](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L229).
+Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:267](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L267).
 
 Signals a concurrent change to a security&#x27;s governed mutation state.
 
@@ -862,7 +979,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Guid SecurityId { get; } = securityId;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:232](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L232) |  |
+| <code>public Guid SecurityId { get; } = securityId;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:270](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L270) |  |
 
 ## SecurityMasterNodeIdentity
 
@@ -1015,59 +1132,3 @@ Enum declarations:
 | <code>Replaced</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs:28](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs#L28) | The retained payload differed and was replaced. |
 | <code>Unchanged</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs:31](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs#L31) | The retained payload already equals the replacement; nothing was written. |
 | <code>VersionChanged</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs:34](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs#L34) | The snapshot is gone or holds another version; nothing was written. |
-
-## StructuredCreditFactorScheduleRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.StructuredCreditFactorScheduleRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:57](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L57).
-
-```csharp
-public sealed record StructuredCreditFactorScheduleRow(Guid SecurityId, int Ordinal, DateOnly AsOfDate, decimal Factor);
-```
-
-## StructuredCreditProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.StructuredCreditProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:32](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L32).
-
-One projected structured-credit tranche. FactorScheduleReference is the free-text trustee-report pointer, never factor data — dated factors live in the factor schedule.
-
-```csharp
-public sealed record StructuredCreditProjectionRow(Guid SecurityId, string DisplayName, string Currency, string Tranche, string? PoolId, string CollateralType, decimal OriginalFace, decimal? CurrentFactor, string CouponOrIndex, string? FactorScheduleReference, DateOnly? MaturityDate, string PrimaryIdentifierValue, long Version, string? StructuredCreditKind = null, string? Seniority = null, decimal? AttachmentPoint = null, decimal? DetachmentPoint = null, decimal? WeightedAverageCoupon = null, int? WeightedAverageMaturityMonths = null, int? WeightedAverageLoanAgeMonths = null, DateOnly? ReinvestmentPeriodEnd = null, DateOnly? NonCallPeriodEnd = null);
-```
-
-## SwapProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SwapProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L13).
-
-```csharp
-public sealed record SwapProjectionRow(Guid SecurityId, string DisplayName, string Currency, string? SwapType, DateOnly EffectiveDate, DateOnly MaturityDate, string LifecycleStat, string PrimaryIdentifierValue, long Version);
-```
-
-## UnderlyingLinkDeclaredPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.UnderlyingLinkDeclaredPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:85](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L85).
-
-UnderlyingGraph / UnderlyingLinkDeclared or UnderlyingLinkAmended.
-
-```csharp
-public sealed record UnderlyingLinkDeclaredPayload(UnderlyingLinkPayload Link, UnderlyingLinkPayload? Previous, IReadOnlyList<string> Changes) : ISecurityGovernancePayload;
-```
-
-## UnderlyingLinkPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.UnderlyingLinkPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:71](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L71).
-
-A declared underlying link as the UnderlyingGraph stream records it.
-
-```csharp
-public sealed record UnderlyingLinkPayload(Guid LinkId, Guid SecurityId, string Role, Guid? UnderlyingSecurityId, string? Reference, decimal? Weight, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, string? Notes, string DeclaredBy, DateTimeOffset DeclaredAt);
-```

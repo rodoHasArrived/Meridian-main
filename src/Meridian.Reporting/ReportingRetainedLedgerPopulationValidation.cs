@@ -26,6 +26,8 @@ public static class ReportingRetainedLedgerPopulationValidation
             .Where(id => id?.StartsWith(EvidencePrefix, StringComparison.Ordinal) == true).ToArray();
         if (source.LedgerPopulation is not { } population)
         {
+            if (source.SecurityInputs is not null)
+                throw Invalid("Retained Security Master inputs require the exact ledger population they bind.");
             // Historic checkpoints did not claim to retain a complete journal population.
             if (markers.Length == 0 && !source.CheckpointId.StartsWith(RetainedCheckpointPrefix, StringComparison.Ordinal))
                 return;
@@ -71,6 +73,7 @@ public static class ReportingRetainedLedgerPopulationValidation
             var journalIds = new HashSet<Guid>();
             var lineIds = new HashSet<Guid>();
             var lineCount = 0;
+            var retainedEntries = new List<JournalEntry>();
             long highestSequence = 0;
             foreach (var record in journals.EnumerateArray())
             {
@@ -91,6 +94,7 @@ public static class ReportingRetainedLedgerPopulationValidation
                         throw Invalid("A retained journal line is ambiguous or outside the certified accounting scope.");
                 }
                 lineCount = checked(lineCount + entry.Lines.Count);
+                retainedEntries.Add(entry);
                 highestSequence = Math.Max(highestSequence, sequence);
             }
             if (journals.GetArrayLength() != population.JournalEntryCount || lineCount != population.LedgerLineCount
@@ -98,6 +102,7 @@ public static class ReportingRetainedLedgerPopulationValidation
                 throw Invalid("Retained journal population counts do not match their certified declaration.");
             RequiredArray(root, "TaxLotReliefProjections");
             RequiredArray(root, "ReportAmounts");
+            ReportingSecurityInputEvidence.Validate(source, retainedEntries);
             var periodVersion = Required(root, "PeriodVersion").GetInt64();
             if (!Sha256Digest.FixedEquals(source.CheckpointHash,
                     ComputeCheckpointHash(source, scope.LedgerBookId, scope.PeriodId, periodVersion, rows))
@@ -132,6 +137,8 @@ public static class ReportingRetainedLedgerPopulationValidation
             writer.WriteNumber("periodVersion", periodVersion);
             writer.WriteNumber("highestGlobalSequence", source.HighestGlobalSequence);
             writer.WriteString("ledgerPopulationHash", source.LedgerPopulation!.ContentHashSha256);
+            if (source.SecurityInputs is { } securityInputs)
+                writer.WriteString("securityInputsHash", securityInputs.ContentHashSha256);
             writer.WriteStartArray("rows");
             foreach (var row in rows)
             {

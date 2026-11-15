@@ -19,6 +19,7 @@ import { normalizeApiErrorDisplay } from "./accounting-screen.view-model.shared"
 import type {
   CorporateAction,
   InstrumentPassport,
+  InstrumentCapabilityAssessment,
   InstrumentPassportOperationsReadiness,
   InstrumentPassportOperationsWorkbenchItem,
   InstrumentPassportOperationsWorkbenchPanel,
@@ -306,6 +307,7 @@ export interface InstrumentPassportOperationsReadinessViewModel extends Instrume
 
 
 export interface InstrumentPassportViewState {
+  capabilities: InstrumentCapabilityAssessment[];
   securityId: string;
   title: string;
   description: string;
@@ -1102,6 +1104,7 @@ export function buildInstrumentPassportViewState({
   return {
     securityId: displaySecurityId,
     title: "Instrument passport",
+    capabilities: passport?.capabilities ?? [],
     description: passport
       ? `${passport.identity?.displayName ?? "Selected security"} passport combines identifiers, provider confidence, lifecycle, pricing, and downstream usage evidence.`
       : `Instrument passport evidence for ${displaySecurityId}.`,

@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-11-02
+**Reviewed:** 2026-11-14
 
 ## Purpose and Scope
 
@@ -661,4 +661,32 @@ StructuredNote. Deploy readers of these versions before publishing a declaration
 replacement raises the row's stamp; old stamped stray keys remain inert through unrelated amendments.
 The economic `rateConvention` module restores that stamp on an economic-only replay. Absent modules
 leave historical economic bytes unchanged. These version advances do not enable authoring the
-calculation-only `cashFlowContract` companion or swap leg convention blocks.
+calculation-only `cashFlowContract` companion. The bounded vanilla IRS authoring increment below
+separately permits reviewed leg convention blocks.
+
+## Bounded CD version 6 and vanilla IRS follow-on
+
+The CD profile adds optional version-6 issue/start date, principal and payment frequency and a
+version-6 calculation context for `fixed-bullet-actual365-v1`. The storage stamp floor remains 1;
+this does not activate every old CD or rewrite historical calculations. Confirm that older CDs still
+capture/replay version-5 analysis and declared version-6 CDs cannot fall back after strict-profile
+refusal. Before publishing the new fields, inventory every reader, writer and calculation consumer
+against the release's actual startup capability lines. Deploy matching readers first, then route explicit
+governed full-term review to capable writers. Older-stamp residue must be cleared or included in
+an explicit version-6 reviewed replacement. Existing Bond/StructuredCredit version-5 replay remains
+the compatibility baseline. Do not raise a fleet floor merely because the new build is available.
+
+Swap stays version 4/read 4/floor 1. Optional `calculationProfile: vanilla-irs-v1` selects the same
+shared contractual engine after its exact two-leg shape and dated fixing/forward evidence pass.
+Reviewed authoring permits the existing leg conventions only within that bounded shape. Omitted
+profile requests retain their previous behavior. The generic `cashFlowContract` companion remains
+readable-only, and no posting gate changes. A rollout must retain old request/receipt replay proof
+and explicitly test new authoring and refusals before operational use.
+
+Migration `069_rate_repair_governance.sql` and ledger migration
+`V_ledger_073__security_revision_workflow_scope.sql` support the new repair workflow. Apply them only
+through the normal transactional migration runner. They retain legacy workflow identity as Close,
+add immutable revision-subject identity and write-once repair/evidence bindings, and preserve Close
+uniqueness. The scoped schema-control waivers document an index replacement and rejection-trigger
+lexical match; they do not authorize data deletion, production execution or skipped hosted checks.
+Use [repairs and evidence operations](security-master-repairs-and-evidence.md) for the workflow.

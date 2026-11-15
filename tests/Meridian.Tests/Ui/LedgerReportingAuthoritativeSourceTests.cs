@@ -737,7 +737,8 @@ public sealed partial class LedgerReportingAuthoritativeSourceTests
     }
 
     private static Fixture CreateFixture(string periodStatus = "HardClosed", bool successors = false,
-        AccountingBasisKindDto accountingBasis = AccountingBasisKindDto.Gaap)
+        AccountingBasisKindDto accountingBasis = AccountingBasisKindDto.Gaap,
+        Meridian.Contracts.SecurityMaster.ISecurityCashFlowReceiptStore? receiptStore = null)
     {
         var tenantId = successors ? "tenant-alpha" : "tenant-reporting";
         var companyId = successors ? "company-alpha" : "company-reporting";
@@ -865,7 +866,7 @@ public sealed partial class LedgerReportingAuthoritativeSourceTests
             journalStore,
             tenancy,
             structure,
-            new FixedTimeProvider(now));
+            new FixedTimeProvider(now), securityReceiptStore: receiptStore);
         fixture.StructureQuery = () => lastQuery;
         return fixture;
     }

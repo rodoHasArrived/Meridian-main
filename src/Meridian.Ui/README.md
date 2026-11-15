@@ -11,6 +11,13 @@ last_reviewed: 2026-11-14
 
 # src/Meridian.Ui
 
+The browser source now includes contextual Security Master capabilities, paged governed scalar-unit
+repair and retained impact inspection, scoped report-input comparison, and planned-only profile
+developer export. Rebuild the served workstation assets after integration; the dashboard and shared
+services retain exact source, permission, review and unavailable-evidence boundaries. See
+[repairs and evidence](../../docs/operators/security-master-repairs-and-evidence.md). These browser
+workflows add no WPF implementation or runtime asset-class activation.
+
 The workstation bundle under `wwwroot/workstation/` is an ignored build product. Build `dashboard/`
 before starting the host from a fresh source checkout, or restore the CI artifact for the same
 revision. npm commands regenerate contract mirrors first. CI supplies the built bundle to .NET
@@ -314,6 +321,9 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-UI -->
 | Roadmap item | Title |
 | --- | --- |
+| `W11-PACK-001` | Governed contract-pack lifecycle on the Security Master asset-class registry |
+| `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
+| `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
 | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W3-CONT-001` | Research to paper continuity |

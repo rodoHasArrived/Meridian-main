@@ -47,6 +47,20 @@ public interface ISecurityMasterRevisionStore
         CancellationToken ct = default)
         => CreateDraftAsync(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, fieldValue, ct);
 
+    /// <summary>Creates a repair draft retaining its immutable maker, evidence and batch identity.</summary>
+    Task<SecurityMasterRevisionRecord> CreateDraftAsync(
+        Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom,
+        string fieldJustification, string? fundProfileId, SecurityMasterRevisionFieldValue fieldValue,
+        SecurityMasterRevisionFieldBase fieldBase, SecurityMasterRevisionDraftContext context,
+        CancellationToken ct = default)
+        => throw new NotSupportedException("This revision store does not retain governed repair context.");
+
+    /// <summary>Binds immutable reviewed evidence, with an exact-retry and state/version guard.</summary>
+    Task<SecurityMasterRevisionRecord> BindImpactPreviewAsync(
+        Guid revisionId, Guid securityId, SecurityMasterRevisionStateDto expectedState,
+        string receiptId, long canonicalVersion, CancellationToken ct = default)
+        => throw new NotSupportedException("This revision store does not retain impact approval evidence.");
+
     /// <summary>Returns the revision, or <c>null</c> when no revision with that id exists.</summary>
     Task<SecurityMasterRevisionRecord?> GetAsync(Guid revisionId, CancellationToken ct = default);
 
@@ -89,6 +103,8 @@ public sealed record SecurityMasterRevisionFieldValue(string? Value);
 /// </summary>
 public sealed record SecurityMasterRevisionFieldBase(long BaseVersion, string FieldSnapshot);
 
+public sealed record SecurityMasterRevisionDraftContext(Guid RepairBatchId, string EvidenceId, string EvidenceSha256);
+
 /// <summary>Durable record of a passport revision's governed lifecycle state.</summary>
 public sealed record SecurityMasterRevisionRecord(
     Guid RevisionId,
@@ -109,6 +125,14 @@ public sealed record SecurityMasterRevisionRecord(
     long? BaseVersion = null,
     string? FieldBaseSnapshot = null)
 {
+    public string? DraftedBy { get; init; }
+    public string? SubmittedBy { get; init; }
+    public Guid? RepairBatchId { get; init; }
+    public string? RepairEvidenceId { get; init; }
+    public string? RepairEvidenceSha256 { get; init; }
+    public string? ReviewedImpactReceiptId { get; init; }
+    public long? ReviewedCanonicalVersion { get; init; }
+
     /// <summary>True when the revision recorded the canonical base its proposal was drafted against.</summary>
     public bool FieldBaseRecorded => BaseVersion is not null && FieldBaseSnapshot is not null;
 }
@@ -164,6 +188,13 @@ public sealed class InMemorySecurityMasterRevisionStore(TimeProvider? timeProvid
         CancellationToken ct = default)
         => CreateDraftCore(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, fieldValue, fieldBase);
 
+    public Task<SecurityMasterRevisionRecord> CreateDraftAsync(
+        Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom,
+        string fieldJustification, string? fundProfileId, SecurityMasterRevisionFieldValue fieldValue,
+        SecurityMasterRevisionFieldBase fieldBase, SecurityMasterRevisionDraftContext context,
+        CancellationToken ct = default)
+        => CreateDraftCore(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, fieldValue, fieldBase, context);
+
     private Task<SecurityMasterRevisionRecord> CreateDraftCore(
         Guid securityId,
         string actor,
@@ -172,7 +203,8 @@ public sealed class InMemorySecurityMasterRevisionStore(TimeProvider? timeProvid
         string? fieldJustification,
         string? fundProfileId,
         SecurityMasterRevisionFieldValue? fieldValue,
-        SecurityMasterRevisionFieldBase? fieldBase = null)
+        SecurityMasterRevisionFieldBase? fieldBase = null,
+        SecurityMasterRevisionDraftContext? context = null)
     {
         var now = _timeProvider.GetUtcNow();
         var record = new SecurityMasterRevisionRecord(
@@ -190,7 +222,13 @@ public sealed class InMemorySecurityMasterRevisionStore(TimeProvider? timeProvid
             FieldValue: fieldValue?.Value,
             FieldValueRecorded: fieldValue is not null,
             BaseVersion: fieldBase?.BaseVersion,
-            FieldBaseSnapshot: fieldBase?.FieldSnapshot);
+            FieldBaseSnapshot: fieldBase?.FieldSnapshot)
+        {
+            DraftedBy = actor,
+            RepairBatchId = context?.RepairBatchId,
+            RepairEvidenceId = context?.EvidenceId,
+            RepairEvidenceSha256 = context?.EvidenceSha256
+        };
         _revisions[record.RevisionId] = record;
         return Task.FromResult(record);
     }
@@ -230,7 +268,14 @@ public sealed class InMemorySecurityMasterRevisionStore(TimeProvider? timeProvid
         var workflowId = next == SecurityMasterRevisionStateDto.Submitted && workflowIdForSubmit.HasValue
             ? workflowIdForSubmit
             : existing.WorkflowId;
-        var updated = existing with { State = next, Actor = actor, UpdatedAt = _timeProvider.GetUtcNow(), WorkflowId = workflowId };
+        var updated = existing with
+        {
+            State = next,
+            Actor = actor,
+            UpdatedAt = _timeProvider.GetUtcNow(),
+            WorkflowId = workflowId,
+            SubmittedBy = next == SecurityMasterRevisionStateDto.Submitted ? existing.SubmittedBy ?? actor : existing.SubmittedBy
+        };
 
         // Compare-and-set: only the caller whose view still matches the stored record wins; a
         // concurrent transition that already advanced the revision loses and is rejected.
@@ -240,6 +285,27 @@ public sealed class InMemorySecurityMasterRevisionStore(TimeProvider? timeProvid
                 revisionId, $"the revision changed concurrently (expected state {expected}).");
         }
 
+        return Task.FromResult(updated);
+    }
+
+    public Task<SecurityMasterRevisionRecord> BindImpactPreviewAsync(
+        Guid revisionId, Guid securityId, SecurityMasterRevisionStateDto expectedState,
+        string receiptId, long canonicalVersion, CancellationToken ct = default)
+    {
+        if (!Meridian.Contracts.Integrity.Sha256Digest.IsCanonical(receiptId) || canonicalVersion < 1)
+            throw new ArgumentException("A canonical impact receipt digest and positive canonical version are required.");
+        if (!_revisions.TryGetValue(revisionId, out var record) || record.SecurityId != securityId
+            || record.State != expectedState)
+            throw new SecurityMasterRevisionStateException(revisionId, "The revision changed before evidence binding.");
+        if (record.ReviewedImpactReceiptId is not null)
+        {
+            if (record.ReviewedImpactReceiptId == receiptId && record.ReviewedCanonicalVersion == canonicalVersion)
+                return Task.FromResult(record);
+            throw new SecurityMasterRevisionStateException(revisionId, "Different impact evidence is already bound.");
+        }
+        var updated = record with { ReviewedImpactReceiptId = receiptId, ReviewedCanonicalVersion = canonicalVersion };
+        if (!_revisions.TryUpdate(revisionId, updated, record))
+            throw new SecurityMasterRevisionStateException(revisionId, "The revision changed before evidence binding.");
         return Task.FromResult(updated);
     }
 }

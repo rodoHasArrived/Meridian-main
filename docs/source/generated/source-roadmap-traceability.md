@@ -19,6 +19,10 @@ do_not_edit: true
 
 | Module | Name | Roadmap item | Roadmap title |
 | --- | --- | --- | --- |
+| `SRC-APP` | Meridian application layer | `W11-LEGS-001` | Reusable fixed and floating legs for vanilla interest-rate swaps |
+| `SRC-APP` | Meridian application layer | `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
+| `SRC-APP` | Meridian application layer | `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
+| `SRC-APP` | Meridian application layer | `W11-PACK-001` | Governed contract-pack lifecycle on the Security Master asset-class registry |
 | `SRC-APP` | Meridian application layer | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `SRC-APP` | Meridian application layer | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-APP` | Meridian application layer | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
@@ -35,6 +39,9 @@ do_not_edit: true
 | `SRC-BACKTESTING` | Meridian backtesting | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `SRC-BACKTESTING` | Meridian backtesting | `W10-PERF-001` | Portfolio and investor return measurement |
 | `SRC-BACKTESTING-SDK` | Backtesting SDK | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `SRC-CONTRACTS` | Meridian contracts | `W11-LEGS-001` | Reusable fixed and floating legs for vanilla interest-rate swaps |
+| `SRC-CONTRACTS` | Meridian contracts | `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
+| `SRC-CONTRACTS` | Meridian contracts | `W11-PACK-001` | Governed contract-pack lifecycle on the Security Master asset-class registry |
 | `SRC-CONTRACTS` | Meridian contracts | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `SRC-CONTRACTS` | Meridian contracts | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-CONTRACTS` | Meridian contracts | `W1-DATA-001` | Provider trust gate and data confidence baseline |
@@ -76,6 +83,7 @@ do_not_edit: true
 | `SRC-DESIGN-ENTITIES` | Meridian Entities design module | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-DESIGN-ENTITIES` | Meridian Entities design module | `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
 | `SRC-DESIGN-ENTITIES` | Meridian Entities design module | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
@@ -108,6 +116,7 @@ do_not_edit: true
 | `SRC-DESIGN-PORTFOLIO-RECORDS` | Meridian Portfolio Records design module | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `SRC-DESIGN-REFERENCE-DATA` | Meridian Reference Data design module | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `SRC-DESIGN-REFERENCE-DATA` | Meridian Reference Data design module | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
+| `SRC-DESIGN-REPORTING` | Meridian Reporting design module | `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
 | `SRC-DESIGN-REPORTING` | Meridian Reporting design module | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `SRC-DESIGN-REPORTING` | Meridian Reporting design module | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-DESIGN-REPORTING` | Meridian Reporting design module | `W5-ACCT-001` | Accounting records and operational evidence |
@@ -123,6 +132,8 @@ do_not_edit: true
 | `SRC-EXECUTION` | Meridian execution | `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
 | `SRC-EXECUTION-SDK` | Execution SDK | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-EXECUTION-SDK` | Execution SDK | `W7-LIVE-001` | Live-readiness governance |
+| `SRC-FSHARP` | Meridian FSharp | `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
+| `SRC-FSHARP` | Meridian FSharp | `W11-PACK-001` | Governed contract-pack lifecycle on the Security Master asset-class registry |
 | `SRC-FSHARP` | Meridian FSharp | `W3-CONT-001` | Research to paper continuity |
 | `SRC-FSHARP` | Meridian FSharp | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `SRC-FSHARP` | Meridian FSharp | `W10-PERF-001` | Portfolio and investor return measurement |
@@ -139,6 +150,7 @@ do_not_edit: true
 | `SRC-INFRASTRUCTURE` | Meridian infrastructure | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `SRC-INFRASTRUCTURE` | Meridian infrastructure | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-INFRASTRUCTURE` | Meridian infrastructure | `W7-LIVE-001` | Live-readiness governance |
+| `SRC-LEDGER` | Meridian ledger | `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
 | `SRC-LEDGER` | Meridian ledger | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `SRC-LEDGER` | Meridian ledger | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-LEDGER` | Meridian ledger | `W4-RPT-001` | Governed report pack readiness |
@@ -154,11 +166,15 @@ do_not_edit: true
 | `SRC-PROVIDER-SDK` | Provider SDK | `W7-LIVE-001` | Live-readiness governance |
 | `SRC-QUANTSCRIPT` | QuantScript | `W3-CONT-001` | Research to paper continuity |
 | `SRC-QUANTSCRIPT` | QuantScript | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `SRC-REPORTING-READMODELS` | Reporting and journal-backed read models | `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
 | `SRC-REPORTING-READMODELS` | Reporting and journal-backed read models | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-REPORTING-READMODELS` | Reporting and journal-backed read models | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-RISK` | Meridian risk | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-RISK` | Meridian risk | `W7-LIVE-001` | Live-readiness governance |
 | `SRC-RISK` | Meridian risk | `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
+| `SRC-STORAGE` | Meridian storage primitives | `W11-PACK-001` | Governed contract-pack lifecycle on the Security Master asset-class registry |
+| `SRC-STORAGE` | Meridian storage primitives | `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
+| `SRC-STORAGE` | Meridian storage primitives | `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
 | `SRC-STORAGE` | Meridian storage primitives | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `SRC-STORAGE` | Meridian storage primitives | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-STORAGE` | Meridian storage primitives | `W1-DATA-001` | Provider trust gate and data confidence baseline |
@@ -172,6 +188,9 @@ do_not_edit: true
 | `SRC-STORAGE` | Meridian storage primitives | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
 | `SRC-STORAGE` | Meridian storage primitives | `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
 | `SRC-STORAGE` | Meridian storage primitives | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
+| `SRC-STORAGE-ACCOUNTING` | Meridian accounting persistence adapters | `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
+| `SRC-STORAGE-ACCOUNTING` | Meridian accounting persistence adapters | `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
+| `SRC-STORAGE-ACCOUNTING` | Meridian accounting persistence adapters | `W11-PACK-001` | Governed contract-pack lifecycle on the Security Master asset-class registry |
 | `SRC-STORAGE-ACCOUNTING` | Meridian accounting persistence adapters | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-STORAGE-ACCOUNTING` | Meridian accounting persistence adapters | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-STORAGE-ACCOUNTING` | Meridian accounting persistence adapters | `W5-ACCT-001` | Accounting records and operational evidence |
@@ -184,9 +203,16 @@ do_not_edit: true
 | `SRC-STRATEGIES` | Meridian strategies | `W10-RECON-001` | Durable break lineage identity and run-over-run break diff |
 | `SRC-STRATEGIES` | Meridian strategies | `W10-RECON-002` | Break clustering and bulk-resolution activation |
 | `SRC-STRATEGIES` | Meridian strategies | `W10-RECON-004` | Operator-taught match rules with promotion gate |
+| `SRC-UI` | Meridian UI asset host | `W11-PACK-001` | Governed contract-pack lifecycle on the Security Master asset-class registry |
+| `SRC-UI` | Meridian UI asset host | `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
+| `SRC-UI` | Meridian UI asset host | `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
 | `SRC-UI` | Meridian UI asset host | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `SRC-UI` | Meridian UI asset host | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-UI` | Meridian UI asset host | `W3-CONT-001` | Research to paper continuity |
+| `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W11-PACK-001` | Governed contract-pack lifecycle on the Security Master asset-class registry |
+| `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W11-LEGS-001` | Reusable fixed and floating legs for vanilla interest-rate swaps |
+| `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
+| `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
@@ -207,6 +233,8 @@ do_not_edit: true
 | `SRC-UI-SERVICES` | UI services | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-UI-SERVICES` | UI services | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-UI-SERVICES` | UI services | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `SRC-UI-SHARED` | UI shared contracts | `W11-LEGS-001` | Reusable fixed and floating legs for vanilla interest-rate swaps |
+| `SRC-UI-SHARED` | UI shared contracts | `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
 | `SRC-UI-SHARED` | UI shared contracts | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `SRC-UI-SHARED` | UI shared contracts | `W10-LOT-002` | Security-identified open-lot convergence |
 | `SRC-UI-SHARED` | UI shared contracts | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |

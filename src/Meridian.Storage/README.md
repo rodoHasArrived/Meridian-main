@@ -6,10 +6,21 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.Storage
+
+## Security Master repair and impact persistence (2026-11-14)
+
+Business sources under SecurityMaster, Ledger and Reporting continue compiling in
+`Meridian.Storage.Accounting`. Migration 069 retains immutable repair manifests/evidence bindings and
+versioned per-item progress; deletion/truncation guards reject destructive maintenance. Ledger 073
+preserves legacy Close uniqueness while introducing immutable exact revision-subject workflow scope.
+Both use the normal transactional runner. Scoped schema-control explanations authorize neither live
+execution nor data deletion. The broad short PostgreSQL impact lease and ambient mutation bind
+canonical publication to checked dependencies; exact approved profile-usage queries and report-input
+retention preserve source gaps. See [rollout](../../docs/operators/security-master-terms-contract-rollout.md).
 
 The `Meridian.Storage` assembly owns storage primitives and does not depend on Ledger or Reporting.
 Business adapters whose source remains under `Ledger/`, `Reporting/`, Security Master and other
@@ -1905,6 +1916,9 @@ ordinary lifecycle transitions cannot replace the preparation link or relax sour
 <!-- source-roadmap-traceability:begin module=SRC-STORAGE -->
 | Roadmap item | Title |
 | --- | --- |
+| `W11-PACK-001` | Governed contract-pack lifecycle on the Security Master asset-class registry |
+| `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
+| `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
 | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |

@@ -111,6 +111,10 @@ public sealed record ReportingAuthoritativeSourceCheckpoint(
     /// <summary>Exact retained replay inputs for every calculation at this source boundary.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public ReportingRetainedLedgerPopulation? LedgerPopulation { get; init; }
+
+    /// <summary>Exact receipt-backed inputs used by the retained journals; absent means legacy provenance is unavailable.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public ReportingRetainedSecurityInputs? SecurityInputs { get; init; }
 }
 
 public sealed record ReportingRetainedLedgerPopulation(
@@ -265,6 +269,8 @@ public sealed class ReportingRunCreateClaimException : InvalidOperationException
 /// <summary>Stores reporting run manifests and audit trails, including tenant-scoped reads and creation claims.</summary>
 public interface IReportingRunStore
 {
+    /// <summary>True only when the tenant/company paging overload enumerates beyond compatibility caps.</summary>
+    bool SupportsCompleteScopedPaging => false;
     /// <summary>True only when create leases and fencing are durable across independent processes.</summary>
     bool SupportsDurableCreateClaims => false;
     IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25);

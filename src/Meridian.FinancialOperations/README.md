@@ -11,6 +11,19 @@ last_reviewed: 2026-11-14
 
 # src/Meridian.FinancialOperations
 
+## Security revision review and accrual claims (2026-11-14)
+
+Operations Continuity distinguishes legacy Close workflows from immutable SecurityMasterRevision
+subjects. A revision workflow retains its exact security/revision and account/book/period authority;
+generic close workbench actions cannot approve a different purpose. The assigned reviewer must be
+independent of the retained maker and submitter for rate repairs.
+
+The existing recurring file store pins optional daily-lot economic-obligation keys write-once under
+its OS-exclusive lease before CD intake. Keys exclude schedule/template/model versions, so overlapping
+schedules or cadences cannot draft the same daily holding accrual twice. Exact retries and process
+restart retain ownership; claims survive failure and corrections use audited reversal/rebook. Optional
+claim fields are omitted for legacy occurrences. See [recurring journal](../../docs/domain/recurring-journal.md).
+
 Mapped statement CSV rejects malformed quotes, null characters and rows whose field count differs
 from the reviewed header. Validation and preview report blocking diagnostics, and commit refuses the
 whole document before retaining evidence. Valid quoted delimiters and escaped quotes retain their
@@ -1307,6 +1320,7 @@ evidence deletion.
 <!-- source-roadmap-traceability:begin module=SRC-DESIGN-FINANCIAL-OPERATIONS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
 | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |

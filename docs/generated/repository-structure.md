@@ -2012,6 +2012,7 @@ Meridian-main
 │   │   ├── security-master-custom-asset-promotion.md
 │   │   ├── security-master-governed-edit-rollout.md
 │   │   ├── security-master-normalized-identifier-migration.md
+│   │   ├── security-master-repairs-and-evidence.md
 │   │   ├── security-master-terms-contract-rollout.md
 │   │   ├── service-level-objectives.md
 │   │   ├── shadow-mode-onboarding.md
@@ -2083,7 +2084,8 @@ Meridian-main
 │   │   │   │   ├── page-009.md
 │   │   │   │   ├── page-010.md
 │   │   │   │   ├── page-011.md
-│   │   │   │   └── page-012.md
+│   │   │   │   ├── page-012.md
+│   │   │   │   └── page-013.md
 │   │   │   ├── meridian.audit
 │   │   │   │   └── page-001.md
 │   │   │   ├── meridian.backtesting
@@ -2169,7 +2171,8 @@ Meridian-main
 │   │   │   │   ├── page-074.md
 │   │   │   │   ├── page-075.md
 │   │   │   │   ├── page-076.md
-│   │   │   │   └── page-077.md
+│   │   │   │   ├── page-077.md
+│   │   │   │   └── page-078.md
 │   │   │   ├── meridian.core
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -2258,7 +2261,8 @@ Meridian-main
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
 │   │   │   │   ├── page-003.md
-│   │   │   │   └── page-004.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   └── page-005.md
 │   │   │   ├── meridian.reporting.readmodels
 │   │   │   │   └── page-001.md
 │   │   │   ├── meridian.risk
@@ -5434,6 +5438,40 @@ Meridian-main
 │   │   │   │   ├── SecurityProjectionRebuildHandler.cs
 │   │   │   │   └── UflProjectionRebuilder.cs
 │   │   │   ├── Validation
+│   │   │   │   ├── Modules
+│   │   │   │   │   ├── BondAssetValidationModule.cs
+│   │   │   │   │   ├── CapFloorAssetValidationModule.cs
+│   │   │   │   │   ├── CashSweepAssetValidationModule.cs
+│   │   │   │   │   ├── CertificateOfDepositAssetValidationModule.cs
+│   │   │   │   │   ├── CfdAssetValidationModule.cs
+│   │   │   │   │   ├── CommercialPaperAssetValidationModule.cs
+│   │   │   │   │   ├── CommitmentGuaranteeAssetValidationModule.cs
+│   │   │   │   │   ├── CommodityAssetValidationModule.cs
+│   │   │   │   │   ├── CreditDefaultSwapAssetValidationModule.cs
+│   │   │   │   │   ├── CryptoCurrencyAssetValidationModule.cs
+│   │   │   │   │   ├── CustomAssetAssetValidationModule.cs
+│   │   │   │   │   ├── DepositAssetValidationModule.cs
+│   │   │   │   │   ├── DirectLoanAssetValidationModule.cs
+│   │   │   │   │   ├── EquityAssetValidationModule.cs
+│   │   │   │   │   ├── FutureAssetValidationModule.cs
+│   │   │   │   │   ├── FxForwardAssetValidationModule.cs
+│   │   │   │   │   ├── FxSpotAssetValidationModule.cs
+│   │   │   │   │   ├── InvestmentFundAssetValidationModule.cs
+│   │   │   │   │   ├── MoneyMarketFundAssetValidationModule.cs
+│   │   │   │   │   ├── NonDeliverableForwardAssetValidationModule.cs
+│   │   │   │   │   ├── OptionAssetValidationModule.cs
+│   │   │   │   │   ├── OtherSecurityAssetValidationModule.cs
+│   │   │   │   │   ├── PrivateCompanyEquityAssetValidationModule.cs
+│   │   │   │   │   ├── PrivateFundInterestAssetValidationModule.cs
+│   │   │   │   │   ├── RealEstateHoldingAssetValidationModule.cs
+│   │   │   │   │   ├── RepoAssetValidationModule.cs
+│   │   │   │   │   ├── SecurityAssetValidationModules.cs
+│   │   │   │   │   ├── StructuredCreditAssetValidationModule.cs
+│   │   │   │   │   ├── StructuredNoteAssetValidationModule.cs
+│   │   │   │   │   ├── SwapAssetValidationModule.cs
+│   │   │   │   │   ├── SwaptionAssetValidationModule.cs
+│   │   │   │   │   ├── TreasuryBillAssetValidationModule.cs
+│   │   │   │   │   └── WarrantAssetValidationModule.cs
 │   │   │   │   ├── AssetClassValidatorRegistry.cs
 │   │   │   │   ├── FileSecurityValidationSnapshotStore.cs
 │   │   │   │   ├── SchemaTermsAssetClassValidator.cs
@@ -5455,6 +5493,7 @@ Meridian-main
 │   │   │   ├── EdgarIngestOrchestrator.cs
 │   │   │   ├── FaceValueLotExtensions.cs
 │   │   │   ├── FileSecurityCashFlowReceiptStore.cs
+│   │   │   ├── FileSecurityMasterImpactPreviewStore.cs
 │   │   │   ├── GovernedTermAmendmentPolicy.cs
 │   │   │   ├── GovernedTermAmendmentRequiredException.cs
 │   │   │   ├── IAffectedLedgerBookResolver.cs
@@ -5465,17 +5504,23 @@ Meridian-main
 │   │   │   ├── IPeriodAwareRestatementResolver.cs
 │   │   │   ├── ISecurityMasterCanonicalMergeOutcomeReporter.cs
 │   │   │   ├── ISecurityMasterConflictAuthorityPolicy.cs
+│   │   │   ├── ISecurityMasterImpactPreviewService.cs
 │   │   │   ├── ISecurityMasterRevisionPublishedHandler.cs
 │   │   │   ├── ISecurityMasterRevisionStore.cs
 │   │   │   ├── ISecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── ISecurityMasterWorkbenchQueryService.cs
+│   │   │   ├── ISecurityRateRepairStore.cs
 │   │   │   ├── KeyedGatePool.cs
 │   │   │   ├── NullSecurityMasterReferenceServices.cs
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── PostgresSecurityMasterConflictService.cs
 │   │   │   ├── PostgresSecurityMasterRevisionStore.cs
+│   │   │   ├── PostgresSecurityMasterRevisionStore.Impact.cs
+│   │   │   ├── PostgresSecurityRateRepairStore.cs
+│   │   │   ├── RetainedSecurityTermsReadBoundary.cs
 │   │   │   ├── SecurityAssetPackAdmission.cs
 │   │   │   ├── SecurityAssetProfileGovernanceService.cs
+│   │   │   ├── SecurityAssetProfilePromotionReadService.cs
 │   │   │   ├── SecurityAssetTermsFieldSnapshot.cs
 │   │   │   ├── SecurityCashFlowReceiptJsonContext.cs
 │   │   │   ├── SecurityCashFlowScheduleRowCodec.cs
@@ -5495,6 +5540,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlowService.DeclaredBondLeg.cs
 │   │   │   ├── SecurityMasterCashFlowService.DeclaredConventions.cs
 │   │   │   ├── SecurityMasterCashFlowService.FactorAccrual.cs
+│   │   │   ├── SecurityMasterCashFlowService.ReceiptEvidence.cs
 │   │   │   ├── SecurityMasterConcurrencyException.cs
 │   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── SecurityMasterConflictDetection.cs
@@ -5508,9 +5554,11 @@ Meridian-main
 │   │   │   ├── SecurityMasterDraftProposalService.cs
 │   │   │   ├── SecurityMasterGovernanceRequirements.cs
 │   │   │   ├── SecurityMasterHistoricalSymbolTimelineResolver.cs
+│   │   │   ├── SecurityMasterImpactPreviewService.cs
 │   │   │   ├── SecurityMasterImportService.cs
 │   │   │   ├── SecurityMasterIngestFailureClassifier.cs
 │   │   │   ├── SecurityMasterIngestStatusService.cs
+│   │   │   ├── SecurityMasterMapping.AssetPackCodecs.cs
 │   │   │   ├── SecurityMasterMapping.cs
 │   │   │   ├── SecurityMasterMapping.EquityCapital.cs
 │   │   │   ├── SecurityMasterMapping.GeneratedDecode.cs
@@ -5523,9 +5571,11 @@ Meridian-main
 │   │   │   ├── SecurityMasterProjectionChangeListener.cs
 │   │   │   ├── SecurityMasterProjectionService.cs
 │   │   │   ├── SecurityMasterProjectionWarmupService.cs
+│   │   │   ├── SecurityMasterProposedTermsBuilder.cs
 │   │   │   ├── SecurityMasterPublishFailedException.cs
 │   │   │   ├── SecurityMasterQueryService.cs
 │   │   │   ├── SecurityMasterService.AheadOfWriteTerms.cs
+│   │   │   ├── SecurityMasterService.Aliases.cs
 │   │   │   ├── SecurityMasterService.ClassificationText.cs
 │   │   │   ├── SecurityMasterService.Creation.cs
 │   │   │   ├── SecurityMasterService.cs
@@ -5538,13 +5588,20 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Discard.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.FieldBase.cs
+│   │   │   ├── SecurityMasterWorkbenchCommandService.ImpactPreview.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.IndependentReview.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Mutations.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Overrides.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.ProfileFieldValidation.cs
+│   │   │   ├── SecurityMasterWorkbenchCommandService.RateRepair.cs
 │   │   │   ├── SecurityMasterWorkbenchOptions.cs
 │   │   │   ├── SecurityMasterWriteAuthority.cs
 │   │   │   ├── SecurityMasterWriteRefusedException.cs
+│   │   │   ├── SecurityRateRepairService.Commands.cs
+│   │   │   ├── SecurityRateRepairService.cs
+│   │   │   ├── SecurityRateRepairService.Discovery.cs
+│   │   │   ├── SecurityRateRepairWorkflowAuthority.cs
+│   │   │   ├── SecurityReportInputAttributionResolver.cs
 │   │   │   ├── SecurityResolver.cs
 │   │   │   ├── SecurityResolverCompatibilityAdapter.cs
 │   │   │   ├── StaleFieldProposalException.cs
@@ -6105,6 +6162,43 @@ Meridian-main
 │   │   │   ├── EventSchema.cs
 │   │   │   └── ISchemaUpcaster.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── AssetModules
+│   │   │   │   ├── BondAssetModule.cs
+│   │   │   │   ├── CapFloorAssetModule.cs
+│   │   │   │   ├── CashSweepAssetModule.cs
+│   │   │   │   ├── CertificateOfDepositAssetModule.cs
+│   │   │   │   ├── CfdAssetModule.cs
+│   │   │   │   ├── CommercialPaperAssetModule.cs
+│   │   │   │   ├── CommitmentGuaranteeAssetModule.cs
+│   │   │   │   ├── CommodityAssetModule.cs
+│   │   │   │   ├── CreditDefaultSwapAssetModule.cs
+│   │   │   │   ├── CryptoCurrencyAssetModule.cs
+│   │   │   │   ├── CustomAssetModule.cs
+│   │   │   │   ├── DepositAssetModule.cs
+│   │   │   │   ├── DirectLoanAssetModule.cs
+│   │   │   │   ├── EquityAssetModule.cs
+│   │   │   │   ├── FutureAssetModule.cs
+│   │   │   │   ├── FxForwardAssetModule.cs
+│   │   │   │   ├── FxSpotAssetModule.cs
+│   │   │   │   ├── InvestmentFundAssetModule.cs
+│   │   │   │   ├── MoneyMarketFundAssetModule.cs
+│   │   │   │   ├── NonDeliverableForwardAssetModule.cs
+│   │   │   │   ├── OptionAssetModule.cs
+│   │   │   │   ├── OtherSecurityAssetModule.cs
+│   │   │   │   ├── PrivateCompanyEquityAssetModule.cs
+│   │   │   │   ├── PrivateFundInterestAssetModule.cs
+│   │   │   │   ├── RealEstateHoldingAssetModule.cs
+│   │   │   │   ├── RepoAssetModule.cs
+│   │   │   │   ├── SecurityAssetModuleCodec.cs
+│   │   │   │   ├── SecurityAssetModuleEconomics.cs
+│   │   │   │   ├── SecurityAssetModuleRates.cs
+│   │   │   │   ├── SecurityAssetModuleSchema.cs
+│   │   │   │   ├── StructuredCreditAssetModule.cs
+│   │   │   │   ├── StructuredNoteAssetModule.cs
+│   │   │   │   ├── SwapAssetModule.cs
+│   │   │   │   ├── SwaptionAssetModule.cs
+│   │   │   │   ├── TreasuryBillAssetModule.cs
+│   │   │   │   └── WarrantAssetModule.cs
 │   │   │   ├── Compatibility
 │   │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
 │   │   │   │   └── ISecurityResolver.cs
@@ -6178,9 +6272,13 @@ Meridian-main
 │   │   │   ├── RateUnitNormalizer.cs
 │   │   │   ├── ScheduleConventionTerms.cs
 │   │   │   ├── ScheduleSpecFactory.cs
+│   │   │   ├── ScheduleSpecFactory.Legs.cs
 │   │   │   ├── ScheduleTermsWriteRules.cs
 │   │   │   ├── ScheduleTermsWriteRules.Gaps.cs
+│   │   │   ├── ScheduleTermsWriteRules.Legs.cs
+│   │   │   ├── ScheduleTermsWriteRules.Scalars.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
+│   │   │   ├── SecurityAssetClassModules.cs
 │   │   │   ├── SecurityAssetClassRegistry.cs
 │   │   │   ├── SecurityAssetClassTermsUpgrade.cs
 │   │   │   ├── SecurityAssetClassTermsUpgrader.cs
@@ -6189,6 +6287,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetPackRegistry.Profiles.cs
 │   │   │   ├── SecurityAssetPackRegistry.Readiness.cs
 │   │   │   ├── SecurityAssetPackRegistry.SharedCoverage.cs
+│   │   │   ├── SecurityAssetProfilePromotionDtos.cs
 │   │   │   ├── SecurityAssetProfiles.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcaster.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChain.cs
@@ -6197,6 +6296,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermsCodecBindings.cs
 │   │   │   ├── SecurityAssetTermsFieldEditValidator.cs
 │   │   │   ├── SecurityAssetTermsSchema.cs
+│   │   │   ├── SecurityBoundedProfileCommonTerms.cs
 │   │   │   ├── SecurityCanonicalAssetHomes.cs
 │   │   │   ├── SecurityCashFlowCalculationReceipt.cs
 │   │   │   ├── SecurityCashFlowTermRoles.cs
@@ -6237,6 +6337,7 @@ Meridian-main
 │   │   │   ├── SecurityRateFieldUnits.cs
 │   │   │   ├── SecurityRateObservations.cs
 │   │   │   ├── SecurityRecordRateUnit.cs
+│   │   │   ├── SecurityRecurringAccrualPolicies.cs
 │   │   │   ├── SecurityScheduleDecimal.cs
 │   │   │   ├── SecurityTermBlocks.cs
 │   │   │   ├── SecurityTermConventions.cs
@@ -6247,6 +6348,8 @@ Meridian-main
 │   │   │   ├── SecurityUnderlyingGraph.cs
 │   │   │   ├── SecurityValidationDtos.cs
 │   │   │   ├── SecurityValuation.cs
+│   │   │   ├── SecurityVanillaSwapProfile.cs
+│   │   │   ├── SecurityVersionedScalarTerms.cs
 │   │   │   ├── SecurityVersionedTerms.cs
 │   │   │   ├── StructuredCashFlowTerms.cs
 │   │   │   └── StructuredCashFlowTermsResolver.cs
@@ -6304,6 +6407,7 @@ Meridian-main
 │   │   │   ├── FundOperationsWorkspaceDtos.cs
 │   │   │   ├── FundWorkflowCommands.cs
 │   │   │   ├── IClosePublicationReadinessGuard.cs
+│   │   │   ├── InstrumentCapabilityDtos.cs
 │   │   │   ├── InvestmentAccountingTransactionLabDtos.cs
 │   │   │   ├── IOperatorInboxService.cs
 │   │   │   ├── IReportingRunNotifier.cs
@@ -6317,6 +6421,7 @@ Meridian-main
 │   │   │   ├── OperationsApprovalCollaborationDtos.cs
 │   │   │   ├── OperationsCloseChecklistHistoryDtos.cs
 │   │   │   ├── OperationsContinuityDtos.cs
+│   │   │   ├── OperationsWorkflowPurposeDto.cs
 │   │   │   ├── OperatorScopePreferenceDtos.cs
 │   │   │   ├── OperatorSurfaceVisitDtos.cs
 │   │   │   ├── OperatorTriageDtos.cs
@@ -6329,9 +6434,12 @@ Meridian-main
 │   │   │   ├── ReportingDeploymentDtos.cs
 │   │   │   ├── ReportLedgerAmountBindingDtos.cs
 │   │   │   ├── ResearchBriefingDtos.cs
+│   │   │   ├── SecurityMasterImpactPreviewDtos.cs
 │   │   │   ├── SecurityMasterTrustWorkbenchDtos.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandDtos.cs
 │   │   │   ├── SecurityMasterWorkstationDtos.cs
+│   │   │   ├── SecurityRateRepairDtos.cs
+│   │   │   ├── SecurityReportInputCompareDtos.cs
 │   │   │   ├── SinglePrincipalAttestationDtos.cs
 │   │   │   ├── StatementConnectorDtos.cs
 │   │   │   ├── StatementReconciliationDtos.cs
@@ -6957,11 +7065,13 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflow.cs
 │   │   │   ├── OperationsContinuityWorkflow.Reconciliation.cs
 │   │   │   ├── OperationsContinuityWorkflow.ReopenGovernance.cs
+│   │   │   ├── OperationsContinuityWorkflow.RevisionPurpose.cs
 │   │   │   ├── OperationsContinuityWorkflowService.ApprovalCollaboration.cs
 │   │   │   ├── OperationsContinuityWorkflowService.ChecklistControls.cs
 │   │   │   ├── OperationsContinuityWorkflowService.CloseReadiness.cs
 │   │   │   ├── OperationsContinuityWorkflowService.cs
 │   │   │   ├── OperationsContinuityWorkflowService.PreparedStart.cs
+│   │   │   ├── OperationsContinuityWorkflowService.RevisionPurpose.cs
 │   │   │   ├── OperationsContinuityWorkflowService.Transitions.cs
 │   │   │   ├── OperationsContinuityWorkflowText.cs
 │   │   │   ├── OperationsLedgerPostingService.cs
@@ -6971,7 +7081,8 @@ Meridian-main
 │   │   │   ├── OperationsWorkflowAuditHashJsonContext.cs
 │   │   │   ├── OperationsWorkflowChecklistSnapshots.cs
 │   │   │   ├── OperationsWorkflowReadModelBuilder.cs
-│   │   │   └── PostgresOperationsContinuityStore.cs
+│   │   │   ├── PostgresOperationsContinuityStore.cs
+│   │   │   └── SecurityMasterRevisionWorkflowAuthority.cs
 │   │   ├── PrivateCapital
 │   │   │   ├── CommitmentRollForwardCalculator.cs
 │   │   │   ├── DefaultInterestCalculator.cs
@@ -7968,6 +8079,7 @@ Meridian-main
 │   │   ├── ReportingReleaseConsistencyGate.cs
 │   │   ├── ReportingRetainedLedgerPopulationValidation.cs
 │   │   ├── ReportingSchedulePeriodPlanner.cs
+│   │   ├── ReportingSecurityInputEvidence.cs
 │   │   ├── ReportingStarterKitCatalog.cs
 │   │   ├── ReportingTemplateRegistryService.cs
 │   │   ├── ReportSnapshotDiffEngine.cs
@@ -8257,7 +8369,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_069__automated_posting_grants.sql
 │   │   │   │   ├── V_ledger_070__automatic_policy_snapshot.sql
 │   │   │   │   ├── V_ledger_071__fee_economic_identity.sql
-│   │   │   │   └── V_ledger_072__onboarding_workspaces.sql
+│   │   │   │   ├── V_ledger_072__onboarding_workspaces.sql
+│   │   │   │   └── V_ledger_073__security_revision_workflow_scope.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -8284,6 +8397,7 @@ Meridian-main
 │   │   │   ├── IConsolidationPostingAuthority.cs
 │   │   │   ├── IConsolidationTransitionStore.cs
 │   │   │   ├── IControlledCloseAuthorizationStore.cs
+│   │   │   ├── IImpactDependencyGuard.cs
 │   │   │   ├── IIntercompanyAgreementPostingAuthority.cs
 │   │   │   ├── IIntercompanyProposalStore.cs
 │   │   │   ├── ILedgerBalanceSnapshotSource.cs
@@ -8339,6 +8453,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.FactorPaydown.cs
 │   │   │   ├── PostgresLedgerJournalStore.FeeCorrections.cs
 │   │   │   ├── PostgresLedgerJournalStore.HistoricalTaxLots.cs
+│   │   │   ├── PostgresLedgerJournalStore.ImpactDependencyGuard.cs
 │   │   │   ├── PostgresLedgerJournalStore.IntercompanyAgreements.cs
 │   │   │   ├── PostgresLedgerJournalStore.IntercompanyProposals.cs
 │   │   │   ├── PostgresLedgerJournalStore.LotReferenceAuthority.cs
@@ -8450,6 +8565,42 @@ Meridian-main
 │   │   ├── Runtime
 │   │   │   └── JsonLifecycleReceiptStore.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── AssetPacks
+│   │   │   │   ├── BondStorageModule.cs
+│   │   │   │   ├── CapFloorStorageModule.cs
+│   │   │   │   ├── CashSweepStorageModule.cs
+│   │   │   │   ├── CertificateOfDepositStorageModule.cs
+│   │   │   │   ├── CfdStorageModule.cs
+│   │   │   │   ├── CommercialPaperStorageModule.cs
+│   │   │   │   ├── CommitmentGuaranteeStorageModule.cs
+│   │   │   │   ├── CommodityStorageModule.cs
+│   │   │   │   ├── CreditDefaultSwapStorageModule.cs
+│   │   │   │   ├── CryptoCurrencyStorageModule.cs
+│   │   │   │   ├── CustomAssetStorageModule.cs
+│   │   │   │   ├── DepositStorageModule.cs
+│   │   │   │   ├── DirectLoanStorageModule.cs
+│   │   │   │   ├── EquityStorageModule.cs
+│   │   │   │   ├── FutureStorageModule.cs
+│   │   │   │   ├── FxForwardStorageModule.cs
+│   │   │   │   ├── FxSpotStorageModule.cs
+│   │   │   │   ├── InvestmentFundStorageModule.cs
+│   │   │   │   ├── MoneyMarketFundStorageModule.cs
+│   │   │   │   ├── NonDeliverableForwardStorageModule.cs
+│   │   │   │   ├── OptionStorageModule.cs
+│   │   │   │   ├── OtherSecurityStorageModule.cs
+│   │   │   │   ├── PrivateCompanyEquityStorageModule.cs
+│   │   │   │   ├── PrivateFundInterestStorageModule.cs
+│   │   │   │   ├── RealEstateHoldingStorageModule.cs
+│   │   │   │   ├── RepoStorageModule.cs
+│   │   │   │   ├── SecurityTermsStorageColumns.cs
+│   │   │   │   ├── SecurityTermsStorageContribution.cs
+│   │   │   │   ├── SecurityTermsStorageModules.cs
+│   │   │   │   ├── StructuredCreditStorageModule.cs
+│   │   │   │   ├── StructuredNoteStorageModule.cs
+│   │   │   │   ├── SwapStorageModule.cs
+│   │   │   │   ├── SwaptionStorageModule.cs
+│   │   │   │   ├── TreasuryBillStorageModule.cs
+│   │   │   │   └── WarrantStorageModule.cs
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_security_master.sql
 │   │   │   │   ├── 002_security_master_fts.sql
@@ -8516,7 +8667,8 @@ Meridian-main
 │   │   │   │   ├── 065_security_price_quotation_evidence.sql
 │   │   │   │   ├── 066_corporate_action_cash_dividend_attestations.sql
 │   │   │   │   ├── 067_security_curve_rate_policy.sql
-│   │   │   │   └── 068_security_master_terms_format_backfill.sql
+│   │   │   │   ├── 068_security_master_terms_format_backfill.sql
+│   │   │   │   └── 069_rate_repair_governance.sql
 │   │   │   ├── CorporateActionCashDividendPostingLease.cs
 │   │   │   ├── CorporateActionInboxExportSource.cs
 │   │   │   ├── FileBondMarketDataStore.cs
@@ -8539,10 +8691,12 @@ Meridian-main
 │   │   │   ├── IMoneyMarketFundReferenceProjectionStore.cs
 │   │   │   ├── IOperatorOverridesStore.cs
 │   │   │   ├── IOptionReferenceProjectionStore.cs
+│   │   │   ├── ISecurityAssetProfileUsageStore.cs
 │   │   │   ├── ISecurityFieldProvenanceStore.cs
 │   │   │   ├── ISecurityIdentifierHistoryStore.cs
 │   │   │   ├── ISecurityMasterCashFlowStore.cs
 │   │   │   ├── ISecurityMasterEventStore.cs
+│   │   │   ├── ISecurityMasterImpactGuardParticipant.cs
 │   │   │   ├── ISecurityMasterPricingStore.cs
 │   │   │   ├── ISecurityMasterQualityReportStore.cs
 │   │   │   ├── ISecurityMasterSnapshotStore.cs
@@ -8595,6 +8749,7 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterStore.IdentifierCandidates.cs
 │   │   │   ├── PostgresSecurityMasterStore.IdentifierHistory.cs
 │   │   │   ├── PostgresSecurityMasterStore.PostingAuthority.cs
+│   │   │   ├── PostgresSecurityMasterStore.ProfileUsage.cs
 │   │   │   ├── PostgresSecurityMasterStore.TermsProjection.cs
 │   │   │   ├── PostgresSecurityMasterTermsCapabilityStore.cs
 │   │   │   ├── PostgresSecurityUnderlyingGraphStore.cs
@@ -9110,6 +9265,8 @@ Meridian-main
 │   │   │   │   │   │   ├── income-movement-waterfall.tsx
 │   │   │   │   │   │   ├── inline-fund-account-picker.test.tsx
 │   │   │   │   │   │   ├── inline-fund-account-picker.tsx
+│   │   │   │   │   │   ├── instrument-capability-card.test.tsx
+│   │   │   │   │   │   ├── instrument-capability-card.tsx
 │   │   │   │   │   │   ├── keyboard-shortcuts-sheet.test.tsx
 │   │   │   │   │   │   ├── keyboard-shortcuts-sheet.tsx
 │   │   │   │   │   │   ├── layout-switcher.test.tsx
@@ -9138,6 +9295,8 @@ Meridian-main
 │   │   │   │   │   │   ├── option-screening-map.tsx
 │   │   │   │   │   │   ├── pop-out-pane-button.test.tsx
 │   │   │   │   │   │   ├── pop-out-pane-button.tsx
+│   │   │   │   │   │   ├── portfolio-capability-rollup.test.tsx
+│   │   │   │   │   │   ├── portfolio-capability-rollup.tsx
 │   │   │   │   │   │   ├── position-value-graphic.test.tsx
 │   │   │   │   │   │   ├── position-value-graphic.tsx
 │   │   │   │   │   │   ├── preparer-attestation-evidence.test.tsx
@@ -9190,6 +9349,8 @@ Meridian-main
 │   │   │   │   │   │   ├── security-details-tracker.tsx
 │   │   │   │   │   │   ├── security-details-tracker.view-model.test.ts
 │   │   │   │   │   │   ├── security-details-tracker.view-model.ts
+│   │   │   │   │   │   ├── security-impact-preview.test.tsx
+│   │   │   │   │   │   ├── security-impact-preview.tsx
 │   │   │   │   │   │   ├── security-passport-editor-launcher.test.tsx
 │   │   │   │   │   │   ├── security-passport-editor-launcher.tsx
 │   │   │   │   │   │   ├── security-passport-editor.test.tsx
@@ -9201,6 +9362,8 @@ Meridian-main
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.ts
 │   │   │   │   │   │   ├── security-rates-ingestion-panel.test.tsx
 │   │   │   │   │   │   ├── security-rates-ingestion-panel.tsx
+│   │   │   │   │   │   ├── security-report-input-compare.test.tsx
+│   │   │   │   │   │   ├── security-report-input-compare.tsx
 │   │   │   │   │   │   ├── single-principal-attestation-panel.test.tsx
 │   │   │   │   │   │   ├── single-principal-attestation-panel.tsx
 │   │   │   │   │   │   ├── snapshot-metric-tile.test.tsx
@@ -9491,6 +9654,7 @@ Meridian-main
 │   │   │   │   │   │   ├── fund-structure-setup.api.ts
 │   │   │   │   │   │   ├── fund-structure-setup.contracts.ts
 │   │   │   │   │   │   ├── http-client.ts
+│   │   │   │   │   │   ├── instrument-capabilities.api.ts
 │   │   │   │   │   │   ├── intercompany-agreements.api.test.ts
 │   │   │   │   │   │   ├── intercompany-agreements.api.ts
 │   │   │   │   │   │   ├── mark-freshness.api.ts
@@ -9520,13 +9684,19 @@ Meridian-main
 │   │   │   │   │   │   ├── reporting-governance.api.ts
 │   │   │   │   │   │   ├── reporting-runs.api.test.ts
 │   │   │   │   │   │   ├── reporting-runs.api.ts
+│   │   │   │   │   │   ├── security-asset-profile-promotion.api.ts
 │   │   │   │   │   │   ├── security-curves.api.test.ts
 │   │   │   │   │   │   ├── security-curves.api.ts
+│   │   │   │   │   │   ├── security-impact-preview.api.test.ts
+│   │   │   │   │   │   ├── security-impact-preview.api.ts
 │   │   │   │   │   │   ├── security-master-schema.api.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.test.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.ts
 │   │   │   │   │   │   ├── security-master.api.ts
+│   │   │   │   │   │   ├── security-rate-repair.api.test.ts
+│   │   │   │   │   │   ├── security-rate-repair.api.ts
 │   │   │   │   │   │   ├── security-rates.api.ts
+│   │   │   │   │   │   ├── security-report-inputs.api.ts
 │   │   │   │   │   │   ├── statement-connectors.api.ts
 │   │   │   │   │   │   ├── statement-run-detail.api.ts
 │   │   │   │   │   │   ├── strategy-designer-quant.api.ts
@@ -9951,6 +10121,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.reconciliation.tie-out.test.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.ts
+│   │   │   │   │   ├── accounting-screen.route-state.ts
 │   │   │   │   │   ├── accounting-screen.security-master-detail-panels.tsx
 │   │   │   │   │   ├── accounting-screen.security-master-panels.tsx
 │   │   │   │   │   ├── accounting-screen.security-master-presenters.ts
@@ -10203,6 +10374,7 @@ Meridian-main
 │   │   │   │   │   ├── report-run-parameters-screen.tsx
 │   │   │   │   │   ├── report-run-parameters-screen.view-model.test.ts
 │   │   │   │   │   ├── report-run-parameters-screen.view-model.ts
+│   │   │   │   │   ├── reporting-amount-security-inputs.tsx
 │   │   │   │   │   ├── reporting-income-comparison.test.tsx
 │   │   │   │   │   ├── reporting-income-comparison.tsx
 │   │   │   │   │   ├── reporting-retained-amounts.test.tsx
@@ -10243,6 +10415,13 @@ Meridian-main
 │   │   │   │   │   ├── security-master-authoritative-detail.ts
 │   │   │   │   │   ├── security-master-policy-evidence.test.tsx
 │   │   │   │   │   ├── security-master-policy-evidence.ts
+│   │   │   │   │   ├── security-master-rate-repair-queue.test.tsx
+│   │   │   │   │   ├── security-master-rate-repair-queue.tsx
+│   │   │   │   │   ├── security-rate-repair-batch-review.tsx
+│   │   │   │   │   ├── security-rate-repair-discovery.test.ts
+│   │   │   │   │   ├── security-rate-repair-discovery.ts
+│   │   │   │   │   ├── security-rate-repair-selection.tsx
+│   │   │   │   │   ├── security-rate-repair.test-fixtures.ts
 │   │   │   │   │   ├── settings-change-impact.test.tsx
 │   │   │   │   │   ├── settings-change-impact.tsx
 │   │   │   │   │   ├── settings-mutation-confirm-dialog.tsx
@@ -10256,6 +10435,8 @@ Meridian-main
 │   │   │   │   │   ├── settings-route-state.test.ts
 │   │   │   │   │   ├── settings-route-state.ts
 │   │   │   │   │   ├── settings-screen.a11y.test.tsx
+│   │   │   │   │   ├── settings-screen.asset-profile-promotion.test.tsx
+│   │   │   │   │   ├── settings-screen.asset-profile-promotion.tsx
 │   │   │   │   │   ├── settings-screen.asset-profile-section.tsx
 │   │   │   │   │   ├── settings-screen.brokerage-sections.tsx
 │   │   │   │   │   ├── settings-screen.capability-sections.tsx
@@ -10844,6 +11025,7 @@ Meridian-main
 │   │   │   ├── RiskEndpoints.cs
 │   │   │   ├── SamplingEndpoints.cs
 │   │   │   ├── SecureReportingDistributionEndpoints.cs
+│   │   │   ├── SecurityMasterEndpoints.Capabilities.cs
 │   │   │   ├── SecurityMasterEndpoints.CashDividendAttestation.cs
 │   │   │   ├── SecurityMasterEndpoints.CashFlowPreview.cs
 │   │   │   ├── SecurityMasterEndpoints.CorporateActionCalendar.cs
@@ -10853,8 +11035,10 @@ Meridian-main
 │   │   │   ├── SecurityMasterEndpoints.ObservedFixings.cs
 │   │   │   ├── SecurityMasterEndpoints.OtcCollateral.cs
 │   │   │   ├── SecurityMasterEndpoints.OtcContracts.cs
+│   │   │   ├── SecurityMasterEndpoints.ProfilePromotion.cs
 │   │   │   ├── SecurityMasterEndpoints.Rates.cs
 │   │   │   ├── SecurityMasterEndpoints.RegistryProjections.cs
+│   │   │   ├── SecurityMasterEndpoints.ReportInputs.cs
 │   │   │   ├── SecurityMasterEndpoints.WriteRefusals.cs
 │   │   │   ├── StatusEndpoints.cs
 │   │   │   ├── StorageEndpoints.cs
@@ -10909,8 +11093,10 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.Routing.cs
 │   │   │   ├── WorkstationEndpoints.ScopeOptions.cs
 │   │   │   ├── WorkstationEndpoints.SecurityCoverage.cs
+│   │   │   ├── WorkstationEndpoints.SecurityMasterImpact.cs
 │   │   │   ├── WorkstationEndpoints.SecurityMasterMapping.cs
 │   │   │   ├── WorkstationEndpoints.SecurityMasterWorkbench.cs
+│   │   │   ├── WorkstationEndpoints.SecurityRateRepairs.cs
 │   │   │   ├── WorkstationEndpoints.SecurityReadRegistration.cs
 │   │   │   ├── WorkstationEndpoints.Session.cs
 │   │   │   ├── WorkstationEndpoints.StatementCaseworkAuthority.cs
@@ -11119,6 +11305,7 @@ Meridian-main
 │   │   │   ├── InitialAccountBootstrapService.cs
 │   │   │   ├── InMemoryFundStructureTenancyGuard.cs
 │   │   │   ├── InMemoryOperatorInboxService.cs
+│   │   │   ├── InstrumentCapabilityReadService.cs
 │   │   │   ├── IntercompanyAccrualDraftService.cs
 │   │   │   ├── IntercompanyAgreementAuthorities.cs
 │   │   │   ├── IntercompanyAgreementJournalProjection.cs
@@ -11133,6 +11320,7 @@ Meridian-main
 │   │   │   ├── LedgerDimensionMapper.cs
 │   │   │   ├── LedgerMarkToMarketCarryingValueSource.cs
 │   │   │   ├── LedgerReportingAuthoritativeSource.cs
+│   │   │   ├── LedgerReportingAuthoritativeSource.SecurityInputs.cs
 │   │   │   ├── LedgerReportingAuthoritativeSource.Successors.cs
 │   │   │   ├── LiveBrokeragePortfolioSyncService.ContractMultipliers.cs
 │   │   │   ├── LiveBrokeragePortfolioSyncService.cs
@@ -11206,10 +11394,13 @@ Meridian-main
 │   │   │   ├── ProviderReadinessService.cs
 │   │   │   ├── ReconciliationApiService.cs
 │   │   │   ├── ReconciliationBreakQueueProjection.cs
+│   │   │   ├── RecurringFixedIncomeAccrualEligibility.cs
 │   │   │   ├── RecurringJournalCalculations.cs
+│   │   │   ├── RecurringJournalEconomicObligationGuard.cs
 │   │   │   ├── RecurringJournalPeriodAuthority.cs
 │   │   │   ├── RecurringJournalRunner.cs
 │   │   │   ├── RecurringJournalSubjectAuthority.cs
+│   │   │   ├── ReleasedReportSecurityInputReadService.cs
 │   │   │   ├── ReportingAccessGrantService.cs
 │   │   │   ├── ReportingArtifactVaultService.cs
 │   │   │   ├── ReportingCertifiedArtifactProducer.cs
@@ -11264,7 +11455,9 @@ Meridian-main
 │   │   │   ├── ReportWriterDatasetSourceService.cs
 │   │   │   ├── ReportWriterGridArtifactService.cs
 │   │   │   ├── RiskRuleRuntimeService.cs
+│   │   │   ├── SecurityAssetProfilePromotionServiceRegistration.cs
 │   │   │   ├── SecurityMasterExceptionCaseworkService.cs
+│   │   │   ├── SecurityMasterOperatorServiceRegistration.cs
 │   │   │   ├── SecurityMasterReconciliationSlaPolicyProvider.cs
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
 │   │   │   ├── SecurityMasterSnapshotLotEconomics.cs
@@ -11305,6 +11498,8 @@ Meridian-main
 │   │   │   ├── TradingOperatorReadinessService.cs
 │   │   │   ├── TradingOperatorReadinessService.Strategy.cs
 │   │   │   ├── UiConfigurationSaveGuard.cs
+│   │   │   ├── WorkstationImpactScopeAccessor.cs
+│   │   │   ├── WorkstationRateRepairEvidenceResolver.cs
 │   │   │   ├── WorkstationServiceCollectionExtensions.cs
 │   │   │   ├── WorkstationWorkflowReadScope.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
@@ -12428,6 +12623,7 @@ Meridian-main
 │   │   │   ├── SecurityListingIdentityTests.cs
 │   │   │   ├── SecurityMasterConflictFieldCategoriesTests.cs
 │   │   │   ├── SecurityMasterConflictRoutingTests.cs
+│   │   │   ├── SecurityVersionedScalarTermsTests.cs
 │   │   │   └── StructuredCashFlowTermsResolverIntegrationTests.cs
 │   │   ├── ContractualCashFlowEngineTests.cs
 │   │   ├── ContractualCashFlowRunComparerTests.cs
@@ -12561,7 +12757,8 @@ Meridian-main
 │   │   ├── Program.Etl.cs
 │   │   ├── Program.EvidenceQuota.cs
 │   │   ├── Program.Identity.cs
-│   │   └── Program.ManifestLock.cs
+│   │   ├── Program.ManifestLock.cs
+│   │   └── Program.Recurring.cs
 │   ├── Meridian.QuantScript.Tests
 │   │   ├── Helpers
 │   │   │   ├── FakeQuantDataContext.cs
@@ -12925,6 +13122,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlowServiceTests.ScheduleCharacterization.cs
 │   │   │   ├── SecurityMasterFactorAccrualProjectionTests.cs
 │   │   │   ├── SecurityMasterScheduleCompatibilityTests.cs
+│   │   │   ├── SecurityRevisionWorkflowPurposeTests.cs
 │   │   │   ├── StructuredCashFlowLedgerGateTests.cs
 │   │   │   ├── StructuredCashFlowScheduleEntryEqualityTests.cs
 │   │   │   └── StructuredCashFlowTermsResolverTests.cs
@@ -13290,6 +13488,7 @@ Meridian-main
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.RetainedEvidenceMerge.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.Successors.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.AcquisitionAdmission.cs
+│   │   │   │   ├── AssetAccountingEventSpineServiceTests.AssetPackAuthority.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.BondAcquisitionOwnership.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.BondSettlement.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.CapitalReturn.cs
@@ -13342,7 +13541,9 @@ Meridian-main
 │   │   │   ├── IntercompanyLedgerPostingAuthorityTests.cs
 │   │   │   ├── MiddleOfficeOperationsServiceTests.cs
 │   │   │   ├── RecurringJournalEvidencePinStoreTests.cs
-│   │   │   └── RecurringJournalStoreTests.cs
+│   │   │   ├── RecurringJournalStoreTests.cs
+│   │   │   ├── RecurringJournalStoreTests.EconomicObligations.cs
+│   │   │   └── RecurringJournalStoreTests.EconomicObligations.Process.cs
 │   │   ├── FixedIncome
 │   │   │   ├── AccountBondIncomePlanningEntitlementTests.cs
 │   │   │   ├── AccountBondIncomePlanningTests.cs
@@ -13907,7 +14108,8 @@ Meridian-main
 │   │   │   │   ├── ScheduleKernelLegacyParityTests.cs
 │   │   │   │   ├── ScheduleParityGrids.cs
 │   │   │   │   ├── SchedulePeriodIdTests.cs
-│   │   │   │   └── ScheduleSpecFactoryTests.cs
+│   │   │   │   ├── ScheduleSpecFactoryTests.cs
+│   │   │   │   └── ScheduleSpecFactoryVersionedAnchorTests.cs
 │   │   │   ├── Workbench
 │   │   │   │   ├── AheadOfWriteWorkbenchFixtures.cs
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.AheadOfWrite.cs
@@ -13926,9 +14128,12 @@ Meridian-main
 │   │   │   │   ├── ReportPeriodRangeTests.cs
 │   │   │   │   ├── SecurityMasterConflictAuthorityPolicyTests.cs
 │   │   │   │   ├── SecurityMasterGovernedWriteAuthorityTests.cs
+│   │   │   │   ├── SecurityMasterImpactPreviewTests.cs
+│   │   │   │   ├── SecurityMasterImpactPublicationPostgresTests.cs
 │   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.AheadOfWrite.cs
 │   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.cs
 │   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.IndependentReviewer.cs
+│   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.RepairMaker.cs
 │   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.RetainedScheduleGaps.cs
 │   │   │   │   ├── SecurityMasterWorkbenchCommandServiceTests.ScheduleSubmission.cs
 │   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.StaleProposal.cs
@@ -13939,6 +14144,7 @@ Meridian-main
 │   │   │   ├── BondSecurityTermsDigestPostgresTests.cs
 │   │   │   ├── BondWorkflowCanonicalModuleTests.cs
 │   │   │   ├── CanonicalRegistryCoverageSourceTests.cs
+│   │   │   ├── CertificateOfDepositCalculationProfileTests.cs
 │   │   │   ├── ClassificationLabelReaderTests.cs
 │   │   │   ├── ContractualCashFlowCompanionPostgresTests.cs
 │   │   │   ├── CorporateActionAccountingMigrationTests.cs
@@ -14029,6 +14235,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetClassAliasMappingTests.cs
 │   │   │   ├── SecurityAssetClassBehaviorFactsTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
+│   │   │   ├── SecurityAssetClassModuleTests.cs
 │   │   │   ├── SecurityAssetClassOperationalWiringTests.cs
 │   │   │   ├── SecurityAssetClassParityGuardTests.cs
 │   │   │   ├── SecurityAssetClassRegistryCoverageTests.cs
@@ -14039,6 +14246,8 @@ Meridian-main
 │   │   │   ├── SecurityAssetPackAdmissionTests.cs
 │   │   │   ├── SecurityAssetPackReadinessMappingTests.cs
 │   │   │   ├── SecurityAssetProfileGovernanceServiceTests.cs
+│   │   │   ├── SecurityAssetProfilePromotionReadServiceTests.cs
+│   │   │   ├── SecurityAssetProfileUsagePostgresTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChainTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterPipelineTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterTests.cs
@@ -14052,6 +14261,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.ReadableTwins.cs
 │   │   │   ├── SecurityAssetTermsSchemaTests.cs
+│   │   │   ├── SecurityAssetValidationModuleTests.cs
 │   │   │   ├── SecurityCodecRecordContractionTests.cs
 │   │   │   ├── SecurityCurveRulesTests.cs
 │   │   │   ├── SecurityCurvesMigrationTests.cs
@@ -14155,6 +14365,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterServiceSnapshotTests.DayCount.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.RetainedScheduleGaps.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.StrayScheduleAmendment.cs
+│   │   │   ├── SecurityMasterServiceSnapshotTests.VersionedScalars.cs
 │   │   │   ├── SecurityMasterSnapshotStoreTests.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationServiceTests.cs
 │   │   │   ├── SecurityMasterTermsCapabilityPostgresTests.cs
@@ -14166,9 +14377,15 @@ Meridian-main
 │   │   │   ├── SecurityQuoteConventionCoverageTests.cs
 │   │   │   ├── SecurityRateIngestionRulesTests.cs
 │   │   │   ├── SecurityRateModuleContractionReplayTests.cs
+│   │   │   ├── SecurityRateRepairDiscoveryTests.cs
+│   │   │   ├── SecurityRateRepairFinalizationTests.cs
+│   │   │   ├── SecurityRateRepairPersistenceTests.cs
+│   │   │   ├── SecurityRateRepairWorkflowPostgresTests.cs
 │   │   │   ├── SecurityRecordRateUnitTests.cs
+│   │   │   ├── SecurityRecurringAccrualPolicyTests.cs
 │   │   │   ├── SecurityReferenceModuleContractionReplayTests.cs
 │   │   │   ├── SecurityReferenceTaxonomyCatalogTests.cs
+│   │   │   ├── SecurityReportInputAttributionTests.cs
 │   │   │   ├── SecurityRequiredModuleValueTests.cs
 │   │   │   ├── SecurityRetainedFoldClearedValueTests.cs
 │   │   │   ├── SecurityScalarModuleContractionReplayTests.cs
@@ -14179,6 +14396,7 @@ Meridian-main
 │   │   │   ├── SecurityTermsFormatDeclarationTests.cs
 │   │   │   ├── SecurityTermsProjectionRegistryTests.cs
 │   │   │   ├── SecurityTermsS2StampTests.cs
+│   │   │   ├── SecurityTermsStorageModuleTests.cs
 │   │   │   ├── SecurityTermsVersioningTests.cs
 │   │   │   ├── SecurityTermsWriteGoldenTests.cs
 │   │   │   ├── SecurityTrancheContractContractionTests.cs
@@ -14189,6 +14407,8 @@ Meridian-main
 │   │   │   ├── SecurityValidationGateServiceTests.cs
 │   │   │   ├── SecurityValidationServiceTests.cs
 │   │   │   ├── SecurityValuationServiceTests.cs
+│   │   │   ├── SecurityVanillaSwapProfileTests.cs
+│   │   │   ├── SecurityVersionedScalarCodecCompatibilityTests.cs
 │   │   │   ├── SecurityVersionedTermsTests.cs
 │   │   │   ├── SpecializedProjectionGoldenTests.cs
 │   │   │   ├── StructuredCashFlowScheduleRowVersionTests.cs
@@ -14359,6 +14579,7 @@ Meridian-main
 │   │   │   ├── GovernedLedgerPostingTargetTests.EntityControls.cs
 │   │   │   ├── HistoricalTaxLotAccrualTests.cs
 │   │   │   ├── HistoricalTaxLotQuantityTests.cs
+│   │   │   ├── ImpactDependencyGuardTests.cs
 │   │   │   ├── IntercompanyAccountBindingFileTests.cs
 │   │   │   ├── IntercompanyAccountBindingPostgresTests.cs
 │   │   │   ├── IntercompanyAccountBindingRulesTests.cs
@@ -14431,6 +14652,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCanonicalWithdrawalDefinitionTests.cs
 │   │   │   ├── SecurityMasterLegacyIdentifierCleanupTests.cs
 │   │   │   ├── SecurityMasterSymbolReconciliationTests.cs
+│   │   │   ├── SecurityRevisionWorkflowPostgresTests.cs
 │   │   │   ├── SourceRegistryPersistenceTests.cs
 │   │   │   ├── StorageCatalogServiceTests.cs
 │   │   │   ├── StorageCatalogServiceTests.Snapshots.cs
@@ -14710,6 +14932,7 @@ Meridian-main
 │   │   │   ├── FundProfileScopeEndpointFilterTests.cs
 │   │   │   ├── FundStructureEndpointAuthorizationTests.cs
 │   │   │   ├── InMemoryFundStructureTenancyGuardTests.cs
+│   │   │   ├── InstrumentCapabilityReadServiceTests.cs
 │   │   │   ├── IntercompanyAccrualDraftServiceTests.cs
 │   │   │   ├── IntercompanyAgreementAuthorityTests.cs
 │   │   │   ├── IntercompanyAgreementEndpointTests.cs
@@ -14735,6 +14958,7 @@ Meridian-main
 │   │   │   ├── LedgerMarkToMarketCarryingValueSourceTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceSuccessorTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.cs
+│   │   │   ├── LedgerReportingAuthoritativeSourceTests.SecurityInputs.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.SuccessorOriginIntegrity.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.SuccessorReportPack.cs
 │   │   │   ├── LedgerReportingSchedulePeriodResolverTests.cs
@@ -14810,6 +15034,8 @@ Meridian-main
 │   │   │   ├── ReconciliationApiServiceTests.cs
 │   │   │   ├── ReconciliationBreakQueueProjectionTests.cs
 │   │   │   ├── ReconciliationLegacyBulkActionTests.cs
+│   │   │   ├── RecurringJournalCalculationTests.CertificateOfDeposit.cs
+│   │   │   ├── RecurringJournalCalculationTests.CertificateOfDepositObligations.cs
 │   │   │   ├── RecurringJournalCalculationTests.cs
 │   │   │   ├── RecurringJournalCalculationTests.EvidencePins.cs
 │   │   │   ├── RecurringJournalCalculationTests.FactoredAccrual.cs
@@ -14837,8 +15063,11 @@ Meridian-main
 │   │   │   ├── ReportingRunReadinessServiceTests.cs
 │   │   │   ├── ReportingRunStoreManifestHashTests.cs
 │   │   │   ├── ReportingRunStreamEndpointTests.cs
+│   │   │   ├── ReportingSecurityInputFormatBoundaryTests.cs
+│   │   │   ├── ReportingSecurityInputTestData.cs
 │   │   │   ├── ReportingTenantIsolationTests.cs
 │   │   │   ├── ReportLedgerAmountProvenanceTests.cs
+│   │   │   ├── ReportLedgerAmountProvenanceTests.SecurityInputs.cs
 │   │   │   ├── ReportPackProvenanceResolverTests.cs
 │   │   │   ├── ReportPackValidationServiceTests.cs
 │   │   │   ├── ReportPackWorkflowServiceTests.cs
@@ -14848,6 +15077,7 @@ Meridian-main
 │   │   │   ├── RiskRuleRuntimeOrderRateStatusTests.cs
 │   │   │   ├── RiskRuleRuntimePriceCollarConfigTests.cs
 │   │   │   ├── SecureReportingDistributionEndpointTests.cs
+│   │   │   ├── SecurityAssetProfilePromotionEndpointsTests.cs
 │   │   │   ├── SecurityMasterAliasEndpointsTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterCurveEndpointsTests.cs
@@ -14877,6 +15107,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchScheduleBookGoldenTests.cs
 │   │   │   ├── SecurityMasterWorkbenchScheduleBookHarness.cs
 │   │   │   ├── SecurityMasterWriteRefusalEndpointsTests.cs
+│   │   │   ├── SecurityRateRepairEndpointsTests.cs
 │   │   │   ├── SinglePrincipalAttestationAdditionalTests.cs
 │   │   │   ├── SinglePrincipalAttestationEndpointTests.cs
 │   │   │   ├── SinglePrincipalAttestationStoreTests.cs

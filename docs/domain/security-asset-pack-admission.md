@@ -2,9 +2,21 @@
 
 **Status:** active guidance
 **Owner:** core-team
-**Reviewed:** 2026-10-28
+**Reviewed:** 2026-11-14
 
 The asset-pack registry participates in canonical Security Master create and amend commands.
+Its compiled foundation now composes all 32 classes through class-owned contributions in each
+owning layer. Contracts owns descriptors, root/nested schema, upgrade steps, cash-flow term roles,
+rate units and codec/economic recovery declarations. Application composes validator factories and
+generated executable decode contributions. Storage composes relational descriptors plus the existing
+Option and CustomAsset specialized writers. The public registry facades and F# union remain stable.
+Shared validation, replay guards and specialized hooks remain outside mechanical declaration tables.
+
+This is compiled composition, not a runtime plugin loader or the governed pack activation lifecycle.
+Accounting declarations still resolve to the existing exact promoted rule/policy authority; pack
+prose cannot replace it. Adding a new class still requires a compiled F# case, reviewed layer
+contributions and compatibility proof. See the [approved continuation plan](../engineering/plans/security-master-review-remediation-plan.md).
+
 `SecurityAssetPackAdmission` first resolves a modeled class to its registered packs. Every matching
 pack must carry that class's current writable contract, derived from `SecurityAssetTermsSchema`:
 field keys and types, serialized-presence rules, vocabularies, aliases and registered nested item

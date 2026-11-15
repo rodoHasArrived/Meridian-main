@@ -71,7 +71,10 @@ module internal SecurityTermsWriteVersion =
                   terms.Workflow.IsSome, fieldSince "Bond" "bondWorkflow" ]
             | SecurityKind.CertificateOfDeposit terms ->
                 [ declares terms.ScheduleConventions, blockSince kind
-                  holdsSchedules terms.CallPutSchedules, schedulesSince kind ]
+                  holdsSchedules terms.CallPutSchedules, schedulesSince kind
+                  terms.Dates.IssueDate.IsSome, fieldSince (SecurityKind.assetClass kind) "issueDate"
+                  terms.Notional.Notional.IsSome, fieldSince (SecurityKind.assetClass kind) "principal"
+                  terms.CouponTerms.PaymentFrequency.IsSome, fieldSince (SecurityKind.assetClass kind) "paymentFrequency" ]
             | SecurityKind.StructuredCredit terms ->
                 [ declares terms.ScheduleConventions, blockSince kind
                   holdsSchedules terms.CallPutSchedules, schedulesSince kind ]

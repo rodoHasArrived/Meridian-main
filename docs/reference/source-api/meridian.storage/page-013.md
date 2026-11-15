@@ -6,6 +6,56 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileSearchQuery
+
+Qualified name: <code>Meridian.Storage.Services.FileSearchQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:740](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L740).
+
+```csharp
+public sealed record FileSearchQuery(string[]? Symbols = null, MarketEventType[]? Types = null, string[]? Sources = null, DateTimeOffset? From = null, DateTimeOffset? To = null, long? MinSize = null, long? MaxSize = null, double? MinQualityScore = null, string? PathPattern = null, SortField SortBy = SortField.Date, bool Descending = true, int Skip = 0, int Take = 100);
+```
+
+## FileSearchResult
+
+Qualified name: <code>Meridian.Storage.Services.FileSearchResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:789](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L789).
+
+```csharp
+public sealed record FileSearchResult(string Path, string Symbol, string EventType, string Source, DateTimeOffset Date, long SizeBytes, long EventCount, double QualityScore);
+```
+
+## HealthCheckOptions
+
+Qualified name: <code>Meridian.Storage.Services.HealthCheckOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:824](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L824).
+
+```csharp
+public sealed record HealthCheckOptions(bool ValidateChecksums = true, bool CheckSequenceContinuity = true, bool ValidateSchemas = true, bool CheckFilePermissions = true, bool IdentifyCorruption = true, bool CheckManifestConsistency = false, string[]? Paths = null, int ParallelChecks = 4);
+```
+
+## HealthIssue
+
+Qualified name: <code>Meridian.Storage.Services.HealthIssue</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:870](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L870).
+
+```csharp
+public sealed record HealthIssue(IssueSeverity Severity, IssueType Type, string Path, string? ExpectedChecksum = null, string? ActualChecksum = null, string? Details = null, string RecommendedAction = "", bool AutoRepairable = false);
+```
+
+## HealthReport
+
+Qualified name: <code>Meridian.Storage.Services.HealthReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:835](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L835).
+
+```csharp
+public sealed record HealthReport(string ReportId, DateTime GeneratedAt, long ScanDurationMs, HealthSummary Summary, IReadOnlyList<HealthIssue> Issues, HealthStatistics Statistics);
+```
+
 ## HealthStatistics
 
 Qualified name: <code>Meridian.Storage.Services.HealthStatistics</code>. Kind: `class`.
@@ -841,61 +891,4 @@ Source: [src/Meridian.Storage/Services/DataLineageService.cs:456](../../../../sr
 
 ```csharp
 public sealed record MigrationRecord(DateTime TimestampUtc, string SourceTier, string TargetTier, string? CompressionChange = null, string? FormatChange = null, long BytesBefore = 0, long BytesAfter = 0);
-```
-
-## MigrationResult
-
-Qualified name: <code>Meridian.Storage.Services.MigrationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:584](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L584).
-
-```csharp
-public sealed record MigrationResult(bool Success, int FilesProcessed, int FilesFailed, long BytesProcessed, long BytesSaved, TimeSpan Duration, IReadOnlyList<string> Errors);
-```
-
-## OperationalScheduleConfig
-
-Qualified name: <code>Meridian.Storage.Services.OperationalScheduleConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1502](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1502).
-
-```csharp
-public sealed record OperationalScheduleConfig(string Name = "Default", TradingSession[] TradingSessions = null !, MaintenanceWindow[] MaintenanceWindows = null !, string[] Holidays = null !, TimeZoneInfo PrimaryTimeZone = null !)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperationalScheduleConfig() : this(&quot;Default&quot;, Array.Empty&lt;TradingSession&gt;(), Array.Empty&lt;MaintenanceWindow&gt;(), Array.Empty&lt;string&gt;(), TimeZoneInfo.Utc);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1510](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1510) |  |
-| <code>public static OperationalScheduleConfig Default =&gt; …;</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1512](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1512) |  |
-
-## OperationalState
-
-Qualified name: <code>Meridian.Storage.Services.OperationalState</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1691](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1691).
-
-```csharp
-public sealed record OperationalState(bool IsRealTimeCollectionActive, TradingSession? CurrentSession, MaintenanceWindow? CurrentMaintenanceWindow, int RunningMaintenanceJobs, ScheduledJob[] PendingJobs, DateTimeOffset NextMaintenanceWindowStart);
-```
-
-## OrphanedFile
-
-Qualified name: <code>Meridian.Storage.Services.OrphanedFile</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:966](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L966).
-
-```csharp
-public sealed record OrphanedFile(string Path, string Reason, long SizeBytes, DateTime LastModified);
-```
-
-## OrphanReport
-
-Qualified name: <code>Meridian.Storage.Services.OrphanReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:960](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L960).
-
-```csharp
-public sealed record OrphanReport(DateTime GeneratedAt, IReadOnlyList<OrphanedFile> OrphanedFiles, long TotalOrphanedBytes);
 ```

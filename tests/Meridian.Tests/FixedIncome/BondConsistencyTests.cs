@@ -479,6 +479,7 @@ public sealed class BondConsistencyTests
     {
         var payload = new Dictionary<string, object?>
         {
+            ["termsFormat"] = "flat",
             ["assetClassTermsVersion"] = 3,
             ["issueDate"] = "2026-01-01",
             ["maturity"] = "2027-01-01",

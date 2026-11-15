@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostgresReportingRunStore
+
+Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingRunStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:17](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L17).
+
+PostgreSQL-backed operational snapshot store for reporting runs. Run identities are isolated by tenant, exact retries are no-ops, and every retained JSON payload is re-hashed before use.
+
+```csharp
+public sealed class PostgresReportingRunStore : IReportingRunStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool SupportsCompleteScopedPaging =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:19](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L19) |  |
+| <code>public bool SupportsDurableCreateClaims =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:20](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L20) |  |
+| <code>public PostgresReportingRunStore(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:27](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L27) |  |
+| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(int limit = 25);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:36](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L36) |  |
+| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, int limit = 25);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:60](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L60) |  |
+| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int limit = 25) =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:91](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L91) |  |
+| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int offset, int limit);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:97](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L97) |  |
+| <code>public ReportingOutputManifest? GetManifest(string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:171](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L171) |  |
+| <code>public ReportingOutputManifest? GetManifest(string tenantId, string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:181](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L181) |  |
+| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:197](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L197) |  |
+| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string tenantId, string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:207](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L207) |  |
+| <code>public string? GetRevision(string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:224](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L224) |  |
+| <code>public string? GetRevision(string tenantId, string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:238](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L238) |  |
+| <code>public async Task&lt;ReportingRunCreateClaimResult&gt; TryClaimCreateAsync(string tenantId, string runId, string leaseOwner, DateTimeOffset nowUtc, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:256](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L256) |  |
+| <code>public async Task&lt;bool&gt; RenewCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:392](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L392) |  |
+| <code>public async Task ReleaseCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:446](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L446) |  |
+| <code>public Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:489](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L489) |  |
+| <code>public Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string? expectedRevision, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:495](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L495) |  |
+| <code>public Task SaveClaimedCreateAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string leaseOwner, long leaseVersion, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:508](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L508) |  |
+
 ## PostgresReportingScheduleStore
 
 Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingScheduleStore</code>. Kind: `class`.
@@ -190,7 +226,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Reporting.ReportingOperationalStateCorruptionException</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:1272](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L1272).
+Source: [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:1273](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L1273).
 
 Raised when retained operational reporting state cannot be proven to match its indexed scope and canonical JSON digests.
 
@@ -202,10 +238,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingOperationalStateCorruptionException(string entityType, string entityId, string detail) : base($&quot;Retained reporting {entityType} &#x27;{entityId}&#x27; is corrupt: {detail}.&quot;);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:1274](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L1274) |  |
-| <code>public ReportingOperationalStateCorruptionException(string entityType, string entityId, string detail, Exception innerException) : base($&quot;Retained reporting {entityType} &#x27;{entityId}&#x27; is corrupt: {detail}.&quot;, innerException);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:1284](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L1284) |  |
-| <code>public string EntityType { get; }</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:1295](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L1295) |  |
-| <code>public string EntityId { get; }</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:1297](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L1297) |  |
+| <code>public ReportingOperationalStateCorruptionException(string entityType, string entityId, string detail) : base($&quot;Retained reporting {entityType} &#x27;{entityId}&#x27; is corrupt: {detail}.&quot;);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:1275](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L1275) |  |
+| <code>public ReportingOperationalStateCorruptionException(string entityType, string entityId, string detail, Exception innerException) : base($&quot;Retained reporting {entityType} &#x27;{entityId}&#x27; is corrupt: {detail}.&quot;, innerException);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:1285](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L1285) |  |
+| <code>public string EntityType { get; }</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:1296](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L1296) |  |
+| <code>public string EntityId { get; }</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:1298](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L1298) |  |
 
 ## ReportingReconciliationEvidenceJsonContext
 
@@ -353,7 +389,7 @@ public sealed record CommodityProjectionRow(Guid SecurityId, string DisplayName,
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.ConnectionLease</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:213](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L213).
+Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:251](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L251).
 
 Holds a mutation connection and optional transaction, releasing its gate and any owned connection on disposal.
 
@@ -365,9 +401,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public NpgsqlConnection Connection { get; } = connection;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:216](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L216) |  |
-| <code>public NpgsqlTransaction? Transaction { get; } = transaction;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:217](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L217) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:218](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L218) |  |
+| <code>public NpgsqlConnection Connection { get; } = connection;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:254](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L254) |  |
+| <code>public NpgsqlTransaction? Transaction { get; } = transaction;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:255](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L255) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:256](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L256) |  |
 
 ## CorporateActionCalendarReadSet
 
@@ -864,23 +900,3 @@ Declared public members:
 | <code>Task&lt;EdgarFilerRecord?&gt; LoadFilerAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:16](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L16) |  |
 | <code>Task&lt;EdgarFactsRecord?&gt; LoadFactsAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L20) |  |
 | <code>Task&lt;EdgarSecurityDataRecord?&gt; LoadSecurityDataAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:24](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L24) |  |
-
-## IEquityReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.IEquityReferenceProjectionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:6](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L6).
-
-Queries equity reference projections by security, exchange, and issuer.
-
-```csharp
-public interface IEquityReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EquityProjectionRow?&gt; GetEquityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L8) |  |
-| <code>Task&lt;IReadOnlyList&lt;EquityProjectionRow&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L9) |  |
-| <code>Task&lt;IReadOnlyList&lt;EquityProjectionRow&gt;&gt; GetByIssuerAsync(string issuerName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L10) |  |

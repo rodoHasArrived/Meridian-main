@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecureReportingTransportCapability
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingTransportCapability</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:88](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L88).
+
+Credential-free transport readiness exposed to authenticated reporting operators.
+
+```csharp
+public sealed record SecureReportingTransportCapability(string TransportId, string DisplayName, string DeliveryMode, bool IsExternal, bool RequiresDestination, bool UsesGovernedRecipientScope, bool IssuesAccessGrant, bool SupportsProviderReceipts, bool IsConfigured, bool IsInfrastructureReady, string? InfrastructureDisabledReasonCode, bool IsReady, string? DisabledReasonCode);
+```
+
+## SecurityMasterExceptionCaseworkService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterExceptionCaseworkService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:40](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L40).
+
+Reads Security Master-tagged cases from the authoritative reconciliation queue.
+
+```csharp
+public sealed class SecurityMasterExceptionCaseworkService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string QualityRunId = &quot;security-master-quality&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:45](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L45) | Canonical run identifier used by genuinely owner-scoped Security Master quality cases. |
+| <code>public SecurityMasterExceptionCaseworkService(IReconciliationBreakQueueRepository? breakQueueRepository, ILogger&lt;SecurityMasterExceptionCaseworkService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:49](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L49) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;&gt; GetAgingExceptionsAsync(ReconciliationBreakQueueScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:60](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L60) | Returns exact-scope open Security Master cases whose SLA deadline has elapsed. |
+
 ## SecurityMasterExceptionSlaConfig
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterExceptionSlaConfig</code>. Kind: `record`.
@@ -96,11 +128,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SecurityMasterWorkbenchQueryService(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService queryService, ISecurityValidationService validationService, ISecurityMasterConflictService conflictService, ISecurityMasterIngestStatusService ingestStatusService, IStrategyRepository strategyRepository, PortfolioReadService portfolioReadService, LedgerReadService ledgerReadService, ReportGenerationService reportGenerationService, IReconciliationRunService? reconciliationRunService = null, ISecurityMasterPricingService? pricingService = null, ISecurityMasterCashFlowService? cashFlowService = null, IDataVendorEntitlementService? entitlementService = null, ISecurityMasterDataQualityService? dataQualityService = null, IFundProfileTenancyRegistry? tenancyRegistry = null, IHttpContextAccessor? httpContextAccessor = null, Meridian.Contracts.Calendars.IBusinessDayCalendarSource? calendars = null, Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null, TimeProvider? timeProvider = null, Microsoft.Extensions.Logging.ILogger&lt;SecurityMasterWorkbenchQueryService&gt;? logger = null, ISecurityMasterGovernanceRequirements? governanceRequirements = null);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:46](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L46) |  |
-| <code>public async Task&lt;SecurityMasterTrustSnapshotDto?&gt; GetTrustSnapshotAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:90](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L90) |  |
-| <code>public async Task&lt;InstrumentPassportDto?&gt; GetInstrumentPassportAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:221](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L221) |  |
-| <code>public async Task&lt;SecurityMasterOperatingModelDto?&gt; GetOperatingModelAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:230](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L230) |  |
-| <code>public async Task&lt;BulkResolveSecurityMasterConflictsResult&gt; BulkResolveConflictsAsync(BulkResolveSecurityMasterConflictsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:273](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L273) |  |
+| <code>public SecurityMasterWorkbenchQueryService(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService queryService, ISecurityValidationService validationService, ISecurityMasterConflictService conflictService, ISecurityMasterIngestStatusService ingestStatusService, IStrategyRepository strategyRepository, PortfolioReadService portfolioReadService, LedgerReadService ledgerReadService, ReportGenerationService reportGenerationService, IReconciliationRunService? reconciliationRunService = null, ISecurityMasterPricingService? pricingService = null, ISecurityMasterCashFlowService? cashFlowService = null, IDataVendorEntitlementService? entitlementService = null, ISecurityMasterDataQualityService? dataQualityService = null, IFundProfileTenancyRegistry? tenancyRegistry = null, IHttpContextAccessor? httpContextAccessor = null, Meridian.Contracts.Calendars.IBusinessDayCalendarSource? calendars = null, Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null, TimeProvider? timeProvider = null, Microsoft.Extensions.Logging.ILogger&lt;SecurityMasterWorkbenchQueryService&gt;? logger = null, ISecurityMasterGovernanceRequirements? governanceRequirements = null, InstrumentCapabilityReadService? capabilityReadService = null);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:47](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L47) |  |
+| <code>public async Task&lt;SecurityMasterTrustSnapshotDto?&gt; GetTrustSnapshotAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:93](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L93) |  |
+| <code>public async Task&lt;InstrumentPassportDto?&gt; GetInstrumentPassportAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:224](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L224) |  |
+| <code>public async Task&lt;SecurityMasterOperatingModelDto?&gt; GetOperatingModelAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:233](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L233) |  |
+| <code>public async Task&lt;BulkResolveSecurityMasterConflictsResult&gt; BulkResolveConflictsAsync(BulkResolveSecurityMasterConflictsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:276](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L276) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs:22](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs#L22).
 
@@ -887,60 +919,20 @@ Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.c
 public sealed record WorkstationPersonalTableViewRecord(string TenantId, string OperatorId, string TableId, WorkstationTableViewDto View);
 ```
 
-## WorkstationServiceCollectionExtensions
+## WorkstationRateRepairEvidenceResolver
 
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationServiceCollectionExtensions</code>. Kind: `class`.
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationRateRepairEvidenceResolver</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:87](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L87).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationRateRepairEvidenceResolver.cs:11](../../../../src/Meridian.Ui.Shared/Services/WorkstationRateRepairEvidenceResolver.cs#L11).
 
-Registers the shared web-workstation service graph consumed by endpoint and host surfaces.
+Resolves owned retained document bytes and derives their repair evidence identity on the server.
 
 ```csharp
-public static class WorkstationServiceCollectionExtensions
+public sealed class WorkstationRateRepairEvidenceResolver(IEvidenceArtifactStore artifacts, IWorkstationTenantContextAccessor contextAccessor) : ISecurityRateRepairEvidenceResolver
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:89](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L89) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1554](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1554) |  |
-
-## WorkstationWorkflowReadScope
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationWorkflowReadScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:28](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L28).
-
-Which workspace families a caller may read in the shared workflow summary. The summary is shell furniture that composes one card per canonical workspace, so its route admits the union of the per-workspace read permissions — otherwise a reporting or strategy reader loses the whole strip. Admission is therefore not authorization: without this projection a caller admitted by any one family receives every family&#x27;s card, and the strategy and accounting cards carry real record content (candidate strategy names, promotion state and reasons, open break counts, ledger continuity posture). Cards backed by no record content — Portfolio, Reporting and Settings, which vary only on whether an operating context is selected — are not gated here; there is nothing in them to withhold. There is deliberately no default: every caller of WorkstationWorkflowSummaryService.GetAsync states a scope, because the desktop lane reaches that service in process with no endpoint filter in between, and an optional argument there is a grant to whichever caller forgets it. Browser requests resolve theirs through ForRequest; the desktop resolves its operator&#x27;s through its own authenticated session.
-
-```csharp
-public sealed record WorkstationWorkflowReadScope(bool Trading, bool Accounting, bool Strategy, bool Data)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly WorkstationWorkflowReadScope All = new (Trading : true, Accounting : true, Strategy : true, Data : true);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:38](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L38) | Every family readable. For a caller whose authority is already established to cover all of them, and for tests; never a stand-in for a scope that was not resolved. |
-| <code>public bool NeedsStrategyRuns =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:49](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L49) | True when any family whose card is built from strategy runs is readable. Trading and Accounting both read the governed (paper and live) runs and Strategy reads the backtest queue, so a caller holding none of the three needs no run load at all. |
-| <code>public static WorkstationWorkflowReadScope ForRequest(HttpContext context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:71](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L71) | The families the current request may read. Each is the permission set already declared by the route that serves that family&#x27;s data directly, so the summary card and the surface it summarises admit the same callers and neither becomes the other&#x27;s second door: Trading — UserPermission.ViewTrades, as the trading read surface. Accounting — the reconciliation break queue&#x27;s set, which the accounting card&#x27;s open-break and continuity posture is drawn from. Strategy — the run-ledger routes&#x27; UserPermission.ViewStrategies and UserPermission.ManageStrategies. Data — the Data workspace&#x27;s own set. The card summarises that workspace and its next action opens it, so the two admit the same callers; the workspace payload reads the same provider metrics the card counts, so nothing reaches the card that the workspace withholds. UserPermission.AdminMaintenance is not a universal override: it appears only in the accounting set, because the reconciliation break queue accepts it and the trading, strategy and data workspaces do not. A profile carrying it alone administers maintenance routines; it is not thereby entitled to strategy candidates or trading posture. |
-
-## WorkstationWorkflowSummaryService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationWorkflowSummaryService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:12](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L12).
-
-Builds a shell-facing workflow summary that keeps next-action ordering shared across hosts.
-
-```csharp
-public sealed class WorkstationWorkflowSummaryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkstationWorkflowSummaryService(StrategyRunReadService runReadService, StrategyRunContinuityService? continuityService = null, IReconciliationRunService? reconciliationRunService = null, Meridian.Application.UI.ConfigStore? configStore = null, IWorkflowActionCatalog? actionCatalog = null, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null, IFundProfileTenancyRegistry? tenancyRegistry = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:22](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L22) |  |
-| <code>public async Task&lt;OperatorWorkflowHomeSummary&gt; GetAsync(WorkstationWorkflowReadScope readScope, bool hasOperatingContext = false, string? operatingContextDisplayName = null, string? fundProfileId = null, string? fundAccountId = null, string? fundDisplayName = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:43](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L43) |  |
+| <code>public async Task&lt;SecurityRateRepairEvidence&gt; ResolveAsync(string evidenceId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationRateRepairEvidenceResolver.cs:14](../../../../src/Meridian.Ui.Shared/Services/WorkstationRateRepairEvidenceResolver.cs#L14) |  |

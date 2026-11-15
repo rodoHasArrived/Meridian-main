@@ -615,6 +615,7 @@ public sealed record InstrumentPassportDto(
     SecurityMasterTrustPostureDto TrustPosture,
     DateTimeOffset RetrievedAtUtc)
 {
+    public IReadOnlyList<InstrumentCapabilityAssessmentDto> Capabilities { get; init; } = [];
     public IReadOnlyList<InstrumentPassportProviderConfidenceDto> ProviderConfidence { get; init; } = [];
     public InstrumentPassportReferenceDataWorkbenchDto? ReferenceDataWorkbench { get; init; }
     public SecurityMasterOperatingModelDto? OperatingModel { get; init; }

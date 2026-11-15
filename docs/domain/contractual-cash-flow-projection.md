@@ -2,7 +2,7 @@
 
 **Status:** calculation capability; production terms write activation remains gated
 **Owner:** Security Master / Direct Lending
-**Reviewed:** 2026-10-29
+**Reviewed:** 2026-11-14
 
 The shared `ContractualCashFlowEngine` projects explicit exercise scenarios and deterministic
 prepayments. It reads a versioned calculation contract and request, without accessing the clock,
@@ -31,6 +31,17 @@ stray convention blocks on unstamped or version-1 rows do not change projected r
 Scalar swap projections read leg currencies and conventions from the same retained source and
 supported alias as the shared terms reader. Nonobject leg rows block preview before mapping;
 valid aliases and source precedence are preserved.
+
+The bounded `vanilla-irs-v1` profile now permits reviewed authoring of the existing Swap leg
+conventions, without making the `cashFlowContract` companion writable. Swap remains write/read
+version 4 with floor 1. Preview and retained-run requests may explicitly name `calculationProfile`;
+omitting it preserves the prior route and retained hashes. The profile adapts exactly two stable
+leg IDs into this same engine: opposite fixed/floating directions, one currency, equal positive
+notional and explicit no principal exchange. Each leg declares cadence, day count, schedule
+conventions and Percent/Fraction rate unit; spreads declare basis points. Historical resets require
+dated fixings and future resets pinned forwards; an undated current index rate is insufficient.
+Cross-currency exchanges, notional amortization, PIK, optionality and credit-protection payoffs
+remain refused. This calculation convergence adds no posting authority or global schedule-gate lift.
 
 Existing retained scalar terms are adapted where complete. Missing origination dates are never
 replaced by effective-from dates. Factor-based balances without reconcilable history, custom loan
@@ -116,4 +127,6 @@ or calculate deal waterfalls. Those operations retain their existing authorities
 Pure arithmetic, compatibility and replay tests live in `ContractualCashFlowEngineTests` in
 `Meridian.Contracts.UnitTests`. Adapter, cutoff, provider, durable packet and permission tests
 live in `ContractualCashFlowPreviewTests` and `ContractualCashFlowEndpointTests` in `Meridian.Tests`.
+`SecurityVanillaSwapProfileTests` covers signed fixed/floating flows and the bounded profile's
+source, convention, fixing and unsupported-shape refusals.
 Terms-version manifests retain all earlier versions and append only the new companion versions.

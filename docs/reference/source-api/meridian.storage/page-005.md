@@ -648,6 +648,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;GovernedLedgerPostingResult&gt; PostAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs:15](../../../../src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs#L15) |  |
 
+## IImpactDependencyGuard
+
+Qualified name: <code>Meridian.Storage.Ledger.IImpactDependencyGuard</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/IImpactDependencyGuard.cs:4](../../../../src/Meridian.Storage/Ledger/IImpactDependencyGuard.cs#L4).
+
+Fences authoritative ledger mutations while a reference-data review transition commits.
+
+```csharp
+public interface IImpactDependencyGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IAsyncDisposable&gt; AcquireImpactDependencyLeaseAsync(string tenantId, string fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IImpactDependencyGuard.cs:6](../../../../src/Meridian.Storage/Ledger/IImpactDependencyGuard.cs#L6) |  |
+
 ## IIntercompanyAgreementBatchPostingAuthority
 
 Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyAgreementBatchPostingAuthority</code>. Kind: `interface`.
@@ -942,21 +960,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;LedgerSecurityEntitlementInventorySnapshot&gt; ReadSecurityEntitlementInventoryAsync(string tenantId, string companyId, Guid ledgerBookId, Guid securityId, DateOnly asOfDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerSecurityEntitlementInventory.cs:12](../../../../src/Meridian.Storage/Ledger/ILedgerSecurityEntitlementInventory.cs#L12) |  |
-
-## ILedgerStructurePostingAuthority
-
-Qualified name: <code>Meridian.Storage.Ledger.ILedgerStructurePostingAuthority</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:15](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L15).
-
-Lets native producers retain structure authority before taking global security locks.
-
-```csharp
-public interface ILedgerStructurePostingAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IAsyncDisposable&gt; AcquireStructureAuthorityAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:17](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L17) |  |

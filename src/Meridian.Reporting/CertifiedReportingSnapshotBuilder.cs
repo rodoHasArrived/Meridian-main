@@ -64,7 +64,13 @@ internal static class CertifiedReportingSnapshotBuilder
             referenceCount,
             blockers);
 
-        return new CertifiedReportingSnapshot(fundId, asOf, reportKind, rows, receipt);
+        return new CertifiedReportingSnapshot(fundId, asOf, reportKind, rows, receipt)
+        {
+            // These exact references already participate in the receipt hash. Retain them rather
+            // than discard the source detail after rendering enriched summary rows.
+            SecurityInputs = orderedInputs.Where(static row => row.SecurityReference is not null)
+                .Select(static row => row.SecurityReference!).ToArray()
+        };
     }
 
     private static ReportingSnapshotSourceContext NormalizeSource(ReportingSnapshotSourceContext? source)

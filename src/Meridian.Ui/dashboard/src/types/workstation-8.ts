@@ -144,6 +144,7 @@ export interface InstrumentPassportPricing {
 }
 
 export interface InstrumentPassport {
+  capabilities?: InstrumentCapabilityAssessment[];
   securityId: string;
   identity: SecurityIdentityDrillIn;
   economicDefinition: InstrumentPassportEconomicDefinition;
@@ -160,6 +161,37 @@ export interface InstrumentPassport {
   operatingModel?: SecurityMasterOperatingModel | null;
   operationsWorkbench?: InstrumentPassportOperationsWorkbench | null;
   classificationProfile?: InstrumentPassportClassificationProfile | null;
+}
+
+export interface InstrumentCapabilityReason {
+  code: string;
+  reason: string;
+  remediationPath: string;
+}
+
+export interface InstrumentCapabilityAssessment {
+  capability: string;
+  label: string;
+  operation: string;
+  applicability: "Applicable" | "NotApplicable" | "Unknown";
+  status: "Ready" | "Review" | "Blocked";
+  evaluationState: "Complete" | "RequiresContext" | "Unavailable";
+  securityVersion: number | null;
+  asOfUtc: string;
+  context: string;
+  reasons: InstrumentCapabilityReason[];
+}
+
+export interface InstrumentCapabilities {
+  securityId: string;
+  securityVersion: number | null;
+  asOfUtc: string;
+  capabilities: InstrumentCapabilityAssessment[];
+}
+
+export interface InstrumentCapabilityBatch {
+  asOfUtc: string;
+  securities: InstrumentCapabilities[];
 }
 
 export type QuantPlotKind =
