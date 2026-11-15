@@ -26,6 +26,7 @@ public sealed class StandardChartOfAccounts : IChartOfAccounts
             [LedgerAccountRole.ShortRebateIncome] = new(LedgerAccounts.ShortRebateIncome),
             [LedgerAccountRole.DividendIncome] = new(LedgerAccounts.DividendIncome),
             [LedgerAccountRole.DividendExpense] = new(LedgerAccounts.DividendExpense),
+            [LedgerAccountRole.DividendReceivable] = new(LedgerAccounts.DividendReceivable("_"), SymbolScope.Required),
             [LedgerAccountRole.CouponIncome] = new(LedgerAccounts.CouponIncome),
             [LedgerAccountRole.CouponExpense] = new(LedgerAccounts.CouponExpense),
             [LedgerAccountRole.CorporateActionIncome] = new(LedgerAccounts.CorporateActionIncome),

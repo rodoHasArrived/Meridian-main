@@ -75,3 +75,8 @@ Migration first proves each full README still matches its accepted version 1 fin
 preserves every accepted source hash, including stale source hashes, and refuses unmatched
 README evidence. Mixed-version merge parents require an explicit migration before reconciliation;
 never refresh all hashes merely to resolve that version mismatch.
+
+CI-produced contract mirrors are excluded from reviewed source fingerprints, just like built
+`wwwroot` assets. A clean checkout and a regenerated checkout therefore have the same source
+fingerprint. Their authored inputs and the generated API/documentation views remain checked.
+`artifacts/docs/source-hashes.json` reports actual current fingerprints without accepting review.

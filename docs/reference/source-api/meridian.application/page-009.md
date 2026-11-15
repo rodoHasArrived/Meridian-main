@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcExposureService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Otc.OtcExposureService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs:17](../../../../src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs#L17).
+
+Computes and records a netting set&#x27;s exposure: reads the netting set with its agreements and contracts, the collateral balances under its collateral agreement and the netting sets that reference that agreement, values each contract that enters the exposure through the registered IOtcContractValuationSource at one knowledge time (the request&#x27;s, else the computation instant the snapshot is stamped with), applies OtcExposureRules.Compute and appends the result as the next snapshot version for the date. The knowledge time is recorded on the snapshot&#x27;s inputs, so a call is refused once market data for a valued security is recorded after it, or when it is earlier than the computation (a replay). An as-of date after the current UTC date is refused before anything is read or valued.
+
+```csharp
+public sealed class OtcExposureService : IOtcExposureService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OtcExposureService(IOtcContractStore contracts, IOtcCollateralStore collateral, IOtcContractValuationSource valuation, ILogger&lt;OtcExposureService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs:24](../../../../src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs#L24) |  |
+| <code>public async Task&lt;OtcExposureSnapshotDto?&gt; ComputeAsync(Guid nettingSetId, DateOnly asOfDate, string actor, DateTimeOffset? knowledgeAsOf = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs:36](../../../../src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs#L36) |  |
+
 ## PricingStoreOtcContractValuationSource
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Otc.PricingStoreOtcContractValuationSource</code>. Kind: `class`.
@@ -968,25 +987,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SecurityMasterProfilePromotionService(ISecurityMasterStore securityStore, ILogger&lt;SecurityMasterProfilePromotionService&gt; logger, ISecurityAssetProfileCatalog? assetProfileCatalog = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs#L38) |  |
 | <code>public async Task&lt;SecurityMasterProfilePromotionReportDto&gt; BuildReportAsync(string profileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs:48](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs#L48) |  |
-
-## SecurityMasterProjectionChangeHandler
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterProjectionChangeHandler</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L38).
-
-Applies cross-node Security Master projection-change notifications to this node&#x27;s SecurityMasterProjectionCache. Separated from the listener&#x27;s connection handling so the decision logic is testable without PostgreSQL.
-
-```csharp
-public sealed class SecurityMasterProjectionChangeHandler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterProjectionChangeHandler(SecurityMasterProjectionService projectionService, SecurityMasterProjectionCache cache, SecurityMasterNodeIdentity nodeIdentity, SecurityMasterOptions options, ILogger&lt;SecurityMasterProjectionChangeHandler&gt; logger, SecurityMasterCanonicalSymbolSeedService? seedService = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:54](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L54) |  |
-| <code>public Task&lt;SecurityProjectionChangeOutcome&gt; HandleAsync(string? payload, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:70](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L70) |  |
-| <code>public async Task&lt;SecurityProjectionChangeOutcome&gt; HandleAsync(string? payload, bool reseedCanonicalSymbols, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:79](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L79) | Applies one notification. With reseedCanonicalSymbols false the caller owns reseeding: the listener drains a batch of notifications and reseeds the canonical registry once afterwards, rather than rescanning the cache and rewriting the registry per notification. |
-| <code>public Task ReseedCanonicalSymbolsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:165](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L165) | Reseeds the canonical symbol registry from the current cache, when one is wired. |
-| <code>public async Task ResynchronizeAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:175](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L175) | Re-synchronises the whole cache after notifications may have been missed (a listener reconnect) or after a bulk publish on another node. A pre-warmed cache is re-warmed with the atomic ReplaceAll swap; a lazily-populated cache (pre-warm disabled) refreshes the securities it already holds plus any whose notification reread failed, so a resync keeps its memory profile without losing a remote creation whose first reread failed. |

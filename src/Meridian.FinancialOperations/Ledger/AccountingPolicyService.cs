@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
@@ -17,6 +19,10 @@ public interface IAccountingPolicyService
     Task<IAsyncDisposable> AcquireConsolidationAuthorityLeaseAsync(CancellationToken ct = default)
         => Task.FromException<IAsyncDisposable>(new InvalidOperationException(
             "The accounting policy provider cannot retain consolidation authority through commit."));
+
+    /// <summary>Restores a retained operator-authorized policy only when absent, and holds its exact content through commit.</summary>
+    Task<IAsyncDisposable> AcquireRetainedPolicyAuthorityLeaseAsync(AccountingPolicyDto snapshot, CancellationToken ct = default)
+        => Task.FromException<IAsyncDisposable>(new InvalidOperationException("The policy provider cannot retain exact persisted policy authority."));
 
     Task<AccountingPolicyDto> ResolvePolicyAsync(AccountingPolicyQuery query, CancellationToken ct = default);
 
@@ -92,6 +98,31 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
     {
         await _consolidationAuthorityGate.WaitAsync(ct).ConfigureAwait(false);
         return new ConsolidationAuthorityLease(_consolidationAuthorityGate);
+    }
+
+    public async Task<IAsyncDisposable> AcquireRetainedPolicyAuthorityLeaseAsync(AccountingPolicyDto snapshot, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        var lease = await AcquireConsolidationAuthorityLeaseAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var key = Key(snapshot.AccountingBasis, RequireText(snapshot.PolicyId, nameof(snapshot.PolicyId)), RequireText(snapshot.Version, nameof(snapshot.Version)));
+            var canonical = JsonSerializer.Serialize(snapshot with { CreatedAt = default }, AccountingPolicySnapshotJsonContext.Default.AccountingPolicyDto);
+            if (_policies.TryGetValue(key, out var current))
+            {
+                if (JsonSerializer.Serialize(current with { CreatedAt = default }, AccountingPolicySnapshotJsonContext.Default.AccountingPolicyDto) != canonical)
+                    throw new InvalidOperationException("The current accounting policy differs from the immutable operator-authorized snapshot; activate a new version and grant.");
+            }
+            else
+            {
+                // A persisted grant supplies authority to restore this exact policy after restart.
+                // It cannot overwrite a different policy under an existing version key.
+                _policies[key] = JsonSerializer.Deserialize(JsonSerializer.Serialize(snapshot, AccountingPolicySnapshotJsonContext.Default.AccountingPolicyDto),
+                    AccountingPolicySnapshotJsonContext.Default.AccountingPolicyDto)!;
+            }
+            return lease;
+        }
+        catch { await lease.DisposeAsync().ConfigureAwait(false); throw; }
     }
 
     public async Task<AccountingPolicyDto> CreatePolicyAsync(CreateAccountingPolicyRequest request, CancellationToken ct = default)
@@ -375,4 +406,10 @@ public sealed class AccountingBasisProjectionService(IAccountingPolicyService ac
 
         return new AccountingBasisProjectionResult(policy, write);
     }
+}
+
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, UseStringEnumConverter = true)]
+[JsonSerializable(typeof(AccountingPolicyDto))]
+internal sealed partial class AccountingPolicySnapshotJsonContext : JsonSerializerContext
+{
 }

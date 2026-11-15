@@ -23,6 +23,13 @@ External-review evidence verifies accepted immutable documents, separately from 
 operator. The close-readiness companion does not become a blocker. See
 [the intercompany procedure](../../docs/operators/intercompany-entity-controls.md).
 
+`IntercompanyAccrualDraftService` backs `/api/ledger/intercompany/accruals/preview` and `/drafts`
+(ADR-028). It resolves approved `LoanInterest` profile revisions, their pinned legal revisions and
+posted `Loan`-profile principal, calls the pure calculator, and retains a source-side journal draft
+through trusted workbench intake. It never submits, approves or posts. The workbench retains the
+accrual evidence against client saves, blocks review when lines no longer match it, refuses a draft
+whose window a posted accrual already covers, and carries the evidence onto the posted journal.
+
 Account/group close advisories require canonical exact-scope membership and retained evidence;
 the book node ID is not substituted for a legal-entity ID. Missing membership yields unknown.
 
@@ -600,6 +607,41 @@ Its shared read endpoint uses exact account/book/fund ownership, verifies mixed 
 chains, reports coverage and missing versions, and splits observations across unknown intervals.
 Legacy workflows remain history-unavailable until new committed observations exist; the endpoint
 never turns current gate state into invented historical progress.
+Reconciliation fee drafts receive server-selected `CurrencyEvidenceVersion = 1` and explicit
+native-currency journal legs through the existing materializer. Other manual drafts retain their
+existing functional and transaction-currency rules. Reconciliation fee drafts retain
+their economic source identity and adjusting-entry flag through approval and posting; copies and
+later comparison runs cannot book the same fee twice. Independent human review remains mandatory.
+Browser saves cannot introduce source fee authority; preparation uses the existing trusted draft
+intake, and later saves preserve that retained proof.
+Linked reversal/rebook drafts retain source-journal lineage and use separate correction identities.
+
+The opt-in `ThreeWayReconciliationService` retains independent posted-ledger, OMS and broker
+operands for an exact authorized account/book/period/cutoff. Its ledger source captures journals and
+full historical canonical lot basis in one database snapshot. The existing durable case queue and
+statement scheduler own casework and daily execution; stale or missing sources remain blockers.
+The browser reads the same protected service routes rather than supplying accounting snapshots.
+
+`GET /api/ledger/books/{ledgerBookId}/periods/{periodId}/exports/general-ledger` downloads one
+`general-ledger.v1` ZIP from a consistent journal/disposal/open-lot snapshot. CSV, exact text-cell
+XLSX, Parquet, symbol P&L and the agreement/hash/evidence manifest share the same captured inputs.
+The route requires an authenticated session, `ExportData`, ledger-report read authority,
+tenant/company scope, and retained ownership of the book's exact fund. It never falls back to an
+inconsistent store.
+Approved close marks additionally require Security Master read authority. With that permission,
+the latest exact-date close revision is used only if approved; `closePriceSnapshotId` can pin a
+specific retained approved revision. Historical Security Master identity/currency and historical
+open basis are bound into the export. Unsupported or incomplete P&L operands remain unavailable
+with explicit reasons. Responses use `Cache-Control: no-store` and `X-Ledger-Snapshot-Sha256`.
+
+Accounting exposes `POST /api/ledger/automation/grants`,
+`GET /api/ledger/automation/grants/{grantId}`, and
+`POST /api/ledger/automation/grants/{grantId}/revoke` to `AdminMaintenance` operators.
+Activation requires an authenticated actor, exact session tenant/company, an open retained USD
+book/period, the current accounting-mapping revision, and policy rules explicitly allowing
+evidence-backed automatic fills, commissions, and identified fees. Only synthetic source mode
+is supported. Actor and tenant come from the session; assistant activation is refused. Nothing
+automatically activates a grant, and historical exact replay remains available after revocation.
 
 Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced. The optional `engineVersion` query selects explicit `portfolio-cash-ladder-v1` replay; an unknown version returns a blocked ladder with no contributions that names the unsupported version rather than falling back silently.
 
@@ -820,7 +862,10 @@ incumbent opening balances, explain differences, issue the parallel-run certific
 positions. `IBookOfRecordGuard` is registered over the onboarding store. `ClosePublicationReadinessGuard`
 resolves it lazily and blocks hard-close with `CLOSE_SHADOW_BOOK`, and governed report release refuses
 a shadow book. `FileOnboardingWorkspaceStore` enforces one active shadow trial per ledger book inside the
-save's writer lease and returns a concurrency conflict to the losing designation.
+save's writer lease and returns a concurrency conflict to the losing designation. With a ledger
+database, storage composition replaces the file store with `PostgresOnboardingWorkspaceStore`, whose
+partial unique index enforces the same rule across processes. The command-center read service resolves
+the book-of-record guard lazily to report the `shadow-agreement` close-readiness contributor.
 
 `FileOnboardingWorkspaceStore` persists full comparison payloads and frozen readiness packets using
 atomic file replacement, writer leases and expected-version checks. Retained history cannot be

@@ -113,6 +113,7 @@ Enum declarations:
 | <code>LoanRestructuringLoss</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:45](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L45) |  |
 | <code>MarginLoanPayable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:46](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L46) |  |
 | <code>ShortSaleCollateralReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:47](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L47) |  |
+| <code>DividendReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:48](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L48) |  |
 
 ## LedgerAccounts
 
@@ -627,6 +628,43 @@ Income earned and expenses incurred over (PeriodStart, AsOf&#93;, excluding tran
 public sealed record LedgerIncomeStatement(DateTimeOffset PeriodStart, DateTimeOffset AsOf, IReadOnlyList<LedgerChartBalance> Rows, decimal TotalRevenue, decimal TotalExpenses, decimal NetIncome);
 ```
 
+## LedgerInventoryAccountRole
+
+Qualified name: <code>Meridian.Ledger.LedgerInventoryAccountRole</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs:7](../../../../src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs#L7).
+
+```csharp
+public enum LedgerInventoryAccountRole
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>NotInventory</code> | [src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs:9](../../../../src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs#L9) |  |
+| <code>LotCarrying</code> | [src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs:10](../../../../src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs#L10) |  |
+| <code>KnownNonLotAsset</code> | [src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs:11](../../../../src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs#L11) |  |
+| <code>UnknownInstrumentAsset</code> | [src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs:12](../../../../src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs#L12) |  |
+
+## LedgerInventoryAccountRoleClassifier
+
+Qualified name: <code>Meridian.Ledger.LedgerInventoryAccountRoleClassifier</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs:19](../../../../src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs#L19).
+
+Separates share inventory from source-proven receivables and loan subledgers. Unknown instrument assets remain unresolved; changing an account caption never authorizes missing-lot coverage.
+
+```csharp
+public static class LedgerInventoryAccountRoleClassifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerInventoryAccountRole Classify(LedgerEntry line, JournalEntryMetadata metadata, IReadOnlySet&lt;LedgerAccount&gt; historicalLotAccounts);</code> | [src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs:21](../../../../src/Meridian.Ledger/LedgerInventoryAccountRoleClassifier.cs#L21) |  |
+
 ## LedgerJournalReversal
 
 Qualified name: <code>Meridian.Ledger.LedgerJournalReversal</code>. Kind: `class`.
@@ -1055,43 +1093,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IReadOnlyList&lt;LedgerReportPackArtifact&gt; Build(LedgerFinancialReportPack reportPack, LedgerReportScheduledExport scheduledExport, ILedgerReportBinaryRenderer? binaryRenderer = null);</code> | [src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs:14](../../../../src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs#L14) |  |
-
-## LedgerSnapshot
-
-Qualified name: <code>Meridian.Ledger.LedgerSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/LedgerSnapshot.cs:6](../../../../src/Meridian.Ledger/LedgerSnapshot.cs#L6).
-
-Point-in-time view of ledger balances and posting counts.
-
-```csharp
-public sealed record LedgerSnapshot(DateTimeOffset Timestamp, IReadOnlyDictionary<LedgerAccount, decimal> Balances, int JournalEntryCount, int LedgerEntryCount);
-```
-
-## LedgerTaxLot
-
-Qualified name: <code>Meridian.Ledger.LedgerTaxLot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/LedgerTaxLot.cs:8](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L8).
-
-Open ledger tax lot available for realized-gain relief.
-
-```csharp
-public sealed record LedgerTaxLot : IUnitizedLot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerTaxLot(string lotId, DateOnly acquiredDate, decimal quantity, decimal unitCost, Guid? securityId = null, DateOnly? holdingPeriodStartDate = null, decimal? costBasis = null);</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:13](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L13) |  |
-| <code>public string LotId { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:47](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L47) |  |
-| <code>public DateOnly AcquiredDate { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:49](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L49) |  |
-| <code>public decimal Quantity { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:51](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L51) |  |
-| <code>public decimal UnitCost { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:59](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L59) | Monetary cost per recorded quantity unit for realized-gain relief: quantity times unit cost is the implied whole-lot basis. For face-value lots this is cost per dollar of face when Multiplier is one, or cost per hundred of face when the multiplier is 100. A market quote must be converted to this monetary convention before relief. |
-| <code>public required SecurityLotUnitKind UnitKind { get; init; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:66](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L66) | What one unit of Quantity measures. Must be supplied explicitly; face-denominated debt lots (bonds, CDs, bills, loans, structured credit) carry SecurityLotUnitKind.FaceValue. Their Multiplier states the face carried by one recorded quantity unit. |
-| <code>public required decimal Multiplier { get; init; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:75](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L75) | Positive contract multiplier scaling one unit to economic exposure. Supply 1 for unscaled units. |
-| <code>public decimal? CostBasis { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:89](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L89) | Exact current basis of the whole lot, when it is known rather than implied by Quantity times UnitCost. Lot-discrete relief that consumes the entire lot relieves this amount exactly, so a governed current basis carrying fractional cents is not re-derived through a rounded unit cost. |
-| <code>public Guid? SecurityId { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:97](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L97) | Optional Security Master identity for this lot. When present, the relief engine can be fed day-count, factor, and corporate-action basis adjustments sourced from the master (see LedgerTaxLotBasisAdjustment), linking cost-basis accounting to authoritative reference data instead of relying on quantity/unit-cost alone. |
-| <code>public DateOnly? HoldingPeriodStartDate { get; }</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:105](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L105) | Holding-period start carried onto this lot by a prior wash sale, when one applied. Under IRC §1223(3) a replacement lot inherits the disallowed sale&#x27;s holding period, so a lot that absorbed a wash sale starts its clock before it was actually acquired. Null for a lot whose holding period simply starts at AcquiredDate. |
-| <code>public DateOnly HoldingPeriodStart =&gt; …;</code> | [src/Meridian.Ledger/LedgerTaxLot.cs:111](../../../../src/Meridian.Ledger/LedgerTaxLot.cs#L111) | The date the lot&#x27;s holding period actually starts: HoldingPeriodStartDate when a wash sale extended it, otherwise AcquiredDate. |

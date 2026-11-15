@@ -29,18 +29,7 @@ public sealed class IntercompanyStructuredTermsPreviewService(IBusinessDayCalend
                 return Unavailable("A declared schedule is required.");
             if (!calendars.TryGet(schedule.CalendarId, out var calendar))
                 return Unavailable("The declared business-day calendar is unavailable; no fallback was applied.");
-            var tenor = schedule.Frequency switch
-            {
-                IntercompanyFrequencyDto.Monthly => ScheduleTenor.Months(1),
-                IntercompanyFrequencyDto.Quarterly => ScheduleTenor.Months(3),
-                IntercompanyFrequencyDto.SemiAnnual => ScheduleTenor.Months(6),
-                IntercompanyFrequencyDto.Annual => ScheduleTenor.Years(1),
-                IntercompanyFrequencyDto.AtMaturity => ScheduleTenor.Term,
-                _ => throw new IntercompanyAgreementValidationException("Unsupported schedule frequency.")
-            };
-            var spec = new ScheduleSpec(schedule.StartDate, schedule.EndDate, tenor,
-                PaymentAdjustment: BusinessDayAdjustment.Of(schedule.BusinessDayConvention, calendar),
-                PaymentLagBusinessDays: schedule.SettlementBusinessDays);
+            var spec = BuildSpec(schedule, calendar);
             var result = ScheduleGenerator.Generate(spec);
             if (!result.Succeeded)
                 return Unavailable(result.Failure.Message, calendar.ContentHash);
@@ -63,5 +52,22 @@ public sealed class IntercompanyStructuredTermsPreviewService(IBusinessDayCalend
         {
             return Unavailable(ex.Message);
         }
+    }
+
+    /// <summary>The one mapping from a declared schedule to the shared kernel; date and amount previews share it.</summary>
+    internal static ScheduleSpec BuildSpec(IntercompanyScheduleDto schedule, IBusinessDayCalendar calendar)
+    {
+        var tenor = schedule.Frequency switch
+        {
+            IntercompanyFrequencyDto.Monthly => ScheduleTenor.Months(1),
+            IntercompanyFrequencyDto.Quarterly => ScheduleTenor.Months(3),
+            IntercompanyFrequencyDto.SemiAnnual => ScheduleTenor.Months(6),
+            IntercompanyFrequencyDto.Annual => ScheduleTenor.Years(1),
+            IntercompanyFrequencyDto.AtMaturity => ScheduleTenor.Term,
+            _ => throw new IntercompanyAgreementValidationException("Unsupported schedule frequency.")
+        };
+        return new ScheduleSpec(schedule.StartDate, schedule.EndDate, tenor,
+            PaymentAdjustment: BusinessDayAdjustment.Of(schedule.BusinessDayConvention, calendar),
+            PaymentLagBusinessDays: schedule.SettlementBusinessDays);
     }
 }

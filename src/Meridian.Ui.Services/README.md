@@ -61,6 +61,19 @@ reused for an identical retry; the server decides permission, target-book author
 amount. Responses for another book, proposal, link target or repricing request are refused, a
 break outage reads as unknown rather than empty, and amounts render from exact decimals.
 
+`WorkstationOnboardingApiClient` and `OnboardingShadowWorkspace` bring shadow-mode onboarding
+(W11-SHADOW-001) to the desktop over the browser's onboarding routes. The panel covers:
+
+- designation and withdrawal
+- opening-balance import, with file content sent base64-encoded
+- the combined opening report and uncovered kinds
+- explanations for opening breaks and period differences
+- the parallel-run certificate and promotion
+
+Onboarding refusals surface the server's `{ "error": ... }` sentence. Responses for another workspace,
+certificate or book are refused with 502. Every mutation carries the workspace version. A 409 reloads the
+server copy and keeps the operator's inputs. Late responses from an earlier selection are discarded.
+
 Shared API response options accept exact decimal strings as well as legacy numeric tokens, so
 typed fixed-income reads preserve nullable and nested financial values. API request serialization
 continues to emit numbers; compact storage, pretty-print and retained calculation serializers are

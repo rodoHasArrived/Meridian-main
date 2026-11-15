@@ -3139,5 +3139,26 @@ describe("accounting-screen close-cockpit view model", () => {
       expect(buildCloseCommandCenterViewState(input).status).toBe("ready");
     }
   });
+  it("routes a shadow-agreement blocker to the onboarding workspace under External GL evidence", () => {
+    const commandCenter: FinancialOperationsCommandCenter = {
+      generatedAtUtc: new Date().toISOString(), fundProfileId: "fund-alpha", ledgerBookId: "book",
+      fundAccountId: "account", periodId: "period", status: "Blocked", isReadyToComplete: false,
+      summary: "Shadow book.", activeItemCount: 0, blockedItemCount: 1, reviewItemCount: 0,
+      metrics: [], queueRows: [], closeReadiness: {
+        scope: { fundProfileId: "fund-alpha", ledgerBookId: "book", fundAccountId: "account", entityId: "entity", periodId: "period" },
+        evaluatedAtUtc: new Date().toISOString(), status: "Blocked", isComplete: true, isReadyToClose: false,
+        contributors: [],
+        blockers: [{ code: "close.shadow-agreement.blocked", contributorId: "shadow-agreement", type: "Blocked", count: 1,
+          severity: "Critical", owner: "Onboarding",
+          message: "The ledger book is a shadow book in parallel run: 1 of 2 required period(s) reconcile cleanly.",
+          recordIds: ["workspace-1"] }]
+      }
+    };
+    const view = buildCloseCommandCenterViewState({ data: accountingWorkspace, commandCenter, workflow: closeWorkflow,
+      workflowLoading: false, workflowError: null, accountingSystemProviders: [], accountingSystemImport: null,
+      accountingSystemReconciliation: null, multiAssetCoverage: null });
+    expect(view.status).toBe("blocked");
+    expect(view.blockerRows[0]).toMatchObject({ ownerLabel: "Onboarding", href: "/accounting/reconciliation/external-gl" });
+  });
 
 });

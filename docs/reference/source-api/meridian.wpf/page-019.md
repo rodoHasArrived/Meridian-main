@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ShellMastheadControl
+
+Qualified name: <code>Meridian.Wpf.Views.ShellMastheadControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/ShellMastheadControl.xaml.cs:8](../../../../src/Meridian.Wpf/Views/ShellMastheadControl.xaml.cs#L8).
+
+Hosts the desktop shell masthead and global status and action surfaces.
+
+```csharp
+public partial class ShellMastheadControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ShellMastheadControl();</code> | [src/Meridian.Wpf/Views/ShellMastheadControl.xaml.cs:10](../../../../src/Meridian.Wpf/Views/ShellMastheadControl.xaml.cs#L10) |  |
+
 ## ShellRailControl
 
 Qualified name: <code>Meridian.Wpf.Views.ShellRailControl</code>. Kind: `class`.
@@ -1108,23 +1126,3 @@ Declared public members:
 | <code>public static readonly DependencyProperty PanelProperty = DependencyProperty.Register(nameof(Panel), typeof(InspectorPanelModel), typeof(InspectorPanelControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs:12](../../../../src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs#L12) |  |
 | <code>public InspectorPanelControl();</code> | [src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs:19](../../../../src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs#L19) |  |
 | <code>public InspectorPanelModel? Panel { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs:24](../../../../src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs#L24) |  |
-
-## MetricTileControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Controls.MetricTileControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs:10](../../../../src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs#L10).
-
-Displays a metric tile through its bound presentation model.
-
-```csharp
-public partial class MetricTileControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty MetricProperty = DependencyProperty.Register(nameof(Metric), typeof(WorkstationMetricModel), typeof(MetricTileControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs:12](../../../../src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs#L12) |  |
-| <code>public MetricTileControl();</code> | [src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs:19](../../../../src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs#L19) |  |
-| <code>public WorkstationMetricModel? Metric { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs:24](../../../../src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs#L24) |  |

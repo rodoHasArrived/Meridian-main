@@ -245,6 +245,24 @@ Source: [src/Meridian.Wpf/Views/Pages.cs:96](../../../../src/Meridian.Wpf/Views/
 public partial class NotificationCenterPage : Page
 ```
 
+## OnboardingShadowControl
+
+Qualified name: <code>Meridian.Wpf.Views.OnboardingShadowControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/OnboardingShadowControl.xaml.cs:9](../../../../src/Meridian.Wpf/Views/OnboardingShadowControl.xaml.cs#L9).
+
+Thin view over OnboardingShadowWorkspace; the only code-behind is the file picker.
+
+```csharp
+public partial class OnboardingShadowControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OnboardingShadowControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/OnboardingShadowControl.xaml.cs:13](../../../../src/Meridian.Wpf/Views/OnboardingShadowControl.xaml.cs#L13) |  |
+
 ## OperationsContinuityPage
 
 Qualified name: <code>Meridian.Wpf.Views.OperationsContinuityPage</code>. Kind: `class`.
@@ -1092,21 +1110,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public SetupWizardPage();</code> | [src/Meridian.Wpf/Views/SetupWizardPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/SetupWizardPage.xaml.cs#L12) |  |
-
-## ShellMastheadControl
-
-Qualified name: <code>Meridian.Wpf.Views.ShellMastheadControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/ShellMastheadControl.xaml.cs:8](../../../../src/Meridian.Wpf/Views/ShellMastheadControl.xaml.cs#L8).
-
-Hosts the desktop shell masthead and global status and action surfaces.
-
-```csharp
-public partial class ShellMastheadControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ShellMastheadControl();</code> | [src/Meridian.Wpf/Views/ShellMastheadControl.xaml.cs:10](../../../../src/Meridian.Wpf/Views/ShellMastheadControl.xaml.cs#L10) |  |

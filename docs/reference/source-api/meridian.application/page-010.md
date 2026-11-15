@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterProjectionChangeHandler
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterProjectionChangeHandler</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L38).
+
+Applies cross-node Security Master projection-change notifications to this node&#x27;s SecurityMasterProjectionCache. Separated from the listener&#x27;s connection handling so the decision logic is testable without PostgreSQL.
+
+```csharp
+public sealed class SecurityMasterProjectionChangeHandler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterProjectionChangeHandler(SecurityMasterProjectionService projectionService, SecurityMasterProjectionCache cache, SecurityMasterNodeIdentity nodeIdentity, SecurityMasterOptions options, ILogger&lt;SecurityMasterProjectionChangeHandler&gt; logger, SecurityMasterCanonicalSymbolSeedService? seedService = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:54](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L54) |  |
+| <code>public Task&lt;SecurityProjectionChangeOutcome&gt; HandleAsync(string? payload, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:70](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L70) |  |
+| <code>public async Task&lt;SecurityProjectionChangeOutcome&gt; HandleAsync(string? payload, bool reseedCanonicalSymbols, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:79](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L79) | Applies one notification. With reseedCanonicalSymbols false the caller owns reseeding: the listener drains a batch of notifications and reseeds the canonical registry once afterwards, rather than rescanning the cache and rewriting the registry per notification. |
+| <code>public Task ReseedCanonicalSymbolsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:165](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L165) | Reseeds the canonical symbol registry from the current cache, when one is wired. |
+| <code>public async Task ResynchronizeAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:175](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L175) | Re-synchronises the whole cache after notifications may have been missed (a listener reconnect) or after a bulk publish on another node. A pre-warmed cache is re-warmed with the atomic ReplaceAll swap; a lazily-populated cache (pre-warm disabled) refreshes the securities it already holds plus any whose notification reread failed, so a resync keeps its memory profile without losing a remote creation whose first reread failed. |
+
 ## SecurityMasterProjectionChangeListener
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterProjectionChangeListener</code>. Kind: `class`.
@@ -1095,24 +1117,3 @@ Declared public members:
 | <code>public ConnectivityProbeService(IHttpClientFactory httpClientFactory, ILogger? log = null);</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:49](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L49) | Initializes ConnectivityProbeService using IHttpClientFactory for HTTP calls. Per ADR-010, HttpClient is never instantiated directly. |
 | <code>public void Start();</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:63](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L63) | Starts the periodic connectivity probe. |
 | <code>public void Dispose();</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:143](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L143) |  |
-
-## ConnectivityTestService
-
-Qualified name: <code>Meridian.Application.Services.ConnectivityTestService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/ConnectivityTestService.cs:15](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L15).
-
-Service for testing connectivity to data providers and reporting results. Helps users diagnose network and configuration issues.
-
-```csharp
-public sealed class ConnectivityTestService : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ConnectivityTestService(Meridian.Contracts.Configuration.ConnectivityProbeOptions? probeOptions = null);</code> | [src/Meridian.Application/Services/ConnectivityTestService.cs:23](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L23) |  |
-| <code>public async Task&lt;ConnectivitySummary&gt; TestAllAsync(AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConnectivityTestService.cs:56](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L56) | Tests connectivity to all configured providers. |
-| <code>public void DisplaySummary(ConnectivitySummary summary);</code> | [src/Meridian.Application/Services/ConnectivityTestService.cs:158](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L158) | Displays the connectivity test summary. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/ConnectivityTestService.cs:515](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L515) |  |

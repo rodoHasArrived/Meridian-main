@@ -82,6 +82,14 @@ public sealed record AccountingPostingCommandDto(
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto? BondCouponRecognition { get; init; }
+
+    /// <summary>Operator delegation used only by the narrowly scoped system fill posting boundary.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AutomatedPostingGrantReferenceDto? AutomationGrant { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ThreeWayFeeCorrectionEvidenceDto? ThreeWayFeeCorrection { get; init; }
+
     /// <summary>
     /// The actual posting actor, supplied by the validated command boundary. Null retains an
     /// explicitly unattributed legacy command; it never means that an approver posted it.

@@ -27,7 +27,9 @@ public static partial class LedgerEndpoints
 
     public static void MapLedgerEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        MapAutomatedPostingGrantEndpoints(app, jsonOptions);
         MapDisposalTaxEndpoints(app, jsonOptions);
+        MapGeneralLedgerExportEndpoint(app);
         MapConsolidationEndpoints(app, jsonOptions);
         MapConsolidationFxEndpoints(app, jsonOptions);
         MapConsolidationTransitionEndpoints(app, jsonOptions);

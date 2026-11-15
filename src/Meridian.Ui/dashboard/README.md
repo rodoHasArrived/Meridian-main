@@ -410,6 +410,27 @@ missing snapshots or workflow-version gaps. Legacy histories and one-point obser
 explicit. Metric payloads may carry a version-1 Number Passport reference to the existing
 subject-addressed evidence API; missing references remain unverified, and this additive contract
 does not grant W10/W11 roadmap acceptance.
+Accounting Reconciliation includes an explicit account/book/period three-way comparison of
+ledger, OMS and broker evidence. Source timestamps, age at cutoff, coverage failures, cash,
+position/basis operands and tolerances stay inspectable; missing values display as unavailable.
+Stable break links select the original retained case so its first-seen age and correction workflow
+remain available across later comparison runs. Only a server-supported, independently evidenced
+fee explanation offers explicit draft preparation. The request retains the frozen comparison,
+period version and evidence hash across uncertain retries; the returned draft opens in the existing
+journal workbench. Insufficient evidence offers no preparation command, and this surface never
+approves or posts an adjustment. Source and comparison provenance remain visible separately from
+the workstation's demo status. Configure exposes synthetic-only automatic fill
+posting grants: authenticated operators inspect, activate and revoke exact scoped authority against
+the current retained policy/mapping. Grant identities survive uncertain responses for inspection
+and retry; tenant, company and actor are server-owned. These reads never use development fallback.
+
+Reporting Exports downloads the server's single-snapshot general-ledger ZIP for the selected
+book/period with the session's explicit ExportData permission, without rebuilding financial rows in JavaScript. Quant Lab's corporate-action selector
+edits the visible executed source with `Backtest.WithCorporateActionMode(...)`; Legacy preserves current automatic stored-action behavior; custom/multiple mode overrides require
+explicit source editing. Raw mode's restrictions
+are enforced by the engine. The run-ledger link opens the existing Strategy simulation explorer;
+it does not claim that a script execution has been retained as a fund journal. Focused integration
+coverage is in `accounting-integrations.test.tsx` and `quant-lab-screen.test.tsx`.
 
 Bond records in Security Master expose calculated analytics and a convention-migration preview
 under the existing Evidence detail tab. Operators supply dates and a clean price or annual yield;
@@ -1287,7 +1308,8 @@ onboarding workspace and its retained comparison and readiness evidence. Its sha
 (`accounting-screen.onboarding-shadow-panel.tsx`) covers shadow-book designation, incumbent
 opening-balance upload and the combined multi-source report (per-line source, uncovered kinds),
 per-period agreement, explanations for both opening breaks and period differences, the parallel-run
-certificate and promotion; tables use the shared `DenseDataTable`.
+certificate and promotion; tables use the shared `DenseDataTable`. The close command center sends a
+`shadow-agreement` close-readiness blocker to the same External GL onboarding route.
 From 1200px the masthead is one 48px row: the environment badge leads with the never-shrinking
 session environment and adds the data qualifier only when the data is not confirmed real
 (`PAPER · SEEDED`; LIVE uses the alarm-red `--live-env` token and follows the resolved session, not
@@ -3081,6 +3103,12 @@ specimen document is not a conformance verdict: some specimens retain their Desi
 external-runtime requirements. Package conformance and browser regression harnesses remain separate.
 
 ## Validation
+
+The C# route and workspace catalog mirrors in `src/lib/*.generated.ts` are local build outputs.
+`npm ci` prepares them, and the dev, lint, typecheck, build and test commands regenerate them
+before use. Python 3 must be available; set `MERIDIAN_PYTHON` to select its executable explicitly.
+After installing dependencies with lifecycle scripts disabled, run `npm run generate:contracts`
+before invoking tools directly. CI publishes generated workstation assets from the current source.
 
 TypeScript is pinned to 5.9.3 in the package manifest and lockfile. This stays within the
 `typescript-eslint` supported compiler range while updating the previous 5.7 baseline.

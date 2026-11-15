@@ -3,7 +3,7 @@
 **Status:** active
 **Owner:** core-team
 **Reviewed:** 2026-06-04
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-11-14
 
 This file tracks repeated AI-agent mistakes so future agents can avoid introducing the same failures.
 
@@ -57,6 +57,24 @@ label alone will update this file.
 ---
 
 ## Known issues
+
+### AI-20261114-configured-loan-policy-pin
+- **Area**: runtime/accounting/direct-lending
+- **Symptoms**: Configured loan journals used a global default policy instead of the selected book's custom policy and were rejected by the authoritative book guard.
+- **Root cause**: The configured chart/book path was added after an existing unscoped Primary policy lookup, leaving two different sources of posting authority.
+- **Prevention checklist**: (1) Resolve configured book, accounting basis and exact policy ID/version together before projection. (2) Use the retained fund/node scope. (3) Test a custom scoped v7 policy against a competing later default v8. (4) Keep legacy unconfigured selection separate and preserve append guards.
+- **Verification commands**: `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -p:EnableWindowsTargeting=true --filter FullyQualifiedName~ConfiguredLoanProjection_UsesPinnedChartRetainedOwnerAndExactCustomBookPolicy`.
+- **Source issue**: Local integration review and synthetic configured-book regression; no external issue created.
+- **Status**: mitigated
+
+### AI-20261114-canonical-fill-lineage
+- **Area**: runtime/accounting/Execution
+- **Symptoms**: Real PostgreSQL canonical fill workflows rejected acquisition journals with missing Security Master provenance and later rejected sales with incorrectly instrument-scoped gain accounts, although in-memory tests passed.
+- **Root cause**: The new producer supplied typed security and lot references but omitted the durable journal boundary's separate lineage metadata and native account identity conventions. A reporting fixture also reused a generic mapping that was not tied to its resolved instrument.
+- **Prevention checklist**: (1) Trace every producer through the actual append guards, including metadata, evidence and exact account identities. (2) Derive lineage from the resolved security and book-position versions. (3) Validate supported chart mappings before execution. (4) Run real PostgreSQL acquisition, disposal and fee workflows; use valid instrument-bound lineage in negative fixtures so they reach the intended guard. (5) Preserve existing append validation.
+- **Verification commands**: With a synthetic `MERIDIAN_LEDGER_CONNECTION_STRING`, run `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -p:EnableWindowsTargeting=true --filter "FullyQualifiedName~SyntheticFillWorkflow|FullyQualifiedName~SyntheticAccountingWorkflow|FullyQualifiedName~ReportingOpenPositions"`.
+- **Source issue**: Local regression reproduced by the named PostgreSQL tests during the scoped accounting integration implementation; no external issue created.
+- **Status**: mitigated
 
 ### AI-20260205-missing-error-memory
 - **Area**: process/documentation

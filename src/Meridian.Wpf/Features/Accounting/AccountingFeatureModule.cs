@@ -101,6 +101,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddSingleton<IWorkstationEntityConsolidationApiClient, WorkstationEntityConsolidationApiClient>();
         services.AddSingleton<IWorkstationManualJournalApiClient, WorkstationManualJournalApiClient>();
         services.AddSingleton<IWorkstationIntercompanyAgreementApiClient, WorkstationIntercompanyAgreementApiClient>();
+        // Shadow-mode onboarding (W11-SHADOW-001) uses the browser's shared onboarding routes; no desktop-local state.
+        services.AddSingleton<IWorkstationOnboardingApiClient, WorkstationOnboardingApiClient>();
         // Audit-chain verification (W9-GOV-008) is read-only and AdminMaintenance-gated server side.
         services.AddSingleton<IAccountingAuditIntegrityApiClient, AccountingAuditIntegrityApiClient>();
         services.AddSingleton<IFactorPaydownApiClient, FactorPaydownApiClient>();

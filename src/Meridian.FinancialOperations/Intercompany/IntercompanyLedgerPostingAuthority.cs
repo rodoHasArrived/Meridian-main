@@ -16,6 +16,35 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAccountingAr
     IConsolidationFxAuthority? fxAuthority = null)
     : ILedgerPostingAuthority, ILedgerBookControlPreflight
 {
+    /// <summary>
+    /// Re-resolves every retained accrual slice under current profile and legal authority. The posted lines
+    /// carry only the revision of the posting date, so an earlier slice whose revision was since retired,
+    /// superseded or re-pinned would otherwise post on authority that no longer covers its days.
+    /// </summary>
+    public async Task VerifyAccrualAuthorityAsync(string tenantId, IntercompanyAccrualEvidenceDto evidence, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(evidence);
+        foreach (var slice in evidence.Computation.Slices)
+            foreach (var day in new[] { slice.From, slice.To.AddDays(-1) }.Distinct())
+            {
+                ResolvedIntercompanyAccountingArrangementDto current;
+                try
+                {
+                    current = await service.ResolveApprovedRevisionAsync(tenantId, evidence.AccountingArrangementId,
+                        slice.AccountingArrangementRevisionId, new DateTimeOffset(day.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
+                }
+                catch (Exception error) when (error is InvalidOperationException or KeyNotFoundException)
+                {
+                    throw new InvalidOperationException($"The profile authority retained for {day:yyyy-MM-dd} no longer applies. Recompute the accrual before review or posting.", error);
+                }
+                if (current.TemplateKind != IntercompanyAccountingTemplateKindDto.LoanInterest
+                    || current.CanonicalAgreementId != evidence.AgreementId
+                    || current.LegalRevision.AgreementVersion != slice.AgreementVersion
+                    || !string.Equals(current.LegalRevision.PayloadHash, slice.AgreementPayloadHash, StringComparison.Ordinal))
+                    throw new InvalidOperationException($"The legal revision retained for {day:yyyy-MM-dd} no longer applies. Recompute the accrual before review or posting.");
+            }
+    }
+
     public string ControlName => "intercompany";
 
     public async Task<IAsyncDisposable> AcquireAsync(IReadOnlyList<LedgerPostingAuthorityContext> contexts, CancellationToken ct = default)

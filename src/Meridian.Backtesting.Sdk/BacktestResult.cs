@@ -114,4 +114,14 @@ public sealed record BacktestResult(
 {
     /// <summary>Day-end accounting differences retained for inspection; empty for a reconciled run.</summary>
     public IReadOnlyList<LedgerIntegrityBreak> LedgerIntegrityBreaks { get; init; } = [];
+
+    /// <summary>Frozen effective action terms for an explicit canonical settlement replay.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BacktestCanonicalActionSnapshot? CanonicalCorporateActions { get; init; }
+
+    /// <summary>Includes the resolved source snapshot in the completed experiment's identity.</summary>
+    public ExecutionRealismDescriptor ToResolvedRealismDescriptor() => Request.ToRealismDescriptor() with
+    {
+        CorporateActionSnapshotHash = CanonicalCorporateActions?.ContentHash
+    };
 }

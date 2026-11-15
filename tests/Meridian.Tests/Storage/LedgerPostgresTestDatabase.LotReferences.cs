@@ -40,7 +40,7 @@ internal sealed partial class LedgerPostgresTestDatabase
     // Explicit fixture setup, never called by a posting wrapper. Commands must state the versions
     // they reviewed, and later fixture drift is not silently repaired before exercising the store.
     public async Task<LotReferenceAuthority> SeedLotReferenceAuthorityAsync(
-        Guid bookId, Guid securityId, Guid positionId, string currency = "USD", string positionSide = BookPositionSides.Long)
+        Guid bookId, Guid securityId, Guid positionId, string currency = "USD", string positionSide = BookPositionSides.Long, string? financialAccountId = null)
     {
         if (_lotSecurities is null)
         {
@@ -76,7 +76,7 @@ internal sealed partial class LedgerPostgresTestDatabase
             book.AccountingPolicyId, book.AccountingPolicyVersion);
         var position = await _lotPositions!.UpsertAsync(role,
             new BookPositionDto(positionId, securityId, role.RoleId, context, positionSide, "Active", date,
-                OriginEvent: origin, EvidenceLinks: [evidence.EvidenceUri])
+                PrimaryAccountId: financialAccountId, OriginEvent: origin, EvidenceLinks: [evidence.EvidenceUri])
             { RetainedEvidence = [evidence] }, null, 0,
             new("reviewer", "evidence://lot/position-approval", "Reviewed fixture position", at.AddMinutes(3)));
         return new(_lotSecurityOptions!, _lotPositionOptions!, _lotSecurities, _lotPositions, security, role, position);

@@ -102,6 +102,10 @@ provenance through the existing dimensions. Conditional hash/grouping suffixes r
 identities for unreferenced lines. Legal provenance alone grants no accrual or settlement authority. Accounting profiles and
 account-role controls govern counterpart drafts and versioned consolidation, while native
 legal-only lines retain their separate advisory coverage. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+`IntercompanyAccrualSourceBuilder` holds the pure pieces of the governed loan-interest accrual
+(ADR-028): profile authority by day, principal read from posted `Loan`-profile journals, posted-window
+overlap detection and the evidence-pinned source draft. It posts nothing; the counterpart still
+arrives through `IntercompanyProposalDraftBuilder` after the source journal commits.
 
 The asset-accounting event spine freezes an optional canonical redemption disposal instruction
 at projection and requires the same instruction at drafting. Selections are compared by their
@@ -285,6 +289,17 @@ certificate requires reconciled opening balances, every required period clean an
 review. Only an independent designated reviewer can promote, with a certificate that still matches
 the current revision, and every step is recorded in a hash-chained audit trail.
 `OnboardingBookOfRecordGuard` implements `IBookOfRecordGuard` over retained workspaces.
+`OnboardingWorkspaceRetention` holds the retention rules every store applies: hash chains verify on read,
+history only grows, versions advance once, and scope and final decisions are fixed.
+`PostgresOnboardingWorkspaceStore` retains workspaces in `ledger.onboarding_workspaces` (`V_ledger_072`).
+A partial unique index lets at most one workspace per tenant hold a ledger book in shadow mode or
+promote it, across processes, and retained rows cannot be deleted.
+`FinancialOperationsCommandCenterReadService` adds a `shadow-agreement` close-readiness contributor when
+a book-of-record guard is composed:
+
+- a book of record is `Ready`
+- a shadow book or withdrawn trial is `Blocked`, with clean-period and unexplained-difference figures
+- an unreadable status is `Unavailable`
 
 `AccountingSystemIntegrationService.Onboarding` adds a read-only capture seam over an already
 retained import and explicitly selected certified mapping. Existing GL reconciliation runs against
@@ -1362,3 +1377,21 @@ Preserve the module boundary declared in `docs/source/data/source-modules.yml` a
 - `docs/source/README.md`
 - `docs/source/generated/source-module-index.md`
 - `docs/architecture/module-map.md`
+
+### Configured posting accounts and automatic policy authority
+
+`ConfiguredLedgerAccountResolver` exposes the shared chart lookup through Contracts. It requires
+an exact owner/book/configuration revision and one active account with the expected classification
+and compatible account/instrument bindings; no account name or numeric prefix infers a type.
+Execution and direct lending consume this seam without introducing another chart.
+`AccountingAutomaticPostingPolicyValidator` resolves the exact effective policy/rule and requires
+retained evidence, `AllowsAutoPosting=true` and `RequiresApproval=false`. Its authority lease uses
+the existing policy mutation gate and remains held through a new posting, preventing a rule edit
+from racing the append. This is separate from the human candidate review workflow, whose approval
+requirements remain unchanged. Ledger storage independently checks the durable operator grant.
+
+Automatic fill grants retain immutable policy snapshots. `AcquireRetainedPolicyAuthorityLeaseAsync`
+restores an absent policy version after process restart under the existing policy mutation gate; it
+compares exact policy content (excluding creation time) when the version already exists and refuses
+to overwrite changed content. The matching lease remains held through each new append. Grant
+revocation and exact effective source-rule authority are independently checked in PostgreSQL.

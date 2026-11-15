@@ -396,6 +396,95 @@ Declared public members:
 | <code>public async Task&lt;LegacyIntercompanyAttributionDto&gt; AppendAsync(LegacyIntercompanyAttributionDto attribution, Guid? expectedPreviousAttributionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLegacyIntercompanyAttributionStore.cs:26](../../../../src/Meridian.Storage/Ledger/FileLegacyIntercompanyAttributionStore.cs#L26) |  |
 | <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLegacyIntercompanyAttributionStore.cs:51](../../../../src/Meridian.Storage/Ledger/FileLegacyIntercompanyAttributionStore.cs#L51) |  |
 
+## GeneralLedgerExportBuilder
+
+Qualified name: <code>Meridian.Storage.Ledger.GeneralLedgerExportBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/GeneralLedgerExportBuilder.cs:32](../../../../src/Meridian.Storage/Ledger/GeneralLedgerExportBuilder.cs#L32).
+
+Serializes one authoritative snapshot to CSV, text-cell XLSX and typed-decimal Parquet. This is a read-only, neutral interchange schema; it does not authorize posting or claim vendor import compatibility.
+
+```csharp
+public static class GeneralLedgerExportBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SchemaVersion = &quot;general-ledger.v1&quot;;</code> | [src/Meridian.Storage/Ledger/GeneralLedgerExportBuilder.cs:34](../../../../src/Meridian.Storage/Ledger/GeneralLedgerExportBuilder.cs#L34) |  |
+| <code>public const int MaximumRows = 100_000;</code> | [src/Meridian.Storage/Ledger/GeneralLedgerExportBuilder.cs:35](../../../../src/Meridian.Storage/Ledger/GeneralLedgerExportBuilder.cs#L35) |  |
+| <code>public static GeneralLedgerExportDataset BuildDataset(LedgerBookRecord book, LedgerReportingSnapshot snapshot, GeneralLedgerUnrealizedInputs? unrealizedInputs = null);</code> | [src/Meridian.Storage/Ledger/GeneralLedgerExportBuilder.cs:49](../../../../src/Meridian.Storage/Ledger/GeneralLedgerExportBuilder.cs#L49) |  |
+| <code>public static async Task&lt;GeneralLedgerExportPackage&gt; BuildAsync(LedgerBookRecord book, LedgerReportingSnapshot snapshot, CancellationToken ct = default, GeneralLedgerUnrealizedInputs? unrealizedInputs = null);</code> | [src/Meridian.Storage/Ledger/GeneralLedgerExportBuilder.cs:134](../../../../src/Meridian.Storage/Ledger/GeneralLedgerExportBuilder.cs#L134) |  |
+
+## GeneralLedgerExportDataset
+
+Qualified name: <code>Meridian.Storage.Ledger.GeneralLedgerExportDataset</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/GeneralLedgerExportBuilder.cs:15](../../../../src/Meridian.Storage/Ledger/GeneralLedgerExportBuilder.cs#L15).
+
+A frozen journal-line dataset. Amount cells are invariant decimal text, never binary floating point.
+
+```csharp
+public sealed record GeneralLedgerExportDataset(string SnapshotSha256, IReadOnlyList<string> Columns, IReadOnlyList<IReadOnlyList<string>> Rows, string DebitTotal, string CreditTotal, string Variance, int LegacyCurrencyLineCount, IReadOnlyList<string> EvidenceReferences);
+```
+
+## GeneralLedgerExportPackage
+
+Qualified name: <code>Meridian.Storage.Ledger.GeneralLedgerExportPackage</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/GeneralLedgerExportBuilder.cs:26](../../../../src/Meridian.Storage/Ledger/GeneralLedgerExportBuilder.cs#L26).
+
+One atomic, internally consistent download of all general-ledger.v1 formats and their agreement manifest.
+
+```csharp
+public sealed record GeneralLedgerExportPackage(byte[] Bytes, string SnapshotSha256, int RowCount);
+```
+
+## GeneralLedgerSymbolPnlBuilder
+
+Qualified name: <code>Meridian.Storage.Ledger.GeneralLedgerSymbolPnlBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/GeneralLedgerSymbolPnlBuilder.cs:22](../../../../src/Meridian.Storage/Ledger/GeneralLedgerSymbolPnlBuilder.cs#L22).
+
+Uses only disposal facts captured with the journals; never queries today&#x27;s positions or manufactures marks.
+
+```csharp
+public static class GeneralLedgerSymbolPnlBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SchemaVersion = &quot;symbol-pnl.v1&quot;;</code> | [src/Meridian.Storage/Ledger/GeneralLedgerSymbolPnlBuilder.cs:24](../../../../src/Meridian.Storage/Ledger/GeneralLedgerSymbolPnlBuilder.cs#L24) |  |
+| <code>public const string UnrealizedBlocker = &quot;An authoritative as-of open-position quantity/basis snapshot and approved marks/FX bound to it are not present in this journal snapshot. Unrealized P&amp;L is unavailable; it is not zero.&quot;;</code> | [src/Meridian.Storage/Ledger/GeneralLedgerSymbolPnlBuilder.cs:25](../../../../src/Meridian.Storage/Ledger/GeneralLedgerSymbolPnlBuilder.cs#L25) |  |
+| <code>public static IReadOnlyList&lt;GeneralLedgerSymbolPnlRow&gt; Build(LedgerBookRecord book, LedgerReportingSnapshot snapshot, GeneralLedgerUnrealizedInputs? unrealizedInputs = null);</code> | [src/Meridian.Storage/Ledger/GeneralLedgerSymbolPnlBuilder.cs:27](../../../../src/Meridian.Storage/Ledger/GeneralLedgerSymbolPnlBuilder.cs#L27) |  |
+
+## GeneralLedgerSymbolPnlRow
+
+Qualified name: <code>Meridian.Storage.Ledger.GeneralLedgerSymbolPnlRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/GeneralLedgerSymbolPnlBuilder.cs:10](../../../../src/Meridian.Storage/Ledger/GeneralLedgerSymbolPnlBuilder.cs#L10).
+
+Known-symbol results over retained disposal evidence. Null amounts always carry an explicit availability reason.
+
+```csharp
+public sealed record GeneralLedgerSymbolPnlRow(string Symbol, string? FinancialAccountId, string FunctionalCurrency, string RealizedAvailability, string? Proceeds, string? CostBasis, string? BookRealizedGainLoss, string? EconomicRealizedGainLoss, string RealizedReason, string UnrealizedAvailability, string? UnrealizedGainLoss, string UnrealizedReason, IReadOnlyList<Guid> DisposalJournalIds);
+```
+
+## GeneralLedgerUnrealizedInputs
+
+Qualified name: <code>Meridian.Storage.Ledger.GeneralLedgerUnrealizedInputs</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/GeneralLedgerSymbolPnlBuilder.cs:18](../../../../src/Meridian.Storage/Ledger/GeneralLedgerSymbolPnlBuilder.cs#L18).
+
+Immutable approved close marks plus dated instrument currency/unit identity retained with the export.
+
+```csharp
+public sealed record GeneralLedgerUnrealizedInputs(SecurityClosePriceSetDto ClosePrices, IReadOnlyList<SecurityDetailDto> Securities);
+```
+
 ## GovernedLedgerPostingResult
 
 Qualified name: <code>Meridian.Storage.Ledger.GovernedLedgerPostingResult</code>. Kind: `record`.
@@ -763,6 +852,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;IReadOnlyList&lt;AtomicTaxLotJournalResult&gt;&gt; GetOpenLotSuccessorHistoryAsync(Guid ledgerBookId, IReadOnlyList&lt;Guid&gt; journalEntryIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CorporateAction.cs:17](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CorporateAction.cs#L17) |  |
 
+## ILedgerOpenPositionReportingSnapshotSource
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerOpenPositionReportingSnapshotSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:24](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L24).
+
+Opt-in capture of historical open-lot basis alongside the exact reporting journal transaction.
+
+```csharp
+public interface ILedgerOpenPositionReportingSnapshotSource : ILedgerReportingSnapshotSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LedgerReportingSnapshot&gt; CaptureOpenPositionReportingSnapshotAsync(LedgerJournalEntryQuery query, Guid accountingPeriodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:26](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L26) |  |
+
 ## ILedgerPostingAuthority
 
 Qualified name: <code>Meridian.Storage.Ledger.ILedgerPostingAuthority</code>. Kind: `interface`.
@@ -804,7 +911,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Ledger.ILedgerReportingSnapshotSource</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:8](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L8).
+Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:10](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L10).
 
 Reporting read boundary required by certification, capturing journals and retained disposal evidence from one consistent ledger population. Implementations must preserve all supplied query filters and prevent later commits from appearing in any component of the returned snapshot.
 
@@ -816,7 +923,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;LedgerReportingSnapshot&gt; CaptureReportingSnapshotAsync(LedgerJournalEntryQuery query, Guid? accountingPeriodId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:15](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L15) | Captures the optional report period independently of the journal query&#x27;s period filter, so all-history balance queries can retain the reporting period&#x27;s status and version atomically. The requested period must belong to the query&#x27;s exact ledger book. |
+| <code>Task&lt;LedgerReportingSnapshot&gt; CaptureReportingSnapshotAsync(LedgerJournalEntryQuery query, Guid? accountingPeriodId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:17](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L17) | Captures the optional report period independently of the journal query&#x27;s period filter, so all-history balance queries can retain the reporting period&#x27;s status and version atomically. The requested period must belong to the query&#x27;s exact ledger book. |
 
 ## ILedgerSecurityEntitlementInventory
 
@@ -853,131 +960,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;IAsyncDisposable&gt; AcquireStructureAuthorityAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:17](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L17) |  |
-
-## ILedgerTaxLotDisposalHistory
-
-Qualified name: <code>Meridian.Storage.Ledger.ILedgerTaxLotDisposalHistory</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs:55](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs#L55).
-
-Reads retained tax-lot disposal history so realized-gain reporting can be rebuilt from the durable record instead of requiring the original in-memory projection to have been kept.
-
-```csharp
-public interface ILedgerTaxLotDisposalHistory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLotDisposalHistoryRecord&gt;&gt; GetTaxLotDisposalHistoryAsync(Guid ledgerBookId, IReadOnlyList&lt;Guid&gt; journalEntryIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs:61](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs#L61) | Returns the disposals recorded against journalEntryIds, one entry per atomic tax-lot batch, ordered by batch. Journal ids that produced no disposal are absent. |
-
-## IntercompanyAccountBindingRules
-
-Qualified name: <code>Meridian.Storage.Ledger.IntercompanyAccountBindingRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs:6](../../../../src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs#L6).
-
-Structural and historical invariants shared by retained account mapping stores.
-
-```csharp
-public static class IntercompanyAccountBindingRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; Resolve(IEnumerable&lt;IntercompanyAccountBindingDto&gt; history, DateOnly asOf) =&gt; …;</code> | [src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs:8](../../../../src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs#L8) |  |
-| <code>public static void ValidateAppend(IntercompanyAccountBindingDto revision, Guid? expectedPreviousRevisionId, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; history);</code> | [src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs:17](../../../../src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs#L17) |  |
-| <code>public static bool IsCompatible(IntercompanyAccountRoleDto role, string accountType) =&gt; …;</code> | [src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs:67](../../../../src/Meridian.Storage/Ledger/IntercompanyAccountBindingRules.cs#L67) |  |
-
-## IntercompanyAgreementPostingGuard
-
-Qualified name: <code>Meridian.Storage.Ledger.IntercompanyAgreementPostingGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs:8](../../../../src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs#L8).
-
-Non-bypassable shape and source-economics checks for explicit agreement provenance.
-
-```csharp
-public static class IntercompanyAgreementPostingGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool HasReferences(JournalEntry entry) =&gt; …;</code> | [src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs:10](../../../../src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs#L10) |  |
-| <code>public static void ValidateShape(JournalEntry entry);</code> | [src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs:14](../../../../src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs#L14) |  |
-
-## IntercompanyAgreementPostingLine
-
-Qualified name: <code>Meridian.Storage.Ledger.IntercompanyAgreementPostingLine</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:53](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L53).
-
-```csharp
-public sealed record IntercompanyAgreementPostingLine(Guid AgreementId, int AgreementVersion, Guid PostingEntityId, Guid CounterpartyId, string TransactionCurrency);
-```
-
-## IntercompanyAgreementPostingRequest
-
-Qualified name: <code>Meridian.Storage.Ledger.IntercompanyAgreementPostingRequest</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:30](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L30).
-
-A request constructed only by the durable ledger boundary after resolving its actual book and, for historical reversals, proving the complete inverse of the immutable source journal.
-
-```csharp
-public sealed class IntercompanyAgreementPostingRequest
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string TenantId { get; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:44](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L44) |  |
-| <code>public Guid BookEntityId { get; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:45](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L45) |  |
-| <code>public DateOnly AccountingDate { get; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:46](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L46) |  |
-| <code>public string BookCurrency { get; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:47](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L47) |  |
-| <code>public IReadOnlyList&lt;IntercompanyAgreementPostingLine&gt; Lines { get; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:48](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L48) |  |
-| <code>public bool IsVerifiedSourceReversal { get; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:49](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L49) |  |
-| <code>public LegalEntityReadAuthorityProof? StructureAuthorityProof { get; internal set; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:50](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L50) |  |
-
-## IntercompanyJournalCorrectionEvidence
-
-Qualified name: <code>Meridian.Storage.Ledger.IntercompanyJournalCorrectionEvidence</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/IntercompanyJournalCorrectionEvidence.cs:7](../../../../src/Meridian.Storage/Ledger/IntercompanyJournalCorrectionEvidence.cs#L7).
-
-Checks the retained economics of a bounded intercompany reversal.
-
-```csharp
-public static class IntercompanyJournalCorrectionEvidence
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool IsExactInverse(JournalEntry inverse, JournalEntry original);</code> | [src/Meridian.Storage/Ledger/IntercompanyJournalCorrectionEvidence.cs:12](../../../../src/Meridian.Storage/Ledger/IntercompanyJournalCorrectionEvidence.cs#L12) |  |
-
-## ITransactionalLedgerJournalStore
-
-Qualified name: <code>Meridian.Storage.Ledger.ITransactionalLedgerJournalStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:183](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L183).
-
-Appends ledger journal entries within a caller-owned PostgreSQL transaction.
-
-```csharp
-public interface ITransactionalLedgerJournalStore : ILedgerJournalStore, IAtomicLedgerPeriodCloseStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IAsyncDisposable&gt; AcquirePostingAuthorityAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, IReadOnlyList&lt;LedgerJournalEntryWrite&gt; entries, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:188](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L188) | Retain this scope through commit/rollback of the caller-owned transaction. |
-| <code>Task AppendAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:195](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L195) |  |
