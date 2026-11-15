@@ -6,6 +6,63 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MigrationResult
+
+Qualified name: <code>Meridian.Storage.Services.MigrationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:584](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L584).
+
+```csharp
+public sealed record MigrationResult(bool Success, int FilesProcessed, int FilesFailed, long BytesProcessed, long BytesSaved, TimeSpan Duration, IReadOnlyList<string> Errors);
+```
+
+## OperationalScheduleConfig
+
+Qualified name: <code>Meridian.Storage.Services.OperationalScheduleConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1502](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1502).
+
+```csharp
+public sealed record OperationalScheduleConfig(string Name = "Default", TradingSession[] TradingSessions = null !, MaintenanceWindow[] MaintenanceWindows = null !, string[] Holidays = null !, TimeZoneInfo PrimaryTimeZone = null !)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperationalScheduleConfig() : this(&quot;Default&quot;, Array.Empty&lt;TradingSession&gt;(), Array.Empty&lt;MaintenanceWindow&gt;(), Array.Empty&lt;string&gt;(), TimeZoneInfo.Utc);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1510](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1510) |  |
+| <code>public static OperationalScheduleConfig Default =&gt; …;</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1512](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1512) |  |
+
+## OperationalState
+
+Qualified name: <code>Meridian.Storage.Services.OperationalState</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1691](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1691).
+
+```csharp
+public sealed record OperationalState(bool IsRealTimeCollectionActive, TradingSession? CurrentSession, MaintenanceWindow? CurrentMaintenanceWindow, int RunningMaintenanceJobs, ScheduledJob[] PendingJobs, DateTimeOffset NextMaintenanceWindowStart);
+```
+
+## OrphanedFile
+
+Qualified name: <code>Meridian.Storage.Services.OrphanedFile</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:966](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L966).
+
+```csharp
+public sealed record OrphanedFile(string Path, string Reason, long SizeBytes, DateTime LastModified);
+```
+
+## OrphanReport
+
+Qualified name: <code>Meridian.Storage.Services.OrphanReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:960](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L960).
+
+```csharp
+public sealed record OrphanReport(DateTime GeneratedAt, IReadOnlyList<OrphanedFile> OrphanedFiles, long TotalOrphanedBytes);
+```
+
 ## ParquetConversionService
 
 Qualified name: <code>Meridian.Storage.Services.ParquetConversionService</code>. Kind: `class`.
@@ -698,131 +755,3 @@ Source: [src/Meridian.Storage/Services/StorageSearchService.cs:898](../../../../
 ```csharp
 public sealed record StorageQuery(string[]? Symbols, MarketEventType[]? Types, DateTimeOffset? From, DateTimeOffset? To, string[]? Sources, long? MinVolume);
 ```
-
-## StorageQueryBuilder
-
-Qualified name: <code>Meridian.Storage.Services.StorageQueryBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:910](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L910).
-
-Builds a storage query from symbol, event type, date range, and minimum volume filters.
-
-```csharp
-public sealed class StorageQueryBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public void AddSymbol(string symbol) =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:918](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L918) |  |
-| <code>public void AddType(MarketEventType type) =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:919](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L919) |  |
-| <code>public void SetDateRange(DateTimeOffset from, DateTimeOffset to);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:920](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L920) |  |
-| <code>public void SetMinVolume(long volume) =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:921](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L921) |  |
-| <code>public StorageQuery Build() =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:923](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L923) |  |
-
-## StorageSearchService
-
-Qualified name: <code>Meridian.Storage.Services.StorageSearchService</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:17](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L17).
-
-Service for searching and discovering data across storage. Provides multi-level indexing and faceted search capabilities.
-
-```csharp
-public sealed class StorageSearchService : IStorageSearchService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StorageSearchService(StorageOptions options, ISourceRegistry? sourceRegistry = null, JsonlStoragePolicy? pathParser = null);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:30](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L30) |  |
-| <code>public async Task&lt;SearchResult&lt;FileSearchResult&gt;&gt; SearchFilesAsync(FileSearchQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:38](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L38) |  |
-| <code>public async Task&lt;SearchResult&lt;EventSearchResult&gt;&gt; SearchEventsAsync(EventSearchQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:125](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L125) |  |
-| <code>public async Task&lt;DataCatalog&gt; DiscoverAsync(DiscoveryQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:183](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L183) |  |
-| <code>public async Task&lt;FacetedSearchResult&gt; SearchWithFacetsAsync(FacetedSearchQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:252](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L252) |  |
-| <code>public StorageQuery? ParseNaturalLanguageQuery(string naturalQuery);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:305](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L305) |  |
-| <code>public async Task UpdateIndexAsync(string filePath, IndexUpdateType updateType, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:366](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L366) |  |
-| <code>public async Task&lt;IndexRebuildVerification&gt; RebuildIndexAsync(string[] paths, RebuildOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:399](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L399) |  |
-
-## StorageSymbolCatalogEntry
-
-Qualified name: <code>Meridian.Storage.Services.StorageSymbolCatalogEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:827](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L827).
-
-```csharp
-public sealed record StorageSymbolCatalogEntry(string Symbol, DateTimeOffset FirstDate, DateTimeOffset LastDate, long TotalEvents, long TotalBytes, HashSet<string> Sources, HashSet<string> EventTypes);
-```
-
-## SymbolIndex
-
-Qualified name: <code>Meridian.Storage.Services.SymbolIndex</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:840](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L840).
-
-```csharp
-public sealed record SymbolIndex(string Symbol, List<string> Files);
-```
-
-## SymbolRegistryService
-
-Qualified name: <code>Meridian.Storage.Services.SymbolRegistryService</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/SymbolRegistryService.cs:16](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L16).
-
-Service for managing the symbol registry with comprehensive alias resolution. Stored at _catalog/symbols.json.
-
-```csharp
-public sealed partial class SymbolRegistryService : ISymbolRegistryService, ISymbolRegistrySecurityMasterWriter, ISymbolRegistryMigrationWriter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SymbolRegistryService(string storagePath) : this(storagePath, static (path, contents, ct) =&gt; AtomicFileWriter.WriteAsync(path, contents, ct));</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:34](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L34) |  |
-| <code>public SymbolRegistry GetRegistry() =&gt; …;</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:56](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L56) |  |
-| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:58](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L58) |  |
-| <code>public async Task RegisterSymbolAsync(SymbolRegistryEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:96](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L96) |  |
-| <code>public SymbolLookupResult LookupSymbol(string query);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:124](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L124) |  |
-| <code>public string ResolveAlias(string alias);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:223](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L223) |  |
-| <code>public string? GetProviderSymbol(string canonical, string provider);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:231](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L231) |  |
-| <code>public async Task AddAliasAsync(string canonical, SymbolAlias alias, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:260](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L260) |  |
-| <code>public Task AddProviderMappingAsync(string canonical, string provider, string providerSymbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:289](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L289) |  |
-| <code>public async Task AddProviderMappingAsync(string canonical, string provider, string providerSymbol, string source, bool isOverride, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:298](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L298) |  |
-| <code>public async Task&lt;bool&gt; RemoveProviderMappingAsync(string canonical, string provider, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:349](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L349) |  |
-| <code>public IEnumerable&lt;SymbolRegistryEntry&gt; GetAllSymbols();</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:383](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L383) |  |
-| <code>public IEnumerable&lt;SymbolRegistryEntry&gt; GetSymbolsByAssetClass(string assetClass);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:388](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L388) |  |
-| <code>public async Task&lt;string?&gt; GetMigrationMarkerAsync(string migrationId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:395](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L395) |  |
-| <code>public async Task SetMigrationMarkerAsync(string migrationId, string fingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:412](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L412) |  |
-| <code>public async Task SaveRegistryAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:433](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L433) |  |
-| <code>public async Task&lt;int&gt; ImportSymbolsAsync(IEnumerable&lt;SymbolRegistryEntry&gt; symbols, bool merge = true, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:440](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L440) |  |
-| <code>public async Task&lt;int&gt; ApplyMigrationAsync(string migrationId, string fingerprint, IEnumerable&lt;SymbolRegistryEntry&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:472](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L472) |  |
-
-Source: [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:9](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L9).
-
-```csharp
-public sealed partial class SymbolRegistryService : ISecurityMasterLegacyIdentifierCleanupWriter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;string&gt; GetLegacyIdentifierCleanupFingerprintAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:12](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L12) |  |
-| <code>public async Task&lt;SecurityMasterLegacyIdentifierCleanupValidation&gt; ValidateLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupManifest manifest, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:26](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L26) |  |
-| <code>public async Task&lt;SecurityMasterLegacyIdentifierCleanupReceipt&gt; ApplyLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupValidation validation, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:51](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L51) |  |
-
-Source: [src/Meridian.Storage/Services/SymbolRegistryService.SecurityMaster.cs:7](../../../../src/Meridian.Storage/Services/SymbolRegistryService.SecurityMaster.cs#L7).
-
-```csharp
-public sealed partial class SymbolRegistryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;int&gt; ReconcileSecurityMasterAsync(IReadOnlyCollection&lt;Guid&gt; securityIds, IEnumerable&lt;SymbolRegistryEntry&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.SecurityMaster.cs:13](../../../../src/Meridian.Storage/Services/SymbolRegistryService.SecurityMaster.cs#L13) | Reconciles a bounded Security Master snapshot without replacing operator/provider authority. Builds and persists a private candidate before publishing any changed resolver state. |

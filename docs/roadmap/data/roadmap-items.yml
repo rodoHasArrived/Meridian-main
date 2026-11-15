@@ -286,7 +286,7 @@ items:
     health: green
     priority: high
     evidence_posture: complete
-    status_note: Shared multi-asset coverage projects validation, provider evidence, ledger classification, reconciliation and close blockers.
+    status_note: Shared coverage baseline is delivered. Passive selected-version capability cards and loaded-observation refusal rollups are source-implemented pending integration verification; missing context remains Review and this is not charter Verified Coverage.
     decision_ids: []
     pr_references: []
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W5-MASSET-001.md
@@ -306,6 +306,10 @@ items:
       - DIA-ASSURANCE-LOOP
     evidence:
       - type: test
+        path: tests/Meridian.Tests/Ui/InstrumentCapabilityReadServiceTests.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Services/InstrumentCapabilityReadService.cs
+      - type: test
         path: tests/Meridian.Tests/SecurityMaster/SecurityMasterOperationalReadinessServiceTests.cs
       - type: test
         path: tests/Meridian.Tests/SecurityMaster/SecurityMasterAssetClassSupportTests.cs
@@ -319,7 +323,9 @@ items:
         path: tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs
       - type: test
         path: src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts
-    last_reviewed: 2026-07-02
+      - type: reference
+        path: docs/engineering/plans/security-master-review-remediation-plan.md
+    last_reviewed: 2026-11-14
 
   - id: W5X-OEG-001
     title: Operational evidence graph product surface
@@ -1652,7 +1658,7 @@ items:
     health: green
     priority: high
     evidence_posture: in_progress
-    status_note: Posted-ledger and governed-run proof slices are implemented. Other report families, NAV/portfolio amounts, current-candidate verification and live acceptance remain open.
+    status_note: Draft-bound impact and forward retained journal-input comparison are source-implemented pending integration verification. Conservative books, unverified lots and legacy input gaps stay explicit; other amount families and live acceptance remain open.
     decision_ids: []
     pr_references:
     - 3041
@@ -1665,6 +1671,10 @@ items:
       - This item feeds W5X-OEG-001 rather than duplicating it, and states its WPF slice or an explicit deferral.
       - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the evidence subject, the shared drawer, the browser surface, and the missing-evidence tests.
     source_modules:
+      - SRC-REPORTING-READMODELS
+      - SRC-DESIGN-REPORTING
+      - SRC-STORAGE-ACCOUNTING
+      - SRC-APP
       - SRC-UI-SHARED
       - SRC-CONTRACTS
       - SRC-UI-DASHBOARD
@@ -1672,6 +1682,14 @@ items:
     diagrams:
       - DIA-ASSURANCE-LOOP
     evidence:
+      - type: reference
+        path: docs/operators/security-master-repairs-and-evidence.md
+      - type: test
+        path: tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterImpactPublicationPostgresTests.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs
+      - type: source
+        path: src/Meridian.Application/SecurityMaster/SecurityMasterImpactPreviewService.cs
       - type: source
         path: src/Meridian.Wpf/Features/Reporting/ReportRetainedAmountsApiClient.cs
       - type: source
@@ -1728,7 +1746,9 @@ items:
         path: src/Meridian.Ui/dashboard/src/screens/finance-standard-pages-screen.test.tsx
       - type: document
         path: docs/testing/w10-amount-provenance.md
-    last_reviewed: 2026-10-28
+      - type: reference
+        path: docs/engineering/plans/security-master-review-remediation-plan.md
+    last_reviewed: 2026-11-14
   - id: W10-RECON-002
     title: Break clustering and bulk-resolution activation
     wave: W10
@@ -2447,7 +2467,7 @@ items:
     health: green
     priority: medium
     evidence_posture: in_progress
-    status_note: Bond analytics and schedule/cutover tools are bounded implementation. Curve pins, batch staging, settlement posting and floating-rate analytics remain open; no live cutover or acceptance.
+    status_note: Paged evidence-cohort scalar repair and bounded CD-v6 fixed-bullet accrual are source-implemented pending integration verification. Per-record review/publication and stable daily-lot claims preserve authority; Bond schedule migration and live acceptance remain separate.
     decision_ids: []
     pr_references:
     - 3328
@@ -2458,6 +2478,9 @@ items:
       - A reviewed cutover enables the durable live-calculation gate for one complete inventory hash; later undeclared or explicitly blocked bonds cannot silently use legacy calculations, and amendments name the current receipt hash.
       - Operator acceptance of the cutover procedure and the scenario workbench on a dedicated nonproduction host is recorded under docs/testing before any row-level acceptance; mocked browser checks, scratch compilation and green CI do not substitute for it.
     source_modules:
+      - SRC-LEDGER
+      - SRC-FSHARP
+      - SRC-APP
       - SRC-CONTRACTS
       - SRC-DESIGN-INSTRUMENTS
       - SRC-DESIGN-FINANCIAL-OPERATIONS
@@ -2468,10 +2491,20 @@ items:
       - SRC-WPF
     evidence:
       - type: reference
+        path: docs/operators/security-master-repairs-and-evidence.md
+      - type: test
+        path: tests/Meridian.Tests/Ui/RecurringJournalCalculationTests.CertificateOfDepositObligations.cs
+      - type: source
+        path: src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs
+      - type: source
+        path: src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs
+      - type: reference
         path: docs/engineering/plans/bond-capability-expansion.md
       - type: reference
         path: docs/testing/evidence/next-work-20261029/README.md
-    last_reviewed: 2026-10-31
+      - type: reference
+        path: docs/engineering/plans/security-master-review-remediation-plan.md
+    last_reviewed: 2026-11-14
   - id: W11-PASSPORT-001
     title: Number Passport contract across amount surfaces
     wave: W11
@@ -2686,31 +2719,90 @@ items:
     health: green
     priority: medium
     evidence_posture: planned_evidence
-    status_note: Govern asset-class contract packs from the existing registry; planned scope retains the recorded migration and acceptance requirements.
+    status_note: All 32 compiled layer contributions and approved-profile developer exports are source-implemented pending integration verification. Governed pack activation, record version pinning and rollback remain planned; export never registers runtime classes.
     decision_ids:
     - DEC-CHARTER-DIRECTION-001
     pr_references: []
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W11-PACK-001.md
     exit_criteria:
+      - The structural increment composes all 32 classes through layer-owned schema, upgrade, role/unit, validator, codec, projection and accounting contributions with independent parity and replay proof; compiled composition does not activate a governed pack.
       - A contract pack is a versioned, content-hashed unit that declares its asset class, term schema, lifecycle events, cash-flow behavior, valuation methods, accounting rule bindings, validations, and reporting taxonomy, and the existing asset-class registry is its first source.
       - A pack moves through Draft, Tested, Reviewed, Approved, Active, Superseded, and Retired, and activation requires passing pack tests and a recorded approval.
       - Records keep the pack version they were created under, so activating a new version never silently reinterprets existing terms; migrating records to a new version is an explicit, audited operation.
       - The coverage tests that lock the registry to the F# SecurityKind union, validators, and storage writers extend to every active pack.
       - Roadmap status remains planned until this item links the pack contract, the lifecycle, the version-pinning behavior, and the activation and reinterpretation tests.
     source_modules:
+      - SRC-UI-DASHBOARD
+      - SRC-UI-SHARED
+      - SRC-APP
       - SRC-DESIGN-INSTRUMENTS
       - SRC-CONTRACTS
       - SRC-FSHARP
       - SRC-STORAGE
+      - SRC-STORAGE-ACCOUNTING
       - SRC-LEDGER
     diagrams:
       - DIA-ASSURANCE-LOOP
     evidence:
+      - type: test
+        path: tests/Meridian.Tests/SecurityMaster/SecurityAssetProfilePromotionReadServiceTests.cs
+      - type: source
+        path: src/Meridian.Application/SecurityMaster/SecurityAssetProfilePromotionReadService.cs
+      - type: source
+        path: src/Meridian.Contracts/SecurityMaster/SecurityAssetClassModules.cs
       - type: reference
         path: docs/product/meridian-design-document.md
       - type: reference
         path: docs/architecture/security-master-extensibility-review.md
-    last_reviewed: 2026-10-16
+      - type: reference
+        path: docs/engineering/plans/security-master-review-remediation-plan.md
+    last_reviewed: 2026-11-14
+
+  - id: W11-LEGS-001
+    title: Reusable fixed and floating legs for vanilla interest-rate swaps
+    wave: W11
+    stage_gates:
+      - PortfolioLedgerReview
+    workspace:
+      - Data
+      - Portfolio
+    owner_lane: Accounting and Ledger
+    status: planned
+    health: green
+    priority: medium
+    evidence_posture: planned_evidence
+    status_note: Optional vanilla-irs-v1 adapts bounded fixed/floating legs to the existing engine; source-implemented pending integration verification. Swap stays v4 and old requests remain stable. No posting, optionality, credit protection or cross-currency treatment is added.
+    decision_ids: []
+    pr_references: []
+    exit_criteria:
+      - Fixed and floating legs carry explicit schedule conventions, day count, currency/notional and declared rate units, using the ADR-025 schedule kernel and typed fixing/source evidence.
+      - Existing vanilla interest-rate swap cash-flow consumers converge on the leg modules with signed fixed/floating golden cases, exact replay and typed missing-fixing or unsupported-structure refusals.
+      - Retained payloads, event versions and historical receipts preserve their interpretation; leg reuse does not bypass instrument-level economics, approval or accounting gates.
+      - Cross-currency exchanges, CDS events, caps/floors, swaptions, structured-note optionality and premium/protection/funding payoffs remain explicit later extensions.
+      - Implementation evidence links shared contracts and consumers, browser validation, compatibility fixtures and refusal tests before row-level acceptance.
+    source_modules:
+      - SRC-CONTRACTS
+      - SRC-FSHARP
+      - SRC-DESIGN-INSTRUMENTS
+      - SRC-APP
+      - SRC-UI-SHARED
+      - SRC-UI-DASHBOARD
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    evidence:
+      - type: test
+        path: tests/Meridian.Tests/SecurityMaster/SecurityVanillaSwapProfileTests.cs
+      - type: source
+        path: src/Meridian.Contracts/SecurityMaster/SecurityVanillaSwapProfile.cs
+      - type: reference
+        path: docs/adr/025-contractual-schedule-kernel.md
+      - type: reference
+        path: docs/adr/027-single-economic-model-consolidation.md
+      - type: reference
+        path: docs/engineering/plans/security-master-review-remediation-plan.md
+    blockers:
+      - Retain integrated compatibility, refusal and browser evidence for the bounded vanilla IRS path before row-level acceptance; the declared-schedule and fixing authority boundaries remain in force.
+    last_reviewed: 2026-11-14
 
   - id: W11-EXEC-001
     title: Trading and Execution bounded-context ownership

@@ -6,10 +6,42 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.Contracts
+
+## Bounded Security Master interfaces (2026-11-14)
+
+Workstation contracts add passive capability assessments, paged rate-repair discovery/frozen batches,
+retained impact receipts and scoped report-input comparison. Applicability and unavailable evidence
+remain distinct from Ready/Review/Blocked; action flags never grant authority beyond server checks.
+
+`SecurityRecurringAccrualPolicies` selects tested profiles. CD version 6 adds explicit issue date,
+principal and cadence for `fixed-bullet-actual365-v1`; the profile requires Actual/365, AtMaturity,
+fixed scalar rate/unit and par face lots with NoAmortization. Versioned scalar amendment rules prevent
+older-stamp residue activating during unrelated edits. Bond/StructuredCredit v5 evidence stays stable.
+CDs below the declaration stamp keep v5 analytical capture/replay; explicit v6 profile declarations
+must pass the strict terms contract and cannot fall back to normalized legacy economics.
+`SecurityVanillaSwapProfile` adapts exactly two same-currency opposite fixed/floating legs to the same
+contractual engine with explicit per-leg rate units, conventions and dated rate authority. Optional
+`calculationProfile` preserves old omitted request bytes and adds no posting authority. See
+[recurring journals](../../docs/domain/recurring-journal.md) and
+[contractual projections](../../docs/domain/contractual-cash-flow-projection.md).
+
+`SecurityAssetClassModules` explicitly composes the 32 built-in `SecurityAssetClassModule`
+contributions. Each class owns its descriptor (including upgrade/term-role/accounting declarations),
+root and nested schema, rate-field declarations, and codec/economic-flattening bindings where
+applicable. Catalog, schema, rate, codec-binding and upcaster registries retain their public facades
+and compatibility ordering over these contributions. The 31 flat-codec classes retain their
+generation inputs; CustomAsset explicitly declares its opaque approved-profile codec. No module declaration
+confers posting or runtime pack-activation authority. `SecurityAssetClassModuleTests` covers the
+composition contract alongside independent existing parity and replay fixtures. See the
+[asset-pack foundation](../../docs/engineering/plans/security-master-review-remediation-plan.md#1-complete-the-layered-asset-pack-foundation).
+
+Class-owned fields also retain main's required-read ordering and seven existing absent-value
+defaults through their explicit field modifiers. Shared schema readers preserve the first refusal
+and use only those declared defaults; module composition does not invent replacement economics.
 
 `Api/ProviderRateLimits.cs` retains the existing counters and adds their explicit `quotaUnit`,
 daily usage/cap and vendor reset policy. Compatibility request-named counters can contain credits;
@@ -2218,6 +2250,9 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-CONTRACTS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W11-LEGS-001` | Reusable fixed and floating legs for vanilla interest-rate swaps |
+| `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
+| `W11-PACK-001` | Governed contract-pack lifecycle on the Security Master asset-class registry |
 | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |

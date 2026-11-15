@@ -6,10 +6,29 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.Ui/dashboard
+
+## Capability, repair and historical-input workflows
+
+The existing Security Master passport displays passive contextual capability assessments. Portfolio
+rollups cover loaded authorized brokerage observations with explicit unresolved coverage, not the
+whole book or charter Verified Coverage. The existing Security Master route opens rate repair on
+demand: paged live discovery exposes source gaps, compatible evidence cohorts preserve exact scalar
+strings, and freeze/stage/submit/review/publish are separate real server commands. History navigation
+cannot apply a late acknowledgement to another selected batch. Each approval requires inspection of
+the matching retained impact receipt; server assignment/version/action refusals remain visible.
+Individual passport edits require an explicit fund profile before staging and freeze it with the
+draft. Approve/publish require inspection of the actual retained hash matching security/revision/fund;
+client display state never replaces server scope and dependency validation.
+
+Report amount links open exact retained journal inputs beside the current approved definition and
+show actual event/revision/workflow attribution or explicit gaps. Settings' existing asset-profile
+card shows exact approved-version usage/required-field presence and an authorized developer JSON
+export with planned classes only. No AI suggestion, automatic publication, current-input fallback or
+runtime class activation is added. See [operator procedure](../../../docs/operators/security-master-repairs-and-evidence.md).
 
 Native intercompany agreement editors capture structured terms without calculating charges.
 Externally reviewed attestations retain the operator and external reviewer separately. The entity
@@ -798,7 +817,7 @@ any total; a host that predates them shows the not-reported marker rather than z
 
 The generated `api-routes.ts` catalog includes exact account-owned ledger-book oversight routes
 for cash continuity, reviewed close prices and cash forecasts. Regenerate it from shared
-`UiApiRoutes` and rebuild the tracked workstation bundle when those routes change; server-owned
+`UiApiRoutes` and rebuild the host-served workstation bundle when those routes change; server-owned
 scope and evidence verification are described in
 [bounded account oversight](../../../docs/operators/account-oversight.md).
 
@@ -3045,6 +3064,10 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 <!-- source-roadmap-traceability:begin module=SRC-UI-DASHBOARD -->
 | Roadmap item | Title |
 | --- | --- |
+| `W11-PACK-001` | Governed contract-pack lifecycle on the Security Master asset-class registry |
+| `W11-LEGS-001` | Reusable fixed and floating legs for vanilla interest-rate swaps |
+| `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
+| `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
 | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |

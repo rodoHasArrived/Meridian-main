@@ -2,7 +2,7 @@ import { BookCheck, Landmark, Network, RefreshCcw, Search, ShieldCheck, WalletCa
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "@/styles/accounting-screen.css";
-import { selectCurrentDailyValuationSchedule, useAccountingCloseSources, type CloseWorkflowQuery } from "./accounting-screen.close-sources";
+import { selectCurrentDailyValuationSchedule, useAccountingCloseSources } from "./accounting-screen.close-sources";
 import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
 import { formatCount } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
@@ -74,55 +74,13 @@ import { ManualJournalEntryWorkbenchPanel } from "@/screens/accounting-screen.ma
 import { AccountingApprovalsWorkstream } from "@/screens/accounting-screen.approvals-workstream";
 import { AccountingValue } from "@/screens/accounting-screen.accounting-value";
 import { statusTextClass } from "@/design-system/status-styles";
+import { buildSecurityMasterDrillInSearch, isSecurityMasterDrillInTabId, parseCloseWorkflowQuery, resolveExplorerSecurityId, resolveSecurityMasterDrillInTab } from "./accounting-screen.route-state";
+import { SecurityRateRepairQueueRegion } from "@/screens/security-master-rate-repair-queue";
 
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
   multiAssetCoverage?: MultiAssetCoverageSummary | null;
   session?: SessionInfo | null;
-}
-
-const SECURITY_MASTER_DRILL_IN_TAB_IDS = ["identity", "reference", "schedules", "lots", "passport", "evidence"] as const;
-
-type SecurityMasterDrillInTabId = (typeof SECURITY_MASTER_DRILL_IN_TAB_IDS)[number];
-
-function isSecurityMasterDrillInTabId(value: string | null): value is SecurityMasterDrillInTabId {
-  return SECURITY_MASTER_DRILL_IN_TAB_IDS.includes(value as SecurityMasterDrillInTabId);
-}
-
-function resolveSecurityMasterDrillInTab(search: string): SecurityMasterDrillInTabId {
-  const requested = new URLSearchParams(search).get("tab");
-  return isSecurityMasterDrillInTabId(requested) ? requested : "identity";
-}
-
-function buildSecurityMasterDrillInSearch(search: string, tabId: SecurityMasterDrillInTabId): string {
-  const params = new URLSearchParams(search);
-  params.set("tab", tabId);
-  const serialized = params.toString();
-  return serialized ? `?${serialized}` : "";
-}
-
-function resolveExplorerSecurityId(recordId: string): string | null {
-  const [recordType, securityId, ...extraSegments] = recordId.split(":");
-  return (recordType === "security" || recordType === "security-instrument") && securityId && extraSegments.length === 0
-    ? securityId
-    : null;
-}
-
-function parseCloseWorkflowQuery(search: string): CloseWorkflowQuery {
-  const params = new URLSearchParams(search);
-  return {
-    fundProfileId: normalizeOptionalQueryValue(params.get("fundProfileId")),
-    entityId: normalizeOptionalQueryValue(params.get("entityId")),
-    fundAccountId: normalizeOptionalQueryValue(params.get("fundAccountId")),
-    ledgerBookId: normalizeOptionalQueryValue(params.get("ledgerBookId")),
-    periodId: normalizeOptionalQueryValue(params.get("periodId")),
-    status: normalizeOptionalQueryValue(params.get("workflowStatus"))
-  };
-}
-
-function normalizeOptionalQueryValue(value: string | null): string | undefined {
-  const normalized = value?.trim();
-  return normalized ? normalized : undefined;
 }
 
 export function AccountingScreen(props: AccountingScreenProps) {
@@ -1560,6 +1518,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           onSelectRecord={selectSecurityFromExplorer}
         >
         <section className="space-y-6">
+          <SecurityRateRepairQueueRegion key={JSON.stringify([session?.displayName, session?.role, session?.environment])} />
           <div id="bond-ladders" className="scroll-mt-6">
             <BondReferenceLadderPanel onSelectSecurity={(securityId) => {
               ladderScroll.current = [];

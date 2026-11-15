@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "85e747b191ee84218f63efbc0ea65d240251910bb4ecdbb41042aadf5e7a3406",
+  "database_fingerprint": "381f9f026a16f0605dce95a2172bbc9443ed5a72a5ff80880660fd3c84e71fb1",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -5339,6 +5339,18 @@
       "target": "ledger.operations_continuity_workflows_pkey",
       "target_kind": "index",
       "target_name": "operations_continuity_workflows_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "f37f516d5bd45da831e75d189622cdc01e79b8a2ae431b37034e51b2620d4ca5",
+      "kind": "normal",
+      "source": "ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.operations_continuity_workflows.workflow_json",
+      "target_kind": "table column",
+      "target_name": "operations_continuity_workflows",
       "target_schema": "ledger"
     },
     {
@@ -13202,6 +13214,54 @@
       "target_schema": "security_master"
     },
     {
+      "fingerprint": "1dd17d2457722f89a73c6ed298c085a8309ec56b756a72aac247d903d9242743",
+      "kind": "normal",
+      "source": "security_master.security_rate_repair_batches_command_sha256_check on security_master.security_rate_repair_batches",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_rate_repair_batches.command_sha256",
+      "target_kind": "table column",
+      "target_name": "security_rate_repair_batches",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "b90cb33b000ea24b5f4b3600e3d4765c7551b60f02798e035ac91ed7ae445232",
+      "kind": "normal",
+      "source": "security_master.security_rate_repair_state_batch_id_fkey on security_master.security_rate_repair_state",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_rate_repair_batches.batch_id",
+      "target_kind": "table column",
+      "target_name": "security_rate_repair_batches",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "d3f72182314c59656cbf587ea82630876021c5d3eaef4c5371a6d4fc4cbeeb56",
+      "kind": "normal",
+      "source": "security_master.security_rate_repair_state_batch_id_fkey on security_master.security_rate_repair_state",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_rate_repair_batches_pkey",
+      "target_kind": "index",
+      "target_name": "security_rate_repair_batches_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "07a0923ea010f91126034cc9cf76d9d2173c7a1eb8dd00a50ef6a89d9958d522",
+      "kind": "normal",
+      "source": "security_master.security_rate_repair_state_version_check on security_master.security_rate_repair_state",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_rate_repair_state.version",
+      "target_kind": "table column",
+      "target_name": "security_rate_repair_state",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "a422474deabf1dd0d6b8a0fcc35fa970586ef71242a6584ab3a3f826277f6c26",
       "kind": "normal",
       "source": "security_master.security_raw_prices_security_id_fkey on security_master.security_raw_prices",
@@ -13235,6 +13295,126 @@
       "target": "security_master.security_raw_prices.price_unit",
       "target_kind": "table column",
       "target_name": "security_raw_prices",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "048b6549fb470eba64fce3074c115da93a03e786c5f517c64d364bf741e4276b",
+      "kind": "normal",
+      "source": "security_master.security_revision_impact_binding_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.reviewed_canonical_version",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "6a48d92184cc161dd3497165fa4c0760fa7f5bf4ac0ce6ead0687d9d52885593",
+      "kind": "normal",
+      "source": "security_master.security_revision_impact_binding_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.reviewed_impact_receipt_id",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "690682e3c0e3fa28abb9bc2b22bab27ed3e414a8668017ea1ea7688d3863adf1",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.base_version",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "227d7609768235ef9987aa5b66f86f4dfcdc6a06ed769af95aca3ed0feff1c65",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.drafted_by",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "43b3127e070f63dcad1dc41f22aa2357ba11a28c480d6a9560b71b1001325432",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.field_base_recorded",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "ffa28a7b895c8f4eb46aeadaebe2855f01737363d426a4bb621a8928b3acce83",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.field_base_value",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "c0190f11f02dc4e5600f89402c89040f749bbd3124f98c84517a4ec902a9ab47",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.field_value_recorded",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "fbc5ed02a7fb6db60823b36d804d7f7761495847978fdb60c68f30f808634312",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.repair_batch_id",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "559a9f1572265798bd34fbd0befd9c8e5d30bf2d2ca4dc49aa257ef7eb72cfa7",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.repair_evidence_id",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "3fb84cf0d9327f6a28447993343a638e33146aff00d7c070683b26ec2211a7dd",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.repair_evidence_sha256",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
       "target_schema": "security_master"
     },
     {
@@ -24491,6 +24671,10 @@
       "object": "column:security_master.security_master_revisions.created_at"
     },
     {
+      "fingerprint": "91e9904e09615bedec2ee18b9bef99823c75c542bac6d007161d4622516d7d98",
+      "object": "column:security_master.security_master_revisions.drafted_by"
+    },
+    {
       "fingerprint": "8a76668a96ebe0be7e4d97b62872d23774c0542880d4c2fd9058ea004a88f5ee",
       "object": "column:security_master.security_master_revisions.field_base_recorded"
     },
@@ -24523,6 +24707,26 @@
       "object": "column:security_master.security_master_revisions.fund_profile_id"
     },
     {
+      "fingerprint": "8f05ab124c8e21d965ca75bae6db5a3c0fb9c172b2a5dfb502a7d5d7513ccaf8",
+      "object": "column:security_master.security_master_revisions.repair_batch_id"
+    },
+    {
+      "fingerprint": "478c56fb58ccb2a4dd6045ed312ec5520c74f6bd71a4d66a8883bda9ea3147cc",
+      "object": "column:security_master.security_master_revisions.repair_evidence_id"
+    },
+    {
+      "fingerprint": "5b03b1896c2955d8cf35a685f3ff365e1d366e2c64398deb0efae19f1954fff7",
+      "object": "column:security_master.security_master_revisions.repair_evidence_sha256"
+    },
+    {
+      "fingerprint": "1cc423c684997139e1e11233bd981019a11da9675d65ec061342912654716f3a",
+      "object": "column:security_master.security_master_revisions.reviewed_canonical_version"
+    },
+    {
+      "fingerprint": "65e1261f976516ac97869e8dae4d212957a75d0e021ca101830bba5013d1989b",
+      "object": "column:security_master.security_master_revisions.reviewed_impact_receipt_id"
+    },
+    {
       "fingerprint": "c9a52e1b1c0e9187f02f3725d0ef3b6dcac4a883743c55ef7d1cbb32bbebe125",
       "object": "column:security_master.security_master_revisions.revision_id"
     },
@@ -24533,6 +24737,10 @@
     {
       "fingerprint": "2c28e4ba6deb7a4953dbe110adf914ac3ccb7f5b4ede50df5c6abacbaf254b14",
       "object": "column:security_master.security_master_revisions.state"
+    },
+    {
+      "fingerprint": "7790767d6a015a0c6493a0a9022947c6bf391180e69d5904328da60ea03ce0b0",
+      "object": "column:security_master.security_master_revisions.submitted_by"
     },
     {
       "fingerprint": "e5ac0a2be735e34813994de4464847b9845a4e23d74d60e1ee93be4d2a03b2a1",
@@ -24673,6 +24881,46 @@
     {
       "fingerprint": "bab802b59229fc4cf21c9adb00addf513b092b81fd38e35525c2f95349c3ca39",
       "object": "column:security_master.security_pricing_hierarchy_history.updated_by"
+    },
+    {
+      "fingerprint": "5c45a5847ecbc50fb2ddbca89e005533a2cffb365f2f30b3343408dba69d7be5",
+      "object": "column:security_master.security_rate_repair_batches.batch_id"
+    },
+    {
+      "fingerprint": "968928dfd524e6a1d946f6c1a4edd91de9d6935066b441d1ac21bc4d63a1d879",
+      "object": "column:security_master.security_rate_repair_batches.command_sha256"
+    },
+    {
+      "fingerprint": "a097f3b4f51736d749e25bb881ea175248554a0ba8d80ce23c965ee7cfab2a29",
+      "object": "column:security_master.security_rate_repair_batches.company_id"
+    },
+    {
+      "fingerprint": "df3d9d1c5b05a7f9c69808583b5da5898d3746cc324b75b27e2524902bcd4c3c",
+      "object": "column:security_master.security_rate_repair_batches.created_at"
+    },
+    {
+      "fingerprint": "1d27aa0b1bc557266d2205a54c71ad27dea4b74180244b00a45c334ee2b906ff",
+      "object": "column:security_master.security_rate_repair_batches.created_by"
+    },
+    {
+      "fingerprint": "3b34e35de189f8ba21f5e71ce607f76d318e9f6dc4662acbc78031a7f7d94524",
+      "object": "column:security_master.security_rate_repair_batches.manifest_json"
+    },
+    {
+      "fingerprint": "85dbc0fc36597916d01510a1466660d6fc78a5b6a002d073648aba5018a31b2a",
+      "object": "column:security_master.security_rate_repair_batches.tenant_id"
+    },
+    {
+      "fingerprint": "5c45a5847ecbc50fb2ddbca89e005533a2cffb365f2f30b3343408dba69d7be5",
+      "object": "column:security_master.security_rate_repair_state.batch_id"
+    },
+    {
+      "fingerprint": "1b960e446ff7f0ad9807c2f3665dc923f11b2b5c85554a51e7ab42398ef059bb",
+      "object": "column:security_master.security_rate_repair_state.state_json"
+    },
+    {
+      "fingerprint": "80d93d5d46995c55b204733af221fcfa619955aaaca0cb34d576a8c01c36fe1b",
+      "object": "column:security_master.security_rate_repair_state.version"
     },
     {
       "fingerprint": "a0c4600e33d3572a0fb7b9c2ce8ee67a3fd1dc66564440fab27e313b4dbd6fad",
@@ -25949,6 +26197,14 @@
     {
       "fingerprint": "b95ee30c14fb99c2dee9b9e0ad019b38e1e49896fc94f015e6ab67eba91acc79",
       "object": "comment:table:security_master.security_pricing_hierarchy_history"
+    },
+    {
+      "fingerprint": "0e328246c75ebc5048ca97d096203b263ddf45e14a8b85607ff3b2b09b157f30",
+      "object": "comment:table:security_master.security_rate_repair_batches"
+    },
+    {
+      "fingerprint": "1284cb5c666ce6af9230bc0d77f9764cfa18841a7ffd65723a60eada06d07118",
+      "object": "comment:table:security_master.security_rate_repair_state"
     },
     {
       "fingerprint": "3196bcd5b9acc9893b0be578b9c52d921151071f0927fa05999ef599d30c6d7f",
@@ -27301,6 +27557,10 @@
     {
       "fingerprint": "76cde6ff908af01dbac299f7e34997267c274d8cedc5d95e1e60bdaba6a970db",
       "object": "constraint:ledger.operations_continuity_workflows.operations_continuity_workflows_pkey"
+    },
+    {
+      "fingerprint": "bb6d5ff970d1ec2fdde2f38a8d7c7f11453ceb082862382dc54523aef19afa31",
+      "object": "constraint:ledger.operations_continuity_workflows.operations_workflow_purpose_check"
     },
     {
       "fingerprint": "119ad2fdb0605b0e4d10427a933641df92083c652cd280597215a5dbc2a758ba",
@@ -29619,6 +29879,14 @@
       "object": "constraint:security_master.security_master_revisions.security_master_revisions_pkey"
     },
     {
+      "fingerprint": "9237f4f9e9f37c474fcf125c4780ec7e42629bec5df5a5299de06da78552cee5",
+      "object": "constraint:security_master.security_master_revisions.security_revision_impact_binding_check"
+    },
+    {
+      "fingerprint": "ce17ead7d0107ee898f44f3563fcdfe3e547872e846f3ee11642a12161487c48",
+      "object": "constraint:security_master.security_master_revisions.security_revision_repair_context_check"
+    },
+    {
       "fingerprint": "5acbd046229482cdf96bd12520b843b07e1a84204ba2e701c59c4e9b955cd23f",
       "object": "constraint:security_master.security_master_terms_capability_floor.security_master_terms_capabi_minimum_declared_mapping_ver_check"
     },
@@ -29673,6 +29941,26 @@
     {
       "fingerprint": "3dfd06a52ea165524979527d84bd328737a46012cb1eccbcbda2037de8416781",
       "object": "constraint:security_master.security_pricing_hierarchy_history.security_pricing_hierarchy_history_security_id_fkey"
+    },
+    {
+      "fingerprint": "e0022dcb65500389b3e4fc0696b3d295f97a397731c71e4ae76c3d98eb58bfb7",
+      "object": "constraint:security_master.security_rate_repair_batches.security_rate_repair_batches_command_sha256_check"
+    },
+    {
+      "fingerprint": "8c907ae69aa1dbe33537da01dfce80d91445853f9c4bdb8c72a217809d9a1ffd",
+      "object": "constraint:security_master.security_rate_repair_batches.security_rate_repair_batches_pkey"
+    },
+    {
+      "fingerprint": "fc7ffb03b119184fa24e0ba525a0fb6ec013f1251337b76c68ad1ebe3fc7ccb0",
+      "object": "constraint:security_master.security_rate_repair_state.security_rate_repair_state_batch_id_fkey"
+    },
+    {
+      "fingerprint": "c8a5f8a875940c329d9237436d2291d39802cc6976b947b22ae6868386c1b9f3",
+      "object": "constraint:security_master.security_rate_repair_state.security_rate_repair_state_pkey"
+    },
+    {
+      "fingerprint": "ee9d92193961b5d2a862c5c336eaf163970655b64ae0a5910b784cd72d18cbd6",
+      "object": "constraint:security_master.security_rate_repair_state.security_rate_repair_state_version_check"
     },
     {
       "fingerprint": "9c6301c712828862ab58a9dfb10a7c4f4c256b85441d529a58ea3993a14e0419",
@@ -31609,6 +31897,10 @@
     {
       "fingerprint": "75192e323d67ed435ffae22b3f89e786888e4931ec05e846c2ae8bcda2b12cd1",
       "object": "dependency:ledger.operations_continuity_audit_workflow_id_fkey on ledger.operations_continuity_audit->ledger.operations_continuity_workflows_pkey:normal"
+    },
+    {
+      "fingerprint": "f37f516d5bd45da831e75d189622cdc01e79b8a2ae431b37034e51b2620d4ca5",
+      "object": "dependency:ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows->ledger.operations_continuity_workflows.workflow_json:normal"
     },
     {
       "fingerprint": "3d86d46c218bdda04fbc7318c2d4970f595643fb12c3068561472361a69e5e1d",
@@ -34231,6 +34523,22 @@
       "object": "dependency:security_master.security_pricing_hierarchy_security_id_fkey on security_master.security_pricing_hierarchy->security_master.securities_pkey:normal"
     },
     {
+      "fingerprint": "1dd17d2457722f89a73c6ed298c085a8309ec56b756a72aac247d903d9242743",
+      "object": "dependency:security_master.security_rate_repair_batches_command_sha256_check on security_master.security_rate_repair_batches->security_master.security_rate_repair_batches.command_sha256:normal"
+    },
+    {
+      "fingerprint": "b90cb33b000ea24b5f4b3600e3d4765c7551b60f02798e035ac91ed7ae445232",
+      "object": "dependency:security_master.security_rate_repair_state_batch_id_fkey on security_master.security_rate_repair_state->security_master.security_rate_repair_batches.batch_id:normal"
+    },
+    {
+      "fingerprint": "d3f72182314c59656cbf587ea82630876021c5d3eaef4c5371a6d4fc4cbeeb56",
+      "object": "dependency:security_master.security_rate_repair_state_batch_id_fkey on security_master.security_rate_repair_state->security_master.security_rate_repair_batches_pkey:normal"
+    },
+    {
+      "fingerprint": "07a0923ea010f91126034cc9cf76d9d2173c7a1eb8dd00a50ef6a89d9958d522",
+      "object": "dependency:security_master.security_rate_repair_state_version_check on security_master.security_rate_repair_state->security_master.security_rate_repair_state.version:normal"
+    },
+    {
       "fingerprint": "a422474deabf1dd0d6b8a0fcc35fa970586ef71242a6584ab3a3f826277f6c26",
       "object": "dependency:security_master.security_raw_prices_security_id_fkey on security_master.security_raw_prices->security_master.securities.security_id:normal"
     },
@@ -34241,6 +34549,46 @@
     {
       "fingerprint": "263350868be1e26ae2b9a21d46a67176d929c9ac5b00df96d38019a12df1572a",
       "object": "dependency:security_master.security_raw_prices_unit_check on security_master.security_raw_prices->security_master.security_raw_prices.price_unit:normal"
+    },
+    {
+      "fingerprint": "048b6549fb470eba64fce3074c115da93a03e786c5f517c64d364bf741e4276b",
+      "object": "dependency:security_master.security_revision_impact_binding_check on security_master.security_master_revisions->security_master.security_master_revisions.reviewed_canonical_version:normal"
+    },
+    {
+      "fingerprint": "6a48d92184cc161dd3497165fa4c0760fa7f5bf4ac0ce6ead0687d9d52885593",
+      "object": "dependency:security_master.security_revision_impact_binding_check on security_master.security_master_revisions->security_master.security_master_revisions.reviewed_impact_receipt_id:normal"
+    },
+    {
+      "fingerprint": "690682e3c0e3fa28abb9bc2b22bab27ed3e414a8668017ea1ea7688d3863adf1",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.base_version:normal"
+    },
+    {
+      "fingerprint": "227d7609768235ef9987aa5b66f86f4dfcdc6a06ed769af95aca3ed0feff1c65",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.drafted_by:normal"
+    },
+    {
+      "fingerprint": "43b3127e070f63dcad1dc41f22aa2357ba11a28c480d6a9560b71b1001325432",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.field_base_recorded:normal"
+    },
+    {
+      "fingerprint": "ffa28a7b895c8f4eb46aeadaebe2855f01737363d426a4bb621a8928b3acce83",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.field_base_value:normal"
+    },
+    {
+      "fingerprint": "c0190f11f02dc4e5600f89402c89040f749bbd3124f98c84517a4ec902a9ab47",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.field_value_recorded:normal"
+    },
+    {
+      "fingerprint": "fbc5ed02a7fb6db60823b36d804d7f7761495847978fdb60c68f30f808634312",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.repair_batch_id:normal"
+    },
+    {
+      "fingerprint": "559a9f1572265798bd34fbd0befd9c8e5d30bf2d2ca4dc49aa257ef7eb72cfa7",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.repair_evidence_id:normal"
+    },
+    {
+      "fingerprint": "3fb84cf0d9327f6a28447993343a638e33146aff00d7c070683b26ec2211a7dd",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.repair_evidence_sha256:normal"
     },
     {
       "fingerprint": "a7fda3f752daddca237d109b4af28c582b1b22ea2f18be1d49c9d491a84d216f",
@@ -34447,6 +34795,10 @@
       "object": "function:ledger.protect_open_lot_current_factor()"
     },
     {
+      "fingerprint": "4417893c9932c986c3d47408f81bfe8b0b5b2a6324628550b40be02601302d88",
+      "object": "function:ledger.protect_operations_workflow_subject()"
+    },
+    {
       "fingerprint": "6bc9cd1a91d16c35f8ea033855df575429c5db2829ab49dc337ea7480d68b34b",
       "object": "function:ledger.protect_private_capital_authority()"
     },
@@ -34599,6 +34951,10 @@
       "object": "function:security_master.guard_close_price_snapshot_append()"
     },
     {
+      "fingerprint": "48c0248dd82f3ca5d0a9f2c6210f6a30d9f645b584e346f893473b908cba1767",
+      "object": "function:security_master.protect_security_revision_review_context()"
+    },
+    {
       "fingerprint": "8c3a738ba4673a8ab767d318ef962674213704c16942ff0b5ee2ea0fb402420d",
       "object": "function:security_master.reject_otc_contract_lifecycle_mutation()"
     },
@@ -34609,6 +34965,10 @@
     {
       "fingerprint": "f777ee25f8f726fe4227a6c78201b81c5a6f3d4b20b0929b06df46362c3597b4",
       "object": "function:security_master.reject_price_selection_receipt_mutation()"
+    },
+    {
+      "fingerprint": "6e7c9b3f2fb40944a45d83cb6f790f18e76e13a5f55db7124ffa8b803aac4864",
+      "object": "function:security_master.reject_rate_repair_manifest_mutation()"
     },
     {
       "fingerprint": "c8bfe15453fd4fcf28194d328cd6b1289fc0eff883844fbef44f4b2b3d14bb4b",
@@ -35811,8 +36171,12 @@
       "object": "index:ledger.ux_operations_continuity_audit_previous_hash"
     },
     {
-      "fingerprint": "af6e075f52eb3fde4b7605917f3c3d5e3a27982a21123b38207397f7ca4151a5",
+      "fingerprint": "4d83c31ac66ad65b8f19310adb2c34a61edd5e8cdf7bffbbaf5ec124447a38f2",
       "object": "index:ledger.ux_operations_continuity_open_workflow"
+    },
+    {
+      "fingerprint": "8e48061f0612b2fec7adbe8cdc03d18b2166450bc83ec1224fe89dc86656b07d",
+      "object": "index:ledger.ux_operations_continuity_revision_subject"
     },
     {
       "fingerprint": "11edd1ec6fb218a05914cd9438d2788b4c70931638f937fb2475bae5cf008c55",
@@ -36723,6 +37087,10 @@
       "object": "index:security_master.ix_security_pricing_hierarchy_security_id"
     },
     {
+      "fingerprint": "00a3dc6b2288220272121d21e3afe0709c39be654897e53624548b6d3934bfea",
+      "object": "index:security_master.ix_security_rate_repair_batches_tenant"
+    },
+    {
       "fingerprint": "97097c37a3967bbb4ac8a5b547649bcd71635601d09ae2ae44ba68b9cd5ce4f6",
       "object": "index:security_master.ix_security_raw_prices_security_id"
     },
@@ -37137,6 +37505,14 @@
     {
       "fingerprint": "d3c1ba9d8fb7942be729f252ead95c3a78308f99cbb8d85378ec1b0405a80192",
       "object": "index:security_master.security_pricing_hierarchy_pkey"
+    },
+    {
+      "fingerprint": "6b2094566b3bea7fa670e192fc94e114f594a8832cd188847ad576542a962402",
+      "object": "index:security_master.security_rate_repair_batches_pkey"
+    },
+    {
+      "fingerprint": "dff210bf31555485188f4756c86f92a973b9da517c3ca248869a43f4f1197a04",
+      "object": "index:security_master.security_rate_repair_state_pkey"
     },
     {
       "fingerprint": "331735b12ffe3863cd4e488be8eeae9e2a45269d678407f432a43129ddaae1cb",
@@ -38403,6 +38779,14 @@
       "object": "rls:security_master.security_pricing_hierarchy_history"
     },
     {
+      "fingerprint": "f26aeca565487b6ecf95c15e66d81acc468499e53ce2941e99fb9a79c083994a",
+      "object": "rls:security_master.security_rate_repair_batches"
+    },
+    {
+      "fingerprint": "0528306f048c258aea739e409e3b7b01076840e13d610fcb2556eb642527244d",
+      "object": "rls:security_master.security_rate_repair_state"
+    },
+    {
       "fingerprint": "1fef4fff6c9df14a52480cf1db7946ad79ef983991ebc829000bed047970b4af",
       "object": "rls:security_master.security_raw_prices"
     },
@@ -38507,7 +38891,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "dbe4d2322ba8ec60f13875de22aec43ea81f8436fadedb7c14b82bd09a36040e",
+      "fingerprint": "c47d4d8dc222276705638d4404cb14bc337b128d45c9c04b8a1017004033f247",
       "object": "schema:ledger"
     },
     {
@@ -38527,7 +38911,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "ae4bd3ea661bce14a2396243cc80ebcebf9c6f6f4d15e296a05b978060382bf2",
+      "fingerprint": "5ce2245767ccd59f0112620a4dbe2cb64c4f1b74b03b29d9c083d9ce42cb2d77",
       "object": "schema:security_master"
     },
     {
@@ -38975,7 +39359,7 @@
       "object": "table:ledger.operations_continuity_audit"
     },
     {
-      "fingerprint": "a58c2e170e7d6a88108e8369e1fb7437a1ea527a0c3806387c9e4062b5219c6c",
+      "fingerprint": "5eb57ed1f520d98512677b114ab60ba11878fa84669a296799896949704901b3",
       "object": "table:ledger.operations_continuity_workflows"
     },
     {
@@ -39539,7 +39923,7 @@
       "object": "table:security_master.security_master_quality_reports"
     },
     {
-      "fingerprint": "d9277a8c4c44f67c59e559db4daee5c32bb7bfafb77cc5f75933d5f34ee593f4",
+      "fingerprint": "8038a31b4f240b1d01ea8687593fd1e0a3740b8a2ee0e3e278dd4a6e8bd6ad60",
       "object": "table:security_master.security_master_revisions"
     },
     {
@@ -39561,6 +39945,14 @@
     {
       "fingerprint": "b0fd8a0c12c9d6066f378db454b2b60be4769b4eca5905d06ad0e051b7765be7",
       "object": "table:security_master.security_pricing_hierarchy_history"
+    },
+    {
+      "fingerprint": "9e94af06386fd89926077fdc05d29166f34a0a400c08fd65eeabb9a6c39b7160",
+      "object": "table:security_master.security_rate_repair_batches"
+    },
+    {
+      "fingerprint": "fc5140ec14b9f8c234d6a9638186ec623b6d8907ce54ea5d2413b9278e3e5e54",
+      "object": "table:security_master.security_rate_repair_state"
     },
     {
       "fingerprint": "509ce79a2944e6b5a5d1fab4047485af61485acdb2b418a3f57a9fafd6008d83",
@@ -39955,6 +40347,10 @@
       "object": "trigger:ledger.open_lot_backfill_reviews.protect_open_lot_backfill_evidence"
     },
     {
+      "fingerprint": "d73d8e8f7d6eb348c2aa7a9b0be6cd7356845f62dd64d84599403d5ee2ea5816",
+      "object": "trigger:ledger.operations_continuity_workflows.operations_workflow_subject_immutable"
+    },
+    {
       "fingerprint": "155dacffb9b52dc3901f76e7b4f3b71f3b6f2ce640579c431b81fd4d659a9acc",
       "object": "trigger:ledger.period_close_snapshots.close_snapshot_immutable"
     },
@@ -40211,12 +40607,32 @@
       "object": "trigger:security_master.security_identifier_revisions.security_identifier_revisions_no_truncate"
     },
     {
+      "fingerprint": "9c68073ca1eaa56cff81e63eac9541cb51e48e8737ab354cc4499606a1142eb8",
+      "object": "trigger:security_master.security_master_revisions.security_revision_review_context_immutable"
+    },
+    {
       "fingerprint": "b34b65eb6dc61b5f3c65b55225b1c6f08a2f1af97d6113c0362a3d267aa249e7",
       "object": "trigger:security_master.security_price_selection_receipts.security_price_selection_receipts_immutable"
     },
     {
       "fingerprint": "fb2dba0553e318e59c1181eb84ecdddb39a0d636a3bcde0e010db43f320e3695",
       "object": "trigger:security_master.security_price_selection_receipts.security_price_selection_receipts_no_truncate"
+    },
+    {
+      "fingerprint": "11c391f05aef5decb8acc4174894400f06cd415af6e496c08dc3404de9f13123",
+      "object": "trigger:security_master.security_rate_repair_batches.rate_repair_manifest_immutable"
+    },
+    {
+      "fingerprint": "5d53207f779144792a2d87f9a277031c8cda6abfaa9910066d69af8700befa3f",
+      "object": "trigger:security_master.security_rate_repair_batches.rate_repair_manifest_no_truncate"
+    },
+    {
+      "fingerprint": "99a84451e0ba375c67f7798669c7186e02d553a4c3ade0628d4c0e05f78580dd",
+      "object": "trigger:security_master.security_rate_repair_state.rate_repair_progress_no_delete"
+    },
+    {
+      "fingerprint": "96eb4ec8939df83f5b368f4bbe5ad53d3feba8d04946ced509ad9e015d43cc7a",
+      "object": "trigger:security_master.security_rate_repair_state.rate_repair_progress_no_truncate"
     },
     {
       "fingerprint": "402b646c629b7bed3913e77e709369a665e635909584022436ba812d3b25d95e",
@@ -85966,6 +86382,18 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "f37f516d5bd45da831e75d189622cdc01e79b8a2ae431b37034e51b2620d4ca5",
+          "kind": "normal",
+          "source": "ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.operations_continuity_workflows.workflow_json",
+          "target_kind": "table column",
+          "target_name": "operations_continuity_workflows",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "3d86d46c218bdda04fbc7318c2d4970f595643fb12c3068561472361a69e5e1d",
           "kind": "normal",
           "source": "ledger.period_close_events_period_id_fkey on ledger.period_close_events",
@@ -86738,7 +87166,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "dbe4d2322ba8ec60f13875de22aec43ea81f8436fadedb7c14b82bd09a36040e",
+      "fingerprint": "c47d4d8dc222276705638d4404cb14bc337b128d45c9c04b8a1017004033f247",
       "foreign_tables": [],
       "functions": [
         {
@@ -87234,6 +87662,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "protect_open_lot_current_factor()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "4d0e52cefd09a4facea7ad3a902e6374bbcd093a2fc8228100004f6728568182",
+          "fingerprint": "4417893c9932c986c3d47408f81bfe8b0b5b2a6324628550b40be02601302d88",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "protect_operations_workflow_subject",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "ledger",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "protect_operations_workflow_subject()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -107611,6 +108070,26 @@
           "constraints": [
             {
               "columns": [
+                "workflow_json"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK ((NOT workflow_json ? 'purpose'::text OR jsonb_typeof(workflow_json -> 'purpose'::text) = 'string'::text) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = ANY (ARRAY['Close'::text, 'SecurityMasterRevision'::text])) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NULL AND (workflow_json ->> 'subjectMaker'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceId'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NULL OR COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'SecurityMasterRevision'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NOT NULL AND (workflow_json ->> 'subjectMaker'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectMaker'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceId'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectEvidenceId'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NOT NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) ~ '^[a-f0-9]{64}$'::text))",
+              "delete_action": null,
+              "fingerprint": "bb6d5ff970d1ec2fdde2f38a8d7c7f11453ceb082862382dc54523aef19afa31",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "operations_workflow_purpose_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
                 "workflow_id"
               ],
               "comment": null,
@@ -107632,7 +108111,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "a58c2e170e7d6a88108e8369e1fb7437a1ea527a0c3806387c9e4062b5219c6c",
+          "fingerprint": "5eb57ed1f520d98512677b114ab60ba11878fa84669a296799896949704901b3",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -107751,9 +108230,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE (derived_status <> 'Closed'::text)",
+              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE ((derived_status <> 'Closed'::text) AND (COALESCE((workflow_json ->> 'purpose'::text), 'Close'::text) = 'Close'::text))",
               "expression": null,
-              "fingerprint": "af6e075f52eb3fde4b7605917f3c3d5e3a27982a21123b38207397f7ca4151a5",
+              "fingerprint": "4d83c31ac66ad65b8f19310adb2c34a61edd5e8cdf7bffbbaf5ec124447a38f2",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -107765,7 +108244,29 @@
               "name": "ux_operations_continuity_open_workflow",
               "options": [],
               "owner": "meridian",
-              "predicate": "derived_status <> 'Closed'::text",
+              "predicate": "derived_status <> 'Closed'::text AND COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_revision_subject ON ledger.operations_continuity_workflows USING btree ((((workflow_json ->> 'subjectRevisionId'::text))::uuid)) WHERE ((workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text)",
+              "expression": "(workflow_json ->> 'subjectRevisionId'::text)::uuid",
+              "fingerprint": "8e48061f0612b2fec7adbe8cdc03d18b2166450bc83ec1224fe89dc86656b07d",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "((workflow_json ->> 'subjectRevisionId'::text)::uuid)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_operations_continuity_revision_subject",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "(workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -107786,7 +108287,25 @@
           "schema": "ledger",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER operations_workflow_subject_immutable BEFORE UPDATE ON ledger.operations_continuity_workflows FOR EACH ROW EXECUTE FUNCTION ledger.protect_operations_workflow_subject()",
+              "definition_hash": "08edfce8fe454a57baa448d0bb7076b3db155495e701ad1910efbad81833e447",
+              "enabled": "origin",
+              "events": [
+                "update"
+              ],
+              "fingerprint": "d73d8e8f7d6eb348c2aa7a9b0be6cd7356845f62dd64d84599403d5ee2ea5816",
+              "function_schema": "ledger",
+              "function_signature": "protect_operations_workflow_subject()",
+              "level": "row",
+              "name": "operations_workflow_subject_immutable",
+              "relation": "operations_continuity_workflows",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -133232,6 +133751,26 @@
           "constraints": [
             {
               "columns": [
+                "workflow_json"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK ((NOT workflow_json ? 'purpose'::text OR jsonb_typeof(workflow_json -> 'purpose'::text) = 'string'::text) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = ANY (ARRAY['Close'::text, 'SecurityMasterRevision'::text])) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NULL AND (workflow_json ->> 'subjectMaker'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceId'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NULL OR COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'SecurityMasterRevision'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NOT NULL AND (workflow_json ->> 'subjectMaker'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectMaker'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceId'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectEvidenceId'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NOT NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) ~ '^[a-f0-9]{64}$'::text))",
+              "delete_action": null,
+              "fingerprint": "bb6d5ff970d1ec2fdde2f38a8d7c7f11453ceb082862382dc54523aef19afa31",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "operations_workflow_purpose_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
                 "workflow_id"
               ],
               "comment": null,
@@ -133253,7 +133792,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "a58c2e170e7d6a88108e8369e1fb7437a1ea527a0c3806387c9e4062b5219c6c",
+          "fingerprint": "5eb57ed1f520d98512677b114ab60ba11878fa84669a296799896949704901b3",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -133372,9 +133911,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE (derived_status <> 'Closed'::text)",
+              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE ((derived_status <> 'Closed'::text) AND (COALESCE((workflow_json ->> 'purpose'::text), 'Close'::text) = 'Close'::text))",
               "expression": null,
-              "fingerprint": "af6e075f52eb3fde4b7605917f3c3d5e3a27982a21123b38207397f7ca4151a5",
+              "fingerprint": "4d83c31ac66ad65b8f19310adb2c34a61edd5e8cdf7bffbbaf5ec124447a38f2",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -133386,7 +133925,29 @@
               "name": "ux_operations_continuity_open_workflow",
               "options": [],
               "owner": "meridian",
-              "predicate": "derived_status <> 'Closed'::text",
+              "predicate": "derived_status <> 'Closed'::text AND COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_revision_subject ON ledger.operations_continuity_workflows USING btree ((((workflow_json ->> 'subjectRevisionId'::text))::uuid)) WHERE ((workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text)",
+              "expression": "(workflow_json ->> 'subjectRevisionId'::text)::uuid",
+              "fingerprint": "8e48061f0612b2fec7adbe8cdc03d18b2166450bc83ec1224fe89dc86656b07d",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "((workflow_json ->> 'subjectRevisionId'::text)::uuid)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_operations_continuity_revision_subject",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "(workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -133407,7 +133968,25 @@
           "schema": "ledger",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER operations_workflow_subject_immutable BEFORE UPDATE ON ledger.operations_continuity_workflows FOR EACH ROW EXECUTE FUNCTION ledger.protect_operations_workflow_subject()",
+              "definition_hash": "08edfce8fe454a57baa448d0bb7076b3db155495e701ad1910efbad81833e447",
+              "enabled": "origin",
+              "events": [
+                "update"
+              ],
+              "fingerprint": "d73d8e8f7d6eb348c2aa7a9b0be6cd7356845f62dd64d84599403d5ee2ea5816",
+              "function_schema": "ledger",
+              "function_signature": "protect_operations_workflow_subject()",
+              "level": "row",
+              "name": "operations_workflow_subject_immutable",
+              "relation": "operations_continuity_workflows",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -139680,6 +140259,23 @@
           "level": "row",
           "name": "protect_open_lot_backfill_evidence",
           "relation": "open_lot_backfill_reviews",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER operations_workflow_subject_immutable BEFORE UPDATE ON ledger.operations_continuity_workflows FOR EACH ROW EXECUTE FUNCTION ledger.protect_operations_workflow_subject()",
+          "definition_hash": "08edfce8fe454a57baa448d0bb7076b3db155495e701ad1910efbad81833e447",
+          "enabled": "origin",
+          "events": [
+            "update"
+          ],
+          "fingerprint": "d73d8e8f7d6eb348c2aa7a9b0be6cd7356845f62dd64d84599403d5ee2ea5816",
+          "function_schema": "ledger",
+          "function_signature": "protect_operations_workflow_subject()",
+          "level": "row",
+          "name": "operations_workflow_subject_immutable",
+          "relation": "operations_continuity_workflows",
           "schema": "ledger",
           "timing": "before"
         },
@@ -166736,6 +167332,18 @@
           "object_type": "table"
         },
         {
+          "comment": "Immutable rate-unit repair manifest retaining the exact selected roster, base versions, declared interpretation and evidence scope for an authenticated batch.",
+          "fingerprint": "0e328246c75ebc5048ca97d096203b263ddf45e14a8b85607ff3b2b09b157f30",
+          "object": "security_master.security_rate_repair_batches",
+          "object_type": "table"
+        },
+        {
+          "comment": "Versioned compare-and-swap progress for a frozen repair batch, retaining each record draft, workflow, impact receipt and explicit item outcome while manifest authority remains immutable.",
+          "fingerprint": "1284cb5c666ce6af9230bc0d77f9764cfa18841a7ffd65723a60eada06d07118",
+          "object": "security_master.security_rate_repair_state",
+          "object_type": "table"
+        },
+        {
           "comment": "The underlying graph: one edge per row from an instrument to the security or named reference it depends on, in a stated role, with its validity window. Derived rows follow the terms; declared rows are governed through the graph API.",
           "fingerprint": "3196bcd5b9acc9893b0be578b9c52d921151071f0927fa05999ef599d30c6d7f",
           "object": "security_master.security_underlying_links",
@@ -171173,6 +171781,54 @@
           "target_schema": "security_master"
         },
         {
+          "fingerprint": "1dd17d2457722f89a73c6ed298c085a8309ec56b756a72aac247d903d9242743",
+          "kind": "normal",
+          "source": "security_master.security_rate_repair_batches_command_sha256_check on security_master.security_rate_repair_batches",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_rate_repair_batches.command_sha256",
+          "target_kind": "table column",
+          "target_name": "security_rate_repair_batches",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "b90cb33b000ea24b5f4b3600e3d4765c7551b60f02798e035ac91ed7ae445232",
+          "kind": "normal",
+          "source": "security_master.security_rate_repair_state_batch_id_fkey on security_master.security_rate_repair_state",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_rate_repair_batches.batch_id",
+          "target_kind": "table column",
+          "target_name": "security_rate_repair_batches",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "d3f72182314c59656cbf587ea82630876021c5d3eaef4c5371a6d4fc4cbeeb56",
+          "kind": "normal",
+          "source": "security_master.security_rate_repair_state_batch_id_fkey on security_master.security_rate_repair_state",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_rate_repair_batches_pkey",
+          "target_kind": "index",
+          "target_name": "security_rate_repair_batches_pkey",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "07a0923ea010f91126034cc9cf76d9d2173c7a1eb8dd00a50ef6a89d9958d522",
+          "kind": "normal",
+          "source": "security_master.security_rate_repair_state_version_check on security_master.security_rate_repair_state",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_rate_repair_state.version",
+          "target_kind": "table column",
+          "target_name": "security_rate_repair_state",
+          "target_schema": "security_master"
+        },
+        {
           "fingerprint": "a422474deabf1dd0d6b8a0fcc35fa970586ef71242a6584ab3a3f826277f6c26",
           "kind": "normal",
           "source": "security_master.security_raw_prices_security_id_fkey on security_master.security_raw_prices",
@@ -171206,6 +171862,126 @@
           "target": "security_master.security_raw_prices.price_unit",
           "target_kind": "table column",
           "target_name": "security_raw_prices",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "048b6549fb470eba64fce3074c115da93a03e786c5f517c64d364bf741e4276b",
+          "kind": "normal",
+          "source": "security_master.security_revision_impact_binding_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.reviewed_canonical_version",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "6a48d92184cc161dd3497165fa4c0760fa7f5bf4ac0ce6ead0687d9d52885593",
+          "kind": "normal",
+          "source": "security_master.security_revision_impact_binding_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.reviewed_impact_receipt_id",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "690682e3c0e3fa28abb9bc2b22bab27ed3e414a8668017ea1ea7688d3863adf1",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.base_version",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "227d7609768235ef9987aa5b66f86f4dfcdc6a06ed769af95aca3ed0feff1c65",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.drafted_by",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "43b3127e070f63dcad1dc41f22aa2357ba11a28c480d6a9560b71b1001325432",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.field_base_recorded",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "ffa28a7b895c8f4eb46aeadaebe2855f01737363d426a4bb621a8928b3acce83",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.field_base_value",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "c0190f11f02dc4e5600f89402c89040f749bbd3124f98c84517a4ec902a9ab47",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.field_value_recorded",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "fbc5ed02a7fb6db60823b36d804d7f7761495847978fdb60c68f30f808634312",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.repair_batch_id",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "559a9f1572265798bd34fbd0befd9c8e5d30bf2d2ca4dc49aa257ef7eb72cfa7",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.repair_evidence_id",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "3fb84cf0d9327f6a28447993343a638e33146aff00d7c070683b26ec2211a7dd",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.repair_evidence_sha256",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
           "target_schema": "security_master"
         },
         {
@@ -171549,7 +172325,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "ae4bd3ea661bce14a2396243cc80ebcebf9c6f6f4d15e296a05b978060382bf2",
+      "fingerprint": "5ce2245767ccd59f0112620a4dbe2cb64c4f1b74b03b29d9c083d9ce42cb2d77",
       "foreign_tables": [],
       "functions": [
         {
@@ -171692,6 +172468,37 @@
             }
           ],
           "comment": null,
+          "definition_hash": "13e68c22205a0b754596f6b50530fe2b49851f7b5750908021c7dc6d4608d24d",
+          "fingerprint": "48c0248dd82f3ca5d0a9f2c6210f6a30d9f645b584e346f893473b908cba1767",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "protect_security_revision_review_context",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "security_master",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "protect_security_revision_review_context()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
           "definition_hash": "646819143be2a75ca04286aaa1f4e2e1c733ab7a0d78e5bbc22ae213fec1be7a",
           "fingerprint": "8c3a738ba4673a8ab767d318ef962674213704c16942ff0b5ee2ea0fb402420d",
           "kind": "function",
@@ -171766,6 +172573,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "reject_price_selection_receipt_mutation()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "27f946f65326f42290085c5651fb35e98b04772c2f6cdf18ff1f2c56e451417a",
+          "fingerprint": "6e7c9b3f2fb40944a45d83cb6f790f18e76e13a5f55db7124ffa8b803aac4864",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "reject_rate_repair_manifest_mutation",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "security_master",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "reject_rate_repair_manifest_mutation()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -213872,10 +214710,170 @@
               "security_labels": [],
               "type_name": "bool",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "91e9904e09615bedec2ee18b9bef99823c75c542bac6d007161d4622516d7d98",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "drafted_by",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7790767d6a015a0c6493a0a9022947c6bf391180e69d5904328da60ea03ce0b0",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "submitted_by",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "8f05ab124c8e21d965ca75bae6db5a3c0fb9c172b2a5dfb502a7d5d7513ccaf8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "repair_batch_id",
+              "nullable": true,
+              "ordinal_position": 19,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "478c56fb58ccb2a4dd6045ed312ec5520c74f6bd71a4d66a8883bda9ea3147cc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "repair_evidence_id",
+              "nullable": true,
+              "ordinal_position": 20,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5b03b1896c2955d8cf35a685f3ff365e1d366e2c64398deb0efae19f1954fff7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "repair_evidence_sha256",
+              "nullable": true,
+              "ordinal_position": 21,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "65e1261f976516ac97869e8dae4d212957a75d0e021ca101830bba5013d1989b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reviewed_impact_receipt_id",
+              "nullable": true,
+              "ordinal_position": 22,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "1cc423c684997139e1e11233bd981019a11da9675d65ec061342912654716f3a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reviewed_canonical_version",
+              "nullable": true,
+              "ordinal_position": 23,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "reviewed_impact_receipt_id",
+                "reviewed_canonical_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK ((reviewed_impact_receipt_id IS NULL) = (reviewed_canonical_version IS NULL) AND (reviewed_impact_receipt_id IS NULL OR reviewed_impact_receipt_id ~ '^[a-f0-9]{64}$'::text AND reviewed_canonical_version >= 1))",
+              "delete_action": null,
+              "fingerprint": "9237f4f9e9f37c474fcf125c4780ec7e42629bec5df5a5299de06da78552cee5",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_revision_impact_binding_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "repair_batch_id",
+                "drafted_by",
+                "repair_evidence_id",
+                "repair_evidence_sha256",
+                "base_version",
+                "field_base_value",
+                "field_base_recorded",
+                "field_value_recorded"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (repair_batch_id IS NULL OR drafted_by IS NOT NULL AND length(TRIM(BOTH FROM drafted_by)) > 0 AND repair_evidence_id IS NOT NULL AND length(TRIM(BOTH FROM repair_evidence_id)) > 0 AND repair_evidence_sha256 IS NOT NULL AND repair_evidence_sha256 ~ '^[a-f0-9]{64}$'::text AND base_version IS NOT NULL AND base_version >= 1 AND field_base_value IS NOT NULL AND field_base_recorded AND field_value_recorded)",
+              "delete_action": null,
+              "fingerprint": "ce17ead7d0107ee898f44f3563fcdfe3e547872e846f3ee11642a12161487c48",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_revision_repair_context_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "revision_id"
@@ -213899,7 +214897,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "d9277a8c4c44f67c59e559db4daee5c32bb7bfafb77cc5f75933d5f34ee593f4",
+          "fingerprint": "8038a31b4f240b1d01ea8687593fd1e0a3740b8a2ee0e3e278dd4a6e8bd6ad60",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -213962,7 +214960,25 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_revision_review_context_immutable BEFORE UPDATE ON security_master.security_master_revisions FOR EACH ROW EXECUTE FUNCTION security_master.protect_security_revision_review_context()",
+              "definition_hash": "12e4f9714b95b1c191199027da9b03b67b260fca3ace6c960350f786a8b31578",
+              "enabled": "origin",
+              "events": [
+                "update"
+              ],
+              "fingerprint": "9c68073ca1eaa56cff81e63eac9541cb51e48e8737ab354cc4499606a1142eb8",
+              "function_schema": "security_master",
+              "function_signature": "protect_security_revision_review_context()",
+              "level": "row",
+              "name": "security_revision_review_context_immutable",
+              "relation": "security_master_revisions",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -215337,6 +216353,550 @@
           "security_labels": [],
           "sequence": null,
           "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "5c45a5847ecbc50fb2ddbca89e005533a2cffb365f2f30b3343408dba69d7be5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "batch_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "85dbc0fc36597916d01510a1466660d6fc78a5b6a002d073648aba5018a31b2a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "a097f3b4f51736d749e25bb881ea175248554a0ba8d80ce23c965ee7cfab2a29",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "968928dfd524e6a1d946f6c1a4edd91de9d6935066b441d1ac21bc4d63a1d879",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "command_sha256",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "1d27aa0b1bc557266d2205a54c71ad27dea4b74180244b00a45c334ee2b906ff",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "created_by",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "df3d9d1c5b05a7f9c69808583b5da5898d3746cc324b75b27e2524902bcd4c3c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "created_at",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "3b34e35de189f8ba21f5e71ce607f76d318e9f6dc4662acbc78031a7f7d94524",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "manifest_json",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Immutable rate-unit repair manifest retaining the exact selected roster, base versions, declared interpretation and evidence scope for an authenticated batch.",
+          "constraints": [
+            {
+              "columns": [
+                "command_sha256"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (command_sha256 ~ '^[a-f0-9]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "e0022dcb65500389b3e4fc0696b3d295f97a397731c71e4ae76c3d98eb58bfb7",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_rate_repair_batches_command_sha256_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "batch_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (batch_id)",
+              "delete_action": null,
+              "fingerprint": "8c907ae69aa1dbe33537da01dfce80d91445853f9c4bdb8c72a217809d9a1ffd",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_rate_repair_batches_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "9e94af06386fd89926077fdc05d29166f34a0a400c08fd65eeabb9a6c39b7160",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_security_rate_repair_batches_tenant ON security_master.security_rate_repair_batches USING btree (tenant_id, created_at DESC)",
+              "expression": null,
+              "fingerprint": "00a3dc6b2288220272121d21e3afe0709c39be654897e53624548b6d3934bfea",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "created_at"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_security_rate_repair_batches_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_rate_repair_batches_pkey ON security_master.security_rate_repair_batches USING btree (batch_id)",
+              "expression": null,
+              "fingerprint": "6b2094566b3bea7fa670e192fc94e114f594a8832cd188847ad576542a962402",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "batch_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_rate_repair_batches_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_rate_repair_batches",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER rate_repair_manifest_immutable BEFORE DELETE OR UPDATE ON security_master.security_rate_repair_batches FOR EACH ROW EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+              "definition_hash": "2fa6126d3c2695fda0ff0c63e0f517a8a52a776dead1d65a535dd7222c61f8c8",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "11c391f05aef5decb8acc4174894400f06cd415af6e496c08dc3404de9f13123",
+              "function_schema": "security_master",
+              "function_signature": "reject_rate_repair_manifest_mutation()",
+              "level": "row",
+              "name": "rate_repair_manifest_immutable",
+              "relation": "security_rate_repair_batches",
+              "schema": "security_master",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER rate_repair_manifest_no_truncate BEFORE TRUNCATE ON security_master.security_rate_repair_batches FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+              "definition_hash": "a7bb0813b1355b7a2afff5596f839447f4b722fb4989cc043a38d60fb63d9772",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "5d53207f779144792a2d87f9a277031c8cda6abfaa9910066d69af8700befa3f",
+              "function_schema": "security_master",
+              "function_signature": "reject_rate_repair_manifest_mutation()",
+              "level": "statement",
+              "name": "rate_repair_manifest_no_truncate",
+              "relation": "security_rate_repair_batches",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "5c45a5847ecbc50fb2ddbca89e005533a2cffb365f2f30b3343408dba69d7be5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "batch_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "80d93d5d46995c55b204733af221fcfa619955aaaca0cb34d576a8c01c36fe1b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "1b960e446ff7f0ad9807c2f3665dc923f11b2b5c85554a51e7ab42398ef059bb",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "state_json",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Versioned compare-and-swap progress for a frozen repair batch, retaining each record draft, workflow, impact receipt and explicit item outcome while manifest authority remains immutable.",
+          "constraints": [
+            {
+              "columns": [
+                "version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (version >= 1)",
+              "delete_action": null,
+              "fingerprint": "ee9d92193961b5d2a862c5c336eaf163970655b64ae0a5910b784cd72d18cbd6",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_rate_repair_state_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "batch_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (batch_id) REFERENCES security_master.security_rate_repair_batches(batch_id)",
+              "delete_action": "no_action",
+              "fingerprint": "fc7ffb03b119184fa24e0ba525a0fb6ec013f1251337b76c68ad1ebe3fc7ccb0",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "security_rate_repair_state_batch_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "batch_id"
+              ],
+              "referenced_schema": "security_master",
+              "referenced_table": "security_rate_repair_batches",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "batch_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (batch_id)",
+              "delete_action": null,
+              "fingerprint": "c8a5f8a875940c329d9237436d2291d39802cc6976b947b22ae6868386c1b9f3",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_rate_repair_state_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "fc5140ec14b9f8c234d6a9638186ec623b6d8907ce54ea5d2413b9278e3e5e54",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_rate_repair_state_pkey ON security_master.security_rate_repair_state USING btree (batch_id)",
+              "expression": null,
+              "fingerprint": "dff210bf31555485188f4756c86f92a973b9da517c3ca248869a43f4f1197a04",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "batch_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_rate_repair_state_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_rate_repair_state",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER rate_repair_progress_no_delete BEFORE DELETE ON security_master.security_rate_repair_state FOR EACH ROW EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+              "definition_hash": "82116ee45afefa94badcbf6849eb98f72f48c7abec1b7c8a6327335823f069b5",
+              "enabled": "origin",
+              "events": [
+                "delete"
+              ],
+              "fingerprint": "99a84451e0ba375c67f7798669c7186e02d553a4c3ade0628d4c0e05f78580dd",
+              "function_schema": "security_master",
+              "function_signature": "reject_rate_repair_manifest_mutation()",
+              "level": "row",
+              "name": "rate_repair_progress_no_delete",
+              "relation": "security_rate_repair_state",
+              "schema": "security_master",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER rate_repair_progress_no_truncate BEFORE TRUNCATE ON security_master.security_rate_repair_state FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+              "definition_hash": "28d8d3dd168cc3af440a327ea8f75d7152e3dea80425714bd656f9ec846370c8",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "96eb4ec8939df83f5b368f4bbe5ad53d3feba8d04946ced509ad9e015d43cc7a",
+              "function_schema": "security_master",
+              "function_signature": "reject_rate_repair_manifest_mutation()",
+              "level": "statement",
+              "name": "rate_repair_progress_no_truncate",
+              "relation": "security_rate_repair_state",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -223585,6 +225145,22 @@
           "forced": false,
           "policies": [],
           "relation": "security_pricing_hierarchy_history",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "f26aeca565487b6ecf95c15e66d81acc468499e53ce2941e99fb9a79c083994a",
+          "forced": false,
+          "policies": [],
+          "relation": "security_rate_repair_batches",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "0528306f048c258aea739e409e3b7b01076840e13d610fcb2556eb642527244d",
+          "forced": false,
+          "policies": [],
+          "relation": "security_rate_repair_state",
           "schema": "security_master"
         },
         {
@@ -265603,10 +267179,170 @@
               "security_labels": [],
               "type_name": "bool",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "91e9904e09615bedec2ee18b9bef99823c75c542bac6d007161d4622516d7d98",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "drafted_by",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7790767d6a015a0c6493a0a9022947c6bf391180e69d5904328da60ea03ce0b0",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "submitted_by",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "8f05ab124c8e21d965ca75bae6db5a3c0fb9c172b2a5dfb502a7d5d7513ccaf8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "repair_batch_id",
+              "nullable": true,
+              "ordinal_position": 19,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "478c56fb58ccb2a4dd6045ed312ec5520c74f6bd71a4d66a8883bda9ea3147cc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "repair_evidence_id",
+              "nullable": true,
+              "ordinal_position": 20,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5b03b1896c2955d8cf35a685f3ff365e1d366e2c64398deb0efae19f1954fff7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "repair_evidence_sha256",
+              "nullable": true,
+              "ordinal_position": 21,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "65e1261f976516ac97869e8dae4d212957a75d0e021ca101830bba5013d1989b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reviewed_impact_receipt_id",
+              "nullable": true,
+              "ordinal_position": 22,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "1cc423c684997139e1e11233bd981019a11da9675d65ec061342912654716f3a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reviewed_canonical_version",
+              "nullable": true,
+              "ordinal_position": 23,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "reviewed_impact_receipt_id",
+                "reviewed_canonical_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK ((reviewed_impact_receipt_id IS NULL) = (reviewed_canonical_version IS NULL) AND (reviewed_impact_receipt_id IS NULL OR reviewed_impact_receipt_id ~ '^[a-f0-9]{64}$'::text AND reviewed_canonical_version >= 1))",
+              "delete_action": null,
+              "fingerprint": "9237f4f9e9f37c474fcf125c4780ec7e42629bec5df5a5299de06da78552cee5",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_revision_impact_binding_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "repair_batch_id",
+                "drafted_by",
+                "repair_evidence_id",
+                "repair_evidence_sha256",
+                "base_version",
+                "field_base_value",
+                "field_base_recorded",
+                "field_value_recorded"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (repair_batch_id IS NULL OR drafted_by IS NOT NULL AND length(TRIM(BOTH FROM drafted_by)) > 0 AND repair_evidence_id IS NOT NULL AND length(TRIM(BOTH FROM repair_evidence_id)) > 0 AND repair_evidence_sha256 IS NOT NULL AND repair_evidence_sha256 ~ '^[a-f0-9]{64}$'::text AND base_version IS NOT NULL AND base_version >= 1 AND field_base_value IS NOT NULL AND field_base_recorded AND field_value_recorded)",
+              "delete_action": null,
+              "fingerprint": "ce17ead7d0107ee898f44f3563fcdfe3e547872e846f3ee11642a12161487c48",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_revision_repair_context_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "revision_id"
@@ -265630,7 +267366,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "d9277a8c4c44f67c59e559db4daee5c32bb7bfafb77cc5f75933d5f34ee593f4",
+          "fingerprint": "8038a31b4f240b1d01ea8687593fd1e0a3740b8a2ee0e3e278dd4a6e8bd6ad60",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -265693,7 +267429,25 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_revision_review_context_immutable BEFORE UPDATE ON security_master.security_master_revisions FOR EACH ROW EXECUTE FUNCTION security_master.protect_security_revision_review_context()",
+              "definition_hash": "12e4f9714b95b1c191199027da9b03b67b260fca3ace6c960350f786a8b31578",
+              "enabled": "origin",
+              "events": [
+                "update"
+              ],
+              "fingerprint": "9c68073ca1eaa56cff81e63eac9541cb51e48e8737ab354cc4499606a1142eb8",
+              "function_schema": "security_master",
+              "function_signature": "protect_security_revision_review_context()",
+              "level": "row",
+              "name": "security_revision_review_context_immutable",
+              "relation": "security_master_revisions",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -267068,6 +268822,550 @@
           "security_labels": [],
           "sequence": null,
           "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "5c45a5847ecbc50fb2ddbca89e005533a2cffb365f2f30b3343408dba69d7be5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "batch_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "85dbc0fc36597916d01510a1466660d6fc78a5b6a002d073648aba5018a31b2a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "a097f3b4f51736d749e25bb881ea175248554a0ba8d80ce23c965ee7cfab2a29",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "968928dfd524e6a1d946f6c1a4edd91de9d6935066b441d1ac21bc4d63a1d879",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "command_sha256",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "1d27aa0b1bc557266d2205a54c71ad27dea4b74180244b00a45c334ee2b906ff",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "created_by",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "df3d9d1c5b05a7f9c69808583b5da5898d3746cc324b75b27e2524902bcd4c3c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "created_at",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "3b34e35de189f8ba21f5e71ce607f76d318e9f6dc4662acbc78031a7f7d94524",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "manifest_json",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Immutable rate-unit repair manifest retaining the exact selected roster, base versions, declared interpretation and evidence scope for an authenticated batch.",
+          "constraints": [
+            {
+              "columns": [
+                "command_sha256"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (command_sha256 ~ '^[a-f0-9]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "e0022dcb65500389b3e4fc0696b3d295f97a397731c71e4ae76c3d98eb58bfb7",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_rate_repair_batches_command_sha256_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "batch_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (batch_id)",
+              "delete_action": null,
+              "fingerprint": "8c907ae69aa1dbe33537da01dfce80d91445853f9c4bdb8c72a217809d9a1ffd",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_rate_repair_batches_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "9e94af06386fd89926077fdc05d29166f34a0a400c08fd65eeabb9a6c39b7160",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_security_rate_repair_batches_tenant ON security_master.security_rate_repair_batches USING btree (tenant_id, created_at DESC)",
+              "expression": null,
+              "fingerprint": "00a3dc6b2288220272121d21e3afe0709c39be654897e53624548b6d3934bfea",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "created_at"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_security_rate_repair_batches_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_rate_repair_batches_pkey ON security_master.security_rate_repair_batches USING btree (batch_id)",
+              "expression": null,
+              "fingerprint": "6b2094566b3bea7fa670e192fc94e114f594a8832cd188847ad576542a962402",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "batch_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_rate_repair_batches_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_rate_repair_batches",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER rate_repair_manifest_immutable BEFORE DELETE OR UPDATE ON security_master.security_rate_repair_batches FOR EACH ROW EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+              "definition_hash": "2fa6126d3c2695fda0ff0c63e0f517a8a52a776dead1d65a535dd7222c61f8c8",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "11c391f05aef5decb8acc4174894400f06cd415af6e496c08dc3404de9f13123",
+              "function_schema": "security_master",
+              "function_signature": "reject_rate_repair_manifest_mutation()",
+              "level": "row",
+              "name": "rate_repair_manifest_immutable",
+              "relation": "security_rate_repair_batches",
+              "schema": "security_master",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER rate_repair_manifest_no_truncate BEFORE TRUNCATE ON security_master.security_rate_repair_batches FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+              "definition_hash": "a7bb0813b1355b7a2afff5596f839447f4b722fb4989cc043a38d60fb63d9772",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "5d53207f779144792a2d87f9a277031c8cda6abfaa9910066d69af8700befa3f",
+              "function_schema": "security_master",
+              "function_signature": "reject_rate_repair_manifest_mutation()",
+              "level": "statement",
+              "name": "rate_repair_manifest_no_truncate",
+              "relation": "security_rate_repair_batches",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "5c45a5847ecbc50fb2ddbca89e005533a2cffb365f2f30b3343408dba69d7be5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "batch_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "80d93d5d46995c55b204733af221fcfa619955aaaca0cb34d576a8c01c36fe1b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "1b960e446ff7f0ad9807c2f3665dc923f11b2b5c85554a51e7ab42398ef059bb",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "state_json",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Versioned compare-and-swap progress for a frozen repair batch, retaining each record draft, workflow, impact receipt and explicit item outcome while manifest authority remains immutable.",
+          "constraints": [
+            {
+              "columns": [
+                "version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (version >= 1)",
+              "delete_action": null,
+              "fingerprint": "ee9d92193961b5d2a862c5c336eaf163970655b64ae0a5910b784cd72d18cbd6",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_rate_repair_state_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "batch_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (batch_id) REFERENCES security_master.security_rate_repair_batches(batch_id)",
+              "delete_action": "no_action",
+              "fingerprint": "fc7ffb03b119184fa24e0ba525a0fb6ec013f1251337b76c68ad1ebe3fc7ccb0",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "security_rate_repair_state_batch_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "batch_id"
+              ],
+              "referenced_schema": "security_master",
+              "referenced_table": "security_rate_repair_batches",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "batch_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (batch_id)",
+              "delete_action": null,
+              "fingerprint": "c8a5f8a875940c329d9237436d2291d39802cc6976b947b22ae6868386c1b9f3",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_rate_repair_state_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "fc5140ec14b9f8c234d6a9638186ec623b6d8907ce54ea5d2413b9278e3e5e54",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_rate_repair_state_pkey ON security_master.security_rate_repair_state USING btree (batch_id)",
+              "expression": null,
+              "fingerprint": "dff210bf31555485188f4756c86f92a973b9da517c3ca248869a43f4f1197a04",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "batch_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_rate_repair_state_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_rate_repair_state",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER rate_repair_progress_no_delete BEFORE DELETE ON security_master.security_rate_repair_state FOR EACH ROW EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+              "definition_hash": "82116ee45afefa94badcbf6849eb98f72f48c7abec1b7c8a6327335823f069b5",
+              "enabled": "origin",
+              "events": [
+                "delete"
+              ],
+              "fingerprint": "99a84451e0ba375c67f7798669c7186e02d553a4c3ade0628d4c0e05f78580dd",
+              "function_schema": "security_master",
+              "function_signature": "reject_rate_repair_manifest_mutation()",
+              "level": "row",
+              "name": "rate_repair_progress_no_delete",
+              "relation": "security_rate_repair_state",
+              "schema": "security_master",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER rate_repair_progress_no_truncate BEFORE TRUNCATE ON security_master.security_rate_repair_state FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+              "definition_hash": "28d8d3dd168cc3af440a327ea8f75d7152e3dea80425714bd656f9ec846370c8",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "96eb4ec8939df83f5b368f4bbe5ad53d3feba8d04946ced509ad9e015d43cc7a",
+              "function_schema": "security_master",
+              "function_signature": "reject_rate_repair_manifest_mutation()",
+              "level": "statement",
+              "name": "rate_repair_progress_no_truncate",
+              "relation": "security_rate_repair_state",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -275037,6 +277335,23 @@
         },
         {
           "comment": null,
+          "definition": "CREATE TRIGGER security_revision_review_context_immutable BEFORE UPDATE ON security_master.security_master_revisions FOR EACH ROW EXECUTE FUNCTION security_master.protect_security_revision_review_context()",
+          "definition_hash": "12e4f9714b95b1c191199027da9b03b67b260fca3ace6c960350f786a8b31578",
+          "enabled": "origin",
+          "events": [
+            "update"
+          ],
+          "fingerprint": "9c68073ca1eaa56cff81e63eac9541cb51e48e8737ab354cc4499606a1142eb8",
+          "function_schema": "security_master",
+          "function_signature": "protect_security_revision_review_context()",
+          "level": "row",
+          "name": "security_revision_review_context_immutable",
+          "relation": "security_master_revisions",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
           "definition": "CREATE TRIGGER security_price_selection_receipts_immutable BEFORE DELETE OR UPDATE ON security_master.security_price_selection_receipts FOR EACH ROW EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
           "definition_hash": "fa472da90cb107a06a1a3abcee2670817a08dc4f3cafd46596f23e6275a93042",
           "enabled": "origin",
@@ -275067,6 +277382,75 @@
           "level": "statement",
           "name": "security_price_selection_receipts_no_truncate",
           "relation": "security_price_selection_receipts",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER rate_repair_manifest_immutable BEFORE DELETE OR UPDATE ON security_master.security_rate_repair_batches FOR EACH ROW EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+          "definition_hash": "2fa6126d3c2695fda0ff0c63e0f517a8a52a776dead1d65a535dd7222c61f8c8",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "11c391f05aef5decb8acc4174894400f06cd415af6e496c08dc3404de9f13123",
+          "function_schema": "security_master",
+          "function_signature": "reject_rate_repair_manifest_mutation()",
+          "level": "row",
+          "name": "rate_repair_manifest_immutable",
+          "relation": "security_rate_repair_batches",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER rate_repair_manifest_no_truncate BEFORE TRUNCATE ON security_master.security_rate_repair_batches FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+          "definition_hash": "a7bb0813b1355b7a2afff5596f839447f4b722fb4989cc043a38d60fb63d9772",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "5d53207f779144792a2d87f9a277031c8cda6abfaa9910066d69af8700befa3f",
+          "function_schema": "security_master",
+          "function_signature": "reject_rate_repair_manifest_mutation()",
+          "level": "statement",
+          "name": "rate_repair_manifest_no_truncate",
+          "relation": "security_rate_repair_batches",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER rate_repair_progress_no_delete BEFORE DELETE ON security_master.security_rate_repair_state FOR EACH ROW EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+          "definition_hash": "82116ee45afefa94badcbf6849eb98f72f48c7abec1b7c8a6327335823f069b5",
+          "enabled": "origin",
+          "events": [
+            "delete"
+          ],
+          "fingerprint": "99a84451e0ba375c67f7798669c7186e02d553a4c3ade0628d4c0e05f78580dd",
+          "function_schema": "security_master",
+          "function_signature": "reject_rate_repair_manifest_mutation()",
+          "level": "row",
+          "name": "rate_repair_progress_no_delete",
+          "relation": "security_rate_repair_state",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER rate_repair_progress_no_truncate BEFORE TRUNCATE ON security_master.security_rate_repair_state FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+          "definition_hash": "28d8d3dd168cc3af440a327ea8f75d7152e3dea80425714bd656f9ec846370c8",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "96eb4ec8939df83f5b368f4bbe5ad53d3feba8d04946ced509ad9e015d43cc7a",
+          "function_schema": "security_master",
+          "function_signature": "reject_rate_repair_manifest_mutation()",
+          "level": "statement",
+          "name": "rate_repair_progress_no_truncate",
+          "relation": "security_rate_repair_state",
           "schema": "security_master",
           "timing": "before"
         }

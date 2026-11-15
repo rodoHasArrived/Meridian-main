@@ -16,6 +16,7 @@ namespace Meridian.Storage.Reporting;
 /// </summary>
 public sealed class PostgresReportingRunStore : IReportingRunStore
 {
+    public bool SupportsCompleteScopedPaging => true;
     public bool SupportsDurableCreateClaims => true;
     private const int MaximumIdentityLength = 256;
 

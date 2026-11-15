@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Meridian.Tests.FinancialOperations;
 
-public sealed class RecurringJournalStoreTests : IDisposable
+public sealed partial class RecurringJournalStoreTests : IDisposable
 {
     private readonly string _directory = Path.Combine(Path.GetTempPath(), "meridian-recurring-tests", Guid.NewGuid().ToString("N"));
     private static readonly DateTimeOffset At = new(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);

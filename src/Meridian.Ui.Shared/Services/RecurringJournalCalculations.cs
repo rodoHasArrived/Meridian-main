@@ -65,6 +65,9 @@ public sealed record RecurringJournalCalculationContext(
 /// </summary>
 public sealed record RecurringJournalCalculationResult(AutomatedJournalDraft? Draft, string Summary)
 {
+    /// <summary>Optional stable economic obligations pinned before intake, independent of schedule and model versions.</summary>
+    public IReadOnlyList<string> EconomicObligationKeys { get; init; } = [];
+
     public static RecurringJournalCalculationResult NothingDue(string reason) => new(null, reason);
 }
 

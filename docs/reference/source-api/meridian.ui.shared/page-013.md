@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IOperationsContinuityReconciliationBridge
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IOperationsContinuityReconciliationBridge</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:11](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L11).
+
+Runs reconciliation through the Operations Continuity workflow and returns its transition result.
+
+```csharp
+public interface IOperationsContinuityReconciliationBridge
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:13](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L13) |  |
+| <code>Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:18](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L18) |  |
+
 ## IOperationsReportPackAuthority
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IOperationsReportPackAuthority</code>. Kind: `interface`.
@@ -69,7 +88,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IRecurringJournalCalculation</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:77](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L77).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:80](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L80).
 
 A posting calculation the recurring-journal runner can run for a calculated template. An implementation reads authoritative inputs, returns one balanced draft (or nothing due), and throws InvalidOperationException to block the occurrence when an input is missing. It never submits, approves or posts.
 
@@ -81,17 +100,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>string Kind { get; }</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:79](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L79) |  |
-| <code>bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:87](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L87) | True when the amount depends on what earlier occurrences posted (a balance, net assets or a carrying value). The runner then calculates an occurrence only after the previous one is posted, rejected or needed no draft, so two periods that come due together cannot both be measured against a ledger that holds neither. |
-| <code>bool ReadsClosingState =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:94](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L94) | True when the amount is measured from balances or holdings at the close of the effective date. Such an occurrence is calculated only after that day has ended, so journals posted later the same day are not left out of an amount that is then never recalculated. |
-| <code>IReadOnlyList&lt;string&gt; RequiredInputs =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:97](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L97) | Template inputs this calculation cannot run without; checked when a schedule is registered. |
-| <code>Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:99](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L99) |  |
+| <code>string Kind { get; }</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:82](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L82) |  |
+| <code>bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:90](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L90) | True when the amount depends on what earlier occurrences posted (a balance, net assets or a carrying value). The runner then calculates an occurrence only after the previous one is posted, rejected or needed no draft, so two periods that come due together cannot both be measured against a ledger that holds neither. |
+| <code>bool ReadsClosingState =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:97](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L97) | True when the amount is measured from balances or holdings at the close of the effective date. Such an occurrence is calculated only after that day has ended, so journals posted later the same day are not left out of an amount that is then never recalculated. |
+| <code>IReadOnlyList&lt;string&gt; RequiredInputs =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:100](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L100) | Template inputs this calculation cannot run without; checked when a schedule is registered. |
+| <code>Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:102](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L102) |  |
 
 ## IRecurringJournalCalculationInputs
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IRecurringJournalCalculationInputs</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:103](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L103).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:106](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L106).
 
 Authoritative ledger reads for posting calculations.
 
@@ -103,9 +122,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyLedger&gt; HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:106](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L106) | The scope&#x27;s ledger book including everything recorded through the end of asOf. |
-| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLot&gt;&gt; ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId, Guid? bookPositionId, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:113](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L113) | Face-value lots of securityId open at the end of asOf. With a book position the quantities are reconstructed for that date; without one only today&#x27;s lot state is known, so a date in the past is refused. |
-| <code>Task&lt;IReadOnlyList&lt;FaceValueAccrualHolding&gt;&gt; ListAccrualHoldingsAsync(RecurringJournalScope scope, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:120](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L120) | Retained daily face and factor evidence, including interest earned through a full paydown. The caller reads from the coupon start so cumulative rounding is stable across windows. |
+| <code>Task&lt;IReadOnlyLedger&gt; HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:109](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L109) | The scope&#x27;s ledger book including everything recorded through the end of asOf. |
+| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLot&gt;&gt; ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId, Guid? bookPositionId, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:116](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L116) | Face-value lots of securityId open at the end of asOf. With a book position the quantities are reconstructed for that date; without one only today&#x27;s lot state is known, so a date in the past is refused. |
+| <code>Task&lt;IReadOnlyList&lt;FaceValueAccrualHolding&gt;&gt; ListAccrualHoldingsAsync(RecurringJournalScope scope, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:123](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L123) | Retained daily face and factor evidence, including interest earned through a full paydown. The caller reads from the coupon start so cumulative rounding is stable across windows. |
 
 ## IRecurringJournalPeriodAuthority
 
@@ -288,7 +307,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1610](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1610).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1627](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1627).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -300,7 +319,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1612](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1612) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1629](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1629) |  |
 
 ## IReportingPrimaryDocumentRenderer
 
@@ -864,7 +883,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.LedgerRecurringJournalCalculationInputs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:127](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L127).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:130](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L130).
 
 Reads calculation inputs from the durable ledger journal store.
 
@@ -876,9 +895,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyLedger&gt; HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:130](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L130) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLot&gt;&gt; ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId, Guid? bookPositionId, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:133](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L133) |  |
-| <code>public Task&lt;IReadOnlyList&lt;FaceValueAccrualHolding&gt;&gt; ListAccrualHoldingsAsync(RecurringJournalScope scope, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:170](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L170) |  |
+| <code>public async Task&lt;IReadOnlyLedger&gt; HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:133](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L133) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLot&gt;&gt; ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId, Guid? bookPositionId, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:136](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L136) |  |
+| <code>public Task&lt;IReadOnlyList&lt;FaceValueAccrualHolding&gt;&gt; ListAccrualHoldingsAsync(RecurringJournalScope scope, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:173](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L173) |  |
 
 ## LedgerReportingAuthoritativeSource
 
@@ -896,33 +915,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public LedgerReportingAuthoritativeSource(ILedgerJournalStore journalStore, IFundProfileTenancyRegistry tenancyRegistry, IFundStructureService fundStructure, TimeProvider? timeProvider = null, ILedgerTaxLotDisposalHistory? taxLotDisposalHistory = null, ILedgerOpenLotSuccessorHistory? openLotSuccessorHistory = null, CapitalCallNoticeSourceValidator? capitalCallNotices = null);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:93](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L93) |  |
-| <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:115](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L115) |  |
-| <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, ReportingAuthoritativeSourceCaptureIntent intent, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:121](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L121) |  |
+| <code>public LedgerReportingAuthoritativeSource(ILedgerJournalStore journalStore, IFundProfileTenancyRegistry tenancyRegistry, IFundStructureService fundStructure, TimeProvider? timeProvider = null, ILedgerTaxLotDisposalHistory? taxLotDisposalHistory = null, ILedgerOpenLotSuccessorHistory? openLotSuccessorHistory = null, CapitalCallNoticeSourceValidator? capitalCallNotices = null, Meridian.Contracts.SecurityMaster.ISecurityCashFlowReceiptStore? securityReceiptStore = null);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:93](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L93) |  |
+| <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:117](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L117) |  |
+| <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, ReportingAuthoritativeSourceCaptureIntent intent, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:123](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L123) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.SecurityInputs.cs:11](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.SecurityInputs.cs#L11).
+
+```csharp
+public sealed partial class LedgerReportingAuthoritativeSource
+```
 
 Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:11](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L11).
 
 ```csharp
 public sealed partial class LedgerReportingAuthoritativeSource
 ```
-
-## LedgerReportingSchedulePeriodResolver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingSchedulePeriodResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:48](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L48).
-
-Ledger-store-backed IReportingSchedulePeriodResolver.
-
-```csharp
-public sealed class LedgerReportingSchedulePeriodResolver : IReportingSchedulePeriodResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerReportingSchedulePeriodResolver(ILedgerJournalStore journalStore) : this((journalStore?? throw new ArgumentNullException(nameof(journalStore))).GetLedgerBookAsync, (fundId, ct) =&gt; journalStore.ListLedgerBooksAsync(fundProfileId : fundId, ct : ct), (bookId, ct) =&gt; journalStore.ListPeriodsAsync(ledgerBookId : bookId, ct : ct));</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:54](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L54) |  |
-| <code>public LedgerReportingSchedulePeriodResolver(Func&lt;Guid, CancellationToken, Task&lt;LedgerBookRecord?&gt;&gt; getBook, Func&lt;string, CancellationToken, Task&lt;IReadOnlyList&lt;LedgerBookRecord&gt;&gt;&gt; listFundBooks, Func&lt;Guid, CancellationToken, Task&lt;IReadOnlyList&lt;LedgerAccountingPeriod&gt;&gt;&gt; listBookPeriods);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:63](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L63) | Lookup-delegate constructor; lets the selection rules be exercised without a full store. |
-| <code>public async Task&lt;ReportingSchedulePeriodMatch?&gt; ResolvePeriodAsync(ReportingRunParametersDto parameters, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:73](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L73) |  |
-| <code>public async Task&lt;ReportingSchedulePeriodMatch?&gt; ResolveNextClosePeriodAsync(ReportingRunParametersDto parameters, DateOnly currentPeriodEnd, ReportingSchedulePeriodFrequencyDto frequency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:102](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L102) |  |

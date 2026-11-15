@@ -20,9 +20,18 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         string validatedPath,
         SecurityMasterRevisionFieldValue stagedValue,
         long currentVersion,
-        CancellationToken ct)
+        CancellationToken ct,
+        SecurityMasterRevisionDraftContext? repairContext = null)
     {
         var fieldBase = await TryCaptureFieldBaseAsync(request.SecurityId, validatedPath, currentVersion, ct).ConfigureAwait(false);
+        if (repairContext is not null)
+        {
+            if (fieldBase is null || validatedPath != "assetSpecificTerms.rateUnit")
+                throw new InvalidOperationException("A bulk rate repair requires a recorded canonical base and a supported scalar unit field.");
+            return await _revisions.CreateDraftAsync(request.SecurityId, request.Actor, validatedPath,
+                request.EffectiveFrom, request.Justification, request.FundProfileId, stagedValue,
+                fieldBase, repairContext, ct).ConfigureAwait(false);
+        }
         return fieldBase is not null
             ? await _revisions.CreateDraftAsync(
                 request.SecurityId, request.Actor, validatedPath, request.EffectiveFrom, request.Justification,

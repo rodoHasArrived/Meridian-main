@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrivateCapitalLifecycleRead
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalLifecycleRead</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:8](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L8).
+
+```csharp
+public sealed record PrivateCapitalLifecycleRead(IReadOnlyList<CapitalCommitmentDto> Commitments, IReadOnlyList<CapitalActivityDto> Activities, IReadOnlyList<string> Warnings, bool IsAvailable = true);
+```
+
 ## PrivateCapitalRecordAuthority
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalRecordAuthority</code>. Kind: `class`.
@@ -531,7 +541,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static RecurringJournalCalculationResult NothingDue(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:68](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L68) |  |
+| <code>public IReadOnlyList&lt;string&gt; EconomicObligationKeys { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:69](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L69) | Optional stable economic obligations pinned before intake, independent of schedule and model versions. |
+| <code>public static RecurringJournalCalculationResult NothingDue(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:71](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L71) |  |
 
 ## RecurringJournalPeriodAuthority
 
@@ -580,7 +591,7 @@ Declared public members:
 | <code>public bool SupportsCalculation(string kind) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:24](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L24) | Whether a calculated template of this kind can be run by this host. |
 | <code>public IReadOnlyList&lt;string&gt; MissingCalculationInputs(JournalTemplateCalculation calculation) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:27](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L27) | The inputs a calculated template of this kind must state and does not. |
 | <code>public async Task&lt;IReadOnlyList&lt;AutomatedJournalScheduledRunResult&gt;&gt; RunDueAsync(DateTimeOffset now, string? tenant = null, string? company = null, bool scopeSpecified = false, CancellationToken ct = default, string? scheduleId = null, RecurringJournalScope? exactScope = null, int? expectedScheduleVersion = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:32](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L32) |  |
-| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:339](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L339) |  |
+| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:357](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L357) |  |
 
 ## RecurringJournalSubjectAuthority
 
@@ -646,6 +657,29 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool IsConfigured =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:166](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L166) |  |
 | <code>public ValueTask&lt;string?&gt; ResolveDestinationAsync(ReportingRecipientDestinationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:168](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L168) |  |
+
+## ReleasedReportSecurityInputReadService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReleasedReportSecurityInputReadService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs#L16).
+
+Reads only authorized released-run inputs, with no historical reconstruction fallback.
+
+```csharp
+public sealed class ReleasedReportSecurityInputReadService(IReportingRunStore? runs, IReportingGovernanceRepository? authority, ISecurityMasterQueryService? securities, Func<ReportAccessQueryContext?> currentAccess, SecurityReportInputAttributionResolver? attribution = null) : ISecurityMasterReleasedReportImpactQuery
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;bool&gt; CanReadRetainedRunIdsAsync(IReadOnlyList&lt;string&gt; runIds, SecurityMasterImpactScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs:24](../../../../src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs#L24) |  |
+| <code>public static ReportAccessQueryContext? ResolveCurrentAccess(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs:41](../../../../src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs#L41) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecurityReportInputLinkDto&gt;&gt; GetRunLinksAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs#L50) |  |
+| <code>public async Task&lt;SecurityReportInputCompareDto&gt; GetComparisonsAsync(Guid securityId, string? runId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs:64](../../../../src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs#L64) |  |
+| <code>public async Task&lt;SecurityReleasedReportImpact&gt; EvaluateAsync(Guid securityId, string? fundProfileId, DateTimeOffset effectiveFrom, SecurityMasterImpactScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs:118](../../../../src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs#L118) |  |
+| <code>public static IReadOnlyList&lt;SecurityReportRateValueDto&gt; Rates(SecurityDetailDto security, bool retainedInput = false);</code> | [src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs:250](../../../../src/Meridian.Ui.Shared/Services/ReleasedReportSecurityInputReadService.cs#L250) |  |
 
 ## ReportingAccessGrantService
 
@@ -811,33 +845,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool RequiresCertifiedLedgerPresentation { get; init; }</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:27](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L27) |  |
 | <code>public static ReportingAuthoritativeSourceCaptureIntent FromTemplate(ReportingTemplateMetadata template);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:29](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L29) |  |
-
-## ReportingAuthoritativeSourceUnavailableException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceUnavailableException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:71](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L71).
-
-Indicates that an authoritative source required for reporting is unavailable.
-
-```csharp
-public class ReportingAuthoritativeSourceUnavailableException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingAuthoritativeSourceUnavailableException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:73](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L73) |  |
-
-## ReportingCertifiedLedgerPresentationInput
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingCertifiedLedgerPresentationInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L16).
-
-Checkpoint-bound input for a canonical ledger presentation. The source implementation must resolve an already-built LedgerFinancialReportPack from the exact authoritative checkpoint represented by the reporting manifest. It must not rebuild the report pack from the manifest&#x27;s display rows because those rows do not prove opening balances or period classifications.
-
-```csharp
-public sealed record ReportingCertifiedLedgerPresentationInput(string SourceCheckpointId, string SourceCheckpointHash, string CertifiedDatasetHashSha256, LedgerFinancialReportPack ReportPack);
-```

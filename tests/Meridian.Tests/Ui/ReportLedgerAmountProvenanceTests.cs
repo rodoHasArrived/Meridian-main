@@ -23,7 +23,7 @@ using Moq;
 
 namespace Meridian.Tests.Ui;
 
-public sealed class ReportLedgerAmountProvenanceTests
+public sealed partial class ReportLedgerAmountProvenanceTests
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
@@ -810,7 +810,8 @@ public sealed class ReportLedgerAmountProvenanceTests
         }
 
         public ReportingOutputManifest BuildManifest(ReportingLedgerPopulationSnapshot snapshot,
-            ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf)
+            ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf,
+            ReportingRetainedSecurityInputs? securityInputs = null)
         {
             var now = DateTimeOffset.UtcNow;
             var asOfDate = DateOnly.FromDateTime(snapshot.Request.AsOf.UtcDateTime);
@@ -820,7 +821,7 @@ public sealed class ReportLedgerAmountProvenanceTests
                 Scope.LedgerBookId.ToString("D"), Scope.PeriodId.ToString("D"), "Gaap", asOfDate,
                 snapshot.Request.AsOf, retained.HighestGlobalSequence, 1, snapshot.DatasetRows.Length,
                 "pending", new string('0', 64), now, [])
-            { LedgerPopulation = retained };
+            { LedgerPopulation = retained, SecurityInputs = securityInputs };
             var checkpointHash = snapshot.ComputeCheckpointHash(source);
             var checkpointId = ReportingRetainedLedgerPopulationValidation.BuildCheckpointId(checkpointHash);
             source = source with

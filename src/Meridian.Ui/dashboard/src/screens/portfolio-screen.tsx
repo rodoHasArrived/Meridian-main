@@ -51,6 +51,7 @@ import { describeFundScopeNarrowing, narrowHouseholdPortfolioToFundScope } from 
 import { getPositionSideOptions, selectPortfolioPositionRows } from "@/lib/portfolio-positions-table";
 import { usePortfolioPositionsTable } from "@/hooks/use-portfolio-positions-table";
 import { PortfolioPositionsToolbar } from "@/screens/portfolio-positions-toolbar";
+import { PortfolioCapabilityRollup } from "@/components/meridian/portfolio-capability-rollup";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { bondWorkflowRoute, holdingBondWorkflowRoute } from "@/lib/fixed-income-navigation";
 import {
@@ -1089,6 +1090,7 @@ function PortfolioScreenContent({
                 selectedRowId={brokerageInspector === "account" && vm.selectedBrokerageAccount.id !== "all" ? vm.selectedBrokerageAccount.id : null}
                 emptyText={vm.brokerageAccountEmptyText} ariaLabel={vm.brokerageAccountsTableLabel}
                 caption="Select an account to filter positions and update the shared brokerage inspector." />
+              <PortfolioCapabilityRollup portfolio={scopedBrokeragePortfolio} accountId={vm.selectedBrokerageAccountKey} scopeLabel={vm.selectedBrokerageAccount.title} />
               {vm.hasBrokeragePositions ? <TableWorkbench workbenchId="portfolio-brokerage-positions"
                 sourceKey={`${location.search}:${vm.selectedBrokerageAccountKey}`}
                 columns={brokeragePositionColumns.map(column => ({ ...column, exportValue: (row: PortfolioBrokeragePositionRow) => ({

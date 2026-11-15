@@ -46,7 +46,11 @@ public sealed record CertifiedReportingSnapshot(
     DateTimeOffset AsOf,
     ReportKind ReportKind,
     IReadOnlyList<EnrichedLedgerRow> Rows,
-    ReportingSnapshotReceipt Receipt);
+    ReportingSnapshotReceipt Receipt)
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<SecurityMasterReportingReference>? SecurityInputs { get; init; }
+}
 
 internal sealed record ReportingSnapshotRowInput(
     string AccountName,

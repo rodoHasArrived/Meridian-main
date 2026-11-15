@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NormalizedStatementCashBalance
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.NormalizedStatementCashBalance</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:909](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L909).
+
+```csharp
+public sealed record NormalizedStatementCashBalance(string CashBalanceId, string Account, string Currency, decimal EndingBalance, string EvidenceReference, DateOnly AsOfDate, bool IsForStatementPeriodEnd = true) : IStatementMatchItem
+```
+
+## NormalizedStatementPosition
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.NormalizedStatementPosition</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:894](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L894).
+
+```csharp
+public sealed record NormalizedStatementPosition(string PositionId, string Account, string SecurityId, DateOnly AsOfDate, decimal Quantity, decimal? MarketValue, string EvidenceReference) : IStatementMatchItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:904](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L904) | Unit price in the same currency as the monetary amount, when explicitly available. |
+
 ## NormalizedStatementTransaction
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.NormalizedStatementTransaction</code>. Kind: `record`.
@@ -793,31 +819,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static StatementNormalizedEntities FromImport(string runId, NormalizedStatementImportResult import);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:227](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L227) |  |
-
-## StatementProfileVersion
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementProfileVersion</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:168](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L168).
-
-```csharp
-public sealed record StatementProfileVersion(string ProfileId, string Version);
-```
-
-## StatementRawFileEvidenceReference
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRawFileEvidenceReference</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:170](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L170).
-
-```csharp
-public sealed record StatementRawFileEvidenceReference(StatementRawFileRetentionMode RetentionMode, string SourcePath, string OriginalFileName, string SourceFileHash, string? EvidenceUri = null, string PolicyNote = StatementRawFileEvidenceReference.DefaultPolicyNote)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string DefaultPolicyNote = &quot;Raw broker and custodian files are not copied by this repository. The manifest stores a source path or approved evidence-store reference plus the source file hash for reproducibility.&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:178](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L178) |  |
-| <code>public static StatementRawFileEvidenceReference ExternalReference(string sourcePath, string originalFileName, string sourceFileHash);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:180](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L180) |  |
-| <code>public static StatementRawFileEvidenceReference EvidenceStoreReference(string sourcePath, string originalFileName, string sourceFileHash, string evidenceUri);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:196](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L196) |  |

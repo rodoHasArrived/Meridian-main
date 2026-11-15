@@ -691,6 +691,12 @@ public sealed record SecureReportingGrantRevocationResponse(string GrantId, bool
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.SecurityMasterEndpoints</code>. Kind: `class`.
 
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Capabilities.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Capabilities.cs#L13).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashDividendAttestation.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashDividendAttestation.cs#L13).
 
 ```csharp
@@ -753,6 +759,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.c
 public static partial class SecurityMasterEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ProfilePromotion.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ProfilePromotion.cs#L13).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Rates.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Rates.cs#L13).
 
 ```csharp
@@ -760,6 +772,12 @@ public static partial class SecurityMasterEndpoints
 ```
 
 Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.RegistryProjections.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.RegistryProjections.cs#L14).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ReportInputs.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ReportInputs.cs#L13).
 
 ```csharp
 public static partial class SecurityMasterEndpoints

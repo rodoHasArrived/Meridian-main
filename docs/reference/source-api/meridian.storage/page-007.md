@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PeriodCloseEventRecord
+
+Qualified name: <code>Meridian.Storage.Ledger.PeriodCloseEventRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:387](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L387).
+
+```csharp
+public sealed record PeriodCloseEventRecord(Guid EventId, Guid PeriodId, string PriorStatus, string NewStatus, string ClosedBy, string Notes, DateTimeOffset RecordedAt);
+```
+
 ## PostgresAccountingConfigurationStore
 
 Qualified name: <code>Meridian.Storage.Ledger.PostgresAccountingConfigurationStore</code>. Kind: `class`.
@@ -408,6 +418,18 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; ListOpenTaxLotsByAssetScopeAsync(Guid ledgerBookId, Guid securityId, Guid bookPositionId, DateOnly effectiveDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.HistoricalTaxLots.cs:11](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.HistoricalTaxLots.cs#L11) |  |
+
+Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ImpactDependencyGuard.cs:5](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ImpactDependencyGuard.cs#L5).
+
+```csharp
+public sealed partial class PostgresLedgerJournalStore : IImpactDependencyGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireImpactDependencyLeaseAsync(string tenantId, string fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ImpactDependencyGuard.cs:7](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ImpactDependencyGuard.cs#L7) |  |
 
 Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.IntercompanyAgreements.cs:7](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.IntercompanyAgreements.cs#L7).
 
@@ -1620,24 +1642,3 @@ Enum declarations:
 | <code>Jsonl</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:202](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L202) | Convert to JSONL for universal compatibility. |
 | <code>Csv</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:205](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L205) | Convert to CSV for spreadsheet compatibility. |
 | <code>Parquet</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:208](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L208) | Convert to Parquet for analytics. |
-
-## PackageDateRange
-
-Qualified name: <code>Meridian.Storage.Packaging.PackageDateRange</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:210](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L210).
-
-Date range information for the package.
-
-```csharp
-public sealed class PackageDateRange
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;start&quot;)] public DateTime Start { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:213](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L213) |  |
-| <code>[JsonPropertyName(&quot;end&quot;)] public DateTime End { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:216](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L216) |  |
-| <code>[JsonPropertyName(&quot;tradingDays&quot;)] public int TradingDays { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:219](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L219) |  |
-| <code>[JsonPropertyName(&quot;calendarDays&quot;)] public int CalendarDays { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:222](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L222) |  |

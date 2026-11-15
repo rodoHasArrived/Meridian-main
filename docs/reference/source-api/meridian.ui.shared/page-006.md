@@ -570,6 +570,12 @@ Security Master coverage helpers for the workstation API surface: builds coverag
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterImpact.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterImpact.cs#L11).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterMapping.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterMapping.cs#L13).
 
 Security Master DTO mapping helpers for the workstation API surface: maps security summary/detail records to workstation DTOs, identity drill-in, and economic-definition summaries, plus asset-class sub-type derivation. Split out of the WorkstationEndpoints core partial.
@@ -579,6 +585,12 @@ public static partial class WorkstationEndpoints
 ```
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterWorkbench.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterWorkbench.cs#L16).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityRateRepairs.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityRateRepairs.cs#L13).
 
 ```csharp
 public static partial class WorkstationEndpoints

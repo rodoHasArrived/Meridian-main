@@ -269,6 +269,18 @@
       "rule_id": "migration-drop-table-member",
       "reason": "Scoped schema review exception for automatic synthetic fill accounting: replaces only ledger_event_audit_events_subject_kind_check with a strict superset preserving journal and period and admitting automation-grant. The migration runner performs drop and replacement within one transaction; no rows, columns, audit events or immutability triggers are removed. Failure rolls back the original constraint. PostgreSQL tests verify existing audit coverage and actor-attributed grant activation/revocation. Independent human schema/storage review remains pending before production activation; never narrow this check while grant audit events exist.",
       "review_after": "2027-02-14"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/069_rate_repair_governance.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the frozen rate-repair manifests and retained execution progress. No TRUNCATE command or data removal is executed. Separate AI schema/storage review on 2026-11-14 identified and resolved nullable evidence/base checks and missing progress-deletion guards before accepting this exact path/rule exception. Independent PostgreSQL 16.16 probes verified manifest UPDATE/DELETE/TRUNCATE refusal, progress DELETE/TRUNCATE refusal, permitted versioned progress updates, malformed authority rejection and retained legacy unknown identities. Preserve these guards; this exception authorizes neither truncation nor a history-removing downgrade. Full migration-catalog verification and repository-owner merge authority remain separate.",
+      "review_after": "2027-05-14"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_073__security_revision_workflow_scope.sql",
+      "rule_id": "migration-drop-object",
+      "reason": "Row-preserving replacement of only ux_operations_continuity_open_workflow: the same transaction recreates close-lane uniqueness for workflows whose purpose is absent or Close and adds canonical-UUID uniqueness for each Security Master revision subject. New checks reject unknown or explicit-null purposes and malformed subject authority; subject and owning scope are immutable. Separate AI schema/storage review on 2026-11-14 and independent PostgreSQL 16.16 probes verified legacy Close preservation, duplicate-close and duplicate-subject refusal, distinct subject coexistence, immutable scope and restoration of the original index when upgrade validation fails. No table, column, workflow or audit row is deleted or rewritten. Apply through the existing transactional/advisory-lock runner with purpose-aware consumers; do not delete retained revision workflows to restore the former all-purpose index. This exact path/rule exception is technical review, not a claim of independent human approval or live rollout.",
+      "review_after": "2027-05-14"
     }
   ],
   "removed_migrations": [

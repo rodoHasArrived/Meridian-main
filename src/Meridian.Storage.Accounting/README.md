@@ -6,10 +6,30 @@ module_id: SRC-STORAGE-ACCOUNTING
 path: src/Meridian.Storage.Accounting
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.Storage.Accounting
+
+## Guarded repairs, workflow scope and report inputs (2026-11-14)
+
+Linked Security Master 069 stores immutable batch manifests, scalar/evidence bindings and impact
+references alongside versioned progress, with DELETE/TRUNCATE rejection. Ledger 073 replaces the
+legacy open-workflow index transactionally: missing purpose remains Close, unknown/null purpose is
+refused, Close retains account/period uniqueness and UUID revision subjects have separate immutable
+scope. No rows are deleted. The shared PostgreSQL impact guard participates through per-item commit;
+canonical publication is atomic and downstream dispatch is postcommit. Exact approved profile usage
+and prospective private report input retention belong to these same linked adapters. See
+[operator procedure](../../docs/operators/security-master-repairs-and-evidence.md).
+
+Security Master projection registration is composed from class-owned contributions in the linked
+`Meridian.Storage/SecurityMaster/AssetPacks` sources. `SecurityTermsStorageModules` covers all 32
+classes: 30 retain declarative descriptors and Option/CustomAsset retain their specialized writer
+dispositions. The existing registry and store dispatch use this explicit composition; SQL bodies,
+tables, namespaces and migrations retain their compatibility boundary. This assembly owns these
+linked sources, while Storage primitives exclude them. `SecurityTermsStorageModuleTests` and the
+existing projection registry and PostgreSQL golden suites cover composition and persistence parity.
+See the [asset-pack foundation](../../docs/engineering/plans/security-master-review-remediation-plan.md#1-complete-the-layered-asset-pack-foundation).
 
 The linked native intercompany registry retains optional structured legal declarations in its
 existing PostgreSQL JSONB state, approved revisions, audit snapshots and command receipts. New
@@ -137,6 +157,9 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-STORAGE-ACCOUNTING -->
 | Roadmap item | Title |
 | --- | --- |
+| `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
+| `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
+| `W11-PACK-001` | Governed contract-pack lifecycle on the Security Master asset-class registry |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |

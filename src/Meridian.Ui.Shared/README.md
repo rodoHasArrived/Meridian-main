@@ -11,6 +11,28 @@ last_reviewed: 2026-11-14
 
 # src/Meridian.Ui.Shared
 
+## Security Master operator services (2026-11-14)
+
+Passport capability reads passively evaluate the selected version, with bounded batch reads and no
+receipt retention. Portfolio clients assess only loaded authorized observations; missing book/lot/
+period/template context remains Review. Shared endpoints expose paged scalar repair, current server
+actions, immutable impact receipts and report-line-scoped actual input comparison without development
+fallback. Bound workflow purpose, assigned reviewer and immutable maker/base remain server authority.
+External schedules remain Review/RequiresContext for passive cash-flow diagnostics and Blocked for
+recurring fixed-income accrual, matching the actual calculated-source guard. Individual passport
+drafts retain an explicitly selected, server-authorized fund; impact receipts bind that same scope.
+
+CD recurring calculations select the registered fixed-bullet profile, retain version-6 context and
+pin stable daily-lot claims before journal intake. Bond/StructuredCredit version-5 evidence and the
+existing journal approval/posting path remain unchanged. Released-report comparison uses only actual
+retained journal inputs; current event/revision/workflow attribution remains supplemental and explicit
+about gaps. See [operator procedure](../../docs/operators/security-master-repairs-and-evidence.md).
+
+Released-report input display shares Application's frozen retained-terms boundary with cash-flow
+replay and exact-event attribution. It preserves verified original bytes while allowing the frozen
+legacy classifier only in that retained view. Current-definition reads and new captures remain strict;
+unknown or malformed format evidence stays unavailable instead of falling back to current terms.
+
 Provider quota responses preserve the runtime's explicit credits/request unit and daily usage,
 cap and reset-policy evidence. They do not infer fundamentals entitlement from available credits.
 
@@ -3946,6 +3968,8 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-UI-SHARED -->
 | Roadmap item | Title |
 | --- | --- |
+| `W11-LEGS-001` | Reusable fixed and floating legs for vanilla interest-rate swaps |
+| `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
 | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W10-LOT-002` | Security-identified open-lot convergence |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |

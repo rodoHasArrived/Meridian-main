@@ -6,10 +6,19 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.Ledger
+
+## Recurring economic-obligation evidence (2026-11-14)
+
+Recurring provenance can retain an independent digest of the CD daily-lot economic-obligation claim.
+Recovery and lifecycle checks bind that digest to the existing occurrence; schedule/template/model
+version changes cannot create a new owner for the same economic day. The optional companion is
+omitted from historical evidence, preserving old Bond receipt bytes. This adds no automatic journal
+submission, posting, period reopen or reinterpretation of accounting template declarations. See
+[recurring journal](../../docs/domain/recurring-journal.md).
 
 ## Purpose
 
@@ -102,6 +111,7 @@ See `DIA-ASSURANCE-LOOP` in the [diagram index](../../docs/source/data/diagram-i
 <!-- source-roadmap-traceability:begin module=SRC-LEDGER -->
 | Roadmap item | Title |
 | --- | --- |
+| `W10-BOND-001` | Bond analytics, declared-schedule migration and contractual cash-flow projection |
 | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |

@@ -66,6 +66,7 @@ Snapshot date: 2026-11-12
 | W10-PERF-001 | Portfolio and investor return measurement | planned | green | high | Accounting and Ledger |
 | W10-CONSOL-001 | Intercompany elimination on consolidated ledger views | planned | green | medium | Accounting and Ledger |
 | W10-LOT-002 | Security-identified open-lot convergence | in_progress | green | critical | Accounting and Ledger |
+| W11-LEGS-001 | Reusable fixed and floating legs for vanilla interest-rate swaps | planned | green | medium | Accounting and Ledger |
 | W11-PASSPORT-001 | Number Passport contract across amount surfaces | planned | green | high | Workstation Shell and UX |
 | W11-COVER-001 | Verified Coverage measurement and operator surface | planned | green | high | Accounting and Ledger |
 | W11-STAKE-001 | Governed stakeholder verification access on delivered packages | planned | green | medium | Platform Security and Governance |

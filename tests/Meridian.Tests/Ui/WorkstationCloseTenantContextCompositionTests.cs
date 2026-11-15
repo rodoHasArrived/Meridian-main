@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
@@ -20,6 +21,7 @@ public sealed class WorkstationCloseTenantContextCompositionTests
         services.AddWorkstationSharedServices();
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
         var accessor = provider.GetRequiredService<IWorkstationTenantContextAccessor>();
+        var impactAccessor = provider.GetRequiredService<ISecurityMasterImpactScopeAccessor>();
         var http = provider.GetRequiredService<IHttpContextAccessor>();
         // The real singleton guard factory must resolve at the root with scope validation enabled.
         var guard = provider.GetRequiredService<IClosePublicationReadinessGuard>();
@@ -47,6 +49,9 @@ public sealed class WorkstationCloseTenantContextCompositionTests
                 current.CompanyId.Should().Be($"company-{tenant}");
                 current.Actor.Should().Be($"operator-{tenant}");
                 current.Permissions.Should().Be(UserPermission.ManageLedgerReports);
+                var impactScope = impactAccessor.GetRequired();
+                impactScope.TenantId.Should().Be(tenant);
+                impactScope.CompanyId.Should().Be($"company-{tenant}");
                 foreach (var (subjectTenant, subjectCompany) in new[]
                 {
                     ("foreign-tenant", current.CompanyId),
@@ -69,6 +74,8 @@ public sealed class WorkstationCloseTenantContextCompositionTests
 
         http.HttpContext.Should().BeNull();
         accessor.TryGetCurrent(out var absent).Should().BeFalse();
+        var absentImpactScope = () => impactAccessor.GetRequired();
+        absentImpactScope.Should().Throw<InvalidOperationException>();
         absent.HasTenantScope.Should().BeFalse();
         using (FundScopeTenantAuthority.Enter("tenant-alpha", "unrelated background worker"))
         {

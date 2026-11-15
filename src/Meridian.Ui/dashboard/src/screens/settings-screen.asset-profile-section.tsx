@@ -21,6 +21,7 @@ import { diagnosticToneClass, FilterSelect, SettingsFieldRow } from "./settings-
 import { SettingsChip, capabilityTone, settingsBannerTone } from "@/screens/settings-screen.section-primitives";
 import { createAssetProfileDraftState, type AssetProfileDraftState } from "@/screens/settings-screen.section-state";
 import { toSeverity } from "@/design-system/status-styles";
+import { SettingsAssetProfilePromotion } from "./settings-screen.asset-profile-promotion";
 
 function AssetProfileFieldInput({
   field,
@@ -539,6 +540,7 @@ export function SettingsAssetProfileSection({ vm, submitAssetProfileDraft, selec
         </div>
       </CardHeader>
       <CardContent className="grid gap-4">
+        <SettingsAssetProfilePromotion />
         <div className="grid gap-3 xl:grid-cols-5" role="list" aria-label={vm.assetProfileGovernancePanel.listLabel}>
           {vm.assetProfileGovernancePanel.rows.map((row) => (
             <div

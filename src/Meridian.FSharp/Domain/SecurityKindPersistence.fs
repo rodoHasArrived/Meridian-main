@@ -213,9 +213,10 @@ module SecurityKindPersistence =
             @ beyond "CouponTerms" [ "CouponType"; "CouponRate"; "DayCount" ] (coupon terms.CouponTerms)
             @ beyond "Callability" [ "IsCallable" ] (call terms.Callability)
         | SecurityKind.CertificateOfDeposit terms ->
-            beyond "Dates" [ "MaturityDate" ] (maturity terms.Dates)
+            beyond "Dates" [ "IssueDate"; "MaturityDate" ] (maturity terms.Dates)
             @ beyond "IssuerTerms" [ "IssuerName" ] (issuer terms.IssuerTerms)
-            @ beyond "CouponTerms" [ "CouponType"; "CouponRate"; "DayCount" ] (coupon terms.CouponTerms)
+            @ beyond "Notional" [ "Notional" ] (notional terms.Notional)
+            @ beyond "CouponTerms" [ "CouponType"; "CouponRate"; "DayCount"; "PaymentFrequency" ] (coupon terms.CouponTerms)
             @ beyond "Callability" [ "IsCallable"; "FirstCallDate" ] (call terms.Callability)
         | SecurityKind.CommercialPaper terms ->
             beyond "Dates" [ "MaturityDate" ] (maturity terms.Dates)

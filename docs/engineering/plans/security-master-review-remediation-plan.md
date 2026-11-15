@@ -1,18 +1,21 @@
 # Security Master Review Remediation Working Plan
 
-**Status:** draft
+**Status:** active working plan
 **Owner:** core-team
-**Reviewed:** 2026-11-11
+**Reviewed:** 2026-11-14
 **Scope:** Engineering
 **Source evidence:** `6bcc7a0262ab0870cee32cb2cb344851e9da7e89` (slices 1–6);
-`fc848789e637f3e241698c84b5415a1a9e0ed32d` (slices 7–9 and the consolidation decision, 2026-11-09)
+`fc848789e637f3e241698c84b5415a1a9e0ed32d` (slices 7–9 and the consolidation decision, 2026-11-09);
+`8d6eb1d425` (architecture-first follow-on baseline, 2026-11-14)
 
 This plan consumes the [October review consolidation](../../../archive/docs/architecture/security-master-extensibility-review.md#consolidated-october-review-and-dispositions--2026-10-28),
 including the dated observations and corrected prescriptions from #3111, #3188, #3196, #3220,
 #3234, #3240, #3247 and #3263. It replaces #3240's unaccepted October 20 design as a current
 working input. The immutable original plan is linked in the review's coverage ledger.
 
-The order below is a proposed review sequence by correctness risk. It assigns no roadmap rank,
+Slices 1–10 below retain their dated review sequence and implementation dispositions. The
+[architecture-first follow-on](#architecture-first-follow-on--2026-11-14) records the approved
+next sequence against the November 14 baseline. Neither sequence assigns a roadmap rank,
 owner acceptance, release readiness or target date. Each slice needs a fresh source comparison,
 its own focused regressions and required hosted checks before merge. A migration also needs the
 repository's independent schema/storage review; this document grants no waiver.
@@ -677,3 +680,260 @@ after corrections.
 Changed-file whitespace formatting passed. Maintained documentation generation converged; the
 repository inventory and test coverage report were refreshed. Hosted checks remain the merge
 authority. No migration or historical journal rewrite is introduced.
+
+## Architecture-first follow-on — 2026-11-14
+
+**Planning status:** approved implementation sequence; the stages below are not delivery evidence.
+The source baseline is `8d6eb1d425`. [ADR-027](../../adr/027-single-economic-model-consolidation.md)
+is accepted and its three consolidation stages are complete: the economic definition is domain
+authority, all 32 classes have schema-bound decode, and the flat codec is generated for the 31
+classes that have one. CustomAsset retains its approved profile document. Preserve those results,
+the F# `SecurityKind` union and all historical event, receipt and codec compatibility boundaries.
+
+The adverse review narrows three claims from the brainstorm. A descriptor cannot establish that
+a particular holding can execute an operation. Vendor/class/issuer grouping cannot establish a
+common rate convention. Required terms and an accounting template cannot supply a missing accrual
+algorithm. The following order makes each of those claims executable and testable before adding
+operator actions that depend on it.
+
+### 1. Complete the layered asset-pack foundation
+
+Give each of the 32 classes one logical module, composed through dependency-safe contributions
+owned by the existing layers. A Contracts descriptor must not depend on application, F# validation,
+storage or ledger implementations. Compose an explicit built-in catalog with deterministic order;
+reject duplicate, missing or contradictory contributions. No runtime class creation or plugin
+discovery is introduced.
+
+Migrate every class through these registry slices in order, preserving behavior after each slice:
+
+1. Metadata, writable schema, upgrade steps, cash-flow term roles and rate-field units.
+2. Validators, including conditional economic rules and precise typed refusals.
+3. C#/F# codec rows and economic bridge contributions, preserving generated output and CustomAsset's
+   profile-document exception.
+4. Storage projection contributions, retaining Option's specialized behavior and every declared
+   unsupported projection.
+5. Accounting classification and template bindings, retaining explicit outside-slice dispositions.
+
+Central registries become projections of these contributions. Keep independent characterization
+fixtures and union/catalog coverage checks so a shared omission cannot make both implementation
+and expected output silently agree. Preserve generated schema versions, raw serialized values,
+module persistence coverage and permanent legacy read adapters. Remove each old registration only
+after its replacement has parity proof across all 32 classes.
+
+This is the structural increment of `W11-PACK-001`. Compiled composition does not complete its
+governed pack activation, record version pinning, approval or rollback lifecycle.
+
+### 2. Bind immutable draft authority and typed edit impact
+
+Before bulk repair, retain each draft's authenticated maker, submitter, base revision and proposed
+change. An approver must differ from both maker and submitter. Legacy drafts missing this authority
+remain explicitly unreviewable until repaired; do not invent identities or adopt the current
+projection as their original base. Preserve the existing approved publication boundary.
+
+Extract a read-only impact evaluator from the existing affected-book and period-aware restatement
+resolvers. Evaluate the proposed overlay against its exact base, with no publication, restatement
+creation, journal or lot mutation. Return typed complete, partial or unavailable impact: affected
+lots/books/periods, locked-period disposition and known retained report dependencies. An unresolved
+dependency cannot become an empty affected set or a zero monetary delta.
+
+Bind review evidence to the draft/base and dependency versions, effective dates and calculation
+version. Recheck authority at approval and publication; changed operands invalidate the preview
+and require fresh review. Preserve same-field conflict refusal, unrelated-field edits, idempotent
+retry and explicit canonical-versus-overlay publication outcomes.
+
+### 3. Deliver capability diagnostics and governed rate repair together
+
+Serve one shared capability evaluation for terms, cash flows, accrual, valuation, corporate actions
+and redemption. Use the actual execution preflight for the selected security/holding, book, date
+and operation. Descriptors describe possible support; they cannot turn a failed or unperformed
+preflight into Ready. Return Ready, Review or Blocked with applicability and evaluation freshness
+separate, typed reasons, and permitted remediation links. Unknown inputs mean Review; inapplicable
+operations are explicitly identified.
+
+The passport renders this projection; Portfolio rolls it up by distinct holdings with a declared
+scope and as-of time. Reason counts disclose overlap and unavailable coverage. The rollup is
+operational eligibility, separate from the charter's `W11-COVER-001` Verified Coverage metric.
+Keep existing routes and browser workspace boundaries; share server contracts with other clients
+without introducing WPF changes in this increment.
+
+Build the repair queue as discovery filters by vendor, class and issuer. A repair cohort also
+requires the same source field, source schema/version, term role and evidence scope. Freeze the
+selected record IDs and base versions, show original scalar and proposed declared unit, and retain
+the supporting evidence reference/hash. The repair declares interpretation; it never rescales the
+stored scalar or infers a unit from value magnitude.
+
+Stage ordinary governed drafts per record, retaining separate decisions and receipts. One operator
+submission may contain many drafts; each item remains reviewable and a different authenticated
+person approves it. Publication is explicit. Persist resumable item outcomes for created, already
+staged, conflicted, refused and published records; retries cannot duplicate drafts or silently skip
+conflicts. Recheck each record's authority instead of extending a batch decision to changed records.
+No AI unit suggestions are included in this delivery.
+
+### 4. Add retained review comparisons and report-input-first temporal evidence
+
+Extend the typed impact preview with old/new cash-flow comparisons only when both sides can be
+calculated under their recorded inputs. Keep each refusal visible when a side is unavailable;
+never substitute zero flows. Retain the reviewed preview with the approval and show stale evidence
+before allowing a new decision.
+
+The first passport comparison shows the selected report's retained input beside the current
+approved definition, with the report's valuation date, book and calculation context visible. A
+report-line deep link starts from its exact retained input revision/snapshot and calculation
+version. Show value, raw/normalized rate unit, source revision and maker/approval/publication
+lineage. An unresolved input identity remains an explicit gap; current state cannot substitute
+for the historical input. A general timestamp-cutoff view may select eligible retained rows using
+the existing query contract, but must distinguish effective and recorded timestamps and must not
+claim complete effective-time term history or database commit visibility. Capture newly required
+history prospectively and label legacy gaps without fabricated backfill. Reuse the existing
+subject-addressed proof API and evidence links.
+
+### 5. Admit one declarative accrual profile
+
+Replace the current `SupportsRecurringFixedIncomeAccrual` boolean admission with declarations
+that select a registered, tested accrual profile and approved accounting binding, preserving the
+current Bond and StructuredCredit boundaries and all lot, terms, source, period and approval
+checks. The first new profile is a fixed-rate bullet CertificateOfDeposit with Actual/365,
+an explicit rate unit, supported accruing lot unit and compatible approved journal template.
+Require complete start/maturity/principal/coupon terms. Exclude fees, discount/OID, premium,
+amortization, floating/reset, embedded optionality and unsupported principal schedules.
+
+Preserve stable accrual source identity across descriptor changes and retries. The same receipt,
+review, independent approval and posting flow used by the supported Bond lane governs CD drafts.
+A declaration cannot bypass the declared-schedule posting gate or any existing refusal. Bond
+results and historical receipts remain unchanged. DirectLoan and CommercialPaper need separate
+profile proofs; no whole-class admission follows from this CD increment. `W12-CREDIT-001` continues
+to own loan servicing, fees, PIK, fixing authority and nonaccrual semantics.
+
+### 6. Converge vanilla interest-rate swaps on reusable legs
+
+Implement `W11-LEGS-001` as fixed/floating leg modules carrying their own schedule conventions,
+day count, currency/notional and declared rate unit. Reuse ADR-025's schedule kernel and retained
+fixing/source evidence, then converge existing vanilla interest-rate swap cash-flow consumers on
+those modules. Preserve instrument-level economics and typed refusal of missing fixings or
+unsupported structures. Replay and old payloads retain their existing interpretation.
+
+This increment excludes cross-currency exchanges, CDS credit events, premium/protection/funding
+payoffs, caps/floors, swaptions and structured-note optionality. Their event, exercise, valuation and
+accounting semantics require separately bounded extensions; common schedule legs do not supply them.
+
+### 7. Use CustomAsset usage to prepare developer-review candidates
+
+Group usage by approved profile identity/version and compatible declared economic semantics.
+Expose record counts, approved field definitions and completeness, evidence and unresolved gaps;
+popularity alone is not class equivalence. Reuse the existing candidate-pack functions to export
+a deterministic draft module/pack review artifact. Do not derive defaults from observed record
+values, create classes at runtime or activate a pack from the operator workflow.
+
+### Verification and roadmap ownership
+
+Each registry slice needs independent parity and replay fixtures, omitted/duplicate contribution
+failures and preserved typed refusals. Financial workflow tests cover cross-scope access, maker/
+submitter self-approval, stale bases and impact operands, locked periods, restart/retry, exact
+per-record receipts and partial batch conflicts. Persistence changes include real PostgreSQL
+concurrency/rollback proof. CD fixtures independently calculate money and reject every excluded
+economic shape; swap fixtures compare signed fixed/floating flows and missing-fixing refusals.
+Browser checks exercise keyboard operation, dense desktop layouts, loading/stale/partial/blocked
+states, remediation navigation and exact decimal display. Use synthetic evidence.
+
+Keep `W5-MASSET-001`'s delivered baseline while tracking capability follow-ons here; rate repair
+extends the governed migration lane under `W10-BOND-001`. Review/temporal evidence extends
+`W10-PROV-001` and feeds `W5X-OEG-001`. `W11-PACK-001` owns composition and later candidate exports;
+`W11-LEGS-001` owns only the bounded vanilla swap convergence. These links assign no new product
+rank, acceptance or release certification. Source/module documentation and generated registries
+must describe the actual implemented slice and its validation, leaving later stages explicitly
+planned. Apply the repository's Level 2 verification and separate-agent adverse review to financial
+and architectural changes; existing owner merge and hosted-check authority remain in force.
+
+### Source disposition — 2026-11-14, local verification complete; hosted checks pending
+
+The approved sequence above now has source implementations for each bounded increment. This note
+records source boundaries, not row completion, hosted-check success, deployment or operator acceptance.
+
+- The compiled 32-class foundation composes Contracts descriptors/schema/upgrades/roles/units and
+  codec/economic recovery rows, Application validators/generated decode contributions, Storage
+  descriptors and Option/CustomAsset specialized writers, and existing exact accounting bindings.
+  The F# union stays unchanged. Governed pack activation/version pinning remains planned.
+- Passport capabilities are passive, selected-version preflights. Missing execution context stays
+  Review. Portfolio counts only loaded authorized brokerage observations with explicit unresolved
+  coverage. Repair discovery pages through a bounded live source scan, retaining missing-projection
+  issues and refusing changed overlapping observations. Frozen scalar/evidence cohorts create
+  per-record revisions and subject-addressed workflows with immutable maker/base, independent
+  reviewer, resumable outcomes and explicit publication. Bond uses full schedule migration.
+- Impact receipts retain exact base/proposed terms, conservative books, known periods/reports and
+  typed old/new flow evidence. `LotImpactUnverified` prevents exact live-lot claims. Stale approved
+  evidence needs a fresh draft/workflow. A short broad PostgreSQL dependency guard and ambient
+  per-item canonical mutation close the approval/publication race; dispatch follows commit.
+- CD version 6 adds explicit start/principal/cadence terms for the tested fixed-bullet Actual/365
+  AtMaturity, par-lot/NoAmortization profile. Existing Bond/StructuredCredit version-5 receipts stay
+  unchanged; CDs below declaration stamp 6 retain old version-5 analytical capture/replay. Declared
+  version-6 CDs must pass the strict profile without legacy fallback. Write-once daily-lot
+  economic-obligation claims exclude schedule/template/model versions
+  and block overlapping schedules/cadences before intake, including restart/retry.
+- Optional `vanilla-irs-v1` converges a bounded fixed/floating two-leg Swap on the same contractual
+  engine. Swap remains version 4/read 4/floor 1; omitted request behavior and old hashes remain.
+  Dated fixing/forward authority, excluded structures and the nonposting boundary remain enforced.
+- CustomAsset usage reads exact approved profile/version references and required-field presence;
+  malformed/nonapproved/unknown references remain distinct. Manual authorized developer export
+  carries planned classes and review tasks, never record-derived defaults or runtime activation.
+- Report comparisons start from prospectively retained actual journal receipt inputs and authorized
+  visible report-line bindings. Current event/revision/workflow attribution distinguishes actors
+  and actual approval. Legacy missing inputs/attribution remain gaps; no current-state substitute,
+  historical approval visibility or complete effective-time query is claimed.
+
+Security Master migration 069 and ledger migration 073 are new normal-runner migrations with scoped
+schema-control explanations, not production execution receipts. Conditional node compatibility and
+explicit authoring govern CD version-6 use; no fleet floor rises automatically. Follow
+[repairs and evidence operations](../../operators/security-master-repairs-and-evidence.md) and
+[terms-contract rollout](../../operators/security-master-terms-contract-rollout.md). The increment
+adds browser/shared-service behavior without a WPF implementation change. Remaining roadmap activation
+and acceptance conditions stay intact.
+
+### Local verification evidence — 2026-11-14
+
+The financial slice below passed **8,826 tests, zero failures and zero skips**, including PostgreSQL
+revision-workflow/publication checks and cross-process recurring economic-obligation claims. It is a
+filtered `Meridian.Tests` run, not a full-solution result:
+
+```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --no-restore --filter 'FullyQualifiedName~SecurityMaster|FullyQualifiedName~RecurringJournal|FullyQualifiedName~InstrumentCapabilityReadServiceTests|FullyQualifiedName~ImpactDependencyGuardTests|FullyQualifiedName~SecurityRevisionWorkflow|FullyQualifiedName~OperationsContinuityWorkflow|FullyQualifiedName~LedgerReportingAuthoritativeSourceTests|FullyQualifiedName~ReportLedgerAmountProvenanceTests|FullyQualifiedName~ReportingRetainedLedgerPopulation|FullyQualifiedName~WorkstationServiceCollectionExtensionsTests|FullyQualifiedName~WorkstationCloseTenantContextCompositionTests|FullyQualifiedName~PeriodAwareRestatementResolverTests|FullyQualifiedName~AffectedLedgerBookResolverTests' --nologo -v minimal -m:2
+dotnet test tests/Meridian.Contracts.UnitTests/Meridian.Contracts.UnitTests.csproj --no-restore --nologo -v minimal -m:2
+dotnet format whitespace Meridian.sln --verify-no-changes --no-restore --verbosity minimal
+```
+
+The Contracts run passed **502 tests with zero skips**; solution whitespace verification exited 0.
+After a clean lockfile installation, the dashboard's full `npm test` run passed **6,499 tests, zero
+failures and zero skips** in 75 batches using Vitest 5.1.0. The final locked production bundle uses
+Vite 8.3.6; global strict TypeScript 5.9.3 and lint checks also passed:
+
+```bash
+npm --prefix src/Meridian.Ui/dashboard test
+npm --prefix src/Meridian.Ui/dashboard run build
+npm --prefix src/Meridian.Ui/dashboard run typecheck:strict
+npm --prefix src/Meridian.Ui/dashboard run lint
+python build/scripts/schema-control.py local --mode snapshot --base-ref 8d6eb1d4259a85db2032600f5e19404e9233bbd8
+```
+
+The disposable PostgreSQL 16.14 snapshot applied 183 migrations across 11 modules with zero migration
+or policy errors and 303 unchanged baseline policy warnings. The reviewed candidate was promoted
+through the schema tool. Maintained generation converged, all 12 reviewed source-module hashes and
+source contracts validated, and unchanged-source UML renderer churn was restored.
+
+All five synthetic browser workflows passed with matching pinned Chromium revision 1254
+(158.0.8127.18) against locked Vite 8.3.6 at 1440×900 and 1366×768; repair also ran at 1920×1080.
+Keyboard, evidence inspection, scoped actions and explicit refusal checks reported no relevant
+page/console errors or scoped Axe issues. These local checks establish their stated development
+scope. Full aggregate CI was not run. The complete `bash scripts/ci.sh --lane verify-docs` lane passed
+on clean checkpoint `ca8bd50454`, including its whole-repository generated-output gate. GitHub-hosted
+integration checks remain pending. No live-provider, production deployment or operator
+release-acceptance result is claimed.
+
+### Integration checkpoint — 2026-11-15, merged-head verification pending
+
+The November 14 test counts above belong to the named pre-integration checkpoints. Integration with
+current main preserves its accounting framework and generated-output delivery policy. Our unpublished
+repair migration is renumbered to Security Master 069 and the revision-workflow migration to Ledger
+073; main's Security Master 068 backfill and Ledger 069–072 remain unchanged. Reviewed references and
+source baselines stay committed, while declared machine inventories, contract mirrors and workstation
+builds remain CI artifacts. Reconcile the reviewed module hashes only after reviewing the combined
+source, then run current-head financial/persistence and generation checks before claiming merge
+verification. No prior test count establishes the newly combined revision's result.

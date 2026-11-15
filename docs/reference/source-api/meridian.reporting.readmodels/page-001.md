@@ -144,8 +144,8 @@ Declared public members:
 | <code>public ImmutableArray&lt;CanonicalCorporateActionLotReport&gt; CorporateActionLotReports { get; init; } = [];</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:25](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L25) | Corporate-action lot evidence captured with the journals; empty for legacy populations. |
 | <code>public ReportingRetainedLedgerPopulation Retain();</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:33](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L33) |  |
 | <code>public static ReportingLedgerPopulationSnapshot Decode(ReportingAuthoritativeSourceCheckpoint checkpoint);</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:43](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L43) |  |
-| <code>public string ComputeCheckpointHash(ReportingAuthoritativeSourceCheckpoint checkpoint) =&gt; …;</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:100](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L100) |  |
-| <code>public LedgerFinancialReportPack Replay();</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:104](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L104) |  |
+| <code>public string ComputeCheckpointHash(ReportingAuthoritativeSourceCheckpoint checkpoint) =&gt; …;</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:101](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L101) |  |
+| <code>public LedgerFinancialReportPack Replay();</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:105](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L105) |  |
 
 ## ReportPeriodRange
 
