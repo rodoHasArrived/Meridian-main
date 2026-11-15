@@ -1363,13 +1363,50 @@ public static partial class WorkstationEndpoints
         var trustSnapshots = canReadRouting && routingTrustService is not null
             ? await routingTrustService.GetTrustSnapshotsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
             : [];
+        var readinessRows = await LoadDataProviderReadinessRowsAsync(context).ConfigureAwait(false);
         return BuildWorkstationDataProviderRecords(
             metricsStatus,
             connectionRows,
             routingConnections,
             routingBindings,
             trustSnapshots,
+            readinessRows,
             exposeConnectionSummaries: canManageCredentials);
+    }
+
+    // The same permissions GET /api/providers/readiness admits, so the list never shows a caller a
+    // readiness-derived status the browser's own readiness read would refuse them.
+    private static readonly UserPermission[] DataProviderReadinessPermissions =
+        [UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders,
+         UserPermission.ManageCredentials, UserPermission.AdminMaintenance];
+
+    /// <summary>
+    /// Readiness rows for the provider list. The browser's Data page shows each provider the worse
+    /// of its listed and readiness status; listing with the same rule here keeps the cross-screen
+    /// "Providers healthy" count equal to what that page shows.
+    /// </summary>
+    private static async Task<IReadOnlyList<ProviderReadinessRowDto>> LoadDataProviderReadinessRowsAsync(HttpContext context)
+    {
+        if (!DataProviderReadinessPermissions.Any(permission => HasPermission(context, permission)))
+        {
+            return [];
+        }
+
+        // The readiness service is built from the shared configuration store; a host that has not
+        // registered that store has no readiness to report, and resolving the service would throw.
+        if (context.RequestServices.GetService<Meridian.Ui.Shared.Services.ConfigStore>() is null)
+        {
+            return [];
+        }
+
+        var readinessService = context.RequestServices.GetService<ProviderReadinessService>();
+        if (readinessService is null)
+        {
+            return [];
+        }
+
+        var readiness = await readinessService.GetReadinessAsync(context.RequestAborted).ConfigureAwait(false);
+        return readiness.Providers;
     }
 
     // Returns null when neither the strategy run read service nor the configuration store is

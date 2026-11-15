@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Xunit;
@@ -24,6 +25,21 @@ public sealed class CrossScreenCountDefinitionsTests
 
             healthy.Should().Be(testCase.GetProperty("healthy").GetInt32(), testCase.GetProperty("name").GetString());
             total.Should().Be(testCase.GetProperty("total").GetInt32(), testCase.GetProperty("name").GetString());
+        }
+    }
+
+    [Fact]
+    public void ResolveProviderStatus_MatchesEveryFixtureCase()
+    {
+        foreach (var testCase in Fixture.RootElement.GetProperty("providerStatus").EnumerateArray())
+        {
+            var readinessText = testCase.GetProperty("readiness").GetString();
+            ProviderReadinessStatusDto? readiness = readinessText is null
+                ? null
+                : Enum.Parse<ProviderReadinessStatusDto>(readinessText);
+
+            CrossScreenCountDefinitions.ResolveProviderStatus(testCase.GetProperty("listed").GetString(), readiness)
+                .Should().Be(testCase.GetProperty("status").GetString(), testCase.GetProperty("name").GetString());
         }
     }
 

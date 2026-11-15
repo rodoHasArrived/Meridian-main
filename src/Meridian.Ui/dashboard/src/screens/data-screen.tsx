@@ -72,6 +72,7 @@ import { DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
 import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
 import {
+  selectProvidersInUse,
   DATA_PROVIDER_DETAIL_PANEL_ID,
   useDataViewModel
 } from "@/screens/data-screen.view-model";
@@ -233,6 +234,14 @@ function DataScreenContent({
   ]);
   const operatorIdentity = session?.displayName.trim() || null;
   const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence, operatorIdentity);
+  // "Providers healthy" counts the providers in use with the status this page shows for each, so
+  // the figure is a count of the health cards beneath it.
+  const kpiProviders = useMemo(
+    () => selectProvidersInUse(vm.providerSection.rows).map((row): DataWorkspaceResponse["providers"][number] => ({
+      providerId: row.providerId, provider: row.provider, status: row.status, capability: row.capability, latency: row.latencyText, note: ""
+    })),
+    [vm.providerSection.rows]
+  );
   const queryPanel = useDataQueryPanel();
   const qualityPanel = useDataQualityPanel(dataQualityFetcher);
   const capabilityMatrixPanel = useCapabilityMatrixPanel();
@@ -304,7 +313,7 @@ function DataScreenContent({
         </div>
       </section>
 
-      <KpiProvider models={{ data: { ...data, metrics: applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, providers: data.providers })) } }}>
+      <KpiProvider models={{ data: { ...data, providers: kpiProviders, metrics: applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, providers: kpiProviders })) } }}>
         <StatStrip ids={workspaceKpiIds("data", data.metrics)} label="Data headline metrics" source="Data workspace" figureSource="data" />
       </KpiProvider>
       {showProviderWorkstream ? <SettingsChangeImpactBanner /> : null}

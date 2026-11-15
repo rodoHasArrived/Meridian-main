@@ -705,6 +705,36 @@ const fixtureDataWorkspace: DataWorkspaceResponse = {
       reasonCode: "review-backfill",
       recommendedAction: "Review queued options-chain backfill before report-pack use.",
       gateImpact: "Review required"
+    },
+    // The server lists every provider with a saved connection or a routing connection, so the
+    // seeded workspace does too: these are the Plaid connection and the Alpaca paper route below.
+    {
+      providerId: "plaid",
+      displayName: "Plaid",
+      provider: "Plaid",
+      status: "Blocked",
+      capability: "Bank account evidence",
+      latency: "Latency not reported",
+      note: "Sandbox credentials are not connected.",
+      trustScore: "0.00",
+      signalSource: "provider-connection",
+      reasonCode: "credentials-missing",
+      recommendedAction: "Connect Plaid sandbox credentials before bank-account evidence can be retained.",
+      gateImpact: "Blocks accounting evidence"
+    },
+    {
+      providerId: "alpaca",
+      displayName: "Alpaca paper route",
+      provider: "Alpaca",
+      status: "Healthy",
+      capability: "Live quotes",
+      latency: "Latency not reported",
+      note: "Paper route is enabled; certification is pending.",
+      trustScore: "0.90",
+      signalSource: "provider-routing",
+      reasonCode: "provider-ready",
+      recommendedAction: "Keep provider in the active trust set.",
+      gateImpact: "Supports paper trading"
     }
   ],
   backfills: [

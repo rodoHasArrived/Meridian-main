@@ -13,7 +13,8 @@ import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 
 export const OPEN_ORDERS_DEFINITION =
   "Orders the order manager reports open (working, partially filled or pending routing) for the fund account in scope.";
-export const PROVIDERS_DEFINITION = "Providers whose status is Healthy, out of every provider the Data workspace lists.";
+export const PROVIDERS_DEFINITION =
+  "Providers in use (with metrics, a saved connection, a routing connection or a trust snapshot) whose status is Healthy. A provider's status is the worse of its listed status and its readiness status.";
 export const OPEN_BREAKS_DEFINITION = "Break-queue items not yet resolved, dismissed or signed off.";
 
 const CLOSED_BREAK_STATUSES = new Set(["resolved", "dismissed", "signedoff", "closed"]);
@@ -30,6 +31,46 @@ export function countOpenOrders(openOrders: readonly unknown[] | null | undefine
 
 export function isHealthyProviderStatus(status: string | null | undefined): boolean {
   return (status ?? "").trim().toLowerCase() === "healthy";
+}
+
+export type ListedProviderStatus = "Healthy" | "Warning" | "Degraded" | "Blocked";
+
+const PROVIDER_STATUS_RANK: Record<ListedProviderStatus, number> = { Healthy: 0, Warning: 1, Degraded: 2, Blocked: 3 };
+
+function normalizeProviderStatus(status: string | null | undefined): ListedProviderStatus {
+  const match = (Object.keys(PROVIDER_STATUS_RANK) as ListedProviderStatus[])
+    .find((known) => known.toLowerCase() === (status ?? "").trim().toLowerCase());
+  return match ?? "Warning";
+}
+
+/** A readiness status in the provider list's words; Review and Unknown are a Warning. */
+export function providerStatusFromReadiness(readinessStatus: string): ListedProviderStatus {
+  switch (readinessStatus) {
+    case "Ready": return "Healthy";
+    case "Blocked": return "Blocked";
+    case "Degraded": return "Degraded";
+    default: return "Warning";
+  }
+}
+
+/** The worse of two provider statuses; a status outside the four known ones is a Warning. */
+export function worstProviderStatus(left: string | null | undefined, right: string | null | undefined): ListedProviderStatus {
+  const a = normalizeProviderStatus(left);
+  const b = normalizeProviderStatus(right);
+  return PROVIDER_STATUS_RANK[b] > PROVIDER_STATUS_RANK[a] ? b : a;
+}
+
+/**
+ * The one status a listed provider shows: the worse of its listed status and its readiness status,
+ * when it has one. Mirrors the server's CrossScreenCountDefinitions.ResolveProviderStatus, so a
+ * provider cannot count as Healthy while its card reads Blocked, and readiness never hides a
+ * listed warning. With no readiness the listed status is returned as its source reported it.
+ */
+export function resolveProviderStatus(listedStatus: string | null | undefined, readinessStatus: string | null | undefined): string {
+  if (readinessStatus == null) {
+    return listedStatus ?? "Warning";
+  }
+  return worstProviderStatus(listedStatus, providerStatusFromReadiness(readinessStatus));
 }
 
 /** Healthy providers out of every provider row listed. */

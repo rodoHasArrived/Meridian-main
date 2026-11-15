@@ -1093,7 +1093,12 @@ not been recorded.
   server's `/api/workstation/cross-screen-counts`, loaded on every route. Headline cards for these
   counts take the selector's value and drop their basis-less delta, and an unreadable count shows
   "—". Settings, which does not refresh the Data payload, prefers the shared provider count over
-  retained Data rows. `lib/cross-screen-counts.screens.test.ts` asserts Trading, Settings, Data and Accounting
+  retained Data rows. Provider health counts the providers in use (`selectProvidersInUse`: listed by
+  the Data workspace, or with a saved connection, routing connection or trust snapshot), each with
+  the worse of its listed and readiness status (`resolveProviderStatus`, the server's
+  `ResolveProviderStatus`). The Data overview's health cards and its "Providers healthy" figure read
+  that one list, so the figure counts the cards; a provider known only from the readiness catalog
+  is available to set up on the Providers page and is not counted. `lib/cross-screen-counts.screens.test.ts` asserts Trading, Settings, Data and Accounting
   agree from one fixture set. Accounting takes open breaks from the payload's `workspace.openBreaks`,
   which the server counts over the whole queue even when it withholds `breakQueue` from a caller
   who may see the count but not the cases.

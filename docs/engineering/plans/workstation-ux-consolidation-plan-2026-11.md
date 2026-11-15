@@ -139,11 +139,15 @@ items, which is a follow-up.
 - KPI denominators name their population through `formatCountOfTotal` ("1 of 2 providers",
   "4 of 5 schedules", "0 of 1 close task"). Trading's risk cockpit labels its exposure figures
   "· paper session" so they do not read as the Portfolio header's gross exposure over live holdings.
+- Provider health is one population and one status rule. The population is the providers in use
+  (metrics, a saved connection, a routing connection or a trust snapshot); a provider known only
+  from the readiness catalog is available to set up and is not counted. A provider's status is the
+  worse of its listed status and its readiness status (`ResolveProviderStatus` on the server,
+  `resolveProviderStatus` in the browser, both held to the shared fixture). The Data overview's
+  health cards and its "Providers healthy" figure read the same rows, and the server's Data payload
+  and cross-screen count apply the same rule, so Data, Settings and the trust strip agree.
 - Not done: the notification bell still counts unread notifications, which is a different
-  quantity from the attention count. The Data page's "Providers healthy" figure still counts the
-  shared cross-screen provider population (the Data payload's provider rows) while the cards below
-  it also list configured connections; making those one population needs the server's
-  cross-screen count to change with it.
+  quantity from the attention count.
 
 **P3 `.toFixed()` burn-down (landed 2026-11-13):** `handRolledNumberFormatting` is at 0 (was
 72), so both formatter ratchets in the Phase 1 criteria are met.

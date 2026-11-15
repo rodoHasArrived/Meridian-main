@@ -1200,6 +1200,15 @@ WPF. Each count is gated by the permission of the route that owns its source, an
 caller may not read it. `tests/fixtures/cross-screen-counts/cross-screen-counts.json` holds this
 class and the browser's `lib/cross-screen-counts.ts` to the same expected values.
 
+The providers the Data workspace lists are the providers in use: those with metrics, a saved
+connection, a routing connection or a trust snapshot. Each one's status comes from
+`ResolveProviderStatus`: the worse of its listed status (connection health, or the trust rationale)
+and its readiness status from `ProviderReadinessService`, when the caller may read readiness. So
+readiness can block a provider whose connection looks healthy, but can never hide a listed warning,
+and the readiness catalog's not-yet-configured providers are not listed and do not count. The
+browser's Data page applies the same rule to the same population, so its "Providers healthy" figure,
+its health cards, Settings and the shell's trust strip agree.
+
 ## Paper futures daily settlement
 
 `Services/PaperFuturesSettlementService.cs` settles the daily variation margin of every open paper
