@@ -187,15 +187,15 @@ Declared public members:
 | <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, ILogger&lt;JsonlStorageSink&gt;? logger = null) : this(options, policy, JsonlBatchOptions.NoBatching, logger);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:174](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L174) | Creates a JsonlStorageSink with default options (no batching for backward compatibility). |
 | <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, JsonlBatchOptions batchOptions, ILogger&lt;JsonlStorageSink&gt;? logger = null);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:193](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L193) | Creates a JsonlStorageSink with configurable batch options. |
 | <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:241](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L241) |  |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:407](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L407) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:424](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L424) |  |
-| <code>public JsonlStorageSinkStatistics GetStatistics();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:489](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L489) | Returns a diagnostics snapshot for buffered JSONL persistence. |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:423](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L423) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:440](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L440) |  |
+| <code>public JsonlStorageSinkStatistics GetStatistics();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:505](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L505) | Returns a diagnostics snapshot for buffered JSONL persistence. |
 
 ## JsonlStorageSinkStatistics
 
 Qualified name: <code>Meridian.Storage.Sinks.JsonlStorageSinkStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1146](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1146).
+Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1162](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1162).
 
 ```csharp
 public sealed record JsonlStorageSinkStatistics(bool IsBatchingEnabled, int BatchSize, TimeSpan FlushInterval, long EventsBuffered, long EventsWritten, long BatchesWritten, int WriterCount, int BufferCount, DateTimeOffset Timestamp, long FsyncCount = 0, int OpenWriterHandles = 0);
