@@ -29,6 +29,8 @@ import {
   uniqueStrings,
   verificationToneFromLabel
 } from "@/screens/data-provider-display-view-model";
+import { assessEvidenceStaleness, type ProviderEvidenceStaleness } from "@/screens/data-provider-display-view-model";
+export { PROVIDER_EVIDENCE_STALE_AFTER_MS, type ProviderEvidenceStaleness } from "@/screens/data-provider-display-view-model";
 import {
   buildDataLoadingState,
   buildRouteFocusCardState,
@@ -85,7 +87,7 @@ import type {
   ProviderSetupResult
 } from "@/types";
 
-import { formatCount, formatDecimal, formatNumber, formatPercent, formatTimestamp, pluralizeCount } from "@/lib/format";
+import { formatCount, formatDecimal, formatNumber, formatPercent, formatTimestamp } from "@/lib/format";
 export {
   DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
   buildDataLoadingState,
@@ -2332,54 +2334,11 @@ export function buildProviderSection(
   };
 }
 
-/**
- * How old a provider's newest evidence may be before "Healthy" stops being believable. Three days
- * spans a weekend without a market session; past it, health is capped at review until the provider
- * is verified again.
- */
-export const PROVIDER_EVIDENCE_STALE_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
-
-export interface ProviderEvidenceStaleness {
-  /** Newest instant any evidence for the provider was observed, or null when none carries a time. */
-  latestEvidenceAt: string | null;
-  stale: boolean;
-  /** Operator copy for a stale provider, e.g. "Last evidence Jun 2, 2026, 14:00 UTC (166 days ago)..." */
-  reason: string | null;
-}
-
-/**
- * Health is only as current as the evidence behind it. This reads the newest timestamp among the
- * provider's successful response, verification and readiness evidence; when that is older than
- * `PROVIDER_EVIDENCE_STALE_AFTER_MS`, the provider cannot be shown as healthy.
- */
-export function assessProviderEvidenceStaleness(
-  record: DataOperationsProviderCenterRecord,
-  now: number = Date.now()
-): ProviderEvidenceStaleness {
+/** The provider's evidence times (last response, verification, readiness evidence) judged for staleness. */
+export function assessProviderEvidenceStaleness(record: DataOperationsProviderCenterRecord, now: number = Date.now()): ProviderEvidenceStaleness {
   const connection = resolveProviderConnection(record);
-  const candidates = [
-    connection?.lastSuccessfulAt,
-    connection?.lastVerifiedAt,
-    ...(record.readiness?.evidence ?? []).map((item) => item.observedAt)
-  ];
-  let latest: number | null = null;
-  let latestEvidenceAt: string | null = null;
-  for (const candidate of candidates) {
-    const time = candidate ? Date.parse(candidate) : Number.NaN;
-    if (Number.isFinite(time) && (latest === null || time > latest)) {
-      latest = time;
-      latestEvidenceAt = candidate ?? null;
-    }
-  }
-  if (latest === null || now - latest <= PROVIDER_EVIDENCE_STALE_AFTER_MS) {
-    return { latestEvidenceAt, stale: false, reason: null };
-  }
-  const days = Math.floor((now - latest) / (24 * 60 * 60 * 1000));
-  return {
-    latestEvidenceAt,
-    stale: true,
-    reason: `Last evidence ${formatTimestamp(latest)} (${pluralizeCount(days, "day")} ago). Health cannot be confirmed until the provider is verified again.`
-  };
+  return assessEvidenceStaleness([connection?.lastSuccessfulAt, connection?.lastVerifiedAt,
+    ...(record.readiness?.evidence ?? []).map((item) => item.observedAt)], now);
 }
 
 export function buildProviderRow(
