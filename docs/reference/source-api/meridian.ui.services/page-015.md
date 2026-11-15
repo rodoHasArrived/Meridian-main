@@ -6,6 +6,152 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolSearchApiResponse
+
+Qualified name: <code>Meridian.Ui.Services.SymbolSearchApiResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:726](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L726).
+
+API response model for symbol search endpoint.
+
+```csharp
+public sealed class SymbolSearchApiResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolSearchApiResult[]? Results { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:728](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L728) |  |
+| <code>public int TotalCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:729](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L729) |  |
+| <code>public string[]? Sources { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:730](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L730) |  |
+| <code>public long ElapsedMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:731](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L731) |  |
+| <code>public string? Query { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:732](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L732) |  |
+
+## SymbolSearchApiResult
+
+Qualified name: <code>Meridian.Ui.Services.SymbolSearchApiResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:738](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L738).
+
+Individual result from the API response.
+
+```csharp
+public sealed class SymbolSearchApiResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:740](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L740) |  |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:741](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L741) |  |
+| <code>public string? Exchange { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:742](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L742) |  |
+| <code>public string? AssetType { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:743](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L743) |  |
+| <code>public string? Country { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:744](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L744) |  |
+| <code>public string? Currency { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:745](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L745) |  |
+| <code>public string? Source { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:746](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L746) |  |
+| <code>public int MatchScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:747](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L747) |  |
+| <code>public string? Figi { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:748](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L748) |  |
+| <code>public string? CompositeFigi { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:749](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L749) |  |
+
+## SymbolSearchResponse
+
+Qualified name: <code>Meridian.Ui.Services.SymbolSearchResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:693](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L693).
+
+Response from symbol search operation.
+
+```csharp
+public sealed class SymbolSearchResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:695](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L695) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:696](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L696) |  |
+| <code>public List&lt;SymbolSearchResultItem&gt; Results { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:697](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L697) |  |
+| <code>public int TotalCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:698](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L698) |  |
+| <code>public string Query { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:699](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L699) |  |
+| <code>public List&lt;string&gt; Sources { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:700](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L700) |  |
+| <code>public long ElapsedMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:701](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L701) |  |
+
+## SymbolSearchResultItem
+
+Qualified name: <code>Meridian.Ui.Services.SymbolSearchResultItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:707](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L707).
+
+Individual symbol search result item.
+
+```csharp
+public sealed class SymbolSearchResultItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:709](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L709) |  |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:710](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L710) |  |
+| <code>public string? Exchange { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:711](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L711) |  |
+| <code>public string? AssetType { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:712](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L712) |  |
+| <code>public int MatchScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:713](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L713) |  |
+| <code>public string DisplayText =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:718](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L718) | Gets a display string combining symbol and name. |
+
+## SymbolStatistics
+
+Qualified name: <code>Meridian.Ui.Services.SymbolStatistics</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:588](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L588).
+
+Summarizes configured and monitored symbols, enabled subscriptions, and collected-event totals.
+
+```csharp
+public sealed class SymbolStatistics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int TotalConfigured { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:590](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L590) |  |
+| <code>public int TotalMonitored { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:591](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L591) |  |
+| <code>public int TotalWithArchivedData { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:592](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L592) |  |
+| <code>public int TradesEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:593](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L593) |  |
+| <code>public int DepthEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:594](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L594) |  |
+| <code>public long TotalTradesCollected { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:595](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L595) |  |
+| <code>public long TotalQuotesCollected { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:596](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L596) |  |
+| <code>public double AverageTradesPerSymbol { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:597](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L597) |  |
+| <code>public DateTime? LastUpdateTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:598](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L598) |  |
+
+## SymbolStorageInfo
+
+Qualified name: <code>Meridian.Ui.Services.SymbolStorageInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:39](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L39).
+
+Describes a symbol&#x27;s stored data types, provider, subscription state, and timestamp coverage.
+
+```csharp
+public sealed class SymbolStorageInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:41](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L41) |  |
+| <code>public string? Exchange { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:42](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L42) |  |
+| <code>public string? Provider { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:43](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L43) |  |
+| <code>public bool IsSubscribed { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:44](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L44) |  |
+| <code>public DateTime? FirstDataPoint { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:45](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L45) |  |
+| <code>public DateTime? LastDataPoint { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:46](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L46) |  |
+| <code>public List&lt;string&gt; DataTypes { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:47](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L47) |  |
+
 ## SymbolStorageStats
 
 Qualified name: <code>Meridian.Ui.Services.SymbolStorageStats</code>. Kind: `class`.
@@ -1000,128 +1146,3 @@ Declared public members:
 | <code>public int? LookbackDays { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:273](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L273) |  |
 | <code>public string? Priority { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:274](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L274) |  |
 | <code>public List&lt;string&gt;? Tags { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:275](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L275) |  |
-
-## UpdateMaintenanceScheduleRequest
-
-Qualified name: <code>Meridian.Ui.Services.UpdateMaintenanceScheduleRequest</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:322](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L322).
-
-Carries optional changes to a maintenance schedule&#x27;s timing, target, priority, and execution limits.
-
-```csharp
-public sealed class UpdateMaintenanceScheduleRequest
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? Name { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:324](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L324) |  |
-| <code>public string? Description { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:325](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L325) |  |
-| <code>public string? CronExpression { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:326](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L326) |  |
-| <code>public string? TargetPath { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:327](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L327) |  |
-| <code>public string? Priority { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:328](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L328) |  |
-| <code>public int? MaxDurationMinutes { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:329](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L329) |  |
-| <code>public int? MaxRetries { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:330](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L330) |  |
-
-## ValidationDetail
-
-Qualified name: <code>Meridian.Ui.Services.ValidationDetail</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:466](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L466).
-
-Describes one categorized readiness validation item and its outcome.
-
-```csharp
-public sealed class ValidationDetail
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Category { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:468](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L468) |  |
-| <code>public string Item { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:469](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L469) |  |
-| <code>public bool Valid { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:470](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L470) |  |
-| <code>public string? Message { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:471](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L471) |  |
-
-## ValidationIssue
-
-Qualified name: <code>Meridian.Ui.Services.ValidationIssue</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:920](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L920).
-
-Describes a portable-package validation finding and its severity.
-
-```csharp
-public sealed class ValidationIssue
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:922](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L922) |  |
-| <code>public string Severity { get; set; } = &quot;Warning&quot;;</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:923](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L923) |  |
-
-## ValidationResult
-
-Qualified name: <code>Meridian.Ui.Services.ValidationResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:548](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L548).
-
-Describes a validation outcome with an optional error and corrective suggestion.
-
-```csharp
-public sealed class ValidationResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Valid { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:550](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L550) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:551](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L551) |  |
-| <code>public string? Suggestion { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:552](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L552) |  |
-
-## VerifiedFile
-
-Qualified name: <code>Meridian.Ui.Services.VerifiedFile</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:173](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L173).
-
-A verified file with checksum.
-
-```csharp
-public sealed class VerifiedFile
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:175](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L175) |  |
-| <code>public string Checksum { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:176](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L176) |  |
-| <code>public bool IsVerified { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:177](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L177) |  |
-| <code>public long Size { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:178](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L178) |  |
-
-## ViolationSeverity
-
-Qualified name: <code>Meridian.Ui.Services.ViolationSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:73](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L73).
-
-Severity level for violations.
-
-```csharp
-public enum ViolationSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:75](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L75) |  |
-| <code>Warning</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:76](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L76) |  |
-| <code>Error</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:77](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L77) |  |

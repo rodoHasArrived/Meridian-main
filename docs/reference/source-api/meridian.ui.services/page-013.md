@@ -6,6 +6,162 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LoggingServiceBase
+
+Qualified name: <code>Meridian.Ui.Services.Services.LoggingServiceBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:49](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L49).
+
+Abstract base class for structured logging shared between platforms. Provides log formatting, level filtering, and event raising. Platform-specific output (Debug.WriteLine, file, etc.) is delegated to derived classes. Part of Phase 2 service extraction.
+
+```csharp
+public abstract class LoggingServiceBase : Contracts.ILoggingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LogLevel MinimumLevel { get; set; } = LogLevel.Debug;</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:53](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L53) |  |
+| <code>public event EventHandler&lt;LogEntryEventArgs&gt;? LogWritten;</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:55](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L55) |  |
+| <code>public void LogInfo(string message, params(string key, string value)[] properties) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:57](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L57) |  |
+| <code>public void LogWarning(string message, params(string key, string value)[] properties) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:60](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L60) |  |
+| <code>public void LogError(string message, Exception? ex = null) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:63](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L63) |  |
+| <code>public void LogError(string message, Exception? ex, params(string key, string value)[] properties) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:66](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L66) |  |
+| <code>public void LogDebug(string message, params(string key, string value)[] properties) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:69](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L69) |  |
+| <code>public static string FormatLogEntry(LogLevel level, DateTime timestamp, string message, Exception? exception, (string key, string value)[] properties);</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:111](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L111) |  |
+
+## LogLevel
+
+Qualified name: <code>Meridian.Ui.Services.Services.LogLevel</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:9](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L9).
+
+Represents the severity level of a log entry.
+
+```csharp
+public enum LogLevel : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Debug</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:11](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L11) |  |
+| <code>Info</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:12](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L12) |  |
+| <code>Warning</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:13](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L13) |  |
+| <code>Error</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:14](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L14) |  |
+
+## NavigationServiceBase
+
+Qualified name: <code>Meridian.Ui.Services.Services.NavigationServiceBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/NavigationServiceBase.cs:11](../../../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs#L11).
+
+Abstract base class for navigation management shared across desktop applications. Provides shared page registry, history tracking, breadcrumb generation, and event raising. Platform-specific frame navigation is delegated to derived classes. Part of Phase 6C.2 service deduplication (ROADMAP item 6C.2).
+
+```csharp
+public abstract class NavigationServiceBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public event EventHandler&lt;NavigationEventArgs&gt;? Navigated;</code> | [src/Meridian.Ui.Services/Services/NavigationServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs#L17) | Event raised when navigation occurs. |
+| <code>public virtual bool CanGoBack =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NavigationServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs#L20) | Gets whether navigation can go back in the history. |
+| <code>public bool NavigateTo(string pageTag, object? parameter = null);</code> | [src/Meridian.Ui.Services/Services/NavigationServiceBase.cs:36](../../../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs#L36) | Navigates to a page by tag name. |
+| <code>public bool NavigateTo(Type pageType, object? parameter = null);</code> | [src/Meridian.Ui.Services/Services/NavigationServiceBase.cs:70](../../../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs#L70) | Navigates to a page type directly. |
+| <code>public virtual void GoBack();</code> | [src/Meridian.Ui.Services/Services/NavigationServiceBase.cs:79](../../../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs#L79) | Navigates back in the history. |
+| <code>public Type? GetPageType(string pageTag);</code> | [src/Meridian.Ui.Services/Services/NavigationServiceBase.cs:94](../../../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs#L94) | Gets the page type for a given tag. |
+| <code>public IReadOnlyList&lt;NavigationEntry&gt; GetBreadcrumbs();</code> | [src/Meridian.Ui.Services/Services/NavigationServiceBase.cs:102](../../../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs#L102) | Gets navigation breadcrumbs (history entries). |
+| <code>public IReadOnlyCollection&lt;string&gt; GetRegisteredPages() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NavigationServiceBase.cs:110](../../../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs#L110) | Gets all registered page tags. |
+| <code>public bool IsPageRegistered(string pageTag) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NavigationServiceBase.cs:115](../../../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs#L115) | Checks if a page tag is registered. |
+| <code>public string? GetCurrentPageTag();</code> | [src/Meridian.Ui.Services/Services/NavigationServiceBase.cs:120](../../../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs#L120) | Gets the current page tag from history. |
+| <code>public virtual void ClearHistory();</code> | [src/Meridian.Ui.Services/Services/NavigationServiceBase.cs:130](../../../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs#L130) | Clears navigation history. |
+
+## NotificationEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.Services.NotificationEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:42](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L42).
+
+Event args for notification received.
+
+```csharp
+public sealed class NotificationEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:44](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L44) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:45](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L45) |  |
+| <code>public NotificationType Type { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:46](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L46) |  |
+| <code>public string Tag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:47](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L47) |  |
+| <code>public int DurationMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:48](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L48) |  |
+
+## NotificationHistoryItem
+
+Qualified name: <code>Meridian.Ui.Services.Services.NotificationHistoryItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:29](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L29).
+
+Notification history item.
+
+```csharp
+public sealed class NotificationHistoryItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:31](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L31) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:32](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L32) |  |
+| <code>public NotificationType Type { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:33](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L33) |  |
+| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:34](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L34) |  |
+| <code>public string Tag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:35](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L35) |  |
+| <code>public bool IsRead { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:36](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L36) |  |
+
+## NotificationServiceBase
+
+Qualified name: <code>Meridian.Ui.Services.Services.NotificationServiceBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:57](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L57).
+
+Abstract base class for notification management shared between platforms. Provides smart suppression (deduplication + rate limiting), history tracking, settings management, and domain-specific notification methods. Part of Phase 2 service extraction.
+
+```csharp
+public abstract class NotificationServiceBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public event EventHandler&lt;NotificationEventArgs&gt;? NotificationReceived;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:72](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L72) |  |
+| <code>public void ShowNotification(string title, string message, NotificationType type = NotificationType.Info, int durationMs = 5000);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:74](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L74) |  |
+| <code>public Task NotifyErrorAsync(string title, string message, Exception? exception = null);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:149](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L149) |  |
+| <code>public void NotifySuccess(string title, string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:161](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L161) |  |
+| <code>public void NotifyWarning(string title, string message);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:164](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L164) |  |
+| <code>public Task NotifyWarningAsync(string title, string message);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:171](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L171) |  |
+| <code>public Task NotifyAsync(string title, string message, NotificationType type = NotificationType.Info);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:177](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L177) |  |
+| <code>public void NotifyInfo(string title, string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:183](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L183) |  |
+| <code>public Task NotifyConnectionStatusAsync(bool connected, string providerName, string? details = null);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:186](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L186) |  |
+| <code>public Task NotifyBackfillCompleteAsync(bool success, int symbolCount, int barsWritten, TimeSpan duration);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:207](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L207) |  |
+| <code>public Task NotifyScheduledJobAsync(string jobName, bool started, bool success = true);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:223](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L223) |  |
+| <code>public Task NotifyDataGapAsync(string symbol, DateTime gapStart, DateTime gapEnd, int missingBars);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:238](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L238) |  |
+| <code>public Task NotifyStorageWarningAsync(double usedPercent, long freeSpaceBytes);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:252](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L252) |  |
+| <code>public void SendTestNotification() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:268](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L268) |  |
+| <code>public void UpdateSettings(NotificationSettings settings) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:271](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L271) |  |
+| <code>public NotificationSettings GetSettings() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:274](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L274) |  |
+| <code>public IReadOnlyList&lt;NotificationHistoryItem&gt; GetHistory();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:276](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L276) |  |
+| <code>public void ClearHistory();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:282](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L282) |  |
+| <code>public void MarkAsRead(int index);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:293](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L293) |  |
+| <code>public int GetUnreadCount();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:302](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L302) |  |
+
 ## NotificationSettings
 
 Qualified name: <code>Meridian.Ui.Services.Services.NotificationSettings</code>. Kind: `class`.
@@ -971,140 +1127,3 @@ Declared public members:
 | <code>public bool FindSmallFiles { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1327](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1327) |  |
 | <code>public bool AnalyzeTiering { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1328](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1328) |  |
 | <code>public int ColdTierAgeDays { get; set; } = 90;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1329](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1329) |  |
-
-## StorageAnalysisProgress
-
-Qualified name: <code>Meridian.Ui.Services.StorageAnalysisProgress</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1335](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1335).
-
-Progress report for storage analysis.
-
-```csharp
-public sealed class StorageAnalysisProgress
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Stage { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1337](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1337) |  |
-| <code>public int Percentage { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1338](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1338) |  |
-
-## StorageAnalytics
-
-Qualified name: <code>Meridian.Ui.Services.StorageAnalytics</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:399](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L399).
-
-Storage analytics data.
-
-```csharp
-public sealed class StorageAnalytics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateTime? LastUpdated { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:401](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L401) |  |
-| <code>public long TotalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:402](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L402) |  |
-| <code>public int TotalFileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:403](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L403) |  |
-| <code>public long TradeSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:404](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L404) |  |
-| <code>public int TradeFileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:405](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L405) |  |
-| <code>public long DepthSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:406](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L406) |  |
-| <code>public int DepthFileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:407](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L407) |  |
-| <code>public long HistoricalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:408](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L408) |  |
-| <code>public int HistoricalFileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:409](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L409) |  |
-| <code>public SymbolAnalyticsInfo[] SymbolBreakdown { get; set; } = Array.Empty&lt;SymbolAnalyticsInfo&gt;();</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:410](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L410) |  |
-| <code>public long DailyGrowthBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:411](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L411) |  |
-| <code>public int? ProjectedDaysUntilFull { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:412](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L412) |  |
-| <code>public int TotalFiles =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:415](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L415) | Total file count (alias for TotalFileCount). |
-
-## StorageAnalyticsEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.StorageAnalyticsEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:435](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L435).
-
-Storage analytics event args.
-
-```csharp
-public sealed class StorageAnalyticsEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StorageAnalytics? Analytics { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:437](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L437) |  |
-
-## StorageAnalyticsService
-
-Qualified name: <code>Meridian.Ui.Services.StorageAnalyticsService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:13](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L13).
-
-Service for analyzing storage usage and providing analytics.
-
-```csharp
-public sealed class StorageAnalyticsService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StorageAnalyticsService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:22](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L22) |  |
-| <code>public async Task&lt;StorageAnalytics&gt; GetAnalyticsAsync(bool forceRefresh = false, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:33](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L33) | Gets storage analytics, using cache if available. |
-| <code>public async Task&lt;DriveStorageInfo?&gt; GetDriveInfoAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:287](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L287) | Gets storage usage for the data drive. |
-| <code>public Task&lt;bool&gt; SymbolHasDataAsync(string symbol, string dataRoot);</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:315](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L315) | Checks if any data files exist for a given symbol. |
-| <code>public Task&lt;DateTime?&gt; GetLastUpdateTimeAsync(string symbol, string dataRoot);</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:338](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L338) | Gets the last update time for a symbol&#x27;s data files. |
-| <code>public static string FormatBytes(long bytes) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:388](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L388) | Formats bytes into human-readable string. |
-| <code>public event EventHandler&lt;StorageAnalyticsEventArgs&gt;? AnalyticsUpdated;</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:393](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L393) | Event raised when analytics are updated. |
-
-## StorageCatalogApiResult
-
-Qualified name: <code>Meridian.Ui.Services.StorageCatalogApiResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1574](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1574).
-
-Response from /api/storage/catalog endpoint.
-
-```csharp
-public sealed class StorageCatalogApiResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateTime GeneratedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1576](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1576) |  |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1577](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1577) |  |
-| <code>public long TotalBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1578](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1578) |  |
-| <code>public List&lt;CatalogEntry&gt; Entries { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1579](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1579) |  |
-| <code>public Dictionary&lt;string, long&gt; BytesBySymbol { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1580](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1580) |  |
-| <code>public Dictionary&lt;string, long&gt; BytesByDataType { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1581](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1581) |  |
-| <code>public Dictionary&lt;string, long&gt; BytesByTier { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1582](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1582) |  |
-
-## StorageCategory
-
-Qualified name: <code>Meridian.Ui.Services.StorageCategory</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:27](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L27).
-
-Describes a storage category&#x27;s file count, size, and share of overall usage.
-
-```csharp
-public sealed class StorageCategory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:29](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L29) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:30](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L30) |  |
-| <code>public long SizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:31](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L31) |  |
-| <code>public int FileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:32](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L32) |  |
-| <code>public double Percentage { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:33](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L33) |  |

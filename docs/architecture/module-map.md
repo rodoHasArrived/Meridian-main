@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-10-30 (product-objective alignment; source ownership retained)
+**Reviewed:** 2026-10-30
 
 This map gives maintainers a quick layer-oriented view of Meridian.
 
