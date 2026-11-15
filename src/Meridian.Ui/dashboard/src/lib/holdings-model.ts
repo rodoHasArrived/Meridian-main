@@ -138,3 +138,30 @@ export function buildHoldingsModel(portfolio: PortfolioWorkspaceResponse | null 
     openPositions: resolveKpi("portfolio.open-positions", models)
   };
 }
+
+/** The row figures as the holdings table and the holding detail panel display them. */
+export function holdingRowFigures(row: HoldingsModelRow) {
+  return {
+    marketValue: row.marketValue.display,
+    marketValueFigure: row.marketValue,
+    currency: row.currencyCode,
+    currencyFigure: row.currency,
+    weight: row.weight.display,
+    weightFigure: row.weight,
+    weightBasis: row.weight.reason,
+    exposureAmount: row.exposureAmount
+  };
+}
+
+/** The headline total exposure, restated under the holdings table from the same model. */
+export interface HoldingsTotalLine { exposure: string; exposureAmount: string | null; currency: string | null; reason: string | null }
+
+export function holdingsTotalLine({ totalExposure }: HoldingsModel): HoldingsTotalLine {
+  const unavailable = totalExposure.status === "unavailable";
+  return {
+    exposure: unavailable ? MISSING_FIGURE : totalExposure.value,
+    exposureAmount: totalExposure.status === "available" ? totalExposureAmount(totalExposure) : null,
+    currency: totalExposure.currency ?? null,
+    reason: unavailable ? totalExposure.delta || "Total exposure is unavailable." : null
+  };
+}

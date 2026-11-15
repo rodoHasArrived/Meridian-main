@@ -13,7 +13,7 @@ import {
   multiAssetStatusTone
 } from "./portfolio-screen.multi-asset-coverage";
 import { formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
-import { buildHoldingsModel, totalExposureAmount, type HoldingFigure } from "@/lib/holdings-model";
+import { buildHoldingsModel, holdingRowFigures, holdingsTotalLine, type HoldingFigure, type HoldingsTotalLine } from "@/lib/holdings-model";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
   comparisonToneForPnl,
@@ -490,8 +490,7 @@ export interface PortfolioScreenViewModel {
   hasPositions: boolean;
   positionRows: PortfolioPositionRow[];
   positionListLabel: string;
-  /** The headline total exposure, restated under the holdings table from the same model. */
-  holdingsTotal: { exposure: string; exposureAmount: string | null; currency: string | null; reason: string | null };
+  holdingsTotal: HoldingsTotalLine;
   positionCountLabel: string;
   positionDetailId: string;
   selectedPositionChip: PortfolioHeaderChip;
@@ -694,14 +693,7 @@ export function buildPortfolioScreenViewModel({
       side: p.side,
       quantity: p.quantity,
       avgPrice: p.averagePrice,
-      marketValue: holding.marketValue.display,
-      marketValueFigure: holding.marketValue,
-      currency: holding.currencyCode,
-      currencyFigure: holding.currency,
-      weight: holding.weight.display,
-      weightFigure: holding.weight,
-      weightBasis: holding.weight.reason,
-      exposureAmount: holding.exposureAmount,
+      ...holdingRowFigures(holding),
       markFreshness: presentMarkFreshness(p.markFreshness),
       markPrice: p.markPrice,
       dayPnl: p.dayPnl,
@@ -856,12 +848,7 @@ export function buildPortfolioScreenViewModel({
     hasPositions: positionRows.length > 0,
     positionRows,
     positionListLabel: "Open positions",
-    holdingsTotal: {
-      exposure: exposureKpi.status === "unavailable" ? "—" : exposureKpi.value,
-      exposureAmount: exposureKpi.status === "available" ? totalExposureAmount(exposureKpi) : null,
-      currency: exposureKpi.currency ?? null,
-      reason: exposureKpi.status === "unavailable" ? exposureKpi.delta || "Total exposure is unavailable." : null
-    },
+    holdingsTotal: holdingsTotalLine(holdings),
     positionCountLabel: `${positionRows.length} position${positionRows.length === 1 ? "" : "s"}`,
     positionDetailId: "portfolio-position-detail",
     selectedPositionChip: { label: "Selected detail", value: selectedPosition?.title ?? "None" },
