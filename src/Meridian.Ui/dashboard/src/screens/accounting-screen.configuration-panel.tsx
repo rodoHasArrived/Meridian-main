@@ -13,6 +13,7 @@ import { ChartAccountPathBuilder, ConfigureActivationRail, ConfigureChangePrevie
 import type { AccountingConfigurationViewModel, AccountingRulesStudioPromotionReadinessViewModel } from "@/screens/accounting-screen.view-model";
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { statusBadgeVariant, statusPanelClass, statusTextClass } from "@/design-system/status-styles";
+import { AutomaticPostingAuthorityPanel } from "./accounting-screen.automation-grant";
 
 export function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationViewModel }) {
   return (
@@ -735,6 +736,7 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
         </div>
         <ConfigureActivationRail view={view} />
       </div>
+      <AutomaticPostingAuthorityPanel />
     </section>
   );
 }

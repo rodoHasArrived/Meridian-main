@@ -26,6 +26,13 @@ vi.mock("@/lib/reporting-income-comparison-api", async (importOriginal) => ({
   getIncomeComparisonCandidates: vi.fn(async () => [])
 }));
 
+// The additive accounting ZIP has its own permission and download tests. Keep this suite's
+// ordered transport responses attached to the existing report-profile commands under review.
+vi.mock("@/lib/api/accounting-integration.api", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/api/accounting-integration.api")>(),
+  getGeneralLedgerExportAccess: vi.fn(async () => true)
+}));
+
 // Personal-view reads are covered by the workbench suite. Keep export command
 // response ordering independent of that separate background preferences read.
 vi.mock("@/lib/table-workbench", async (importOriginal) => ({

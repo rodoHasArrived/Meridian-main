@@ -3002,7 +3002,8 @@ export function useAccountingReconciliationViewModel(
       || breakQueueLoading || statementRunsLoading || breakQueueError || statementRunsError) return;
     const knownBreakRun = breakQueue.find((item) => reconciliationQueue.some((run) => run.runId === item.runId)
       || statementRuns.some((run) => run.runId === item.runId))?.runId;
-    const runId = selectedRunId ?? knownBreakRun ?? statementRuns[0]?.runId ?? reconciliationQueue[0]?.runId ?? null;
+    const requestedBreakRun = breakQueue.find((item) => item.breakId === selectedBreakId)?.runId;
+    const runId = selectedRunId ?? requestedBreakRun ?? knownBreakRun ?? statementRuns[0]?.runId ?? reconciliationQueue[0]?.runId ?? null;
     const breakId = selectedBreakId ?? breakQueue.find((item) => !runId || item.runId === runId)?.breakId ?? null;
     if (runId !== selectedRunId || breakId !== selectedBreakId) selectionState.replaceSelection(runId, breakId);
   }, [breakQueue, breakQueueError, breakQueueLoading, breakQueueReadScope, reconciliationQueue, scopeRevision,
