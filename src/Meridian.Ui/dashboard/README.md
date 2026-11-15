@@ -511,8 +511,22 @@ applied financial filter. Trading metrics remain owned by the Trading read model
 
 Portfolio defaults to Live holdings. The source selector reveals retained run records
 with their own market-value and record-count definitions; exposure and market value
-are distinct measures. Compare position sources is a collapsed disclosure. Holding
-table and inspector values retain their source's supplied meaning.
+are distinct measures. Compare position sources is a collapsed disclosure.
+
+The holdings table, the headline figures and the holding detail panel read one model,
+`lib/holdings-model.ts`, so they cannot disagree. Values the source supplies are shown
+unchanged. When the source omits them, the model derives two row figures and says so:
+
+- Market value: the last recorded value (quantity × recorded price), marked "Stale" with the
+  price date, or "no price date" when the source gave none. A mark the shared valuation policy
+  rates Current is not marked stale.
+- Weight: the holding's share of the headline total exposure, with that basis in the tooltip.
+
+A value that does not exist renders "—" with the reason as a tooltip and screen-reader text,
+never a sentence in the cell. Currency has its own column: the supplied ISO code, or USD for a
+"$" amount under the same rule the headline total uses. The line under the table restates the
+headline total. Headline aggregates are unchanged: missing or mixed denominations still
+withhold them.
 
 The screenshot harness independently reads `[data-kpi-rendered-value]`, checks it
 against the registry display annotation, then compares KPI ID + applied scope across
@@ -520,6 +534,12 @@ routes within each scenario (and explicit source revision, when supplied). Both 
 and formatted discrepancies fail the run and remain in `manifest.kpiConsistency`.
 Fixtures must be consistent within the same scenario; differing sources need distinct
 registry IDs/scopes, not cosmetic labels that hide discrepancies.
+
+The harness also runs `checkHoldingsTotals` per page: where `[data-holdings-table]` shows every
+loaded row, the `[data-holding-exposure]` amounts must sum to the table total and to the page's
+`portfolio.total-exposure` headline. Conflicts fail the run and remain in
+`manifest.holdingsTotals`. Its `article-before-vowel` copy rule flags "a" before a vowel sound;
+generated sentences use `withIndefiniteArticle` from `@/lib/format`.
 
 Focused verification: `kpi-registry.test.ts`, `stat-strip.test.tsx`, registry card tests,
 Portfolio/Settings suites, and `node --test scripts/dev/capture-web-screenshots.test.mjs

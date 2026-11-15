@@ -73,6 +73,14 @@ Each phase ships on its own, behind the existing browser smoke tests and screens
   - Example: `"12345678901234.565"` now renders `12,345,678,901,234.57`, and `"1.005"` renders
     `1.01` (previously `1.00`).
 
+**Portfolio figure consistency (landed 2026-11-15, extends P1 and P3):** the Portfolio holdings
+table, headline figures and holding detail panel read one model (`lib/holdings-model.ts`). With no
+current price, Market value shows the last recorded value with a "Stale" marker and the price date;
+a value that does not exist shows "—" with the reason as a tooltip. The table has a Currency column
+and a total line that restates the headline. The screenshot script fails a page whose table rows do
+not sum to the headline Total exposure. The page heading is "Holdings". The WPF Portfolio surface
+does not have this presentation yet.
+
 **P1 first step (landed 2026-11-13):** the bottom status bar no longer repeats the
 masthead's worst issue ("Cash variance needs review +5 more"). It holds Sync and page Freshness
 only, so the trust strip is the one shell place that names the worst open issue.
