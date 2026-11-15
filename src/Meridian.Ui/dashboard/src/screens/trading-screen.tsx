@@ -1,4 +1,5 @@
 import { SectionDescription } from "@/components/ui/section-description";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React, { type ReactNode } from "react";
@@ -561,6 +562,8 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
       tradingReadiness.refresh()
     ]);
   }
+  // Readiness and execution evidence reload with the header Refresh; neither has its own button.
+  useOnGlobalRefresh(refreshSessionEvidence);
 
   if (!data) {
     return <TradingLoadingPanel state={shellVm.loadingState} />;

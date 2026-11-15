@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { Button } from "@/components/ui/button";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { apiGetJson } from "@/lib/api/http-client";
@@ -61,6 +62,9 @@ export function SettingsChangeImpactBanner({ loadStatus = loadConfigurationChang
     };
   }, [loadStatus, refresh]);
 
+  // Activation status reloads with the header Refresh; a local Retry appears only after a failure.
+  useOnGlobalRefresh(() => setRefresh(value => value + 1));
+
   const pending = status?.pendingChanges ?? [];
   if (pending.length === 0 && !error) return null;
   return (
@@ -85,9 +89,9 @@ export function SettingsChangeImpactBanner({ loadStatus = loadConfigurationChang
         />
       ) : null}
       {error ? <p className="text-xs text-muted-foreground" role="status">Setting activation status is unavailable.{pending.length > 0 ? " The last confirmed pending changes remain shown." : ""}</p> : null}
-      <Button size="sm" variant="outline" disabled={busy} onClick={() => setRefresh(value => value + 1)}>
-        {busy ? "Checking activation…" : "Refresh activation status"}
-      </Button>
+      {error ? <Button size="sm" variant="outline" disabled={busy} onClick={() => setRefresh(value => value + 1)}>
+        {busy ? "Checking activation…" : "Retry"}
+      </Button> : null}
     </section>
   );
 }

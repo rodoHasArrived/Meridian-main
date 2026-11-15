@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -20,6 +21,7 @@ export function OperatorTriageQueue({ fundAccountId, fallback, refreshKey = fals
   refreshKey?: unknown;
 }) {
   const triage = useOperatorTriageInbox({ fundAccountId, refreshKey });
+  useOnGlobalRefresh(triage.reload);
   const { inbox, loading, error, busy, rows, selected, capability, openAction } = triage;
   const keyboard = useQueueKeyboard({
     rows, selectedId: selected?.workItemId ?? null, getId: (item: OperatorTriageItem) => item.workItemId,
@@ -45,7 +47,7 @@ export function OperatorTriageQueue({ fundAccountId, fallback, refreshKey = fals
     {!inbox ? (fallback ?? null) : <>
       <div className="flex flex-wrap items-center justify-between gap-2" role="group" aria-label="Inbox filters">
         <p className="text-xs text-muted-foreground">{rows.length} of {pluralizeCount(inbox.items.length, "inbox item")} · {fundAccountId ? "Account filter applied" : "All authorized accounts"}</p>
-        <OperatorTriageInboxActions triage={triage} />
+        <OperatorTriageInboxActions />
       </div>
       <OperatorTriageNotices triage={triage} />
       <div onKeyDownCapture={keyboard} className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
@@ -90,10 +92,12 @@ export function triageSelection(triage: OperatorTriageInboxState): TableWorkbenc
   };
 }
 
-/** Refresh and shortcut help for the loaded inbox. Bulk assignment lives in the selection bar. */
-export function OperatorTriageInboxActions({ triage }: { triage: OperatorTriageInboxState }) {
+/**
+ * Shortcut help for the loaded inbox. Bulk assignment lives in the selection bar, and the inbox
+ * reloads with the header Refresh; "Retry inbox" appears only in its error state.
+ */
+export function OperatorTriageInboxActions() {
   return <div className="flex flex-wrap items-center gap-2">
-    <Button size="sm" variant="outline" disabled={triage.loading || triage.busy} onClick={triage.reload}>Refresh inbox</Button>
     <details className="text-xs"><summary className="cursor-pointer">Shortcuts</summary><p className="mt-1">j/k select; a opens assignment. Acknowledgement and snooze never clear source blockers.</p></details>
   </div>;
 }

@@ -42,8 +42,6 @@ export interface DailyControlTowerScreenProps {
   trustStrip: AppShellTrustStripState;
   /** The shell attention state the masthead pill shows; Today lists every signal behind it. */
   attention: AppShellAttentionState;
-  onEditOperatingScope?: () => void;
-  onRefresh?: () => void;
   refreshing?: boolean;
 }
 
@@ -56,8 +54,6 @@ export function DailyControlTowerScreen({
   viewModel,
   trustStrip,
   attention,
-  onEditOperatingScope,
-  onRefresh,
   refreshing = false
 }: DailyControlTowerScreenProps) {
   const model = buildDailyControlTowerModel(viewModel, trustStrip);
@@ -225,18 +221,6 @@ export function DailyControlTowerScreen({
                   {model.nextActionLabel}<ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               </Button>
-              {onRefresh ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={refreshing}
-                  aria-label={refreshing ? "Refreshing: control tower evidence" : "Refresh evidence: control tower"}
-                  onClick={onRefresh}
-                >
-                  {refreshing ? "Refreshing" : "Refresh evidence"}
-                </Button>
-              ) : null}
             </>
           }
         />
@@ -245,7 +229,6 @@ export function DailyControlTowerScreen({
       <section aria-label="Daily control tower confidence" className="space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span title={viewModel.operatingScope.summary}><span className="text-muted-foreground">Scope </span>{viewModel.operatingScope.hasScope ? viewModel.operatingScope.summary : "All authorized scopes"}</span>
             <span title={freshness.detail}><span className="text-muted-foreground">Selected evidence </span>{freshness.value}</span>
             {/* The source tabs show these counts visually; retain their full accessible context here. */}
             <span className="sr-only">
@@ -253,11 +236,6 @@ export function DailyControlTowerScreen({
               {" · "}
               {inboxCount !== null ? pluralizeCount(inboxCount, "shared inbox item") : triage.error ? "Shared inbox unavailable" : "Shared inbox loading"}
             </span>
-            {onEditOperatingScope ? (
-              <Button type="button" variant="ghost" size="sm" onClick={onEditOperatingScope}>
-                {viewModel.operatingScope.hasScope ? "Change scope filter" : "Set operating scope"}
-              </Button>
-            ) : null}
           </div>
           {showsInbox && triage.inbox ? (
             <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Inbox filters" aria-busy={triage.loading || triage.busy}>
@@ -278,7 +256,7 @@ export function DailyControlTowerScreen({
                   </span>
                 )
               ) : null}
-              <OperatorTriageInboxActions triage={triage} />
+              <OperatorTriageInboxActions />
             </div>
           ) : null}
         </div>

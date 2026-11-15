@@ -1,4 +1,6 @@
+import { useState, type ReactNode } from "react";
 import { screen, fireEvent, waitFor, within } from "@testing-library/react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import userEvent from "@testing-library/user-event";
 import { resolveTradingRouteView, TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
@@ -338,9 +340,20 @@ async function renderTradingScreen(
   initialEntry = "/trading",
   fundAccountId?: string | null
 ) {
-  const result = renderWithRouter(<TradingScreen data={screenData} fundAccountId={fundAccountId} />, { initialEntries: [initialEntry] });
+  const result = renderWithRouter(<WithHeaderRefresh><TradingScreen data={screenData} fundAccountId={fundAccountId} /></WithHeaderRefresh>, { initialEntries: [initialEntry] });
   await waitForAsyncEffects();
   return result;
+}
+
+/** Stands in for the shell: its button is the header Refresh, the one refresh control. */
+function WithHeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return (
+    <GlobalRefreshProvider sequence={sequence}>
+      <button type="button" onClick={() => setSequence((value) => value + 1)}>Header refresh</button>
+      {children}
+    </GlobalRefreshProvider>
+  );
 }
 
 async function openPromotionGate(user: ReturnType<typeof userEvent.setup>) {
@@ -744,7 +757,7 @@ describe("TradingScreen", () => {
     expect(within(confidence).queryByText("Disconnected")).not.toBeInTheDocument();
     expect(within(confidence).getByText("Complete and consistent broker evidence")).toBeInTheDocument();
     expect(screen.getByText("Overall: Blocked")).toBeInTheDocument();
-    rerender(<TestMemoryRouter initialEntries={["/trading"]}><TradingScreen data={{ ...data, readiness }} fundAccountId="22222222-2222-2222-2222-222222222222" /></TestMemoryRouter>);
+    rerender(<TestMemoryRouter initialEntries={["/trading"]}><WithHeaderRefresh><TradingScreen data={{ ...data, readiness }} fundAccountId="22222222-2222-2222-2222-222222222222" /></WithHeaderRefresh></TestMemoryRouter>);
     expect(within(confidence).queryByText("Connected · healthy")).not.toBeInTheDocument();
     expect(within(confidence).getAllByText("Broker unavailable")[0]).toBeInTheDocument();
   });
@@ -877,7 +890,7 @@ describe("TradingScreen", () => {
     });
 
     await renderTradingScreen(serverReadinessData);
-    await user.click(screen.getByRole("button", { name: /refresh trading readiness/i }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
 
     await waitFor(() => expect(api.getTradingReadiness).toHaveBeenCalledTimes(1));
     expect(screen.getByText("Overall: Review required")).toBeInTheDocument();
@@ -896,7 +909,7 @@ describe("TradingScreen", () => {
     vi.mocked(api.getTradingReadiness).mockResolvedValueOnce(serverReadinessData.readiness!);
 
     await renderTradingScreen(serverReadinessData, "/trading", fundAccountId);
-    await user.click(screen.getByRole("button", { name: /refresh trading readiness/i }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
 
     await waitFor(() => expect(api.getTradingReadiness).toHaveBeenCalledTimes(1));
     expect(api.getTradingReadiness).toHaveBeenCalledWith(expect.objectContaining({
@@ -1360,7 +1373,7 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getPaperSessionReplayVerification).toHaveBeenCalledWith("sess-1"));
 
     // Operator refreshes readiness — stale work item clears
-    await user.click(screen.getByRole("button", { name: /refresh trading readiness/i }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
 
     await waitFor(() =>
       expect(screen.queryByText(/Replay stale/i)).not.toBeInTheDocument()
