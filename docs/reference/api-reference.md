@@ -761,6 +761,19 @@ Reads (including `POST .../search`) require `ViewSecurityMaster` or `ModifySecur
 | POST | `/api/security-master/money-market-funds/{securityId}/rebuild` | Rebuild projections for one MMF |
 | GET | `/api/security-master/money-market-funds/rebuild/checkpoints` | Projection rebuild checkpoints |
 
+### Security Master reclassification reports
+
+Both routes are report-only scans under ADR-022 canonical asset-class homes: they propose changes and
+never write. Applying a proposal is a governed Security Master amendment. Both require
+`AdminMaintenance` and return `403` otherwise.
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST | `/api/security-master/structured-credit-reclassification/report` | Propose `StructuredCredit` terms for legacy securitised `Bond` and `CustomAsset` rows |
+| POST | `/api/security-master/profile-promotion/{profileId}/report` | Dry-run `CustomAsset` records pinned to a reclassifying profile under the profile's target class; returns `400` when `profileId` is not a reclassifying profile |
+
+Operator procedure: [Security Master custom-asset promotion](../operators/security-master-custom-asset-promotion.md).
+
 ### Packaging (`/api/packaging/*`)
 
 | Method | Route | Description |
