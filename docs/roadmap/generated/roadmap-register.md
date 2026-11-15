@@ -1563,7 +1563,7 @@ W10-PROV-001: in_progress; health green; evidence in_progress. Posted-ledger and
 - Evidence: [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs](../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs)
 - Evidence: [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs](../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs)
 - Evidence: [src/Meridian.Ui.Shared/Services/LedgerAmountProvenanceService.cs](../../../src/Meridian.Ui.Shared/Services/LedgerAmountProvenanceService.cs)
-- Evidence: [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs](../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs)
+- Evidence: [src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs](../../../src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs)
 - Evidence: [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs](../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs)
 - Evidence: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs](../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs)
 - Evidence: [src/Meridian.Ui/dashboard/src/screens/reporting-retained-amounts.tsx](../../../src/Meridian.Ui/dashboard/src/screens/reporting-retained-amounts.tsx)
