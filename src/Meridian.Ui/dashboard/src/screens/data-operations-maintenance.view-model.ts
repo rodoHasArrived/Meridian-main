@@ -8,7 +8,7 @@
  * the enum in this file.
  */
 
-import { formatDecimal, formatRatioAsPercent } from "@/lib/format";
+import { formatCountOfTotal, formatDecimal, formatRatioAsPercent } from "@/lib/format";
 import type {
   ArchiveMaintenanceExecution,
   MaintenanceScheduleSummary,
@@ -156,8 +156,8 @@ export function buildMaintenanceMetrics(
     },
     {
       id: "schedules",
-      label: "Schedules",
-      value: scheduleSummary === null ? "—" : `${scheduleSummary.enabledSchedules}/${scheduleSummary.totalSchedules}`,
+      label: "Schedules enabled",
+      value: scheduleSummary === null ? "—" : formatCountOfTotal(scheduleSummary.enabledSchedules, scheduleSummary.totalSchedules, "schedule"),
       detail: scheduleSummary === null
         ? "Schedule summary has not loaded."
         : scheduleSummary.nextDueScheduleName

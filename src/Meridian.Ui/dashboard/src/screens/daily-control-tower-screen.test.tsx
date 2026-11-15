@@ -156,7 +156,10 @@ describe("DailyControlTowerScreen", () => {
       screen.getByRole("region", { name: /Brokerage sync failed evidence summary/i })
     ).toBeInTheDocument();
     const confidence = screen.getByLabelText("Daily control tower confidence");
-    expect(confidence).toHaveTextContent("3 workspace signals in the queue · 2 shared inbox items");
+    // One count, with its rule stated once: 3 workspace signals + the inbox blocker; the
+    // informational inbox note is not counted.
+    expect(screen.getByTestId("today-attention-count")).toHaveTextContent("4 need attention · blocked + action, excluding snoozed");
+    expect(confidence).not.toHaveTextContent(/workspace signals? in the queue/);
     expect(confidence).toHaveTextContent("Stale update");
     expect(confidence).toHaveTextContent("May 14, 2026");
     expect(screen.queryByLabelText("Daily control tower decision drivers")).not.toBeInTheDocument();
@@ -164,8 +167,7 @@ describe("DailyControlTowerScreen", () => {
     expect(screen.getByText("More evidence").closest("details")).not.toHaveAttribute("open");
   });
 
-  it("keeps read-only inbox capability visible with its reason behind a compact disclosure", async () => {
-    const user = userEvent.setup();
+  it("keeps the seeded read-only inbox notice out of the normal view while its actions stay disabled", async () => {
     vi.mocked(getOperatorTriageInbox).mockResolvedValue({
       ...inboxResponse,
       persistenceAvailable: false,
@@ -173,12 +175,10 @@ describe("DailyControlTowerScreen", () => {
     });
     await renderLoaded();
 
-    const warning = screen.getByText("Read-only inbox");
-    expect(warning).toBeVisible();
-    expect(warning.closest("details")).not.toHaveAttribute("open");
-    await user.click(warning);
-    expect(screen.getByText("Inbox is read-only. Use a configured shared host for durable triage actions.")).toBeVisible();
-    expect(screen.queryByText(/^Seeded read-only inbox/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/read-only inbox/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("row", { name: "Cash break triage" }));
+    expect(screen.getByRole("button", { name: "Assign" })).toBeDisabled();
     expect(screen.getByRole("treegrid", { name: "Today queue" })).toBeInTheDocument();
   });
 
@@ -195,12 +195,13 @@ describe("DailyControlTowerScreen", () => {
     expect(total).toBeGreaterThan(0);
     const { container } = await renderLoaded();
 
-    // One grid under the one Queue heading; the badge counts exactly its workspace-signal rows.
+    const user = userEvent.setup();
+    // One grid under the one Queue heading; the default view lists exactly the counted items.
     const grid = screen.getByRole("treegrid", { name: "Today queue" });
     expect(screen.getByRole("region", { name: "Queue" })).toContainElement(grid);
     expect(screen.getAllByRole("treegrid")).toHaveLength(1);
     expect(grid.querySelectorAll('tbody tr[data-dense-row-id^="workspace:"]')).toHaveLength(total);
-    expect(grid.querySelectorAll('tbody tr[data-dense-row-id^="inbox:"]')).toHaveLength(2);
+    expect(grid.querySelectorAll('tbody tr[data-dense-row-id^="inbox:"]')).toHaveLength(1);
     expect(within(grid).getByRole("columnheader", { name: "Source" })).toBeInTheDocument();
     expect(screen.getByRole("row", { name: "Brokerage sync failed" })).toHaveTextContent("Workspace signal");
     expect(screen.getByRole("row", { name: "Cash break triage" })).toHaveTextContent("Shared inbox");
@@ -210,15 +211,25 @@ describe("DailyControlTowerScreen", () => {
     const keys = gridRowKeys();
     expect(keys.slice(0, 2)).toEqual(["inbox:cash-break", "workspace:work-item:brokerage-sync"]);
     expect(keys.slice(2, 4).every((key) => key?.startsWith("workspace:"))).toBe(true);
-    expect(keys[4]).toBe("inbox:pack-note");
+    expect(keys).toHaveLength(total + 1);
 
-    // Source filter counts are per source; the workspace count is the sidebar badge's count.
+    // Source filter counts are views of the one count: they add up to the total, which is the
+    // row count on screen and the count the sidebar shows beside Today for the same inbox.
     const source = screen.getByRole("tablist", { name: "Queue source" });
     expect(within(source).getByRole("tab", { name: /Workspace signals/ })).toHaveTextContent(String(total));
-    expect(within(source).getByRole("tab", { name: /Shared inbox/ })).toHaveTextContent("2");
-    expect(within(source).getByRole("tab", { name: /All sources/ })).toHaveTextContent(String(total + 2));
+    expect(within(source).getByRole("tab", { name: /Shared inbox/ })).toHaveTextContent("1");
+    expect(within(source).getByRole("tab", { name: /^All/ })).toHaveTextContent(String(total + 1));
+    expect(buildWorkspaceAttentionCounts(shell.workflowContinuity, inboxResponse.items).total).toBe(total + 1);
+    expect(screen.queryByText(/sidebar badges count/)).not.toBeInTheDocument();
     expect(container.querySelector("[data-today-inbox-state]")).toHaveAttribute("data-today-inbox-state", "ready");
-    expect(screen.getByRole("group", { name: "Inbox filters" })).toHaveTextContent("2 of 2 inbox items · All authorized accounts");
+    expect(screen.getByRole("group", { name: "Inbox filters" })).toHaveTextContent("All authorized accounts");
+    expect(screen.getByRole("group", { name: "Inbox filters" })).not.toHaveTextContent(/inbox items/);
+
+    // "All items" adds the informational note after the counted rows; the counts do not move.
+    await user.selectOptions(screen.getByRole("combobox", { name: "Show" }), "all");
+    expect(gridRowKeys()[total + 1]).toBe("inbox:pack-note");
+    expect(within(source).getByRole("tab", { name: /^All/ })).toHaveTextContent(String(total + 1));
+    await user.selectOptions(screen.getByRole("combobox", { name: "Show" }), "active");
 
     const results = await axe(container);
     expect(results.violations).toEqual([]);
@@ -230,7 +241,7 @@ describe("DailyControlTowerScreen", () => {
     const source = screen.getByRole("tablist", { name: "Queue source" });
 
     await user.click(within(source).getByRole("tab", { name: /Shared inbox/ }));
-    expect(gridRowKeys()).toEqual(["inbox:cash-break", "inbox:pack-note"]);
+    expect(gridRowKeys()).toEqual(["inbox:cash-break"]);
     // The leading workspace decision is filtered out, so the first visible row is selected.
     expect(screen.getByRole("row", { name: "Cash break triage" })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("region", { name: "Cash break triage triage detail" })).toBeInTheDocument();
@@ -240,8 +251,8 @@ describe("DailyControlTowerScreen", () => {
     expect(screen.queryByRole("group", { name: "Inbox filters" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: /Brokerage sync failed evidence summary/i })).toBeInTheDocument();
 
-    await user.click(within(source).getByRole("tab", { name: /All sources/ }));
-    expect(gridRowKeys()).toHaveLength(5);
+    await user.click(within(source).getByRole("tab", { name: /^All/ }));
+    expect(gridRowKeys()).toHaveLength(4);
   });
 
   it("keeps inbox triage on inbox rows and an unconfirmed command across source filtering", async () => {
@@ -303,13 +314,14 @@ describe("DailyControlTowerScreen", () => {
     expect(failure).toHaveTextContent("Inbox triage is unavailable. Workspace signals in this queue are unaffected");
     expect(gridRowKeys()).toHaveLength(3);
     expect(container.querySelector("[data-today-inbox-state]")).toHaveAttribute("data-today-inbox-state", "unavailable");
-    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("Shared inbox unavailable");
+    expect(screen.getByTestId("today-attention-count")).toHaveTextContent("3 need attention · blocked + action, excluding snoozed · shared inbox unavailable");
     unmount();
 
     vi.mocked(getOperatorTriageInbox).mockResolvedValue({ ...inboxResponse, persistenceAvailable: false, unavailableReason: "Production triage storage is unavailable." });
     const user = userEvent.setup();
     await renderLoaded();
     expect(screen.getByRole("alert")).toHaveTextContent("Production triage storage is unavailable");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Show" }), "all");
     await user.click(screen.getByRole("row", { name: "Pack reviewer note" }));
     expect(screen.getByRole("button", { name: "Acknowledge" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Assign" })).toBeDisabled();
@@ -400,6 +412,7 @@ describe("DailyControlTowerScreen", () => {
 
   it("shows the combined ranked queue without a scope selection", async () => {
     await renderLoaded({ search: "" });
+    await userEvent.setup().selectOptions(screen.getByRole("combobox", { name: "Show" }), "all");
     expect(screen.queryByRole("region", { name: "Choose Control Tower scope" })).not.toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Today queue" })).toBeInTheDocument();
     // The header scope bar states the scope; Today does not repeat it.

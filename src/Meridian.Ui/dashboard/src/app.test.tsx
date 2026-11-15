@@ -640,7 +640,7 @@ describe("App", () => {
     expect(within(confidence).queryByText("Scope")).not.toBeInTheDocument();
     expect(within(confidence).getByText("Selected evidence")).toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "Priority decision" })).getByRole("region", { name: "Workstation status" })).toHaveAttribute("data-status-tone", "blocked");
-    expect(confidence).toHaveTextContent("4 workspace signals in the queue");
+    expect(screen.getByTestId("today-attention-count")).toHaveTextContent(/^\d+ needs? attention · blocked \+ action, excluding snoozed/);
     const trust = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
     await user.click(trust.querySelector("summary") as HTMLElement);
     expect(within(trust).getByRole("link", { name: "Blocked Brokerage sync failed" }))
@@ -662,20 +662,23 @@ describe("App", () => {
     expect(confidence).not.toHaveTextContent("All authorized scopes");
     const todayQueue = await screen.findByRole("treegrid", { name: "Today queue" });
     expect(todayQueue).toBeInTheDocument();
-    // One grid holds both sources. The sidebar Today badge counts exactly its workspace-signal
-    // rows; the loaded shared-inbox rows are interleaved and labelled by Source.
+    // One grid holds both sources, and one count covers it: the sidebar Today badge, the count
+    // beside the Queue heading and the rows on screen are the same 4 workspace signals + 1
+    // shared-inbox item.
     expect(within(screen.getByRole("region", { name: "Queue" })).getByRole("treegrid", { name: "Today queue" }))
       .toBe(todayQueue);
     expect(screen.getAllByRole("treegrid")).toHaveLength(1);
     expect(todayQueue.querySelectorAll('tbody tr[data-dense-row-id^="workspace:"]')).toHaveLength(4);
-    const todayLinks = screen.getAllByRole("link", { name: /^Today, Daily Control Tower, current route, 4 items need attention/ });
+    const todayLinks = await screen.findAllByRole("link", { name: /^Today, Daily Control Tower, current route, 5 items need attention/ });
     expect(todayLinks.length).toBeGreaterThan(0);
     for (const link of todayLinks) {
-      expect(link.parentElement?.querySelector(".operator-nav-count")).toHaveTextContent("4");
+      expect(link.parentElement?.querySelector(".operator-nav-count")).toHaveTextContent("5");
       // The badge lets the pointer through to the link, so the link's tooltip names the unit.
-      expect(link).toHaveAttribute("title", "Today: Daily Control Tower · 4 items in Today's finance queue");
+      expect(link).toHaveAttribute("title", "Today: Daily Control Tower · 5 items in Today's finance queue");
     }
-    expect(await screen.findByText("1 of 1 inbox item · All authorized accounts")).toBeInTheDocument();
+    expect(screen.getByTestId("today-attention-count")).toHaveTextContent("5 need attention · blocked + action, excluding snoozed");
+    expect(within(screen.getByRole("tablist", { name: "Queue source" })).getByRole("tab", { name: /^All/ })).toHaveTextContent("5");
+    expect(todayQueue.querySelectorAll("tbody tr[data-dense-row-id]")).toHaveLength(5);
     const inboxRow = within(todayQueue).getByRole("row", { name: "Promotion checklist incomplete" });
     expect(inboxRow).toHaveTextContent("Shared inbox");
     expect(todayQueue.querySelectorAll('tbody tr[data-dense-row-id^="inbox:"]')).toHaveLength(1);

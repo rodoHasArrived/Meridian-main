@@ -1,4 +1,4 @@
-import { selectSharedProviderHealth } from "@/lib/cross-screen-counts";
+import { formatProviderHealth, selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { pluralizeCount, withIndefiniteArticle } from "@/lib/format";
@@ -2841,7 +2841,7 @@ export function buildSettingsScreenViewModel(
         { label: "Status", value: overview.systemStatus, tone: systemTone(overview.systemStatus) },
         {
           label: "Providers healthy",
-          value: providerHealth ? `${providerHealth.healthy} / ${providerHealth.total}` : "—",
+          value: providerHealth ? formatProviderHealth(providerHealth) : "—",
           tone: !providerHealth ? "muted" : providerHealth.total > 0 && providerHealth.healthy === providerHealth.total ? "success" : "warning"
         },
         { label: "Active runs", value: String(overview.activeRuns), tone: "default" },
@@ -2858,7 +2858,7 @@ export function buildSettingsScreenViewModel(
     ? "warning"
     : statusTone;
   const sysSummary = overview
-    ? `${overview.systemStatus} · ${providerHealth ? `${providerHealth.healthy}/${providerHealth.total} providers healthy` : "provider health unavailable"} · ${overview.activeRuns} active run${overview.activeRuns === 1 ? "" : "s"} · heartbeat ${systemFreshness.status}`
+    ? `${overview.systemStatus} · ${providerHealth ? `${formatProviderHealth(providerHealth)} healthy` : "provider health unavailable"} · ${overview.activeRuns} active run${overview.activeRuns === 1 ? "" : "s"} · heartbeat ${systemFreshness.status}`
     : "System overview unavailable.";
   const diagnosticSection = buildDiagnosticEndpointSection(payload);
   const backendCapabilitySection = buildBackendCapabilitySection(payload);

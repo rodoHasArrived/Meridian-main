@@ -1157,7 +1157,13 @@ not been recorded.
   server's `/api/workstation/cross-screen-counts`, loaded on every route. Headline cards for these
   counts take the selector's value and drop their basis-less delta, and an unreadable count shows
   "—". Settings, which does not refresh the Data payload, prefers the shared provider count over
-  retained Data rows. `lib/cross-screen-counts.screens.test.ts` asserts Trading, Settings, Data and Accounting
+  retained Data rows. Provider health counts the providers in use (`selectProvidersInUse`: listed by
+  the Data workspace, or with a saved connection, routing connection or trust snapshot), each with
+  the worse of its listed and readiness status (`resolveProviderStatus`, the server's
+  `ResolveProviderStatus`), capped at review when its newest evidence is older than three days
+  (`capHealthyOnStaleEvidence`, the server's `CapHealthyOnStaleEvidence`). The Data overview's health cards and its "Providers healthy" figure read
+  that one list, so the figure counts the cards; a provider known only from the readiness catalog
+  is available to set up on the Providers page and is not counted. `lib/cross-screen-counts.screens.test.ts` asserts Trading, Settings, Data and Accounting
   agree from one fixture set. Accounting takes open breaks from the payload's `workspace.openBreaks`,
   which the server counts over the whole queue even when it withholds `breakQueue` from a caller
   who may see the count but not the cases.
@@ -1394,6 +1400,15 @@ disagree:
 - **Attention pill** (masthead): the worst open issue across the workstation with a count of the
   rest, or `All clear`. It always opens Today. The count matches the queue count beside `Today`
   in the sidebar; a provider warning or failed workspace area that is also queued is counted once.
+- **Attention count** (`src/lib/attention-items.ts`): the sidebar badges, the pill's count and
+  Today's queue count one list of `AttentionItem`s (source, severity, owner, due time, snoozed),
+  built from the Control Tower's workspace signals and the shared operator inbox, which the shell
+  reads once and passes to Today. The one rule is `needsAttention`: blocked + action, excluding
+  snoozed. A work item present in both sources is listed once, as the inbox item. Per-source and
+  per-workspace counts are filtered views of that list, so they add up to the total; Today's
+  default "Needs attention" view lists exactly the counted rows and "All items" adds informational
+  and snoozed ones. Do not count attention with a rule of your own. Part-of-whole KPI values name
+  their population through `formatCountOfTotal` ("1 of 2 providers").
 - **Page status row** (`OperationalTrustSummary`, rendered by `StatusRow`): one line that reads
   `All sources current` or names only the facts that are not ready
   (`Scope: none selected`, `Freshness: 187d stale`). The per-fact breakdown, with detail and

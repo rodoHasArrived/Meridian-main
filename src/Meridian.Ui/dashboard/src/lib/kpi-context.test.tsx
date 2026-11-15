@@ -46,7 +46,7 @@ describe("registered KPI owner evidence", () => {
     const { result } = renderHook(() => useKpis(["portfolio.open-positions", "system.providers-online"]), {
       wrapper: ({ children }) => <CrossScreenCountsProvider counts={counts}><KpiProvider models={{ portfolio: { positions: [{}] } as KpiReadModels["portfolio"] }}><KpiProvider models={{ portfolio: undefined }}>{children}</KpiProvider></KpiProvider></CrossScreenCountsProvider>
     });
-    expect(result.current.map((metric) => metric.value)).toEqual(["1", "1 / 2"]);
+    expect(result.current.map((metric) => metric.value)).toEqual(["1", "1 of 2 providers"]);
   });
 
   it("validates a requested account against the actual loaded scope and preserves unavailable request identity", () => {

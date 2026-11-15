@@ -1478,7 +1478,10 @@ describe("data-screen view model", () => {
       label: "Trust score",
       value: "92% · Healthy"
     });
-    expect(providerSection.readinessSummary).toContain("Displayed posture: 2 ready / 0 review / 0 degraded / 1 blocked.");
+    // Polygon's readiness is Ready but its connection health is Warning: the row shows the worse
+    // of the two, as the server's provider list does, so readiness cannot hide the warning.
+    expect(providerSection.rows.find((row) => row.provider === "Polygon.io")?.status).toBe("Warning");
+    expect(providerSection.readinessSummary).toContain("Displayed posture: 1 ready / 1 review / 0 degraded / 1 blocked.");
     expect(providerSection.readinessSummary).toContain("Shared readiness covers 2 of 3 displayed providers.");
     } finally {
       vi.useRealTimers();

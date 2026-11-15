@@ -11,7 +11,6 @@ import type {
 } from "@/app-shell.view-model";
 import { Button } from "@/components/ui/button";
 import { TechnicalDetails } from "@/components/ui/technical-details";
-import { SectionDescription } from "@/components/ui/section-description";
 import { DetailRail } from "@/components/meridian/detail-rail";
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { buildAttentionSignalFact } from "@/components/meridian/attention-signal-fact";
@@ -22,7 +21,8 @@ import {
   OperatorTriageInboxFilters, OperatorTriageNotices, restoreTriageFilters, TriageAge, TriageAssignCheckbox,
   triageSelection, TriageSeverityStatus, triageStateExportValue, triageStateLabel
 } from "@/components/meridian/operator-triage-queue";
-import { useOperatorTriageInbox } from "@/components/meridian/use-operator-triage-inbox";
+import { useOperatorTriageInbox, type OperatorTriageInboxState } from "@/components/meridian/use-operator-triage-inbox";
+import { ATTENTION_COUNT_RULE, countAttention, needsAttention } from "@/lib/attention-items";
 import { useQueueKeyboard } from "@/lib/use-queue-keyboard";
 import { SeverityBadge } from "@/components/operations";
 import {
@@ -42,6 +42,11 @@ export interface DailyControlTowerScreenProps {
   trustStrip: AppShellTrustStripState;
   /** The shell attention state the masthead pill shows; Today lists every signal behind it. */
   attention: AppShellAttentionState;
+  /**
+   * The shell's shared-inbox state, so Today triages the same inbox the sidebar badges count.
+   * Omit it to let Today read the inbox itself (a standalone render).
+   */
+  triage?: OperatorTriageInboxState;
   refreshing?: boolean;
 }
 
@@ -50,17 +55,30 @@ type QueueSelection = { source: "workspace"; id: string } | { source: "inbox" } 
 const EVIDENCE_PANEL_ID = "daily-control-tower-evidence-detail";
 const TRIAGE_PANEL_ID = "daily-control-tower-triage-detail";
 
-export function DailyControlTowerScreen({
+export function DailyControlTowerScreen(props: DailyControlTowerScreenProps) {
+  return props.triage
+    ? <DailyControlTowerQueue {...props} triage={props.triage} />
+    : <DailyControlTowerWithOwnInbox {...props} />;
+}
+
+function DailyControlTowerWithOwnInbox(props: DailyControlTowerScreenProps) {
+  const triage = useOperatorTriageInbox({
+    fundAccountId: props.viewModel.operatingScope.fundAccountId,
+    refreshKey: props.refreshing ?? false
+  });
+  return <DailyControlTowerQueue {...props} triage={triage} />;
+}
+
+function DailyControlTowerQueue({
   viewModel,
   trustStrip,
   attention,
-  refreshing = false
-}: DailyControlTowerScreenProps) {
+  triage
+}: DailyControlTowerScreenProps & { triage: OperatorTriageInboxState }) {
   const model = buildDailyControlTowerModel(viewModel, trustStrip);
   const fundAccountId = viewModel.operatingScope.fundAccountId;
-  // The shared inbox's read, filters and in-flight / unconfirmed command live here, above the
-  // Source filter, so filtering inbox rows out of the grid never drops a pending command.
-  const triage = useOperatorTriageInbox({ fundAccountId, refreshKey: refreshing });
+  // The shared inbox's read, filters and in-flight / unconfirmed command live above the Source
+  // filter (in the shell), so filtering inbox rows out of the grid never drops a pending command.
   const [queueSource, setQueueSource] = useState<TodayQueueSource>("all");
   // Triage-in-place: the operator inspects any row without leaving Today. A workspace signal
   // shows its evidence; an inbox item shows its triage actions. Falls back to the leading
@@ -71,7 +89,11 @@ export function DailyControlTowerScreen({
   const workspaceRows = search
     ? model.queueRows.filter((row) => `${row.item.label} ${row.item.detail} ${row.item.workspaceLabel}`.toLowerCase().includes(search))
     : model.queueRows;
-  const queueRows = buildTodayQueueRows(workspaceRows, triage.rows)
+  // The default view is the count rule itself, so the rows on screen are the rows the sidebar
+  // badges and the Source filter count. "All items" adds informational and snoozed rows;
+  // workspace signals cannot be snoozed, so "Snoozed items" lists inbox rows only.
+  const queueRows = buildTodayQueueRows(workspaceRows, triage.rows, triage.inbox?.items ?? null)
+    .filter((row) => triage.visibility === "all" || (triage.visibility === "snoozed" ? row.snoozed : needsAttention(row)))
     .filter((row) => queueSource === "all" || row.source === queueSource);
   const selectedKey = selection?.source === "workspace"
     ? todayQueueRowKey("workspace", selection.id)
@@ -97,8 +119,11 @@ export function DailyControlTowerScreen({
     }
   };
 
-  const workspaceCount = model.queueRows.length;
-  const inboxCount = triage.inbox ? triage.inbox.items.length : null;
+  // The attention list before any filter, counted by the one rule: the same list and the same
+  // rule as the sidebar badges and the masthead pill.
+  const allRows = buildTodayQueueRows(model.queueRows, triage.inbox?.items ?? []);
+  const attentionCounts = countAttention(allRows);
+  const otherItemCount = allRows.length - attentionCounts.total;
   const inboxState = triage.inbox ? "ready" : triage.error ? "unavailable" : "loading";
   const showsInbox = queueSource !== "workspace";
 
@@ -132,8 +157,8 @@ export function DailyControlTowerScreen({
       id: "owner",
       label: "Owner",
       priority: "low",
-      exportValue: (row) => row.source === "inbox" ? row.item.ownerId : null,
-      render: (row) => row.source === "inbox" ? row.item.ownerId ?? "Unassigned" : "Not tracked"
+      exportValue: (row) => row.owner,
+      render: (row) => row.owner ?? (row.source === "inbox" ? "Unassigned" : "Not tracked")
     },
     {
       id: "age",
@@ -147,8 +172,8 @@ export function DailyControlTowerScreen({
       id: "due",
       label: "Due",
       className: "whitespace-nowrap tabular-nums",
-      exportValue: (row) => row.source === "inbox" ? row.item.dueAt : null,
-      render: (row) => <TimeText value={row.source === "inbox" ? row.item.dueAt : null} display="compact" fallback="No due time" />
+      exportValue: (row) => row.dueAt,
+      render: (row) => <TimeText value={row.dueAt} display="compact" fallback="No due time" />
     },
     {
       id: "state",
@@ -193,15 +218,19 @@ export function DailyControlTowerScreen({
     }]
   });
 
-  const emptyText = queueSource === "workspace"
-    ? search ? "No workspace signals match this search." : model.emptyQueueText
-    : queueSource === "inbox"
-      ? triage.inbox
-        ? triage.mineOnly ? "No shared inbox items are assigned to you in these filters." : "No shared inbox items match these filters."
-        : triage.error ? "The shared inbox is unavailable." : "The shared inbox is loading."
-      : search || triage.mineOnly || triage.visibility !== "active"
-        ? "No queue items match these filters."
-        : `${model.emptyQueueText} The shared inbox has no active items.`;
+  const otherItemsText = otherItemCount > 0
+    ? ` ${pluralizeCount(otherItemCount, "other item")} (informational or snoozed) ${otherItemCount === 1 ? "is" : "are"} listed under All items.`
+    : "";
+  const emptyText = queueSource === "inbox" && !triage.inbox
+    ? triage.error ? "The shared inbox is unavailable." : "The shared inbox is loading."
+    : search || triage.mineOnly || triage.visibility !== "active"
+      ? queueSource === "workspace" ? "No workspace signals match these filters."
+        : queueSource === "inbox"
+          ? triage.mineOnly ? "No shared inbox items are assigned to you in these filters." : "No shared inbox items match these filters."
+          : "No queue items match these filters."
+      : queueSource === "workspace" ? `${model.emptyQueueText}${otherItemsText}`
+        : queueSource === "inbox" ? `No shared inbox items need attention.${otherItemsText}`
+          : `Nothing needs attention.${otherItemsText}`;
 
   return (
     <div className="space-y-2">
@@ -230,31 +259,16 @@ export function DailyControlTowerScreen({
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span title={freshness.detail}><span className="text-muted-foreground">Selected evidence </span>{freshness.value}</span>
-            {/* The source tabs show these counts visually; retain their full accessible context here. */}
-            <span className="sr-only">
-              {pluralizeCount(workspaceCount, "workspace signal")} in the queue
-              {" · "}
-              {inboxCount !== null ? pluralizeCount(inboxCount, "shared inbox item") : triage.error ? "Shared inbox unavailable" : "Shared inbox loading"}
-            </span>
           </div>
           {showsInbox && triage.inbox ? (
             <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Inbox filters" aria-busy={triage.loading || triage.busy}>
-              <span className="sr-only">
-                {triage.rows.length} of {pluralizeCount(triage.inbox.items.length, "inbox item")} · {fundAccountId ? "Account filter applied" : "All authorized accounts"}
-              </span>
-              {!triage.inbox.persistenceAvailable ? (
-                /^Seeded read-only inbox\./i.test(triage.inbox.unavailableReason ?? "") ? (
-                  <details className="relative">
-                    <summary className="cursor-pointer text-warning underline underline-offset-2">Read-only inbox</summary>
-                    <p className="absolute right-0 top-full z-30 w-72 rounded-sm border border-border bg-card p-3 text-xs text-foreground shadow-md">
-                      {triage.inbox.unavailableReason?.replace(/^Seeded read-only inbox\.\s*/i, "Inbox is read-only. ")}
-                    </p>
-                  </details>
-                ) : (
-                  <span role="alert" className="text-xs text-warning">
-                    {triage.inbox.unavailableReason ?? "Durable triage is unavailable. Actions are disabled."}
-                  </span>
-                )
+              <span className="sr-only">{fundAccountId ? "Account filter applied" : "All authorized accounts"}</span>
+              {/* A seeded preview inbox is read-only by design, not a fault: its triage buttons are
+                  simply disabled. Only a real loss of durable triage interrupts the operator. */}
+              {!triage.inbox.persistenceAvailable && !SEEDED_INBOX_REASON.test(triage.inbox.unavailableReason ?? "") ? (
+                <span role="alert" className="text-xs text-warning">
+                  {triage.inbox.unavailableReason ?? "Durable triage is unavailable. Actions are disabled."}
+                </span>
               ) : null}
               <OperatorTriageInboxActions />
             </div>
@@ -264,17 +278,17 @@ export function DailyControlTowerScreen({
         {showsInbox && triage.error ? <OperatorTriageInboxError triage={triage} unaffectedText="Workspace signals in this queue are unaffected" /> : null}
       </section>
 
-      {/* One queue grid, two sources (UX consolidation P1). Workspace signals are exactly what the
-          sidebar Today badge and the masthead count; the shared inbox is the host's triage
-          population, which is not a subset of them and keeps its assignment and snooze. The
-          Source filter filters rows of this one grid. */}
+      {/* One queue grid over the one attention list (UX consolidation P1). The count beside the
+          heading, the Source filter counts, the rows in the default view, the sidebar badges and
+          the masthead pill are all this list counted by the one rule, which is stated here once. */}
       <section aria-labelledby="today-queue-heading" className="space-y-2" data-today-inbox-state={inboxState}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
             <h3 id="today-queue-heading" className="text-sm font-semibold">Queue</h3>
-            <SectionDescription descriptionKey="today:queue" label="About the Today queue">
-              Workspace signals are what the sidebar badges count. Shared inbox items can be assigned, snoozed and acknowledged here.
-            </SectionDescription>
+            <p className="text-xs text-muted-foreground" data-testid="today-attention-count">
+              {attentionCounts.total} need{attentionCounts.total === 1 ? "s" : ""} attention · {ATTENTION_COUNT_RULE}
+              {triage.inbox ? "" : triage.error ? " · shared inbox unavailable" : " · shared inbox loading"}
+            </p>
           </div>
           <SegmentedControl
             aria-label="Queue source"
@@ -282,9 +296,9 @@ export function DailyControlTowerScreen({
             value={queueSource}
             onChange={(value) => setQueueSource(value as TodayQueueSource)}
             options={[
-              { value: "all", label: "All sources", count: inboxCount !== null ? workspaceCount + inboxCount : undefined },
-              { value: "workspace", label: "Workspace signals", count: workspaceCount },
-              { value: "inbox", label: "Shared inbox", count: inboxCount ?? undefined }
+              { value: "all", label: "All", count: attentionCounts.total },
+              { value: "workspace", label: "Workspace signals", count: attentionCounts.bySource.workspace },
+              { value: "inbox", label: "Shared inbox", count: triage.inbox ? attentionCounts.bySource.inbox : undefined }
             ]}
           />
         </div>
@@ -298,7 +312,7 @@ export function DailyControlTowerScreen({
             workbenchId="operator-inbox"
             sourceKey={`${triage.inbox?.actorId ?? "pending"}:${fundAccountId ?? "all"}`}
             completePopulation={Boolean(triage.inbox && !triage.loading && !triage.error)}
-            sourceDescription={`Today queue: ${pluralizeCount(workspaceCount, "workspace signal")} from the workstation read models and ${triage.inbox ? `${pluralizeCount(triage.inbox.items.length, "shared inbox item")} as of ${triage.inbox.asOf}` : "no loaded shared inbox"}; inbox filters apply to inbox rows only.`}
+            sourceDescription={`Today queue: workspace signals from the workstation read models and ${triage.inbox ? `the shared inbox as of ${triage.inbox.asOf}` : "no loaded shared inbox"}. Counts are ${ATTENTION_COUNT_RULE}.`}
             searchText={triage.search}
             onSearchTextChange={triage.setSearch}
             filterState={{ source: queueSource, visibility: triage.visibility, mineOnly: String(triage.mineOnly) }}
@@ -306,9 +320,8 @@ export function DailyControlTowerScreen({
               restoreTriageFilters(triage, filters);
               setQueueSource(filters.source === "workspace" || filters.source === "inbox" ? filters.source : "all");
             }}
-            filters={showsInbox && triage.inbox
-              ? <OperatorTriageInboxFilters triage={triage} visibilityLabel="Inbox visibility" mineLabel="My inbox items" />
-              : null}
+            filters={<OperatorTriageInboxFilters triage={triage} visibilityLabel="Show" activeLabel="Needs attention"
+              mineLabel="My inbox items" showMine={showsInbox && Boolean(triage.inbox)} />}
             selection={showsInbox && triage.inbox ? triageSelection(triage) : undefined}
             tableId="daily-control-tower-queue"
             columns={queueColumns}
@@ -386,6 +399,8 @@ function WorkspaceEvidenceRail({ row }: { row: Extract<TodayQueueRow, { source: 
     </DetailRail>
   );
 }
+
+const SEEDED_INBOX_REASON = /^Seeded read-only inbox\./i;
 
 const TOWER_FRESHNESS_WINDOW_MS = 24 * 60 * 60 * 1000;
 

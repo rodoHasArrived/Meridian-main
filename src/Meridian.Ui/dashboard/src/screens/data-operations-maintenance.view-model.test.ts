@@ -145,7 +145,7 @@ describe("buildMaintenanceMetrics", () => {
       ["service", "Running"],
       ["success-rate", "95.0%"],
       ["recent-activity", "3"],
-      ["schedules", "4/5"]
+      ["schedules", "4 of 5 schedules"]
     ]);
     expect(metrics.find((metric) => metric.id === "success-rate")?.tone).toBe("warning");
     expect(metrics.find((metric) => metric.id === "schedules")?.detail).toBe("Next due: Nightly health check");

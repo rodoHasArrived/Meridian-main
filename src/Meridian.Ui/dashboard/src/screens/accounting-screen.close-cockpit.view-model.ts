@@ -97,7 +97,7 @@ import type {
   UpsertClosePeriodPlanConfigurationRequest,
   AccountingCertificationState,
 } from "@/types";
-import { formatCount as formatCountValue, formatCurrencyWithCode } from "@/lib/format";
+import { formatCount as formatCountValue, formatCountOfTotal, formatCurrencyWithCode } from "@/lib/format";
 
 const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageServices = {
   getClosePlan: (workflowId) => getLedgerCloseManagementPeriodPlan(workflowId),
@@ -1653,7 +1653,7 @@ function buildAccountingReportCertificationSafeguards(
     {
       id: "checklist-signoff",
       label: "Checklist sign-off",
-      value: closePlan ? `${signedOffTaskCount}/${tasks.length}` : "Not loaded",
+      value: closePlan ? formatCountOfTotal(signedOffTaskCount, tasks.length, "close task") : "Not loaded",
       detail: closePlan
         ? openTaskCount > 0
           ? `${formatCount(openTaskCount, "close task")} still requires retained sign-off evidence.`
@@ -1690,7 +1690,7 @@ function buildAccountingReportCertificationSafeguards(
       label: "Export certification",
       value: bundle
         ? exportArtifacts.length > 0
-          ? `${certifiedExportCount}/${exportArtifacts.length}`
+          ? formatCountOfTotal(certifiedExportCount, exportArtifacts.length, "export")
           : "No artifacts"
         : "Not loaded",
       detail: bundle

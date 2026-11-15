@@ -1,3 +1,4 @@
+import { PROVIDER_EVIDENCE_STALE_AFTER_MS } from "@/lib/cross-screen-counts";
 import type {
   ProviderConnectionRow,
   ProviderReadinessStatus,
@@ -297,7 +298,7 @@ export function splitProviderSetupPascalCase(value: string): string {
  * spans a weekend without a market session; past it, health is capped at review until the provider
  * is verified again.
  */
-export const PROVIDER_EVIDENCE_STALE_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
+export { PROVIDER_EVIDENCE_STALE_AFTER_MS };
 
 export interface ProviderEvidenceStaleness {
   /** Newest instant any evidence for the provider was observed, or null when none carries a time. */

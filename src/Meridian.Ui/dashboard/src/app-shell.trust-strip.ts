@@ -225,7 +225,7 @@ function buildProviderTrustStripItem({
 }): AppShellTrustStripItem {
   if (!data && sharedProviders) {
     // Routes that do not load the Data workspace show the same count the Data screen shows.
-    const value = `${sharedProviders.healthy}/${sharedProviders.total} healthy`;
+    const value = `${sharedProviders.healthy} of ${sharedProviders.total} healthy`;
     const detail = `${formatCount(sharedProviders.healthy, "provider")} healthy of ${sharedProviders.total} listed in Data provider posture.`;
     return {
       id: "providers",
@@ -300,7 +300,7 @@ function buildProviderTrustStripItem({
         ? `${warning} warning`
         : unverified > 0
           ? `${unverified} unverified`
-        : `${healthy}/${providers.length} healthy`;
+        : `${healthy} of ${providers.length} healthy`;
   const detail = blocked > 0
     ? `${formatCount(blocked, "provider")} blocked; restore provider connectivity before relying on workstation data.`
     : degraded > 0
