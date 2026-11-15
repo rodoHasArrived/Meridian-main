@@ -3168,11 +3168,11 @@ items:
       - Accounting
       - Portfolio
     owner_lane: Accounting and Ledger
-    status: ready_for_acceptance
+    status: accepted
     health: green
     priority: high
     evidence_posture: complete
-    status_note: Development verification recorded 2026-11-14 on hosted quality, PostgreSQL integration and Windows lanes (PR 3591); operator acceptance pending. Profile owner approval still never replaces independent legal approval.
+    status_note: Accepted by the repository owner on 2026-11-15 on the development verification recorded 2026-11-14 (hosted quality, PostgreSQL integration and Windows lanes, PR 3591). Synthetic evidence only; no live-provider or release claim.
     decision_ids: []
     pr_references:
     - 3591
@@ -3214,7 +3214,7 @@ items:
         path: tests/Meridian.Tests/Storage/FundStructure/IntercompanyAccountingArrangementPostgresTests.cs
       - type: test
         path: tests/Meridian.Ui.Tests/Services/IntercompanyAgreementWorkspaceTests.cs
-    last_reviewed: 2026-11-14
+    last_reviewed: 2026-11-15
 
   - id: W12-ENTITY-001
     title: Effective entity lifecycle and audited book-control migration
@@ -3225,11 +3225,11 @@ items:
       - Accounting
       - Portfolio
     owner_lane: Accounting and Ledger
-    status: ready_for_acceptance
+    status: accepted
     health: green
     priority: high
     evidence_posture: complete
-    status_note: Development verification recorded 2026-11-14 on hosted quality, PostgreSQL integration and Windows lanes (PR 3591), including legacy-book activation after a passing preflight; operator acceptance pending.
+    status_note: Accepted by the repository owner on 2026-11-15 on the development verification recorded 2026-11-14 (hosted quality, PostgreSQL integration and Windows lanes, PR 3591). Synthetic evidence only; no live-provider or release claim.
     decision_ids: []
     pr_references:
     - 3591
@@ -3270,7 +3270,7 @@ items:
         path: tests/Meridian.Tests/Storage/FundStructure/EntityLifecyclePostgresTests.cs
       - type: test
         path: tests/Meridian.Wpf.Tests/Views/IntercompanyNativeControlSmokeTests.cs
-    last_reviewed: 2026-11-14
+    last_reviewed: 2026-11-15
 
   - id: W12-ICPAIR-001
     title: Durable reviewed counterpart proposals and aged intercompany breaks
@@ -3281,11 +3281,11 @@ items:
       - Accounting
       - Reporting
     owner_lane: Accounting and Ledger
-    status: ready_for_acceptance
+    status: accepted
     health: green
     priority: high
     evidence_posture: complete
-    status_note: Development verification recorded 2026-11-14 on hosted quality, PostgreSQL integration and Windows lanes (PR 3591); operator acceptance pending. Delivery never posts; repricing and break reads check tenant, not company, at the service.
+    status_note: Accepted by the repository owner on 2026-11-15 on the development verification recorded 2026-11-14 (PR 3591). Delivery never posts; repricing and break reads check tenant, not company, at the service. Synthetic evidence only.
     decision_ids: []
     pr_references:
     - 3591
@@ -3326,7 +3326,7 @@ items:
         path: tests/Meridian.Ui.Tests/Services/IntercompanyCounterpartQueueWorkspaceTests.cs
       - type: source
         path: src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs
-    last_reviewed: 2026-11-14
+    last_reviewed: 2026-11-15
 
   - id: W12-ICINCOME-001
     title: Policy-governed intercompany revenue and expense elimination
@@ -3337,11 +3337,11 @@ items:
       - Accounting
       - Reporting
     owner_lane: Accounting and Ledger
-    status: ready_for_acceptance
+    status: accepted
     health: green
     priority: medium
     evidence_posture: complete
-    status_note: Development verification recorded 2026-11-14 on hosted quality and PostgreSQL integration lanes (PR 3591); operator acceptance pending. Populations above two entities are proven for w10-v2 only; investment/equity elimination stays unsupported.
+    status_note: Accepted by the repository owner on 2026-11-15 on the development verification recorded 2026-11-14 (PR 3591). Populations above two entities are proven for w10-v2 only; investment/equity elimination stays unsupported.
     decision_ids: []
     pr_references:
     - 3591
@@ -3376,7 +3376,7 @@ items:
         path: tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationFxTests.cs
       - type: document
         path: docs/engineering/plans/intercompany-entity-controls.md
-    last_reviewed: 2026-11-14
+    last_reviewed: 2026-11-15
 
   - id: W12-ICACCRUAL-001
     title: Governed intercompany loan-interest accrual from structured terms

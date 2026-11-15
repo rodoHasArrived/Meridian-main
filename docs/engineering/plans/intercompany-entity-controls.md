@@ -1,10 +1,10 @@
 # Intercompany contracts and entity controls: staged implementation
 
-**Status:** implementation complete; development verification recorded 2026-11-14, acceptance pending
+**Status:** implementation complete; development verification recorded 2026-11-14; four W12 items accepted by the owner 2026-11-15
 
 **Owner:** Accounting and Ledger
 
-**Reviewed:** 2026-11-14
+**Reviewed:** 2026-11-15
 
 The adopted scope is P1–P5: an agreement registry, effective entity controls, stable account roles
 and N-entity consolidation, reviewed counterpart proposals, and full reporting-currency
@@ -104,8 +104,9 @@ retention and the counterpart mirror; no PostgreSQL-backed post-and-deliver run 
 ## Verification record (2026-11-14)
 
 This records development verification for `W12-ICAGREE-001`, `W12-ENTITY-001`, `W12-ICPAIR-001`
-and `W12-ICINCOME-001` in PR #3591. All fixtures are synthetic. It is not operator acceptance, a
-live-provider result or a release decision.
+and `W12-ICINCOME-001` in PR #3591. All fixtures are synthetic. It is not a live-provider result
+or a release decision. The repository owner accepted the four items on this evidence on
+2026-11-15; the limits below still apply.
 
 ### Hosted runs
 
