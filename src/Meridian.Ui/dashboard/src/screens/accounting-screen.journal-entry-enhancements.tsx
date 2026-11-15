@@ -172,7 +172,7 @@ export function ManualJournalDimensionsInspector({ view }: { view: ManualJournal
             </label>
             <p role="status" className={cn("mt-2 text-xs", view.securitySearchErrorText ? "text-danger" : "text-muted-foreground")}>{view.securitySearchStatusText}</p>
             <div className="mt-2 space-y-2">
-              {view.securitySearchResults.map((security) => <button key={security.securityId} type="button" className="w-full rounded border border-border/70 bg-secondary/30 px-3 py-2 text-left hover:border-primary/50 hover:bg-primary/10" onClick={() => view.selectSecurity(selectedLine.lineId, security)}><span className="block font-semibold text-foreground">{security.displayName}</span><span className="mt-1 block font-mono text-[11px] text-muted-foreground">{security.securityId} / {security.classification.assetClass} / {security.classification.primaryIdentifierValue}</span></button>)}
+              {view.securitySearchResults.map((security) => <button key={security.securityId} type="button" className="w-full rounded border border-border/70 bg-secondary/30 px-3 py-2 text-left hover:border-primary/50 hover:bg-primary/10" onClick={() => view.selectSecurity(selectedLine.lineId, security)}><span className="block font-semibold text-foreground">{security.displayName}</span><span className="mt-1 block font-mono text-xs text-muted-foreground">{security.securityId} / {security.classification.assetClass} / {security.classification.primaryIdentifierValue}</span></button>)}
             </div>
             {selectedLine.securityId ? <Button className="mt-2" size="sm" variant="ghost" onClick={() => view.clearSecurity(selectedLine.lineId)}><X className="h-3.5 w-3.5" aria-hidden="true" />Clear security</Button> : null}
           </div>

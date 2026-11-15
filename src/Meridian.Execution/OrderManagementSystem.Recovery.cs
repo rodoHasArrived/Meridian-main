@@ -59,16 +59,32 @@ public sealed partial class OrderManagementSystem
         // modification, and is capped to the local request rather than report data.
         if (pendingExecutionLimit is > 0m && report.FillPrice is > 0m)
             authorizedQuantity = Math.Max(authorizedQuantity, Math.Min(pendingExecutionLimit.Value, report.FilledQuantity));
+        var filledQuantity = Math.Min(authorizedQuantity, Math.Max(report.FilledQuantity, current.FilledQuantity));
         return current with
         {
-            Status = report.OrderStatus,
+            Status = ResolveWorkingStatus(current.Status, report.OrderStatus, filledQuantity),
             BrokerAccountId = brokerAccount,
             Quantity = authorizedQuantity,
-            FilledQuantity = Math.Min(authorizedQuantity, Math.Max(report.FilledQuantity, current.FilledQuantity)),
-            AverageFillPrice = ComputeAverageFillPrice(current,
-                Math.Min(authorizedQuantity, Math.Max(report.FilledQuantity, current.FilledQuantity)), report.FillPrice),
+            FilledQuantity = filledQuantity,
+            AverageFillPrice = ComputeAverageFillPrice(current, filledQuantity, report.FillPrice),
             LastUpdatedAt = report.Timestamp
         };
+    }
+
+    /// <summary>
+    /// Keeps lifecycle status consistent with retained fills when reports arrive out of order.
+    /// Filled quantity is already monotonic; without this a late <c>PendingNew</c>/<c>Accepted</c>
+    /// acknowledgement would overwrite <c>PartiallyFilled</c> and present an order holding fills
+    /// as untouched. An acknowledgement also never walks <c>Accepted</c> back to <c>PendingNew</c>.
+    /// Every other transition (pending cancel, terminal states, fills) is the broker's to report.
+    /// </summary>
+    private static OrderStatus ResolveWorkingStatus(OrderStatus current, OrderStatus reported, decimal filledQuantity)
+    {
+        if (reported is not (OrderStatus.PendingNew or OrderStatus.Accepted))
+            return reported;
+        if (filledQuantity > 0m)
+            return OrderStatus.PartiallyFilled;
+        return reported == OrderStatus.PendingNew && current == OrderStatus.Accepted ? current : reported;
     }
 
     private static void ValidateBrokerAccountEvidence(OrderState current, ExecutionReport report)

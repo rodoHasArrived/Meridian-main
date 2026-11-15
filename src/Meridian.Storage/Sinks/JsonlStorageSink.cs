@@ -265,7 +265,23 @@ public sealed class JsonlStorageSink : IStorageSink
         // Flush if buffer is full
         if (buffer.ShouldFlush(_batchOptions.BatchSize))
         {
-            await FlushBufferUnderGateAsync(path, buffer, ct).ConfigureAwait(false);
+            try
+            {
+                await FlushBufferUnderGateAsync(path, buffer, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // The event is already buffered (and a failed flush restores its batch), so
+                // this append has been accepted. Surfacing the flush failure here would tell
+                // the caller the event was NOT accepted; the pipeline would then append it
+                // again and the next successful flush would write it twice. The failure is
+                // not lost: FlushAsync and the periodic flush retry the buffered batch and
+                // report it.
+                _logger.LogWarning(
+                    ex,
+                    "Size-triggered flush for {Path} failed after the event was buffered; the batch stays buffered for the next flush",
+                    path);
+            }
         }
     }
 
@@ -533,6 +549,10 @@ public sealed class JsonlStorageSink : IStorageSink
         private FileStream? _writerLock;
         private static readonly TimeSpan WriterLockTimeout = TimeSpan.FromMinutes(5);
         private bool _dirtySinceFsync;
+        // Directories whose entries are not yet durable: the day file's own directory when this
+        // writer created the file, plus the parent of every directory created for it. Fsynced
+        // with the file at the next durability barrier, then cleared. Guarded by _gate.
+        private List<string>? _pendingDirectorySyncs;
         private bool _compressedFileValidated;
         private long _fsyncCount;
         private DateTimeOffset _lastWriteUtc;
@@ -540,8 +560,11 @@ public sealed class JsonlStorageSink : IStorageSink
         private readonly ILogger _logger;
         private readonly Action? _archiveChecksumFault;
 
-        private WriterState(string path, bool compressed, bool copyOnWrite, ILogger logger, Action? archiveChecksumFault)
+        private WriterState(
+            string path, bool compressed, bool copyOnWrite, ILogger logger, Action? archiveChecksumFault,
+            List<string>? pendingDirectorySyncs)
         {
+            _pendingDirectorySyncs = pendingDirectorySyncs;
             _path = path;
             _compressed = compressed;
             _copyOnWrite = copyOnWrite;
@@ -551,8 +574,41 @@ public sealed class JsonlStorageSink : IStorageSink
 
         public static WriterState Create(string path, bool compress, bool copyOnWrite, ILogger logger, Action? archiveChecksumFault)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            return new WriterState(path, compress, copyOnWrite, logger, archiveChecksumFault);
+            var directory = Path.GetDirectoryName(path)!;
+
+            // A directory created here exists only in its parent's in-memory entry list until
+            // that parent is fsynced. Record each such parent so power loss cannot drop a new
+            // symbol/date directory together with the day file fsynced inside it.
+            List<string>? pendingDirectorySyncs = null;
+            for (var missing = directory; !string.IsNullOrEmpty(missing) && !Directory.Exists(missing);)
+            {
+                var parent = Path.GetDirectoryName(missing);
+                if (string.IsNullOrEmpty(parent))
+                    break;
+                (pendingDirectorySyncs ??= new List<string>()).Add(parent);
+                missing = parent;
+            }
+
+            Directory.CreateDirectory(directory);
+            return new WriterState(path, compress, copyOnWrite, logger, archiveChecksumFault, pendingDirectorySyncs);
+        }
+
+        // Caller holds _gate and has just fsynced the file. Makes the new file's directory entry
+        // (and any directories created for it) durable; without this a crash can lose a whole
+        // new day file even though its bytes were fsynced.
+        private void SyncPendingDirectories()
+        {
+            if (_pendingDirectorySyncs is not { Count: > 0 } pending)
+                return;
+
+            // Innermost first is not required for correctness; every listed directory is synced
+            // before the list is cleared, so a failure part-way retries all of them.
+            foreach (var directory in pending)
+            {
+                AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).GetAwaiter().GetResult();
+            }
+
+            _pendingDirectorySyncs = null;
         }
 
         public long FsyncCount => Interlocked.Read(ref _fsyncCount);
@@ -584,6 +640,19 @@ public sealed class JsonlStorageSink : IStorageSink
 
             try
             {
+                if (stream.Length == 0)
+                {
+                    // Newly created (or never durably written): its directory entry must be
+                    // fsynced along with the first fsync of its contents.
+                    var directory = Path.GetDirectoryName(_path);
+                    if (!string.IsNullOrEmpty(directory))
+                    {
+                        _pendingDirectorySyncs ??= new List<string>();
+                        if (!_pendingDirectorySyncs.Contains(directory))
+                            _pendingDirectorySyncs.Insert(0, directory);
+                    }
+                }
+
                 JsonlAppendWriter.RepairTornTail(stream);
                 stream.Position = stream.Length;
                 _stream = stream;
@@ -612,6 +681,7 @@ public sealed class JsonlStorageSink : IStorageSink
                     if (await TryAppendToPublishedArchiveAsync(stream => WriteEventToTargetStreamAsync(stream, evt, ct), ct).ConfigureAwait(false))
                         return;
                     await AppendCopyOnWriteAsync(stream => WriteSingleEventAsync(stream, evt, ct), ct).ConfigureAwait(false);
+                    SyncPendingDirectories();
                     return;
                 }
 
@@ -648,6 +718,7 @@ public sealed class JsonlStorageSink : IStorageSink
                     if (await TryAppendToPublishedArchiveAsync(stream => WriteEventsToTargetStreamAsync(stream, events, ct), ct).ConfigureAwait(false))
                         return;
                     await AppendCopyOnWriteAsync(stream => WriteEventsAsync(stream, events, ct), ct).ConfigureAwait(false);
+                    SyncPendingDirectories();
                     return;
                 }
 
@@ -694,6 +765,7 @@ public sealed class JsonlStorageSink : IStorageSink
             if (_dirtySinceFsync)
             {
                 _stream.Flush(flushToDisk: true);
+                SyncPendingDirectories();
                 _dirtySinceFsync = false;
                 Interlocked.Increment(ref _fsyncCount);
             }
@@ -955,6 +1027,7 @@ public sealed class JsonlStorageSink : IStorageSink
                 if (_stream is not null && _dirtySinceFsync)
                 {
                     _stream.Flush(flushToDisk: true);
+                    SyncPendingDirectories();
                     _dirtySinceFsync = false;
                     Interlocked.Increment(ref _fsyncCount);
                 }

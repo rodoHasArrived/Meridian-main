@@ -14,7 +14,7 @@ import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 export const OPEN_ORDERS_DEFINITION =
   "Orders the order manager reports open (working, partially filled or pending routing) for the fund account in scope.";
 export const PROVIDERS_DEFINITION =
-  "Providers in use (with metrics, a saved connection, a routing connection or a trust snapshot) whose status is Healthy. A provider's status is the worse of its listed status and its readiness status.";
+  "Providers in use (with metrics, a saved connection, a routing connection or a trust snapshot) whose status is Healthy. A provider's status is the worse of its listed status and its readiness status, and it is not Healthy on evidence older than three days.";
 export const OPEN_BREAKS_DEFINITION = "Break-queue items not yet resolved, dismissed or signed off.";
 
 const CLOSED_BREAK_STATUSES = new Set(["resolved", "dismissed", "signedoff", "closed"]);
@@ -71,6 +71,30 @@ export function resolveProviderStatus(listedStatus: string | null | undefined, r
     return listedStatus ?? "Warning";
   }
   return worstProviderStatus(listedStatus, providerStatusFromReadiness(readinessStatus));
+}
+
+/**
+ * How old a provider's newest evidence may be before its health can no longer be confirmed. Three
+ * days spans a weekend without a market session. Mirrors the server's ProviderEvidenceStaleAfter.
+ */
+export const PROVIDER_EVIDENCE_STALE_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
+
+/**
+ * Health is only as current as the evidence behind it: a Healthy provider whose newest evidence is
+ * older than the threshold is a Warning until it is verified again. No timestamped evidence is
+ * unknown, not stale, and any other status is returned unchanged. Mirrors the server's
+ * CrossScreenCountDefinitions.CapHealthyOnStaleEvidence.
+ */
+export function capHealthyOnStaleEvidence<TStatus extends string>(
+  status: TStatus,
+  evidenceObservedAt: readonly (string | null | undefined)[],
+  now: number = Date.now()
+): TStatus | "Warning" {
+  if (!isHealthyProviderStatus(status)) {
+    return status;
+  }
+  const times = evidenceObservedAt.map((value) => (value ? Date.parse(value) : Number.NaN)).filter(Number.isFinite);
+  return times.length > 0 && now - Math.max(...times) > PROVIDER_EVIDENCE_STALE_AFTER_MS ? "Warning" : status;
 }
 
 /** Healthy providers out of every provider row listed. */

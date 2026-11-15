@@ -1,3 +1,4 @@
+import { TimeText } from "@/components/ui/time-text";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 /**
  * Execution audit trail panel for Trading → Risk.
@@ -110,7 +111,7 @@ export function ExecutionAuditTrailPanel() {
  onExportAll={!loading && !error && result ? (columns, _search, sort, signal) => exportTableQuery("trading-execution-audit", columns, appliedSearch, sort?.columnId, sort?.direction, signal) : undefined}
  ariaLabel="Execution audit trail entries" emptyText={loading ? "Loading audit trail…" : vm.emptyState}
  filterState={{search:appliedSearch}} onRestoreFilters={(filters)=>{setSearchText(filters.search??"");setAppliedSearch(filters.search??"");}}
- columns={[{id:"column-1",label:"Occurred",className:"whitespace-nowrap",render:(row)=>(<>{row.occurredAt}</>),exportValue:(row)=>row.occurredAt},
+ columns={[{id:"column-1",label:"Occurred",className:"whitespace-nowrap",render:(row)=>(<TimeText value={row.occurredAt} precision="second" fallback="Unavailable" />),exportValue:(row)=>row.occurredAt},
 {id:"column-2",label:"Object",render:(row)=>(<>{row.objectLabel}</>),exportValue:(row)=>row.objectLabel},
 {id:"column-3",label:"Action",render:(row)=>(<>{row.actionLabel}</>),exportValue:(row)=>row.actionLabel},
 {id:"column-4",label:"Outcome",render:(row)=>(<><Badge variant={badgeVariant(row.outcomeTone)}>{row.outcome}</Badge></>),exportValue:(row)=>row.outcome},

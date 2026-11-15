@@ -15,9 +15,18 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
 {
     /// <summary>Creates the production client with connection-time DNS validation and address pinning.</summary>
     public static HttpClient CreateHttpClient(IProviderIntegrationHostResolver? resolver = null)
+        => new(CreatePublicOnlyHandler(resolver));
+
+    /// <summary>
+    /// Creates a handler that refuses to connect to non-public addresses. The check runs at
+    /// connection time against the addresses actually dialled, so a host name that passes
+    /// validation cannot later be re-pointed at an internal address (DNS rebinding). Shared by
+    /// every outbound client whose destination is operator- or provider-supplied.
+    /// </summary>
+    public static SocketsHttpHandler CreatePublicOnlyHandler(IProviderIntegrationHostResolver? resolver = null)
     {
         resolver ??= new DnsProviderIntegrationHostResolver();
-        return new HttpClient(new SocketsHttpHandler
+        return new SocketsHttpHandler
         {
             AllowAutoRedirect = false,
             UseProxy = false,
@@ -41,7 +50,7 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
                     throw;
                 }
             }
-        });
+        };
     }
 
     private const int MaximumRedirects = 3;
@@ -250,31 +259,7 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
             HttpStatusCode.PermanentRedirect;
 
     private static bool IsBlockedAddress(IPAddress address)
-    {
-        if (address.IsIPv4MappedToIPv6)
-        {
-            address = address.MapToIPv4();
-        }
-
-        if (IPAddress.IsLoopback(address) || address.Equals(IPAddress.Any) || address.Equals(IPAddress.IPv6Any))
-        {
-            return true;
-        }
-
-        if (address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-        {
-            var bytes = address.GetAddressBytes();
-            return bytes[0] is 0 or 10 or 127 ||
-                   (bytes[0] == 100 && bytes[1] is >= 64 and <= 127) ||
-                   (bytes[0] == 169 && bytes[1] == 254) ||
-                   (bytes[0] == 172 && bytes[1] is >= 16 and <= 31) ||
-                   (bytes[0] == 192 && bytes[1] == 168) ||
-                   bytes[0] >= 224;
-        }
-
-        return address.IsIPv6LinkLocal || address.IsIPv6SiteLocal || address.IsIPv6Multicast ||
-               (address.GetAddressBytes()[0] & 0xfe) == 0xfc;
-    }
+        => Meridian.Core.Net.PublicNetworkAddress.IsBlocked(address);
 
     private static HttpMethod ToHttpMethod(ProviderIntegrationHttpMethodDto method)
         => method switch

@@ -80,6 +80,10 @@ and atomic lot posting, requires a matching posting-authority scope retained thr
 Controlled-close authorizations bind an approved draft's economics, evidence and version;
 they permit no edits to posted journals. Unmapped historical periods retain explicit warnings.
 
+`JsonlStorageSink.AppendAsync` acknowledges an event once it is buffered: a failed size-triggered
+flush is logged and left for `FlushAsync` or the periodic flush to retry and report, so a caller
+that retries failed appends cannot write the same event twice.
+
 JSONL and Parquet sinks retire empty partition buffers after successful flushes. Admission and
 retirement share the buffer lock, so a producer holding an evicted buffer retries admission to
 the current buffer. Failed flushes restore their batches and retain the buffer. Parquet filenames
@@ -291,6 +295,13 @@ or deletes prior records. Repeating a command with identical reviewed inputs ret
 outcome after restart; changed inputs under the same command identity conflict. Focused coverage
 is in `PrivateCapitalRecordServiceTests`, `PrivateCapitalRecordAuthorityTests`,
 `PrivateCapitalRecordEndpointTests` and `PostgresPrivateCapitalRecordStoreTests`.
+
+`WriteAheadLog` treats a failed write or flush as a fault on the active segment, not on the log:
+the next append, flush, commit or delayed-flush tick abandons that handle, opens a new segment and
+rewrites the records not yet confirmed flushed. A record can therefore appear in both segments, and
+replay stays at-least-once. New WAL segments fsync their header and directory entry (except in
+`NoSync`), and `JsonlStorageSink` fsyncs the directory of a newly created day file, and the parents
+of directories created for it, at the first durability barrier.
 
 `JsonlAppendWriter` appends lines to an append-only JSONL log in place and fsyncs them, truncating a
 torn final line first; `JsonlStorageSink` uses the same torn-tail repair for its day files. Use it

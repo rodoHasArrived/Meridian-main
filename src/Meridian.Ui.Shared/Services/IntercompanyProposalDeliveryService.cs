@@ -117,8 +117,9 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
                     saved.JournalEntryId, ct).ConfigureAwait(false);
                 completed++;
             }
-            catch (Exception error) when (error is InvalidOperationException or ArgumentException or UnauthorizedAccessException)
+            catch (Exception error) when (error is InvalidOperationException or ArgumentException or UnauthorizedAccessException or KeyNotFoundException)
             {
+                // An arrangement the tenant registry no longer returns fails this proposal only; the rest of the claim still runs.
                 await store.FailAsync(proposal.Source.TenantId, proposal.Source.ProposalId, proposal.ClaimToken!,
                     error.Message, ct).ConfigureAwait(false);
             }
@@ -306,7 +307,7 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
         ResolvedIntercompanyAccountingArrangementDto agreement;
         try
         { agreement = await evaluation.TermsAsync(source, ct).ConfigureAwait(false); }
-        catch (InvalidOperationException error) { return error.Message; }
+        catch (Exception error) when (error is InvalidOperationException or KeyNotFoundException) { return error.Message; }
         var sourceMap = agreement.PartyMappings.SingleOrDefault(x => x.EntityId == source.SourceEntityId && x.LedgerBookId == source.SourceBookId);
         var targetMap = agreement.PartyMappings.SingleOrDefault(x => x.EntityId == source.CounterpartyEntityId && x.LedgerBookId == targetBookId);
         if (sourceMap is null || targetMap is null)
@@ -334,7 +335,7 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
             return targetBalance.Amount == -sourceBalance.Amount ? null
                 : "The actual source and counterpart correction families do not reciprocate on the selected accounting date.";
         }
-        catch (InvalidOperationException error) { return error.Message; }
+        catch (Exception error) when (error is InvalidOperationException or KeyNotFoundException) { return error.Message; }
     }
 
     private static (decimal Amount, string? Error) MonetaryFamilyBalance(IReadOnlyList<LedgerJournalEntryRecord> family,
@@ -471,7 +472,7 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
             ResolvedIntercompanyAccountingArrangementDto? terms = null;
             try
             { terms = await evaluation.TermsAsync(proposal.Source, ct).ConfigureAwait(false); }
-            catch (InvalidOperationException error) { mismatch ??= error.Message; classification = "AgreementAuthorityUnavailable"; }
+            catch (Exception error) when (error is InvalidOperationException or KeyNotFoundException) { mismatch ??= error.Message; classification = "AgreementAuthorityUnavailable"; }
             var due = proposal.DueDate ?? (terms?.SettlementDueDays is { } days ? proposal.Source.EffectiveDate.AddDays(days) : (DateOnly?)null);
             var from = due ?? proposal.Source.EffectiveDate;
             result.Add(new(proposal.Source.ProposalId, proposal.Source.AccountingArrangementId, proposal.Source.TransactionId,

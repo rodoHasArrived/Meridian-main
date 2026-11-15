@@ -655,32 +655,49 @@ internal sealed class LiveStrategyRunSession
         if (report.OrderStatus is ExecutionSdk.OrderStatus.Filled or ExecutionSdk.OrderStatus.PartiallyFilled
             && report.FilledQuantity > 0m)
         {
-            var signedQuantity = ConvertToBacktestFillQuantity(report);
-            var fillPrice = report.FillPrice
-                ?? _context.GetLastPrice(report.Symbol)
-                ?? order.LimitPrice
-                ?? 0m;
-            var fill = new FillEvent(
-                FillId: Guid.NewGuid(),
-                OrderId: order.OrderId,
-                Symbol: report.Symbol,
-                FilledQuantity: signedQuantity,
-                FillPrice: fillPrice,
-                Commission: report.Commission ?? 0m,
-                FilledAt: report.Timestamp,
-                AccountId: order.AccountId);
-
-            // The report's OMS-stamped sizing classification and lot multiplier ride along so a
-            // fixed-income fill (face value at percent-of-par) books its par-scaled cash flow and
-            // a multiplied contract books the same cash the paper portfolio moved.
-            _metrics.RecordFill(
-                fill,
-                report.Timestamp,
-                report.UsesFaceValuePercentageOfPar,
-                report.LotMultiplier ?? 1m);
-            if (_strategy.Status != StrategyStatus.Stopped)
+            if (report.FillPrice is not { } fillPrice)
             {
-                _strategy.OnOrderFill(fill, _context);
+                // The execution price is the venue's to state. Substituting the last market
+                // price, the limit price, or zero would book strategy P&L the portfolio ledger
+                // never recorded — it books nothing for a fill report without a price — so the
+                // two would drift apart with no evidence of why. Book nothing here either.
+                _logger.LogWarning(
+                    "Run {RunId} order {ClientOrderId} for {Symbol}: {Status} report for quantity {FilledQuantity} " +
+                    "carries no fill price; no strategy fill was booked for it.",
+                    _run.RunId, clientOrderId, report.Symbol, report.OrderStatus, report.FilledQuantity);
+            }
+            else
+            {
+                if (fillPrice <= 0m)
+                {
+                    throw new InvalidOperationException(
+                        $"Execution fill for order '{report.OrderId}' has non-positive price {fillPrice}; "
+                        + "the portfolio ledger rejects such a fill, so the live run failed closed.");
+                }
+
+                var signedQuantity = ConvertToBacktestFillQuantity(report);
+                var fill = new FillEvent(
+                    FillId: Guid.NewGuid(),
+                    OrderId: order.OrderId,
+                    Symbol: report.Symbol,
+                    FilledQuantity: signedQuantity,
+                    FillPrice: fillPrice,
+                    Commission: report.Commission ?? 0m,
+                    FilledAt: report.Timestamp,
+                    AccountId: order.AccountId);
+
+                // The report's OMS-stamped sizing classification and lot multiplier ride along so a
+                // fixed-income fill (face value at percent-of-par) books its par-scaled cash flow and
+                // a multiplied contract books the same cash the paper portfolio moved.
+                _metrics.RecordFill(
+                    fill,
+                    report.Timestamp,
+                    report.UsesFaceValuePercentageOfPar,
+                    report.LotMultiplier ?? 1m);
+                if (_strategy.Status != StrategyStatus.Stopped)
+                {
+                    _strategy.OnOrderFill(fill, _context);
+                }
             }
         }
 

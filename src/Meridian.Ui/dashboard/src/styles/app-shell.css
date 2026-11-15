@@ -406,7 +406,7 @@ a.workstation-trust-item:focus-visible {
 }
 
 .masthead-status-pill-status {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -452,7 +452,7 @@ a.workstation-trust-item:focus-visible {
   border-radius: var(--radius-chip, 2px);
   background: var(--topbar-field-bg);
   font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 /* The environment badge is the one part of the session card that must never shrink:
@@ -590,7 +590,7 @@ a.workstation-trust-item:focus-visible {
   border-top: 1px solid var(--topbar-border, #3A444D);
   color: var(--statusbar-text, #C9CFD4);
   font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -823,7 +823,7 @@ button.operating-scope-bar-button:focus-visible { outline: 2px solid var(--inter
   border-radius: var(--radius-chip);
   padding: 0.125rem 0.3125rem;
   color: var(--chrome-warn);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   line-height: 1.2;
 }

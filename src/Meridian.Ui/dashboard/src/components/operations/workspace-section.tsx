@@ -19,7 +19,7 @@ const CSS = `
 .mds-wsection__jump{display:inline-flex;align-items:center;gap:6px;min-height:30px;
   border:1px solid var(--interaction-link,#2A5F96);border-radius:var(--radius-chip,2px);
   background:var(--blue-a10,rgba(47,100,138,.10));color:var(--interaction-link,#2A5F96);
-  padding:4px 10px;font-family:var(--font-body);font-size:11px;font-weight:700;cursor:pointer;text-decoration:none;
+  padding:4px 10px;font-family:var(--font-body);font-size:0.75rem;font-weight:700;cursor:pointer;text-decoration:none;
   white-space:nowrap;}
 .mds-wsection__jump:hover{background:var(--bg-active,#E7EDF2);}
 .mds-wsection__jump:focus-visible{outline:var(--focus-ring,2px solid var(--interaction-focus,#2D6FB3));outline-offset:2px;}

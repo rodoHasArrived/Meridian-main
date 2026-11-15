@@ -1,5 +1,6 @@
 import { accountingPayload as fixtureAccountingWorkspace } from "../scenarios/accounting-payload";
 import {
+  capHealthyOnStaleEvidence,
   countOpenBreaks,
   countOpenOrders,
   countProviderHealth,
@@ -5874,10 +5875,25 @@ function createFixtureFinancialRecordExplorer(seed: FixtureFinancialRecordExplor
 
 // Counted from the same fixtures the Trading, Data and Accounting screens read, with the same
 // definitions, as the server counts its own sources (A3).
+// The seeded evidence times are fixed, so the server rule that a provider is not Healthy on
+// evidence older than three days is applied here as the server would apply it at request time.
+// The seeded Data payload and the seeded shared count both read this list.
+const fixtureListedDataProviders: DataWorkspaceResponse["providers"] = fixtureDataWorkspace.providers.map((provider) => {
+  const connection = fixtureProviderConnections.find((candidate) => candidate.providerId === provider.providerId);
+  const readiness = fixtureProviderReadiness.providers.find((candidate) => candidate.providerId === provider.providerId);
+  return {
+    ...provider,
+    status: capHealthyOnStaleEvidence(provider.status, [
+      connection?.lastSuccessfulAt, connection?.lastVerifiedAt, readiness?.lastSuccessfulAt, readiness?.lastVerifiedAt,
+      ...(readiness?.evidence ?? []).map((item) => item.observedAt)
+    ])
+  };
+});
+
 const fixtureCrossScreenCounts: WorkstationCrossScreenCounts = {
   asOf: "2026-03-21T14:30:00Z",
   openOrders: { count: countOpenOrders(fixtureTradingWorkspace.openOrders) ?? 0, definition: OPEN_ORDERS_DEFINITION },
-  providers: { ...(countProviderHealth(fixtureDataWorkspace.providers) ?? { healthy: 0, total: 0 }), definition: PROVIDERS_DEFINITION },
+  providers: { ...(countProviderHealth(fixtureListedDataProviders) ?? { healthy: 0, total: 0 }), definition: PROVIDERS_DEFINITION },
   openBreaks: { count: countOpenBreaks(fixtureAccountingWorkspace.breakQueue) ?? 0, definition: OPEN_BREAKS_DEFINITION }
 };
 
@@ -5929,8 +5945,8 @@ const fixtures = {
   [brokerageConnectionStatusEndpoint("alpaca")]: fixtureAlpacaConnection,
   [brokerageConnectionStatusEndpoint("robinhood")]: fixtureRobinhoodConnection,
   [PORTFOLIO_API_ENDPOINTS.household]: fixtureAlpacaPortfolio,
-  [WORKSTATION_API_ENDPOINTS.data]: { ...fixtureDataWorkspace, metrics: fixtureDataWorkspace.metrics.map(metric => ({ ...metric, basis: "Seeded data workspace snapshot", source: "Deterministic development fixture" })) },
-  "/api/workstation/data-operations": fixtureDataWorkspace,
+  [WORKSTATION_API_ENDPOINTS.data]: { ...fixtureDataWorkspace, providers: fixtureListedDataProviders, metrics: fixtureDataWorkspace.metrics.map(metric => ({ ...metric, basis: "Seeded data workspace snapshot", source: "Deterministic development fixture" })) },
+  "/api/workstation/data-operations": { ...fixtureDataWorkspace, providers: fixtureListedDataProviders },
   [PROVIDER_API_ENDPOINTS.connections]: fixtureProviderConnections,
   [PROVIDER_API_ENDPOINTS.readiness]: fixtureProviderReadiness,
   [PROVIDER_ROUTING_API_ENDPOINTS.connections]: fixtureProviderRoutingConnections,

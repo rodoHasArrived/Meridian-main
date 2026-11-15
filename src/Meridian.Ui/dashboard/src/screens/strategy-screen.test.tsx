@@ -224,7 +224,7 @@ describe("StrategyScreen", () => {
     renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy/lab"] });
 
     expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
-    expect(screen.getAllByText("PlotTool catalog not connected").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Strategy analytics not connected").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("No retained PlotTool studies are available. Connect a governed PlotTool catalog before selecting notebooks.")).toBeInTheDocument();
     expect(screen.getByRole("status", { name: "PlotTool scatter observations unavailable" }))
       .toHaveTextContent("No PlotTool observations yet");

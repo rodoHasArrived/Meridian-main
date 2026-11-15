@@ -6,6 +6,143 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageAnalysisProgress
+
+Qualified name: <code>Meridian.Ui.Services.StorageAnalysisProgress</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1335](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1335).
+
+Progress report for storage analysis.
+
+```csharp
+public sealed class StorageAnalysisProgress
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Stage { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1337](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1337) |  |
+| <code>public int Percentage { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1338](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1338) |  |
+
+## StorageAnalytics
+
+Qualified name: <code>Meridian.Ui.Services.StorageAnalytics</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:399](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L399).
+
+Storage analytics data.
+
+```csharp
+public sealed class StorageAnalytics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTime? LastUpdated { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:401](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L401) |  |
+| <code>public long TotalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:402](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L402) |  |
+| <code>public int TotalFileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:403](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L403) |  |
+| <code>public long TradeSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:404](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L404) |  |
+| <code>public int TradeFileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:405](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L405) |  |
+| <code>public long DepthSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:406](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L406) |  |
+| <code>public int DepthFileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:407](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L407) |  |
+| <code>public long HistoricalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:408](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L408) |  |
+| <code>public int HistoricalFileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:409](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L409) |  |
+| <code>public SymbolAnalyticsInfo[] SymbolBreakdown { get; set; } = Array.Empty&lt;SymbolAnalyticsInfo&gt;();</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:410](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L410) |  |
+| <code>public long DailyGrowthBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:411](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L411) |  |
+| <code>public int? ProjectedDaysUntilFull { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:412](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L412) |  |
+| <code>public int TotalFiles =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:415](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L415) | Total file count (alias for TotalFileCount). |
+
+## StorageAnalyticsEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.StorageAnalyticsEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:435](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L435).
+
+Storage analytics event args.
+
+```csharp
+public sealed class StorageAnalyticsEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StorageAnalytics? Analytics { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:437](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L437) |  |
+
+## StorageAnalyticsService
+
+Qualified name: <code>Meridian.Ui.Services.StorageAnalyticsService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:13](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L13).
+
+Service for analyzing storage usage and providing analytics.
+
+```csharp
+public sealed class StorageAnalyticsService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StorageAnalyticsService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:22](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L22) |  |
+| <code>public async Task&lt;StorageAnalytics&gt; GetAnalyticsAsync(bool forceRefresh = false, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:33](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L33) | Gets storage analytics, using cache if available. |
+| <code>public async Task&lt;DriveStorageInfo?&gt; GetDriveInfoAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:287](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L287) | Gets storage usage for the data drive. |
+| <code>public Task&lt;bool&gt; SymbolHasDataAsync(string symbol, string dataRoot);</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:315](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L315) | Checks if any data files exist for a given symbol. |
+| <code>public Task&lt;DateTime?&gt; GetLastUpdateTimeAsync(string symbol, string dataRoot);</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:338](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L338) | Gets the last update time for a symbol&#x27;s data files. |
+| <code>public static string FormatBytes(long bytes) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:388](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L388) | Formats bytes into human-readable string. |
+| <code>public event EventHandler&lt;StorageAnalyticsEventArgs&gt;? AnalyticsUpdated;</code> | [src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs:393](../../../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs#L393) | Event raised when analytics are updated. |
+
+## StorageCatalogApiResult
+
+Qualified name: <code>Meridian.Ui.Services.StorageCatalogApiResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1574](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1574).
+
+Response from /api/storage/catalog endpoint.
+
+```csharp
+public sealed class StorageCatalogApiResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTime GeneratedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1576](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1576) |  |
+| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1577](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1577) |  |
+| <code>public long TotalBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1578](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1578) |  |
+| <code>public List&lt;CatalogEntry&gt; Entries { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1579](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1579) |  |
+| <code>public Dictionary&lt;string, long&gt; BytesBySymbol { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1580](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1580) |  |
+| <code>public Dictionary&lt;string, long&gt; BytesByDataType { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1581](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1581) |  |
+| <code>public Dictionary&lt;string, long&gt; BytesByTier { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1582](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1582) |  |
+
+## StorageCategory
+
+Qualified name: <code>Meridian.Ui.Services.StorageCategory</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:27](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L27).
+
+Describes a storage category&#x27;s file count, size, and share of overall usage.
+
+```csharp
+public sealed class StorageCategory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:29](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L29) |  |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:30](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L30) |  |
+| <code>public long SizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:31](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L31) |  |
+| <code>public int FileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:32](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L32) |  |
+| <code>public double Percentage { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:33](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L33) |  |
+
 ## StorageHealth
 
 Qualified name: <code>Meridian.Ui.Services.StorageHealth</code>. Kind: `class`.
@@ -1075,149 +1212,3 @@ Declared public members:
 | <code>public long RecordCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1207](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1207) |  |
 | <code>public bool HasGaps { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1208](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1208) |  |
 | <code>public string QualityGrade { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1209](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1209) |  |
-
-## SymbolSearchApiResponse
-
-Qualified name: <code>Meridian.Ui.Services.SymbolSearchApiResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:726](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L726).
-
-API response model for symbol search endpoint.
-
-```csharp
-public sealed class SymbolSearchApiResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SymbolSearchApiResult[]? Results { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:728](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L728) |  |
-| <code>public int TotalCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:729](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L729) |  |
-| <code>public string[]? Sources { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:730](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L730) |  |
-| <code>public long ElapsedMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:731](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L731) |  |
-| <code>public string? Query { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:732](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L732) |  |
-
-## SymbolSearchApiResult
-
-Qualified name: <code>Meridian.Ui.Services.SymbolSearchApiResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:738](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L738).
-
-Individual result from the API response.
-
-```csharp
-public sealed class SymbolSearchApiResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:740](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L740) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:741](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L741) |  |
-| <code>public string? Exchange { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:742](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L742) |  |
-| <code>public string? AssetType { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:743](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L743) |  |
-| <code>public string? Country { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:744](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L744) |  |
-| <code>public string? Currency { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:745](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L745) |  |
-| <code>public string? Source { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:746](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L746) |  |
-| <code>public int MatchScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:747](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L747) |  |
-| <code>public string? Figi { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:748](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L748) |  |
-| <code>public string? CompositeFigi { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:749](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L749) |  |
-
-## SymbolSearchResponse
-
-Qualified name: <code>Meridian.Ui.Services.SymbolSearchResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:693](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L693).
-
-Response from symbol search operation.
-
-```csharp
-public sealed class SymbolSearchResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:695](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L695) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:696](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L696) |  |
-| <code>public List&lt;SymbolSearchResultItem&gt; Results { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:697](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L697) |  |
-| <code>public int TotalCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:698](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L698) |  |
-| <code>public string Query { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:699](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L699) |  |
-| <code>public List&lt;string&gt; Sources { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:700](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L700) |  |
-| <code>public long ElapsedMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:701](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L701) |  |
-
-## SymbolSearchResultItem
-
-Qualified name: <code>Meridian.Ui.Services.SymbolSearchResultItem</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:707](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L707).
-
-Individual symbol search result item.
-
-```csharp
-public sealed class SymbolSearchResultItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:709](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L709) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:710](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L710) |  |
-| <code>public string? Exchange { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:711](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L711) |  |
-| <code>public string? AssetType { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:712](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L712) |  |
-| <code>public int MatchScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:713](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L713) |  |
-| <code>public string DisplayText =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:718](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L718) | Gets a display string combining symbol and name. |
-
-## SymbolStatistics
-
-Qualified name: <code>Meridian.Ui.Services.SymbolStatistics</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:588](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L588).
-
-Summarizes configured and monitored symbols, enabled subscriptions, and collected-event totals.
-
-```csharp
-public sealed class SymbolStatistics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int TotalConfigured { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:590](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L590) |  |
-| <code>public int TotalMonitored { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:591](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L591) |  |
-| <code>public int TotalWithArchivedData { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:592](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L592) |  |
-| <code>public int TradesEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:593](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L593) |  |
-| <code>public int DepthEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:594](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L594) |  |
-| <code>public long TotalTradesCollected { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:595](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L595) |  |
-| <code>public long TotalQuotesCollected { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:596](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L596) |  |
-| <code>public double AverageTradesPerSymbol { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:597](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L597) |  |
-| <code>public DateTime? LastUpdateTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:598](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L598) |  |
-
-## SymbolStorageInfo
-
-Qualified name: <code>Meridian.Ui.Services.SymbolStorageInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:39](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L39).
-
-Describes a symbol&#x27;s stored data types, provider, subscription state, and timestamp coverage.
-
-```csharp
-public sealed class SymbolStorageInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:41](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L41) |  |
-| <code>public string? Exchange { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:42](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L42) |  |
-| <code>public string? Provider { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:43](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L43) |  |
-| <code>public bool IsSubscribed { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:44](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L44) |  |
-| <code>public DateTime? FirstDataPoint { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:45](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L45) |  |
-| <code>public DateTime? LastDataPoint { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:46](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L46) |  |
-| <code>public List&lt;string&gt; DataTypes { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:47](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L47) |  |

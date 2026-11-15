@@ -174,6 +174,9 @@ describe("Button", () => {
     expect(rule).toMatch(/border-color: var\(--ws-disabled-border\)/);
     expect(rule).toMatch(/color: var\(--ws-disabled-fg\)/);
     expect(rule).toMatch(/opacity: 1/);
+    // Solid, not dashed: a dashed edge reads as a drop zone.
+    expect(rule.slice(0, rule.indexOf("}"))).toMatch(/border-style: solid/);
+    expect(rule.slice(0, rule.indexOf("}"))).not.toMatch(/dashed/);
     // Each theme block defines the three tokens.
     for (const token of ["--ws-disabled-bg:", "--ws-disabled-fg:", "--ws-disabled-border:"]) {
       expect(css.split(token).length - 1).toBe(5);

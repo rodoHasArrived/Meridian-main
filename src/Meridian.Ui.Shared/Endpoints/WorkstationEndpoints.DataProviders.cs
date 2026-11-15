@@ -59,6 +59,7 @@ public static partial class WorkstationEndpoints
         IReadOnlyList<ProviderBindingDto> routingBindings,
         IReadOnlyList<ProviderTrustSnapshotDto> trustSnapshots,
         IReadOnlyList<ProviderReadinessRowDto> readinessRows,
+        DateTimeOffset asOf,
         bool exposeConnectionSummaries)
     {
         // Readiness can only worsen the status of a listed provider; it does not add providers. The
@@ -134,6 +135,20 @@ public static partial class WorkstationEndpoints
                 connection ??= exposeConnectionSummaries
                     ? BuildMetricsConnectionSummary(metrics, rationale)
                     : null;
+                // The evidence times the browser's provider card judges for staleness: the last
+                // successful response and verification, and each readiness evidence item.
+                var evidenceObservedAt = new List<DateTimeOffset?>
+                {
+                    connection?.LastSuccessfulAt,
+                    connection?.LastVerifiedAt,
+                    readiness?.LastSuccessfulAt,
+                    readiness?.LastVerifiedAt
+                };
+                if (readiness is not null)
+                {
+                    evidenceObservedAt.AddRange(readiness.Evidence.Select(static evidence => evidence.ObservedAt));
+                }
+
                 var displayName = ResolveDataProviderDisplayName(providerId, connection, routingConnection, metrics);
                 var capability = ResolveDataProviderCapability(connection, routingConnection, metrics);
                 var latency = metrics is not null ? $"{metrics.AverageLatencyMs:F0}ms p50" : "Latency not reported";
@@ -141,9 +156,12 @@ public static partial class WorkstationEndpoints
                 return new WorkstationDataProviderRecord(
                     ProviderId: connection?.ProviderId ?? providerId,
                     DisplayName: displayName,
-                    Status: CrossScreenCountDefinitions.ResolveProviderStatus(
-                        connection is not null ? connection.Health.ToString() : rationale.Status,
-                        readiness?.Status),
+                    Status: CrossScreenCountDefinitions.CapHealthyOnStaleEvidence(
+                        CrossScreenCountDefinitions.ResolveProviderStatus(
+                            connection is not null ? connection.Health.ToString() : rationale.Status,
+                            readiness?.Status),
+                        evidenceObservedAt,
+                        asOf),
                     Capability: capability,
                     Latency: latency,
                     Note: note,

@@ -235,7 +235,7 @@ export function LifecycleControlPanel() {
 function LifecycleFact({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="rounded-md border border-border/70 bg-background/35 px-3 py-2.5">
-      <div className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.12em]")}>{label}</div>
+      <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.12em]")}>{label}</div>
       <div className={cn("mt-1 truncate text-sm font-semibold text-foreground", mono && "font-mono text-xs")}>{value}</div>
     </div>
   );

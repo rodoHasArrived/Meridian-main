@@ -94,7 +94,7 @@ function StatementEvidenceSummary({ preview }: { preview: StatementImportPreview
 }
 
 function EvidenceMetric({ label, value }: { label: string; value: string }) {
-  return <div><p className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.12em]")}>{label}</p><p className="mt-1 font-mono">{value}</p></div>;
+  return <div><p className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.12em]")}>{label}</p><p className="mt-1 font-mono">{value}</p></div>;
 }
 
 function formatAmount(value: number | null, currency: string) {
@@ -155,7 +155,7 @@ function StatementKindSummarySection({
             type="button"
             aria-pressed={summary.kind === selected?.kind}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-[2px] border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em]",
+              "inline-flex items-center gap-1.5 rounded-[2px] border px-2.5 py-1 font-mono text-xs font-semibold uppercase tracking-[0.14em]",
               "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
               summary.kind === selected?.kind
                 ? "border-primary bg-primary/15 text-primary"
@@ -174,7 +174,7 @@ function StatementKindSummarySection({
           <table className="w-full border-collapse text-xs" aria-label={`Sample ${selected.kind} records`}>
             <caption className="sr-only">Sample records parsed for the {selected.kind} kind</caption>
             <thead>
-              <tr className="border-b border-border text-left font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+              <tr className="border-b border-border text-left font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
                 <th scope="col" className="px-2 py-1.5">Account</th>
                 <th scope="col" className="px-2 py-1.5">Symbol</th>
                 <th scope="col" className="px-2 py-1.5">Activity</th>
@@ -219,7 +219,7 @@ function StatementIssueList({ preview }: { preview: StatementImportPreview }) {
           className="flex flex-wrap items-center gap-2 rounded-[2px] border border-border/60 bg-card px-2 py-1.5 text-xs"
         >
           <Badge variant={statementIssueBadgeVariant(issue.severity)}>{issue.severity}</Badge>
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+          <span className="font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
             {issue.code}
             {issue.rowNumber !== null ? ` · row ${issue.rowNumber}` : ""}
             {issue.field ? ` · ${issue.field}` : ""}

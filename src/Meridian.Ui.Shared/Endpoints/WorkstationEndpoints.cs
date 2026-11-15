@@ -1371,6 +1371,7 @@ public static partial class WorkstationEndpoints
             routingBindings,
             trustSnapshots,
             readinessRows,
+            asOf: DateTimeOffset.UtcNow,
             exposeConnectionSummaries: canManageCredentials);
     }
 

@@ -211,7 +211,7 @@ public sealed record CreatePaperSessionDto(string StrategyId, string? StrategyNa
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionAlertService</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:42](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L42).
+Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:43](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L43).
 
 Durable account-scoped alerts and webhook outbox.
 
@@ -223,19 +223,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;ExecutionAlertSettings&gt; SettingsAsync(Guid accountId, string scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:47](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L47) |  |
-| <code>public async Task SaveSettingsAsync(ExecutionAlertSettings settings, string scope, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:51](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L51) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ExecutionNotification&gt;&gt; NotificationsAsync(Guid accountId, string scope, CancellationToken ct = default, int take = 200) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:69](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L69) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;PendingExecutionWebhook&gt;&gt; PendingWebhookDeliveriesAsync(Guid accountId, string scope, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:74](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L74) |  |
-| <code>public async Task ObserveEquityAsync(ExecutionEquityObservation observation, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:85](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L85) |  |
-| <code>public async Task ScanAsync(Guid accountId, string scope, Func&lt;DateTimeOffset, DateTimeOffset, double&gt; regularMinutes, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:111](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L111) |  |
-| <code>public async Task PublishAsync(Guid accountId, string scope, string key, string severity, string title, string detail, DateTimeOffset timestamp, string? orderId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:148](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L148) |  |
+| <code>public async Task&lt;ExecutionAlertSettings&gt; SettingsAsync(Guid accountId, string scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:48](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L48) |  |
+| <code>public async Task SaveSettingsAsync(ExecutionAlertSettings settings, string scope, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:52](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L52) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ExecutionNotification&gt;&gt; NotificationsAsync(Guid accountId, string scope, CancellationToken ct = default, int take = 200) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:77](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L77) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;PendingExecutionWebhook&gt;&gt; PendingWebhookDeliveriesAsync(Guid accountId, string scope, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:82](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L82) |  |
+| <code>public async Task ObserveEquityAsync(ExecutionEquityObservation observation, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:93](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L93) |  |
+| <code>public async Task ScanAsync(Guid accountId, string scope, Func&lt;DateTimeOffset, DateTimeOffset, double&gt; regularMinutes, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:119](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L119) |  |
+| <code>public async Task PublishAsync(Guid accountId, string scope, string key, string severity, string title, string detail, DateTimeOffset timestamp, string? orderId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:156](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L156) |  |
 
 ## ExecutionAlertSettings
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionAlertSettings</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:9](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L9).
+Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:10](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L10).
 
 ```csharp
 public sealed record ExecutionAlertSettings(Guid AccountId, decimal? DailyLossLimitUsd = null, int StaleOrderMinutes = 15, bool WebhookEnabled = false, string? WebhookUrl = null, int Version = 1);
@@ -349,7 +349,7 @@ public sealed record ExecutionControlSnapshot(ExecutionCircuitBreakerState Circu
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionEquityEvidence</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:16](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L16).
+Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:17](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L17).
 
 ```csharp
 public static class ExecutionEquityEvidence
@@ -359,13 +359,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ExecutionEquityObservation FromBroker(Guid account, string scope, DateOnly date, DateTimeOffset readStarted, DateTimeOffset cutoff, DateTimeOffset previousClose, AccountInfo balance, BrokerageActivitySnapshotDto activity);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:18](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L18) |  |
+| <code>public static ExecutionEquityObservation FromBroker(Guid account, string scope, DateOnly date, DateTimeOffset readStarted, DateTimeOffset cutoff, DateTimeOffset previousClose, AccountInfo balance, BrokerageActivitySnapshotDto activity);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:19](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L19) |  |
 
 ## ExecutionEquityObservation
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionEquityObservation</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:11](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L11).
+Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:12](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L12).
 
 ```csharp
 public sealed record ExecutionEquityObservation(Guid AccountId, string Scope, DateOnly TradingDate, DateTimeOffset ObservedAt, decimal? Equity, decimal? PreviousCloseEquity, decimal? NetExternalFlows, bool IsComplete, string? BlockingReason = null, string Currency = "USD");
@@ -446,7 +446,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionNotification</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:7](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L7).
+Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:8](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L8).
 
 ```csharp
 public sealed record ExecutionNotification(string Id, Guid AccountId, string Scope, string Severity, string Title, string Detail, DateTimeOffset Timestamp, string? OrderId = null);

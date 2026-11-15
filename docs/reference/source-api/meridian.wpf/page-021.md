@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorReadinessGateRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperatorReadinessGateRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:12](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L12).
+
+```csharp
+public sealed record OperatorReadinessGateRowModel(string GateId, string Label, string StatusText, WorkstationReadinessTone ReadinessTone, string Tone, string Detail, string? RequiredNextAction);
+```
+
 ## OperatorReadinessPanelRowModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.OperatorReadinessPanelRowModel</code>. Kind: `record`.
@@ -799,23 +809,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool IsLoading { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs#L11) |  |
 | <code>public string Message { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs:17](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs#L17) |  |
-
-## RoutingMatrixRow
-
-Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.RoutingMatrixRow</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs:8](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs#L8).
-
-Carries a routing source, target, and status for matrix presentation.
-
-```csharp
-public sealed class RoutingMatrixRow
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Source { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs#L10) |  |
-| <code>public string Target { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs#L11) |  |
-| <code>public string Status { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs:12](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs#L12) |  |

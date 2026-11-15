@@ -81,6 +81,24 @@ Declared public members:
 | <code>public static readonly NullReconnectionMetrics Instance = new ();</code> | [src/Meridian.Core/Monitoring/IReconnectionMetrics.cs:26](../../../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs#L26) |  |
 | <code>public void RecordAttempt(string provider, bool success);</code> | [src/Meridian.Core/Monitoring/IReconnectionMetrics.cs:28](../../../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs#L28) |  |
 
+## PublicNetworkAddress
+
+Qualified name: <code>Meridian.Core.Net.PublicNetworkAddress</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Net/PublicNetworkAddress.cs:12](../../../../src/Meridian.Core/Net/PublicNetworkAddress.cs#L12).
+
+Classifies IP addresses for outbound requests whose destination is operator- or provider-supplied. Such requests must only reach public hosts: letting them reach loopback, private, link-local (including the 169.254.169.254 metadata endpoint), or multicast ranges turns the server into a proxy onto its own internal network.
+
+```csharp
+public static class PublicNetworkAddress
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsBlocked(IPAddress address);</code> | [src/Meridian.Core/Net/PublicNetworkAddress.cs:19](../../../../src/Meridian.Core/Net/PublicNetworkAddress.cs#L19) | Returns true when address is loopback, unspecified, private (RFC 1918), carrier-grade NAT, link-local, unique-local, site-local, multicast, or reserved — anything a server-initiated request must not be allowed to target. |
+
 ## ConnectionWarmUp
 
 Qualified name: <code>Meridian.Core.Performance.ConnectionWarmUp</code>. Kind: `class`.
@@ -932,23 +950,3 @@ Result of a bulk CSV import operation.
 ```csharp
 public sealed record BulkImportResult(int SuccessCount, int FailureCount, int SkippedCount, ImportError[] Errors, string[] ImportedSymbols, long ProcessingTimeMs);
 ```
-
-## CircuitState
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.CircuitState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs:176](../../../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs#L176).
-
-Circuit breaker states.
-
-```csharp
-public enum CircuitState : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Closed = 0</code> | [src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs:179](../../../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs#L179) | Circuit is closed, allowing operations. |
-| <code>Open = 1</code> | [src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs:182](../../../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs#L182) | Circuit is open, rejecting operations. |
-| <code>HalfOpen = 2</code> | [src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs:185](../../../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs#L185) | Circuit is half-open, testing recovery. |

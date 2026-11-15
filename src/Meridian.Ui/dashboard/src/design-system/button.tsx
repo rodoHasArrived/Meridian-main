@@ -27,8 +27,9 @@ import { cn } from "@/lib/utils";
  * button's tooltip and accessible description, so the operator learns what unblocks the action.
  * The screenshot harness fails a route that renders a disabled primary button without one.
  *
- * **Disabled look:** every variant shares one disabled style (neutral fill, dashed edge, muted
- * label at full opacity) from `styles/index.css`; do not restyle it per screen.
+ * **Disabled look:** every variant shares one disabled style (the solid shape on a neutral,
+ * dimmed fill with a muted label at full opacity) from `styles/index.css`; do not restyle it per
+ * screen. A dashed edge is reserved for drop zones and empty slots.
  *
  * **AsChild:** set `asChild` to render the button styles and accessibility props on a child
  * `<Link>` or `<a>` instead of a native `<button>`. The child must accept `className`.

@@ -7,6 +7,7 @@ import {
   countOpenBreaks,
   countOpenOrders,
   countProviderHealth,
+  capHealthyOnStaleEvidence,
   formatProviderHealth,
   resolveProviderStatus,
   selectCrossScreenCounts
@@ -19,6 +20,7 @@ import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 interface CountFixture {
   providerHealth: { name: string; statuses: string[]; healthy: number; total: number }[];
   providerStatus: { name: string; listed: string; readiness: string | null; status: string }[];
+  providerEvidenceStaleness: { name: string; status: string; now: string; observedAt: (string | null)[]; capped: string }[];
   openBreaks: { name: string; statuses: string[]; open: number }[];
   openOrders: { name: string; statuses: string[]; open: number }[];
 }
@@ -40,6 +42,10 @@ describe("cross-screen count definitions (shared with the server)", () => {
 
   it.each(fixture.providerStatus)("provider status: $name", ({ listed, readiness, status }) => {
     expect(resolveProviderStatus(listed, readiness)).toBe(status);
+  });
+
+  it.each(fixture.providerEvidenceStaleness)("provider evidence staleness: $name", ({ status, now, observedAt, capped }) => {
+    expect(capHealthyOnStaleEvidence(status, observedAt, Date.parse(now))).toBe(capped);
   });
 
   it.each(fixture.openBreaks)("open breaks: $name", ({ statuses, open }) => {

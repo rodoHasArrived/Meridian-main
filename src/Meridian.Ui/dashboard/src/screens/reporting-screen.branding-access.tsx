@@ -95,7 +95,7 @@ export function ReportingBrandingAccessPanel({
                 <p className="mt-3 text-xs leading-5 text-muted-foreground">
                   {theme.footerText ?? "No footer text"} · {theme.disclaimer ?? "No disclaimer"}
                 </p>
-                <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{theme.logoUri ?? theme.themeId}</p>
+                <p className="mt-2 break-all font-mono text-xs text-muted-foreground">{theme.logoUri ?? theme.themeId}</p>
               </div>
             ))}
           </div>
@@ -111,7 +111,7 @@ export function ReportingBrandingAccessPanel({
             </div>
             <div className="mt-3 grid gap-2 md:grid-cols-3">
               <label className="space-y-1">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Theme ID</span>
+                <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Theme ID</span>
                 <Input
                   value={draft.themeId}
                   onChange={(event) => onDraftChange("themeId", event.target.value)}
@@ -120,7 +120,7 @@ export function ReportingBrandingAccessPanel({
                 />
               </label>
               <label className="space-y-1">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Theme name</span>
+                <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Theme name</span>
                 <Input
                   value={draft.name}
                   onChange={(event) => onDraftChange("name", event.target.value)}
@@ -128,7 +128,7 @@ export function ReportingBrandingAccessPanel({
                 />
               </label>
               <label className="space-y-1">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Firm</span>
+                <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Firm</span>
                 <Input
                   value={draft.firmName}
                   onChange={(event) => onDraftChange("firmName", event.target.value)}
@@ -142,7 +142,7 @@ export function ReportingBrandingAccessPanel({
                 ["backgroundColor", "Background", draft.backgroundColor]
               ] as const).map(([field, label, value]) => (
                 <label key={field} className="space-y-1">
-                  <span className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</span>
+                  <span className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</span>
                   <span className="flex items-center gap-2">
                     <span
                       aria-hidden="true"
@@ -159,7 +159,7 @@ export function ReportingBrandingAccessPanel({
                 </label>
               ))}
               <label className="space-y-1 md:col-span-2">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Logo URI</span>
+                <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Logo URI</span>
                 <Input
                   value={draft.logoUri}
                   onChange={(event) => onDraftChange("logoUri", event.target.value)}
@@ -169,7 +169,7 @@ export function ReportingBrandingAccessPanel({
             </div>
             <div className="mt-2 grid gap-2 md:grid-cols-2">
               <label className="space-y-1">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Footer</span>
+                <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Footer</span>
                 <Input
                   value={draft.footerText}
                   onChange={(event) => onDraftChange("footerText", event.target.value)}
@@ -177,7 +177,7 @@ export function ReportingBrandingAccessPanel({
                 />
               </label>
               <label className="space-y-1">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Disclaimer</span>
+                <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Disclaimer</span>
                 <Input
                   value={draft.disclaimer}
                   onChange={(event) => onDraftChange("disclaimer", event.target.value)}

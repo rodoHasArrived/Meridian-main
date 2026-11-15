@@ -346,7 +346,7 @@ export function StrategyRunLedgerScreen() {
                     onClick={() => setSelectedBasis(option.id)}
                   >
                     <span>{option.label}</span>
-                    <span className="ml-2 font-mono text-[10px] opacity-75">{option.rowCount}</span>
+                    <span className="ml-2 font-mono text-xs opacity-75">{option.rowCount}</span>
                   </Button>
                 ))}
               </div>
@@ -444,7 +444,7 @@ export function StrategyRunLedgerScreen() {
                         </span>
                         <Badge variant={row.varianceTone}>{row.varianceLabel}</Badge>
                       </div>
-                      <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                      <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                         <span className="font-mono tabular-nums">Primary {row.primaryBalanceLabel}</span>
                         <span className="font-mono tabular-nums">{row.comparisonBalanceLabel}</span>
                       </div>

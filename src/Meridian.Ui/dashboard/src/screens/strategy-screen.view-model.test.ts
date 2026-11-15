@@ -1287,7 +1287,7 @@ describe("strategy-screen view model", () => {
     expect(state.plotTool.studies).toEqual([]);
     expect(state.selectedPlotStudyId).toBeNull();
     expect(state.selectedPlotStudyDetail).toBeNull();
-    expect(state.plotTool.workspace.title).toBe("PlotTool catalog not connected");
+    expect(state.plotTool.workspace.title).toBe("Strategy analytics not connected");
     expect(state.plotTool.workspace.studyTableEmptyText).toBe("No retained PlotTool studies are available. Connect a governed PlotTool catalog before selecting notebooks.");
     expect(state.plotTool.workspace.points).toEqual([]);
     expect(state.plotTool.workspace.scatterChart.points).toEqual([]);

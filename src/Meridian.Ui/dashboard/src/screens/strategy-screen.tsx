@@ -747,7 +747,7 @@ function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
                       {vm.promotionApprovalForm.acknowledgementDisabledReason ? (
                         <span
                           id={vm.promotionApprovalForm.acknowledgementDisabledReasonId ?? undefined}
-                          className="rounded-sm border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] leading-4 text-warning"
+                          className="rounded-sm border border-warning/30 bg-warning/10 px-2 py-1 text-xs leading-4 text-warning"
                         >
                           {vm.promotionApprovalForm.acknowledgementDisabledReason}
                         </span>
@@ -1212,7 +1212,7 @@ function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
                         />
                         <span className="min-w-0">
                           <span className="block text-sm font-medium text-foreground">{item.label}</span>
-                          <span className="block font-mono text-[11px] text-muted-foreground">{item.checklistId}</span>
+                          <span className="block font-mono text-xs text-muted-foreground">{item.checklistId}</span>
                           <span className="mt-1 block text-xs text-muted-foreground">
                             {item.status === "Ready"
                               ? `Ready - decided by ${item.decidedBy} at ${item.decidedAt}.`
@@ -1221,12 +1221,12 @@ function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
                                 : item.blocker ?? "Review is required before this item can be ready."}
                           </span>
                           {item.evidenceReference ? (
-                            <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">
+                            <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">
                               Evidence: {item.evidenceReference}
                             </span>
                           ) : null}
                           {item.auditReference ? (
-                            <span className="block break-all font-mono text-[11px] text-muted-foreground">
+                            <span className="block break-all font-mono text-xs text-muted-foreground">
                               Audit: {item.auditReference}
                             </span>
                           ) : null}
@@ -1616,7 +1616,7 @@ function SelectedPlotStudyDetail({
       </div>
       <div className="body">
         <h3 className="text-sm font-semibold text-foreground">{detail.title}</h3>
-        <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{detail.subtitle}</p>
+        <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
         <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.description}</p>
         <DetailFields fields={detail.fields} className="mt-3" />
       </div>

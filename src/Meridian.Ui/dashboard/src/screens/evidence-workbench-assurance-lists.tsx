@@ -36,7 +36,7 @@ export function EvidenceSlaRows({ rows }: { rows: EvidenceSlaAssessmentRowViewMo
           </div>
           <p className="mt-2 leading-5 text-muted-foreground">{row.message}</p>
           <TechnicalDetails label="Technical details" className="mt-2">
-            <div className="break-all font-mono text-[0.7rem] text-muted-foreground">{row.evidenceId}</div>
+            <div className="break-all font-mono text-xs text-muted-foreground">{row.evidenceId}</div>
           </TechnicalDetails>
         </li>
       ))}

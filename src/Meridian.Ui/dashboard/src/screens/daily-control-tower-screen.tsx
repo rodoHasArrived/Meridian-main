@@ -1,3 +1,4 @@
+import { TimeText } from "@/components/ui/time-text";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { WORKSPACE_KPI_IDS } from "@/lib/kpi-registry";
 import { useState } from "react";
@@ -18,7 +19,7 @@ import type { OperationalTrustTone } from "@/components/meridian/operational-tru
 import {
   OperatorTriageActionDialog, OperatorTriageDetailRail, OperatorTriageInboxActions, OperatorTriageInboxError,
   OperatorTriageInboxFilters, OperatorTriageNotices, restoreTriageFilters, TriageAge, TriageAssignCheckbox,
-  triageDateLabel, TriageSeverityStatus, triageStateExportValue, triageStateLabel
+  triageSelection, TriageSeverityStatus, triageStateExportValue, triageStateLabel
 } from "@/components/meridian/operator-triage-queue";
 import { useOperatorTriageInbox, type OperatorTriageInboxState } from "@/components/meridian/use-operator-triage-inbox";
 import { ATTENTION_COUNT_RULE, countAttention, needsAttention } from "@/lib/attention-items";
@@ -141,7 +142,7 @@ function DailyControlTowerQueue({
     {
       id: "item",
       label: "Item",
-      className: "min-w-[18rem]",
+      wrap: true,
       exportValue: (row) => row.label,
       render: (row) => (
         <div className="space-y-2">
@@ -155,31 +156,34 @@ function DailyControlTowerQueue({
         </div>
       )
     },
-    { id: "source", label: "Source", exportValue: (row) => row.sourceLabel, render: (row) => row.sourceLabel },
-    { id: "workspace", label: "Workspace", exportValue: (row) => row.workspaceLabel, render: (row) => row.workspaceLabel },
+    { id: "source", label: "Source", priority: "medium", exportValue: (row) => row.sourceLabel, render: (row) => row.sourceLabel },
+    { id: "workspace", label: "Workspace", priority: "low", exportValue: (row) => row.workspaceLabel, render: (row) => row.workspaceLabel },
     {
       id: "owner",
       label: "Owner",
+      priority: "low",
       exportValue: (row) => row.owner,
       render: (row) => row.owner ?? (row.source === "inbox" ? "Unassigned" : "Not tracked")
     },
     {
       id: "age",
       label: "Age",
+      priority: "medium",
       className: "whitespace-nowrap tabular-nums",
       exportValue: (row) => row.observedAt,
       render: (row) => <TriageAge value={row.observedAt} />
     },
     {
       id: "due",
-      label: "Due · UTC",
+      label: "Due",
       className: "whitespace-nowrap tabular-nums",
       exportValue: (row) => row.dueAt,
-      render: (row) => row.dueAt ? triageDateLabel(row.dueAt) : "No due time"
+      render: (row) => <TimeText value={row.dueAt} display="compact" fallback="No due time" />
     },
     {
       id: "state",
       label: "Triage",
+      priority: "low",
       exportValue: (row) => row.source === "inbox" ? triageStateExportValue(row.item) : "Signal only",
       render: (row) => row.source === "inbox" ? triageStateLabel(row.item) : "Signal only"
     },
@@ -341,6 +345,7 @@ function DailyControlTowerQueue({
             }}
             filters={<OperatorTriageInboxFilters triage={triage} visibilityLabel="Show" activeLabel="Needs attention"
               mineLabel="My inbox items" showMine={showsInbox && Boolean(triage.inbox)} />}
+            selection={showsInbox && triage.inbox ? triageSelection(triage) : undefined}
             tableId="daily-control-tower-queue"
             columns={queueColumns}
             rows={queueRows}

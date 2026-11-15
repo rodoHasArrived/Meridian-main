@@ -44,6 +44,23 @@ public sealed class CrossScreenCountDefinitionsTests
     }
 
     [Fact]
+    public void CapHealthyOnStaleEvidence_MatchesEveryFixtureCase()
+    {
+        foreach (var testCase in Fixture.RootElement.GetProperty("providerEvidenceStaleness").EnumerateArray())
+        {
+            var observedAt = testCase.GetProperty("observedAt").EnumerateArray()
+                .Select(static item => item.ValueKind == JsonValueKind.Null ? (DateTimeOffset?)null : item.GetDateTimeOffset())
+                .ToArray();
+
+            CrossScreenCountDefinitions.CapHealthyOnStaleEvidence(
+                    testCase.GetProperty("status").GetString()!,
+                    observedAt,
+                    testCase.GetProperty("now").GetDateTimeOffset())
+                .Should().Be(testCase.GetProperty("capped").GetString(), testCase.GetProperty("name").GetString());
+        }
+    }
+
+    [Fact]
     public void IsOpenBreak_MatchesEveryFixtureCase()
     {
         foreach (var testCase in Fixture.RootElement.GetProperty("openBreaks").EnumerateArray())

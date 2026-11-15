@@ -6,7 +6,8 @@ import {
   buildWorkspaceAttentionCounts,
   dailyControlTowerProofPassportLabels,
   selectDailyControlTowerQueueItems,
-  type DailyControlTowerFocusRow
+  type DailyControlTowerFocusRow,
+  describeFocus
 } from "@/lib/daily-control-tower";
 import type { OperatorTriageItem } from "@/lib/operator-inbox-triage";
 import { normalizeWorkspacePath } from "@/lib/workspace";
@@ -271,5 +272,14 @@ describe("buildTodayQueueRows", () => {
     ]);
     expect(rows.find((row) => row.id === "in-info")).toMatchObject({ source: "inbox", sourceLabel: "Shared inbox", workspaceLabel: "Unspecified" });
     expect(rows.find((row) => row.id === "ws-blocked")).toMatchObject({ source: "workspace", sourceLabel: "Workspace signal", observedAt: "2026-05-14T20:00:00Z" });
+  });
+
+  it("writes the selected item's summary as a sentence, not comma-joined labels", () => {
+    expect(describeFocus("Cash variance needs review", "blocked", "Accounting record or close evidence", null)).toBe(
+      "Cash variance needs review. It is blocked and affects the accounting record or close evidence. No timestamped evidence is linked yet."
+    );
+    expect(describeFocus("NAV pack", "ready", "Reporting package or evidence", "Jun 1, 2026, 12:00 UTC")).toBe(
+      "NAV pack. It is ready and affects the reporting package or evidence. Latest evidence: Jun 1, 2026, 12:00 UTC."
+    );
   });
 });

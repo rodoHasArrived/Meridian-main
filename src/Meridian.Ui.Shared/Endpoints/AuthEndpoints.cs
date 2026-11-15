@@ -27,7 +27,7 @@ public static class AuthEndpoints
         // GET /login – serve the login page
         app.MapGet(UiApiRoutes.AuthLoginPage, (HttpContext context) =>
         {
-            var returnUrl = context.Request.Query["returnUrl"].ToString();
+            var returnUrl = NormalizeLocalReturnUrl(context.Request.Query["returnUrl"].ToString());
             var hasError = context.Request.Query.ContainsKey("error");
             var html = HtmlTemplateGenerator.Login(returnUrl, hasError);
             return Results.Content(html, "text/html");
@@ -38,6 +38,16 @@ public static class AuthEndpoints
         // POST /api/auth/login – authenticate and issue a session cookie
         app.MapPost(UiApiRoutes.AuthApiLogin, async (HttpContext context, LoginSessionService sessionService) =>
         {
+            // Login is exempt from the double-submit CSRF check (no session exists yet), so a
+            // cross-site page could otherwise post an attacker's credentials and sign the
+            // victim's browser into the attacker's account. Browsers label such requests.
+            if (IsCrossSiteRequest(context.Request))
+            {
+                return Results.Json(
+                    new { error = "Cross-site sign-in requests are not accepted." },
+                    statusCode: StatusCodes.Status403Forbidden);
+            }
+
             string? username, password, returnUrl;
 
             if (context.Request.HasJsonContentType())
@@ -54,6 +64,10 @@ public static class AuthEndpoints
                 password = form["password"].ToString();
                 returnUrl = form["returnUrl"].ToString();
             }
+
+            // Never carry a caller-supplied absolute or scheme-relative target through the
+            // sign-in flow: it would turn the login page into an open redirector.
+            returnUrl = NormalizeLocalReturnUrl(returnUrl);
 
             if (!sessionService.IsConfigured && !sessionService.AllowAnonymousWhenUnconfigured)
             {
@@ -140,9 +154,9 @@ public static class AuthEndpoints
                 });
             }
 
-            var redirect = string.IsNullOrWhiteSpace(returnUrl) ? "/workstation/" : returnUrl;
-            return Results.Redirect(redirect);
+            return Results.LocalRedirect(returnUrl ?? "/workstation/");
         }).ExcludeFromDescription()
+          .RequireRateLimiting(UiEndpoints.LoginRateLimitPolicy)
           .DeclarePermissionlessMutation(
               "Login is the seam that establishes the session permissions come from; requiring a " +
               "permission here would make authentication itself unreachable.");
@@ -637,6 +651,54 @@ public static class AuthEndpoints
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status409Conflict);
+    }
+
+    /// <summary>
+    /// Returns <paramref name="returnUrl"/> only when it is a same-host, path-absolute URL
+    /// (<c>/workstation/...</c>); otherwise <see langword="null"/>. Scheme-relative
+    /// (<c>//host</c>), backslash (<c>/\host</c>, which browsers treat as <c>//host</c>),
+    /// absolute, and control-character-bearing values are rejected.
+    /// </summary>
+    internal static string? NormalizeLocalReturnUrl(string? returnUrl)
+    {
+        if (string.IsNullOrWhiteSpace(returnUrl))
+            return null;
+
+        if (returnUrl[0] != '/')
+            return null;
+
+        if (returnUrl.Length > 1 && (returnUrl[1] == '/' || returnUrl[1] == '\\'))
+            return null;
+
+        foreach (var ch in returnUrl)
+        {
+            // Browsers strip tabs/newlines while parsing URLs, so "/\t/host" becomes "//host".
+            if (char.IsControl(ch))
+                return null;
+        }
+
+        return returnUrl;
+    }
+
+    /// <summary>
+    /// True when the browser reports the request was initiated by a different site, either
+    /// through Fetch Metadata or an <c>Origin</c> whose host differs from the request host.
+    /// Non-browser clients send neither header and are unaffected.
+    /// </summary>
+    internal static bool IsCrossSiteRequest(HttpRequest request)
+    {
+        var fetchSite = request.Headers["Sec-Fetch-Site"].ToString();
+        if (!string.IsNullOrEmpty(fetchSite))
+            return fetchSite.Equals("cross-site", StringComparison.OrdinalIgnoreCase);
+
+        // Older browsers: fall back to Origin. Compare hosts only, so a same-site origin on
+        // another port (a local dev server) keeps working like it does with Sec-Fetch-Site.
+        var origin = request.Headers.Origin.ToString();
+        if (string.IsNullOrEmpty(origin))
+            return false;
+
+        return !Uri.TryCreate(origin, UriKind.Absolute, out var originUri)
+            || !string.Equals(originUri.Host, request.Host.Host, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string BuildLoginRedirect(string? returnUrl, bool error)

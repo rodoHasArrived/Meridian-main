@@ -149,7 +149,7 @@ export function DensityToggle({
             className={cn(
               "inline-flex min-h-6 flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-button)] font-medium leading-none transition-colors",
               "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]",
-              size === "sm" ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs",
+              size === "sm" ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs",
               active
                 ? "bg-background font-semibold text-foreground shadow-[inset_0_0_0_1px_hsl(var(--border))]"
                 : "bg-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"

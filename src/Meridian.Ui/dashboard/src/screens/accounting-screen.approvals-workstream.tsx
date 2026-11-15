@@ -302,12 +302,12 @@ function ApprovalTimelineRow({ entry }: { entry: OperationsTimelineEntry }) {
     <div className="rounded-md border border-border/70 px-3 py-2 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="font-semibold text-foreground">{splitApprovalWords(entry.eventType)}</span>
-        <span className="font-mono text-[11px] text-muted-foreground">{formatApprovalDate(entry.occurredAtUtc)}</span>
+        <span className="font-mono text-xs text-muted-foreground">{formatApprovalDate(entry.occurredAtUtc)}</span>
       </div>
       <p className="mt-1 text-muted-foreground">{entry.rationale || `${splitApprovalWords(entry.fromState)} → ${splitApprovalWords(entry.toState)}`}</p>
-      <div className="mt-2 text-[11px] text-muted-foreground">Evidence: {entry.references.length}</div>
+      <div className="mt-2 text-xs text-muted-foreground">Evidence: {entry.references.length}</div>
       <TechnicalDetails label="Audit metadata" className="mt-2">
-        <div className="grid gap-1 text-[11px] text-muted-foreground sm:grid-cols-2">
+        <div className="grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
           <span>Actor: {entry.actor || "unknown"}</span>
           <span className="break-all">Hash: {entry.currentHash || "pending"}</span>
           <span className="break-all sm:col-span-2">Audit ID: {entry.auditId}</span>

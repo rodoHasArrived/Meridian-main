@@ -76,6 +76,11 @@ the original order identity.
 Open-order limits recognize a working order's prior broker IDs in stale snapshots. Multiple chain
 members reported as open still consume separate slots.
 
+Tracked order status does not regress on out-of-order reports: a `PendingNew` or `Accepted`
+report for an order that already holds fills resolves to `PartiallyFilled`, and `Accepted` is not
+walked back to `PendingNew`. Enabled execution-alert webhooks must target a public address;
+literal internal addresses are refused when settings are saved.
+
 Broker-dispatched client IDs, run/account ownership and processed fill watermarks are retained by
 `FileBrokerageOrderRecoveryStore` before dispatch. Broker acknowledgement accounts are retained as
 `OrderState.BrokerAccountId`; later reports
@@ -324,6 +329,11 @@ appends a `PaperSessionSettlementRecord` (one per account, symbol and trading da
 `settlements.jsonl` in the JSONL store, read strictly) before applying it, and the live projection,
 restart and replay all merge settlements into the fills at `SettledAt`. Settlements are not yet
 published to the accounting handoff, and the sessionless OMS portfolio is not settled.
+
+Both paper gateways wait for capacity on their bounded update/report channel before emitting a
+fill, cancellation, or terminal update for an order that has already left the working set; only
+gateway disposal abandons a waiting emission. A slow consumer therefore applies backpressure
+instead of losing the update.
 
 Both paper gateways resolve the final fill price through the shared trading-parameter helper.
 Tick-size rounding is best-effort: a rounded price is used only when it remains positive, stays

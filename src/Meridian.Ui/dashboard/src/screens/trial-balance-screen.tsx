@@ -331,7 +331,7 @@ export function TrialBalanceScreen() {
                 onClick={() => postedLedger.selectBasis(option.id)}
               >
                 <span>{option.label}</span>
-                <span className="ml-2 font-mono text-[10px] opacity-75">{option.rowCount}</span>
+                <span className="ml-2 font-mono text-xs opacity-75">{option.rowCount}</span>
               </Button>
             ))}
           </div>

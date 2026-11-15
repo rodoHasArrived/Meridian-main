@@ -118,7 +118,12 @@ describe("ArchiveMaintenanceOperations", () => {
     expect(api.getMaintenanceExecutions).toHaveBeenCalledWith(25);
     const toolbar = screen.getByRole("group", { name: "Maintenance execution history table controls" });
     expect(within(toolbar).getByText("Columns", { selector: "summary", exact: true }).closest("details")).not.toHaveAttribute("open");
-    expect(within(toolbar).getByText("Save view", { selector: "summary", exact: true }).closest("details")).not.toHaveAttribute("open");
+    // A short table carries two small controls: Columns, and one menu for export and saved views.
+    const moreActions = within(toolbar).getByLabelText("Maintenance execution history more table actions");
+    expect(moreActions.closest("details")).not.toHaveAttribute("open");
+    // This history is server-backed, so search stays even with two loaded rows.
+    expect(within(toolbar).getByRole("searchbox", { name: "Search" })).toBeInTheDocument();
+    expect(within(toolbar).queryByRole("combobox", { name: "Maintenance execution history density" })).not.toBeInTheDocument();
     screen.getByRole("combobox", { name: "Maintenance task type" }).focus();
     await user.tab();
     expect(screen.getByRole("button", { name: "Run maintenance now" })).toHaveFocus();
@@ -129,11 +134,7 @@ describe("ArchiveMaintenanceOperations", () => {
     await user.tab();
     expect(within(toolbar).getByText("Columns", { selector: "summary", exact: true })).toHaveFocus();
     await user.tab();
-    expect(within(toolbar).getByRole("combobox", { name: "Maintenance execution history density" })).toHaveFocus();
-    await user.tab();
-    expect(within(toolbar).getByRole("button", { name: "Export CSV" })).toHaveFocus();
-    await user.tab();
-    expect(within(toolbar).getByText("Save view", { selector: "summary", exact: true })).toHaveFocus();
+    expect(moreActions).toHaveFocus();
     await user.tab();
     const scrollArea = screen.getByRole("region", { name: "Maintenance execution history scroll area" });
     expect(scrollArea).toHaveFocus();

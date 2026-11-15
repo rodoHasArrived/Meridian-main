@@ -245,8 +245,8 @@ The design-system source contract checks the projection owner, those re-exports 
 schedules-view binding together.
 The existing four fixed-number and one signed-money formatting ratchet allowances follow their
 unchanged declarations into the projections module; aggregate ceilings remain unchanged.
-The Settings typography allowance likewise follows the unchanged JSX: 16 occurrences remain in
-the screen and 45 belong to the provider components, retaining the prior aggregate ceiling of 61.
+The typography-floor baseline is empty: no source file sets text below 12px, so any new
+occurrence fails `node scripts/check-typography-floor.mjs`.
 Fund-structure setup transport types live in `lib/api/fund-structure-setup.contracts.ts`, with
 `lib/api.ts` retaining its public type exports. Promotion form normalization, keyed evidence validation
 and checklist presentation live in `trading-screen.promotion-evidence.ts`; the existing view-model
@@ -1087,6 +1087,18 @@ not been recorded.
   figures (trading and portfolio positions, orders) sort on their text columns, and the
   reconciliation queue keeps its own sort control. The `rawTables` ratchet counts hand-built
   tables.
+  The `TableWorkbench` toolbar is sized to its table. Density follows the global setting
+  (Settings > Preferences), not a control per table. Export and saved views share one "⋯" menu.
+  Search appears only above `TABLE_SEARCH_MIN_ROWS` (10) rows or while a query is active. Pass
+  `selection` for bulk actions: the bar exists only while rows are selected. Give columns a
+  `priority` so a table beside a detail rail drops "low" then "medium" columns instead of clipping
+  or scrolling sideways; dropped columns stay in the Columns menu and in exports.
+- **Wire values and times in rendered text.** Enum identifiers ("PartiallyFilled") are shown
+  through `formatEnumLabel` or a label map in `@/lib/display-labels`, and instants through
+  `formatTimestamp`, `formatCompactTimestamp` or `<TimeText>` from `@/lib/format`. The
+  `pascalCaseRenderedText` and `isoTimestampsInJsx` ratchets hold the existing occurrences in
+  `src/screens/` to a baseline. Method and provenance text goes behind `TechnicalDetails`, and
+  `operatorNote` (`@/lib/internal-copy`) drops fixture notes outside the mock-data build.
 - **Cross-screen counts.** Open orders, provider health and open breaks come from one selector,
   `lib/cross-screen-counts.ts`. A screen holding the source list (the blotter, the Data provider
   rows, the break queue) counts it with the shared definition; Settings and the shell read the
@@ -1096,7 +1108,8 @@ not been recorded.
   retained Data rows. Provider health counts the providers in use (`selectProvidersInUse`: listed by
   the Data workspace, or with a saved connection, routing connection or trust snapshot), each with
   the worse of its listed and readiness status (`resolveProviderStatus`, the server's
-  `ResolveProviderStatus`). The Data overview's health cards and its "Providers healthy" figure read
+  `ResolveProviderStatus`), capped at review when its newest evidence is older than three days
+  (`capHealthyOnStaleEvidence`, the server's `CapHealthyOnStaleEvidence`). The Data overview's health cards and its "Providers healthy" figure read
   that one list, so the figure counts the cards; a provider known only from the readiness catalog
   is available to set up on the Providers page and is not counted. `lib/cross-screen-counts.screens.test.ts` asserts Trading, Settings, Data and Accounting
   agree from one fixture set. Accounting takes open breaks from the payload's `workspace.openBreaks`,
@@ -1127,7 +1140,7 @@ not been recorded.
   (`components/ui/error-notice.tsx`) renders them with the technical details collapsed. New error
   states use `ErrorNotice`; the Recurring journals queue is the first.
 - **Disabled buttons.** Every `Button` variant shares one disabled look from `styles/index.css`:
-  neutral fill, dashed edge and muted label at full opacity (`--ws-disabled-*` tokens; label
+  neutral dimmed fill, solid edge and muted label at full opacity (`--ws-disabled-*` tokens; label
   4.8:1, edge at least 3:1 on every surface, asserted in `components/ui/button.test.tsx`). A busy
   button keeps its own colours. Pass `disabledReason` whenever a button can be disabled; the
   harness fails a route that renders a disabled primary button without one.

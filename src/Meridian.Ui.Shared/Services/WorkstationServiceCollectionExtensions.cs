@@ -462,7 +462,11 @@ public static class WorkstationServiceCollectionExtensions
         services.AddHostedService(sp => sp.GetRequiredService<ExecutionWorkflowWorker>());
         services.AddHostedService<ExecutionWebhookWorker>();
         services.AddHttpClient("execution-webhook", client => client.Timeout = TimeSpan.FromSeconds(15))
-            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+            // The webhook URL is operator-supplied. Dial only public addresses, checked at connect
+            // time, so the workstation cannot be used to POST to loopback, private, or
+            // link-local (cloud metadata) hosts — including via a host name that resolves there.
+            .ConfigurePrimaryHttpMessageHandler(() =>
+                Meridian.Application.Integrations.ProviderIntegrationHttpClientTransport.CreatePublicOnlyHandler());
         services.TryAddSingleton(sp => new LiveBrokeragePortfolioSyncService(
             () => sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>() as Meridian.Execution.Sdk.IBrokerageGateway,
             sp.GetService<Meridian.Execution.Sdk.IOrderManager>,

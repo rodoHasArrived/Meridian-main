@@ -30,7 +30,7 @@ function parseKeys(keys?: string | string[], children?: ReactNode): string[] | n
 export function Kbd({ keys, variant = "default", className, children }: KbdProps) {
   const parts = parseKeys(keys, children);
   const keyClass = cn(
-    "inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-[2px] border border-b-2 border-border px-1.5 font-mono text-[11px] font-semibold leading-none",
+    "inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-[2px] border border-b-2 border-border px-1.5 font-mono text-xs font-semibold leading-none",
     variant === "solid" ? "bg-card text-foreground" : "bg-[var(--ws-surface-raised)] text-muted-foreground"
   );
 
@@ -40,7 +40,7 @@ export function Kbd({ keys, variant = "default", className, children }: KbdProps
         parts.map((key, index) => (
           <Fragment key={index}>
             {index > 0 ? (
-              <span aria-hidden="true" className="px-px text-[10px] font-medium text-muted-foreground">
+              <span aria-hidden="true" className="px-px text-xs font-medium text-muted-foreground">
                 +
               </span>
             ) : null}

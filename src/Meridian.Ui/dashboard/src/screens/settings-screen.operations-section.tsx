@@ -425,7 +425,7 @@ export function SettingsOperationsSection({ vm, submitLedgerMappingAssignment, l
                   href={card.endpointHref}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex max-w-full items-center gap-2 break-all font-mono text-[11px] text-primary hover:underline focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+                  className="inline-flex max-w-full items-center gap-2 break-all font-mono text-xs text-primary hover:underline focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                   aria-label={`Open service details for ${card.title}`}
                 >
                   {card.endpointHref}
@@ -596,7 +596,7 @@ export function SettingsOperationsSection({ vm, submitLedgerMappingAssignment, l
                   label={
                     <span className="min-w-0">
                     <span className="block font-medium text-foreground">{permission.label}</span>
-                    <span className="block break-words text-[11px] leading-4">{permission.group}</span>
+                    <span className="block break-words text-xs leading-4">{permission.group}</span>
                   </span>
                   }
                 />

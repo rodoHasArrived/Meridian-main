@@ -100,6 +100,10 @@ hosts without the wrapper preserve live environment reads and credential rotatio
 
 `AuthenticationModeResolver` is the shared strict parser used by host startup and sessions.
 Invalid modes refuse construction, including Development/Test and configured-account hosts.
+Login-failure windows are keyed by username and client address and capped at 1,024. A full table
+evicts its oldest window to admit a new one, preferring windows that are not locked out, so
+throwaway-username churn neither locks out untracked accounts nor cheaply lifts an active lockout.
+
 Durable sessions reload authoritative state under an exclusive cross-process file lease for
 every operation; the lease is taken through `Core.IO.ExclusiveFileLock`, which retries only
 contention. Session hashes and bounded login-failure windows commit atomically together;

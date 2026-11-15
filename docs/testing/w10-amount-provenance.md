@@ -1,7 +1,7 @@
 # W10-PROV-001 posted and generated amount workflows
 
 **Status:** posted-line and generated trial-balance slices implemented; validation recorded below
-**Reviewed:** 2026-10-07 (UTC)
+**Reviewed:** 2026-10-07
 
 Browser Accounting Ledger Explorer and WPF Posted Ledger now select an individual posted debit or
 credit amount. Both request the same `ledger-amount` subject packet and display the same retained

@@ -187,6 +187,8 @@ Entity timelines, intercompany agreements, role bindings, legacy attribution and
 proposal delivery share host read models and existing journal review APIs. Consolidation projects
 server-authoritative gross/proposed/posted/actual/preview values and separate FX/rounding evidence.
 Browser and WPF consume the same seams; destination permissions remain authoritative.
+An accounting arrangement the tenant registry no longer returns fails only its own proposal in
+counterpart delivery and is classified `AgreementAuthorityUnavailable` in the aged-break list.
 See [intercompany operations](../../docs/operators/intercompany-entity-controls.md).
 
 Entity lifecycle revisions, book-control preflight/activation, and controlled-close authorization
@@ -1205,7 +1207,9 @@ connection, a routing connection or a trust snapshot. Each one's status comes fr
 `ResolveProviderStatus`: the worse of its listed status (connection health, or the trust rationale)
 and its readiness status from `ProviderReadinessService`, when the caller may read readiness. So
 readiness can block a provider whose connection looks healthy, but can never hide a listed warning,
-and the readiness catalog's not-yet-configured providers are not listed and do not count. The
+and the readiness catalog's not-yet-configured providers are not listed and do not count. A provider
+is also not listed Healthy on evidence older than three days (`CapHealthyOnStaleEvidence`): its newest
+last-success, verification or readiness evidence time decides, and no timestamp is unknown, not stale. The
 browser's Data page applies the same rule to the same population, so its "Providers healthy" figure,
 its health cards, Settings and the shell's trust strip agree.
 
@@ -1415,6 +1419,8 @@ without endpoint or workstation orchestration. The larger cross-domain workflows
 
 The shared host composes equity session/coverage policies, authoritative previews, a durable operational journal, reconciliation/notification workers, an independent disabled-by-default webhook outbox, and retained strategy comparison. Browser Orders, Settings and Strategy reuse these authenticated services. Unavailable baseline, activity or cost evidence remains unassessed. See [execution workflows](../../docs/engineering/execution-workflows.md).
 
+The `execution-webhook` client dials only public addresses: it resolves the host, refuses loopback, private, link-local and other internal addresses at connection time, pins the connection to the validated addresses, follows no redirects and uses no system proxy.
+
 `GET /api/config` requires configuration-read permission and masks every configured backfill
 provider credential in a cloned response projection. Persisted credentials remain unchanged.
 Connection services use the injected `IHttpClientFactory` for credential verification and OAuth
@@ -1452,6 +1458,12 @@ watch surface, so another company cannot trigger or populate an operator refresh
 scope is rejected by the shared tenant/company filter as typed `403` Problem Details before either
 endpoint resolves provider data. The shared service's legacy unscoped snapshot and watch surfaces
 exclude tenant/company-aware providers entirely rather than invoking their compatibility methods.
+
+`POST /api/auth/login` carries its own `login` limiter (10 requests per minute per client address,
+same bypass policy as the mutation limiter). It follows `returnUrl` only when the value is a
+path-absolute local URL, falling back to `/workstation/`, and refuses requests the browser marks
+as cross-site (`Sec-Fetch-Site: cross-site`, or a foreign `Origin` when Fetch Metadata is absent)
+because sign-in is exempt from the CSRF token check.
 
 The shared mutation and global API throttles accept `MDC_DISABLE_RATE_LIMIT=true` only in an
 explicit Development/Test host outside production, packaged and customer postures. Both resolve

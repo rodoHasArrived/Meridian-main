@@ -45,7 +45,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       "border-border/70 bg-secondary/20 text-muted-foreground"
               )}
             >
-              <div className={cn("text-[11px] font-semibold", usesTrackedCaps(metric.label) && "uppercase")}>{metric.label}</div>
+              <div className={cn("text-xs font-semibold", usesTrackedCaps(metric.label) && "uppercase")}>{metric.label}</div>
               <div className="mt-1 font-mono text-base text-foreground">{metric.value}</div>
               <div className="mt-1 text-xs">{metric.detail}</div>
             </div>
@@ -73,11 +73,11 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
  ariaLabel="Payment intent and cash evidence workflows" emptyText="No retained records are available in this scope."
  columns={[{ id: "column-1", label: "Payment intent", render: (intent) => (<>
                         <div className="break-all font-mono text-xs text-foreground">{intent.title}</div>
-                        <div className="mt-1 break-all text-[11px] text-muted-foreground">{intent.subtitle}</div>
-                        <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestedLabel}</div>
+                        <div className="mt-1 break-all text-xs text-muted-foreground">{intent.subtitle}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{intent.requestedLabel}</div>
                         {intent.workbenchRouteLabel !== "No workbench route" ? (
                           <a
-                            className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                            className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                             href={intent.workbenchRouteLabel}
                             target="_blank"
                             rel="noreferrer"
@@ -90,19 +90,19 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
 { id: "column-2", label: "Status", render: (intent) => (<>
                         <Badge variant={intent.statusTone} dot>{intent.statusLabel}</Badge>
                         <div className="mt-1 text-xs text-muted-foreground">{intent.readinessReasonLabel}</div>
-                        <div className="mt-1 text-[11px] text-muted-foreground">{intent.executionDeferredLabel}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{intent.executionDeferredLabel}</div>
                       </>), exportValue: (intent) => [intent.statusTone, intent.statusLabel, intent.readinessReasonLabel, intent.executionDeferredLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-3", label: "Expected cash", render: (intent) => (<>
                         <div className="font-mono">{intent.expectedCashLabel}</div>
-                        <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestMetadataLabel}</div>
-                        <div className="mt-1 text-[11px] text-muted-foreground">{intent.sourceEvidenceLabel}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{intent.requestMetadataLabel}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{intent.sourceEvidenceLabel}</div>
                       </>), exportValue: (intent) => [intent.expectedCashLabel, intent.requestMetadataLabel, intent.sourceEvidenceLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-4", label: "Approvals", render: (intent) => (<>{intent.approvalLabel}</>), exportValue: (intent) => [intent.approvalLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-5", label: "Cash evidence", render: (intent) => (<>
                         <div>{intent.bankEvidenceLabel}</div>
                         {intent.evidenceRouteLabel !== "No evidence route" ? (
                           <a
-                            className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                            className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                             href={intent.evidenceRouteLabel}
                             target="_blank"
                             rel="noreferrer"
@@ -128,14 +128,14 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                     <div>
                       <div className="break-all font-mono text-xs text-foreground">{intent.title}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{intent.expectedCashLabel}</div>
-                      <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestMetadataLabel}</div>
-                      <div className="mt-1 text-[11px] text-muted-foreground">{intent.sourceEvidenceLabel}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{intent.requestMetadataLabel}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{intent.sourceEvidenceLabel}</div>
                     </div>
                     <Badge variant={intent.statusTone} dot>{intent.statusLabel}</Badge>
                   </div>
                   <div className="mt-3 grid gap-3 lg:grid-cols-4">
                     <div>
-                      <div className="text-[11px] font-semibold uppercase text-muted-foreground">Approval chain</div>
+                      <div className="text-xs font-semibold uppercase text-muted-foreground">Approval chain</div>
                       {intent.approvalSteps.length > 0 ? (
                         <ol className="mt-2 space-y-2">
                           {intent.approvalSteps.map((step) => (
@@ -145,10 +145,10 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                                 <Badge variant="outline">{step.statusLabel}</Badge>
                               </div>
                               <div className="mt-1 text-muted-foreground">{step.roleLabel} / {step.actorLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{step.decidedLabel}</div>
+                              <div className="mt-1 text-xs text-muted-foreground">{step.decidedLabel}</div>
                               {step.evidenceRouteLabel !== "No approval evidence route" ? (
                                 <a
-                                  className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                                  className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                                   href={step.evidenceRouteLabel}
                                   target="_blank"
                                   rel="noreferrer"
@@ -166,7 +166,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                     </div>
 
                     <div>
-                      <div className="text-[11px] font-semibold uppercase text-muted-foreground">Bank evidence</div>
+                      <div className="text-xs font-semibold uppercase text-muted-foreground">Bank evidence</div>
                       {intent.bankEvidence.length > 0 ? (
                         <div className="mt-2 space-y-2">
                           {intent.bankEvidence.map((item) => (
@@ -176,13 +176,13 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                                 <Badge variant="outline">{item.statusLabel}</Badge>
                               </div>
                               <div className="mt-1 text-muted-foreground">{item.summaryLabel}</div>
-                              <div className="mt-1 font-mono text-[11px] text-muted-foreground">{item.amountLabel} / {item.effectiveDateLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{item.referenceLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{item.recordedLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{item.recorderLabel}</div>
+                              <div className="mt-1 font-mono text-xs text-muted-foreground">{item.amountLabel} / {item.effectiveDateLabel}</div>
+                              <div className="mt-1 text-xs text-muted-foreground">{item.referenceLabel}</div>
+                              <div className="mt-1 text-xs text-muted-foreground">{item.recordedLabel}</div>
+                              <div className="mt-1 text-xs text-muted-foreground">{item.recorderLabel}</div>
                               {item.evidenceRouteLabel !== "No bank evidence route" ? (
                                 <a
-                                  className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                                  className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                                   href={item.evidenceRouteLabel}
                                   target="_blank"
                                   rel="noreferrer"
@@ -200,20 +200,20 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                     </div>
 
                     <div>
-                      <div className="text-[11px] font-semibold uppercase text-muted-foreground">Reconciliation</div>
+                      <div className="text-xs font-semibold uppercase text-muted-foreground">Reconciliation</div>
                       {intent.reconciliationLinks.length > 0 ? (
                         <div className="mt-2 space-y-2">
                           {intent.reconciliationLinks.map((link) => (
                             <div key={link.id} className="text-xs">
                               <div className="flex flex-wrap items-center gap-2">
-                                <span className="break-all font-mono text-[11px] text-foreground">{link.id}</span>
+                                <span className="break-all font-mono text-xs text-foreground">{link.id}</span>
                                 <Badge variant="outline">{link.statusLabel}</Badge>
                               </div>
                               <div className="mt-1 text-muted-foreground">{link.summaryLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{link.caseLabel}</div>
+                              <div className="mt-1 text-xs text-muted-foreground">{link.caseLabel}</div>
                               {link.routeLabel !== "No reconciliation evidence route" ? (
                                 <a
-                                  className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                                  className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                                   href={link.routeLabel}
                                   target="_blank"
                                   rel="noreferrer"
@@ -231,19 +231,19 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                     </div>
 
                     <div>
-                      <div className="text-[11px] font-semibold uppercase text-muted-foreground">Audit trail</div>
+                      <div className="text-xs font-semibold uppercase text-muted-foreground">Audit trail</div>
                       {intent.auditEvents.length > 0 ? (
                         <div className="mt-2 space-y-2">
                           {intent.auditEvents.map((event) => (
                             <div key={event.id} className="text-xs">
                               <div className="font-semibold text-foreground">{event.actionLabel}</div>
                               <div className="mt-1 text-muted-foreground">{event.summaryLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{event.actorLabel} / {event.recordedLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{event.evidenceLabel}</div>
+                              <div className="mt-1 text-xs text-muted-foreground">{event.actorLabel} / {event.recordedLabel}</div>
+                              <div className="mt-1 text-xs text-muted-foreground">{event.evidenceLabel}</div>
                               {event.evidenceRouteLabels.map((route, index) => (
                                 <a
                                   key={`${event.id}-${route}`}
-                                  className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                                  className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                                   href={route}
                                   target="_blank"
                                   rel="noreferrer"
@@ -274,10 +274,10 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
  ariaLabel="Private-capital fund event ledger records" emptyText="No retained records are available in this scope."
  columns={[{ id: "column-1", label: "Fund event", render: (record) => (<>
                       <div className="font-semibold text-foreground">{record.title}</div>
-                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.subtitle}</div>
+                      <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{record.subtitle}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{record.memoLabel}</div>
-                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.referenceLabel}</div>
-                      <div className="mt-2 rounded border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground">
+                      <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{record.referenceLabel}</div>
+                      <div className="mt-2 rounded border border-border/60 bg-secondary/20 px-2 py-1 text-xs text-muted-foreground">
                         <div className="flex flex-wrap items-center gap-1">
                           <Badge variant={record.paymentEvidenceTone} dot>{record.paymentEvidenceLabel}</Badge>
                         </div>
@@ -285,7 +285,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                         <div className="mt-1">{record.paymentEvidenceRequiredLabel}</div>
                       </div>
                       <a
-                        className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                        className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                         href={record.activityRouteLabel}
                         target="_blank"
                         rel="noreferrer"
@@ -294,7 +294,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                         {record.activityRouteLabel}
                       </a>
                       <a
-                        className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                        className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                         href={record.commandCenterRouteLabel}
                         target="_blank"
                         rel="noreferrer"
@@ -312,7 +312,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       <div className="mt-1 text-xs text-muted-foreground">{record.issueLabel}</div>
                       {record.nextActionRouteLabel !== "No next-action route" ? (
                         <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                           href={record.nextActionRouteLabel}
                           target="_blank"
                           rel="noreferrer"
@@ -321,11 +321,11 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                           {record.nextActionLabel}
                         </a>
                       ) : (
-                        <div className="mt-1 text-[11px] text-muted-foreground">{record.nextActionLabel}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{record.nextActionLabel}</div>
                       )}
                       {record.approvalRouteLabel !== "No approval route" ? (
                         <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                           href={record.approvalRouteLabel}
                           target="_blank"
                           rel="noreferrer"
@@ -338,7 +338,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
 { id: "column-3", label: "Effective", render: (record) => (<>{record.effectiveDateLabel}</>), exportValue: (record) => [record.effectiveDateLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-4", label: "Net", render: (record) => (<>
                       <div>{record.netActivityLabel}</div>
-                      <div className="mt-1 text-[11px] text-muted-foreground">{record.grossActivityLabel} gross</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{record.grossActivityLabel} gross</div>
                     </>), exportValue: (record) => [record.netActivityLabel, record.grossActivityLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-5", label: "Subledger", render: (record) => (<>
                       <div>{record.subledgerLabel}</div>
@@ -348,13 +348,13 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
 { id: "column-7", label: "Report output", render: (record) => (<>
                       <div>{record.reportOutputLabel}</div>
                       <div className="mt-1 text-muted-foreground">{record.reportOutputDetailLabel}</div>
-                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.reportOutputRouteLabel}</div>
+                      <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{record.reportOutputRouteLabel}</div>
                     </>), exportValue: (record) => [record.reportOutputLabel, record.reportOutputDetailLabel, record.reportOutputRouteLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-8", label: "Evidence", render: (record) => (<>
                       <div>{record.evidenceLabel}</div>
                       {record.evidenceRouteLabel !== "No evidence route" ? (
                         <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                           href={record.evidenceRouteLabel}
                           target="_blank"
                           rel="noreferrer"
@@ -365,23 +365,23 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       ) : null}
                       {record.evidenceCategories.length > 0 ? (
                         <div className="mt-2 space-y-1" aria-label={`Evidence readiness categories for ${record.title}`}>
-                          <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(record.evidenceCategorySummaryLabel) && "uppercase")}>
+                          <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(record.evidenceCategorySummaryLabel) && "uppercase")}>
                             {record.evidenceCategorySummaryLabel}
                           </div>
                           {record.evidenceCategories.map((category) => (
                             <div key={category.id} className="rounded border border-border/60 bg-secondary/20 px-2 py-1">
                               <div className="flex flex-wrap items-center gap-1">
                                 <Badge variant={category.tone} dot>{category.label}</Badge>
-                                <span className="text-[11px] text-muted-foreground">{category.statusLabel}</span>
-                                <span className="font-mono text-[11px] text-muted-foreground">{category.evidenceLabel}</span>
+                                <span className="text-xs text-muted-foreground">{category.statusLabel}</span>
+                                <span className="font-mono text-xs text-muted-foreground">{category.evidenceLabel}</span>
                               </div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{category.summaryLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{category.requiredEvidenceLabel}</div>
+                              <div className="mt-1 text-xs text-muted-foreground">{category.summaryLabel}</div>
+                              <div className="mt-1 text-xs text-muted-foreground">{category.requiredEvidenceLabel}</div>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <div className="mt-2 text-[11px] text-muted-foreground">{record.evidenceCategorySummaryLabel}</div>
+                        <div className="mt-2 text-xs text-muted-foreground">{record.evidenceCategorySummaryLabel}</div>
                       )}
                     </>), exportValue: (record) => [record.evidenceLabel, record.evidenceRouteLabel, record.title, record.evidenceCategories, record.evidenceCategorySummaryLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") }]}
 />
@@ -396,7 +396,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
  ariaLabel="Private-capital capital account activity" emptyText="No retained records are available in this scope."
  columns={[{ id: "column-1", label: "Capital account", render: (account) => (<>
                       <div className="break-all font-mono text-xs text-foreground">{account.title}</div>
-                      <div className="mt-1 break-all text-[11px] text-muted-foreground">{account.subtitle}</div>
+                      <div className="mt-1 break-all text-xs text-muted-foreground">{account.subtitle}</div>
                     </>), exportValue: (account) => [account.title, account.subtitle].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-2", label: "Net", render: (account) => (<>{account.netActivityLabel}</>), exportValue: (account) => [account.netActivityLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-3", label: "Calls", render: (account) => (<>{account.contributionLabel}</>), exportValue: (account) => [account.contributionLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
@@ -422,10 +422,10 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
  ariaLabel="Private-capital capital account subledgers" emptyText="No retained records are available in this scope."
  columns={[{ id: "column-1", label: "Capital account", render: (subledger) => (<>
                       <div className="break-all font-mono text-xs text-foreground">{subledger.title}</div>
-                      <div className="mt-1 break-all text-[11px] text-muted-foreground">{subledger.subtitle}</div>
+                      <div className="mt-1 break-all text-xs text-muted-foreground">{subledger.subtitle}</div>
                       {subledger.activityRouteLabel !== "No subledger route" ? (
                         <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                           href={subledger.activityRouteLabel}
                           target="_blank"
                           rel="noreferrer"
@@ -458,7 +458,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                     </>), exportValue: (subledger) => [subledger.eventCountLabel, subledger.approvalQueueLabel, subledger.postedEventLabel, subledger.publishedReportLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-6", label: "Evidence", render: (subledger) => (<>
                       <div>{subledger.evidenceLabel}</div>
-                      <div className="mt-2 rounded border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground">
+                      <div className="mt-2 rounded border border-border/60 bg-secondary/20 px-2 py-1 text-xs text-muted-foreground">
                         <div className="flex flex-wrap items-center gap-1">
                           <Badge variant={subledger.paymentEvidenceTone} dot>{subledger.paymentEvidenceLabel}</Badge>
                         </div>
@@ -467,23 +467,23 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       </div>
                       {subledger.evidenceCategories.length > 0 ? (
                         <div className="mt-2 space-y-1" aria-label={`Subledger evidence readiness categories for ${subledger.title}`}>
-                          <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(subledger.evidenceCategorySummaryLabel) && "uppercase")}>
+                          <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(subledger.evidenceCategorySummaryLabel) && "uppercase")}>
                             {subledger.evidenceCategorySummaryLabel}
                           </div>
                           {subledger.evidenceCategories.map((category) => (
                             <div key={category.id} className="rounded border border-border/60 bg-secondary/20 px-2 py-1">
                               <div className="flex flex-wrap items-center gap-1">
                                 <Badge variant={category.tone} dot>{category.label}</Badge>
-                                <span className="text-[11px] text-muted-foreground">{category.statusLabel}</span>
-                                <span className="font-mono text-[11px] text-muted-foreground">{category.evidenceLabel}</span>
+                                <span className="text-xs text-muted-foreground">{category.statusLabel}</span>
+                                <span className="font-mono text-xs text-muted-foreground">{category.evidenceLabel}</span>
                               </div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{category.summaryLabel}</div>
-                              <div className="mt-1 text-[11px] text-muted-foreground">{category.requiredEvidenceLabel}</div>
+                              <div className="mt-1 text-xs text-muted-foreground">{category.summaryLabel}</div>
+                              <div className="mt-1 text-xs text-muted-foreground">{category.requiredEvidenceLabel}</div>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <div className="mt-2 text-[11px] text-muted-foreground">{subledger.evidenceCategorySummaryLabel}</div>
+                        <div className="mt-2 text-xs text-muted-foreground">{subledger.evidenceCategorySummaryLabel}</div>
                       )}
                     </>), exportValue: (subledger) => [subledger.evidenceLabel, subledger.paymentEvidenceTone, subledger.paymentEvidenceLabel, subledger.paymentEvidenceSummaryLabel, subledger.paymentEvidenceRequiredLabel, subledger.evidenceCategories, subledger.title, subledger.evidenceCategorySummaryLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") }]}
 />
@@ -498,7 +498,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
  ariaLabel="Private-capital capital account subledger" emptyText="No retained records are available in this scope."
  columns={[{ id: "column-1", label: "Event", render: (entry) => (<>
                       <div className="font-semibold text-foreground">{entry.title}</div>
-                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{entry.subtitle}</div>
+                      <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{entry.subtitle}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{entry.memoLabel}</div>
                     </>), exportValue: (entry) => [entry.title, entry.subtitle, entry.memoLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-2", label: "Status", render: (entry) => (<>
@@ -522,7 +522,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
  ariaLabel="Private-capital ledger impacts" emptyText="No retained records are available in this scope."
  columns={[{ id: "column-1", label: "Impact", render: (impact) => (<>
                       <div className="font-semibold text-foreground">{impact.title}</div>
-                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{impact.subtitle}</div>
+                      <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{impact.subtitle}</div>
                     </>), exportValue: (impact) => [impact.title, impact.subtitle].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-2", label: "Readiness", render: (impact) => (<>
                       <Badge variant={impact.readinessTone} dot>{impact.readinessLabel}</Badge>
@@ -548,7 +548,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
  ariaLabel="Private-capital report outputs" emptyText="No retained records are available in this scope."
  columns={[{ id: "column-1", label: "Output", render: (output) => (<>
                       <div className="font-semibold text-foreground">{output.title}</div>
-                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{output.subtitle}</div>
+                      <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{output.subtitle}</div>
                     </>), exportValue: (output) => [output.title, output.subtitle].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-2", label: "Readiness", render: (output) => (<>
                       <Badge variant={output.readinessTone} dot>{output.readinessLabel}</Badge>
@@ -558,7 +558,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
 { id: "column-4", label: "Amount", render: (output) => (<>{output.amountLabel}</>), exportValue: (output) => [output.amountLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-5", label: "Evidence", render: (output) => (<>{output.evidenceLabel}</>), exportValue: (output) => [output.evidenceLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-6", label: "Workflow", render: (output) => (<>
-                      <div className="break-all font-mono text-[11px] text-foreground">{output.workflowLabel}</div>
+                      <div className="break-all font-mono text-xs text-foreground">{output.workflowLabel}</div>
                       <div className="mt-1 text-muted-foreground">{output.publicationLabel}</div>
                       <div className="mt-1 text-muted-foreground">{output.provenanceLabel}</div>
                     </>), exportValue: (output) => [output.workflowLabel, output.publicationLabel, output.provenanceLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
@@ -574,7 +574,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="font-semibold text-foreground">{event.title}</div>
-                    <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{event.subtitle}</div>
+                    <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{event.subtitle}</div>
                   </div>
                   <Badge variant={event.statusTone} dot>{event.statusLabel}</Badge>
                 </div>
@@ -608,7 +608,7 @@ function ManualJournalLineBadges({ badges }: { badges: ReturnType<ManualJournalE
           key={badge.id}
           title={badge.message}
           className={cn(
-            "inline-flex max-w-full items-center rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-tight",
+            "inline-flex max-w-full items-center rounded border px-1.5 py-0.5 text-xs font-semibold uppercase leading-tight",
             badge.tone === "danger"
               ? "border-danger/30 bg-danger/10 text-danger"
               : badge.tone === "warning"
@@ -780,9 +780,9 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
                   onClick={() => view.selectDraft(draft.journalEntryId)}
                 >
                   <span className="block font-semibold text-foreground">{draft.memo || "Untitled journal entry"}</span>
-                  <span className="mt-1 block text-[11px] text-muted-foreground">{draft.entryType}</span>
-                  <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{draft.status} / v{draft.version}</span>
-                  <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{draft.accountingDate} / {draft.currency}</span>
+                  <span className="mt-1 block text-xs text-muted-foreground">{draft.entryType}</span>
+                  <span className="mt-1 block font-mono text-xs text-muted-foreground">{draft.status} / v{draft.version}</span>
+                  <span className="mt-1 block font-mono text-xs text-muted-foreground">{draft.accountingDate} / {draft.currency}</span>
                 </button>
               )) : (
                 <p role="status" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm text-muted-foreground">
@@ -922,7 +922,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
                             onKeyDown={(event) => handleManualJournalCellKeyDown(event, view, line.lineId, "debit", "Debit")}
                           />
                           {`${line.lineId}:Debit` in amountDrafts ? (
-                            <p id={`manual-je-debit-error-${line.lineId}`} className="mt-1 text-right text-[11px] text-danger" role="alert">Enter a valid amount.</p>
+                            <p id={`manual-je-debit-error-${line.lineId}`} className="mt-1 text-right text-xs text-danger" role="alert">Enter a valid amount.</p>
                           ) : null}
                         </td>
                         <td>
@@ -940,7 +940,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
                             onKeyDown={(event) => handleManualJournalCellKeyDown(event, view, line.lineId, "credit", "Credit")}
                           />
                           {`${line.lineId}:Credit` in amountDrafts ? (
-                            <p id={`manual-je-credit-error-${line.lineId}`} className="mt-1 text-right text-[11px] text-danger" role="alert">Enter a valid amount.</p>
+                            <p id={`manual-je-credit-error-${line.lineId}`} className="mt-1 text-right text-xs text-danger" role="alert">Enter a valid amount.</p>
                           ) : null}
                         </td>
                         <td>
@@ -950,7 +950,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
                             onClick={() => view.selectLine(line.lineId)}
                           >
                             <span className="block truncate font-semibold text-foreground">{line.securityDisplayName || (view.draft.assetAccountingDraft ? "Inspect line attribution" : "Choose security")}</span>
-                            <span className="block truncate font-mono text-[11px] text-muted-foreground">{line.securityId || "No Security Master reference"}</span>
+                            <span className="block truncate font-mono text-xs text-muted-foreground">{line.securityId || "No Security Master reference"}</span>
                           </button>
                           <input disabled={Boolean(view.draft.assetAccountingDraft)}
                             id={`manual-je-description-${line.lineId}`}
@@ -1044,7 +1044,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
                       <tr key={row.id}>
                         <td>
                           <div className="font-semibold text-foreground">{row.accountName}</div>
-                          <div className="font-mono text-[11px] text-muted-foreground">{row.accountPath} / {row.accountType}</div>
+                          <div className="font-mono text-xs text-muted-foreground">{row.accountPath} / {row.accountType}</div>
                         </td>
                         <td className="font-mono tabular-nums text-right">{row.debitLabel}</td>
                         <td className="font-mono tabular-nums text-right">{row.creditLabel}</td>
@@ -1225,13 +1225,13 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
                     <div className="font-semibold text-foreground">{transition.title}</div>
                     <div className="mt-1 text-xs text-muted-foreground">{transition.detail}</div>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      <Badge variant="outline" className="font-mono text-[11px]">{transition.auditLabel}</Badge>
-                      <Badge variant="outline" className="font-mono text-[11px]">{transition.correlationLabel}</Badge>
+                      <Badge variant="outline" className="font-mono text-xs">{transition.auditLabel}</Badge>
+                      <Badge variant="outline" className="font-mono text-xs">{transition.correlationLabel}</Badge>
                       <Badge variant={transition.evidenceTone}>{transition.evidenceLabel}</Badge>
                     </div>
                     <div className="mt-2 space-y-1">
                       {transition.evidenceRows.map((evidence) => (
-                        <div key={`${transition.id}-${evidence}`} className="break-all rounded border border-border/60 bg-secondary/30 px-2 py-1 font-mono text-[11px] text-muted-foreground">
+                        <div key={`${transition.id}-${evidence}`} className="break-all rounded border border-border/60 bg-secondary/30 px-2 py-1 font-mono text-xs text-muted-foreground">
                           {evidence}
                         </div>
                       ))}

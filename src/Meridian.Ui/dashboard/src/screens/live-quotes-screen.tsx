@@ -583,7 +583,7 @@ function SessionStatsBanner({ session }: { session: LiveQuotesSessionStatsViewMo
           <span className={cn("text-xs text-muted-foreground", usesTrackedCaps(session.periodLabel) && "uppercase tracking-wide")}>{session.periodLabel}</span>
           <span className={`font-mono text-base ${tone}`} aria-label={session.changeAriaLabel}>{session.changeLabel}</span>
         </div>
-        <span className="text-[11px] text-muted-foreground">{session.dateLabel}</span>
+        <span className="text-xs text-muted-foreground">{session.dateLabel}</span>
       </div>
       <p id={session.descriptionId} className="sr-only">{session.description}</p>
       <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-xs sm:grid-cols-5">
@@ -604,7 +604,7 @@ const sessionStatsChangeClass = {
 function SessionStatCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between sm:flex-col sm:items-start">
-      <span className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</span>
+      <span className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</span>
       <span className="text-foreground">{value}</span>
     </div>
   );
@@ -950,7 +950,7 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
             <div className="min-w-0">
               <div>{status.message}</div>
               {status.details.length > 0 ? (
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-[11px] leading-5">
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
                   {status.details.map((detail) => (
                     <li key={detail}>{detail}</li>
                   ))}
@@ -1133,7 +1133,7 @@ const chartChangeToneClass = {
 function ChartStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-border/60 bg-secondary/25 px-2.5 py-1.5">
-      <div className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</div>
+      <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</div>
       <div className="mt-0.5 font-mono text-sm text-foreground">{value}</div>
     </div>
   );

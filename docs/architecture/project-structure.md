@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-11-09 (added the bounded-context, platform, process-isolation, worker, and smoke-stub projects missing from the source table)
+**Reviewed:** 2026-11-14
 
 Meridian uses a standard repository layout organized around source projects,
 tests, automation, docs, design-system assets, and generated artifacts.
@@ -33,6 +33,7 @@ tests, automation, docs, design-system assets, and generated artifacts.
 | `src/Meridian.Instruments/` | Active source code | Instrument economics, Security Master-keyed Asset Operations, cash-flow projections, and factor-paydown projections |
 | `src/Meridian.ReferenceData/` | Active source code | Asset-class/instrument-kind mapping, profile catalog contracts, and seeded approved asset-profile templates |
 | `src/Meridian.Reporting/` | Active source code | Governed report packs, report-writer grid rendering, saved filters, formulas, lineage, publication, restatement, and report generation |
+| `src/Meridian.Reporting.ReadModels/` | Active source code | Leaf reporting read models shared by both workstations (income comparisons, report access evaluation, journal-backed tax projections, partners-capital reads, ledger-population replay); extracted from `Meridian.Ui.Shared` with type forwarding and no UI or host references |
 | `src/Meridian.FSharp*/` | Active source code | F# domain models, operations, direct-lending, trading, and functional workflow support |
 | `src/Meridian.QuantScript/` | Active source code | QuantScript parsing, compilation, and charting support |
 | `src/Meridian.Mcp*/` | Active source code | MCP hosts and tool surfaces |

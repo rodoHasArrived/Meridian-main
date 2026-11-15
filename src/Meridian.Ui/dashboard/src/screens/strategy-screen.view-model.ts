@@ -39,6 +39,9 @@ import type {
 import { formatCount as formatCountValue, formatDecimal, formatMoney, formatNumber, formatRatioAsPercent as formatRatioAsPercentValue } from "@/lib/format";
 import { defaultGetRunEquityCurve } from "@/screens/strategy-screen.equity-paths.view-model";
 
+/** Badge text of the analytics panel when no analytics source is connected. */
+export const PLOT_TOOL_NOT_CONNECTED_LABEL = "Not connected";
+
 export type StrategyCommand = "compare" | "diff" | "history";
 export type StrategyPlotToolView = "workspace" | "statistics";
 
@@ -1809,7 +1812,7 @@ function buildPlotToolStateFromApiOrFallback(
         analyticsEvidenceStatus: status === "Unavailable" ? "Unavailable" : "Unverified",
         studies: Array.isArray(plotToolFromApi.studies) ? plotToolFromApi.studies as StrategyPlotStudyItem[] : [],
         workspace: { ...empty.workspace, title: "Statistical observations unavailable", description: detail,
-          studyTableEmptyText: detail, statusBadgeLabel: "ANALYTICS UNAVAILABLE", metaItems: ["Statistical evidence unavailable"] },
+          studyTableEmptyText: detail, statusBadgeLabel: "Analytics unavailable", metaItems: ["Statistical evidence unavailable"] },
         statistics: { ...empty.statistics, title: "Statistical evidence unavailable", description: detail }
       };
     }
@@ -1839,10 +1842,10 @@ function buildEmptyPlotToolState(): StrategyPlotToolState {
     analyticsEvidenceStatus: "Unavailable",
     studies: [],
     workspace: {
-      eyebrow: "Strategy · PlotTool",
-      title: "PlotTool catalog not connected",
-      description: "Strategy analytics are not connected. Connect a strategy analytics source to inspect notebooks, scatter analysis, or statistics.",
-      statusBadgeLabel: "NOT CONNECTED",
+      eyebrow: "Strategy · Analytics",
+      title: "Strategy analytics not connected",
+      description: "Connect a strategy analytics source to inspect notebooks, scatter analysis, or statistics.",
+      statusBadgeLabel: PLOT_TOOL_NOT_CONNECTED_LABEL,
       statusBadgeVariant: "outline",
       expression: "Strategy analytics not connected",
       toolbarPills: ["No catalog", "No samples", "No overlay", "No diff"],

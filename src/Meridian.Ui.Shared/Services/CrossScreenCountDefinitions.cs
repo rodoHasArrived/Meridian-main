@@ -16,7 +16,7 @@ public static class CrossScreenCountDefinitions
         "Orders the order manager reports open (working, partially filled or pending routing) for the fund account in scope.";
 
     public const string ProvidersDefinition =
-        "Providers in use (with metrics, a saved connection, a routing connection or a trust snapshot) whose status is Healthy. A provider's status is the worse of its listed status and its readiness status.";
+        "Providers in use (with metrics, a saved connection, a routing connection or a trust snapshot) whose status is Healthy. A provider's status is the worse of its listed status and its readiness status, and it is not Healthy on evidence older than three days.";
 
     public const string OpenBreaksDefinition =
         "Break-queue items not yet resolved, dismissed or signed off.";
@@ -56,6 +56,39 @@ public static class CrossScreenCountDefinitions
         var listed = NormalizeProviderStatus(listedStatus);
         var readiness = ProviderStatusFromReadiness(readinessStatus.Value);
         return ProviderStatusRank(readiness) > ProviderStatusRank(listed) ? readiness : listed;
+    }
+
+    /// <summary>
+    /// How old a provider's newest evidence may be before its health can no longer be confirmed.
+    /// Three days spans a weekend without a market session. Mirrors the browser's
+    /// <c>PROVIDER_EVIDENCE_STALE_AFTER_MS</c>.
+    /// </summary>
+    public static readonly TimeSpan ProviderEvidenceStaleAfter = TimeSpan.FromDays(3);
+
+    /// <summary>
+    /// Health is only as current as the evidence behind it: a Healthy provider whose newest
+    /// evidence is older than <see cref="ProviderEvidenceStaleAfter"/> is listed as a Warning until
+    /// it is verified again. No timestamped evidence at all is unknown, not stale, and any other
+    /// status is returned unchanged.
+    /// </summary>
+    public static string CapHealthyOnStaleEvidence(string status, IEnumerable<DateTimeOffset?> evidenceObservedAt, DateTimeOffset now)
+    {
+        ArgumentNullException.ThrowIfNull(evidenceObservedAt);
+        if (!IsHealthyProviderStatus(status))
+        {
+            return status;
+        }
+
+        DateTimeOffset? newest = null;
+        foreach (var observedAt in evidenceObservedAt)
+        {
+            if (observedAt is { } value && (newest is null || value > newest.Value))
+            {
+                newest = value;
+            }
+        }
+
+        return newest is { } latest && now - latest > ProviderEvidenceStaleAfter ? "Warning" : status;
     }
 
     private static string NormalizeProviderStatus(string? status) =>
