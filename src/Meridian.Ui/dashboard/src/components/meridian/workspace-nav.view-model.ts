@@ -141,7 +141,11 @@ export function buildWorkspaceNavViewModel(
     const workspaceAttention = [...new Map(attentionItems.filter((item) => item.tone !== "ready"
       && ((visibleWorkspaces.find((candidate) => isWorkspacePathActive(item.route.split(/[?#]/)[0], candidate.key))?.key
         ?? item.workspaceLabel.toLowerCase()) === workspace.key)).map((item) => [item.id, item])).values()];
-    const attentionSeverity = workspaceAttention.some((item) => item.tone === "blocked") ? "blocked" as const
+    // Supplied counts already carry the worst severity of exactly the items they count.
+    const countedSeverity = attentionCounts?.severityByWorkspace?.[workspace.key];
+    const attentionSeverity = attentionCounts?.severityByWorkspace
+      ? countedSeverity === "blocked" ? "blocked" as const : countedSeverity === "action" ? "review" as const : null
+      : workspaceAttention.some((item) => item.tone === "blocked") ? "blocked" as const
       : workspaceAttention.some((item) => item.tone === "review") ? "review" as const
       : workspaceAttention.length ? "info" as const : null;
     const attentionCount = attentionCounts?.byWorkspace[workspace.key] ?? workspaceAttention.length;

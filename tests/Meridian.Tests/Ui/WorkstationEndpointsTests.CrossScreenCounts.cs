@@ -71,5 +71,6 @@ public sealed partial class WorkstationEndpointsTests
             MaxLatencyMs: isConnected ? 80 : 900,
             DataQualityScore: quality,
             ConnectionSuccessRate: successRate,
-            Timestamp: new DateTimeOffset(2026, 4, 24, 16, 59, 0, TimeSpan.Zero));
+            // Recent: a provider is not listed Healthy on evidence older than three days.
+            Timestamp: DateTimeOffset.UtcNow.AddMinutes(-1));
 }

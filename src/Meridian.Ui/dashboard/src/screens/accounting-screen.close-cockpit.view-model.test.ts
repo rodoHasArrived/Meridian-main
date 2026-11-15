@@ -1166,7 +1166,7 @@ describe("accounting-screen close-cockpit view model", () => {
       expect.objectContaining({
         id: "checklist-signoff",
         label: "Checklist sign-off",
-        value: "0/1",
+        value: "0 of 1 close task",
         detail: "1 close task still requires retained sign-off evidence.",
         tone: "warning"
       }),
@@ -1187,7 +1187,7 @@ describe("accounting-screen close-cockpit view model", () => {
       expect.objectContaining({
         id: "export-certification",
         label: "Export certification",
-        value: "1/2",
+        value: "1 of 2 exports",
         detail: "1 export artifact remains ready for review.",
         tone: "warning"
       }),

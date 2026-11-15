@@ -58,8 +58,19 @@ public static partial class WorkstationEndpoints
         IReadOnlyList<ProviderConnectionDto> routingConnections,
         IReadOnlyList<ProviderBindingDto> routingBindings,
         IReadOnlyList<ProviderTrustSnapshotDto> trustSnapshots,
+        IReadOnlyList<ProviderReadinessRowDto> readinessRows,
+        DateTimeOffset asOf,
         bool exposeConnectionSummaries)
     {
+        // Readiness can only worsen the status of a listed provider; it does not add providers. The
+        // list stays the providers in use, so the readiness catalog's not-yet-configured entries
+        // never count against provider health on the shell's trust strip.
+        var readinessLookup = new Dictionary<string, ProviderReadinessRowDto>(StringComparer.OrdinalIgnoreCase);
+        foreach (var readinessRow in readinessRows)
+        {
+            readinessLookup.TryAdd(NormalizeProviderKey(readinessRow.ProviderId), readinessRow);
+        }
+
         var metricLookup = metricsStatus?.Providers.ToDictionary(
             static metric => NormalizeProviderKey(metric.ProviderId),
             static metric => metric,
@@ -113,6 +124,7 @@ public static partial class WorkstationEndpoints
                 connectionLookup.TryGetValue(providerId, out var connection);
                 routingLookup.TryGetValue(providerId, out var routingConnectionsForProvider);
                 trustLookup.TryGetValue(providerId, out var trustSnapshotsForProvider);
+                readinessLookup.TryGetValue(providerId, out var readiness);
 
                 var routingConnection = SelectRepresentativeRoutingConnection(routingConnectionsForProvider);
                 var trustSnapshot = SelectRepresentativeTrustSnapshot(trustSnapshotsForProvider, routingConnection?.ConnectionId);
@@ -123,6 +135,20 @@ public static partial class WorkstationEndpoints
                 connection ??= exposeConnectionSummaries
                     ? BuildMetricsConnectionSummary(metrics, rationale)
                     : null;
+                // The evidence times the browser's provider card judges for staleness: the last
+                // successful response and verification, and each readiness evidence item.
+                var evidenceObservedAt = new List<DateTimeOffset?>
+                {
+                    connection?.LastSuccessfulAt,
+                    connection?.LastVerifiedAt,
+                    readiness?.LastSuccessfulAt,
+                    readiness?.LastVerifiedAt
+                };
+                if (readiness is not null)
+                {
+                    evidenceObservedAt.AddRange(readiness.Evidence.Select(static evidence => evidence.ObservedAt));
+                }
+
                 var displayName = ResolveDataProviderDisplayName(providerId, connection, routingConnection, metrics);
                 var capability = ResolveDataProviderCapability(connection, routingConnection, metrics);
                 var latency = metrics is not null ? $"{metrics.AverageLatencyMs:F0}ms p50" : "Latency not reported";
@@ -130,7 +156,12 @@ public static partial class WorkstationEndpoints
                 return new WorkstationDataProviderRecord(
                     ProviderId: connection?.ProviderId ?? providerId,
                     DisplayName: displayName,
-                    Status: connection is not null ? connection.Health.ToString() : rationale.Status,
+                    Status: CrossScreenCountDefinitions.CapHealthyOnStaleEvidence(
+                        CrossScreenCountDefinitions.ResolveProviderStatus(
+                            connection is not null ? connection.Health.ToString() : rationale.Status,
+                            readiness?.Status),
+                        evidenceObservedAt,
+                        asOf),
                     Capability: capability,
                     Latency: latency,
                     Note: note,

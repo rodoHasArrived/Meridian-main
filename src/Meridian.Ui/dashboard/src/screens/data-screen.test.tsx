@@ -971,6 +971,40 @@ describe("DataScreen", () => {
     expect(screen.queryByRole("region", { name: "Backfill route focus" })).not.toBeInTheDocument();
   });
 
+  it("counts Providers healthy over the same in-use providers its health cards show", () => {
+    const yahooConnection: ProviderConnectionRow = { ...polygonConnection, providerId: "yahoo", displayName: "Yahoo Finance", health: "Warning" };
+    renderWithRouter(
+      <DataScreen data={data} providerConnections={[polygonConnection, yahooConnection]} providerReadiness={providerReadiness} />,
+      { initialEntries: ["/data"] }
+    );
+
+    // Plaid is known only from the readiness catalog: available to set up, not in use, so it has
+    // no health card and does not count. Polygon and Yahoo are in use.
+    const overview = screen.getByRole("region", { name: "Provider health overview" });
+    const cards = within(overview).getAllByRole("article");
+    expect(cards.map((card) => card.getAttribute("aria-label"))).toEqual(["Polygon.io health", "Yahoo Finance health"]);
+    // Whatever each card's status (stale evidence caps a healthy one at review), the figure is a
+    // count of these cards.
+    const healthyCards = cards.filter((card) => within(card).queryByText("Healthy")).length;
+    expect(within(screen.getByLabelText("Data headline metrics")).getByText(`${healthyCards} of ${cards.length} providers`)).toBeInTheDocument();
+  });
+
+  it("never lets a ready readiness row hide a listed warning, nor a healthy listing hide blocked readiness", () => {
+    const blockedPolygon: ProviderReadinessSummary = {
+      ...providerReadiness,
+      providers: providerReadiness.providers.map((row) => row.providerId === "polygon" ? { ...row, status: "Blocked" } : row)
+    };
+    expect(blockedPolygon.providers.some((row) => row.providerId === "polygon")).toBe(true);
+    renderWithRouter(
+      <DataScreen data={data} providerConnections={[polygonConnection]} providerReadiness={blockedPolygon} />,
+      { initialEntries: ["/data"] }
+    );
+
+    const card = within(screen.getByRole("region", { name: "Provider health overview" })).getByRole("article", { name: "Polygon.io health" });
+    expect(within(card).getByText("Blocked")).toBeInTheDocument();
+    expect(within(screen.getByLabelText("Data headline metrics")).getByText("0 of 1 provider")).toBeInTheDocument();
+  });
+
   it("leads Data with provider health before repair work and keeps focused tools available", async () => {
     renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
 

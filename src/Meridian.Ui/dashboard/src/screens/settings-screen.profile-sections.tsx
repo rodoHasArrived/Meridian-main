@@ -14,7 +14,7 @@ import { ArrowRight, MonitorCheck, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { diagnosticToneClass, SettingsFieldRow } from "./settings-provider-integration";
 import type { SettingsScreenViewModel } from "@/screens/settings-screen.view-model";
-import type { ProviderHealthCount } from "@/lib/cross-screen-counts";
+import { formatProviderHealth, type ProviderHealthCount } from "@/lib/cross-screen-counts";
 import { SettingsChip, settingsBannerTone, setupStepToneClass } from "@/screens/settings-screen.section-primitives";
 import { toSeverity } from "@/design-system/status-styles";
 import { SettingsTimeZonePreference } from "@/screens/settings-screen.time-zone-preference";
@@ -137,7 +137,7 @@ export function SettingsAccessPostureSection({ vm, overview, providerHealth }: S
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            <SettingsChip label="Providers healthy" value={providerHealth ? `${providerHealth.healthy} / ${providerHealth.total}` : "—"} />
+            <SettingsChip label="Providers healthy" value={providerHealth ? formatProviderHealth(providerHealth) : "—"} />
             <SettingsChip label="Runs" value={overview ? String(overview.activeRuns) : "—"} />
             <SettingsChip label="Positions" kpi={openPositionsKpi} />
             <SettingsChip label="Storage" value={overview?.storageHealth ?? "—"} />

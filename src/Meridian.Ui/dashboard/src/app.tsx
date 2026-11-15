@@ -104,7 +104,8 @@ import {
   useOnboardingTour
 } from "@/components/meridian/onboarding-tour";
 import { ActivationHeaderProgress } from "@/features/first-run/activation-progress";
-import { buildWorkspaceAttentionCounts } from "@/lib/daily-control-tower";
+import { countAttention } from "@/lib/attention-items";
+import { useOperatorTriageInbox } from "@/components/meridian/use-operator-triage-inbox";
 import { PriceAlertsProvider } from "@/lib/price-alerts/service";
 import {
   reportWorkstationRouteError,
@@ -724,6 +725,13 @@ function AppShell({
   }, []);
 
   const { registry: pageTrustRegistry, pageFreshness } = usePageTrustRegistry();
+  // The shared operator inbox is read once, here, so the sidebar badges, the masthead pill and
+  // Today's queue count the same attention list. Today receives this same state for triage.
+  const triageInbox = useOperatorTriageInbox({
+    fundAccountId: operatingScopeInput.fundAccountId,
+    refreshKey: loading || refreshStatus.inFlight
+  });
+  const inboxItems = triageInbox.inbox?.items ?? null;
   const shell = useMemo(() => buildAppShellViewState({
     pathname,
     search,
@@ -748,7 +756,8 @@ function AppShell({
       reporting,
       workflowSummary
     },
-    operatingContextScope: operatingScopeInput
+    operatingContextScope: operatingScopeInput,
+    inboxItems
   }), [
     pathname,
     search,
@@ -771,7 +780,8 @@ function AppShell({
     accounting,
     reporting,
     workflowSummary,
-    operatingScopeInput
+    operatingScopeInput,
+    inboxItems
   ]);
   // Page status rows fold in the shell's source signals, so a page cannot read "All sources
   // current" while the masthead pill warns about the same sources.
@@ -787,11 +797,8 @@ function AppShell({
     () => describeOperatingScopeForRoute(pathname, shell.workflowContinuity.operatingScope, { fundStructureReady }),
     [pathname, shell.workflowContinuity.operatingScope, fundStructureReady]
   );
-  // Sidebar attention counts read the same queue selection the Daily Control Tower lists.
-  const workspaceAttention = useMemo(
-    () => buildWorkspaceAttentionCounts(shell.workflowContinuity),
-    [shell.workflowContinuity]
-  );
+  // Sidebar badges are per-workspace views of the one attention list Today's queue shows.
+  const workspaceAttention = useMemo(() => countAttention(shell.attention.items), [shell.attention.items]);
   const breadcrumbItems = useMemo(
     () => buildWorkspaceBreadcrumbItems(pathname, shell.activeWorkspace, navigate),
     [pathname, shell.activeWorkspace, navigate]
@@ -1004,6 +1011,7 @@ function AppShell({
                       viewModel={shell.workflowContinuity}
                       trustStrip={shell.trustStrip}
                       attention={shell.attention}
+                      triage={triageInbox}
                       onEditOperatingScope={() => setScopePickerOpen(true)}
                       onRefresh={() => {
                         void refresh({ includeDeferred: true });

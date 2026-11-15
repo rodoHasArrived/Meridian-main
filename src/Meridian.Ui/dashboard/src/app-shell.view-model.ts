@@ -1,3 +1,4 @@
+import type { OperatorTriageItem } from "@/lib/operator-inbox-triage";
 import {
   normalizeWorkspacePath,
   workspaceForPath
@@ -138,6 +139,8 @@ export interface BuildAppShellViewStateOptions {
   usingDevelopmentFixtures?: boolean;
   dataProvenance?: DataProvenanceKind;
   payload: AppShellWorkspacePayload;
+  /** The shared operator inbox for the attention list, or null while loading or unavailable. */
+  inboxItems?: readonly OperatorTriageItem[] | null;
 }
 
 export function buildAppShellViewState({
@@ -153,7 +156,8 @@ export function buildAppShellViewState({
   workspaceErrors,
   usingDevelopmentFixtures = false,
   dataProvenance,
-  payload
+  payload,
+  inboxItems = null
 }: BuildAppShellViewStateOptions): AppShellViewState {
   const activeWorkspace = getWorkspaceForPath(pathname);
   const location = resolveAppShellLocation(pathname);
@@ -215,7 +219,8 @@ export function buildAppShellViewState({
       error,
       trustStrip,
       workflowContinuity,
-      degradedMode: payload.overview?.degradedMode ?? null
+      degradedMode: payload.overview?.degradedMode ?? null,
+      inboxItems
     }),
     workflowContinuity,
     commandPaletteTrigger: buildCommandPaletteTriggerState(commandPaletteOpen)

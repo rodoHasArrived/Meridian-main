@@ -540,7 +540,7 @@ function summarizeProviderPosture(data: DataWorkspaceResponse): {
 
   return {
     statusLabel: "Providers ready",
-    value: `${healthy}/${providers.length} healthy`,
+    value: `${healthy} of ${providers.length} healthy`,
     detail: `${healthy} provider${healthy === 1 ? "" : "s"} healthy in the loaded source-data posture.`,
     tone: "ready"
   };

@@ -45,10 +45,12 @@ describe("cross-screen counts agree across Trading, Settings and Data", () => {
     }).items.find((item) => item.id === "providers")?.value;
 
     const healthy = data.providers.filter((provider) => provider.status === "Healthy").length;
-    const expected = `${healthy}/${data.providers.length}`;
+    // The denominator names its population on every screen.
+    const expected = `${healthy} of ${data.providers.length} providers`;
     expect(dataHeadline).toBe(expected);
-    expect(settingsValue?.replace(/\s/g, "")).toBe(expected);
-    expect(tradingStrip).toBe(`${expected} healthy`);
+    expect(settingsValue).toBe(expected);
+    // The strip item is labelled "Providers", so its value does not repeat the noun.
+    expect(tradingStrip).toBe(`${healthy} of ${data.providers.length} healthy`);
     // The overview's separate "providers online" tally is no longer what Settings shows.
     expect(`${overview.providersOnline}/${overview.providersTotal}`).not.toBe(expected);
   });

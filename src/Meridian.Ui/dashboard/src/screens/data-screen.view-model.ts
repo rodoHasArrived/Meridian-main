@@ -1,3 +1,4 @@
+import { providerStatusFromReadiness, worstProviderStatus, type ListedProviderStatus } from "@/lib/cross-screen-counts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
@@ -74,7 +75,6 @@ import type {
   ProviderConnectionRow,
   ProviderCredentialVerificationResult,
   ProviderReadinessRow,
-  ProviderReadinessStatus,
   ProviderReadinessSummary,
   ProviderKindMeta,
   PlaidInstitution,
@@ -379,6 +379,13 @@ export interface DataOperationsProviderSummaryCardState {
 export interface DataOperationsProviderRow {
   providerId: string;
   provider: string;
+  /**
+   * True for a provider in use: one the Data workspace lists, or one with a saved connection,
+   * a routing connection or a trust snapshot. That is the population the server lists and the
+   * "Providers healthy" count covers. False for a provider known only from the readiness
+   * catalog, which is available to set up but not in use.
+   */
+  inUse: boolean;
   rowId: string;
   detailPanelId: string;
   status: DataOperationsProviderStatus;
@@ -2222,27 +2229,8 @@ export function buildProviderSection(
   const selectedRowId = selectedRecord ? buildProviderCenterRowId(selectedRecord) : null;
   const rows = records.map((record) => buildProviderRow(record, selectedRowId));
   const selectedDetail = buildSelectedProviderDetail(records, selectedRowId, selectedTab, verifyAction);
-  const blockedCount = rows.filter((row) => row.status === "Blocked").length;
-  const degradedCount = rows.filter((row) => row.status === "Degraded").length;
-  const reviewCount = rows.filter((row) => row.statusTone === "warning").length;
-  const readyCount = rows.filter((row) => row.statusTone === "success").length;
+  const { blockedCount, degradedCount, reviewCount, readyCount, statusLabel, statusTone } = summarizeProviderRows(rows);
   const verifiedCount = rows.filter((row) => row.credentialText === "Verified" || row.credentialText === "Not required").length;
-  const statusLabel = rows.length === 0
-    ? "No providers"
-    : blockedCount > 0
-      ? `${blockedCount} blocked`
-      : degradedCount > 0
-        ? `${degradedCount} degraded`
-        : reviewCount > 0
-          ? `${reviewCount} need review`
-        : "Continuity ready";
-  const statusTone = rows.length === 0
-    ? "warning"
-    : blockedCount > 0 || degradedCount > 0
-      ? "danger"
-      : reviewCount > 0
-        ? "warning"
-        : "success";
 
   return {
     title: "Provider Management",
@@ -2334,6 +2322,40 @@ export function buildProviderSection(
   };
 }
 
+/** The posture of a set of provider rows: counts per status and the one-line label. */
+export function summarizeProviderRows(rows: readonly DataOperationsProviderRow[]) {
+  const blockedCount = rows.filter((row) => row.status === "Blocked").length;
+  const degradedCount = rows.filter((row) => row.status === "Degraded").length;
+  const reviewCount = rows.filter((row) => row.statusTone === "warning").length;
+  const readyCount = rows.filter((row) => row.statusTone === "success").length;
+  const statusLabel = rows.length === 0
+    ? "No providers"
+    : blockedCount > 0
+      ? `${blockedCount} blocked`
+      : degradedCount > 0
+        ? `${degradedCount} degraded`
+        : reviewCount > 0
+          ? `${reviewCount} need review`
+        : "Continuity ready";
+  const statusTone: "success" | "warning" | "danger" = rows.length === 0
+    ? "warning"
+    : blockedCount > 0 || degradedCount > 0
+      ? "danger"
+      : reviewCount > 0
+        ? "warning"
+        : "success";
+  return { blockedCount, degradedCount, reviewCount, readyCount, statusLabel, statusTone };
+}
+
+/**
+ * The providers in use, each with the status the page shows. The overview's health cards and the
+ * "Providers healthy" figure both read this list, so the figure is a count of the cards beneath
+ * it. Providers that are only available to set up are not in it.
+ */
+export function selectProvidersInUse(rows: readonly DataOperationsProviderRow[]): DataOperationsProviderRow[] {
+  return rows.filter((row) => row.inUse);
+}
+
 /** The provider's evidence times (last response, verification, readiness evidence) judged for staleness. */
 export function assessProviderEvidenceStaleness(record: DataOperationsProviderCenterRecord, now: number = Date.now()): ProviderEvidenceStaleness {
   const connection = resolveProviderConnection(record);
@@ -2398,6 +2420,7 @@ export function buildProviderRow(
   return {
     providerId: record.providerId,
     provider: record.displayName,
+    inUse: Boolean(providerRecord || record.connection || record.routingConnection || trust),
     rowId,
     detailPanelId: DATA_PROVIDER_DETAIL_PANEL_ID,
     status,
@@ -2845,44 +2868,24 @@ function providerConnectionFromReadiness(readiness: ProviderReadinessRow): Provi
   };
 }
 
+/**
+ * The status a provider row shows: the worst of everything known about it. The Data workspace's
+ * own status (already the server's worse-of listed and readiness), the connection health and the
+ * readiness status this page loaded may be of different ages, so the page takes the worst rather
+ * than letting a fresher "ready" hide an older warning. With none of those, routing trust decides.
+ * Same rule as the server's provider list, through the shared resolveProviderStatus.
+ */
 function resolveProviderDisplayStatus(record: DataOperationsProviderCenterRecord): DataOperationsProviderStatus {
-  if (record.readiness) {
-    return dataProviderStatusFromReadiness(record.readiness.status);
+  const connectionHealth = record.connection && record.connection.health !== "Unknown" ? record.connection.health : null;
+  const listed = [record.workspaceProvider?.status, connectionHealth]
+    .filter((status): status is NonNullable<typeof status> => status != null)
+    .reduce<ListedProviderStatus | null>((worst, status) => worst === null ? worstProviderStatus(status, status) : worstProviderStatus(worst, status), null);
+  if (listed === null && !record.readiness) {
+    return record.trustSnapshot ? record.trustSnapshot.isHealthy ? "Healthy" : "Degraded" : "Warning";
   }
-
-  if (record.connection) {
-    switch (record.connection.health) {
-      case "Healthy":
-        return "Healthy";
-      case "Blocked":
-        return "Blocked";
-      case "Degraded":
-        return "Degraded";
-      case "Warning":
-        return "Warning";
-      default:
-        return record.workspaceProvider?.status ?? "Warning";
-    }
-  }
-
-  if (record.trustSnapshot) {
-    return record.trustSnapshot.isHealthy ? "Healthy" : "Degraded";
-  }
-
-  return record.workspaceProvider?.status ?? "Warning";
-}
-
-function dataProviderStatusFromReadiness(status: ProviderReadinessStatus): DataOperationsProviderStatus {
-  switch (status) {
-    case "Ready":
-      return "Healthy";
-    case "Blocked":
-      return "Blocked";
-    case "Degraded":
-      return "Degraded";
-    default:
-      return "Warning";
-  }
+  return record.readiness
+    ? worstProviderStatus(listed ?? "Healthy", providerStatusFromReadiness(record.readiness.status))
+    : listed ?? "Warning";
 }
 
 function resolveProviderCapability(record: DataOperationsProviderCenterRecord): string {

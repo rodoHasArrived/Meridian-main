@@ -1581,8 +1581,8 @@ describe("buildSettingsScreenViewModel", () => {
         openBreaks: null
       }
     });
-    expect(vm.systemSummary).toContain("2/3 providers healthy");
-    expect(vm.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("2 / 3");
+    expect(vm.systemSummary).toContain("2 of 3 providers healthy");
+    expect(vm.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("2 of 3 providers");
   });
 
   it("keeps the refreshed shared provider count over retained Data rows", () => {
@@ -1599,7 +1599,7 @@ describe("buildSettingsScreenViewModel", () => {
       },
       data: { providers: [{ status: "Healthy" }, { status: "Healthy" }] } as never
     });
-    expect(vm.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("1 / 2");
+    expect(vm.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("1 of 2 providers");
 
     const withoutShared = buildSettingsScreenViewModel({
       session: null,
@@ -1607,7 +1607,7 @@ describe("buildSettingsScreenViewModel", () => {
       crossScreenCounts: null,
       data: { providers: [{ status: "Healthy" }, { status: "Degraded" }] } as never
     });
-    expect(withoutShared.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("1 / 2");
+    expect(withoutShared.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("1 of 2 providers");
   });
 
   it("points system overview diagnostics at the mapped status endpoint", () => {

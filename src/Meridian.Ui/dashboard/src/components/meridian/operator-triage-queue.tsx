@@ -108,14 +108,18 @@ export function OperatorTriageNotices({ triage, showPersistence = true }: { tria
   </>;
 }
 
-export function OperatorTriageInboxFilters({ triage, visibilityLabel = "Visibility", mineLabel = "My items" }: {
+export function OperatorTriageInboxFilters({ triage, visibilityLabel = "Visibility", mineLabel = "My items", activeLabel = "Active items", showMine = true }: {
   triage: OperatorTriageInboxState;
   visibilityLabel?: string;
   mineLabel?: string;
+  /** Names the default view; Today calls it "Needs attention" because it applies the count rule. */
+  activeLabel?: string;
+  /** Hide "My items" where no inbox is loaded to own any. */
+  showMine?: boolean;
 }) {
   return <>
-    <label className="text-xs">{visibilityLabel}<Select aria-label={visibilityLabel} value={triage.visibility} onChange={(event) => triage.setVisibility(event.target.value)}><option value="active">Active items</option><option value="all">All items</option><option value="snoozed">Snoozed items</option></Select></label>
-    <label className="flex min-h-9 items-center gap-2 text-sm"><input type="checkbox" checked={triage.mineOnly} onChange={(event) => triage.setMineOnly(event.target.checked)} />{mineLabel}</label>
+    <label className="text-xs">{visibilityLabel}<Select aria-label={visibilityLabel} value={triage.visibility} onChange={(event) => triage.setVisibility(event.target.value)}><option value="active">{activeLabel}</option><option value="all">All items</option><option value="snoozed">Snoozed items</option></Select></label>
+    {showMine ? <label className="flex min-h-9 items-center gap-2 text-sm"><input type="checkbox" checked={triage.mineOnly} onChange={(event) => triage.setMineOnly(event.target.checked)} />{mineLabel}</label> : null}
   </>;
 }
 

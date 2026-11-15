@@ -8,10 +8,13 @@ import type {
   AppShellWorkflowContinuityStatusTone,
   AppShellWorkflowContinuityViewModel
 } from "@/app-shell.view-model";
+import {
+  ATTENTION_SOURCE_LABELS, attentionItemFromInbox, attentionItemFromWorkspaceSignal, attentionItemKey,
+  attentionSeverityRank, buildAttentionItems, countAttention, isSignalInInbox,
+  type AttentionCounts, type AttentionItem, type AttentionItemSource
+} from "@/lib/attention-items";
 import type { OperatorTriageItem } from "@/lib/operator-inbox-triage";
 import { summarizeStatusSignals } from "@/lib/status-signals";
-import { normalizeWorkspacePath, WORKSPACES } from "@/lib/workspace";
-import type { WorkspaceKey } from "@/types";
 
 export type DailyControlTowerBadgeVariant = "outline" | "success" | "warning" | "danger";
 
@@ -98,37 +101,18 @@ export function selectLeadingDecisionItem(viewModel: AppShellWorkflowContinuityV
   return named && named.tone === worst.tone ? named : worst;
 }
 
-export interface WorkspaceAttentionCounts {
-  /** Every queued item: the "Today" entry's count. */
-  total: number;
-  byWorkspace: Partial<Record<WorkspaceKey, number>>;
-}
+/** The sidebar's counts: the attention list counted by the one rule, in total and per workspace. */
+export type WorkspaceAttentionCounts = Pick<AttentionCounts, "total" | "byWorkspace"> & Partial<AttentionCounts>;
 
-/** Per-workspace counts of the Control Tower queue, for the sidebar. */
-export function buildWorkspaceAttentionCounts(viewModel: AppShellWorkflowContinuityViewModel): WorkspaceAttentionCounts {
-  const byWorkspace: Partial<Record<WorkspaceKey, number>> = {};
-  const queue = selectDailyControlTowerQueueItems(viewModel);
-  for (const item of queue) {
-    const key = workspaceKeyForQueueItem(item);
-    if (key) {
-      byWorkspace[key] = (byWorkspace[key] ?? 0) + 1;
-    }
-  }
-  return { total: queue.length, byWorkspace };
-}
-
-function workspaceKeyForQueueItem(item: AppShellOperatorFocusItem): WorkspaceKey | null {
-  const pathname = item.route.split(/[?#]/, 1)[0].replace(/^\/workstation(?=\/)/, "");
-  const segment = pathname.split("/").filter(Boolean)[0];
-  if (segment) {
-    const key = normalizeWorkspacePath(pathname);
-    // normalizeWorkspacePath falls back to Trading for an unknown root; only trust a real match.
-    if (key !== "trading" || segment === "trading") {
-      return key;
-    }
-  }
-  const label = item.workspaceLabel.trim().toLowerCase();
-  return WORKSPACES.find((workspace) => workspace.label.toLowerCase() === label)?.key ?? null;
+/**
+ * Sidebar counts of the attention list: the Control Tower queue's workspace signals plus the
+ * shared inbox, counted by the one rule. Pass null while the inbox is loading or unavailable.
+ */
+export function buildWorkspaceAttentionCounts(
+  viewModel: AppShellWorkflowContinuityViewModel,
+  inboxItems: readonly OperatorTriageItem[] | null = null
+): AttentionCounts {
+  return countAttention(buildAttentionItems(selectDailyControlTowerQueueItems(viewModel), inboxItems));
 }
 
 export function buildDailyControlTowerModel(
@@ -232,77 +216,44 @@ function buildDriverItems({
 }
 
 /** Where a Today queue row comes from (UX consolidation P1). */
-export type TodayQueueRowSource = "workspace" | "inbox";
+export type TodayQueueRowSource = AttentionItemSource;
 
-export const TODAY_QUEUE_SOURCE_LABELS: Record<TodayQueueRowSource, string> = {
-  workspace: "Workspace signal",
-  inbox: "Shared inbox"
-};
-
-interface TodayQueueRowBase {
-  /** Unique across both sources; also the dense-row id. */
-  key: string;
-  /** The source's own id: the focus item id or the inbox work item id. */
-  id: string;
-  sourceLabel: string;
-  label: string;
-  detail: string;
-  workspaceLabel: string;
-  /** 0 blocked, 1 review/action, 2 pending/info, 3 ready/success. */
-  severityRank: number;
-  /** ISO time the row was observed: the inbox item's creation, or the signal's correlated evidence. */
-  observedAt: string | null;
-}
+export const TODAY_QUEUE_SOURCE_LABELS = ATTENTION_SOURCE_LABELS;
 
 /**
- * One row of Today's single queue grid. Workspace signals keep their evidence passport and next
- * action; shared-inbox rows keep the full triage item so assignment and snooze stay available.
+ * One row of Today's single queue grid: an attention item plus its source's detail. Workspace
+ * signals keep their evidence passport and next action; shared-inbox rows keep the full triage
+ * item so assignment and snooze stay available.
  */
 export type TodayQueueRow =
-  | (TodayQueueRowBase & { source: "workspace"; focus: DailyControlTowerFocusRow })
-  | (TodayQueueRowBase & { source: "inbox"; item: OperatorTriageItem });
+  | (AttentionItem & { source: "workspace"; focus: DailyControlTowerFocusRow })
+  | (AttentionItem & { source: "inbox"; item: OperatorTriageItem });
 
-export function todayQueueRowKey(source: TodayQueueRowSource, id: string): string {
-  return `${source}:${id}`;
-}
-
-const WORKSPACE_SEVERITY_RANK: Record<AppShellWorkflowContinuityStatusTone, number> = { blocked: 0, review: 1, pending: 2, ready: 3 };
-const INBOX_SEVERITY_RANK: Record<OperatorTriageItem["tone"], number> = { Critical: 0, Warning: 1, Info: 2, Success: 3 };
+export const todayQueueRowKey = attentionItemKey;
 
 /**
  * Interleaves workspace signals and shared-inbox items into one queue. Order: severity
  * (blocked first), then age (oldest first; rows without an observed time after those with one),
  * then each source's own ranking, workspace signals before inbox items on a tie.
+ *
+ * A workspace signal that is also a shared-inbox item is one work item and gets one row, the
+ * inbox one. `loadedInboxItems` is the whole loaded inbox, which decides that even when
+ * `inboxItems` has been narrowed by the inbox filters.
  */
 export function buildTodayQueueRows(
   focusRows: readonly DailyControlTowerFocusRow[],
-  inboxItems: readonly OperatorTriageItem[]
+  inboxItems: readonly OperatorTriageItem[],
+  loadedInboxItems: readonly OperatorTriageItem[] | null = inboxItems
 ): TodayQueueRow[] {
   const rows: TodayQueueRow[] = [
-    ...focusRows.map((focus): TodayQueueRow => ({
-      key: todayQueueRowKey("workspace", focus.item.id),
-      id: focus.item.id,
+    ...focusRows.filter((focus) => !isSignalInInbox(focus.item.id, loadedInboxItems)).map((focus): TodayQueueRow => ({
+      ...attentionItemFromWorkspaceSignal(focus.item),
       source: "workspace",
-      sourceLabel: TODAY_QUEUE_SOURCE_LABELS.workspace,
-      label: focus.item.label,
-      detail: focus.item.detail,
-      workspaceLabel: focus.item.workspaceLabel,
-      severityRank: WORKSPACE_SEVERITY_RANK[focus.item.tone],
+      // A workspace signal is observed when its correlated evidence was.
       observedAt: focus.proof?.timestampIso ?? null,
       focus
     })),
-    ...inboxItems.map((item): TodayQueueRow => ({
-      key: todayQueueRowKey("inbox", item.workItemId),
-      id: item.workItemId,
-      source: "inbox",
-      sourceLabel: TODAY_QUEUE_SOURCE_LABELS.inbox,
-      label: item.label,
-      detail: item.detail,
-      workspaceLabel: item.workspace ?? "Unspecified",
-      severityRank: INBOX_SEVERITY_RANK[item.tone],
-      observedAt: item.createdAt,
-      item
-    }))
+    ...inboxItems.map((item): TodayQueueRow => ({ ...attentionItemFromInbox(item), source: "inbox", item }))
   ];
   const observedMs = (row: TodayQueueRow) => {
     const value = Date.parse(row.observedAt ?? "");
@@ -310,7 +261,7 @@ export function buildTodayQueueRows(
   };
   return rows
     .map((row, index) => ({ row, index, observed: observedMs(row) }))
-    .sort((left, right) => left.row.severityRank - right.row.severityRank
+    .sort((left, right) => attentionSeverityRank(left.row.severity) - attentionSeverityRank(right.row.severity)
       || (left.observed === right.observed ? 0 : left.observed < right.observed ? -1 : 1)
       || left.index - right.index)
     .map(({ row }) => row);
