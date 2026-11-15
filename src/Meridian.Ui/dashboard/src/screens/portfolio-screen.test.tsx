@@ -392,7 +392,7 @@ describe("PortfolioScreen", () => {
   });
 
   it.each([
-    ["/portfolio", "Execution-linked holdings"],
+    ["/portfolio", "Holdings"],
     ["/portfolio/attribution", "Run attribution evidence"]
   ])("opens %s on its own view with the sidebar as the only sub-route navigation", async (route, heading) => {
     await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />, {

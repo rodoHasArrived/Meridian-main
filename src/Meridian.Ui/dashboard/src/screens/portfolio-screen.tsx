@@ -19,7 +19,8 @@ import { OperationalTrustSummary, type OperationalTrustTone } from "@/components
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { exportTableQuery } from "@/lib/table-workbench";
-import { formatNumber, formatPercent, formatRatioAsPercent } from "@/lib/format";
+import { formatNumber, formatPercent, formatRatioAsPercent, pluralizeCount } from "@/lib/format";
+import type { HoldingFigure } from "@/lib/holdings-model";
 import { EntityLink } from "@/components/meridian/entity-inspector";
 import { AccountBalanceHistoryChart } from "@/components/meridian/account-balance-history-chart";
 import { StatStrip } from "@/components/meridian/stat-strip";
@@ -147,7 +148,7 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
   },
   {
     id: "average",
-    label: "Avg",
+    label: "Avg price",
     numeric: true,
     hideable: true,
     render: (row) => <span className="font-mono text-foreground">{row.avgPrice}</span>
@@ -171,20 +172,34 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
     label: "Exposure",
     numeric: true,
     hideable: true,
-    render: (row) => <PositionValueGraphic value={row.exposure} measurement={row.exposureGraphic} kind="exposure" reviewRequired={row.markFreshness.reviewRequired} className="text-foreground" />
+    render: (row) => <span data-holding-exposure={row.exposureAmount ?? ""} data-holding-currency={row.currency ?? ""}>
+      <PositionValueGraphic value={row.exposure} measurement={row.exposureGraphic} kind="exposure" reviewRequired={row.markFreshness.reviewRequired} className="text-foreground" />
+    </span>
   }
 ];
+
+/** A holdings figure: the value, a "stale" marker when it is a last recorded value, or "—" with the reason as a tooltip. */
+function HoldingFigureCell({ figure }: { figure: HoldingFigure }) {
+  return (
+    <span className="inline-flex flex-col items-end" title={figure.reason ?? undefined}>
+      <span className={cn("font-mono", figure.display === "—" ? "text-muted-foreground" : "text-foreground")}>{figure.display}</span>
+      {figure.staleLabel ? <span className="text-xs font-normal text-warning">{figure.staleLabel}</span> : null}
+      {figure.reason && (figure.display === "—" || figure.stale) ? <span className="sr-only">{figure.reason}</span> : null}
+    </span>
+  );
+}
 
 const positionWorkbenchColumns: TableWorkbenchColumn<PortfolioPositionRow>[] = positionColumns.map(column => ({
   ...column,
   exportValue: (row: PortfolioPositionRow) => ({ symbol: row.symbol, side: row.side, quantity: row.quantity,
     average: row.avgPrice, mark: row.markPrice, "unrealized-pnl": row.unrealizedPnl,
-    exposure: row.exposure, "mark-readiness": `${row.markFreshness.label}; observed ${row.markFreshness.observedOn}; age ${row.markFreshness.age}`
+    exposure: row.exposure, currency: row.currency ?? "", "mark-readiness": `${row.markFreshness.label}; observed ${row.markFreshness.observedOn}; age ${row.markFreshness.age}`
   } as Record<string, string>)[column.id]
 })).sort((left, right) => Number(right.id === "symbol") - Number(left.id === "symbol"));
 positionWorkbenchColumns.splice(5, 0,
-  { id: "market-value", label: "Market value", align: "right", exportValue: row => row.marketValue, render: row => row.marketValue },
-  { id: "weight", label: "Weight", align: "right", exportValue: row => row.weight, render: row => <span title={row.weightBasis ?? "The source has not supplied a comparable denominator."}>{row.weight}</span> },
+  { id: "currency", label: "Currency", hideable: true, exportValue: row => row.currency ?? "", render: row => <HoldingFigureCell figure={row.currencyFigure} /> },
+  { id: "market-value", label: "Market value", align: "right", exportValue: row => row.marketValueFigure.staleLabel ? `${row.marketValue} (${row.marketValueFigure.staleLabel})` : row.marketValue, render: row => <HoldingFigureCell figure={row.marketValueFigure} /> },
+  { id: "weight", label: "Weight", align: "right", exportValue: row => row.weight, render: row => <HoldingFigureCell figure={row.weightFigure} /> },
   { id: "day-pnl", label: "Day P&L", align: "right", exportValue: row => row.dayPnl, render: row => row.dayPnl });
 
 const runColumns: DenseDataTableColumn<PortfolioRunRow>[] = [
@@ -348,7 +363,7 @@ export function resolvePortfolioRouteView(pathname: string): PortfolioRouteViewI
 
 const portfolioRouteViewCopy: Record<PortfolioRouteViewId, { title: string; description: string }> = {
   overview: {
-    title: "Execution-linked holdings",
+    title: "Holdings",
     description: "Open holdings, cash posture, and the record explorer stay aligned with the active paper workflow."
   },
   attribution: {
@@ -1234,6 +1249,8 @@ function PortfolioScreenContent({
                 </TechnicalDetails>
               ) : null}
               {vm.hasPositions ? (
+                <div data-holdings-table data-holdings-loaded-count={vm.positionRows.length}
+                  data-holdings-total={vm.holdingsTotal.exposureAmount ?? ""} data-holdings-total-currency={vm.holdingsTotal.currency ?? ""}>
                 <TableWorkbench
                   workbenchId="portfolio-positions"
                   sourceKey={location.search}
@@ -1260,6 +1277,12 @@ function PortfolioScreenContent({
                   ariaLabel={vm.positionListLabel}
                   caption="Select a position row to update the holding detail panel."
                 />
+                <p className="mt-2 flex items-baseline justify-end gap-2 text-xs text-muted-foreground" aria-label="Holdings total">
+                  <span>Total exposure, all {pluralizeCount(vm.positionRows.length, "holding")}</span>
+                  <span className="font-mono text-sm font-semibold text-foreground" title={vm.holdingsTotal.reason ?? "Same figure as the Total exposure headline."}>{vm.holdingsTotal.exposure}</span>
+                  {vm.holdingsTotal.reason ? <span className="sr-only">{vm.holdingsTotal.reason}</span> : null}
+                </p>
+                </div>
               ) : (
                 <div role="status" className="rounded-sm border border-border/70 bg-background/40">
                   <EmptyState

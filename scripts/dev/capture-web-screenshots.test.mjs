@@ -8,6 +8,7 @@ import { test } from "node:test";
 import {
   CAPTURE_CONTENT_ISSUE_KINDS,
   captureRouteWithRetries,
+  checkHoldingsTotals,
   checkKpiConsistency,
   collectKpiSnapshots,
   collectAllowedContentIssueKinds,
@@ -939,4 +940,43 @@ test("the content-issue failure names the route, the excerpts and the remedy", (
   assert.match(message, /singular-count-plural-noun "1 thing0s"/);
   assert.match(message, /and 2 more/);
   assert.match(message, /allowedContentIssues/);
+});
+
+function holdingsCapture(table, headline = { status: "available", value: "37699", currency: "USD" }, display = "$37,699") {
+  return {
+    name: "portfolio", route: "/portfolio", status: "passed",
+    kpis: headline ? [{ id: "portfolio.total-exposure", value: JSON.stringify(headline), display }] : [],
+    holdingsTables: [{ loadedCount: 2, total: "37699", totalCurrency: "USD", rowAmounts: ["7159", "30540"], rowCurrencies: ["USD", "USD"], ...table }]
+  };
+}
+
+test("holdings total check passes when table rows, table total and headline agree", () => {
+  assert.deepEqual(checkHoldingsTotals([holdingsCapture({})]), { checkedCount: 1, conflicts: [] });
+  assert.deepEqual(checkHoldingsTotals([holdingsCapture({ rowAmounts: ["7159.5", "30539.50"] })]).conflicts, []);
+});
+
+test("holdings total check flags a table that disagrees with the headline figure", () => {
+  const result = checkHoldingsTotals([holdingsCapture({ rowAmounts: ["7159", "30000"], total: "37159" })]);
+  assert.equal(result.conflicts.length, 1);
+  assert.match(result.conflicts[0].problem, /headline figure '\$37,699'/);
+  const stale = checkHoldingsTotals([holdingsCapture({ rowAmounts: ["7159", "30000"] })]);
+  assert.deepEqual(stale.conflicts.map((conflict) => conflict.problem.includes("table total")), [true, false]);
+});
+
+test("holdings total check flags a headline shown over rows that cannot be summed", () => {
+  const missing = checkHoldingsTotals([holdingsCapture({ rowAmounts: ["7159", ""], total: null })]);
+  assert.match(missing.conflicts[0].problem, /cannot be summed/);
+  const mixed = checkHoldingsTotals([holdingsCapture({ rowCurrencies: ["USD", "EUR"], total: null }, { status: "unavailable", value: null, currency: null }, "Unavailable")]);
+  assert.deepEqual(mixed.conflicts, []);
+});
+
+test("holdings total check skips filtered tables and failed captures", () => {
+  assert.equal(checkHoldingsTotals([holdingsCapture({ rowAmounts: ["7159"], rowCurrencies: ["USD"] })]).checkedCount, 0);
+  assert.equal(checkHoldingsTotals([{ ...holdingsCapture({ rowAmounts: ["1", "2"] }), status: "failed" }]).checkedCount, 0);
+});
+
+test("content check flags the article 'a' before a vowel sound", () => {
+  const issues = findCaptureContentIssues("Ops Desk has a Operator session. Add a entry or a Admin. Class A income, a user, a one-time code, a European fund, an owner, data access.");
+  assert.deepEqual(issues.filter((issue) => issue.kind === "article-before-vowel").map((issue) => issue.excerpt),
+    ["a Operator", "a entry", "a Admin"]);
 });

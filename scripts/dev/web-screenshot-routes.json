@@ -128,7 +128,7 @@
       "name": "web-portfolio-workspace",
       "path": "/portfolio",
       "docLabel": "Portfolio",
-      "waitForText": "Execution-linked holdings",
+      "waitForText": "Holdings",
       "requiredApiRoutes": [
         "/api/workstation/portfolio"
       ],

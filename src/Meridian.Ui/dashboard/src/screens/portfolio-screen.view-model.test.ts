@@ -927,6 +927,25 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.selectedRun).toBeNull();
   });
 
+  it("feeds the table, the headline and the holding detail from one holdings model", () => {
+    const seeded = portfolioFromTrading({ ...trading, positions: [
+      { symbol: "AAPL", side: "Long", quantity: "38", averagePrice: "142.20", markPrice: "188.40", dayPnl: "+$190", unrealizedPnl: "+$1,756", exposure: "$7,159" },
+      { symbol: "VTI", side: "Long", quantity: "120", averagePrice: "205.00", markPrice: "254.50", dayPnl: "+$495", unrealizedPnl: "+$5,940", exposure: "$30,540" }
+    ] }, strategy);
+    const vm = buildPortfolioScreenViewModel({ portfolio: seeded, trading, strategy, accounting, pathname: "/portfolio" });
+    const headline = vm.fallbackStats.find((metric) => metric.id === "portfolio-total-exposure")?.value;
+    expect(headline).toBe("$37,699");
+    expect(vm.holdingsTotal).toMatchObject({ exposure: headline, exposureAmount: "37699", currency: "USD" });
+    expect(vm.positionRows.reduce((sum, row) => sum + Number(row.exposureAmount), 0)).toBe(37699);
+    expect(vm.positionRows.map((row) => [row.currency, row.marketValue, row.marketValueFigure.staleLabel, row.weight])).toEqual([
+      ["USD", "$7,159.20", "Stale · no price date", "19.0%"],
+      ["USD", "$30,540.00", "Stale · no price date", "81.0%"]
+    ]);
+    const detail = Object.fromEntries(vm.selectedPosition!.fields.map((field) => [field.label, field.value]));
+    expect(detail).toMatchObject({ Currency: "USD", "Market value": "$7,159.20 (Stale · no price date)", Weight: "19.0%", Exposure: "$7,159" });
+    expect(vm.positionRows.flatMap((row) => [row.marketValue, row.weight])).not.toContain("Unavailable");
+  });
+
   it.each(["/portfolio", "/portfolio/brokerage-sync"])("keeps repeated totals on %s consistent for shorts and mixed currencies", (pathname) => {
     const shortPortfolio = portfolioFromTrading({ ...trading, positions: [
       { ...trading.positions[0], exposure: "$100", unrealizedPnl: "+$10" },

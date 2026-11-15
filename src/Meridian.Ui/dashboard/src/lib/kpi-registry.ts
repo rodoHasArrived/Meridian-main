@@ -54,7 +54,7 @@ const scalar = (value: string | number, tone: Tone = "default", delta = ""): Com
   value: String(value), delta, tone, status: "available", raw: value, currency: null
 });
 
-interface Money { units: bigint; scale: number; currency: string }
+export interface Money { units: bigint; scale: number; currency: string }
 const symbolCurrencies: Record<string, string> = { "$": "USD", "€": "EUR", "£": "GBP" };
 const currencySymbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£" };
 
@@ -72,7 +72,7 @@ export function parseKpiMoney(value: string): Money | null {
   return { units: BigInt(`${whole}${fraction}`) * (negative ? -1n : 1n), scale: fraction.length, currency };
 }
 
-function positionMoney(value: string, suppliedCurrency?: string | null): Money | null {
+export function positionMoney(value: string, suppliedCurrency?: string | null): Money | null {
   const currency = suppliedCurrency?.trim().toUpperCase();
   if (!currency) return parseKpiMoney(value);
   if (!/^[A-Z]{3}$/.test(currency)) return null;
@@ -85,7 +85,7 @@ function positionMoney(value: string, suppliedCurrency?: string | null): Money |
   return { ...parsed, currency };
 }
 
-function decimalText({ units, scale }: Money): string {
+export function decimalText({ units, scale }: Pick<Money, "units" | "scale">): string {
   const negative = units < 0n;
   const digits = (negative ? -units : units).toString().padStart(scale + 1, "0");
   const whole = scale ? digits.slice(0, -scale) : digits;
@@ -93,14 +93,21 @@ function decimalText({ units, scale }: Money): string {
   return `${negative ? "-" : ""}${whole}${fraction ? `.${fraction}` : ""}`;
 }
 
-function moneyResult(money: Money, signed = false, delta = "Live holdings · all accounts"): ComputedKpi {
+/** One display format for every holdings amount: headline totals and per-holding values alike. */
+export function formatKpiMoney(money: Money, signed = false, alwaysCents = false): string {
   const decimal = decimalText(money);
   const negative = decimal.startsWith("-");
   const [whole, fraction] = decimal.replace(/^-/, "").split(".");
-  const amount = `${whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}${fraction ? `.${fraction.padEnd(2, "0")}` : ""}`;
+  const amount = `${whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}${fraction || alwaysCents ? `.${(fraction ?? "").padEnd(2, "0")}` : ""}`;
   const prefix = currencySymbols[money.currency] ?? `${money.currency} `;
+  return `${negative ? "-" : signed ? "+" : ""}${prefix}${amount}`;
+}
+
+function moneyResult(money: Money, signed = false, delta = "Live holdings · all accounts"): ComputedKpi {
+  const decimal = decimalText(money);
+  const negative = decimal.startsWith("-");
   return {
-    value: `${negative ? "-" : signed ? "+" : ""}${prefix}${amount}`,
+    value: formatKpiMoney(money, signed),
     delta,
     tone: signed ? negative ? "danger" : "success" : "default",
     status: "available",

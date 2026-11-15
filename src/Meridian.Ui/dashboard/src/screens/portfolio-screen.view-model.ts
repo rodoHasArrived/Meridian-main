@@ -13,6 +13,7 @@ import {
   multiAssetStatusTone
 } from "./portfolio-screen.multi-asset-coverage";
 import { formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
+import { buildHoldingsModel, totalExposureAmount, type HoldingFigure } from "@/lib/holdings-model";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
   comparisonToneForPnl,
@@ -66,10 +67,16 @@ type PortfolioSourceRun = {
 };
 
 export interface PortfolioPositionRow {
+  /** Display values from the shared holdings model; the `*Figure` fields carry reason and staleness. */
   marketValue: string;
+  marketValueFigure: HoldingFigure;
   currency: string | null;
+  currencyFigure: HoldingFigure;
   weight: string;
+  weightFigure: HoldingFigure;
   weightBasis: string | null;
+  /** Absolute exposure as a plain decimal; the screenshot check sums these against the headline. */
+  exposureAmount: string | null;
   exposureGraphic: PositionValueMeasurement | null;
   pnlGraphic: PositionValueMeasurement | null;
   markFreshness: MarkFreshnessPresentation;
@@ -483,6 +490,8 @@ export interface PortfolioScreenViewModel {
   hasPositions: boolean;
   positionRows: PortfolioPositionRow[];
   positionListLabel: string;
+  /** The headline total exposure, restated under the holdings table from the same model. */
+  holdingsTotal: { exposure: string; exposureAmount: string | null; currency: string | null; reason: string | null };
   positionCountLabel: string;
   positionDetailId: string;
   selectedPositionChip: PortfolioHeaderChip;
@@ -671,7 +680,10 @@ export function buildPortfolioScreenViewModel({
   const positionCurrencies = positions.map((position) => position.currency);
   const exposureGraphics = measureDisplayedPositionAmounts(positions.map((position) => position.exposure), positionCurrencies);
   const pnlGraphics = measureDisplayedPositionAmounts(positions.map((position) => position.unrealizedPnl), positionCurrencies);
+  // One model feeds the table rows, the headline figures and the holding detail panel.
+  const holdings = buildHoldingsModel(portfolio);
   const positionRows: PortfolioPositionRow[] = positions.map((p, index) => {
+    const holding = holdings.rows[index];
     const id = positionId(p.symbol, p.side, index);
     const tone = pnlTone(p.unrealizedPnl);
     const isSelected = id === selectedId;
@@ -682,10 +694,14 @@ export function buildPortfolioScreenViewModel({
       side: p.side,
       quantity: p.quantity,
       avgPrice: p.averagePrice,
-      marketValue: p.marketValue && p.currency ? `${p.marketValue} ${p.currency}` : "Unavailable · currency or value not supplied",
-      currency: p.currency ?? null,
-      weight: p.weight && p.weightBasis ? p.weight : "Unavailable",
-      weightBasis: p.weightBasis ?? null,
+      marketValue: holding.marketValue.display,
+      marketValueFigure: holding.marketValue,
+      currency: holding.currencyCode,
+      currencyFigure: holding.currency,
+      weight: holding.weight.display,
+      weightFigure: holding.weight,
+      weightBasis: holding.weight.reason,
+      exposureAmount: holding.exposureAmount,
       markFreshness: presentMarkFreshness(p.markFreshness),
       markPrice: p.markPrice,
       dayPnl: p.dayPnl,
@@ -729,9 +745,9 @@ export function buildPortfolioScreenViewModel({
     };
   });
 
-  const exposureKpi = resolveKpi("portfolio.total-exposure", { portfolio });
-  const unrealizedPnlKpi = resolveKpi("portfolio.unrealized-pnl", { portfolio });
-  const positionCountKpi = resolveKpi("portfolio.open-positions", { portfolio });
+  const exposureKpi = holdings.totalExposure;
+  const unrealizedPnlKpi = holdings.totalUnrealizedPnl;
+  const positionCountKpi = holdings.openPositions;
   const totalExposure = exposureKpi.value;
   const totalUnrealizedPnl = unrealizedPnlKpi.value;
   const selectedRow = positionRows.find((row) => row.id === selectedId) ?? null;
@@ -840,6 +856,12 @@ export function buildPortfolioScreenViewModel({
     hasPositions: positionRows.length > 0,
     positionRows,
     positionListLabel: "Open positions",
+    holdingsTotal: {
+      exposure: exposureKpi.status === "unavailable" ? "—" : exposureKpi.value,
+      exposureAmount: exposureKpi.status === "available" ? totalExposureAmount(exposureKpi) : null,
+      currency: exposureKpi.currency ?? null,
+      reason: exposureKpi.status === "unavailable" ? exposureKpi.delta || "Total exposure is unavailable." : null
+    },
     positionCountLabel: `${positionRows.length} position${positionRows.length === 1 ? "" : "s"}`,
     positionDetailId: "portfolio-position-detail",
     selectedPositionChip: { label: "Selected detail", value: selectedPosition?.title ?? "None" },
@@ -2337,9 +2359,16 @@ function buildSelectedPositionDetail(
     fields: [
       { label: "Side", value: position.side, tone: "default" },
       { label: "Quantity", value: position.quantity, tone: "default" },
+      { label: "Currency", value: position.currencyFigure.display, tone: "muted" },
       { label: "Average price", value: position.avgPrice, tone: "muted" },
       markPriceField(position.markPrice, position.markFreshness),
       ...markFreshnessFields(position.markFreshness),
+      {
+        label: "Market value",
+        value: position.marketValueFigure.staleLabel ? `${position.marketValue} (${position.marketValueFigure.staleLabel})` : position.marketValue,
+        tone: position.marketValueFigure.stale ? "warning" : "default"
+      },
+      { label: "Weight", value: position.weight, tone: "muted" },
       { label: "Exposure", value: position.exposure, tone: "default" },
       { label: "Day P&L", value: position.dayPnl, tone: pnlFieldTone(position.dayPnl) },
       { label: "Unrealized P&L", value: position.unrealizedPnl, tone: pnlFieldTone(position.unrealizedPnl) },
