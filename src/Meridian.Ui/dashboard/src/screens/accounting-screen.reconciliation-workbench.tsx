@@ -15,7 +15,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { SectionDescription } from "@/components/ui/section-description";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { TableWorkbench } from "@/components/meridian/table-workbench";
+import { type TableWorkbenchColumn, TableWorkbench } from "@/components/meridian/table-workbench";
 import { DetailRail } from "@/components/meridian/detail-rail";
 import { DesignSystemStatus } from "@/design-system/status";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
@@ -83,18 +83,19 @@ export interface ReconciliationQueueControls {
   setQueueSort: (value: ReconciliationQueueSort) => void;
   clearQueueFilters: () => void;
 }
-const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowViewModel>[] = [
+// Beside the inspector rail the queue keeps break, variance and status; the rest drop by priority.
+const reconciliationBreakColumns: TableWorkbenchColumn<ReconciliationBreakRowViewModel>[] = [
   {
     id: "break",
     label: "Break",
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.strategyName}</span>
-        <span className="mt-1 block text-[11px] text-muted-foreground">{row.financeLabel}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{row.financeLabel}</span>
       </span>
     )
   },
-  { id: "category", label: "Case", hideable: true, render: (row) => <span className="text-foreground">{row.financeLabel}</span> },
+  { id: "category", label: "Case", hideable: true, priority: "medium", render: (row) => <span className="text-foreground">{row.financeLabel}</span> },
   {
     id: "variance",
     label: "Variance",
@@ -110,9 +111,9 @@ const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowVie
       </span>
     )
   },
-  { id: "owner", label: "Owner", hideable: true, render: (row) => <span className="font-mono text-muted-foreground">{row.ownerLabel}</span> },
-  { id: "updated", label: "Updated", hideable: true, render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedAtLabel}</span> },
-  { id: "source", label: "Source observation", hideable: true, render: (row) => <span className="block"><span className="block">{sourceObservationLabel(row.lineage)}</span><span className="block text-muted-foreground">{sourceObservationAge(row.lineage)}</span></span> },
+  { id: "owner", label: "Owner", hideable: true, priority: "medium", render: (row) => <span className="font-mono text-muted-foreground">{row.ownerLabel}</span> },
+  { id: "updated", label: "Updated", hideable: true, priority: "low", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedAtLabel}</span> },
+  { id: "source", label: "Source observation", hideable: true, priority: "low", render: (row) => <span className="block"><span className="block">{sourceObservationLabel(row.lineage)}</span><span className="block text-muted-foreground">{sourceObservationAge(row.lineage)}</span></span> },
   { id: "status", label: "Case status", render: (row) => <Badge variant={row.statusBadgeVariant}>{row.status}</Badge> }
 ];
 
@@ -156,7 +157,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
     const mark = classifySinceLastVisit(row, visitBaseline);
     return mark ? `${label}, ${mark} since your last visit` : label;
   };
-  const breakColumns = useMemo<DenseDataTableColumn<ReconciliationBreakRowViewModel>[]>(() => [
+  const breakColumns = useMemo<TableWorkbenchColumn<ReconciliationBreakRowViewModel>[]>(() => [
     {
       id: "select",
       label: "",

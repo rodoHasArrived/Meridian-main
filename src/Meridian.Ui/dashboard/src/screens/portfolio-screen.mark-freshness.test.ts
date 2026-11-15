@@ -47,8 +47,9 @@ describe("Portfolio shared mark readiness", () => {
     const vm = portfolio(null);
     const markFields = vm.selectedPosition?.fields.filter((field) => field.label.startsWith("Mark") || field.label === "Valuation date");
     expect(markFields).toEqual([
+      // The price names its own source, so no separate row contradicts it with "No mark observed".
+      { label: "Mark price", value: expect.stringMatching(/ \(recorded on the position, no observed mark\)$/), tone: "warning" },
       { label: "Mark readiness", value: "Review required", tone: "warning" },
-      { label: "Mark evidence", value: "No mark observed", tone: "muted" },
       { label: "Mark assessment", value: expect.stringContaining("Shared mark assessment unavailable"), tone: "warning" }
     ]);
     expect(vm.selectedPosition?.fields.map((field) => field.value)).not.toContain("Unknown");

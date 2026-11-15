@@ -269,7 +269,7 @@ export function SecurityDetailsPanel({
           <ClipboardList className="h-4 w-4 text-primary" />
           Security details
           {overrideCount > 0 && (
-            <Badge variant="outline" className="ml-2 font-mono text-[10px]">
+            <Badge variant="outline" className="ml-2 font-mono text-xs">
               {overrideCount} override{overrideCount === 1 ? "" : "s"}
             </Badge>
           )}
@@ -286,7 +286,7 @@ export function SecurityDetailsPanel({
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {vm.syncStatus ? (
             <span
-              className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]", vm.syncStatus.className)}
+              className={cn("rounded-sm border px-2 py-0.5 font-mono text-xs uppercase tracking-[0.12em]", vm.syncStatus.className)}
               aria-label={vm.syncStatus.ariaLabel}
             >
               {vm.syncStatus.label}
@@ -329,7 +329,7 @@ export function SecurityDetailsPanel({
                     <dt className="min-w-0 text-xs text-muted-foreground">
                       {field.label}
                       {field.isOverridden && (
-                        <span className="ml-1 font-mono text-[9px] uppercase tracking-[0.12em] text-primary">override</span>
+                        <span className="ml-1 font-mono text-xs uppercase tracking-[0.12em] text-primary">override</span>
                       )}
                     </dt>
                     <dd className="min-w-0 break-words font-mono text-xs text-foreground">
@@ -455,7 +455,7 @@ function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel 
         <FieldSupportText
           helpId={editor.helperId}
           helpText={editor.helperText}
-          helpClassName="block text-[11px] leading-4"
+          helpClassName="block text-xs leading-4"
           disabledReason={editor.disabledReason}
           disabledReasonId={disabledReasonId}
           disabledReasonClassName="block"
@@ -483,7 +483,7 @@ function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel 
       <FieldSupportText
         helpId={editor.helperId}
         helpText={editor.helperText}
-        helpClassName="block text-[11px] leading-4"
+        helpClassName="block text-xs leading-4"
         disabledReason={editor.disabledReason}
         disabledReasonId={disabledReasonId}
         disabledReasonClassName="block"
@@ -859,7 +859,7 @@ function LotDraftField({
 }) {
   return (
     <div className={cn("min-w-0 space-y-1", className)}>
-      <label htmlFor={field.id} className={cn("text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.12em]")}>
+      <label htmlFor={field.id} className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.12em]")}>
         {field.label}
       </label>
       <Input
@@ -874,11 +874,11 @@ function LotDraftField({
         className="min-h-8 px-2 py-1 text-xs"
         onChange={(event) => onChange(event.target.value)}
       />
-      <p id={field.helperId} className="text-[11px] leading-4 text-muted-foreground">
+      <p id={field.helperId} className="text-xs leading-4 text-muted-foreground">
         {field.helperText}
       </p>
       {field.errorText ? (
-        <p id={field.errorId} className="text-[11px] leading-4 text-danger">
+        <p id={field.errorId} className="text-xs leading-4 text-danger">
           {field.errorText}
         </p>
       ) : null}
@@ -889,7 +889,7 @@ function LotDraftField({
 function LotsMetric({ label, value, tone }: { label: string; value: string; tone?: "success" | "danger" }) {
   return (
     <div className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2">
-      <div className={cn("text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.12em]")}>{label}</div>
+      <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.12em]")}>{label}</div>
       <div className={cn(
         "mt-1 font-mono text-sm font-semibold tabular-nums",
         tone === "success" ? "text-success" : tone === "danger" ? "text-danger" : "text-foreground"

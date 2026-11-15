@@ -41,7 +41,7 @@ const queueColumns: TableWorkbenchColumn<CorporateActionInboxRowModel>[] = [
           <Badge variant={row.tone === "warning" ? "warning" : "outline"}>{row.actionType}</Badge>
           <span className="font-mono font-semibold text-foreground">{row.ticker}</span>
         </span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.securityId}</span>
+        <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{row.securityId}</span>
       </span>
     )
   },
@@ -63,7 +63,7 @@ const queueColumns: TableWorkbenchColumn<CorporateActionInboxRowModel>[] = [
     render: (row) => (
       <span className="block">
         <span className="block text-foreground">{row.statusLabel}</span>
-        <span className="block max-w-48 truncate font-mono text-[11px] text-muted-foreground" title={row.caseIdLabel}>
+        <span className="block max-w-48 truncate font-mono text-xs text-muted-foreground" title={row.caseIdLabel}>
           {row.caseIdLabel}
         </span>
       </span>
@@ -87,7 +87,7 @@ const queueColumns: TableWorkbenchColumn<CorporateActionInboxRowModel>[] = [
     render: (row) => (
       <span className="block">
         <Badge variant={row.tone === "warning" ? "warning" : "outline"}>{row.conflictLabel}</Badge>
-        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.versionLabel}</span>
+        <span className="mt-1 block font-mono text-xs text-muted-foreground">{row.versionLabel}</span>
       </span>
     )
   },

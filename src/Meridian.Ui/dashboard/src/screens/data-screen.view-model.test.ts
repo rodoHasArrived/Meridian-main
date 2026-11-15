@@ -23,7 +23,9 @@ import {
   buildDataPresentationState,
   buildExportSection,
   formatProviderReasonLabel,
+  assessProviderEvidenceStaleness,
   buildProviderRow,
+  PROVIDER_EVIDENCE_STALE_AFTER_MS,
   buildProviderSection,
   buildPlaidInstitutionSearchState,
   buildProviderSetupDialogState,
@@ -1413,7 +1415,37 @@ describe("data-screen view model", () => {
     });
   });
 
+  it("caps a provider reported healthy at review once its newest evidence is stale, and says why", () => {
+    const record: Parameters<typeof assessProviderEvidenceStaleness>[0] = { providerId: "polygon", displayName: "Polygon.io", workspaceProvider: null, readiness: null, routingConnection: null, bindings: [], trustSnapshot: null, connection: polygonConnection };
+    const fresh = Date.parse("2026-05-21T18:25:00Z");
+    const fiveMonthsOn = Date.parse("2026-11-14T00:00:00Z");
+
+    expect(assessProviderEvidenceStaleness(record, fresh)).toEqual({
+      latestEvidenceAt: "2026-05-20T18:25:00Z", stale: false, reason: null
+    });
+    expect(assessProviderEvidenceStaleness(record, fresh + PROVIDER_EVIDENCE_STALE_AFTER_MS)).toMatchObject({ stale: true });
+    expect(assessProviderEvidenceStaleness(record, fiveMonthsOn)).toMatchObject({
+      stale: true,
+      reason: "Last evidence May 20, 2026, 18:25 UTC (177 days ago). Health cannot be confirmed until the provider is verified again."
+    });
+    // No timestamped evidence at all is unknown, not stale: nothing here contradicts the reported status.
+    expect(assessProviderEvidenceStaleness({ ...record, connection: { ...polygonConnection, lastSuccessfulAt: null, lastVerifiedAt: null } }, fiveMonthsOn).stale).toBe(false);
+
+    const healthy = { ...record, connection: { ...polygonConnection, health: "Healthy" as const } };
+    const current = buildProviderRow(healthy, null, fresh);
+    const stale = buildProviderRow(healthy, null, fiveMonthsOn);
+    expect(current.status).toBe("Healthy");
+    expect(current.staleEvidenceReason).toBeNull();
+    expect(stale.status).toBe("Warning");
+    expect(stale.statusTone).toBe("warning");
+    expect(stale.reasonLabelText).toBe("Evidence is stale");
+    expect(stale.staleEvidenceReason).toContain("177 days ago");
+    expect(stale.recommendedActionText).toContain("Run verification to refresh it.");
+  });
+
   it("merges workspace and routing providers while normalizing trust and readiness coverage", () => {
+    vi.useFakeTimers({ now: Date.parse("2026-06-02T17:00:00Z"), toFake: ["Date"] });
+    try {
     const alpacaRoutingConnection: ProviderRoutingConnection = {
       ...polygonRoutingConnection,
       connectionId: "alpaca",
@@ -1448,6 +1480,9 @@ describe("data-screen view model", () => {
     });
     expect(providerSection.readinessSummary).toContain("Displayed posture: 2 ready / 0 review / 0 degraded / 1 blocked.");
     expect(providerSection.readinessSummary).toContain("Shared readiness covers 2 of 3 displayed providers.");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("surfaces verification command state without mutating provider rows", () => {

@@ -202,7 +202,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
   return {
     inbox, loading, error, notice, busy, uncertain, reload, retryUncertain,
     rows, selectedId, setSelectedId, selected,
-    checkedIds, toggleChecked,
+    checkedIds, toggleChecked, clearChecked: () => setCheckedIds([]),
     mineOnly, setMineOnly, visibility, setVisibility, search, setSearch,
     actionsAvailable, capability,
     action, actionTarget, openAction, closeAction,

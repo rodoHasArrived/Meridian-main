@@ -52,7 +52,7 @@ export function SettingsRuntimeCapabilitiesSection({ vm, onFeatureCapabilityTogg
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="font-mono text-[10px] text-muted-foreground">{capability.capabilityKey}</div>
+                    <div className="font-mono text-xs text-muted-foreground">{capability.capabilityKey}</div>
                     <h3 className="mt-2 text-sm font-semibold text-foreground">{capability.displayName}</h3>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{capability.description}</p>
                   </div>
@@ -192,10 +192,10 @@ function EndpointReference({
       <Badge variant="outline" className="shrink-0">{endpoint.method}</Badge>
       <span className="min-w-0">
         <span className="block font-semibold text-foreground">{endpoint.label}</span>
-        <span className="mt-1 block break-all font-mono text-[10px] leading-4 text-muted-foreground">
+        <span className="mt-1 block break-all font-mono text-xs leading-4 text-muted-foreground">
           {endpoint.href}
         </span>
-        <span className={cn("mt-1 inline-flex rounded-sm border border-border/60 px-1.5 py-0.5 text-[10px] text-muted-foreground", usesTrackedCaps(endpoint.interactionLabel) && "uppercase")}>
+        <span className={cn("mt-1 inline-flex rounded-sm border border-border/60 px-1.5 py-0.5 text-xs text-muted-foreground", usesTrackedCaps(endpoint.interactionLabel) && "uppercase")}>
           {endpoint.interactionLabel}
         </span>
       </span>

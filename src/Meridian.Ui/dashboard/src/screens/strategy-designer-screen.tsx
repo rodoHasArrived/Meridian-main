@@ -314,7 +314,7 @@ function CellCanvasPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
                 {field.fieldId}
               </Badge>
               {field.disabledReason ? (
-                <span className="text-[10px] leading-4 text-warning">{field.disabledReason}</span>
+                <span className="text-xs leading-4 text-warning">{field.disabledReason}</span>
               ) : null}
             </div>
           ))}
@@ -428,7 +428,7 @@ function CellDetail({ detail }: { detail: StrategyBuilderCellDetailViewModel | n
 function StrategyDetailField({ field }: { field: StrategyLegDetailFieldViewModel }) {
   return (
     <div className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2">
-      <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>{field.label}</dt>
+      <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>{field.label}</dt>
       <dd className="mt-1 break-words font-mono text-xs text-foreground">{field.value}</dd>
     </div>
   );
@@ -508,11 +508,11 @@ function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
         ) : null}
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-md border border-border/70 p-3">
-            <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Dataset fingerprint</div>
+            <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Dataset fingerprint</div>
             <div className="mt-1 break-words font-mono text-xs text-foreground">{vm.backtest.datasetFingerprint}</div>
           </div>
           <div className="rounded-md border border-border/70 p-3">
-            <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Execution mode</div>
+            <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Execution mode</div>
             <div className="mt-1 text-sm font-medium text-foreground">Backtest only</div>
           </div>
         </div>

@@ -9650,6 +9650,8 @@ Meridian-main
 │   │   │   │   │   ├── dev-fixtures.test.ts
 │   │   │   │   │   ├── dev-fixtures.trading-risk.ts
 │   │   │   │   │   ├── dev-fixtures.ts
+│   │   │   │   │   ├── display-labels.test.ts
+│   │   │   │   │   ├── display-labels.ts
 │   │   │   │   │   ├── display-time-zone.ts
 │   │   │   │   │   ├── exact-decimal.ts
 │   │   │   │   │   ├── failover-api.ts
@@ -9665,6 +9667,8 @@ Meridian-main
 │   │   │   │   │   ├── identifiers.ts
 │   │   │   │   │   ├── income-movement-waterfall.test.ts
 │   │   │   │   │   ├── income-movement-waterfall.ts
+│   │   │   │   │   ├── internal-copy.test.ts
+│   │   │   │   │   ├── internal-copy.ts
 │   │   │   │   │   ├── keymap.test.ts
 │   │   │   │   │   ├── keymap.ts
 │   │   │   │   │   ├── kpi-context.test.tsx

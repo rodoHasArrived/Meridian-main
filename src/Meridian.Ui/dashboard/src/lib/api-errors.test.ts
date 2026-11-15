@@ -5,6 +5,7 @@ import {
   describeApiError,
   isAbortError,
   isApiError,
+  isEmptyResponseBody,
   presentApiError
 } from "@/lib/api-errors";
 
@@ -61,6 +62,17 @@ describe("api-errors", () => {
       summary: "Export worker unavailable",
       details: ["Meridian service returned 503. Open diagnostics for technical details."]
     });
+  });
+
+  it("never shows an empty or brace-only response body as a detail", () => {
+    for (const body of ["{}", " { } ", "[]", "\"\"", "null", "{\"\":{}}"]) {
+      const error = createApiErrorFromResponseBody("/api/risk/rules", 404, body);
+      expect(describeApiError(error, "Failed to load risk controls.").details).toEqual([
+        "Meridian service returned 404. Open diagnostics for technical details."
+      ]);
+    }
+    expect(isEmptyResponseBody("{}")).toBe(true);
+    expect(isEmptyResponseBody("Export worker unavailable")).toBe(false);
   });
 
   it("translates raw HTML 404 responses into operator recovery copy", () => {

@@ -163,7 +163,7 @@ export function SettingsDiagnosticsSection({ vm, overview, recentEventsVm, showA
                   </div>
                   <p className="text-xs leading-5 text-muted-foreground">{link.description}</p>
                   <p className="text-xs leading-5 text-foreground/75">{link.statusDetail}</p>
-                  <span className="mt-1 font-mono text-[10px] text-muted-foreground">{link.href}</span>
+                  <span className="mt-1 font-mono text-xs text-muted-foreground">{link.href}</span>
                 </a>
               </div>
             ))}
@@ -273,7 +273,7 @@ function RecentEventDetailPanel({
             <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
               {detail.fields.map((field) => (
                 <div key={field.label} className="rounded-sm border border-border/60 bg-background/35 px-2.5 py-2">
-                  <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>{field.label}</dt>
+                  <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>{field.label}</dt>
                   <dd className={cn("mt-1 break-words font-mono text-xs", itemToneClass[field.tone])}>
                     {field.value}
                   </dd>

@@ -29,6 +29,8 @@ import {
   uniqueStrings,
   verificationToneFromLabel
 } from "@/screens/data-provider-display-view-model";
+import { assessEvidenceStaleness, type ProviderEvidenceStaleness } from "@/screens/data-provider-display-view-model";
+export { PROVIDER_EVIDENCE_STALE_AFTER_MS, type ProviderEvidenceStaleness } from "@/screens/data-provider-display-view-model";
 import {
   buildDataLoadingState,
   buildRouteFocusCardState,
@@ -395,6 +397,8 @@ export interface DataOperationsProviderRow {
   trustScoreText: string;
   signalSourceText: string;
   note: string;
+  /** Why a provider reported healthy is shown as review: its newest evidence is past the staleness threshold. */
+  staleEvidenceReason: string | null;
   statusTone: "success" | "warning" | "danger";
   trustFields: DataOperationsDetailField[];
   reasonLabelText: string;
@@ -2330,9 +2334,17 @@ export function buildProviderSection(
   };
 }
 
+/** The provider's evidence times (last response, verification, readiness evidence) judged for staleness. */
+export function assessProviderEvidenceStaleness(record: DataOperationsProviderCenterRecord, now: number = Date.now()): ProviderEvidenceStaleness {
+  const connection = resolveProviderConnection(record);
+  return assessEvidenceStaleness([connection?.lastSuccessfulAt, connection?.lastVerifiedAt,
+    ...(record.readiness?.evidence ?? []).map((item) => item.observedAt)], now);
+}
+
 export function buildProviderRow(
   provider: DataProviderRecord | DataOperationsProviderCenterRecord,
-  selectedProviderId: string | null = null
+  selectedProviderId: string | null = null,
+  now: number = Date.now()
 ): DataOperationsProviderRow {
   const record = isProviderCenterRecord(provider) ? provider : buildProviderCenterRecordFromWorkspace(provider);
   const rowId = buildProviderCenterRowId(record);
@@ -2359,8 +2371,12 @@ export function buildProviderRow(
   const reasonCodeText = readiness
     ? `READINESS_${readiness.status.toUpperCase()}`
     : formatProviderValue(providerRecord?.reasonCode, record.routingConnection?.productionReady === false ? "CERTIFICATION_PENDING" : "Reason code not reported");
-  const reasonLabelText = formatProviderReasonLabel(reasonCodeText);
-  const recommendedActionText = readiness?.recommendedAction
+  // A provider reported healthy on evidence past the staleness threshold is capped at review.
+  const reportedStatus = resolveProviderDisplayStatus(record);
+  const staleness = assessProviderEvidenceStaleness(record, now);
+  const cappedByStaleEvidence = reportedStatus === "Healthy" && staleness.stale;
+  const reasonLabelText = cappedByStaleEvidence ? "Evidence is stale" : formatProviderReasonLabel(reasonCodeText);
+  const recommendedActionText = cappedByStaleEvidence ? `${staleness.reason} Run verification to refresh it.` : readiness?.recommendedAction
     ?? (record.routingConnection
       ? providerRoutingRecommendedAction(record.routingConnection, trust, bindings, record.routingConnection.enabled)
       : connection
@@ -2370,7 +2386,7 @@ export function buildProviderRow(
     ? `Impacts ${readiness.affectedWorkflows.join(", ")}.`
     : formatProviderValue(providerRecord?.gateImpact, providerGateImpactText(record.routingConnection, trust));
   const selected = rowId === selectedProviderId;
-  const status = resolveProviderDisplayStatus(record);
+  const status: DataOperationsProviderStatus = cappedByStaleEvidence ? "Warning" : reportedStatus;
   const statusTone = resolveProviderStatusTone(status);
   const credentialText = connection ? providerCredentialLabel(connection.credentialState) : "Not reported";
   const verificationText = connection ? providerVerificationLabel(connection.verificationState) : providerRoutingVerificationLabel(record.routingConnection, trust);
@@ -2398,6 +2414,7 @@ export function buildProviderRow(
     trustScoreText,
     signalSourceText,
     note: recommendedActionText ?? providerRecord?.note ?? "No operator action reported",
+    staleEvidenceReason: cappedByStaleEvidence ? staleness.reason : null,
     statusTone,
     trustFields: [
       {

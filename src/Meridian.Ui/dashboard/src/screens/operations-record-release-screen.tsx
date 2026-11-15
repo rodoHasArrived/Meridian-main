@@ -146,13 +146,13 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
               >
                 <span className="min-w-0">
                   <span className="flex items-start justify-between gap-2">
-                    <span className="font-mono text-[11px] text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
+                    <span className="font-mono text-xs text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
                     <SeverityBadge status={toSeverity(step.tone)} label={step.statusLabel} />
                   </span>
                   <span className="mt-2 block font-semibold text-foreground">{step.label}</span>
                   <span className="mt-2 block text-xs leading-5 text-muted-foreground">{step.detail}</span>
                 </span>
-                <span className="mt-3 inline-flex items-center gap-1.5 font-mono text-[11px] text-primary">
+                <span className="mt-3 inline-flex items-center gap-1.5 font-mono text-xs text-primary">
                   {step.id === selectedStep?.id ? "Selected release step" : "Inspect step"}
                   <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </span>
@@ -223,7 +223,7 @@ function OperationsRecordContextRail({
         ))}
       </ol>
       <TechnicalDetails label="Release route details">
-        <p className="break-all font-mono text-[11px] leading-5 text-muted-foreground">{vm.routePathLabel}</p>
+        <p className="break-all font-mono text-xs leading-5 text-muted-foreground">{vm.routePathLabel}</p>
       </TechnicalDetails>
     </div>
   );
@@ -413,7 +413,7 @@ function ReleaseEvidenceRow({ row }: { row: OperationsRecordReleaseEvidenceRow }
         </span>
         <SeverityBadge status={toSeverity(row.tone)} label={row.value} />
       </span>
-      <span className="mt-2 inline-flex items-center gap-1.5 font-mono text-[11px] text-primary">
+      <span className="mt-2 inline-flex items-center gap-1.5 font-mono text-xs text-primary">
         {row.routeLabel}
         {row.href ? <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /> : null}
       </span>

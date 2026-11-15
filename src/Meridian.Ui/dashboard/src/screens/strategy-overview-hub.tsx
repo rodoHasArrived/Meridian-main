@@ -2,7 +2,7 @@ import { WorkspaceTaskWorkbench } from "@/components/meridian/workspace-task-wor
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { TechnicalDetails } from "@/components/ui/technical-details";
-import type { StrategyRunLibraryState } from "@/screens/strategy-screen.view-model";
+import { PLOT_TOOL_NOT_CONNECTED_LABEL, type StrategyRunLibraryState } from "@/screens/strategy-screen.view-model";
 
 // Domain-specific projections and components shared by the screen composition.
 
@@ -47,7 +47,7 @@ export const strategyHubRoutes = [
 
 
 export function StrategyOverviewHub({ vm }: { vm: StrategyRunLibraryState }) {
-  const plotToolConnected = vm.plotTool.workspace.statusBadgeLabel !== "NOT CONNECTED";
+  const plotToolConnected = vm.plotTool.workspace.statusBadgeLabel !== PLOT_TOOL_NOT_CONNECTED_LABEL;
   const runs = vm.runs.map((run) => ({
     id: run.id,
     title: run.strategyName,

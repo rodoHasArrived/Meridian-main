@@ -340,7 +340,7 @@ function StatementFetchSchedulesTable({
 {id:"field-2",label:"Cadence",exportValue:schedule=>schedule.cadenceHours,render:schedule=><>Every {schedule.cadenceHours}h</>},
 {id:"field-3",label:"Last result",exportValue:schedule=>schedule.lastRunStatus,render:schedule=><>
                       <div>{schedule.lastRunStatus ?? "Not run"}</div>
-                      <div className="font-mono text-[10px] text-muted-foreground">{formatTimestamp(schedule.lastRunAtUtc)}</div>
+                      <div className="font-mono text-xs text-muted-foreground">{formatTimestamp(schedule.lastRunAtUtc)}</div>
                     </>},
 {id:"field-4",label:"Next due",exportValue:schedule=>schedule.nextDueAtUtc,render:schedule=><>{formatTimestamp(schedule.nextDueAtUtc)}</>},
 {id:"field-5",label:"Actions",render:schedule=><>
@@ -388,7 +388,7 @@ function StatementFetchSchedulesTable({
                             role="status"
                             aria-label="Schedule deletion confirmation"
                             aria-live="polite"
-                            className="basis-full text-right text-[11px] leading-4 text-warning"
+                            className="basis-full text-right text-xs leading-4 text-warning"
                           >
                             Delete confirmation pending for {schedule.scheduleId}. Confirm delete permanently removes this schedule.
                           </p>

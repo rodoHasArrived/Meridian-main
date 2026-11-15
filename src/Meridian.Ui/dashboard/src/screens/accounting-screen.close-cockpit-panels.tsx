@@ -1,3 +1,4 @@
+import { compactTimestampLabel } from "@/lib/format";
 import { IntercompanyCloseAdvisories } from "./accounting-screen.intercompany-close-advisories";
 import { AlertCircle, BookCheck, CheckCircle2, Landmark, LockKeyhole, Network, Paperclip, RefreshCcw, ShieldCheck, Table2, UserCheck, WalletCards, X } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -190,7 +191,7 @@ export function CloseCommandCenterPanel({
                 <div className={cn("h-full rounded-md border bg-secondary/20 px-3 py-3", statusPanelClass(metric.tone))}>
                   <div className="flex items-start justify-between gap-2">
                     <div className={cn("min-w-0 text-xs font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase")}>{metric.label}</div>
-                    <Badge variant={statusBadgeVariant(metric.tone)}>{metric.value}</Badge>
+                    <Badge variant={statusBadgeVariant(metric.tone)} className="shrink-0 whitespace-nowrap" title={compactTimestampLabel(metric.value) === metric.value ? undefined : metric.value}>{compactTimestampLabel(metric.value)}</Badge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
                 </div>
@@ -613,7 +614,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                   </div>
                   <div className="grid content-start gap-1 text-xs leading-5 text-muted-foreground">
                     <span>{step.detail}</span>
-                    <span className="font-mono text-[0.72rem] text-foreground">{step.evidenceLabel}</span>
+                    <span className="font-mono text-xs text-foreground">{step.evidenceLabel}</span>
                   </div>
                   {step.actionId ? (
                     <Button
@@ -638,7 +639,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
               <div key={metric.id} className={cn("rounded-md border bg-secondary/20 px-3 py-3", statusPanelClass(metric.tone))}>
                 <div className="flex items-start justify-between gap-2">
                   <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase")}>{metric.label}</div>
-                  <Badge variant={statusBadgeVariant(metric.tone)}>{metric.value}</Badge>
+                  <Badge variant={statusBadgeVariant(metric.tone)} className="shrink-0 whitespace-nowrap" title={compactTimestampLabel(metric.value) === metric.value ? undefined : metric.value}>{compactTimestampLabel(metric.value)}</Badge>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
               </div>

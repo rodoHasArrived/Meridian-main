@@ -1,5 +1,6 @@
 import type { AuditTrailExplorerResult, AuditTrailTimelineEntry } from "@/types/execution-audit.types";
 import type { TradingFill } from "@/types";
+import { executionEventLabel } from "@/lib/display-labels";
 
 export interface ExecutionJourneyEvent {
   id: string;
@@ -27,7 +28,7 @@ export function buildExecutionJourney(orderId: string, results: AuditTrailExplor
     timestamp: audit.occurredAt,
     timestampKind: audit.metadata?.timestampBasis === "execution-report-event" ? "Occurred" : "Recorded",
     kind: audit.category === "Fill" ? "Fill report" : /control|risk/i.test(audit.category) ? "Control evidence" : /submit/i.test(audit.action) ? "Submission" : "Recorded outcome / action",
-    label: `${audit.action} · ${audit.outcome}`,
+    label: `${executionEventLabel(audit.action)} · ${executionEventLabel(audit.outcome)}`,
     audit
   }));
   const retainedFills = new Map(fills.filter((fill) => !ambiguous && fill.orderId === orderId).map((fill) => [fill.fillId, fill]));

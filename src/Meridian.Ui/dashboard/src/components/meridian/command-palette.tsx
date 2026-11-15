@@ -284,7 +284,7 @@ export function CommandPalette({
             <section className="mb-3 rounded-md border border-primary/25 bg-primary/5 px-3 py-3" aria-label={viewModel.recommendedItemsLabel}>
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className={eyebrowClassName(viewModel.recommendedItemsLabel)}>{viewModel.recommendedItemsLabel}</div>
-                <div className="font-mono text-[10px] text-muted-foreground">{viewModel.recommendedItemsCountLabel}</div>
+                <div className="font-mono text-xs text-muted-foreground">{viewModel.recommendedItemsCountLabel}</div>
               </div>
               <div className="grid gap-1 sm:grid-cols-2">
                 {viewModel.recommendedItems.map((item) => (
@@ -326,7 +326,7 @@ export function CommandPalette({
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
-                  <div className={cn("inline-flex rounded-sm border border-border/70 bg-background/70 px-2 py-1 text-[10px] text-muted-foreground", usesTrackedCaps(viewModel.emptyState.statusLabel) && "font-mono uppercase tracking-[0.12em]")}>
+                  <div className={cn("inline-flex rounded-sm border border-border/70 bg-background/70 px-2 py-1 text-xs text-muted-foreground", usesTrackedCaps(viewModel.emptyState.statusLabel) && "font-mono uppercase tracking-[0.12em]")}>
                     {viewModel.emptyState.statusLabel}
                   </div>
                   <div
@@ -369,7 +369,7 @@ export function CommandPalette({
             <div key={group.kind} className="command-palette-group">
               <div className="command-palette-group-label" aria-label={group.ariaLabel}>
                 <span>{group.label}</span>
-                <span className="font-mono text-[10px] text-muted-foreground">{group.countLabel}</span>
+                <span className="font-mono text-xs text-muted-foreground">{group.countLabel}</span>
               </div>
               <div className="grid gap-1">
                 {group.items.map((item) => item.action ? (

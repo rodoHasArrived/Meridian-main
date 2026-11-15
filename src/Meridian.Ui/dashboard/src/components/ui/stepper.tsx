@@ -44,7 +44,7 @@ export function Stepper({ steps, activeStep = 0, onStepChange, showStepNumber = 
               <span
                 aria-hidden="true"
                 className={cn(
-                  "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-semibold",
+                  "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-xs font-semibold",
                   active
                     ? "bg-[var(--interaction-selected)] text-[var(--text-on-fill)]"
                     : complete
@@ -57,7 +57,7 @@ export function Stepper({ steps, activeStep = 0, onStepChange, showStepNumber = 
             ) : null}
             <span className="truncate">{step.label}</span>
             {step.badge != null ? (
-              <span className="ml-auto shrink-0 rounded-[2px] bg-[var(--ws-surface-raised)] px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+              <span className="ml-auto shrink-0 rounded-[2px] bg-[var(--ws-surface-raised)] px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
                 {step.badge}
               </span>
             ) : null}

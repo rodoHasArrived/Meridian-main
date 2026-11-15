@@ -62,7 +62,7 @@ const workflowColumns: DenseDataTableColumn<OperationsContinuityWorkflowRow>[] =
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.title}</span>
-        <span className="mt-1 block break-words font-mono text-[11px] text-muted-foreground">{row.subtitle}</span>
+        <span className="mt-1 block break-words font-mono text-xs text-muted-foreground">{row.subtitle}</span>
       </span>
     )
   },
@@ -948,7 +948,7 @@ const closeCockpitWorkflowColumns: DenseDataTableColumn<OperationsContinuityClos
         ) : (
           <span className="block font-semibold text-foreground">{row.periodLabel}</span>
         )}
-        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.id}</span>
+        <span className="mt-1 block font-mono text-xs text-muted-foreground">{row.id}</span>
       </span>
     )
   },
@@ -992,7 +992,7 @@ const closeCockpitApprovalColumns: DenseDataTableColumn<OperationsContinuityClos
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.workflowLabel}</span>
-        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.id}</span>
+        <span className="mt-1 block font-mono text-xs text-muted-foreground">{row.id}</span>
       </span>
     )
   },

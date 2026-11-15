@@ -15,6 +15,12 @@
 //   - localMoneyFormatters: money and P&L formatters defined in a screen (formatMoney,
 //     formatCurrency, formatPnl, formatSigned*, fmtMoney, ...) instead of imported from
 //     `@/lib/format`; each one can round, sign or abbreviate differently from its neighbours.
+//   - pascalCaseRenderedText: PascalCase enum identifiers ("PartiallyFilled", "ControlEvaluated")
+//     in JSX text or in a label-like string (label, title, description, summary, ...). Wire
+//     values are shown through `formatEnumLabel` / a display-label map from `@/lib/display-labels`.
+//   - isoTimestampsInJsx: a raw timestamp field (`{entry.occurredAt}`, a `render` that returns
+//     `row.createdAt`, `.toISOString()` in a JSX expression, or an ISO literal) rendered without
+//     `@/lib/format` (`formatTimestamp`, `<TimeText>`), so one screen never mixes time formats.
 //
 // `design-system-ratchets.test.ts` fails when a file exceeds its baseline, when a file not in
 // the baseline gains an occurrence, or when a file drops below its baseline (lock the progress
@@ -37,6 +43,42 @@ const TO_FIXED = /\.toFixed\(/g;
 const LOCAL_MONEY_FORMATTER = /\b(?:function|const)\s+(?:format|fmt)(?:Money|Currency|Pnl|PnL|Usd|Dollars?|Notional|Signed|Compact)\w*/g;
 // A <table opening tag that is not styled as the table system's `dense-data-table`.
 const RAW_TABLE = /<table\b(?![^>]*\bclassName="[^"]*\bdense-data-table\b)/g;
+
+// Product and technology names that are legitimately written in PascalCase.
+const PASCAL_CASE_NAMES = new Set([
+  "PlotTool", "QuantConnect", "JavaScript", "TypeScript", "PostgreSQL", "OpenFIGI", "GitHub", "PowerShell",
+  "NinjaTrader", "StockSharp", "MetaTrader", "TradingView", "QuickBooks", "NetSuite", "WebSocket", "DataFrame",
+  "BlackRock", "PayPal", "MasterCard", "LinkedIn", "YouTube", "DocuSign", "OpenAPI", "FactSet", "PitchBook"
+]);
+const PASCAL_CASE_TOKEN = /\b[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]+)+\b/g;
+// Text between a tag's `>` and the next `<`, on one line and free of code punctuation.
+const JSX_TEXT = />([^<>{}=;|&\n]*[A-Za-z][^<>{}=;|&\n]*)</g;
+// A string assigned to a property or attribute whose value is shown to the operator.
+const LABEL_STRING = /\b(?:label|title|description|detail|summary|message|emptyText|caption|placeholder|statusLabel|statusBadgeLabel|eyebrow|heading|helpText|tooltip|aria-label|ariaLabel)\s*[:=]\s*\{?\s*(?:"([^"\n]*)"|'([^'\n]*)')/g;
+
+/** PascalCase enum identifiers left in text an operator reads. */
+export function countPascalCaseRenderedText(source) {
+  const count = (text) => [...text.matchAll(PASCAL_CASE_TOKEN)].filter(([token]) => !PASCAL_CASE_NAMES.has(token)).length;
+  let total = 0;
+  for (const match of source.matchAll(JSX_TEXT)) total += count(match[1]);
+  for (const match of source.matchAll(LABEL_STRING)) total += count(match[1] ?? match[2] ?? "");
+  return total;
+}
+
+const TIMESTAMP_FIELD = "(?:[A-Za-z]*(?:At|AtUtc|Utc|Timestamp)|asOf|timestamp|lastHeartbeat)";
+const MEMBER_CHAIN = "[A-Za-z_$][\\w$]*(?:\\??\\.[A-Za-z_$][\\w$]*)*\\??\\.";
+// `{entry.occurredAt}` as JSX content. A prop value (`value={...}`) or template hole (`${...}`) is not content.
+const ISO_JSX_CHILD = new RegExp(`(?<![=\\w$])\\{\\s*${MEMBER_CHAIN}${TIMESTAMP_FIELD}\\s*\\}`, "g");
+// A table column whose `render` returns the raw field.
+const ISO_RENDER = new RegExp(`\\brender:\\s*\\([^)]*\\)\\s*=>\\s*${MEMBER_CHAIN}${TIMESTAMP_FIELD}\\s*[,}]`, "g");
+const ISO_TO_STRING_IN_JSX = /(?<![=\w$])\{[^{}\n]*\.toISOString\(\)[^{}\n]*\}/g;
+const ISO_LITERAL_IN_JSX = />[^<>{}\n]*\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}[^<>{}\n]*</g;
+
+/** Raw ISO timestamps rendered without the shared formatter. */
+export function countIsoTimestampsInJsx(source) {
+  return [ISO_JSX_CHILD, ISO_RENDER, ISO_TO_STRING_IN_JSX, ISO_LITERAL_IN_JSX]
+    .reduce((total, pattern) => total + [...source.matchAll(pattern)].length, 0);
+}
 
 /** A string literal styled like a status chip: tracked uppercase text in a bordered/rounded box. */
 export function isAdHocBadgeClass(value) {
@@ -83,6 +125,14 @@ export const RATCHETS = {
     count(source) {
       return [...source.matchAll(LOCAL_MONEY_FORMATTER)].length;
     }
+  },
+  pascalCaseRenderedText: {
+    description: "PascalCase enum identifiers in rendered text in screens/ (use formatEnumLabel or a label map from @/lib/display-labels)",
+    count: countPascalCaseRenderedText
+  },
+  isoTimestampsInJsx: {
+    description: "raw ISO timestamps rendered in screens/ (use formatTimestamp or <TimeText> from @/lib/format)",
+    count: countIsoTimestampsInJsx
   }
 };
 

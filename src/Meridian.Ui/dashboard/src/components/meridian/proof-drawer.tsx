@@ -192,7 +192,7 @@ function FactList({ title, items }: { title: string; items: FinancialRecordExplo
       <h4 className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(title) && "uppercase")}>{title}</h4>
       {items.map((item) => (
         <dl key={`${item.label}-${item.value}`} className="rounded-md border border-border/60 px-3 py-2">
-          <dt className="text-[11px] text-muted-foreground">{normalizeFinancialLabel(item.label)}</dt>
+          <dt className="text-xs text-muted-foreground">{normalizeFinancialLabel(item.label)}</dt>
           <dd className={cn("mt-1 font-mono text-sm", toneTextClass(item.tone))}>
             {item.value}
             {item.detail ? <span className="mt-1 block font-sans text-xs text-muted-foreground">{item.detail}</span> : null}

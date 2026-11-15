@@ -368,11 +368,10 @@ describe("TradingScreen", () => {
     expect(within(fill).getByText("948.20")).toBeInTheDocument();
     expect(order).not.toHaveTextContent("$414.20");
     expect(fill).not.toHaveTextContent("$948.20");
-    const basis = "Prices in source quote units · currency not supplied.";
-    expect(screen.getAllByText(basis)).toHaveLength(3);
-    expect(screen.getByRole("region", { name: /order detail for po-1/i })).toHaveTextContent(basis);
+    // The price basis is stated once for the page, not repeated under each table and the detail pane.
+    expect(screen.getAllByText("Prices are as quoted by the source; no currency was supplied.")).toHaveLength(1);
     await user.click(fill);
-    expect(screen.getByRole("region", { name: /fill detail for fl-1/i })).toHaveTextContent(basis);
+    expect(screen.getByRole("region", { name: /fill detail for fl-1/i })).toBeInTheDocument();
   });
 
   it("renders a VM-owned pending state while the cockpit data loads", async () => {
@@ -597,10 +596,10 @@ describe("TradingScreen", () => {
     await renderTradingScreen(data, "/trading/risk");
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalled());
     expect(screen.getByText(/Execution controls snapshot/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/Breaker Closed/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/breaker closed/i).length).toBeGreaterThan(0);
     const controls = screen.getByLabelText(/Execution controls snapshot: breaker closed/i);
     expect(within(controls).getByText("5000")).toBeInTheDocument();
-    expect(within(controls).getByText("BypassOrderControls (AAPL)")).toBeInTheDocument();
+    expect(within(controls).getByText("Bypass order controls (AAPL)")).toBeInTheDocument();
   });
 
   it("exposes a reachable kill switch on the browser lane and routes it through the confirmation gate", async () => {

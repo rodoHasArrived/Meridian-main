@@ -28,10 +28,10 @@ function inject(): void {
 .mds-corr{display:inline-grid;gap:1px;background:var(--border-color,#D2CDC3);
   border:1px solid var(--border-strong,#AAA49A);font-family:var(--font-data,monospace);}
 .mds-corr__h{background:var(--bg-medium,#EBE8E1);color:var(--text-secondary,#535C65);
-  font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;
+  font-size:0.75rem;font-weight:600;display:flex;align-items:center;justify-content:center;
   padding:4px 6px;white-space:nowrap;}
 .mds-corr__rh{justify-content:flex-end;padding-right:8px;}
-.mds-corr__cell{display:flex;align-items:center;justify-content:center;font-size:11px;
+.mds-corr__cell{display:flex;align-items:center;justify-content:center;font-size:0.75rem;
   color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums;cursor:default;}
 .mds-corr__cell--diag{color:var(--text-muted,#606870);background:var(--bg-active,#E7EDF2)!important;}
 .mds-corr__corner{background:var(--bg-medium,#EBE8E1);}

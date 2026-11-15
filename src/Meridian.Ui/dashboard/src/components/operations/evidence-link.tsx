@@ -21,9 +21,9 @@ const CSS = `
 .mds-evidence--action .mds-evidence__dot{background:var(--state-warn-fg,#724D11);}
 .mds-evidence--blocked .mds-evidence__dot{background:var(--state-danger-fg,#883832);}
 .mds-evidence__label{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mds-evidence__route{font-family:var(--font-data,monospace);font-size:10px;color:var(--text-muted,#606870);
+.mds-evidence__route{font-family:var(--font-data,monospace);font-size:0.75rem;color:var(--text-muted,#606870);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
-.mds-evidence__arrow{margin-left:auto;color:var(--text-muted,#606870);flex:0 0 auto;font-size:11px;}
+.mds-evidence__arrow{margin-left:auto;color:var(--text-muted,#606870);flex:0 0 auto;font-size:0.75rem;}
 `;
 
 type EvidenceLinkOwnProps = {

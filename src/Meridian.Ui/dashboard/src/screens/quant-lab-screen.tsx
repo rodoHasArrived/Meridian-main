@@ -473,7 +473,7 @@ function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSideP
                   >
                     {row.label}
                   </label>
-                  <span className="rounded bg-secondary/50 px-1 py-0.5 font-mono text-[10px] text-muted-foreground">
+                  <span className="rounded bg-secondary/50 px-1 py-0.5 font-mono text-xs text-muted-foreground">
                     {row.typeName}
                   </span>
                 </div>
@@ -507,14 +507,14 @@ function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSideP
                   />
                 )}
                 {row.description ? (
-                  <p id={row.descriptionId ?? undefined} className="text-[10px] leading-4 text-muted-foreground">{row.description}</p>
+                  <p id={row.descriptionId ?? undefined} className="text-xs leading-4 text-muted-foreground">{row.description}</p>
                 ) : null}
                 {row.resetLabel ? (
                   <button
                     type="button"
                     disabled={panel.controlsDisabled}
                     onClick={() => onReset(row.name)}
-                    className="text-[10px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
                     aria-label={row.resetLabel}
                   >
                     {row.resetText}
