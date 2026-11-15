@@ -984,7 +984,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Composition.Startup.EventPipelineShutdownParticipant</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:10](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L10).
+Source: [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:15](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L15).
 
 Completes and flushes EventPipeline exactly once. The pipeline flush already drains its channel and flushes the underlying storage sink, so the sink must not be registered separately.
 
@@ -996,12 +996,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public EventPipelineShutdownParticipant(EventPipeline pipeline);</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:14](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L14) |  |
-| <code>public string Id =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:19](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L19) |  |
-| <code>public LifecycleShutdownStage Stage =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:20](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L20) |  |
-| <code>public int Order =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:21](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L21) |  |
-| <code>public bool IsCritical =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:22](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L22) |  |
-| <code>public async ValueTask ExecuteAsync(CancellationToken ct);</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:24](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L24) |  |
+| <code>public EventPipelineShutdownParticipant(EventPipeline pipeline, DualPathEventPipeline? hotPath = null);</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:20](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L20) |  |
+| <code>public string Id =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:26](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L26) |  |
+| <code>public LifecycleShutdownStage Stage =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:27](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L27) |  |
+| <code>public int Order =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:28](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L28) |  |
+| <code>public bool IsCritical =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:29](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L29) |  |
+| <code>public async ValueTask ExecuteAsync(CancellationToken ct);</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:31](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L31) |  |
 
 ## HostModeOrchestrator
 
