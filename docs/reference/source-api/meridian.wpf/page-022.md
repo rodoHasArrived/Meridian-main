@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RoutingMatrixRow
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.RoutingMatrixRow</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs:8](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs#L8).
+
+Carries a routing source, target, and status for matrix presentation.
+
+```csharp
+public sealed class RoutingMatrixRow
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Source { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs#L10) |  |
+| <code>public string Target { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs#L11) |  |
+| <code>public string Status { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs:12](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs#L12) |  |
+
 ## RoutingMatrixViewModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.RoutingMatrixViewModel</code>. Kind: `class`.

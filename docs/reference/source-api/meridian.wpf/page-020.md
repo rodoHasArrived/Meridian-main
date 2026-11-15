@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MetricTileControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Controls.MetricTileControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs:10](../../../../src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs#L10).
+
+Displays a metric tile through its bound presentation model.
+
+```csharp
+public partial class MetricTileControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty MetricProperty = DependencyProperty.Register(nameof(Metric), typeof(WorkstationMetricModel), typeof(MetricTileControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs:12](../../../../src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs#L12) |  |
+| <code>public MetricTileControl();</code> | [src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs:19](../../../../src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs#L19) |  |
+| <code>public WorkstationMetricModel? Metric { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs:24](../../../../src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs#L24) |  |
+
 ## RoutingMatrixControl
 
 Qualified name: <code>Meridian.Wpf.Workstation.Controls.RoutingMatrixControl</code>. Kind: `class`.
@@ -794,14 +814,4 @@ Source: [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentatio
 
 ```csharp
 public sealed record OperatorReadinessFactModel(string Label, string Value, string Detail);
-```
-
-## OperatorReadinessGateRowModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.OperatorReadinessGateRowModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:12](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L12).
-
-```csharp
-public sealed record OperatorReadinessGateRowModel(string GateId, string Label, string StatusText, WorkstationReadinessTone ReadinessTone, string Tone, string Detail, string? RequiredNextAction);
 ```

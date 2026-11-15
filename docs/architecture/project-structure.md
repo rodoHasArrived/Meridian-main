@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-11-14 (added the `Meridian.Reporting.ReadModels` project extracted from `Meridian.Ui.Shared` on 2026-11-13)
+**Reviewed:** 2026-11-14
 
 Meridian uses a standard repository layout organized around source projects,
 tests, automation, docs, design-system assets, and generated artifacts.
