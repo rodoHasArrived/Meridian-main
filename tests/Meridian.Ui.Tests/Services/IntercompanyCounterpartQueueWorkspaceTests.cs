@@ -144,6 +144,25 @@ public sealed class IntercompanyCounterpartQueueWorkspaceTests
     }
 
     [Fact]
+    public async Task ConfirmedRetryRetiresItsIdentitySoTheSameReasonLaterIsANewRequest()
+    {
+        var client = new Client { Proposals = [Proposal(IntercompanyProposalStatusDto.NeedsFix)] };
+        using var view = Open(client);
+        await view.LoadCommand.ExecuteAsync(null);
+        view.SelectedProposal = Assert.Single(view.Proposals);
+        view.RetryReason = "Period reopened";
+        await view.RetryCommand.ExecuteAsync(null);
+        // Delivery fails again; the operator reloads and retries with the same words.
+        await view.LoadCommand.ExecuteAsync(null);
+        view.SelectedProposal = Assert.Single(view.Proposals);
+        view.RetryReason = "Period reopened";
+        await view.RetryCommand.ExecuteAsync(null);
+        Assert.Equal(2, client.Retries.Count);
+        Assert.Equal(client.Retries[0].Request.Reason, client.Retries[1].Request.Reason);
+        Assert.NotEqual(client.Retries[0].Request.RequestId, client.Retries[1].Request.RequestId);
+    }
+
+    [Fact]
     public async Task LinkSendsExactTargetIdentityAndClosesFurtherResolution()
     {
         var client = new Client { Proposals = [Proposal(IntercompanyProposalStatusDto.Pending)] };

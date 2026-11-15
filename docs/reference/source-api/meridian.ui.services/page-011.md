@@ -1066,7 +1066,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyCounterpartBreakRow</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:371](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L371).
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:381](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L381).
 
 ```csharp
 public sealed class IntercompanyCounterpartBreakRow(IntercompanyBreakDto item)
@@ -1076,21 +1076,21 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IntercompanyBreakDto Break { get; } = item;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:373](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L373) |  |
-| <code>public string Classification =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:374](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L374) |  |
-| <code>public int AgeDays =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:375](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L375) |  |
-| <code>public string Aging =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:376](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L376) |  |
-| <code>public string TransactionId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:377](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L377) |  |
-| <code>public string Detail =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:378](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L378) |  |
-| <code>public Guid AccountingArrangementId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:379](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L379) |  |
-| <code>public Guid SourceJournalId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:380](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L380) |  |
-| <code>public string TargetJournal =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:381](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L381) |  |
+| <code>public IntercompanyBreakDto Break { get; } = item;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:383](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L383) |  |
+| <code>public string Classification =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:384](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L384) |  |
+| <code>public int AgeDays =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:385](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L385) |  |
+| <code>public string Aging =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:386](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L386) |  |
+| <code>public string TransactionId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:387](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L387) |  |
+| <code>public string Detail =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:388](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L388) |  |
+| <code>public Guid AccountingArrangementId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:389](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L389) |  |
+| <code>public Guid SourceJournalId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:390](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L390) |  |
+| <code>public string TargetJournal =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:391](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L391) |  |
 
 ## IntercompanyCounterpartProposalRow
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyCounterpartProposalRow</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:323](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L323).
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:333](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L333).
 
 One retained counterpart delivery record with the browser queue&#x27;s resolution rules.
 
@@ -1102,22 +1102,22 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IntercompanyProposalDto Proposal { get; } = proposal;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:325](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L325) |  |
-| <code>public Guid ProposalId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:326](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L326) |  |
-| <code>public string TransactionId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:327](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L327) |  |
-| <code>public DateOnly EffectiveDate =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:328](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L328) |  |
-| <code>public IntercompanyProposalStatusDto Status =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:329](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L329) |  |
-| <code>public int Attempts =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:330](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L330) |  |
-| <code>public string SourceDigest =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:331](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L331) |  |
-| <code>public Guid CounterpartyEntityId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:332](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L332) |  |
-| <code>public bool IsResolved =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:333](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L333) |  |
-| <code>public bool CanRetry =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:334](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L334) |  |
-| <code>public bool CanReprice =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:335](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L335) |  |
-| <code>public string Delivery =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:336](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L336) |  |
-| <code>public string DeliveryDetail =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:337](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L337) |  |
-| <code>public string Target =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:338](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L338) |  |
-| <code>public IReadOnlyList&lt;IntercompanyCounterpartSourceLineRow&gt; Lines { get; } = [..(proposal.Source.Lines??[]).Select(x =&gt; new IntercompanyCounterpartSourceLineRow(x))];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:340](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L340) |  |
-| <code>public string Provenance { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:341](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L341) |  |
+| <code>public IntercompanyProposalDto Proposal { get; } = proposal;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:335](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L335) |  |
+| <code>public Guid ProposalId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:336](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L336) |  |
+| <code>public string TransactionId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:337](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L337) |  |
+| <code>public DateOnly EffectiveDate =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:338](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L338) |  |
+| <code>public IntercompanyProposalStatusDto Status =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:339](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L339) |  |
+| <code>public int Attempts =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:340](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L340) |  |
+| <code>public string SourceDigest =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:341](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L341) |  |
+| <code>public Guid CounterpartyEntityId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:342](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L342) |  |
+| <code>public bool IsResolved =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:343](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L343) |  |
+| <code>public bool CanRetry =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:344](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L344) |  |
+| <code>public bool CanReprice =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:345](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L345) |  |
+| <code>public string Delivery =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:346](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L346) |  |
+| <code>public string DeliveryDetail =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:347](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L347) |  |
+| <code>public string Target =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:348](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L348) |  |
+| <code>public IReadOnlyList&lt;IntercompanyCounterpartSourceLineRow&gt; Lines { get; } = [..(proposal.Source.Lines??[]).Select(x =&gt; new IntercompanyCounterpartSourceLineRow(x))];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:350](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L350) |  |
+| <code>public string Provenance { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:351](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L351) |  |
 
 ## IntercompanyCounterpartQueueWorkspace
 
@@ -1159,14 +1159,14 @@ Declared public members:
 | <code>public string RepricingReason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:66](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L66) |  |
 | <code>public IntercompanyCounterpartProposalRow? SelectedProposal { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L67) |  |
 | <code>public string SelectedGuidance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:80](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L80) |  |
-| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:273](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L273) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:285](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L285) |  |
+| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:283](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L283) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:295](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L295) |  |
 
 ## IntercompanyCounterpartRepricingRow
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyCounterpartRepricingRow</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:385](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L385).
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:395](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L395).
 
 One counterpart line before and after explicit repricing; amounts are the server&#x27;s exact decimals.
 
@@ -1178,17 +1178,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Account =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:387](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L387) |  |
-| <code>public string Side =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:388](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L388) |  |
-| <code>public string CurrentAmount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:389](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L389) |  |
-| <code>public string ProposedAmount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:390](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L390) |  |
-| <code>public string OriginalEvidence =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:391](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L391) |  |
+| <code>public string Account =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:397](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L397) |  |
+| <code>public string Side =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:398](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L398) |  |
+| <code>public string CurrentAmount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:399](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L399) |  |
+| <code>public string ProposedAmount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:400](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L400) |  |
+| <code>public string OriginalEvidence =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:401](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L401) |  |
 
 ## IntercompanyCounterpartSourceLineRow
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyCounterpartSourceLineRow</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:360](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L360).
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:370](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L370).
 
 ```csharp
 public sealed class IntercompanyCounterpartSourceLineRow(IntercompanyProposalSourceLineDto line)
@@ -1198,13 +1198,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string AccountName =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:362](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L362) |  |
-| <code>public string AccountType =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:363](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L363) |  |
-| <code>public string Currency =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:364](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L364) |  |
-| <code>public string TransactionDebit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:365](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L365) |  |
-| <code>public string TransactionCredit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:366](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L366) |  |
-| <code>public string FunctionalDebit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:367](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L367) |  |
-| <code>public string FunctionalCredit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:368](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L368) |  |
+| <code>public string AccountName =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:372](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L372) |  |
+| <code>public string AccountType =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:373](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L373) |  |
+| <code>public string Currency =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:374](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L374) |  |
+| <code>public string TransactionDebit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:375](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L375) |  |
+| <code>public string TransactionCredit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:376](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L376) |  |
+| <code>public string FunctionalDebit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:377](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L377) |  |
+| <code>public string FunctionalCredit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:378](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L378) |  |
 
 ## IntercompanyLegacyCoverageCandidate
 

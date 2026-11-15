@@ -141,6 +141,7 @@ public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableOb
         var reason = RetryReason.Trim();
         var updated = Require(await _client.RetryCounterpartProposalAsync(row.ProposalId, new(Identity($"retry|{row.ProposalId:D}|{reason}"), reason), token));
         token.ThrowIfCancellationRequested();
+        RetireIdentity();
         Replace(updated);
         StatusText = "A retry was scheduled against the retained source identity. Background delivery retains the target draft or repair reason; reload to observe it.";
     });
@@ -154,6 +155,7 @@ public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableOb
         var updated = Require(await _client.LinkCounterpartProposalAsync(row.ProposalId,
             new(Identity($"link|{row.ProposalId:D}|{book:D}|{journal:D}|{reason}"), book, journal, reason), token));
         token.ThrowIfCancellationRequested();
+        RetireIdentity();
         Replace(updated);
         StatusText = "Existing counterpart journal linked after source and target validation.";
     });
@@ -197,6 +199,7 @@ public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableOb
         Require(await _client.RefreshCounterpartProposalAsync(row.ProposalId,
             new(Identity($"refresh|{row.ProposalId:D}|{version}|{preview.Fingerprint}|{reason}"), version, preview.Fingerprint, reason), token));
         token.ThrowIfCancellationRequested();
+        RetireIdentity();
         ResetRepricing();
         RepricingReason = "";
         StatusText = "Counterpart repricing retained against the reviewed source and FX evidence. Its previous review was cleared; obtain fresh independent journal approval before posting.";
@@ -208,6 +211,13 @@ public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableOb
         if (key != _commandKey)
         { _commandKey = key; _commandId = Guid.NewGuid(); }
         return _commandId;
+    }
+
+    /// <summary>A confirmed command is finished: the same reason entered again later is a new request, not a replay.</summary>
+    private void RetireIdentity()
+    {
+        _commandKey = null;
+        _commandId = Guid.Empty;
     }
 
     private void Replace(IntercompanyProposalDto updated)
