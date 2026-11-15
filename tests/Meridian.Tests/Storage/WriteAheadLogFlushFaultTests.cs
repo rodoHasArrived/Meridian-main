@@ -59,7 +59,7 @@ public sealed class WriteAheadLogFlushFaultTests : TempDirectoryAsyncTestBase
     [Fact]
     public async Task BackgroundFlushFailure_DoesNotBlockLaterWrites()
     {
-        await using var wal = new WriteAheadLog(TestDataRoot, Batched(TimeSpan.FromMilliseconds(100)));
+        await using var wal = new WriteAheadLog(TestDataRoot, Batched(TimeSpan.FromMilliseconds(250)));
         await wal.InitializeAsync();
 
         // The fault must hit the delayed flush loop, not a flush this test triggers itself: an
@@ -77,16 +77,19 @@ public sealed class WriteAheadLogFlushFaultTests : TempDirectoryAsyncTestBase
             }
         };
 
-        // Each append that is not flushed inline leaves a record for the loop to pick up.
+        // An append that is not flushed inline leaves a record for the loop to pick up.
         long lastSequence = 0;
         using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(20));
         while (!faultObserved.Task.IsCompleted)
         {
             deadline.Token.ThrowIfCancellationRequested();
+            // Two back-to-back appends: the first may flush inline (MaxFlushDelay has elapsed
+            // since the previous flush), which resets the flush clock so the second cannot.
             Volatile.Write(ref foreground, 1);
+            await wal.AppendAsync("a", "trade");
             lastSequence = (await wal.AppendAsync("a", "trade")).Sequence;
             Volatile.Write(ref foreground, 0);
-            await Task.WhenAny(faultObserved.Task, Task.Delay(TimeSpan.FromMilliseconds(500), deadline.Token));
+            await Task.WhenAny(faultObserved.Task, Task.Delay(TimeSpan.FromSeconds(1), deadline.Token));
         }
 
         // Before the fix this threw "new writes are blocked" until process restart.
