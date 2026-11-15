@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileAccountingCalendar
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileAccountingCalendar</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/FileAccountingCalendar.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountingCalendar.cs#L21).
+
+Loads the production IAccountingCalendar from an operator-maintained calendar file under the deployment data root (reconciliation/business-calendar.json), mirroring the FileReconciliationFxRateProvider pattern. This is the seam that turns the weekends-only default into a real market calendar (exchange holidays, regional weekends).
+
+```csharp
+public static class FileAccountingCalendar
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string RelativePath = &quot;reconciliation/business-calendar.json&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/FileAccountingCalendar.cs:28](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountingCalendar.cs#L28) |  |
+| <code>public static IAccountingCalendar Load(string dataRoot, ILogger? logger = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileAccountingCalendar.cs:30](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountingCalendar.cs#L30) |  |
+
+## FileReconciliationDecisionJournal
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileReconciliationDecisionJournal</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs#L9).
+
+Retains reconciliation decisions and resolution history in local files.
+
+```csharp
+public sealed class FileReconciliationDecisionJournal : IReconciliationDecisionJournal
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileReconciliationDecisionJournal(string dataRoot);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs:15](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs#L15) |  |
+| <code>public async Task AppendDecisionAsync(BrokerCustodianMatchDecision decision, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs#L21) |  |
+| <code>public async Task AppendHistoryAsync(ReconciliationResolutionHistoryEntry history, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs:27](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs#L27) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;BrokerCustodianMatchDecision&gt;&gt; ListDecisionsAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs#L33) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationResolutionHistoryEntry&gt;&gt; ListHistoryAsync(string decisionId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs:39](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs#L39) |  |
+
 ## FileReconciliationFxRateProvider
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileReconciliationFxRateProvider</code>. Kind: `class`.
@@ -885,30 +926,4 @@ A single portfolio position passed into the reconciliation engine.
 
 ```csharp
 public sealed record PortfolioPositionInput(string Symbol, decimal MarketValue);
-```
-
-## PositionToleranceRule
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.PositionToleranceRule</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs:39](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs#L39).
-
-```csharp
-public sealed record PositionToleranceRule(string RuleId, decimal QuantityTolerance, decimal MarketValueTolerance, decimal PriceTolerance)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Allows(decimal expectedQuantity, decimal actualQuantity, decimal expectedMarketValue, decimal actualMarketValue, decimal expectedPrice, decimal actualPrice) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs:45](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs#L45) |  |
-
-## ReconciliationCaseIntakeRequest
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationCaseIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:42](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L42).
-
-```csharp
-public sealed record ReconciliationCaseIntakeRequest(string SourceKind, string SourcePath, string? MappingProfileId);
 ```

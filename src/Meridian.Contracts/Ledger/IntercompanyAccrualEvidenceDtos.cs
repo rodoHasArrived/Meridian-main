@@ -1,0 +1,177 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Integrity;
+
+namespace Meridian.Contracts.Ledger;
+
+/// <summary>Operator selection only. Rates, day counts, principal and amounts are always server-resolved.</summary>
+public sealed record IntercompanyAccrualRequestDto(Guid SourceBookId, Guid InterestArrangementId,
+    Guid PrincipalArrangementId, DateOnly AccrualFrom, DateOnly AccrualTo);
+
+/// <summary>The digest proves the operator is drafting exactly the computation they previewed.</summary>
+public sealed record CreateIntercompanyAccrualDraftRequest(IntercompanyAccrualRequestDto Accrual, string ExpectedEvidenceDigest);
+
+/// <summary>A posted principal journal dated inside the accrual window, signed toward the outstanding balance.</summary>
+public sealed record IntercompanyAccrualPrincipalMovementDto(Guid JournalEntryId, DateOnly EffectiveDate,
+    [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal SignedAmount);
+
+/// <summary>Principal is read from posted journals of the reviewed loan profile; it is never typed in.</summary>
+public sealed record IntercompanyAccrualPrincipalEvidenceDto(Guid PrincipalArrangementId, IntercompanyAccountRoleDto Role,
+    IReadOnlyList<string> ReceivableAccountNodeIds, IReadOnlyList<string> PayableAccountNodeIds,
+    [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal OpeningPrincipal,
+    int OpeningJournalCount, string OpeningJournalDigest, IReadOnlyList<IntercompanyAccrualPrincipalMovementDto> Movements);
+
+/// <summary>
+/// Everything that determined one accrual amount: the legal version and profile revision of every slice, the
+/// principal journals, the calendars and kernel, and any governed FX conversion. Retained on the draft and
+/// carried onto the posted journal; a client resave cannot replace it.
+/// </summary>
+public sealed record IntercompanyAccrualEvidenceDto(string RuleVersion, Guid DraftId, string TenantId,
+    Guid SourceBookId, Guid SourceEntityId, Guid CounterpartyEntityId,
+    Guid AccountingArrangementId, Guid PostingArrangementRevisionId,
+    Guid AgreementId, int PostingAgreementVersion, string PostingAgreementPayloadHash,
+    string TransactionId, DateOnly PostingDate, IntercompanyAccountRoleDto SourceRole,
+    string MonetaryAccountNodeId, string OperatingAccountNodeId, string FunctionalCurrency,
+    [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal FunctionalAmount,
+    IntercompanyAccrualPreviewDto Computation, IntercompanyAccrualPrincipalEvidenceDto Principal,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ConsolidationFxAmountDto? Fx = null);
+
+/// <summary>Preview and draft share one shape so the operator reviews exactly what would be retained.</summary>
+public sealed record IntercompanyAccrualProposalDto(IntercompanyAccrualPreviewDto Computation,
+    IReadOnlyList<string> Diagnostics,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IntercompanyAccrualEvidenceDto? Evidence = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? EvidenceDigest = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ManualJournalEntryDraftDto? Draft = null)
+{
+    [JsonIgnore] public bool IsReady => Computation.IsReady && Evidence is not null && Draft is not null;
+}
+
+/// <summary>Retained accrual provenance stays bound to the financial lines through review and posting.</summary>
+public static class IntercompanyAccrualEvidenceGuard
+{
+    public const string EvidenceTag = "intercompany.accrualEvidence.v1";
+    public const string DigestTag = "intercompany.accrualEvidence.sha256";
+    public const string TransactionPrefix = "loan-interest:";
+
+    /// <summary>Tag the workbench puts on a journal posted from a counterpart proposal draft.</summary>
+    public const string CounterpartOriginTag = "intercompany.proposalId";
+
+    /// <summary>A correction is a different journal and needs its own retry-stable posting identity.</summary>
+    public static string CorrectionKey(Guid postedJournalEntryId, Guid correctionJournalEntryId)
+        => $"intercompany-accrual-correction:{postedJournalEntryId:D}:{correctionJournalEntryId:D}";
+
+    /// <summary>
+    /// A recomputation after a reversal is a new economic event of the same window: its generation suffix keeps
+    /// counterpart delivery from mistaking the reversed original's counterpart for an existing booking.
+    /// </summary>
+    public static string TransactionId(DateOnly accrualFrom, DateOnly accrualTo, int generation = 0)
+        => $"{TransactionPrefix}{accrualFrom:yyyyMMdd}-{accrualTo:yyyyMMdd}"
+            + (generation == 0 ? string.Empty : FormattableString.Invariant($"#g{generation}"));
+
+    /// <summary>Recovers the half-open accrual window a retained transaction identity declares.</summary>
+    public static bool TryParseWindow(string? transactionId, out DateOnly accrualFrom, out DateOnly accrualTo)
+    {
+        accrualFrom = accrualTo = default;
+        if (transactionId is null || !transactionId.StartsWith(TransactionPrefix, StringComparison.Ordinal))
+            return false;
+        var parts = transactionId[TransactionPrefix.Length..].Split('#')[0].Split('-');
+        return parts.Length == 2
+            && DateOnly.TryParseExact(parts[0], "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out accrualFrom)
+            && DateOnly.TryParseExact(parts[1], "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out accrualTo)
+            && accrualFrom < accrualTo;
+    }
+
+    public static IntercompanyAccrualEvidenceDto? Deserialize(string evidenceJson)
+        => JsonSerializer.Deserialize(evidenceJson, IntercompanyAccrualJsonContext.Default.IntercompanyAccrualEvidenceDto);
+    /// <summary>Canonical text of the principal facts, for comparing a rebuilt reading with the retained one.</summary>
+    public static string Serialize(IntercompanyAccrualPrincipalEvidenceDto principal)
+        => JsonSerializer.Serialize(principal, IntercompanyAccrualJsonContext.Default.IntercompanyAccrualPrincipalEvidenceDto);
+    public static string Serialize(IntercompanyAccrualEvidenceDto evidence)
+        => JsonSerializer.Serialize(evidence, IntercompanyAccrualJsonContext.Default.IntercompanyAccrualEvidenceDto);
+    public static string Digest(string evidenceJson) => Sha256Digest.ComputeUtf8(evidenceJson);
+
+    public static bool IsAccrualDraft(ManualJournalEntryDraftDto draft)
+        => draft.IntercompanyAccrualEvidenceJson is not null || draft.IntercompanyAccrualEvidenceDigest is not null;
+
+    /// <summary>
+    /// True only for the draft the computation was retained for. A reversal or rebook clones the provenance
+    /// under a new journal identity and is a correction, not a new accrual of the window.
+    /// </summary>
+    public static bool IsOriginalAccrualDraft(ManualJournalEntryDraftDto draft)
+    {
+        if (string.IsNullOrWhiteSpace(draft.IntercompanyAccrualEvidenceJson))
+            return false;
+        try
+        {
+            return JsonSerializer.Deserialize(draft.IntercompanyAccrualEvidenceJson,
+                IntercompanyAccrualJsonContext.Default.IntercompanyAccrualEvidenceDto)?.DraftId == draft.JournalEntryId;
+        }
+        catch (JsonException) { return false; }
+    }
+
+    /// <summary>Null when the draft still states exactly the retained computation; otherwise the refusal.</summary>
+    public static string? Validate(ManualJournalEntryDraftDto draft)
+    {
+        ArgumentNullException.ThrowIfNull(draft);
+        if (string.IsNullOrWhiteSpace(draft.IntercompanyAccrualEvidenceJson)
+            || !Sha256Digest.IsCanonical(draft.IntercompanyAccrualEvidenceDigest)
+            || !Sha256Digest.FixedEquals(draft.IntercompanyAccrualEvidenceDigest, Digest(draft.IntercompanyAccrualEvidenceJson)))
+            return "Accrual provenance is missing or differs from the retained server computation.";
+        IntercompanyAccrualEvidenceDto? evidence;
+        try
+        { evidence = JsonSerializer.Deserialize(draft.IntercompanyAccrualEvidenceJson, IntercompanyAccrualJsonContext.Default.IntercompanyAccrualEvidenceDto); }
+        catch (JsonException) { return "Accrual provenance is invalid."; }
+        if (evidence is null || evidence.RuleVersion != IntercompanyAccrualRules.RuleVersion
+            || evidence.Computation is not { IsReady: true, Amount: { } amount } || evidence.Principal is null)
+            return "Accrual provenance uses an unsupported calculation rule.";
+        // A reversal or rebook of a posted accrual is a different journal; its inverse is proved by the
+        // correction workflow against the immutable original, not by restating the original computation.
+        if (evidence.DraftId != draft.JournalEntryId)
+            return null;
+        if (evidence.SourceBookId != draft.LedgerBookId || evidence.PostingDate != draft.AccountingDate
+            || !string.Equals(evidence.FunctionalCurrency, draft.Currency, StringComparison.Ordinal)
+            || !string.Equals(evidence.TenantId, draft.TenantId, StringComparison.Ordinal))
+            return "The accrual draft's book, date, currency or tenant differs from the retained computation.";
+        if (draft.Lines.Count != 2 || draft.Lines[0].Side == draft.Lines[1].Side)
+            return "An accrual draft carries exactly the computed debit and credit; edit the source facts and recompute instead.";
+        // The lender debits its interest receivable; the borrower credits its interest payable. Swapping both
+        // sides keeps the journal balanced and the amounts equal, so direction is bound explicitly.
+        var monetarySide = evidence.SourceRole == IntercompanyAccountRoleDto.Receivable
+            ? AccountingTemplateLineSideDto.Debit : AccountingTemplateLineSideDto.Credit;
+        var monetary = draft.Lines.Where(line => line.Dimensions?.ChartAccountNodeId == evidence.MonetaryAccountNodeId).ToArray();
+        var operating = draft.Lines.Where(line => line.Dimensions?.ChartAccountNodeId == evidence.OperatingAccountNodeId).ToArray();
+        if (evidence.MonetaryAccountNodeId == evidence.OperatingAccountNodeId || monetary.Length != 1 || operating.Length != 1
+            || monetary[0].Side != monetarySide || operating[0].Side == monetarySide)
+            return "Accrual lines differ from the retained lending direction or accounts.";
+        foreach (var line in draft.Lines)
+        {
+            var dimensions = line.Dimensions;
+            var original = line.TransactionCurrency;
+            if (line.Amount != evidence.FunctionalAmount || !string.Equals(line.Currency, evidence.FunctionalCurrency, StringComparison.Ordinal)
+                || (original?.Amount ?? line.Amount) != amount
+                || !string.Equals(original?.Currency ?? line.Currency, evidence.Computation.Currency, StringComparison.Ordinal)
+                || dimensions is null || dimensions.IntercompanyAgreementId != evidence.AgreementId
+                || dimensions.IntercompanyAgreementVersion != evidence.PostingAgreementVersion
+                || dimensions.EntityId != evidence.SourceEntityId.ToString("D")
+                || dimensions.CounterpartyId != evidence.CounterpartyEntityId.ToString("D")
+                || (dimensions.AccountingArrangementId is { } arrangement
+                    && (arrangement != evidence.AccountingArrangementId.ToString("D")
+                        || dimensions.AccountingArrangementRevisionId != evidence.PostingArrangementRevisionId.ToString("D")
+                        || dimensions.IntercompanyTransactionId != evidence.TransactionId)))
+                return "Accrual lines differ from the retained amount, parties, agreement version or profile revision.";
+        }
+        return draft.Lines.Any(line => line.Dimensions?.AccountingArrangementId is not null) ? null
+            : "An accrual draft requires its reviewed loan-interest profile attribution.";
+    }
+}
+
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    PropertyNameCaseInsensitive = true)]
+[JsonSerializable(typeof(IntercompanyAccrualRequestDto))]
+[JsonSerializable(typeof(CreateIntercompanyAccrualDraftRequest))]
+[JsonSerializable(typeof(IntercompanyAccrualEvidenceDto))]
+[JsonSerializable(typeof(IntercompanyAccrualPrincipalEvidenceDto))]
+[JsonSerializable(typeof(IntercompanyAccrualProposalDto))]
+[JsonSerializable(typeof(IntercompanyAccrualPreviewDto))]
+public partial class IntercompanyAccrualJsonContext : JsonSerializerContext;

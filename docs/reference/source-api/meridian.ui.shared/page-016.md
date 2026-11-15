@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingDeliveryDispatcher
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryDispatcher</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:13](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L13).
+
+Queues reporting delivery jobs, dispatches due work, and retains provider receipts.
+
+```csharp
+public sealed class ReportingDeliveryDispatcher
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingDeliveryDispatcher(IReportingDeliveryStore store, IEnumerable&lt;IReportingDeliveryTransport&gt; transports, IReportingReleaseAuthorizationVerifier releaseVerifier, TimeProvider? timeProvider = null, ReportingDeliveryDispatcherOptions? options = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L22) |  |
+| <code>public async Task&lt;ReportingDeliveryJobRecord&gt; QueueAsync(ReportingDeliveryQueueRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L39) |  |
+| <code>public bool IsTransportConfigured(string transportId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:122](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L122) | True only when a concrete transport adapter is present in this process. |
+| <code>public IReadOnlyCollection&lt;string&gt; ConfiguredTransportIds =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:126](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L126) | Configured adapter identifiers, never provider credentials or endpoints. |
+| <code>public async Task&lt;IReadOnlyList&lt;ReportingDeliveryJobRecord&gt;&gt; DispatchDueAsync(string leaseOwner, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:129](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L129) |  |
+| <code>public async Task&lt;ReportingDeliveryJobRecord&gt; AppendReceiptAsync(string jobId, string tenantId, ReportingDeliveryReceipt receipt, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:156](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L156) |  |
+| <code>public static string BuildIdempotencyKey(string tenantId, string packageId, string distributionId, string transportId, string releaseVersion, string artifactManifestHash, ReportingDeliveryPayload? payload = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:288](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L288) |  |
+
 ## ReportingDeliveryReadModelSecurity
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryReadModelSecurity</code>. Kind: `class`.
@@ -857,21 +881,3 @@ Declared public members:
 | <code>public ReportingSecureDistributionHostedService(ReportingDeliveryDispatcher dispatcher, ReportingScheduleService scheduleService, ReportingSecureDistributionApplicationService applicationService, SecureReportingDistributionOptions options, ILogger&lt;ReportingSecureDistributionHostedService&gt; logger, ReportingDeliveryWorkerReadinessState? readiness);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs:55](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs#L55) |  |
 | <code>public override Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs:127](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs#L127) |  |
 | <code>public override async Task StopAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs:133](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs#L133) |  |
-
-## ReportingSecureDistributionServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingSecureDistributionServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionServiceCollectionExtensions.cs:13](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionServiceCollectionExtensions.cs#L13).
-
-Registers the application-level secure distribution graph. Durable governance, artifact, catalog, audit, grant, and delivery stores remain deployment-owned prerequisites.
-
-```csharp
-public static class ReportingSecureDistributionServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddSecureReportingDistribution(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionServiceCollectionExtensions.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionServiceCollectionExtensions.cs#L15) |  |

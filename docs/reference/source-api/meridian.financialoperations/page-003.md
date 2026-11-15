@@ -6,6 +6,124 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingPostingCandidatePostService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingPostingCandidatePostService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.ApprovalBoundary.cs:7](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.ApprovalBoundary.cs#L7).
+
+```csharp
+public sealed partial class AccountingPostingCandidatePostService
+```
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.BondAcquisition.cs:8](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.BondAcquisition.cs#L8).
+
+```csharp
+public sealed partial class AccountingPostingCandidatePostService
+```
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CapitalReturn.cs:8](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CapitalReturn.cs#L8).
+
+```csharp
+public sealed partial class AccountingPostingCandidatePostService
+```
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs:23](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs#L23).
+
+```csharp
+public sealed partial class AccountingPostingCandidatePostService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PostedPostingRuleJournalCandidateResultDto&gt; PostAttestedCashDividendCandidateAsync(PostAttestedCashDividendPostingCandidateRequestDto request, CorporateActionCashDividendPostingLease lease, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs:25](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs#L25) |  |
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs:31](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs#L31).
+
+Posts reviewed accounting candidates while checking approval, reference, and ledger authority.
+
+```csharp
+public sealed partial class AccountingPostingCandidatePostService : IAccountingPostingCandidatePostService, IAccountingCashDividendAttestedPostService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AccountingPostingCandidatePostService(IAccountingPostingCandidateWriteBuilder candidateBuilder, ILedgerJournalStore? journalStore = null, IAtomicTaxLotJournalStore? atomicTaxLotStore = null, IAssetAccountingEventProjectionStore? assetAccountingEventStore = null, IAccountingPostingCandidateAuthorityBuilder? authorityBuilder = null, IBondCalculationPolicy? bondCalculationPolicy = null, IBondSettlementConsiderationService? bondSettlementConsiderationService = null, Func&lt;CancellationToken, Task&gt;? termsCapabilityCheck = null, IInstrumentPositionProjectionStore? instrumentPositions = null);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs:43](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs#L43) |  |
+| <code>public async Task&lt;PostedPostingRuleJournalCandidateResultDto&gt; PostCandidateAsync(PostPostingRuleJournalCandidateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs:67](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs#L67) |  |
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.Dimensions.cs:6](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.Dimensions.cs#L6).
+
+```csharp
+public sealed partial class AccountingPostingCandidatePostService
+```
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.FactorPaydown.cs:8](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.FactorPaydown.cs#L8).
+
+```csharp
+public sealed partial class AccountingPostingCandidatePostService
+```
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.FactorPaydownReplay.cs:8](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.FactorPaydownReplay.cs#L8).
+
+```csharp
+public sealed partial class AccountingPostingCandidatePostService
+```
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.JournalIntentBinding.cs:8](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.JournalIntentBinding.cs#L8).
+
+```csharp
+public sealed partial class AccountingPostingCandidatePostService
+```
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.ReferenceAuthority.cs:5](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.ReferenceAuthority.cs#L5).
+
+```csharp
+public sealed partial class AccountingPostingCandidatePostService
+```
+
+## AccountingPostingCandidateService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingPostingCandidateService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.BondAcquisition.cs:7](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.BondAcquisition.cs#L7).
+
+```csharp
+public sealed partial class AccountingPostingCandidateService
+```
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.BondIncome.cs:10](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.BondIncome.cs#L10).
+
+```csharp
+public sealed partial class AccountingPostingCandidateService
+```
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.CashFlow.cs:7](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.CashFlow.cs#L7).
+
+```csharp
+public sealed partial class AccountingPostingCandidateService
+```
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:70](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L70).
+
+Builds reviewable journal candidates and candidate writes from accounting-event evidence.
+
+```csharp
+public sealed partial class AccountingPostingCandidateService : IAccountingPostingCandidateService, IAccountingPostingCandidateWriteBuilder, IAccountingPostingCandidateAuthorityBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AccountingPostingCandidateService(IAccountingConfigurationService configurationService, IAccountingJournalDraftService journalDraftService, ILedgerBookService? ledgerBookService = null, IAccountingPolicyService? accountingPolicyService = null, IAssetOperationsQueryService? assetOperationsQueryService = null, IFactorPaydownProjectionService? factorPaydownProjector = null, ILedgerJournalStore? taxLotStore = null, Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore? instrumentPositions = null);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:84](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L84) |  |
+| <code>public async Task&lt;PostingRuleJournalCandidateResultDto&gt; BuildCandidateAsync(PostingRuleJournalCandidateRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:104](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L104) |  |
+| <code>public async Task&lt;AccountingPostingCandidateWriteResult&gt; BuildCandidateWriteAsync(PostingRuleJournalCandidateRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:109](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L109) |  |
+| <code>public async Task&lt;AccountingPostingCandidateWriteResult&gt; BuildAuthoritativeCandidateWriteAsync(PostingRuleJournalCandidateRequestDto request, AssetAccountingCandidateAuthorityContext authority, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:114](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L114) |  |
+
 ## AccountingPostingCandidateWriteResult
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingPostingCandidateWriteResult</code>. Kind: `record`.
@@ -855,34 +973,4 @@ Request to book a trade on trade date (T+0).
 
 ```csharp
 public sealed record TradeBookingRequest(string AccountId, string Symbol, ReconciliationDimension Dimension, decimal Quantity, decimal Amount, string Currency, DateOnly TradeDate, int SettlementCycleDays, string BookedBy, string? BookingId = null, DateTimeOffset? BookedAtUtc = null);
-```
-
-## TrueBreakEscalation
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TrueBreakEscalation</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:236](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L236).
-
-An escalation raised for a reconciliation break the platform classified as a genuine (BreakClassification.TrueBreak) or potential break. Carries an escalation level that advances when its SLA timer breaches, plus resolution provenance.
-
-```csharp
-public sealed record TrueBreakEscalation(string EscalationId, string BreakId, string SubjectId, BreakClassification Classification, ReconciliationBreakSeverity Severity, int Level, string AssignedTo, string Reason, TrueBreakEscalationStatus Status, DateTimeOffset RaisedAtUtc, WorkflowSlaTimer? Timer = null, DateTimeOffset? ResolvedAtUtc = null, string? ResolvedBy = null, string? ResolutionNote = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsOpen =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:253](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L253) | True when the escalation is still open or escalated (not yet resolved). |
-
-## TrueBreakEscalationRequest
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TrueBreakEscalationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:213](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L213).
-
-Request to raise a true-break escalation.
-
-```csharp
-public sealed record TrueBreakEscalationRequest(string BreakId, BreakClassification Classification, ReconciliationBreakSeverity Severity, string Reason, string AssignedTo, WorkflowSlaPolicy? SlaPolicy = null, string? SubjectId = null, DateTimeOffset? RaisedAtUtc = null);
 ```

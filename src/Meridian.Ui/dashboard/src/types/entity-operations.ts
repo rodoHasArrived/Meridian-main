@@ -19,7 +19,7 @@ export interface EntityOperationScope {
   graph: EntityOperationGraph | null;
   capabilities: EntityOperationCapabilities;
 }
-export type AccountingArrangementTemplate = "Loan" | "CostRecharge" | "ManagementFee" | "ExpenseShare" | "CashSweep" | "Guarantee" | "Manual";
+export type AccountingArrangementTemplate = "Loan" | "CostRecharge" | "ManagementFee" | "ExpenseShare" | "CashSweep" | "Guarantee" | "Manual" | "LoanInterest";
 export type AccountingArrangementStatus = "Draft" | "Submitted" | "Approved" | "Rejected" | "Retired";
 export interface AccountingArrangementPartyMapping {
   entityId: string; ledgerBookId: string; receivableAccountNodeId: string; payableAccountNodeId: string;

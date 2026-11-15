@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingSecureDistributionServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingSecureDistributionServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionServiceCollectionExtensions.cs:13](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionServiceCollectionExtensions.cs#L13).
+
+Registers the application-level secure distribution graph. Durable governance, artifact, catalog, audit, grant, and delivery stores remain deployment-owned prerequisites.
+
+```csharp
+public static class ReportingSecureDistributionServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddSecureReportingDistribution(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionServiceCollectionExtensions.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionServiceCollectionExtensions.cs#L15) |  |
+
 ## ReportingStarterKitService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingStarterKitService</code>. Kind: `class`.
@@ -821,26 +839,3 @@ Declared public members:
 | <code>public const string QualityRunId = &quot;security-master-quality&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:45](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L45) | Canonical run identifier used by genuinely owner-scoped Security Master quality cases. |
 | <code>public SecurityMasterExceptionCaseworkService(IReconciliationBreakQueueRepository? breakQueueRepository, ILogger&lt;SecurityMasterExceptionCaseworkService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:49](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L49) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;&gt; GetAgingExceptionsAsync(ReconciliationBreakQueueScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:60](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L60) | Returns exact-scope open Security Master cases whose SLA deadline has elapsed. |
-
-## SecurityMasterExceptionSlaConfig
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterExceptionSlaConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:10](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L10).
-
-Per-category SLA configuration for Security Master exceptions.
-
-```csharp
-public sealed record SecurityMasterExceptionSlaConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int IdentifierConflictDays { get; init; } = 5;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:13](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L13) | Days to resolve an identifier conflict before SLA breach. |
-| <code>public int IncompleteRecordDays { get; init; } = 3;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:16](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L16) | Days to resolve an incomplete security record before SLA breach. |
-| <code>public int NewSecurityUnresolvedDays { get; init; } = 1;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:19](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L19) | Days to create a new unresolved security before SLA breach. |
-| <code>public int QualityHardBlockDays { get; init; } = 1;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:22](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L22) | Days to resolve a HardBlock data quality violation before SLA breach. |
-| <code>public int QualityErrorDays { get; init; } = 3;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:25](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L25) | Days to resolve an Error data quality violation before SLA breach. |
-| <code>public int QualityWarningDays { get; init; } = 5;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:28](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L28) | Days to resolve a Warning data quality violation before SLA breach. |
