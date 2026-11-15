@@ -22,4 +22,13 @@ public sealed class DirectLendingOptions
     public int ReplayBatchSize { get; set; } = 250;
 
     public bool RequireSecurityMasterReferenceForDurableWrites { get; set; }
+
+    /// <summary>Explicit book for configured single-currency accounting; null retains legacy period selection.</summary>
+    public Guid? LedgerBookId { get; set; }
+
+    /// <summary>Pinned chart workspace version required by configured loan posting.</summary>
+    public string? LedgerChartMappingRevision { get; set; }
+
+    /// <summary>Maps economic account roles (for example LoanPrincipal) to configured chart paths.</summary>
+    public Dictionary<string, string> LedgerAccountPaths { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }

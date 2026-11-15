@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HmacReportingDeliveryGrantCredentialDeriver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.HmacReportingDeliveryGrantCredentialDeriver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L34).
+
+Derives repeatable reporting delivery access credentials from a binding key using HMAC.
+
+```csharp
+public sealed class HmacReportingDeliveryGrantCredentialDeriver : IReportingDeliveryGrantCredentialDeriver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public HmacReportingDeliveryGrantCredentialDeriver(ReadOnlySpan&lt;byte&gt; key);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L39) |  |
+| <code>public ReportingDerivedAccessGrantCredential Derive(string bindingKey);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:49](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L49) |  |
+
 ## HmacReportingProviderReceiptAuthenticator
 
 Qualified name: <code>Meridian.Ui.Shared.Services.HmacReportingProviderReceiptAuthenticator</code>. Kind: `class`.
@@ -941,21 +960,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:13](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L13) |  |
 | <code>Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:18](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L18) |  |
-
-## IOperationsReportPackAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IOperationsReportPackAuthority</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:14](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L14).
-
-Resolves authoritative report-pack readiness for an Operations Continuity workflow.
-
-```csharp
-public interface IOperationsReportPackAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OperationsReportPackReadinessDto&gt; ResolveAsync(OperationsContinuityWorkflowDto workflow, string? packageId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:16](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L16) |  |

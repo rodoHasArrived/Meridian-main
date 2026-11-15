@@ -6,6 +6,111 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UpsertAccountingRuleTestCaseRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.UpsertAccountingRuleTestCaseRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:707](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L707).
+
+```csharp
+public sealed record UpsertAccountingRuleTestCaseRequest(string FundProfileId, AccountingRuleTestCaseDto TestCase, string Actor, Guid? LedgerBookId = null, string? CorrelationId = null, IReadOnlyList<string>? EvidenceLinks = null, string? CompanyId = null, IReadOnlyList<string>? ReportGroupPrincipalIds = null, string? TenantId = null);
+```
+
+## UpsertChartOfAccountsNodeRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.UpsertChartOfAccountsNodeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:653](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L653).
+
+```csharp
+public sealed record UpsertChartOfAccountsNodeRequest(string FundProfileId, ChartOfAccountsNodeDto Node, string Actor, string? CorrelationId = null, IReadOnlyList<string>? EvidenceLinks = null, string? CompanyId = null, IReadOnlyList<string>? ReportGroupPrincipalIds = null, Guid? LedgerBookId = null, string? TenantId = null);
+```
+
+## UpsertClosePeriodPlanConfigurationRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.UpsertClosePeriodPlanConfigurationRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:234](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L234).
+
+```csharp
+public sealed record UpsertClosePeriodPlanConfigurationRequestDto(Guid WorkflowId, MaterialityPolicyDto? MaterialityPolicy = null, IReadOnlyList<CloseTaskConfigurationDto>? TaskConfigurations = null, string? Actor = null, IReadOnlyList<string>? EvidenceLinks = null, string? CorrelationId = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, DateTimeOffset? ExpectedConfiguredAtUtc = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore] public ClosePlanPreparationLineageDto? Preparation { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:246](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L246) |  |
+| <code>public IReadOnlyList&lt;CloseTaskConfigurationDto&gt; TaskConfigurations { get; init; } = TaskConfigurations??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:248](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L248) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:251](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L251) |  |
+
+## UpsertJournalEntryTemplateRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.UpsertJournalEntryTemplateRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:664](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L664).
+
+```csharp
+public sealed record UpsertJournalEntryTemplateRequest(string FundProfileId, JournalEntryTemplateDto Template, string Actor, string? CorrelationId = null, IReadOnlyList<string>? EvidenceLinks = null, string? CompanyId = null, IReadOnlyList<string>? ReportGroupPrincipalIds = null, Guid? LedgerBookId = null, string? TenantId = null);
+```
+
+## UpsertPostingRuleRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.UpsertPostingRuleRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:675](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L675).
+
+```csharp
+public sealed record UpsertPostingRuleRequest(string FundProfileId, PostingRuleDto Rule, string Actor, string? CorrelationId = null, IReadOnlyList<string>? EvidenceLinks = null, string? CompanyId = null, IReadOnlyList<string>? ReportGroupPrincipalIds = null, Guid? LedgerBookId = null, string? TenantId = null);
+```
+
+## ValidateManualJournalEntryDraftRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.ValidateManualJournalEntryDraftRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:957](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L957).
+
+```csharp
+public sealed record ValidateManualJournalEntryDraftRequest(ManualJournalEntryDraftDto Draft, string Actor, string? CorrelationId = null, bool PeriodIsLocked = false, Guid? LedgerBookId = null, string? TenantId = null, string? CompanyId = null);
+```
+
+## ILifecycleReceiptStore
+
+Qualified name: <code>Meridian.Contracts.Lifecycle.ILifecycleReceiptStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Lifecycle/ILifecycleReceiptStore.cs:6](../../../../src/Meridian.Contracts/Lifecycle/ILifecycleReceiptStore.cs#L6).
+
+Durable boundary for host and combined lifecycle receipts.
+
+```csharp
+public interface ILifecycleReceiptStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask WriteHostReceiptAsync(LifecycleShutdownReceiptDto receipt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Lifecycle/ILifecycleReceiptStore.cs:8](../../../../src/Meridian.Contracts/Lifecycle/ILifecycleReceiptStore.cs#L8) |  |
+| <code>ValueTask&lt;LifecycleShutdownReceiptDto?&gt; ReadLatestHostReceiptAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Lifecycle/ILifecycleReceiptStore.cs:12](../../../../src/Meridian.Contracts/Lifecycle/ILifecycleReceiptStore.cs#L12) |  |
+| <code>ValueTask WriteSessionReceiptAsync(LifecycleSessionReceiptDto receipt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Lifecycle/ILifecycleReceiptStore.cs:15](../../../../src/Meridian.Contracts/Lifecycle/ILifecycleReceiptStore.cs#L15) |  |
+
+## LifecycleCheckRequirement
+
+Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleCheckRequirement</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:35](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L35).
+
+```csharp
+public enum LifecycleCheckRequirement
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Required</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:37](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L37) |  |
+| <code>Degradable</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:38](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L38) |  |
+
 ## LifecycleCheckStatus
 
 Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleCheckStatus</code>. Kind: `enum`.
@@ -934,161 +1039,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;OperationEvidenceReference&gt; Evidence { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:74](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L74) |  |
 | <code>public IReadOnlyList&lt;OperationalCaseRecoveryAttempt&gt; RecoveryAttempts { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:75](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L75) |  |
 | <code>public VerifiedOperationOutcome? TerminalOutcome { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:76](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L76) |  |
-
-## OperationalCaseHistoryHashing
-
-Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseHistoryHashing</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:7](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L7).
-
-Canonical hash calculation for one persisted case-history record.
-
-```csharp
-public static class OperationalCaseHistoryHashing
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int MaxDataEntries = 64;</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:9](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L9) |  |
-| <code>public const int MaxDataKeyLength = 128;</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:10](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L10) |  |
-| <code>public const int MaxDataValueLength = 1_048_576;</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:11](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L11) |  |
-| <code>public const int MaxDataTotalCharacters = 2_097_152;</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:12](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L12) |  |
-| <code>public static string ComputeRecordHashSha256(OperationalCaseHistoryRecord record);</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:14](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L14) |  |
-| <code>public static bool HasValidRecordHash(OperationalCaseHistoryRecord record) =&gt; …;</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:40](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L40) |  |
-| <code>public static IReadOnlyList&lt;string&gt; ValidateData(IReadOnlyDictionary&lt;string, string&gt;? data);</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:46](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L46) |  |
-
-## OperationalCaseHistoryQuery
-
-Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseHistoryQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:107](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L107).
-
-```csharp
-public sealed record OperationalCaseHistoryQuery
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? CaseId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:109](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L109) |  |
-| <code>public string? CaseType { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:110](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L110) |  |
-| <code>public long? AfterSequence { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:111](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L111) |  |
-
-## OperationalCaseHistoryRecord
-
-Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseHistoryRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:79](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L79).
-
-```csharp
-public sealed record OperationalCaseHistoryRecord
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string CaseId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:81](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L81) |  |
-| <code>public required string CaseType { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:82](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L82) |  |
-| <code>public required string HistoryEventId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:83](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L83) |  |
-| <code>public required string EventType { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:84](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L84) |  |
-| <code>public required long Sequence { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:85](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L85) |  |
-| <code>public string? PreviousRecordHashSha256 { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:86](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L86) |  |
-| <code>public required string RecordHashSha256 { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:87](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L87) |  |
-| <code>public required DateTimeOffset OccurredAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:88](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L88) |  |
-| <code>public required DateTimeOffset PersistedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:89](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L89) |  |
-| <code>public required string ActorId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:90](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L90) |  |
-| <code>public required string Reason { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:91](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L91) |  |
-| <code>public required string CorrelationId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:92](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L92) |  |
-| <code>public required string InputHashSha256 { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:93](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L93) |  |
-| <code>public IReadOnlyDictionary&lt;string, string&gt; Data { get; init; } = new Dictionary&lt;string, string&gt;(StringComparer.Ordinal);</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:94](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L94) |  |
-| <code>public OperationalCaseStateTransition? Transition { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:96](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L96) |  |
-| <code>public OperationalCaseAssignment? Assignment { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:97](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L97) |  |
-| <code>public IReadOnlyList&lt;OperationalCaseRetry&gt; Retries { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:98](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L98) |  |
-| <code>public IReadOnlyList&lt;OperationalCaseException&gt; Exceptions { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:99](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L99) |  |
-| <code>public IReadOnlyList&lt;OperationalCaseApproval&gt; Approvals { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:100](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L100) |  |
-| <code>public IReadOnlyList&lt;OperationArtifactReference&gt; Artifacts { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:101](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L101) |  |
-| <code>public IReadOnlyList&lt;OperationEvidenceReference&gt; Evidence { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:102](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L102) |  |
-| <code>public IReadOnlyList&lt;OperationalCaseRecoveryAttempt&gt; RecoveryAttempts { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:103](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L103) |  |
-| <code>public VerifiedOperationOutcome? TerminalOutcome { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:104](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L104) |  |
-
-## OperationalCaseRecoveryAttempt
-
-Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseRecoveryAttempt</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:44](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L44).
-
-```csharp
-public sealed record OperationalCaseRecoveryAttempt
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string RecoveryActionId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:46](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L46) |  |
-| <code>public required int Attempt { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:47](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L47) |  |
-| <code>public required DateTimeOffset StartedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:48](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L48) |  |
-| <code>public DateTimeOffset? CompletedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:49](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L49) |  |
-| <code>public required string Result { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:50](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L50) |  |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceIds { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:51](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L51) |  |
-| <code>public IReadOnlyList&lt;string&gt; ArtifactIds { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:52](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L52) |  |
-
-## OperationalCaseRetry
-
-Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseRetry</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:18](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L18).
-
-```csharp
-public sealed record OperationalCaseRetry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required int Attempt { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:20](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L20) |  |
-| <code>public required DateTimeOffset AttemptedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:21](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L21) |  |
-| <code>public required string Reason { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:22](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L22) |  |
-
-## OperationalCaseStateTransition
-
-Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseStateTransition</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:3](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L3).
-
-```csharp
-public sealed record OperationalCaseStateTransition
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? PreviousState { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:5](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L5) |  |
-| <code>public required string CurrentState { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:6](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L6) |  |
-| <code>public required DateTimeOffset TransitionedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:7](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L7) |  |
-
-## OperationArtifactReference
-
-Qualified name: <code>Meridian.Contracts.Operations.OperationArtifactReference</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs:50](../../../../src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs#L50).
-
-```csharp
-public sealed record OperationArtifactReference(string ArtifactId, string FileName, string ContentType, long ByteLength, string ContentHashSha256, string? Uri = null, string? PreviewUri = null);
-```
-
-## OperationEvidenceReference
-
-Qualified name: <code>Meridian.Contracts.Operations.OperationEvidenceReference</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs:42](../../../../src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs#L42).
-
-```csharp
-public sealed record OperationEvidenceReference(string EvidenceId, string Kind, string Description, string? Uri = null, string? ContentHashSha256 = null, DateTimeOffset? CapturedAtUtc = null);
-```

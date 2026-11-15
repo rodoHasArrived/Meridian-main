@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IOperationsReportPackAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IOperationsReportPackAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:14](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L14).
+
+Resolves authoritative report-pack readiness for an Operations Continuity workflow.
+
+```csharp
+public interface IOperationsReportPackAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OperationsReportPackReadinessDto&gt; ResolveAsync(OperationsContinuityWorkflowDto workflow, string? packageId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:16](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L16) |  |
+
 ## IPrivateCapitalLifecycleSource
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IPrivateCapitalLifecycleSource</code>. Kind: `interface`.
@@ -270,7 +288,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1607](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1607).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1609](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1609).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -282,7 +300,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1609](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1609) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1611](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1611) |  |
 
 ## IReportingPrimaryDocumentRenderer
 
@@ -633,6 +651,24 @@ Declared public members:
 | <code>Task&lt;StatementAccountingScope&gt; ResolveAccountingScopeAsync(StatementReconciliationIntakeScopeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:43](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L43) |  |
 | <code>Task&lt;StatementReconciliationIntakeReceipt&gt; PublishAsync(string statementWorkflowId, StatementImportCommitResultDto import, StatementAccountingScope accountingScope, string tenantId, string companyId, string actor, string sourceInstitution, IReadOnlyList&lt;string&gt; evidenceReferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:47](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L47) |  |
 
+## IThreeWayReconciliationSourceReader
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IThreeWayReconciliationSourceReader</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:29](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L29).
+
+```csharp
+public interface IThreeWayReconciliationSourceReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ThreeWayReconciliationScopeDto&gt; AuthorizeAsync(Guid accountId, ReconciliationBreakQueueScope accessScope, Guid ledgerBookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:31](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L31) |  |
+| <code>Task CaptureAsync(ThreeWayReconciliationScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:33](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L33) |  |
+| <code>Task&lt;IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt;&gt; ReadAsync(ThreeWayReconciliationScopeDto scope, DateTimeOffset cutoffUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:34](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L34) |  |
+
 ## ITradingOperatorReadinessProvider
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ITradingOperatorReadinessProvider</code>. Kind: `interface`.
@@ -890,31 +926,3 @@ Declared public members:
 | <code>public LedgerReportingSchedulePeriodResolver(Func&lt;Guid, CancellationToken, Task&lt;LedgerBookRecord?&gt;&gt; getBook, Func&lt;string, CancellationToken, Task&lt;IReadOnlyList&lt;LedgerBookRecord&gt;&gt;&gt; listFundBooks, Func&lt;Guid, CancellationToken, Task&lt;IReadOnlyList&lt;LedgerAccountingPeriod&gt;&gt;&gt; listBookPeriods);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:63](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L63) | Lookup-delegate constructor; lets the selection rules be exercised without a full store. |
 | <code>public async Task&lt;ReportingSchedulePeriodMatch?&gt; ResolvePeriodAsync(ReportingRunParametersDto parameters, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:73](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L73) |  |
 | <code>public async Task&lt;ReportingSchedulePeriodMatch?&gt; ResolveNextClosePeriodAsync(ReportingRunParametersDto parameters, DateOnly currentPeriodEnd, ReportingSchedulePeriodFrequencyDto frequency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:102](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L102) |  |
-
-## LiquidityWarning
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LiquidityWarning</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:75](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L75).
-
-```csharp
-public sealed record LiquidityWarning(string AccountId, string Currency, DateOnly Date, decimal ProjectedNet, string Message);
-```
-
-## LiveBrokeragePortfolioStatus
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LiveBrokeragePortfolioStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:11](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L11).
-
-Account-scoped execution evidence; never substitutes for the accounting import projection.
-
-```csharp
-public sealed record LiveBrokeragePortfolioStatus(Guid FundAccountId, string ProviderId, string? ExternalAccountId, bool IsConnected, bool IsFresh, bool IsComplete, bool IsConsistent, bool IsReconciled, DateTimeOffset? LastAttemptAt, DateTimeOffset? LastSuccessfulSyncAt, BrokeragePortfolioSnapshotDto? Snapshot, BrokerageExecutionReconciliationReport? Reconciliation, IReadOnlyList<string> BlockingReasons)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:29](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L29) |  |

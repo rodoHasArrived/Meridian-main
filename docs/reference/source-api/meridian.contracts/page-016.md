@@ -382,6 +382,9 @@ Declared public members:
 | <code>public int OutboxPollIntervalSeconds { get; set; } = 5;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:20](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L20) |  |
 | <code>public int ReplayBatchSize { get; set; } = 250;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:22](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L22) |  |
 | <code>public bool RequireSecurityMasterReferenceForDurableWrites { get; set; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:24](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L24) |  |
+| <code>public Guid? LedgerBookId { get; set; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:27](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L27) | Explicit book for configured single-currency accounting; null retains legacy period selection. |
+| <code>public string? LedgerChartMappingRevision { get; set; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:30](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L30) | Pinned chart workspace version required by configured loan posting. |
+| <code>public Dictionary&lt;string, string&gt; LedgerAccountPaths { get; set; } = new (StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:33](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L33) | Maps economic account roles (for example LoanPrincipal) to configured chart paths. |
 
 ## DirectLendingOutboxMessageDto
 

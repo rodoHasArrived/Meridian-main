@@ -525,7 +525,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingBasisProjectionItemDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1119](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1119).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1133](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1133).
 
 ```csharp
 public sealed record AccountingBasisProjectionItemDto(AccountingBasisKindDto AccountingBasis, Guid LedgerBookId, Guid PeriodId, PostingRuleJournalCandidateResultDto Candidate, string Status, string? DisabledReason = null);
@@ -535,7 +535,7 @@ public sealed record AccountingBasisProjectionItemDto(AccountingBasisKindDto Acc
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingBasisProjectionSetDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1127](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1127).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1141](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1141).
 
 ```csharp
 public sealed record AccountingBasisProjectionSetDto(Guid SourceEventId, string FundProfileId, string SourceEventType, DateOnly EffectiveDate, decimal EventAmount, string Currency, DateTimeOffset ProjectedAtUtc, IReadOnlyList<AccountingBasisProjectionItemDto>? Items = null)
@@ -545,13 +545,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;AccountingBasisProjectionItemDto&gt; Items { get; init; } = Items??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1137](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1137) |  |
+| <code>public IReadOnlyList&lt;AccountingBasisProjectionItemDto&gt; Items { get; init; } = Items??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1151](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1151) |  |
 
 ## AccountingBasisProjectionSetRequestDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingBasisProjectionSetRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1093](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1093).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1107](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1107).
 
 ```csharp
 public sealed record AccountingBasisProjectionSetRequestDto(string FundProfileId, string SourceEventType, decimal EventAmount, string Currency, DateOnly EffectiveDate, string Actor, Guid SourceEventId, DateTimeOffset AccountingTimestamp, string Description, IReadOnlyList<AccountingBasisProjectionTargetDto> Targets, Guid? CorrelationId = null, string? CounterpartyId = null, string? InstrumentSymbol = null, TreasuryLedgerContextDto? TreasuryContext = null, IReadOnlyList<string>? EvidenceLinks = null, string? TenantId = null, string? CompanyId = null)
@@ -561,14 +561,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;AccountingBasisProjectionTargetDto&gt; Targets { get; init; } = Targets??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1112](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1112) |  |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1115](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1115) |  |
+| <code>public IReadOnlyList&lt;AccountingBasisProjectionTargetDto&gt; Targets { get; init; } = Targets??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1126](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1126) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1129](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1129) |  |
 
 ## AccountingBasisProjectionTargetDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingBasisProjectionTargetDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1085](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1085).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1099](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1099).
 
 ```csharp
 public sealed record AccountingBasisProjectionTargetDto(AccountingBasisKindDto AccountingBasis, Guid LedgerBookId, Guid PeriodId, string? PolicyId = null, AccountingTreatmentKindDto? TreatmentKind = null, LedgerDimensionSetDto? Dimensions = null);

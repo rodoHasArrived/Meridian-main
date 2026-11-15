@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Banking;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
@@ -322,6 +323,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         {
             throw new InvalidOperationException("Consolidation drafts require authoritative consolidation intake; rerun consolidation to prepare an elimination.");
         }
+        if (!trustedAutomatedIntake && request.Draft.ThreeWayFeeCorrection is not null
+            && existing?.ThreeWayFeeCorrection is null)
+            throw new InvalidOperationException("Reconciliation fee evidence requires server-authorized preparation from retained source observations.");
         EnsureAssetAccountingSaveAuthority(request.Draft, existing, trustedAutomatedIntake);
         EnsureOpeningBalanceSaveAuthority(request.Draft, existing, trustedAutomatedIntake);
         var normalizedDraft = await NormalizeAndValidateAsync(request.Draft with
@@ -331,6 +335,15 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             PriorPeriodAdjustmentSource = existing is null
                 ? (trustedAutomatedIntake ? request.Draft.PriorPeriodAdjustmentSource : null)
                 : existing.PriorPeriodAdjustmentSource,
+            DataProvenanceToken = existing?.DataProvenanceToken is { } retainedToken &&
+                Meridian.Contracts.Operations.DataProvenanceExtensions.ParseTokenOrSimulated(retainedToken).IsNonReal()
+                    ? retainedToken : request.Draft.DataProvenanceToken,
+            IsAdjustingEntry = existing?.IsAdjustingEntry == true || request.Draft.IsAdjustingEntry,
+            CurrencyEvidenceVersion = existing?.CurrencyEvidenceVersion
+                ?? (trustedAutomatedIntake && request.Draft.ThreeWayFeeCorrection is not null ? 1 : 0),
+            ThreeWayFeeCorrection = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.ThreeWayFeeCorrection : null)
+                : existing.ThreeWayFeeCorrection,
             // Automated evidence grades are server-produced accounting-control facts. A browser or
             // WPF resave may edit the draft, but cannot clear, replace, or upgrade the retained grade.
             AutomationEvidenceAssessment = existing is null
@@ -1035,6 +1048,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             }
 
             var amount = Math.Abs(line.Amount);
+            if (draft.ThreeWayFeeCorrection is not null &&
+                (!string.Equals(line.Currency, ledgerBook.BaseCurrency, StringComparison.OrdinalIgnoreCase)
+                    || line.TransactionCurrency is not null))
+                throw new InvalidOperationException("Manual journal currency differs from its functional book; explicit FX authority is required.");
             // Preserve the structured ledger-account identity (symbol / financial account) supplied by
             // automated drafts so scoped postings (for example period-close entries on broker-scoped
             // revenue) land on the scoped account and zero the scoped trial-balance row rather than an
@@ -1111,6 +1128,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         var sourceJournalEntryId = draft.ReversalOfJournalEntryId ?? draft.RebookedFromJournalEntryId;
         var idempotencyKey = NormalizeOptional(treasuryContext?.IdempotencyKey)
                              ?? $"manual-je:{ledgerBookId:N}:{draft.JournalEntryId:N}";
+        if (draft.ThreeWayFeeCorrection is { } feeCorrection)
+            idempotencyKey = "three-way-correction:" + ThreeWayFeeCorrectionIdentity.Compute(feeCorrection);
         var commandId = CreateDeterministicGuid(
             "manual-je-posting-command",
             ledgerBookId.ToString("D"),
@@ -1122,6 +1141,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         var sourceEventType = treasuryFundEventType is not null
             ? $"ManualJournalEntry:{treasuryFundEventType}"
             : null;
+        if (draft.ThreeWayFeeCorrection is not null)
+            sourceEventType = "reconciliation.missing-broker-fee";
 
         return new AccountingPostingCommandDto(
             commandId,
@@ -1131,7 +1152,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             recordedAtUtc,
             idempotencyKey,
             BuildManualPostingIntent(draft),
-            SourceEventId: draft.JournalEntryId,
+            SourceEventId: draft.ThreeWayFeeCorrection is { } fee
+                ? ThreeWayFeeCorrectionIdentity.SourceEventId(fee) : draft.JournalEntryId,
             CorrelationId: TryParseGuid(request.CorrelationId),
             CausationId: draft.JournalEntryId,
             SourceJournalEntryId: sourceJournalEntryId,
@@ -1153,7 +1175,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             LedgerBookId: ledgerBookId)
         {
             Actor = RequireText(request.Actor, nameof(request.Actor)),
-            IntercompanyFx = draft.IntercompanyFx
+            IntercompanyFx = draft.IntercompanyFx,
+            ThreeWayFeeCorrection = draft.ThreeWayFeeCorrection,
+            Provenance = string.IsNullOrWhiteSpace(draft.DataProvenanceToken) ? Meridian.Contracts.Operations.DataProvenance.Real
+                : Meridian.Contracts.Operations.DataProvenanceExtensions.ParseTokenOrSimulated(draft.DataProvenanceToken)
         };
     }
 
@@ -1201,6 +1226,11 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         AddMetadataTag(tags, "companyId", draft.CompanyId);
         AddMetadataTag(tags, "sourceEventId", postingCommand.SourceEventId?.ToString("D"));
         AddMetadataTag(tags, "sourceJournalEntryId", postingCommand.SourceJournalEntryId?.ToString("D"));
+        if (draft.ThreeWayFeeCorrection is { } correction)
+        {
+            AddMetadataTag(tags, "externalTransactionId", correction.FeeTransactionId);
+            AddMetadataTag(tags, "threeWayFeeEconomicKey", correction.EconomicKey);
+        }
         AddMetadataTag(tags, "securityMasterProvenance", securityLineage?.Provenance);
         AddMetadataTag(tags, "securityMasterLineage", securityLineage?.Lineage);
         if (securityLineage?.PerLine is { } perLine)
@@ -1400,13 +1430,13 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             return AccountingPostingIntentDto.Rebook;
         }
 
-        return AccountingPostingIntentDto.Originating;
+        return draft.IsAdjustingEntry ? AccountingPostingIntentDto.Adjustment : AccountingPostingIntentDto.Originating;
     }
 
     private static LedgerPostingKindDto BuildManualPostingKind(ManualJournalEntryDraftDto draft)
         => draft.EntryType == ManualJournalEntryTypeDto.ClosingEntry
             ? LedgerPostingKindDto.ClosingEntry
-            : draft.ReversalOfJournalEntryId.HasValue || draft.RebookedFromJournalEntryId.HasValue
+            : draft.IsAdjustingEntry || draft.ReversalOfJournalEntryId.HasValue || draft.RebookedFromJournalEntryId.HasValue
                 ? LedgerPostingKindDto.Adjustment
                 : LedgerPostingKindDto.Originating;
 
@@ -1416,7 +1446,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         IReadOnlyList<string> evidenceLinks,
         DateTimeOffset recordedAtUtc)
     {
-        if (!draft.ReversalOfJournalEntryId.HasValue && !draft.RebookedFromJournalEntryId.HasValue)
+        if (!draft.IsAdjustingEntry && !draft.ReversalOfJournalEntryId.HasValue && !draft.RebookedFromJournalEntryId.HasValue)
         {
             return null;
         }
@@ -1427,6 +1457,12 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             ?? throw new InvalidOperationException("Correction posting requires a retained approving actor.");
         var approvedAt = draft.ApprovedAtUtc
             ?? throw new InvalidOperationException("Correction posting requires a retained approval timestamp.");
+        if (draft.IsAdjustingEntry && !draft.ReversalOfJournalEntryId.HasValue && !draft.RebookedFromJournalEntryId.HasValue)
+            return new LedgerAdjustmentApprovalMetadataDto(approvalId, LedgerAdjustmentApprovalStatusDto.Approved,
+                approvedBy, approvedAt, "reviewed-adjusting-entry",
+                GovernanceCaseId: draft.ThreeWayFeeCorrection is { } correction
+                    ? "three-way-fee:" + correction.EconomicKey : "manual-adjustment:" + draft.JournalEntryId.ToString("D"),
+                EvidenceLink: evidenceLinks.FirstOrDefault(), Notes: "Independent journal approval retained before adjusting entry posting.");
         var sourceJournalEntryId = postingCommand.SourceJournalEntryId
             ?? throw new InvalidOperationException("Correction posting requires source journal-entry lineage.");
         var evidenceLink = evidenceLinks.FirstOrDefault();
@@ -1644,6 +1680,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         var correction = posted with
         {
             JournalEntryId = correctionId,
+            ThreeWayFeeCorrection = null,
             Status = ManualJournalEntryStatusDto.Draft,
             Memo = string.IsNullOrWhiteSpace(request.Notes)
                 ? $"{(reverseSides ? "Reversal" : "Rebook")} for journal entry {posted.JournalEntryId:D}"
@@ -1693,6 +1730,12 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 { IdempotencyKey = $"portfolio-opening-correction:{posted.JournalEntryId:D}:{correctionId:D}" }
             };
         }
+        if (posted.ThreeWayFeeCorrection is not null)
+            correction = correction with
+            {
+                TreasuryContext = (correction.TreasuryContext ?? new TreasuryLedgerContextDto()) with
+                { IdempotencyKey = "three-way-fee-linked-correction:" + correctionId.ToString("D") }
+            };
         if (IntercompanyAccrualEvidenceGuard.IsAccrualDraft(posted))
         {
             // The clone would otherwise reuse the posted accrual's posting identity for different content.

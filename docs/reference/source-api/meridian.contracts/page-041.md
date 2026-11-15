@@ -6,6 +6,94 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PlaidBalanceDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidBalanceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:171](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L171).
+
+```csharp
+public sealed record PlaidBalanceDto(string PlaidAccountId, decimal? Available, decimal? Current, string Currency, DateTimeOffset AsOf, bool IsFresh);
+```
+
+## PlaidClientCredentials
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidClientCredentials</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:77](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L77).
+
+```csharp
+public sealed record PlaidClientCredentials(string ClientId, string Secret, PlaidEnvironmentDto Environment);
+```
+
+## PlaidEnvironmentDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidEnvironmentDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:7](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L7).
+
+```csharp
+public enum PlaidEnvironmentDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Sandbox</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:9](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L9) |  |
+| <code>Development</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:10](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L10) |  |
+| <code>Production</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:11](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L11) |  |
+
+## PlaidIdentitySnapshot
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidIdentitySnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:227](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L227).
+
+```csharp
+public sealed record PlaidIdentitySnapshot(string PlaidAccountId, string? OwnerName, string? OwnerEmail, string? OwnerPhone, string VerificationStatus, DateTimeOffset VerifiedAt);
+```
+
+## PlaidInstitutionDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidInstitutionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:104](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L104).
+
+```csharp
+public sealed record PlaidInstitutionDto(string InstitutionId, string Name, IReadOnlyList<PlaidProductDto> Products, IReadOnlyList<string> CountryCodes, string? Url, string? PrimaryColor, string? Logo);
+```
+
+## PlaidInstitutionSearchResult
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidInstitutionSearchResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:113](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L113).
+
+```csharp
+public sealed record PlaidInstitutionSearchResult(string Query, IReadOnlyList<PlaidInstitutionDto> Institutions, string? RequestId);
+```
+
+## PlaidInvestmentHoldingDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidInvestmentHoldingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:201](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L201).
+
+```csharp
+public sealed record PlaidInvestmentHoldingDto(string PlaidAccountId, string SecurityId, string? Symbol, string? Name, decimal Quantity, decimal? MarketValue, string Currency, DateTimeOffset AsOf);
+```
+
+## PlaidInvestmentsSnapshot
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidInvestmentsSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:222](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L222).
+
+```csharp
+public sealed record PlaidInvestmentsSnapshot(IReadOnlyList<PlaidInvestmentHoldingDto> Holdings, IReadOnlyList<PlaidInvestmentTransactionDto> Transactions, string? RequestId);
+```
+
 ## PlaidInvestmentTransactionDto
 
 Qualified name: <code>Meridian.Contracts.Plaid.PlaidInvestmentTransactionDto</code>. Kind: `record`.
@@ -495,86 +583,4 @@ Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:39](../.
 
 ```csharp
 public sealed record ReportingGovernanceAccessScopeDto(string PolicyId, string PolicyVersion, string Mode, string? OwnerPrincipalId, bool AllowOwnerAccess, IReadOnlyList<ReportingGovernanceAccessPrincipalDto> Principals, string PolicyHash);
-```
-
-## ReportingGovernanceActionAvailabilityDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceActionAvailabilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:63](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L63).
-
-```csharp
-public sealed record ReportingGovernanceActionAvailabilityDto(string Action, bool IsAllowed, string? BlockedReason, long ExpectedVersion);
-```
-
-## ReportingGovernanceApprovalDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceApprovalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:92](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L92).
-
-```csharp
-public sealed record ReportingGovernanceApprovalDto(ReportingGovernanceAuthorityDto Authority, DateTimeOffset ApprovedAtUtc, string DecisionNote);
-```
-
-## ReportingGovernanceApprovalRequestDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceApprovalRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:13](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L13).
-
-Human approval rationale plus the required optimistic concurrency token.
-
-```csharp
-public sealed record ReportingGovernanceApprovalRequestDto(long ExpectedVersion, string DecisionNote);
-```
-
-## ReportingGovernanceArtifactDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceArtifactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:97](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L97).
-
-```csharp
-public sealed record ReportingGovernanceArtifactDto(string ArtifactId, string ArtifactHash, long ByteLength);
-```
-
-## ReportingGovernanceAuditEntryDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAuditEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:124](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L124).
-
-```csharp
-public sealed record ReportingGovernanceAuditEntryDto(string EventId, string AggregateKind, string AggregateId, long AggregateVersion, DateTimeOffset OccurredAtUtc, string Action, ReportingGovernanceAuthorityDto Authority, string PermissionUsed, string? FromExecutionState, string? ToExecutionState, string? FromGovernanceState, string? ToGovernanceState, string? FromRestatementState, string? ToRestatementState, string? Note, string? PreviousHash, string Hash);
-```
-
-## ReportingGovernanceAuthorityDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAuthorityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:69](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L69).
-
-```csharp
-public sealed record ReportingGovernanceAuthorityDto(string ActorId, string TenantId, string OrganizationId, string? CompanyId, IReadOnlyList<string> Permissions, string Origin, string CorrelationId, IReadOnlyList<string> PrincipalIds);
-```
-
-## ReportingGovernanceCertifiedSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceCertifiedSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:52](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L52).
-
-```csharp
-public sealed record ReportingGovernanceCertifiedSnapshotDto(string SnapshotId, string SnapshotHash, string ReconciliationCheckpointId, DateTimeOffset CapturedAtUtc, string? SourceCheckpointId = null, string? SourceCheckpointHash = null, string? ReconciliationCheckpointHash = null, string? ParametersCanonicalJson = null, string? ParametersHash = null);
-```
-
-## ReportingGovernanceChangedLineDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceChangedLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:170](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L170).
-
-```csharp
-public sealed record ReportingGovernanceChangedLineDto(string LineKey, string PreviousValue, string CurrentValue, IReadOnlyList<string> EvidenceIds);
 ```

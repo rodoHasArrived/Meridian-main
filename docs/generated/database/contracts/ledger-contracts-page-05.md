@@ -2,11 +2,78 @@
 
 # `ledger-contracts` data objects - page 5 of 6
 
-Objects 321-400 of 447. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 455. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_LedgerBookRolloutIssueSeverityDto["LedgerBookRolloutIssueSeverityDto"] {
+    }
+    class Meridian_Contracts_Ledger_LedgerBookSetupCandidateDto["LedgerBookSetupCandidateDto"] {
+        +AccountingBasisKindDto AccountingBasis
+        +string AccountingPolicyId
+        +string AccountingPolicyVersion
+        +string BaseCurrency
+        +string? Description
+        +string DisplayName
+        +string FundProfileId
+        +Guid FundStructureNodeId
+        +FundStructureNodeKindDto FundStructureNodeKind
+        +Guid? RequestedLedgerBookId
+        +Guid? SourceLedgerBookId
+        +string SuggestedAction
+    }
+    class Meridian_Contracts_Ledger_LedgerControlDecisionDto["LedgerControlDecisionDto"] {
+        +bool Allowed
+        +string Code
+        +string Control
+        +string? EvidenceRevision
+        +string Message
+    }
+    class Meridian_Contracts_Ledger_LedgerCrossPeriodPnlReportDto["LedgerCrossPeriodPnlReportDto"] {
+        +AccountingBasisKindDto? AccountingBasis
+        +DateOnly? EndDate
+        +string? FundProfileId
+        +Guid? FundStructureNodeId
+        +DateTimeOffset GeneratedAtUtc
+        +Guid? LedgerBookId
+        +decimal NetIncome
+        +IReadOnlyList~LedgerPeriodPnlSummaryDto~ Periods
+        +DateOnly? StartDate
+        +decimal TotalAccrualBasisAdjustmentNetImpact
+        +decimal TotalExpenses
+        +decimal TotalRealizedNetIncome
+    }
+    class Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto["LedgerCrossPeriodTrialBalanceLineDto"] {
+        +AccountingBasisKindDto AccountingBasis
+        +string AccountingPolicyId
+        +string AccountingPolicyVersion
+        +string AccountName
+        +string AccountType
+        +decimal Balance
+        +decimal CreditTotal
+        +decimal DebitTotal
+        +LedgerDimensionSetDto? Dimensions
+        +int EntryCount
+        +string? FinancialAccountId
+        +int FiscalYear
+    }
+    class Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceReportDto["LedgerCrossPeriodTrialBalanceReportDto"] {
+        +AccountingBasisKindDto? AccountingBasis
+        +DateOnly? EndDate
+        +string? FundProfileId
+        +Guid? FundStructureNodeId
+        +DateTimeOffset GeneratedAtUtc
+        +Guid? LedgerBookId
+        +IReadOnlyList~LedgerCrossPeriodTrialBalanceLineDto~ Lines
+        +decimal NetIncome
+        +IReadOnlyList~LedgerPeriodDto~ Periods
+        +DateOnly? StartDate
+        +decimal TotalCredits
+        +decimal TotalDebits
+    }
+    class Meridian_Contracts_Ledger_LedgerCurrencyRounding["LedgerCurrencyRounding"] {
+    }
     class Meridian_Contracts_Ledger_LedgerDimensionSetDto["LedgerDimensionSetDto"] {
         +string? AccountBindingRevisionId
         +string? AccountId
@@ -667,91 +734,10 @@ classDiagram
         +bool IsReplay
         +string SourceHashSha256
     }
-    class Meridian_Contracts_Ledger_PrivateCapitalBankObservationSourceDto["PrivateCapitalBankObservationSourceDto"] {
-        +decimal Amount
-        +Guid BankTransactionId
-        +string Currency
-        +string Direction
-        +DateOnly EffectiveDate
-        +Guid EntityId
-        +DateTimeOffset ObservedAtUtc
-        +DateOnly SettlementDate
-        +string StatementReference
-        +DateOnly TransactionDate
-    }
-    class Meridian_Contracts_Ledger_PrivateCapitalCallDto["PrivateCapitalCallDto"] {
-        +decimal AmountToCall
-        +string CallId
-        +DateTimeOffset CreatedAtUtc
-        +string CreatedBy
-        +DateOnly DueDate
-        +IReadOnlyList~PrivateCapitalCallLineDto~ Lines
-        +DateOnly NoticeDate
-        +string PeriodId
-        +string PlanHash
-        +string? Purpose
-        +PrivateCapitalScopeDto Scope
-    }
-    class Meridian_Contracts_Ledger_PrivateCapitalCallLineDto["PrivateCapitalCallLineDto"] {
-        +decimal Amount
-        +string CapitalAccountId
-        +string CommitmentId
-        +int CommitmentRevision
-        +decimal FundedAmount
-        +string InstallmentId
-        +string InvestorId
-        +Guid? IssuanceJournalEntryId
-        +decimal IssuedAmount
-        +decimal UncalledAfter
-        +decimal UncalledBefore
-    }
-    class Meridian_Contracts_Ledger_PrivateCapitalCallPreviewDto["PrivateCapitalCallPreviewDto"] {
-        +IReadOnlyList~string~ Blockers
-        +PrivateCapitalCallDto? Call
-        +bool IsReady
-    }
-    class Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountActivityDto["PrivateCapitalCapitalAccountActivityDto"] {
-        +string CapitalAccountId
-        +decimal Contributions
-        +string Currency
-        +decimal Distributions
-        +int FundEventCount
-        +IReadOnlyList~string~ FundEventIds
-        +string? InvestorId
-        +DateOnly? LastEffectiveDate
-        +string? LastFundEventType
-        +decimal ManagementFees
-        +decimal NetActivity
-        +decimal Redemptions
-    }
-    class Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerDto["PrivateCapitalCapitalAccountSubledgerDto"] {
-        +string ActivityRoute
-        +int ApprovalQueueCount
-        +PrivateCapitalCapitalAccountActivityDto? CapitalAccount
-        +string CapitalAccountId
-        +decimal Contributions
-        +string Currency
-        +decimal Distributions
-        +decimal EndingNetActivity
-        +IReadOnlyList~PrivateCapitalEvidenceCategoryDto~ EvidenceCategories
-        +int EvidenceLinkCount
-        +IReadOnlyList~string~ EvidenceLinks
-        +DateOnly? FirstEffectiveDate
-    }
-    class Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerEntryDto["PrivateCapitalCapitalAccountSubledgerEntryDto"] {
-        +ManualJournalEntryStatusDto ApprovalState
-        +string CapitalAccountId
-        +string Currency
-        +DateOnly EffectiveDate
-        +ManualJournalEntryTypeDto EntryType
-        +IReadOnlyList~string~ EvidenceLinks
-        +string FundEventId
-        +string FundEventType
-        +decimal GrossAmount
-        +string? InvestorId
-        +bool IsPosted
-        +Guid JournalEntryId
-    }
+    Meridian_Contracts_Ledger_LedgerCrossPeriodPnlReportDto --> Meridian_Contracts_Ledger_LedgerPeriodPnlSummaryDto
+    Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
+    Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceReportDto --> Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto
+    Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceReportDto --> Meridian_Contracts_Ledger_LedgerPeriodDto
     Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto --> Meridian_Contracts_Ledger_LedgerDisposalTaxParcelDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerJournalEntryLineDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerPostingKindDto
@@ -812,13 +798,4 @@ classDiagram
     Meridian_Contracts_Ledger_PriorPeriodAdjustmentSourceDto --> Meridian_Contracts_Ledger_ManualJournalEntryLineDto
     Meridian_Contracts_Ledger_PriorPeriodAdjustmentSourceDto --> Meridian_Contracts_Ledger_PriorPeriodAdjustmentCorrectionDto
     Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PaymentIntentWorkflowDto
-    Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountActivityDto
-    Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerDto
-    Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerEntryDto
-    Meridian_Contracts_Ledger_PrivateCapitalCallDto --> Meridian_Contracts_Ledger_PrivateCapitalCallLineDto
-    Meridian_Contracts_Ledger_PrivateCapitalCallPreviewDto --> Meridian_Contracts_Ledger_PrivateCapitalCallDto
-    Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerDto --> Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountActivityDto
-    Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerDto --> Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerEntryDto
-    Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerEntryDto --> Meridian_Contracts_Ledger_ManualJournalEntryStatusDto
-    Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerEntryDto --> Meridian_Contracts_Ledger_ManualJournalEntryTypeDto
 ```

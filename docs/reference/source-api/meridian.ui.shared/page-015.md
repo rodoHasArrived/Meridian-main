@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrivateCapitalRecordAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalRecordAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs:14](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs#L14).
+
+Checks real authorized structure identities and retained scoped document bytes.
+
+```csharp
+public sealed class PrivateCapitalRecordAuthority(IFundStructureService structures, ISecurityMasterQueryService securities, IEvidenceArtifactStore evidenceStore) : IPrivateCapitalRecordAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PrivateCapitalChoices&gt; ChoicesAsync(PrivateCapitalScope scope, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs:18](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs#L18) |  |
+| <code>public async Task&lt;PrivateCapitalVehicle&gt; ValidateRegisterAsync(PrivateCapitalScope scope, Guid entityId, Guid securityId, string currency, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs:38](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs#L38) |  |
+| <code>public async Task ValidateEvidenceAsync(PrivateCapitalScope scope, PrivateCapitalEvidence evidence, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs:58](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs#L58) |  |
+
+## PrivateCapitalRecordServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalRecordServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs:9](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs#L9).
+
+```csharp
+public static class PrivateCapitalRecordServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddPrivateCapitalRecords(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs:12](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs#L12) | Uses the existing account database or durable, partitioned local record authority. |
+
 ## ProductExposure
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ProductExposure</code>. Kind: `record`.
@@ -805,56 +841,3 @@ Checkpoint-bound input for a canonical ledger presentation. The source implement
 ```csharp
 public sealed record ReportingCertifiedLedgerPresentationInput(string SourceCheckpointId, string SourceCheckpointHash, string CertifiedDatasetHashSha256, LedgerFinancialReportPack ReportPack);
 ```
-
-## ReportingDeliveryDispatcher
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryDispatcher</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:13](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L13).
-
-Queues reporting delivery jobs, dispatches due work, and retains provider receipts.
-
-```csharp
-public sealed class ReportingDeliveryDispatcher
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingDeliveryDispatcher(IReportingDeliveryStore store, IEnumerable&lt;IReportingDeliveryTransport&gt; transports, IReportingReleaseAuthorizationVerifier releaseVerifier, TimeProvider? timeProvider = null, ReportingDeliveryDispatcherOptions? options = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L22) |  |
-| <code>public async Task&lt;ReportingDeliveryJobRecord&gt; QueueAsync(ReportingDeliveryQueueRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L39) |  |
-| <code>public bool IsTransportConfigured(string transportId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:122](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L122) | True only when a concrete transport adapter is present in this process. |
-| <code>public IReadOnlyCollection&lt;string&gt; ConfiguredTransportIds =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:126](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L126) | Configured adapter identifiers, never provider credentials or endpoints. |
-| <code>public async Task&lt;IReadOnlyList&lt;ReportingDeliveryJobRecord&gt;&gt; DispatchDueAsync(string leaseOwner, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:129](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L129) |  |
-| <code>public async Task&lt;ReportingDeliveryJobRecord&gt; AppendReceiptAsync(string jobId, string tenantId, ReportingDeliveryReceipt receipt, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:156](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L156) |  |
-| <code>public static string BuildIdempotencyKey(string tenantId, string packageId, string distributionId, string transportId, string releaseVersion, string artifactManifestHash, ReportingDeliveryPayload? payload = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:288](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L288) |  |
-
-## ReportingDeliveryReadModelSecurity
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryReadModelSecurity</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L16).
-
-Fail-closed projection policy for legacy report-pack delivery records. Delivery attempts do not carry an independent tenant/access authority, so they are visible only through an exact, immutable workflow or governed-run binding. Credential-bearing links are never returned by a workstation read model.
-
-```csharp
-public static class ReportingDeliveryReadModelSecurity
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string RetiredAccessSummary = &quot;Legacy delivery access is retired; issue an opaque access grant through canonical secure distribution.&quot;;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L18) |  |
-| <code>public static IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; FilterVisibleAttempts(IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; attempts, ReportAccessQueryContext? accessContext, IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt;? workflowRecords = null, IReadOnlyList&lt;ReportingRunSnapshot&gt;? reportingRuns = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L50) |  |
-| <code>public static (IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; Attempts, bool SourceAvailable) ListVisibleAttempts(IServiceProvider services, int limit);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:83](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L83) |  |
-| <code>public static ReportAccessQueryContext? ResolveCurrentAccessContext(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:109](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L109) |  |
-| <code>public static ReportPackDeliveryAttemptDto SanitizeAttempt(ReportPackDeliveryAttemptDto attempt);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:136](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L136) |  |
-| <code>public static ReportPackDeliveryPackageDto SanitizePackage(ReportPackDeliveryPackageDto package);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:150](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L150) |  |
-| <code>public static IReadOnlyList&lt;ReportPackEvidenceLinkDto&gt;? SanitizeEvidenceLinks(IReadOnlyList&lt;ReportPackEvidenceLinkDto&gt;? links) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:236](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L236) |  |
-| <code>public static string SanitizeHref(string href);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:247](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L247) |  |
-| <code>public static string? SanitizeOptionalHref(string? href) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:274](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L274) |  |
-| <code>public static bool IsSafeRetainedEvidenceHref(string? href) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:277](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L277) |  |
-| <code>public static bool IsUnsafeHref(string? href) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:280](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L280) |  |
-| <code>public static bool ContainsCredentialMaterial(string? value);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:286](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L286) |  |

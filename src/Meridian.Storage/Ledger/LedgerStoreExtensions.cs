@@ -35,6 +35,8 @@ public static class LedgerStoreExtensions
             () => sp.GetService<IIntercompanyAgreementPostingAuthority>());
         services.AddSingleton<PostgresLedgerJournalStore>();
         services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+        services.AddSingleton<IAutomatedPostingGrantStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+        services.AddSingleton<IAtomicTaxLotJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<IIntercompanyAgreementJournalValidation>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<ILedgerReportingSnapshotSource>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());

@@ -2,7 +2,7 @@
 
 # `ledger` schema
 
-- Relations: 55
+- Relations: 56
 - Functions/procedures: 31
 - Triggers: 61
 - Row-level security policies: 0
@@ -155,6 +155,27 @@ erDiagram
         jsonb corporate_action_instruction
         jsonb capital_return_instruction
         jsonb factor_paydown_instruction
+    }
+    ledger_automated_posting_grants {
+        uuid grant_id PK
+        bigint version
+        text tenant_id
+        text company_id
+        text financial_account_id
+        uuid ledger_book_id FK
+        uuid period_id FK
+        text policy_id
+        text policy_version
+        text mapping_revision
+        text mapping_fingerprint
+        text source_mode
+        boolean is_active
+        text activated_by
+        timestamp_with_time_zone activated_at_utc
+        text revoked_by
+        timestamp_with_time_zone revoked_at_utc
+        jsonb policy_snapshot
+        text policy_snapshot_sha256
     }
     ledger_bond_coupon_cash_consumption {
         uuid ledger_book_id PK
@@ -727,6 +748,7 @@ erDiagram
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_posting_rules : "accounting_configuration_posting_rules_workspace_fkey"
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_rule_test_cases : "accounting_configuration_rule_test_cases_workspace_fkey"
     ledger_accounting_periods ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_period_id_fkey"
+    ledger_accounting_periods ||--o{ ledger_automated_posting_grants : "automated_posting_grants_period_id_fkey"
     ledger_accounting_periods ||--o{ ledger_ledger_balance_checkpoints : "ledger_balance_checkpoints_period_id_fkey"
     ledger_accounting_periods ||--o{ ledger_period_close_events : "period_close_events_period_id_fkey"
     ledger_accounting_periods ||--o{ ledger_period_close_snapshots : "period_close_snapshots_period_id_fkey"
@@ -757,6 +779,7 @@ erDiagram
     ledger_ledger_balance_checkpoints ||--o{ ledger_ledger_balance_checkpoint_rows : "ledger_balance_checkpoint_rows_checkpoint_id_fkey"
     ledger_ledger_books ||--o{ ledger_accounting_periods : "accounting_periods_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_automated_posting_grants : "automated_posting_grants_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_bond_coupon_recognition : "bond_coupon_recognition_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_consolidation_fx_book_configurations : "consolidation_fx_book_configurations_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_consolidation_transition_receipts : "consolidation_transition_receipts_new_book_id_fkey"
@@ -808,6 +831,7 @@ erDiagram
 | `accounting_periods` | table | 14 | `period_id` | 1 | 8 | - |
 | `accounting_policies` | table | 14 | `accounting_policy_key` | 0 | 3 | - |
 | `atomic_tax_lot_posting_batches` | table | 21 | `mutation_batch_id` | 4 | 5 | - |
+| `automated_posting_grants` | table | 19 | `grant_id` | 2 | 1 | - |
 | `bond_coupon_cash_consumption` | table | 12 | `ledger_book_id`, `account_id`, `allocation_id`, `receipt_id` | 2 | 3 | - |
 | `bond_coupon_recognition` | table | 10 | `receipt_id` | 5 | 4 | - |
 | `consolidation_fx_book_configurations` | table | 10 | `ledger_book_id`, `revision` | 2 | 1 | - |
@@ -821,7 +845,7 @@ erDiagram
 | `intercompany_proposal_links` | table | 10 | `tenant_id`, `request_id` | 1 | 1 | - |
 | `intercompany_proposal_retries` | table | 6 | `tenant_id`, `request_id` | 1 | 1 | - |
 | `intercompany_proposals` | table | 15 | `proposal_id` | 2 | 4 | - |
-| `journal_entries` | table | 19 | `global_sequence` | 0 | 16 | - |
+| `journal_entries` | table | 19 | `global_sequence` | 0 | 17 | - |
 | `journal_entries_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `journal_entry_integrity_seals` | table | 3 | `journal_entry_id` | 1 | 1 | - |
 | `journal_entry_open_postings` | table | 2 | `journal_entry_id` | 1 | 1 | - |

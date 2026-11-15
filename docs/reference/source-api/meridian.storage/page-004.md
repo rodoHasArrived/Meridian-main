@@ -1046,7 +1046,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static LedgerJournalEntryWrite NormalizeAndValidate(LedgerJournalEntryWrite write, bool requirePostingCommand = false, bool requireExpectedVersion = false, bool allowPreparerAttestation = false);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:22](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L22) |  |
-| <code>public static string? ReadRetainedPostingActor(JournalEntryMetadata metadata);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:717](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L717) | Unversioned legacy metadata never supplies command actor attribution. |
+| <code>public static string? ReadRetainedPostingActor(JournalEntryMetadata metadata);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:843](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L843) | Unversioned legacy metadata never supplies command actor attribution. |
 
 ## AtomicLotReferenceVersions
 

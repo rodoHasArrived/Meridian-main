@@ -11,6 +11,12 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Storage
 
+The `Meridian.Storage` assembly owns storage primitives and does not depend on Ledger or Reporting.
+Business adapters whose source remains under `Ledger/`, `Reporting/`, Security Master and other
+business folders compile through linked items in `Meridian.Storage.Accounting`. The workflow
+notes below cover these retained source paths; they do not move business ownership back into
+Storage primitives.
+
 Position snapshots preserve reviewed preparation lineages alongside economic-state history.
 Historical reads still exclude lineage effective after their requested date.
 
@@ -1794,6 +1800,52 @@ authority.
 - **ETL audit and reject logs.** `EtlAuditStore` and `EtlRejectSink` append through `DurableLineAppender`. Appends to one file are serialized by striped locks, hashed case-insensitively on Windows and macOS, and each line is flushed to disk. When a log file or job directory is newly created, its directory entry is fsynced before the append is acknowledged.
 
 `ScheduledArchiveMaintenanceService` computes its "executions today" window in UTC.
+
+### Synthetic fill authority and historical accounting exports
+
+Ledger migrations 069–071 retain operator-delegated synthetic fill authority, the immutable policy
+snapshot used after restart, and a shared unique fee identity across automatic fills and reviewed
+reconciliation corrections. The write boundary validates exact authority, typed USD economics and
+scope in the posting transaction. Fee uniqueness is independent of run/draft/fill identities, so
+competing handoffs cannot double-book an expense. Exact receipt recovery remains idempotent; linked
+human reversal/rebook flows retain their separate correction lineage.
+
+`GeneralLedgerExportBuilder` freezes one `general-ledger.v1` journal-line dataset into a ZIP of
+CSV, exact text-cell XLSX, typed-decimal Parquet, symbol P&L CSV/JSON, and an agreement/evidence
+manifest. Every artifact is hashed; the snapshot digest binds book, period/version, ordered lines,
+retained disposal history, historical open positions and any selected approved marks/reference data.
+Legacy currency detail remains explicitly `book-base-currency-only`; transaction currency is never
+invented. The bounded export accepts at most 100,000 journal lines/history rows and refuses decimal
+values that cannot be encoded exactly. CSV neutralizes formula-looking text; XLSX retains source
+text in inline-string cells so neither formulas nor floating-point coercion alter it.
+
+`ILedgerOpenPositionReportingSnapshotSource` is an opt-in reporting capture. PostgreSQL reads full
+immutable lot after-snapshots in the journal's repeatable-read transaction, restoring historical
+quantity **and basis**; it does not substitute the current basis used by the quantity-only historical
+helper. An explicit query `EffectiveTo`/`OccurredTo` also cuts the lot versions at that exact
+effective date/UTC occurrence time; an admitted mutation cannot depend on an excluded prior state.
+Missing, discontinuous or retrodated mutation chains block unrealized P&L explicitly.
+Inventory coverage failures are scoped to their financial account and symbol. Canonical historical
+acquisition accounts establish lot-carrying roles; typed, source-backed dividend receivables and
+Direct Lending subledger assets retain their independent accounting roles. Unknown instrument
+assets still block their own scope, so renamed journal-only equities cannot masquerade as zero lots.
+Native cash-dividend preparer receipts explain only their exact retained USD receivable role and
+source binding; this classification does not convert preparer attestation into independent approval.
+`GeneralLedgerSymbolPnlBuilder` reconciles canonical disposal proceeds/basis and booked/economic
+realized results. Unrealized v1 supports long unit common equity with same-currency basis, historical
+instrument currency identity and an independently approved per-unit close snapshot. Other asset,
+multiplier or FX cases remain unavailable with reasons, never fabricated zeroes. Exports do not
+certify close or tax finality, post journals, or claim compatibility with a named external GL.
+
+Automatic fill accounting has a separate, explicitly delegated system origin. Ledger migration 069
+retains operator-activated grants for one tenant, financial account, USD book, open period, policy
+version, accounting-mapping revision, and synthetic source mode. The journal append transaction
+locks and rechecks the retained grant and mapping revision; revocation blocks new appends while
+exact retained replay remains available. Ordinary fills require atomic canonical-lot publication;
+only commission and identified fee journals use the journal-only path. Assistant origins and
+human approval workflows retain their existing guards. Grants are never activated at startup.
+Focused proof is `AutomatedPostingGrantTests`, including PostgreSQL-backed activation, revocation,
+restart, tenant isolation, stale mapping, and replay scenarios.
 
 ## Diagrams
 
