@@ -1297,8 +1297,8 @@ describe("TradingScreen", () => {
     // Choosing it opens the same confirmation step; nothing is cancelled yet.
     expect(api.cancelAllOrders).not.toHaveBeenCalled();
     expect(await screen.findByRole("button", { name: /confirm cancel all open orders/i })).toBeDisabled();
-    expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent(/\d+ positions?/);
-    expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent("Latest brokerage heartbeat");
+    // The page's own facts are ready, so it adds no trust row to what the masthead already says.
+    expect(screen.queryByLabelText("Trading data confidence")).not.toBeInTheDocument();
   });
 
   it("keeps strategy lifecycle commands disabled until the view model has a strategy ID", async () => {

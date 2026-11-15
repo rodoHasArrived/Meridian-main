@@ -3,7 +3,7 @@ import { buildAttentionSignalFact } from "@/components/meridian/attention-signal
 import { StatusRow, type StatusRowFact } from "@/components/meridian/status-row";
 import { useReportPageFreshness } from "@/lib/page-trust-context";
 import { useShellStatusSignals } from "@/lib/shell-status-signals-context";
-import { isStatusIssue } from "@/lib/status-signals";
+import { isStatusIssue, summarizeStatusSignals } from "@/lib/status-signals";
 
 export type OperationalTrustTone = "ready" | "review" | "blocked" | "unknown";
 
@@ -22,6 +22,8 @@ export interface OperationalTrustSummaryProps {
   completeness: OperationalTrustFact;
   blocker?: OperationalTrustFact;
   action?: ReactNode;
+  /** Keep the row when every fact is ready, for a page whose row is the only place its source and date appear. */
+  showWhenClear?: boolean;
   label?: string;
   className?: string;
 }
@@ -36,6 +38,11 @@ export interface OperationalTrustSummaryProps {
  * masthead's to name: they appear under "Details" and in the clear line's count, never as
  * repeated items in this row's summary, so the row and the masthead cannot disagree. Each fact can own its recovery action so an operator does not have to infer
  * which global control remediates a specific warning.
+ *
+ * The row appears only when this page differs from the global state: a page whose own facts are
+ * all ready renders nothing (unless it carries a card-level `action` or sets `showWhenClear`), because the masthead
+ * already states the environment and the worst open issue. The page still reports its freshness
+ * to the status bar, and each headline figure's details state its source.
  */
 export function OperationalTrustSummary({
   source,
@@ -44,6 +51,7 @@ export function OperationalTrustSummary({
   completeness,
   blocker,
   action,
+  showWhenClear = false,
   label = "Data confidence",
   className
 }: OperationalTrustSummaryProps) {
@@ -67,6 +75,10 @@ export function OperationalTrustSummary({
   const contextFacts = shell.sourceSignals
     .filter((signal) => isStatusIssue(signal.tone))
     .map((signal) => buildAttentionSignalFact(signal, shell.operatingScope));
+
+  if (!action && !showWhenClear && summarizeStatusSignals(facts).clear) {
+    return null;
+  }
 
   return <StatusRow label={label} facts={facts} contextFacts={contextFacts} action={action} className={className} />;
 }

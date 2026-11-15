@@ -79,6 +79,29 @@ describe("StatStrip", () => {
     expect(screen.getByTestId("stat-strip-provenance")).toHaveTextContent(/^Stale figures · Source: Portfolio workspace/);
   });
 
+  it("shows one compact label and keeps the full source sentence for hover and assistive technology", () => {
+    const provenance = { source: "Portfolio workspace", asOf: "2026-06-30T18:05:00Z", scope: "All accounts" };
+    render(
+      <StatStrip
+        label="Trust"
+        metrics={[
+          { id: "pnl", label: "Net P&L", value: "+$90", delta: "", tone: "success", provenance, freshness: "unverified" },
+          { id: "cash", label: "Cash", value: "$10", delta: "", tone: "default", provenance, freshness: "unverified" }
+        ]}
+      />
+    );
+
+    const compact = screen.getByTestId("stat-strip-compact-label");
+    expect(compact).toHaveTextContent(/^Jun 30, 2026, 18:05 UTC · All accounts$/);
+    expect(compact).toHaveAttribute("aria-hidden", "true");
+    const full = screen.getByTestId("stat-strip-provenance");
+    expect(full).toHaveClass("sr-only");
+    expect(full).toHaveTextContent(/^Unverified figures · Source: Portfolio workspace/);
+    expect(full.parentElement).toHaveAttribute("title", full.textContent);
+    // Unverified is a style on the figure itself, not a word in the label.
+    expect(screen.getByText("+$90")).toHaveClass("underline", "decoration-dotted");
+  });
+
   it("states each source with the figures it covers when the figures come from different sources", () => {
     render(
       <StatStrip

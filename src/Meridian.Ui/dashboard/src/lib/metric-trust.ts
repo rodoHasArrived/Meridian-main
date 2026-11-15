@@ -180,6 +180,44 @@ export function describeGroupedMetricProvenance(metrics: readonly MetricSnapshot
   return supplied.map((text, index) => [text, evidence[index]].filter(Boolean).join(" · ")).join("; ");
 }
 
+const SHORT_DATA_LABELS: Record<string, string> = {
+  "simulated data": "Simulated",
+  "seeded demo data": "Seeded",
+  "sample data": "Sample",
+  "data source unverified": "Source unverified"
+};
+
+/**
+ * The compact label under a row of headline figures: "Seeded · 12:08 UTC · All accounts". It names
+ * the kind of data when the session is not on real data, the as-of time the figures share (time
+ * only when it is today), and the scope they share. Parts the figures do not share are left out and
+ * the label says "Mixed sources"; the full source sentence stays on hover and on each figure's
+ * details. Stale figures are named; unverified ones are marked on the figure itself.
+ */
+export function describeCompactProvenance(
+  metrics: readonly MetricSnapshot[],
+  { dataLabel, scope, freshness, now = new Date() }: { dataLabel?: string | null; scope?: string | null; freshness?: MetricFreshness; now?: Date }
+): string | null {
+  const stated = metrics.map((metric) => metric.provenance).filter((provenance): provenance is MetricProvenance => Boolean(provenance?.source.trim()));
+  const shared = (read: (provenance: MetricProvenance) => string | null) => {
+    const values = new Set(stated.map(read));
+    return stated.length === metrics.length && values.size === 1 ? [...values][0] : null;
+  };
+  const asOf = shared((provenance) => formatMetricAsOf(provenance.asOf));
+  const today = formatMetricAsOf(now.toISOString());
+  const datePrefix = (text: string | null) => text?.slice(0, text.lastIndexOf(", ") + 2) ?? "";
+  const time = asOf && datePrefix(asOf) && datePrefix(asOf) === datePrefix(today) ? asOf.slice(datePrefix(asOf).length) : asOf;
+  const sharedScope = shared((provenance) => provenance.scope?.trim() || null) ?? (stated.some((provenance) => provenance.scope?.trim()) ? null : scope?.trim() || null);
+  const mixed = stated.length > 0 && new Set(stated.map((provenance) => describeMetricProvenance(provenance))).size > 1 && (!asOf || !sharedScope);
+  return [
+    freshness === "stale" ? "Stale" : null,
+    dataLabel ? SHORT_DATA_LABELS[dataLabel] ?? dataLabel : null,
+    time,
+    sharedScope,
+    mixed ? "Mixed sources" : null
+  ].filter(Boolean).join(" · ") || null;
+}
+
 /**
  * The worst of several freshness verdicts about one figure: stale outranks unverified, which
  * outranks fresh. A figure is only as trustworthy as the weakest evidence behind it, so a screen
