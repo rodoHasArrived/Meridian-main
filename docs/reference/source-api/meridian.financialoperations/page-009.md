@@ -6,6 +6,33 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementRawFileRetentionMode
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRawFileRetentionMode</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:212](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L212).
+
+```csharp
+public enum StatementRawFileRetentionMode
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ExternalReferenceOnly</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:214](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L214) |  |
+| <code>EvidenceStoreReference</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:215](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L215) |  |
+
+## StatementReconciliationCheckpoint
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementReconciliationCheckpoint</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs#L16).
+
+```csharp
+public sealed record StatementReconciliationCheckpoint(Guid AccountId, string SourceKind, string SourcePath, StatementReconciliationStage LastCompletedStage, StatementReconciliationStage CurrentStage, string Status, string? LastError, string? ImportId, int ImportedRowCount, int MatchCount, int UnresolvedCount, DateTimeOffset UpdatedAtUtc, IReadOnlyList<StatementRunEvidenceLink>? EvidenceLinks = null);
+```
+
 ## StatementReconciliationContextAdapter
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementReconciliationContextAdapter</code>. Kind: `class`.

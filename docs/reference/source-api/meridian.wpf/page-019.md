@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ShellRailControl
+
+Qualified name: <code>Meridian.Wpf.Views.ShellRailControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/ShellRailControl.xaml.cs:10](../../../../src/Meridian.Wpf/Views/ShellRailControl.xaml.cs#L10).
+
+Hosts desktop workspace navigation and handles rail item activation.
+
+```csharp
+public partial class ShellRailControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ShellRailControl();</code> | [src/Meridian.Wpf/Views/ShellRailControl.xaml.cs:12](../../../../src/Meridian.Wpf/Views/ShellRailControl.xaml.cs#L12) |  |
+
 ## SplitPaneHostControl
 
 Qualified name: <code>Meridian.Wpf.Views.SplitPaneHostControl</code>. Kind: `class`.
@@ -1110,23 +1128,3 @@ Declared public members:
 | <code>public static readonly DependencyProperty MetricProperty = DependencyProperty.Register(nameof(Metric), typeof(WorkstationMetricModel), typeof(MetricTileControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs:12](../../../../src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs#L12) |  |
 | <code>public MetricTileControl();</code> | [src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs:19](../../../../src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs#L19) |  |
 | <code>public WorkstationMetricModel? Metric { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs:24](../../../../src/Meridian.Wpf/Workstation/Controls/MetricTileControl.xaml.cs#L24) |  |
-
-## RoutingMatrixControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Controls.RoutingMatrixControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs:10](../../../../src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs#L10).
-
-Displays workflow routing rows in a workstation matrix.
-
-```csharp
-public partial class RoutingMatrixControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty MatrixProperty = DependencyProperty.Register(nameof(Matrix), typeof(RoutingMatrixModel), typeof(RoutingMatrixControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs:12](../../../../src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs#L12) |  |
-| <code>public RoutingMatrixControl();</code> | [src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs:19](../../../../src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs#L19) |  |
-| <code>public RoutingMatrixModel? Matrix { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs:24](../../../../src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs#L24) |  |

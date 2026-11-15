@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NormalizedStatementTransaction
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.NormalizedStatementTransaction</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:921](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L921).
+
+```csharp
+public sealed record NormalizedStatementTransaction(string TransactionId, string? ExternalTransactionId, string Account, string? SecurityId, string? Currency, DateOnly TradeDate, DateOnly SettlementDate, string TransactionType, decimal Quantity, decimal NetAmount, string EvidenceReference) : IStatementMatchItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:935](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L935) | Unit price in the same currency as the monetary amount, when explicitly available. |
+
+## PortfolioPositionInput
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.PortfolioPositionInput</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs:219](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs#L219).
+
+A single portfolio position passed into the reconciliation engine.
+
+```csharp
+public sealed record PortfolioPositionInput(string Symbol, decimal MarketValue);
+```
+
 ## PositionToleranceRule
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.PositionToleranceRule</code>. Kind: `record`.
@@ -793,30 +821,3 @@ Declared public members:
 | <code>public const string DefaultPolicyNote = &quot;Raw broker and custodian files are not copied by this repository. The manifest stores a source path or approved evidence-store reference plus the source file hash for reproducibility.&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:178](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L178) |  |
 | <code>public static StatementRawFileEvidenceReference ExternalReference(string sourcePath, string originalFileName, string sourceFileHash);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:180](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L180) |  |
 | <code>public static StatementRawFileEvidenceReference EvidenceStoreReference(string sourcePath, string originalFileName, string sourceFileHash, string evidenceUri);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:196](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L196) |  |
-
-## StatementRawFileRetentionMode
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRawFileRetentionMode</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:212](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L212).
-
-```csharp
-public enum StatementRawFileRetentionMode
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ExternalReferenceOnly</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:214](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L214) |  |
-| <code>EvidenceStoreReference</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:215](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L215) |  |
-
-## StatementReconciliationCheckpoint
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementReconciliationCheckpoint</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs#L16).
-
-```csharp
-public sealed record StatementReconciliationCheckpoint(Guid AccountId, string SourceKind, string SourcePath, StatementReconciliationStage LastCompletedStage, StatementReconciliationStage CurrentStage, string Status, string? LastError, string? ImportId, int ImportedRowCount, int MatchCount, int UnresolvedCount, DateTimeOffset UpdatedAtUtc, IReadOnlyList<StatementRunEvidenceLink>? EvidenceLinks = null);
-```

@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IAutomatedJournalCapitalAccountReconciliationResolver
+
+Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.IAutomatedJournalCapitalAccountReconciliationResolver</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:33](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L33).
+
+Server-side source for reviewed capital-account balances, confidence, source version, and retained evidence. Implementations must resolve from authoritative state; request payloads and persisted schedule assertions are never an implementation fallback.
+
+```csharp
+public interface IAutomatedJournalCapitalAccountReconciliationResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;AutomatedJournalCapitalAccountReconciliationDto?&gt; ResolveAsync(AutomatedJournalCapitalAccountReconciliationScope scope, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:35](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L35) |  |
+
+## LedgerCapitalAccountReconciliationResolver
+
+Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.LedgerCapitalAccountReconciliationResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:47](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L47).
+
+Reconstructs fee-basis NAV, capital-account equity, and high-water history from immutable, posted ledger journals. Tenant/company ownership, ledger-book identity, accounting period, entity dimensions, book currency, retained evidence, durable posting-command or adjustment approval provenance, and the evaluation-time boundary are all resolved from server-owned state before a reconciliation can be returned.
+
+```csharp
+public sealed class LedgerCapitalAccountReconciliationResolver : IAutomatedJournalCapitalAccountReconciliationResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerCapitalAccountReconciliationResolver(ILedgerJournalStore? journalStore, IFundProfileTenancyRegistry? tenancyRegistry);</code> | [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:55](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L55) |  |
+| <code>public async Task&lt;AutomatedJournalCapitalAccountReconciliationDto?&gt; ResolveAsync(AutomatedJournalCapitalAccountReconciliationScope scope, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:63](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L63) |  |
+
 ## PostedPrivateCapitalActivityProjection
 
 Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PostedPrivateCapitalActivityProjection</code>. Kind: `record`.
@@ -838,42 +875,3 @@ Declared public members:
 | <code>Task&lt;bool&gt; DeleteAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:52](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L52) |  |
 | <code>Task RecordRunAsync(string scheduleId, DateTimeOffset ranAtUtc, string status, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:53](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L53) |  |
 | <code>Task RecordFailureAsync(string scheduleId, DateTimeOffset attemptedAtUtc, string status, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:54](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L54) |  |
-
-## IStatementImportCommitService
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementImportCommitService</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L60).
-
-Validates statement source requests and commits accepted imports with retained evidence.
-
-```csharp
-public interface IStatementImportCommitService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;StatementImportCommitResultDto&gt; CommitAsync(StatementImportCommitRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:62](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L62) |  |
-| <code>Task&lt;StatementImportValidationResult&gt; ValidateAsync(StatementSourceDocument document, string? connectorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:71](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L71) | Validates a statement document through the connector pipeline (resolve connector, parse, no commit), so the newly supported bank formats are validatable from the CLI just as they are importable. Returns the record count and any blocking parse errors. |
-
-## IStatementMappingProfileStore
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementMappingProfileStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L11).
-
-Lists, saves, and deletes versioned statement mapping profile documents.
-
-```csharp
-public interface IStatementMappingProfileStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;StatementMappingProfileDocument&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L13) |  |
-| <code>Task&lt;StatementMappingProfileDocument&gt; UpsertAsync(StatementMappingProfileDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L16) | Creates or replaces an operator-owned profile document. Built-in ids are rejected. |
-| <code>Task&lt;bool&gt; DeleteAsync(string profileId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L18) |  |

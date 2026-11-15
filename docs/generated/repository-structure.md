@@ -6939,8 +6939,10 @@ Meridian-main
 │   │   │   │   └── OnboardingOpeningSources.cs
 │   │   │   ├── OnboardingBookOfRecordGuard.cs
 │   │   │   ├── OnboardingInterfaces.cs
+│   │   │   ├── OnboardingWorkspaceRetention.cs
 │   │   │   ├── OnboardingWorkspaceService.cs
-│   │   │   └── OnboardingWorkspaceService.Shadow.cs
+│   │   │   ├── OnboardingWorkspaceService.Shadow.cs
+│   │   │   └── PostgresOnboardingWorkspaceStore.cs
 │   │   ├── OperationsContinuity
 │   │   │   ├── CloseReadinessProjection.cs
 │   │   │   ├── FinancialOperationsCommandCenterReadService.CloseInputs.cs
@@ -8254,7 +8256,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_068__period_close_snapshots.sql
 │   │   │   │   ├── V_ledger_069__automated_posting_grants.sql
 │   │   │   │   ├── V_ledger_070__automatic_policy_snapshot.sql
-│   │   │   │   └── V_ledger_071__fee_economic_identity.sql
+│   │   │   │   ├── V_ledger_071__fee_economic_identity.sql
+│   │   │   │   └── V_ledger_072__onboarding_workspaces.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -10550,6 +10553,7 @@ Meridian-main
 │   │   │   │   ├── IntercompanyAgreementWorkspace.cs
 │   │   │   │   ├── IntercompanyAgreementWorkspace.LegacyCoverage.cs
 │   │   │   │   ├── IntercompanyAgreementWorkspace.StructuredTerms.cs
+│   │   │   │   ├── OnboardingShadowWorkspace.cs
 │   │   │   │   ├── PostedLedgerProjection.cs
 │   │   │   │   ├── WorkstationAccountingCloseApiClient.cs
 │   │   │   │   ├── WorkstationEntityConsolidationApiClient.cs
@@ -10557,7 +10561,8 @@ Meridian-main
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Obligations.cs
-│   │   │   │   └── WorkstationManualJournalApiClient.cs
+│   │   │   │   ├── WorkstationManualJournalApiClient.cs
+│   │   │   │   └── WorkstationOnboardingApiClient.cs
 │   │   │   ├── DataQuality
 │   │   │   │   ├── DataQualityApiClient.cs
 │   │   │   │   ├── DataQualityModels.cs
@@ -11763,6 +11768,7 @@ Meridian-main
 │   │   │   │   ├── AccountingConfigureViewModel.ManualJournals.cs
 │   │   │   │   ├── AccountingConfigureViewModel.ProductionReadiness.cs
 │   │   │   │   ├── AccountingConfigureViewModel.Setup.cs
+│   │   │   │   ├── AccountingConfigureViewModel.ShadowOnboarding.cs
 │   │   │   │   ├── AccountingConfigureViewModel.TenantAdministration.cs
 │   │   │   │   ├── AccountingWorkbenchPresentation.cs
 │   │   │   │   ├── AccountingWorkbenchRow.cs
@@ -12039,6 +12045,8 @@ Meridian-main
 │   │   │   ├── MessagingHubPage.xaml.cs
 │   │   │   ├── NotificationCenterPage.xaml
 │   │   │   ├── NotificationCenterPage.xaml.cs
+│   │   │   ├── OnboardingShadowControl.xaml
+│   │   │   ├── OnboardingShadowControl.xaml.cs
 │   │   │   ├── OperationsContinuityPage.xaml
 │   │   │   ├── OperationsContinuityPage.xaml.cs
 │   │   │   ├── OperationsRecordReleasePage.xaml
@@ -13309,6 +13317,7 @@ Meridian-main
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.AcceptanceTests.cs
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.PublicationTests.cs
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.ScopeTests.cs
+│   │   │   │   ├── FinancialOperationsCommandCenterReadService.ShadowAgreementTests.cs
 │   │   │   │   ├── FinancialOperationsCommandCenterReadServiceTests.cs
 │   │   │   │   └── OperationsReviewedAutomationProjectionTests.cs
 │   │   │   ├── PrivateCapital
@@ -14395,6 +14404,7 @@ Meridian-main
 │   │   │   ├── MeridianDatabaseEnvironmentTests.cs
 │   │   │   ├── MetadataTagServiceTests.cs
 │   │   │   ├── MetadataTagServiceTests.Durability.cs
+│   │   │   ├── OnboardingWorkspacePostgresTests.cs
 │   │   │   ├── OpenLotBackfillPostgresTests.AuthorityFixture.cs
 │   │   │   ├── OpenLotBackfillPostgresTests.cs
 │   │   │   ├── OpenLotBackfillPostgresTests.TransactionAuthority.cs
@@ -15062,6 +15072,7 @@ Meridian-main
 │   │   │   ├── NotificationServiceBaseTests.cs
 │   │   │   ├── NotificationServiceTests.cs
 │   │   │   ├── OAuthRefreshServiceTests.cs
+│   │   │   ├── OnboardingShadowWorkspaceTests.cs
 │   │   │   ├── OrderBookVisualizationServiceTests.cs
 │   │   │   ├── PortfolioImportServiceTests.cs
 │   │   │   ├── PostedLedgerProjectionTests.cs

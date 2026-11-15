@@ -6,6 +6,102 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolStorageStats
+
+Qualified name: <code>Meridian.Ui.Services.SymbolStorageStats</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:53](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L53).
+
+Summarizes a symbol&#x27;s stored bytes, events, files, quality, and per-type usage.
+
+```csharp
+public sealed class SymbolStorageStats
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:55](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L55) |  |
+| <code>public long TotalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:56](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L56) |  |
+| <code>public long TotalEvents { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:57](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L57) |  |
+| <code>public int FileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:58](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L58) |  |
+| <code>public double DataQuality { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:59](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L59) |  |
+| <code>public int GapCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:60](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L60) |  |
+| <code>public Dictionary&lt;string, long&gt; SizeByType { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:61](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L61) |  |
+| <code>public Dictionary&lt;string, long&gt; EventsByType { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:62](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L62) |  |
+
+## SymbolTransform
+
+Qualified name: <code>Meridian.Ui.Services.SymbolTransform</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:783](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L783).
+
+Symbol transformation types.
+
+```csharp
+public enum SymbolTransform : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:786](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L786) | No transformation, identity. |
+| <code>Uppercase</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:788](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L788) | Convert to uppercase. |
+| <code>Lowercase</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:790](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L790) | Convert to lowercase. |
+| <code>DotsToSpaces</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:792](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L792) | Replace dots with spaces (IB format). |
+| <code>DotsToDashes</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:794](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L794) | Replace dots with dashes (Yahoo format). |
+| <code>StooqFormat</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:796](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L796) | Stooq format: lowercase with .us suffix. |
+
+## SymbolValidationResult
+
+Qualified name: <code>Meridian.Ui.Services.SymbolValidationResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:604](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L604).
+
+Reports symbol validity, normalization, suggested contract details, and trading availability.
+
+```csharp
+public sealed class SymbolValidationResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:606](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L606) |  |
+| <code>public bool IsValid { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:607](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L607) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:608](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L608) |  |
+| <code>public string? NormalizedSymbol { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:609](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L609) |  |
+| <code>public string? SuggestedExchange { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:610](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L610) |  |
+| <code>public string? SecurityType { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:611](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L611) |  |
+| <code>public bool IsAvailableForTrading { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:612](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L612) |  |
+
+## SystemEvent
+
+Qualified name: <code>Meridian.Ui.Services.SystemEvent</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SystemHealthService.cs:263](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L263).
+
+Describes a timestamped system event with severity, source, message, and structured details.
+
+```csharp
+public sealed class SystemEvent
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:265](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L265) |  |
+| <code>public string EventType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:266](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L266) |  |
+| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:267](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L267) |  |
+| <code>public string Source { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:268](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L268) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:269](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L269) |  |
+| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:270](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L270) |  |
+| <code>public Dictionary&lt;string, object&gt;? Details { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:271](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L271) |  |
+
 ## SystemHealthService
 
 Qualified name: <code>Meridian.Ui.Services.SystemHealthService</code>. Kind: `class`.
@@ -1029,82 +1125,3 @@ Enum declarations:
 | <code>Info</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:75](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L75) |  |
 | <code>Warning</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:76](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L76) |  |
 | <code>Error</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:77](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L77) |  |
-
-## VolumePriceLevel
-
-Qualified name: <code>Meridian.Ui.Services.VolumePriceLevel</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ChartingService.cs:621](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L621).
-
-Volume at price level.
-
-```csharp
-public sealed class VolumePriceLevel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal PriceLevel { get; set; }</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:623](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L623) |  |
-| <code>public decimal Volume { get; set; }</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:624](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L624) |  |
-| <code>public double Intensity { get; set; }</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:625](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L625) |  |
-
-## VolumeProfileData
-
-Qualified name: <code>Meridian.Ui.Services.VolumeProfileData</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ChartingService.cs:610](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L610).
-
-Volume profile data.
-
-```csharp
-public sealed class VolumeProfileData
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public List&lt;VolumePriceLevel&gt; Levels { get; } = new ();</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:612](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L612) |  |
-| <code>public decimal PointOfControl { get; set; }</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:613](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L613) |  |
-| <code>public decimal ValueAreaHigh { get; set; }</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:614](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L614) |  |
-| <code>public decimal ValueAreaLow { get; set; }</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:615](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L615) |  |
-
-## WatchlistData
-
-Qualified name: <code>Meridian.Ui.Services.WatchlistData</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WatchlistService.cs:104](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L104).
-
-Watchlist data containing watched symbols.
-
-```csharp
-public sealed class WatchlistData
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public List&lt;WatchlistItem&gt; Symbols { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:106](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L106) |  |
-| <code>public List&lt;WatchlistGroup&gt; Groups { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:107](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L107) |  |
-
-## WatchlistGroup
-
-Qualified name: <code>Meridian.Ui.Services.WatchlistGroup</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WatchlistService.cs:123](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L123).
-
-A group of symbols in a watchlist.
-
-```csharp
-public sealed class WatchlistGroup
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:125](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L125) |  |
-| <code>public List&lt;string&gt; Symbols { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:126](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L126) |  |

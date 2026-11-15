@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IStatementImportCommitService
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementImportCommitService</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L60).
+
+Validates statement source requests and commits accepted imports with retained evidence.
+
+```csharp
+public interface IStatementImportCommitService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;StatementImportCommitResultDto&gt; CommitAsync(StatementImportCommitRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:62](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L62) |  |
+| <code>Task&lt;StatementImportValidationResult&gt; ValidateAsync(StatementSourceDocument document, string? connectorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:71](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L71) | Validates a statement document through the connector pipeline (resolve connector, parse, no commit), so the newly supported bank formats are validatable from the CLI just as they are importable. Returns the record count and any blocking parse errors. |
+
+## IStatementMappingProfileStore
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementMappingProfileStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L11).
+
+Lists, saves, and deletes versioned statement mapping profile documents.
+
+```csharp
+public interface IStatementMappingProfileStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;StatementMappingProfileDocument&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L13) |  |
+| <code>Task&lt;StatementMappingProfileDocument&gt; UpsertAsync(StatementMappingProfileDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L16) | Creates or replaces an operator-owned profile document. Built-in ids are rejected. |
+| <code>Task&lt;bool&gt; DeleteAsync(string profileId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L18) |  |
+
 ## OfxDocument
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Ofx.OfxDocument</code>. Kind: `record`.
@@ -803,33 +842,3 @@ Result of a single reconciliation engine run.
 ```csharp
 public sealed record EngineReconciliationResult(Guid RunId, string PortfolioId, DateTimeOffset AsOf, DateTimeOffset StartedAt, DateTimeOffset CompletedAt, int TotalChecks, int MatchCount, int BreakCount, PortfolioLedgerCheckResultDto[] Matches, PortfolioLedgerCheckResultDto[] Breaks, IReadOnlyDictionary<string, SecurityDetailDto> ResolvedSecurities);
 ```
-
-## ExternalStatementCaseIntakeResult
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ExternalStatementCaseIntakeResult</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:1062](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L1062).
-
-```csharp
-public sealed record ExternalStatementCaseIntakeResult(string ImportId, string SourceKind, string SourcePath, int RowCount, int MatchCount, IReadOnlyList<ReconciliationCase> Cases);
-```
-
-## FileAccountCashReconciliationStore
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileAccountCashReconciliationStore</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs#L21).
-
-Explicitly provisioned atomic state partitioned per exact account scope, with a cross-process lease spanning each scoped mutation.
-
-```csharp
-public sealed class FileAccountCashReconciliationStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileAccountCashReconciliationStore(string dataRoot);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs:35](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs#L35) |  |
-| <code>public static string ScopeFileName(AccountCashReconciliationScope scope);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs:42](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs#L42) | Canonical file-system-safe identity of one scope; the envelope re-states the scope so a misplaced file fails closed. |
-| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs#L48) |  |

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorReadinessPanelRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperatorReadinessPanelRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:21](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L21).
+
+```csharp
+public sealed record OperatorReadinessPanelRowModel(string Id, string Label, string Value, string Detail, string Meta, WorkstationReadinessTone ReadinessTone, string Tone);
+```
+
 ## OperatorReadinessWorkItemRowModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.OperatorReadinessWorkItemRowModel</code>. Kind: `record`.
@@ -809,21 +819,3 @@ Declared public members:
 | <code>public string Source { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs#L10) |  |
 | <code>public string Target { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs#L11) |  |
 | <code>public string Status { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs:12](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs#L12) |  |
-
-## RoutingMatrixViewModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.RoutingMatrixViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs:18](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs#L18).
-
-Exposes an observable collection of source-to-target routing rows.
-
-```csharp
-public sealed class RoutingMatrixViewModel : Meridian.Wpf.ViewModels.BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ObservableCollection&lt;RoutingMatrixRow&gt; Rows { get; } = [];</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs:20](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs#L20) |  |

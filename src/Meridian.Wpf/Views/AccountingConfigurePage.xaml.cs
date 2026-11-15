@@ -48,6 +48,7 @@ public partial class AccountingConfigurePage : Page
         _viewModel.AuditChainIntegrity.Cancel();
         _viewModel.FactorPaydown.Cancel();
         _viewModel.EntityConsolidation.Cancel();
+        _viewModel.ShadowOnboarding.Cancel();
         _loadCts?.Cancel();
         _loadCts?.Dispose();
         _loadCts = null;

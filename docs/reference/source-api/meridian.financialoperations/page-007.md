@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExternalStatementCaseIntakeResult
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ExternalStatementCaseIntakeResult</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:1062](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L1062).
+
+```csharp
+public sealed record ExternalStatementCaseIntakeResult(string ImportId, string SourceKind, string SourcePath, int RowCount, int MatchCount, IReadOnlyList<ReconciliationCase> Cases);
+```
+
+## FileAccountCashReconciliationStore
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileAccountCashReconciliationStore</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs#L21).
+
+Explicitly provisioned atomic state partitioned per exact account scope, with a cross-process lease spanning each scoped mutation.
+
+```csharp
+public sealed class FileAccountCashReconciliationStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileAccountCashReconciliationStore(string dataRoot);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs:35](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs#L35) |  |
+| <code>public static string ScopeFileName(AccountCashReconciliationScope scope);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs:42](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs#L42) | Canonical file-system-safe identity of one scope; the envelope re-states the scope so a misplaced file fails closed. |
+| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs#L48) |  |
+
 ## FileAccountingCalendar
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileAccountingCalendar</code>. Kind: `class`.
@@ -899,31 +929,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:904](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L904) | Unit price in the same currency as the monetary amount, when explicitly available. |
-
-## NormalizedStatementTransaction
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.NormalizedStatementTransaction</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:921](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L921).
-
-```csharp
-public sealed record NormalizedStatementTransaction(string TransactionId, string? ExternalTransactionId, string Account, string? SecurityId, string? Currency, DateOnly TradeDate, DateOnly SettlementDate, string TransactionType, decimal Quantity, decimal NetAmount, string EvidenceReference) : IStatementMatchItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:935](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L935) | Unit price in the same currency as the monetary amount, when explicitly available. |
-
-## PortfolioPositionInput
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.PortfolioPositionInput</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs:219](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs#L219).
-
-A single portfolio position passed into the reconciliation engine.
-
-```csharp
-public sealed record PortfolioPositionInput(string Symbol, decimal MarketValue);
-```

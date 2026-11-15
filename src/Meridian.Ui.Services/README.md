@@ -54,6 +54,19 @@ input, server capabilities, exact approved versions, evidence and review history
 agreement authority in the desktop client. Source-line responses verify agreement/book/date identity
 and retain exact amount strings. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+`WorkstationOnboardingApiClient` and `OnboardingShadowWorkspace` bring shadow-mode onboarding
+(W11-SHADOW-001) to the desktop over the browser's onboarding routes. The panel covers:
+
+- designation and withdrawal
+- opening-balance import, with file content sent base64-encoded
+- the combined opening report and uncovered kinds
+- explanations for opening breaks and period differences
+- the parallel-run certificate and promotion
+
+Onboarding refusals surface the server's `{ "error": ... }` sentence. Responses for another workspace,
+certificate or book are refused with 502. Every mutation carries the workspace version. A 409 reloads the
+server copy and keeps the operator's inputs. Late responses from an earlier selection are discarded.
+
 Shared API response options accept exact decimal strings as well as legacy numeric tokens, so
 typed fixed-income reads preserve nullable and nested financial values. API request serialization
 continues to emit numbers; compact storage, pretty-print and retained calculation serializers are
