@@ -9,7 +9,7 @@ using Meridian.Contracts.FundStructure;
 namespace Meridian.Ui.Services.Services.Accounting;
 
 /// <summary>Desktop presentation state over the same governed agreement API as the browser.</summary>
-public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposable
+public sealed partial class IntercompanyAgreementWorkspace : ObservableObject, IDisposable
 {
     private readonly IWorkstationIntercompanyAgreementApiClient _client;
     private CancellationTokenSource _sessionCancellation = new();
@@ -45,11 +45,12 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
         DiscardCommand = new RelayCommand(Discard, () => !IsBusy && IsEditing);
         SaveCommand = new AsyncRelayCommand(SaveAsync, () => !IsBusy && IsEditing);
         SubmitCommand = Decision("submit", () => Detail?.Capabilities.CanSubmit == true);
-        ApproveCommand = Decision("approve", () => Detail?.Capabilities.CanApprove == true);
+        ApproveCommand = Decision("approve", () => UseExternalReview ? Detail?.Capabilities.CanAttestExternalReview == true : Detail?.Capabilities.CanApprove == true);
         RejectCommand = Decision("reject", () => Detail?.Capabilities.CanReject == true);
         WithdrawCommand = Decision("withdraw", () => Detail?.Capabilities.CanWithdraw == true);
         LoadJournalLinesCommand = new AsyncRelayCommand(() => LoadJournalLinesAsync(false), () => !IsBusy && !IsDirty && Detail is not null);
         MoreJournalLinesCommand = new AsyncRelayCommand(() => LoadJournalLinesAsync(true), () => !IsBusy && !IsDirty && Detail is not null && _journalCursor is not null);
+        InitializeStructuredCommands();
     }
 
     public ObservableCollection<IntercompanyAgreementDetailDto> Agreements { get; } = [];
@@ -78,12 +79,12 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
     public string EntityFilter { get => _entity; set => ChangeScope(ref _entity, value); }
     public string AsOf { get => _asOf; set => ChangeScope(ref _asOf, value); }
     public IntercompanyAgreementDetailDto? SelectedRow { get => _selectedRow; set { SetProperty(ref _selectedRow, value); NotifyCommands(); } }
-    public IntercompanyAgreementDetailDto? Detail { get => _detail; private set { SetProperty(ref _detail, value); OnPropertyChanged(nameof(MigrationWarnings)); NotifyCommands(); } }
+    public IntercompanyAgreementDetailDto? Detail { get => _detail; private set { SetProperty(ref _detail, value); OnPropertyChanged(nameof(MigrationWarnings)); OnPropertyChanged(nameof(RetainedStructuredTermsSummary)); NotifyCommands(); } }
     public string MigrationWarnings => string.Join(Environment.NewLine, Detail?.MigrationWarnings ?? []);
     public IntercompanyAgreementRevisionDto? SelectedRevision
     {
         get => _selectedRevision;
-        set { SetProperty(ref _selectedRevision, value); OnPropertyChanged(nameof(SelectedRevisionSummary)); OnPropertyChanged(nameof(PreviousRevisionSummary)); }
+        set { SetProperty(ref _selectedRevision, value); OnPropertyChanged(nameof(SelectedRevisionSummary)); OnPropertyChanged(nameof(PreviousRevisionSummary)); DatePreviewPeriods.Clear(); DatePreviewStatus = "Select Preview to inspect dates for this exact retained version."; NotifyStructuredCommands(); }
     }
     public string SelectedRevisionSummary => RevisionSummary(SelectedRevision);
     public string PreviousRevisionSummary => RevisionSummary(Detail?.Revisions.FirstOrDefault(r => r.AgreementVersion == SelectedRevision?.PredecessorAgreementVersion));
@@ -92,7 +93,7 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
           + (_conflictDetail.Proposals.LastOrDefault(p => p.State is IntercompanyAgreementProposalStateDto.Draft or IntercompanyAgreementProposalStateDto.Submitted) is { } proposal
               ? $"Open proposal: {proposal.State}; base approved version {proposal.BaseAgreementVersion}\n" + DraftSummary(proposal.Draft)
               : RevisionSummary(_conflictDetail.ApplicableRevision ?? _conflictDetail.Revisions.LastOrDefault()));
-    public string LedgerBook { get => _ledgerBook; set { if (SetProperty(ref _ledgerBook, value)) ResetJournalLines(); } }
+    public string LedgerBook { get => _ledgerBook; set { if (SetProperty(ref _ledgerBook, value)) { ResetJournalLines(); ResetObligationMonitor(); } } }
     public string JournalStatus { get => _journalStatus; private set => SetProperty(ref _journalStatus, value); }
     public string Code { get => _code; set => Edit(ref _code, value); }
     public string Name { get => _name; set => Edit(ref _name, value); }
@@ -120,7 +121,7 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
     private void Edit(ref string field, string value, [System.Runtime.CompilerServices.CallerMemberName] string? property = null)
     {
         if (SetProperty(ref field, value ?? "", property) && IsEditing)
-            IsDirty = true;
+        { IsDirty = true; InvalidateDatePreview(); }
     }
 
     private void ChangeScope(ref string field, string value, [System.Runtime.CompilerServices.CallerMemberName] string? property = null)
@@ -129,8 +130,14 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
         { StatusText = "Save or discard local edits before changing the agreement scope."; OnPropertyChanged(property); return; }
         if (!SetProperty(ref field, value ?? "", property))
             return;
+        _sessionGeneration++;
+        _sessionCancellation.Cancel();
+        _sessionCancellation.Dispose();
+        _sessionCancellation = new CancellationTokenSource();
+        IsBusy = false;
         _cursor = null;
         _canCreate = false;
+        ResetObligationMonitor();
         Agreements.Clear();
         SelectedRow = null;
         Detail = null;
@@ -301,7 +308,8 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
     {
         var proposal = Detail?.Proposals.LastOrDefault(p => p.State is IntercompanyAgreementProposalStateDto.Draft or IntercompanyAgreementProposalStateDto.Submitted);
         var command = new IntercompanyAgreementCommandDto(Guid.Empty, _agreementId, Detail?.AggregateVersion ?? 0,
-            draft is null ? proposal?.ProposalId ?? _proposalId : _proposalId, draft, Rationale, proposal?.SubmittedHash);
+            draft is null ? proposal?.ProposalId ?? _proposalId : _proposalId, draft, Rationale, proposal?.SubmittedHash)
+        { ExternalReview = action == "approve" && UseExternalReview ? BuildExternalReview(proposal?.SubmittedHash ?? throw new InvalidOperationException("A frozen submitted hash is required.")) : null };
         var key = action + JsonSerializer.Serialize(command);
         if (key != _retryKey)
         { _retryKey = key; _retryId = Guid.NewGuid(); }
@@ -319,16 +327,16 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
 
     private IntercompanyAgreementDraftDto BuildDraft()
     {
-        decimal? rate = string.IsNullOrWhiteSpace(FixedAnnualRate) ? null : decimal.TryParse(FixedAnnualRate, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var parsedRate)
+        decimal? rate = UseStructuredTerms || string.IsNullOrWhiteSpace(FixedAnnualRate) ? null : decimal.TryParse(FixedAnnualRate, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var parsedRate)
             ? parsedRate : throw new InvalidOperationException("Annual rate must be a decimal fraction, for example 0.05.");
-        int? days = string.IsNullOrWhiteSpace(SettlementDays) ? null : int.TryParse(SettlementDays, NumberStyles.None, CultureInfo.InvariantCulture, out var parsedDays)
+        int? days = UseStructuredTerms || string.IsNullOrWhiteSpace(SettlementDays) ? null : int.TryParse(SettlementDays, NumberStyles.None, CultureInfo.InvariantCulture, out var parsedDays)
             ? parsedDays : throw new InvalidOperationException("Settlement days must be a nonnegative whole number.");
         var evidence = new List<IntercompanyAgreementEvidenceDto>(_additionalEvidence);
         if (!string.IsNullOrWhiteSpace(EvidenceReference))
             evidence.Insert(0, new(EvidenceReference.Trim(), string.IsNullOrWhiteSpace(EvidenceArtifact) ? null : EvidenceArtifact.Trim()));
         return new(Code, Name, ParseId(PartyOne, "First party"), PartyOneRole, ParseId(PartyTwo, "Second party"), PartyTwoRole,
             AgreementType, Currency, Date(EffectiveFrom, "Effective start"), OptionalDate(EffectiveTo, "Effective end"),
-            new(rate, RateDescription, Schedule, Allocation, days, Notes), evidence, _action,
+            new IntercompanyAgreementTermsDto(UseStructuredTerms ? null : rate, RateDescription, Schedule, Allocation, UseStructuredTerms ? null : days, Notes) { StructuredTerms = BuildStructuredTerms() }, evidence, _action,
             _action == IntercompanyAgreementActionDto.Terminate ? Date(TerminationDate, "Termination date") : null, Purpose);
     }
 
@@ -376,6 +384,7 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
         SettlementDays = draft.Terms?.SettlementDays?.ToString(CultureInfo.InvariantCulture) ?? "";
         Notes = draft.Terms?.Notes ?? "";
         Purpose = draft.Purpose ?? "";
+        FillStructuredTerms(draft.Terms?.StructuredTerms);
         var first = draft.Evidence?.FirstOrDefault();
         EvidenceReference = first?.Reference ?? "";
         EvidenceArtifact = first?.ArtifactId ?? "";
@@ -412,6 +421,7 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
         IsEditing = false;
         IsDirty = false;
         _canCreate = false;
+        ResetObligationMonitor();
         Agreements.Clear();
         SelectedRow = null;
         Detail = null;
@@ -424,6 +434,11 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
         LedgerBook = "";
         Fill(new("", "", Guid.Empty, "", Guid.Empty, "", IntercompanyAgreementTypeDto.Loan, "", DateOnly.FromDateTime(DateTime.UtcNow)));
         Rationale = "";
+        LegacyPreparedBy = LegacyTransactionId = LegacyEvidenceReference = LegacyReviewRationale = "";
+        _legacyRetryPayload = null;
+        _legacyRequestId = Guid.Empty;
+        UseExternalReview = false;
+        ExternalReviewer = ReviewerReference = ReviewedOn = ReviewEvidenceReference = ReviewEvidenceArtifact = ReviewEvidenceHash = "";
         ResetJournalLines();
         IsBusy = false;
         StatusText = "Session changed. Load agreements for the signed-in account.";
@@ -454,7 +469,8 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
         if (revision is null)
             return "No retained revision selected.";
         return $"Version {revision.AgreementVersion} — {revision.Action}\n" + DraftSummary(revision.Terms)
-            + $"\nApproved UTC: {revision.ApprovedAtUtc:O}\nApprover: {revision.Approver}\nRationale: {revision.Rationale}";
+            + $"\nApproved UTC: {revision.ApprovedAtUtc:O}\nApprover: {revision.Approver}\nRationale: {revision.Rationale}"
+            + (revision.ExternalReview is { } external ? $"\nExternally reviewed by {external.ExternalReviewer} ({external.ReviewerReference}) on {external.ReviewedOn:yyyy-MM-dd}; attested by {external.Operator}. Evidence: {external.Evidence.Reference}; {external.Evidence.ArtifactId}; {external.Evidence.ContentHash}" : "");
     }
 
     private static string DraftSummary(IntercompanyAgreementDraftDto draft)
@@ -465,6 +481,7 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
             + $"Annual rate fraction: {draft.Terms?.FixedAnnualRate?.ToString(CultureInfo.InvariantCulture) ?? "not stated"}\n{draft.Terms?.RateDescription}\n"
             + $"Schedule: {draft.Terms?.ScheduleDescription}\nAllocation: {draft.Terms?.AllocationDescription}\nSettlement days: {draft.Terms?.SettlementDays}\n"
             + $"Terms: {draft.Terms?.Notes}\nPurpose: {draft.Purpose}\n"
+            + StructuredSummary(draft.Terms?.StructuredTerms) + "\n"
             + string.Join("\n", (draft.Evidence ?? []).Select(e => $"Evidence: {e.Reference}; artifact {e.ArtifactId}; hash {e.ContentHash}"));
     private void NotifyCommands()
     {
@@ -484,5 +501,6 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
         ApproveCommand?.NotifyCanExecuteChanged();
         RejectCommand?.NotifyCanExecuteChanged();
         WithdrawCommand?.NotifyCanExecuteChanged();
+        NotifyStructuredCommands();
     }
 }

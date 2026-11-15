@@ -4,7 +4,7 @@
 
 **Owner:** Accounting and Ledger
 
-**Reviewed:** 2026-11-12
+**Reviewed:** 2026-11-14
 
 Use Accounting's entity/intercompany and consolidation views to inspect the shared entity timeline,
 agreements, books, source evidence, counterpart proposals and consolidation output. Desktop uses
@@ -15,7 +15,7 @@ preview is not a posted balance.
    windows and successor identities. Uncovered history remains unknown.
 2. Configure chart roles and append bindings for stable chart nodes. Keep old ledger names as
    historical aliases when renaming. Use one unambiguous output account per elimination role.
-3. Create and independently approve legal terms and exact retained agreement evidence in the
+3. Create and review legal terms and exact retained agreement evidence in the
    canonical agreement registry. In Accounting profiles, select that exact approved legal version
    and hash, then configure the party books, accounting template and stable account mappings.
    Legal terms are read-only there. Approve the exact profile revision before governed posting.
@@ -50,6 +50,68 @@ preview is not a posted balance.
    authority requires a rerun. Corrections are new linked adjustments; process elimination dates
    in order.
 
+For structured legal terms, retain a new native proposal rather than editing an approved version
+or an accounting profile. Declare annual decimal rates, basis-point spreads, schedules, calendar
+and allocation references explicitly. Use the date preview to inspect boundaries and payment dates;
+it calculates no interest, fees or ledger due dates. Legacy calendar-day settlement terms are not
+converted to business days automatically. A missing calendar or an unstructured agreement remains
+unavailable for date preview.
+
+## Accruing loan interest
+
+Interest on a fixed-rate, simple-interest intercompany loan can be calculated from its approved
+structured terms. It needs two approved accounting profiles of the same legal agreement: the `Loan`
+profile that carries posted principal, and a `LoanInterest` profile that maps interest receivable and
+payable and puts interest income on one party against interest expense on the other.
+
+1. Preview with `POST /api/ledger/intercompany/accruals/preview`, giving the source book, the two
+   profile IDs and the window. `accrualTo` is exclusive: June is `2026-06-01` to `2026-07-01`.
+   Nothing is saved. The response shows each slice, the rounded amount, the draft that would be
+   retained and an evidence digest.
+2. Draft with `POST /api/ledger/intercompany/accruals/drafts`, sending the same selection and the
+   digest from the preview. If terms, profiles, principal or FX changed in between, the request is
+   refused and you preview again.
+3. Review the draft in the source book's journal queue like any other entry. It is dated on the last
+   accrued day and is not submitted, approved or posted for you.
+4. After it posts, the counterpart arrives as a proposal draft in the other entity's review queue.
+
+Both routes need ledger management permission. You cannot supply a rate, day count, principal or
+amount; they are resolved from approved records. Do not edit the computed lines. If the amount is
+wrong, correct the terms, profile or principal and recompute: a draft that has not yet been submitted
+is refreshed in place, and edited lines block review.
+
+An accrual is unavailable, with the reason stated, when a day in the window has no approved
+`LoanInterest` profile revision or falls outside the declared schedule; when the loan is
+floating-rate, compounding or unstructured; when no principal is posted under the `Loan` profile;
+when a posted accrual already covers part of the window (reverse it first); when the source book has
+no open period containing the last accrued day; or when a cross-currency loan has no approved FX
+configuration. After an amendment, approve a `LoanInterest` profile revision that pins the amended
+legal version before accruing the affected days; the days on each side of the amendment then use
+their own rate. Fees are not calculated.
+
+Ordinary legal approval retains the independent-reviewer rule. To attest an external legal review,
+select the exact submitted hash and accepted retained review document, identify the distinct
+external reviewer and date, and supply the attestation rationale. The preparing Meridian operator
+may record this separate decision; the audit identifies the external reviewer and authenticated
+attester separately. The same evidence-bound option applies to legal lifecycle revisions. It does
+not authorize self-approval of a journal.
+
+Existing legacy-attribution review stays independent by default. Explicit operator-reviewed mode
+requires the same retained preparing/reviewing operator, evidence and review rationale. Inspect the
+exact source digest and legal/profile/account pins before recording it; a correction appends a new
+attribution rather than changing the posted line.
+
+To retract an active assertion, append a reviewed successor with `Revoked = true`, the exact
+expected prior attribution and a review rationale. Preserve every source, legal/profile, account
+and transaction pin; do not use revocation to relink an assertion. The active projection excludes
+the retracted assertion, and its immutable history remains available.
+
+Evaluate obligation advisories for the selected book/fund and as-of date. The default expiry horizon
+is 30 calendar days. Inspect expiry, coverage, lifecycle and guarantee findings and their source
+versions; refresh stale results and investigate unavailable authority. These advisory findings do
+not change close-readiness blockers or posting eligibility. Existing blocking balance-schedule
+requirements and controlled-close rules remain authoritative.
+
 For WindingDown, use a retained controlled-close authorization for the exact settlement, closing
 expense, tax, revaluation or correction obligation. New commitments remain blocked. Dissolved and
 Merged entities remain readable; exceptional correction requires separately approved evidence.
@@ -64,8 +126,15 @@ The shared API families are `/api/fund-structure/intercompany-agreements`,
 `/api/ledger/intercompany-accounting-arrangements`, entity
 `/lifecycle` and `/timeline`, `/api/ledger/intercompany/account-bindings`,
 `/api/ledger/intercompany/legacy-attributions`, `/api/ledger/intercompany/proposals`,
-`/api/ledger/intercompany/breaks`, book `/controls`, `/api/ledger/consolidation`, and its `/transitions` preview/activation/history routes.
+`/api/ledger/intercompany/accruals`, `/api/ledger/intercompany/breaks`, book `/controls`, `/api/ledger/consolidation`, and its `/transitions` preview/activation/history routes.
 Use the host's authenticated capability responses; service absence is an unavailable capability.
+The native agreement `/{id}/schedule` read selects an approved version or proposal for dates-only
+preview. `/api/ledger/intercompany/obligations` requires an owned ledger book and explicit as-of
+date, with optional `expiryHorizonDays` defaulting to 30. The response retains schedule/guarantee
+observations and source fingerprints without granting financial authority.
+Decimal amounts on this new monitor response are exact strings. The existing canonical balance
+schedule's numeric JSON and fingerprint remain unchanged; clients must not reserialize the
+monitor response to manufacture a canonical schedule hash.
 PostgreSQL is the governed multi-resource commit authority. File stores are durable local/demo
 counterparts and do not establish production certification or cross-process transactional fencing.
 

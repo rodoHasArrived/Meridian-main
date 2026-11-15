@@ -25,7 +25,7 @@ public sealed partial class OrderManagementSystem
         var id = request.ClientOrderId ?? throw new InvalidOperationException("Journal intent requires an assigned client order ID.");
         var hash = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(request, ExecutionJsonContext.Default.OrderRequest));
         var reportingAssetClass = kind == "Dispatch" && _instrumentCoverage is not null
-            && await _instrumentCoverage.IsUsdEquityAsync(request, ct).ConfigureAwait(false) ? "USD_US_EQUITY" : null;
+            && await _instrumentCoverage.IsUsdEquityAsync(request, ct).ConfigureAwait(false) ? ExecutionReportingAssetClasses.UsdUsEquity : null;
         await _journal.AppendAsync(new ExecutionJournalEntry(1, JournalEventId($"{kind}:{id}:{hash}", attemptId), JournalScope,
             request.FundAccountId, id, kind, DateTimeOffset.UtcNow, Request: request,
             Reference: kind == "Dispatch" ? _marketReferences?.GetReference(request.Symbol, request.Side) : null,

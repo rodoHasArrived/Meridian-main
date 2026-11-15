@@ -331,7 +331,10 @@ public sealed class ApiClientService : IDisposable
             if (!response.IsSuccessStatusCode)
             {
                 LoggingService.Instance.LogWarning(
-                    $"Workstation API login failed with {(int)response.StatusCode} {response.StatusCode}.");
+                    "Workstation API login failed with {StatusCode} {Status}.",
+                    null,
+                    ("StatusCode", ((int)response.StatusCode).ToString()),
+                    ("Status", response.StatusCode.ToString()));
             }
 
             return response.IsSuccessStatusCode;
@@ -367,7 +370,9 @@ public sealed class ApiClientService : IDisposable
         catch (Exception ex)
         {
             LoggingService.Instance.LogWarning(
-                $"Workstation API logout failed ({ex.Message}); expiring local session cookies anyway.");
+                "Workstation API logout failed ({Error}); expiring local session cookies anyway.",
+                ex,
+                ("Error", ex.Message));
         }
         finally
         {
@@ -401,8 +406,13 @@ public sealed class ApiClientService : IDisposable
                 if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
                 {
                     LoggingService.Instance.LogWarning(
-                        $"API {method} {url} failed with {(int)response.StatusCode} {response.StatusCode}; returning null. " +
-                        "Callers on the legacy null-based seam cannot distinguish this failure from absent data.");
+                        "API {Method} {Url} failed with {StatusCode} {Status}; returning null. " +
+                        "Callers on the legacy null-based seam cannot distinguish this failure from absent data.",
+                        null,
+                        ("Method", method.ToString()),
+                        ("Url", url),
+                        ("StatusCode", ((int)response.StatusCode).ToString()),
+                        ("Status", response.StatusCode.ToString()));
                 }
 
                 return null;
@@ -417,7 +427,8 @@ public sealed class ApiClientService : IDisposable
         }
         catch (Exception ex)
         {
-            LoggingService.Instance.LogError($"API {method} {url} threw; returning null.", ex);
+            LoggingService.Instance.LogError("API {Method} {Url} threw; returning null.", ex,
+                ("Method", method.ToString()), ("Url", url));
             return null;
         }
     }

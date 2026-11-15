@@ -23,7 +23,8 @@ public sealed record ProviderConnectionsConfig(
 }
 
 /// <summary>A host-selected provider connection; never a credential value or provider-wide fallback.</summary>
-public sealed record ProviderRuntimeCredentialBinding(string ProviderId, string TenantId, string ConnectionId);
+public sealed record ProviderRuntimeCredentialBinding(string ProviderId, string TenantId, string ConnectionId,
+    string? ExternalAccountId = null, string? Environment = null, string? SelectionId = null);
 
 /// <summary>
 /// One credentialed provider relationship.

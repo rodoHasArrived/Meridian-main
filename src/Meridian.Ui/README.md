@@ -6,10 +6,16 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.Ui
+
+The workstation bundle under `wwwroot/workstation/` is an ignored build product. Build `dashboard/`
+before starting the host from a fresh source checkout, or restore the CI artifact for the same
+revision. npm commands regenerate contract mirrors first. CI supplies the built bundle to .NET
+before project evaluation; commit authored inputs and reviewed documentation, not bundles or
+mechanical trackers. See [generated output delivery](../../docs/engineering/generated-output-delivery.md).
 
 The Providers workstation includes guarded failover, historical provider limits and routing previews,
 symbol rollout, validation profiles and quota history. Data and Settings share pending activation
@@ -41,6 +47,12 @@ funding review and notice governance as distinct states. No browser-local balanc
 new root navigation or live payment capability is introduced. See the dashboard and UI Shared
 READMEs for the exact support boundary and validation.
 
+The built workstation assets expose the existing Accounting and Reporting surfaces' three-way
+comparison, operator posting authority and frozen general-ledger export controls. Their domain
+state and mutations remain in shared protected services. Source changes live in `dashboard/`;
+regenerate `wwwroot/workstation/` from that source and avoid bundle regeneration during a host
+build, which captures hashed static-asset paths before copying them.
+
 The host-served workstation bundle uses paired React/React DOM runtime packages and preserves
 accessible separators between account labels, tab counts, and provider state badges. Dashboard
 runtime requirements remain declared in its package manifest and checked before dependency work.
@@ -52,7 +64,7 @@ provenance; printing does not fetch unmounted records or change report authority
 Run Ledger Explorer includes an inclusive UTC as-of date and accounting-package downloads in
 CSV, Excel, Parquet, or Arrow. The shared API enforces run visibility and supplies journal,
 trial-balance, cash-flow, and available retained lot schedules; missing lot evidence is explicit
-in the package. Rebuild `dashboard/` to refresh the checked-in workstation bundle.
+in the package. Rebuild `dashboard/` to refresh the CI-produced workstation bundle.
 
 Browser reconciliation queue source observations and retained occurrence age are projected separately from case status. Shared services own lineage, comparison evidence and SLA calendars.
 
@@ -67,9 +79,10 @@ Accounting's External GL surface includes bounded onboarding backed by shared re
 services. Rebuild the dashboard to serve source selection, comparison history, review controls and
 canonical frozen packet downloads. The host exposes no onboarding posting. Shadow-mode onboarding adds
 one audited authority transition: promoting a shadow book to book of record, which needs an
-independent reviewer and a verified parallel-run certificate.
+independent reviewer and a verified parallel-run certificate. The close command center routes a
+`shadow-agreement` close-readiness blocker to the External GL onboarding workspace.
 
-The checked-in workstation bundle includes retained manual-journal amount proof and durable
+The CI-produced workstation bundle includes retained manual-journal amount proof and durable
 reconciliation lineage display. Regenerate it from the dashboard after related source changes;
 close and report authority remains in the shared endpoint and service layer.
 
@@ -190,8 +203,9 @@ Dashboard source also carries the P4 entity, fund and period step (host bundle n
   or Account reads "All authorized"; an unset Period reads "All periods". Entity and fund are the
   `entityId` and `fundId` URL parameters, carried on every route and in storage, recent scopes,
   saved layouts, Copy link and the server-side default scope. Accounting applies `entityId`.
-  Portfolio > Brokerage sync (household accounts and positions) and Accounting > Close calendar
-  (close workflows) narrow their fund-account rows to the chosen fund or entity client-side, using
+  Portfolio > Brokerage sync (household accounts and positions), Accounting > Close calendar
+  (close workflows), Accounting > Operations continuity (workflow list) and Accounting > Statement
+  import (saved fetch schedules) narrow their fund-account rows to the chosen fund or entity client-side, using
   the organization graph; there the bar shows Entity and Fund as applied. Elsewhere, and on those
   screens when the structure read is unavailable, a set fund shows as retained (muted) and nothing is hidden.
 - The Trading inline account picker narrows its suggestions by the chosen entity and fund as the

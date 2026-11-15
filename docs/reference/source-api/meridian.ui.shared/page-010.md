@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CoveredCallChainPreviewResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallChainPreviewResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:36](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L36).
+
+Result returned by ICoveredCallChainProviderFactory.PreviewAsync.
+
+```csharp
+public sealed record CoveredCallChainPreviewResult(decimal UnderlyingPrice, IReadOnlyList<OptionCandidateInfo> Candidates)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool CoverageKnown { get; init; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:40](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L40) |  |
+| <code>public IReadOnlyList&lt;DateOnly&gt; RequestedExpirations { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:41](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L41) |  |
+| <code>public IReadOnlyList&lt;DateOnly&gt; LoadedExpirations { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:42](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L42) |  |
+| <code>public IReadOnlyList&lt;DateTimeOffset&gt; SnapshotTimes { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:43](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L43) |  |
+| <code>public int? MaxStrikesPerExpiration { get; init; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:44](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L44) |  |
+
 ## CoveredCallChainProviderAdapter
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallChainProviderAdapter</code>. Kind: `class`.
@@ -921,19 +943,3 @@ Declared public members:
 | <code>public async Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:277](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L277) | Appends an audit event and extends the tamper-evident chain over it. |
 | <code>public async Task&lt;AccountingAuditChainVerification&gt; VerifyAuditChainAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:408](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L408) | Verifies the retained audit chain against its events and its external head. |
 | <code>public async Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:424](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L424) |  |
-
-## AccountingConfigurationSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingConfigurationStore.AccountingConfigurationSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:459](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L459).
-
-```csharp
-public sealed record AccountingConfigurationSnapshot(IReadOnlyList<AccountingConfigurationWorkspaceDto> Workspaces, IReadOnlyList<AccountingActionAuditEventDto> AuditEvents, AccountingAuditChainState? AuditChain = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static AccountingConfigurationSnapshot Empty { get; } = new ([], []);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:464](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L464) |  |

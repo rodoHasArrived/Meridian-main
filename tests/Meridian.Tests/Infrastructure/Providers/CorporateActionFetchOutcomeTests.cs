@@ -289,11 +289,14 @@ public sealed class CorporateActionFetchOutcomeTests
         credentials.Get(Arg.Any<string>()).Returns(hasCredentials ? "synthetic-test-credential" : null);
         return providerId switch
         {
-            "alphavantage" => new AlphaVantageCorporateActionProvider(factory, configuration, NullLogger<AlphaVantageCorporateActionProvider>.Instance, credentials),
+            "alphavantage" => new AlphaVantageCorporateActionProvider(factory, configuration, NullLogger<AlphaVantageCorporateActionProvider>.Instance, credentials,
+                rateLimiterRegistry: AlphaVantageTestBudget.Create()),
             "finnhub" => new FinnhubCorporateActionProvider(factory, configuration, NullLogger<FinnhubCorporateActionProvider>.Instance, credentials),
             "nasdaq" => new NasdaqDataLinkCorporateActionProvider(factory, configuration, NullLogger<NasdaqDataLinkCorporateActionProvider>.Instance, credentials),
             "tiingo" => new TiingoCorporateActionProvider(factory, configuration, NullLogger<TiingoCorporateActionProvider>.Instance, credentials),
-            "twelvedata" => new TwelveDataCorporateActionProvider(factory, configuration, NullLogger<TwelveDataCorporateActionProvider>.Instance, credentials, rateLimiterRegistry: TwelveDataTestBudget.Create(automaticDelayLimit: TimeSpan.FromSeconds(20))),
+            "twelvedata" => new TwelveDataCorporateActionProvider(factory, configuration, NullLogger<TwelveDataCorporateActionProvider>.Instance, credentials,
+                rateLimiterRegistry: TwelveDataTestBudget.Create(automaticDelayLimit: TimeSpan.FromSeconds(20)),
+                quotaConfig: new(55, FundamentalsEntitled: true, NoDailyLimit: true)),
             _ => throw new ArgumentOutOfRangeException(nameof(providerId)),
         };
     }

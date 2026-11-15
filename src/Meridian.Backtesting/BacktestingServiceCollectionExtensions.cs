@@ -54,6 +54,7 @@ public static class BacktestingServiceCollectionExtensions
                     identity,
                     sp.GetService<IBacktestAssetEventSource>() ?? CreateSecurityMasterAssetEventSource(sp))
                 {
+                    CanonicalCorporateActionQueries = actions,
                     AssetEventSource = sp.GetService<IBacktestAssetEventSource>() ??
                         (identity is not null && actions is not null
                             ? new SecurityMasterBacktestAssetEventSource(identity, actions, aggregate)

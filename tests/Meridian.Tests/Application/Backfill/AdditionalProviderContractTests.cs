@@ -1,3 +1,4 @@
+using Meridian.Tests.TestHelpers;
 using System.Net;
 using System.Text;
 using FluentAssertions;
@@ -247,7 +248,7 @@ public sealed class AdditionalProviderContractTests
     public async Task AlphaVantage_ParsesValidResponse_ReturnsCorrectBars()
     {
         var httpClient = CreateMockHttpClient(AlphaVantageResponses.ValidDailyAdjustedResponse);
-        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var bars = await provider.GetDailyBarsAsync("AAPL", null, null);
 
@@ -266,7 +267,7 @@ public sealed class AdditionalProviderContractTests
     public async Task AlphaVantage_ParsesAdjustedPrices_IncludesAdjustedClose()
     {
         var httpClient = CreateMockHttpClient(AlphaVantageResponses.ValidDailyAdjustedResponse);
-        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var bars = await provider.GetAdjustedDailyBarsAsync("AAPL", null, null);
 
@@ -282,7 +283,7 @@ public sealed class AdditionalProviderContractTests
     public async Task AlphaVantage_ParsesDividendData()
     {
         var httpClient = CreateMockHttpClient(AlphaVantageResponses.ResponseWithDividend);
-        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var bars = await provider.GetAdjustedDailyBarsAsync("SPY", null, null);
 
@@ -293,7 +294,7 @@ public sealed class AdditionalProviderContractTests
     public async Task AlphaVantage_ParsesSplitCoefficient()
     {
         var httpClient = CreateMockHttpClient(AlphaVantageResponses.ResponseWithSplit);
-        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var bars = await provider.GetAdjustedDailyBarsAsync("AAPL", null, null);
 
@@ -304,7 +305,7 @@ public sealed class AdditionalProviderContractTests
     public async Task AlphaVantage_HandlesErrorMessage_ReturnsEmptyList()
     {
         var httpClient = CreateMockHttpClient(AlphaVantageResponses.ErrorResponse);
-        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var bars = await provider.GetDailyBarsAsync("INVALID", null, null);
 
@@ -315,7 +316,7 @@ public sealed class AdditionalProviderContractTests
     public async Task AlphaVantage_HandlesRateLimitMessage_ThrowsTypedRateLimitException()
     {
         var httpClient = CreateMockHttpClient(AlphaVantageResponses.RateLimitResponse);
-        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var exception = await Assert.ThrowsAsync<Meridian.Core.Exceptions.RateLimitException>(
             () => provider.GetDailyBarsAsync("AAPL", null, null));
@@ -328,7 +329,7 @@ public sealed class AdditionalProviderContractTests
     public async Task AlphaVantage_WithEmptySymbol_ThrowsArgumentException()
     {
         var httpClient = CreateMockHttpClient(AlphaVantageResponses.ValidDailyAdjustedResponse);
-        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         await Assert.ThrowsAsync<ArgumentException>(
             () => provider.GetDailyBarsAsync("", null, null));
@@ -338,7 +339,7 @@ public sealed class AdditionalProviderContractTests
     public async Task AlphaVantage_WithNoApiKey_ThrowsInvalidOperationException()
     {
         var httpClient = CreateMockHttpClient(AlphaVantageResponses.ValidDailyAdjustedResponse);
-        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: null, httpClient: httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: null, httpClient: httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => provider.GetDailyBarsAsync("AAPL", null, null));
@@ -348,7 +349,7 @@ public sealed class AdditionalProviderContractTests
     public async Task AlphaVantage_RespectsDateRange_FiltersCorrectly()
     {
         var httpClient = CreateMockHttpClient(AlphaVantageResponses.ValidDailyAdjustedResponse);
-        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
         var from = new DateOnly(2024, 1, 3);
         var to = new DateOnly(2024, 1, 4);
 
@@ -365,7 +366,7 @@ public sealed class AdditionalProviderContractTests
     public async Task AlphaVantage_BarsAreSortedByDate()
     {
         var httpClient = CreateMockHttpClient(AlphaVantageResponses.ValidDailyAdjustedResponse);
-        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var bars = await provider.GetDailyBarsAsync("AAPL", null, null);
 
@@ -375,7 +376,7 @@ public sealed class AdditionalProviderContractTests
     [Fact]
     public void AlphaVantage_HasCorrectMetadata()
     {
-        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key");
+        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         provider.Name.Should().Be("alphavantage");
         provider.DisplayName.Should().Contain("Alpha Vantage");

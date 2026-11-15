@@ -76,7 +76,8 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
         }
         catch (Exception ex)
         {
-            WpfLoggingService.Instance.LogError($"[{GetType().Name}] Failed to restore dock layout: {ex.Message}");
+            WpfLoggingService.Instance.LogError("[{Page}] Failed to restore dock layout: {Error}", ex,
+                ("Page", GetType().Name), ("Error", ex.Message));
             var state = await _stateProvider.GetStateAsync().ConfigureAwait(true);
             _lastState = state;
             LoadDefaultDocking(dockManager, state);
@@ -101,7 +102,8 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
         }
         catch (Exception ex)
         {
-            WpfLoggingService.Instance.LogError($"[{GetType().Name}] Failed to save dock layout: {ex.Message}");
+            WpfLoggingService.Instance.LogError("[{Page}] Failed to save dock layout: {Error}", ex,
+                ("Page", GetType().Name), ("Error", ex.Message));
         }
     }
 
@@ -135,7 +137,8 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
         }
         catch (Exception ex)
         {
-            WpfLoggingService.Instance.LogError($"[{GetType().Name}] Failed to open '{pageTag}': {ex.Message}");
+            WpfLoggingService.Instance.LogError("[{Page}] Failed to open '{PageTag}': {Error}", ex,
+                ("Page", GetType().Name), ("PageTag", pageTag), ("Error", ex.Message));
             dockManager.LoadPage(
                 BuildPageKey(pageTag, parameter),
                 ShellNavigationCatalog.GetPageTitle(pageTag),

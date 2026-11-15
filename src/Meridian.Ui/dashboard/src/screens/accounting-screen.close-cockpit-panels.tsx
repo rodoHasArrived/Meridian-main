@@ -1,3 +1,4 @@
+import { IntercompanyCloseAdvisories } from "./accounting-screen.intercompany-close-advisories";
 import { AlertCircle, BookCheck, CheckCircle2, Landmark, LockKeyhole, Network, Paperclip, RefreshCcw, ShieldCheck, Table2, UserCheck, WalletCards, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AsyncRegion } from "@/components/ui/async-region";
@@ -263,6 +264,7 @@ export function CloseCommandCenterPanel({
               </div>
             </div>
           </div>
+          <IntercompanyCloseAdvisories result={view.intercompanyAdvisories} />
         </CardContent>
       </Card>
     </section>

@@ -580,7 +580,7 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
             signals.Add(new SecurityAssetProfilePromotionSignalDto(
                 "profile-fields.projected",
                 "Declared projected field surface",
-                $"{projectedFields} profile fields are declared projected (intent only; no profile field is projected today) and should become typed read-model columns if usage grows.",
+                $"{projectedFields} profile fields are declared projected (the flag is intent only; every CustomAsset profile field is already written to the profile-keyed custom_asset_profile_field_projection rows, migration 064, but none has a typed read-model column) and should become typed read-model columns if usage grows.",
                 projectedFields >= 6
                     ? SecurityAssetProfilePromotionSignalSeverityDto.Strong
                     : SecurityAssetProfilePromotionSignalSeverityDto.Advisory));

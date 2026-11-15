@@ -27,6 +27,8 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
     private readonly ILedgerBookService? _ledgerBookService;
     private readonly IAccountingCloseManagementService? _closeManagementService;
     private readonly ICloseReadinessSubjectSource? _closeSubjectSource;
+    private readonly IIntercompanyCloseAdvisorySource? _intercompanyAdvisories;
+    private readonly Func<IBookOfRecordGuard?>? _bookOfRecordGuardFactory;
 
     public FinancialOperationsCommandCenterReadService(
         IOperationsContinuityWorkflowService workflowService,
@@ -34,7 +36,9 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
         IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null,
         ILedgerBookService? ledgerBookService = null,
         IAccountingCloseManagementService? closeManagementService = null,
-        ICloseReadinessSubjectSource? closeSubjectSource = null)
+        ICloseReadinessSubjectSource? closeSubjectSource = null,
+        IIntercompanyCloseAdvisorySource? intercompanyAdvisories = null,
+        Func<IBookOfRecordGuard?>? bookOfRecordGuardFactory = null)
     {
         _workflowService = workflowService ?? throw new ArgumentNullException(nameof(workflowService));
         _closeCalendarService = closeCalendarService;
@@ -42,6 +46,8 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
         _ledgerBookService = ledgerBookService;
         _closeManagementService = closeManagementService;
         _closeSubjectSource = closeSubjectSource;
+        _intercompanyAdvisories = intercompanyAdvisories;
+        _bookOfRecordGuardFactory = bookOfRecordGuardFactory;
     }
 
     public async Task<FinancialOperationsCommandCenterDto> GetCommandCenterAsync(
@@ -87,6 +93,27 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
         var blockedCount = orderedRows.Count(static row => row.IsBlocked);
         var reviewCount = orderedRows.Length - blockedCount;
         var projection = inputs.Projection.Build(orderedRows);
+        if (_intercompanyAdvisories is not null)
+        {
+            try
+            {
+                projection = projection with
+                {
+                    IntercompanyAdvisories = await _intercompanyAdvisories.GetAsync(
+                    projection.Scope, tenantId, companyId, ct).ConfigureAwait(false)
+                };
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+            catch (Exception)
+            {
+                projection = projection with
+                {
+                    IntercompanyAdvisories = new(
+                    DateOnly.FromDateTime(DateTime.UtcNow), 30, DateTimeOffset.UtcNow, "Unavailable", false, "", [],
+                    [new("IntercompanyMonitorUnavailable", "Warning", "Intercompany advisory monitoring is unavailable.")], null, [])
+                };
+            }
+        }
         var isReady = projection.IsReadyToClose;
         var status = projection.Status;
         var summary = isReady ? "All required contributors are ready for the selected close scope."

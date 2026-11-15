@@ -235,13 +235,13 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
                 countryOfRisk = "US",
                 issuerName = "Acme Corp"
             }),
-            AssetSpecificTerms: JsonSerializer.SerializeToElement(new
+            AssetSpecificTerms: SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(new
             {
                 schemaVersion = 1,
                 shareClass = "Class T",
                 classification = "Other",
                 otherClassification = "TrackingStock"
-            }),
+            })),
             Provenance: JsonSerializer.SerializeToElement(new { sourceSystem = "test" }),
             Version: 1,
             EffectiveFrom: effectiveFrom,
@@ -264,11 +264,14 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
     }
 
     [SecurityMasterDatabaseFact]
-    public async Task UpsertProjection_PersistsTheTermsFormatColumn_FromTheTagOrTheShapeRule()
+    public async Task UpsertProjection_PersistsTheDeclaredTermsFormatColumn_AndTheDatabaseRefusesAnUntaggedPayload()
     {
-        // Migration 042 promotes the payload family to `terms_format`. A tagged payload stores its
-        // declared family; a payload that predates the tag stores what ResolveFormat infers, which is
-        // the same rule the migration backfill applied — so the column has one definition.
+        // Migration 042 promotes the payload family to `terms_format`; a tagged payload stores its
+        // declared family. Migration 068 backfilled the tag on every stored row and added
+        // ck_securities_terms_format_declared, so a payload that does not declare its family is
+        // refused instead of being classified by shape. Since ADR-024 amendment 2026-11-13 step 5 the
+        // store refuses it first, naming the security, and the constraint stays the backstop for any
+        // write that bypasses the store. The store still never adds the tag itself: writers own stamping.
         var store = new PostgresSecurityMasterStore(_fixture.Options);
         var tagged = Guid.NewGuid();
         var untagged = Guid.NewGuid();
@@ -279,18 +282,26 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
             [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetOrDefault("Equity").TermsVersion,
             ["classification"] = "Common"
         })));
-        await store.UpsertProjectionAsync(TermsFormatProjection(untagged, "TFU", JsonSerializer.SerializeToElement(new
+        var upsertUntagged = () => store.UpsertProjectionAsync(TermsFormatProjection(untagged, "TFU", JsonSerializer.SerializeToElement(new
         {
             schemaVersion = 1,
             classification = "Common"
         })));
 
         (await ReadTermsFormatAsync(tagged)).Should().Be(SecurityTermsFormats.Flat);
-        (await ReadTermsFormatAsync(untagged)).Should().Be(SecurityTermsFormats.Flat);
+        (await upsertUntagged.Should().ThrowAsync<InvalidOperationException>().WithMessage($"*'{untagged}'*cannot be stored*declare no termsFormat*"))
+            .WithInnerException<SecurityTermsFormatUndeclaredException>();
+        (await store.GetProjectionAsync(untagged)).Should().BeNull("the refused write leaves no row behind");
 
-        var stored = await store.GetProjectionAsync(untagged);
-        SecurityTermsEnvelope.GetDeclaredFormat(stored!.AssetSpecificTerms).Should().BeNull(
-            "the store never mutates the payload to add the tag; writers own stamping");
+        // A write that bypasses the store meets the constraint.
+        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var strip = connection.CreateCommand();
+        strip.CommandText = $"update {_fixture.Options.Schema}.securities set asset_specific_terms = asset_specific_terms - 'termsFormat' where security_id = @security_id;";
+        strip.Parameters.AddWithValue("security_id", tagged);
+        var bypass = () => strip.ExecuteNonQueryAsync();
+        (await bypass.Should().ThrowAsync<PostgresException>().WithMessage("*ck_securities_terms_format_declared*"))
+            .Which.SqlState.Should().Be(PostgresErrorCodes.CheckViolation);
     }
 
     [SecurityMasterDatabaseFact]
@@ -627,7 +638,7 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
             PrimaryIdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
             PrimaryIdentifierValue: $"CA{securityId:N}",
             CommonTerms: JsonSerializer.SerializeToElement(new { currency = "USD" }),
-            AssetSpecificTerms: JsonSerializer.SerializeToElement(new { schemaVersion = 1 }),
+            AssetSpecificTerms: SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(new { schemaVersion = 1 })),
             Provenance: JsonSerializer.SerializeToElement(new { sourceSystem = "test" }),
             Version: 1,
             EffectiveFrom: effectiveFrom,
@@ -1392,29 +1403,41 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
 
     /// <summary>
     /// Pins the store's single-aggregate retirement-gate count (ADR-024 decision 5, remediation
-    /// slice 9) to the C# declared-format verdict, row by row: a stamped payload is tagged; a
-    /// payload with no <c>termsFormat</c>, a non-string tag, or an inactive status with either
-    /// counts exactly as <c>SecurityTermsEnvelope.GetDeclaredFormat</c> says, without loading a
-    /// projection.
+    /// slice 9) to the C# declared-format verdict over every stored row. Since migration 068 a
+    /// payload with no <c>termsFormat</c> or a non-string tag, active or inactive, is refused by
+    /// <c>ck_securities_terms_format_declared</c>, so only stamped rows are stored and the count
+    /// stays at zero, exactly as <c>SecurityTermsEnvelope.GetDeclaredFormat</c> says. The row-by-row
+    /// parity of the count SQL on real untagged rows (absent, null and numeric tags, active and
+    /// inactive) is pinned on a pre-068 schema by
+    /// <c>SecurityMasterTermsFormatBackfillMigrationTests.UntaggedCount_OnAPre068Schema_MatchesTheDeclaredFormatVerdict_RowByRow</c>.
     /// </summary>
     [SecurityMasterDatabaseFact]
     public async Task CountUntaggedAssetSpecificTerms_MatchesTheDeclaredFormatVerdict_RowByRow()
     {
+        // Since migration 068 the database refuses an untagged row, so the decision-5 count stays at
+        // zero: the stamped row is stored, and the untagged active, untagged inactive and
+        // non-string-tag rows are refused rather than counted (by the store since ADR-024 amendment
+        // 2026-11-13 step 5, ahead of the constraint).
         var store = new PostgresSecurityMasterStore(_fixture.Options);
-        var baseline = await store.CountUntaggedAssetSpecificTermsAsync();
+        (await store.CountUntaggedAssetSpecificTermsAsync()).Should().Be(0);
 
         var stamped = JsonDocument.Parse(SecurityTermsEnvelope.StampFlat(
             """{"maturity":"2031-03-31"}""", "Bond")).RootElement.Clone();
         await store.UpsertProjectionAsync(GateCountRow("Bond", stamped, SecurityStatusDto.Active));
-        await store.UpsertProjectionAsync(GateCountRow(
-            "Bond", JsonSerializer.SerializeToElement(new { maturity = "2030-01-01" }), SecurityStatusDto.Active));
-        await store.UpsertProjectionAsync(GateCountRow(
-            "Bond", JsonSerializer.SerializeToElement(new { maturity = "2029-06-30" }), SecurityStatusDto.Inactive));
-        await store.UpsertProjectionAsync(GateCountRow(
-            "Bond", JsonSerializer.SerializeToElement(new { termsFormat = 123, maturity = "2028-12-31" }), SecurityStatusDto.Active));
+        foreach (var (terms, status) in new[]
+                 {
+                     (JsonSerializer.SerializeToElement(new { maturity = "2030-01-01" }), SecurityStatusDto.Active),
+                     (JsonSerializer.SerializeToElement(new { maturity = "2029-06-30" }), SecurityStatusDto.Inactive),
+                     (JsonSerializer.SerializeToElement(new { termsFormat = 123, maturity = "2028-12-31" }), SecurityStatusDto.Active)
+                 })
+        {
+            var upsert = () => store.UpsertProjectionAsync(GateCountRow("Bond", terms, status));
+            (await upsert.Should().ThrowAsync<InvalidOperationException>().WithMessage("*cannot be stored*declare no termsFormat*"))
+                .WithInnerException<SecurityTermsFormatUndeclaredException>();
+        }
 
         var count = await store.CountUntaggedAssetSpecificTermsAsync();
-        count.Should().Be(baseline + 3, "the stamped row is tagged; the untagged active, untagged inactive and non-string-tag rows are not");
+        count.Should().Be(0, "only the stamped row was stored");
 
         var rows = await store.LoadAllAsync();
         count.Should().Be(

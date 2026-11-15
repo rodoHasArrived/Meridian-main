@@ -123,7 +123,7 @@ jobs:
           global-json-file: global.json
 
       - name: Set up Node.js
-        if: inputs.mode == 'browser-workstation'
+        if: inputs.mode == 'browser-workstation' || (inputs.mode == 'dotnet-filtered' && contains(inputs.dotnet_project, 'Meridian.Demo.Tests'))
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
@@ -131,7 +131,7 @@ jobs:
           cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
       - name: Set up Python
-        if: inputs.mode == 'docs-source'
+        if: inputs.mode == 'docs-source' || (inputs.mode == 'dotnet-filtered' && contains(inputs.dotnet_project, 'Meridian.Demo.Tests'))
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
@@ -205,6 +205,13 @@ jobs:
           $props = @("/p:EnableWindowsTargeting=$env:ENABLE_WINDOWS_TARGETING")
           if ($env:ENABLE_FULL_WPF_BUILD -eq 'true') {
             $props += '/p:EnableFullWpfBuild=true'
+          }
+
+          # Asset-resolution tests use the actual generated bundle. Prepare it
+          # on clean hosted checkouts before MSBuild captures static content.
+          if ($project -eq 'tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj') {
+            & python build/scripts/ensure-workstation-assets.py
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
 
           & dotnet restore $project @props

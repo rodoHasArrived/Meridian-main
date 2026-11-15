@@ -6,6 +6,66 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateScheduleRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.CreateScheduleRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs:78](../../../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs#L78).
+
+Request to create or update a schedule.
+
+```csharp
+public sealed record CreateScheduleRequest(string Name, string[] Symbols, ScheduleAction Action, ScheduleTiming Timing, string? Description = null);
+```
+
+## CreateWatchlistRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.CreateWatchlistRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/Watchlist.cs:45](../../../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs#L45).
+
+Request to create a new watchlist.
+
+```csharp
+public sealed record CreateWatchlistRequest(string Name, string? Description = null, string[]? Symbols = null, string? Color = null, bool IsActive = true, WatchlistDefaults? Defaults = null);
+```
+
+## CsvColumns
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.CsvColumns</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:74](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L74).
+
+CSV column mappings for import/export.
+
+```csharp
+public static class CsvColumns
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Symbol = &quot;Symbol&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:76](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L76) |  |
+| <code>public const string SubscribeTrades = &quot;SubscribeTrades&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:77](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L77) |  |
+| <code>public const string SubscribeDepth = &quot;SubscribeDepth&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:78](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L78) |  |
+| <code>public const string DepthLevels = &quot;DepthLevels&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:79](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L79) |  |
+| <code>public const string SecurityType = &quot;SecurityType&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:80](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L80) |  |
+| <code>public const string Exchange = &quot;Exchange&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:81](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L81) |  |
+| <code>public const string Currency = &quot;Currency&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:82](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L82) |  |
+| <code>public const string PrimaryExchange = &quot;PrimaryExchange&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:83](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L83) |  |
+| <code>public const string LocalSymbol = &quot;LocalSymbol&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:84](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L84) |  |
+| <code>public const string TradingClass = &quot;TradingClass&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:85](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L85) |  |
+| <code>public const string ConId = &quot;ConId&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:86](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L86) |  |
+| <code>public const string Name = &quot;Name&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:89](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L89) |  |
+| <code>public const string Sector = &quot;Sector&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:90](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L90) |  |
+| <code>public const string Industry = &quot;Industry&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:91](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L91) |  |
+| <code>public const string MarketCap = &quot;MarketCap&quot;;</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:92](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L92) |  |
+| <code>public static readonly string[] Required = { Symbol };</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:94](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L94) |  |
+| <code>public static readonly string[] Standard = { Symbol, SubscribeTrades, SubscribeDepth, DepthLevels, SecurityType, Exchange, Currency, PrimaryExchange };</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:96](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L96) |  |
+| <code>public static readonly string[] Full = { Symbol, SubscribeTrades, SubscribeDepth, DepthLevels, SecurityType, Exchange, Currency, PrimaryExchange, LocalSymbol, TradingClass, ConId };</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:102](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L102) |  |
+| <code>public static readonly string[] WithMetadata = { Symbol, Name, Sector, Industry, MarketCap, SubscribeTrades, SubscribeDepth, DepthLevels, SecurityType, Exchange, Currency, PrimaryExchange };</code> | [src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs:109](../../../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs#L109) |  |
+
 ## FigiLookupRequest
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.FigiLookupRequest</code>. Kind: `record`.

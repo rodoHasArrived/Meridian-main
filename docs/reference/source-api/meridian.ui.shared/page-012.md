@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HmacReportingDeliveryGrantCredentialDeriver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.HmacReportingDeliveryGrantCredentialDeriver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L34).
+
+Derives repeatable reporting delivery access credentials from a binding key using HMAC.
+
+```csharp
+public sealed class HmacReportingDeliveryGrantCredentialDeriver : IReportingDeliveryGrantCredentialDeriver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public HmacReportingDeliveryGrantCredentialDeriver(ReadOnlySpan&lt;byte&gt; key);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L39) |  |
+| <code>public ReportingDerivedAccessGrantCredential Derive(string bindingKey);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:49](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L49) |  |
+
+## HmacReportingProviderReceiptAuthenticator
+
+Qualified name: <code>Meridian.Ui.Shared.Services.HmacReportingProviderReceiptAuthenticator</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:44](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L44).
+
+Verifies relay webhook receipts with an HMAC over every state-bearing field. The key is retained only in process memory and signatures are compared in constant time.
+
+```csharp
+public sealed class HmacReportingProviderReceiptAuthenticator : IReportingProviderReceiptAuthenticator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public HmacReportingProviderReceiptAuthenticator(ReadOnlySpan&lt;byte&gt; secret, TimeProvider? timeProvider = null, TimeSpan? maximumClockSkew = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:51](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L51) |  |
+| <code>public ValueTask&lt;bool&gt; AuthenticateAsync(ReportingProviderReceiptAuthenticationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:70](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L70) |  |
+| <code>public static string CreateSignature(ReadOnlySpan&lt;byte&gt; secret, ReportingProviderReceiptAuthenticationRequest request, long unixSeconds);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:110](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L110) |  |
+
 ## HostStartupEscalation
 
 Qualified name: <code>Meridian.Ui.Shared.Services.HostStartupEscalation</code>. Kind: `class`.
@@ -59,7 +98,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;bool&gt; CanAccessEntitiesAsync(IntercompanyAgreementCallContext context, IReadOnlyList&lt;Guid&gt; entityIds, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:18](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L18) |  |
+| <code>public async Task&lt;bool&gt; CanAccessEntitiesAsync(IntercompanyAgreementCallContext context, IReadOnlyList&lt;Guid&gt; entityIds, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:19](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L19) |  |
 
 ## HttpRelayReportingDeliveryTransport
 
@@ -816,6 +855,25 @@ Declared public members:
 | <code>public IReadOnlyList&lt;ReportPackSecurityLineIndexEntry&gt; Lookup(Guid securityId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:148](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L148) |  |
 | <code>public IReadOnlyList&lt;ReportPackSecurityLineIndexEntry&gt; LookupByFund(Guid securityId, string fundProfileId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:158](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L158) |  |
 
+## IntercompanyAccrualDraftService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyAccrualDraftService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:15](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs#L15).
+
+Resolves approved terms, profile revisions and posted principal into a source-side accrual draft. It never approves or posts: the draft enters the source book&#x27;s ordinary review, and the counterpart is produced by the existing proposal pipeline only after the source journal commits.
+
+```csharp
+public sealed class IntercompanyAccrualDraftService(IntercompanyAccountingArrangementService arrangements, ILedgerJournalStore journals, IIntercompanyAccountBindingStore bindings, IAccountingConfigurationService configuration, IManualJournalEntryDraftStore drafts, ManualJournalEntryWorkbenchService workbench, IIntercompanyAccrualPreviewService calculator, IConsolidationFxAuthority? fx = null, TimeProvider? time = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyAccrualProposalDto&gt; PreviewAsync(string tenantId, string? companyId, string actor, IntercompanyAccrualRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:23](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs#L23) | Read-only: computes the amount, its evidence and the draft that would be retained. |
+| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; CreateDraftAsync(string tenantId, string? companyId, string actor, CreateIntercompanyAccrualDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:131](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs#L131) | Retains the previewed computation as a draft in the source book&#x27;s review queue. A changed input since the preview is refused. An unreviewed draft of the same window is recomputed in place; one already submitted, approved or posted is never overwritten. |
+
 ## IntercompanyAgreementJournalProjection
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyAgreementJournalProjection</code>. Kind: `class`.
@@ -902,62 +960,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:13](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L13) |  |
 | <code>Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:18](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L18) |  |
-
-## IOperationsReportPackAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IOperationsReportPackAuthority</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:14](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L14).
-
-Resolves authoritative report-pack readiness for an Operations Continuity workflow.
-
-```csharp
-public interface IOperationsReportPackAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OperationsReportPackReadinessDto&gt; ResolveAsync(OperationsContinuityWorkflowDto workflow, string? packageId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:16](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L16) |  |
-
-## IPrivateCapitalLifecycleSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IPrivateCapitalLifecycleSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L15).
-
-A source supplies retained balances; the workstation does not manufacture or approve them.
-
-```csharp
-public interface IPrivateCapitalLifecycleSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;PrivateCapitalLifecycleRead&gt; ReadAsync(string familyOfficeId, IReadOnlySet&lt;string&gt; entityIds, DateOnly asOf, DateTimeOffset knownAt, CancellationToken ct = default, Func&lt;DateOnly, CancellationToken, Task&lt;IReadOnlySet&lt;string&gt;&gt;&gt;? historicalEntityScope = null);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:17](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L17) |  |
-
-## IProviderModuleSetupService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IProviderModuleSetupService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:6](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L6).
-
-Manages provider module configuration lifecycle: discovery, upsert, enable/disable, remove, and connectivity test.
-
-```csharp
-public interface IProviderModuleSetupService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;ProviderModuleStatusDto&gt;&gt; GetConfiguredModulesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:9](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L9) | Returns status of all currently configured provider modules. |
-| <code>IReadOnlyList&lt;ProviderModuleCatalogueEntry&gt; GetDiscoveredModuleCatalogue();</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:12](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L12) | Returns all discoverable provider module types with capability and credential metadata. |
-| <code>Task&lt;ProviderModuleSetupResult&gt; UpsertModuleAsync(UpsertProviderModuleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:15](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L15) | Creates or updates a provider module configuration and persists credentials to the credential store. |
-| <code>Task&lt;ProviderModuleSetupResult&gt; SetEnabledAsync(string moduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:18](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L18) | Toggles a module&#x27;s enabled state. Applied live via ProviderRegistry; also persisted to config. |
-| <code>Task&lt;ProviderModuleSetupResult&gt; RemoveModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:21](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L21) | Removes a module&#x27;s configuration from config and its credentials from the credential store. |
-| <code>Task&lt;ProviderModuleTestResult&gt; TestModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs:27](../../../../src/Meridian.Ui.Shared/Services/IProviderModuleSetupService.cs#L27) | Validates stored credentials and optionally probes the live connection. Always runs ValidateAsync; calls ProbeConnectionAsync if the module implements IProviderModuleConnectionProbe. |

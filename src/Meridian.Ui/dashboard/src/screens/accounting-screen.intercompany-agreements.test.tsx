@@ -135,3 +135,32 @@ describe("IntercompanyAgreementsPanel", () => {
     expect(source.getIntercompanyAgreement).toHaveBeenCalledTimes(2);
   });
 });
+
+it("allows explicit external-review attestation through its separate server capability", async () => {
+  const source = services({ ...detail, capabilities: { ...detail.capabilities, canApprove: false, canAttestExternalReview: true } });
+  render(<IntercompanyAgreementsPanel services={source} />);
+  fireEvent.click(await screen.findByRole("button", { name: "IC-LOAN · Operating loan" }));
+  fireEvent.change(await screen.findByLabelText("Review decision rationale"), { target: { value: "Retain reviewed legal decision" } });
+  fireEvent.click(screen.getByLabelText("Attest external legal review as the operator"));
+  expect(screen.getByRole("button", { name: "Approve submitted terms" })).toBeDisabled();
+  const attest = screen.getByRole("button", { name: "Attest external review and approve terms" }); expect(attest).toBeDisabled();
+  fireEvent.change(screen.getByLabelText("External reviewer"), { target: { value: "Outside counsel" } });
+  fireEvent.change(screen.getByLabelText("External reviewer reference"), { target: { value: "counsel-a" } });
+  fireEvent.change(screen.getByLabelText("External review evidence reference"), { target: { value: "evidence://evidence-vault/external-review" } });
+  fireEvent.change(screen.getByLabelText("External review artifact ID"), { target: { value: "review-document" } });
+  fireEvent.change(screen.getByLabelText("External-review attestation rationale"), { target: { value: "Attest exact submitted legal terms" } });
+  fireEvent.click(attest);
+  await waitFor(() => expect(source.mutateIntercompanyAgreement).toHaveBeenCalledOnce());
+  expect(source.mutateIntercompanyAgreement.mock.calls[0][1]).toMatchObject({ submittedHash: "frozen-hash", externalReview: { externalReviewer: "Outside counsel", reviewerReference: "counsel-a", submittedHash: "frozen-hash", evidence: { reference: "evidence://evidence-vault/external-review", artifactId: "review-document" } } });
+  expect(source.mutateIntercompanyAgreement.mock.calls[0][1].externalReview).not.toHaveProperty("operator");
+});
+
+it("previews the exact retained proposed terms without mutating agreement authority", async () => {
+  const source = { ...services(), previewIntercompanyAgreementSchedule: vi.fn().mockResolvedValue({ status: "Unavailable", termsFormat: "StructuredV1", subjectHash: "frozen-hash", kernelVersion: "schedule-kernel", calendarId: "UNAVAILABLE", calendarHash: null, periods: [], diagnostics: ["The declared business calendar is unavailable."] }) };
+  render(<IntercompanyAgreementsPanel services={source} />);
+  fireEvent.click(await screen.findByRole("button", { name: "IC-LOAN · Operating loan" }));
+  fireEvent.click(await screen.findByRole("button", { name: "Preview proposed contractual dates" }));
+  await screen.findByText("The declared business calendar is unavailable.");
+  expect(source.previewIntercompanyAgreementSchedule).toHaveBeenCalledWith(detail.agreementId, expect.objectContaining({ proposalId: "proposal" }), expect.objectContaining({ signal: expect.any(AbortSignal) }));
+  expect(source.mutateIntercompanyAgreement).not.toHaveBeenCalled();
+});

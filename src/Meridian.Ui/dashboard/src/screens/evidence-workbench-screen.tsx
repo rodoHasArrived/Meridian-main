@@ -929,7 +929,8 @@ const linkKinds: EvidenceDocumentLinkKind[] = [
   "ReconciliationCase",
   "ReportLine",
   "CloseTask",
-  "IntercompanyAgreement"
+  "IntercompanyAgreement",
+  "LegalEntity"
 ];
 
 function EvidenceVaultQueueFilters({
@@ -1199,10 +1200,11 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
               <label className="grid gap-1 text-xs font-medium text-muted-foreground">
                 Linked object id
                 <Input aria-label="Linked object id" value={objectId} onChange={(event) => setObjectId(event.currentTarget.value)} disabled={vm.intakeCommand.busy}
-                  required={linkKind === "IntercompanyAgreement"}
-                  pattern={linkKind === "IntercompanyAgreement" ? "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}" : undefined} />
+                  required={linkKind === "IntercompanyAgreement" || linkKind === "LegalEntity"}
+                  pattern={linkKind === "IntercompanyAgreement" || linkKind === "LegalEntity" ? "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}" : undefined} />
               </label>
             </div>
+            {linkKind === "LegalEntity" ? <p className="text-xs leading-5 text-muted-foreground">Link the external review to the exact legal entity record ID. Use Agreement classification, then accept the document review before attesting a lifecycle change.</p> : null}
             {linkKind === "IntercompanyAgreement" ? <p className="text-xs leading-5 text-muted-foreground">
               Link the signed document to its saved agreement record ID. Use Agreement classification, then accept the document review before attaching it to that agreement.
             </p> : null}

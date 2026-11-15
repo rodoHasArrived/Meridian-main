@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode, type UIEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { ThreeWayAccountingPanel } from "./accounting-screen.three-way";
 import { Landmark, Network, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Combobox } from "@/components/ui/combobox";
 import { Kbd } from "@/components/ui/kbd";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
@@ -113,6 +115,11 @@ const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowVie
   { id: "source", label: "Source observation", hideable: true, render: (row) => <span className="block"><span className="block">{sourceObservationLabel(row.lineage)}</span><span className="block text-muted-foreground">{sourceObservationAge(row.lineage)}</span></span> },
   { id: "status", label: "Case status", render: (row) => <Badge variant={row.statusBadgeVariant}>{row.status}</Badge> }
 ];
+
+/** Preserve the existing casework context before the explicit independent comparison. */
+export function ThreeWayReconciliationWorkbench({ children }: { children: ReactNode }) {
+  return <>{children}<ThreeWayAccountingPanel /></>;
+}
 
 export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice, bulkServices, visitServices }: {
   reconciliation: Reconciliation;
@@ -716,13 +723,23 @@ const reconciliationStatementRunColumns: DenseDataTableColumn<ReconciliationStat
 export function ReconciliationStatementRuns({ reconciliation, initiallyOpen = false }: { reconciliation: StatementRuns; initiallyOpen?: boolean }) {
   return (
     <div className="reconciliation-run-context">
-      <label className="reconciliation-run-picker">
-        <span>Reconciliation run</span>
-        <Select value={reconciliation.reconciliationQueue.some((run) => run.runId === reconciliation.selectedRunId) ? reconciliation.selectedRunId ?? "" : ""} onChange={(event) => reconciliation.selectRun(event.target.value || null)}>
-          <option value="">Choose a reconciliation run</option>
-          {reconciliation.reconciliationQueue.map((run) => <option key={run.runId} value={run.runId}>{run.strategyName} · {run.openBreakCount} open</option>)}
-        </Select>
-      </label>
+      <Combobox
+        id="reconciliation-run-picker"
+        label="Reconciliation run"
+        required
+        className="max-w-lg"
+        value={reconciliation.selectedRunId ?? ""}
+        options={[
+          { value: "", label: "Choose a reconciliation run" },
+          ...reconciliation.reconciliationQueue.map((run) => ({
+            value: run.runId,
+            label: `${run.strategyName} · ${run.openBreakCount} open`
+          }))
+        ]}
+        onChange={(value) => reconciliation.selectRun(value || null)}
+        placeholder="Search reconciliation runs…"
+        emptyText="No matching reconciliation runs"
+      />
       <TechnicalDetails label="Statement runs and import evidence" open={initiallyOpen}>
       <Card className="panel-surface xl:col-span-2">
         <CardHeader>

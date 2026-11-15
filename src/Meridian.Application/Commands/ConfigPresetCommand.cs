@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Meridian.Core.Config;
 using Meridian.Platform.Results;
 using Meridian.Application.Services;
+using Meridian.Application.ProviderRouting;
 using Meridian.Storage.Archival;
 using Serilog;
 
@@ -16,6 +17,7 @@ internal sealed class ConfigPresetCommand : ICliCommand
 {
     private readonly AutoConfigurationService _autoConfig;
     private readonly ILogger _log;
+    private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -25,10 +27,12 @@ internal sealed class ConfigPresetCommand : ICliCommand
         Converters = { new JsonStringEnumConverter() }
     };
 
-    public ConfigPresetCommand(AutoConfigurationService autoConfig, ILogger log)
+    public ConfigPresetCommand(AutoConfigurationService autoConfig, ILogger log,
+        ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
         _autoConfig = autoConfig;
         _log = log;
+        _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
     }
 
     public IReadOnlyList<string> Triggers { get; } = ["--preset", "--list-presets"];
@@ -90,7 +94,7 @@ internal sealed class ConfigPresetCommand : ICliCommand
         Console.WriteLine();
         Console.WriteLine($"  Applying '{preset}' preset...");
 
-        var config = _autoConfig.ApplyPreset(preset);
+        var config = ProviderConfigurationCredentialGuard.Prepare(_autoConfig.ApplyPreset(preset), _ownershipPolicy);
 
         var configPath = CliArguments.GetValue(args, "--output") ?? "config/appsettings.json";
         var configDir = Path.GetDirectoryName(configPath);
@@ -102,8 +106,10 @@ internal sealed class ConfigPresetCommand : ICliCommand
         // Warn if overwriting
         if (File.Exists(configPath))
         {
+            var retainedJson = await File.ReadAllTextAsync(configPath, ct).ConfigureAwait(false);
+            ProviderConfigurationCredentialGuard.ValidateJson(retainedJson, _ownershipPolicy);
             var backupPath = configPath + $".backup.{DateTime.UtcNow:yyyyMMdd-HHmmss}";
-            File.Copy(configPath, backupPath, overwrite: true);
+            await AtomicFileWriter.WriteAsync(backupPath, retainedJson, ct).ConfigureAwait(false);
             Console.WriteLine($"  Backed up existing config to: {backupPath}");
         }
 

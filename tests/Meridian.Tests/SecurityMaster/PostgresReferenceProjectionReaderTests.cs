@@ -114,7 +114,217 @@ public sealed class PostgresReferenceProjectionReaderTests
             {
                 PostgresStructuredCreditReferenceProjectionStore.FactorScheduleTable
             });
+
+        // Every typed store reads through the generic registry store, one per table it reads, and
+        // the generic store's class and child table are the ones the constants name.
+        var tables = RegistryStoreQueries().Select(entry => (entry.AssetClass, entry.ChildTable)).Distinct().ToArray();
+        tables.Select(table => table.AssetClass).Distinct().Should().BeEquivalentTo(storeClasses);
+        tables.Should().Contain((PostgresDirectLoanReferenceProjectionStore.AssetClass, PostgresDirectLoanReferenceProjectionStore.CovenantTable));
+        tables.Should().Contain((PostgresDirectLoanReferenceProjectionStore.AssetClass, PostgresDirectLoanReferenceProjectionStore.PrincipalScheduleTable));
+        tables.Should().Contain((PostgresStructuredCreditReferenceProjectionStore.AssetClass, PostgresStructuredCreditReferenceProjectionStore.FactorScheduleTable));
     }
+
+    /// <summary>
+    /// The predicate text each hand-written store appended to its select before the stores moved
+    /// onto <see cref="RegistryReferenceProjectionStore{TRow}"/>, copied literally. Each generic
+    /// store must send exactly <c>SelectSql</c>/<c>SelectChildSql</c> over that text, and must
+    /// declare nothing else, so the conversion is pinned to the SQL the old stores sent.
+    /// </summary>
+    private static readonly (string AssetClass, string? ChildTable, string Query, string Predicate)[] HandWrittenPredicates =
+    [
+        ("CryptoCurrency", null, "BySecurityId", "where security_id = @security_id"),
+        ("CryptoCurrency", null, "ByNetwork", "where lower(network) = lower(@network)\norder by display_name"),
+        ("CryptoCurrency", null, "ByBaseCurrency", "where base_currency = @base_currency\norder by display_name"),
+        ("Deposit", null, "BySecurityId", "where security_id = @security_id"),
+        ("Deposit", null, "ByInstitution", "where lower(institution_name) = lower(@institution_name)\norder by maturity_date"),
+        ("Deposit", null, "MaturingBefore", "where maturity_date is not null\n  and maturity_date < @before_date\norder by maturity_date"),
+        ("MoneyMarketFund", null, "BySecurityId", "where security_id = @security_id"),
+        ("MoneyMarketFund", null, "ByFundFamily", "where lower(fund_family) = lower(@fund_family)\norder by display_name"),
+        ("MoneyMarketFund", null, "BySweepEligibility", "where sweep_eligible = @sweep_eligible\norder by display_name"),
+        ("CertificateOfDeposit", null, "BySecurityId", "where security_id = @security_id"),
+        ("CertificateOfDeposit", null, "ByIssuer", "where lower(issuer_name) = lower(@issuer_name)\norder by maturity_date"),
+        ("CertificateOfDeposit", null, "MaturingBefore", "where maturity_date < @before_date\norder by maturity_date"),
+        ("Equity", null, "BySecurityId", "where security_id = @security_id"),
+        ("Equity", null, "ByExchange", "where exchange_code = @exchange_code\norder by display_name"),
+        ("Equity", null, "ByIssuer", "where lower(issuer_name) = lower(@issuer_name)\norder by display_name"),
+        ("FxSpot", null, "BySecurityId", "where security_id = @security_id"),
+        ("FxSpot", null, "ByPairCode", "where pair_code = @pair_code"),
+        ("FxSpot", null, "ByCurrency", "where base_currency = @currency or quote_currency = @currency\norder by pair_code"),
+        ("Swap", null, "BySecurityId", "where security_id = @security_id"),
+        ("Swap", null, "BySwapType", "where lower(swap_type) = lower(@swap_type)\norder by maturity_date"),
+        ("Swap", null, "MaturingBefore", "where maturity_date < @before_date\n  and lifecycle_stat not in ('Matured', 'Terminated')\norder by maturity_date"),
+        ("Commodity", null, "BySecurityId", "where security_id = @security_id"),
+        ("Commodity", null, "ByCommodityType", "where lower(commodity_type) = lower(@commodity_type)\norder by display_name"),
+        ("Commodity", null, "ByExchange", "where exchange_code = @exchange_code\norder by display_name"),
+        ("Future", null, "BySecurityId", "where security_id = @security_id"),
+        ("Future", null, "ByRootSymbol", "where root_symbol = @root_symbol\norder by expiry_date"),
+        ("DirectLoan", null, "BySecurityId", "where security_id = @security_id"),
+        ("DirectLoan", null, "ByBorrower", "where lower(borrower) = lower(@borrower)\norder by maturity_date nulls last, display_name"),
+        ("DirectLoan", null, "ByReferenceIndex", "where lower(reference_index) = lower(@reference_index)\norder by maturity_date nulls last, display_name"),
+        ("DirectLoan", null, "MaturityLadder", "where maturity_date between @from_date and @to_date\norder by maturity_date, display_name"),
+        ("DirectLoan", "direct_loan_covenant_projection", "ChildrenBySecurity", "where security_id = @security_id\norder by ordinal"),
+        ("DirectLoan", "direct_loan_principal_schedule_projection", "ChildrenBySecurity", "where security_id = @security_id\norder by ordinal"),
+        ("DirectLoan", "direct_loan_principal_schedule_projection", "PrincipalPaymentsDue", "where payment_date between @from_date and @to_date\norder by payment_date, security_id, ordinal"),
+        ("StructuredCredit", null, "BySecurityId", "where security_id = @security_id"),
+        ("StructuredCredit", null, "ByPool", "where lower(pool_id) = lower(@pool_id)\norder by tranche, display_name"),
+        ("StructuredCredit", null, "ByCollateralType", "where lower(collateral_type) = lower(@collateral_type)\norder by maturity_date nulls last, display_name"),
+        ("StructuredCredit", "structured_credit_factor_schedule_projection", "FactorScheduleBySecurity", "where security_id = @security_id\norder by ordinal"),
+        ("StructuredCredit", "structured_credit_factor_schedule_projection", "FactorAsOf", "where security_id = @security_id and as_of_date <= @as_of_date\norder by as_of_date desc, ordinal desc\nlimit 1"),
+    ];
+
+    [Fact]
+    public void RegistryStores_SendExactlyTheSqlTheHandWrittenStoresSent()
+    {
+        var reader = new PostgresReferenceProjectionReader(Options);
+        var actual = RegistryStoreQueries().ToArray();
+
+        actual.Select(entry => (entry.AssetClass, entry.ChildTable, entry.Query))
+            .Should().BeEquivalentTo(HandWrittenPredicates.Select(entry => (entry.AssetClass, entry.ChildTable, entry.Query)),
+                "a store declares exactly the reads it had before the move");
+
+        foreach (var expected in HandWrittenPredicates)
+        {
+            var expectedSql = expected.ChildTable is null
+                ? reader.SelectSql(expected.AssetClass, expected.Predicate)
+                : reader.SelectChildSql(expected.AssetClass, expected.ChildTable, expected.Predicate);
+            actual.Single(entry => entry.AssetClass == expected.AssetClass
+                    && entry.ChildTable == expected.ChildTable
+                    && entry.Query == expected.Query)
+                .Sql.Should().Be(expectedSql, $"{expected.AssetClass}/{expected.ChildTable}/{expected.Query}");
+        }
+    }
+
+    [Fact]
+    public void RegistryStore_RefusesAnUndeclaredQuery_ADuplicateName_AndAnUnknownTable()
+    {
+        var store = PostgresCryptoReferenceProjectionStore.CreateStore(Options);
+        var undeclared = new RegistryProjectionQuery("ByIssuer", "where issuer_name = @issuer_name");
+        store.Invoking(s => s.SqlFor(undeclared)).Should().Throw<InvalidOperationException>().WithMessage("*CryptoCurrency*ByIssuer*");
+
+        // Same name, different text: a query object the store did not declare is refused too.
+        var impostor = PostgresCryptoReferenceProjectionStore.ByNetwork with { PredicateSql = "where true" };
+        store.Invoking(s => s.SqlFor(impostor)).Should().Throw<InvalidOperationException>();
+
+        var duplicate = () => new RegistryReferenceProjectionStore<CryptoProjectionRow>(
+            Options, "CryptoCurrency", PostgresCryptoReferenceProjectionStore.MapRow,
+            [PostgresCryptoReferenceProjectionStore.ByNetwork, PostgresCryptoReferenceProjectionStore.ByNetwork]);
+        duplicate.Should().Throw<ArgumentException>().WithMessage("*ByNetwork*");
+
+        // A parent store declares the by-security read itself; restating it is a duplicate.
+        var restated = () => new RegistryReferenceProjectionStore<CryptoProjectionRow>(
+            Options, "CryptoCurrency", PostgresCryptoReferenceProjectionStore.MapRow, [RegistryProjectionQuery.BySecurityId]);
+        restated.Should().Throw<ArgumentException>();
+
+        var unknownClass = () => new RegistryReferenceProjectionStore<CryptoProjectionRow>(
+            Options, "Option", PostgresCryptoReferenceProjectionStore.MapRow, []);
+        unknownClass.Should().Throw<ArgumentException>().WithMessage("*Option*");
+
+        var unknownChild = () => new RegistryReferenceProjectionStore<DirectLoanCovenantRow>(
+            Options, "DirectLoan", PostgresDirectLoanReferenceProjectionStore.MapCovenantRow,
+            [PostgresDirectLoanReferenceProjectionStore.ChildrenBySecurity], "direct_loan_waterfall_projection");
+        unknownChild.Should().Throw<ArgumentException>().WithMessage("*direct_loan_waterfall_projection*");
+
+        // A child store answers only what it declares: there is no implicit by-security read.
+        PostgresDirectLoanReferenceProjectionStore.CreateCovenantStore(Options).Queries
+            .Select(query => query.Name).Should().Equal("ChildrenBySecurity");
+    }
+
+    [Fact]
+    public void SelectSatelliteSql_CarriesTheSatelliteSpine_AndRefusesAnUnknownSatellite()
+    {
+        var reader = new PostgresReferenceProjectionReader(Options);
+        var bond = SecurityTermsProjectionRegistry.Require("Bond");
+        bond.Satellites.Should().NotBeEmpty();
+
+        foreach (var satellite in bond.Satellites)
+        {
+            reader.SelectSatelliteSql("Bond", satellite.TableName, "where security_id = @security_id").Should().Be(
+                $"select {string.Join(", ", SecurityTermsProjectionRegistry.SatelliteColumnNames(satellite))} "
+                + $"from sm_test.{satellite.TableName} where security_id = @security_id;");
+        }
+
+        reader.Invoking(r => r.SelectSatelliteSql("Bond", "bond_waterfall_projection", ""))
+            .Should().Throw<ArgumentException>().WithMessage("*bond_waterfall_projection*");
+    }
+
+    [Fact]
+    public void ToJsonColumns_WritesEveryNamedColumnInOrder_WithNullsAndTypedValues()
+    {
+        using var reader = TableReader(
+            ["security_id", "display_name", "amount", "version", "is_callable", "missing_value"],
+            new Dictionary<string, object>
+            {
+                ["security_id"] = SecurityId,
+                ["display_name"] = "Display",
+                ["amount"] = 1234.5600m,
+                ["version"] = 3L,
+                ["is_callable"] = true
+            });
+        reader.Read().Should().BeTrue();
+
+        var json = new ProjectionRow(reader).ToJsonColumns(["version", "security_id", "display_name", "amount", "is_callable", "missing_value"]);
+
+        json.Keys.Should().Equal("version", "security_id", "display_name", "amount", "is_callable", "missing_value");
+        json["security_id"].GetString().Should().Be(SecurityId.ToString("D"));
+        json["display_name"].GetString().Should().Be("Display");
+        json["amount"].GetRawText().Should().Be("1234.5600", "decimal text is kept exactly");
+        json["version"].GetInt64().Should().Be(3L);
+        json["is_callable"].GetBoolean().Should().BeTrue();
+        json["missing_value"].ValueKind.Should().Be(System.Text.Json.JsonValueKind.Null);
+
+        new ProjectionRow(reader).Invoking(row => row.ToJsonColumns(["not_selected"]))
+            .Should().Throw<InvalidOperationException>().WithMessage("*not_selected*");
+    }
+
+    [Fact]
+    public void ProjectionJsonValue_WritesDatesAsDates_AndTimestampsAsUtc()
+    {
+        ProjectionJsonValue.From(new DateTime(2031, 6, 15), "date").GetString().Should().Be("2031-06-15");
+        ProjectionJsonValue.From(new DateTime(2026, 10, 18, 1, 2, 3, DateTimeKind.Unspecified), "timestamp without time zone")
+            .GetString().Should().Be("2026-10-18T01:02:03.0000000+00:00");
+        ProjectionJsonValue.From(new DateOnly(2030, 1, 2), "date").GetString().Should().Be("2030-01-02");
+        ProjectionJsonValue.From(7, "integer").GetInt32().Should().Be(7);
+        ProjectionJsonValue.From(DBNull.Value, "text").ValueKind.Should().Be(System.Text.Json.JsonValueKind.Null);
+        ProjectionJsonValue.From(null, "text").ValueKind.Should().Be(System.Text.Json.JsonValueKind.Null);
+    }
+
+    /// <summary>Every query every converted store declares, with the SQL it sends.</summary>
+    private static IEnumerable<(string AssetClass, string? ChildTable, string Query, string Sql)> RegistryStoreQueries()
+    {
+        foreach (var entry in Describe(PostgresCryptoReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresDepositReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresMoneyMarketFundReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresCertificateOfDepositReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresEquityReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresFxSpotReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresSwapReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresCommodityReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresFutureReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresDirectLoanReferenceProjectionStore.CreateLoanStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresDirectLoanReferenceProjectionStore.CreateCovenantStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresDirectLoanReferenceProjectionStore.CreatePrincipalScheduleStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresStructuredCreditReferenceProjectionStore.CreateTrancheStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresStructuredCreditReferenceProjectionStore.CreateFactorScheduleStore(Options)))
+            yield return entry;
+    }
+
+    private static IEnumerable<(string AssetClass, string? ChildTable, string Query, string Sql)> Describe<TRow>(
+        RegistryReferenceProjectionStore<TRow> store)
+        where TRow : class
+        => store.Queries.Select(query => (store.AssetClass, store.ChildTableName, query.Name, store.SqlFor(query)));
 
     [Fact]
     public void Equity_MapsTheDescriptorSelect()

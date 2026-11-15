@@ -11,6 +11,17 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Storage.Accounting
 
+The linked native intercompany registry retains optional structured legal declarations in its
+existing PostgreSQL JSONB state, approved revisions, audit snapshots and command receipts. New
+companions omit null/default legacy values, preserving approved immutable prefixes and legal
+hashes. Adding terms requires a new reviewed revision; no replacement registry or schema migration
+rewrites earlier approvals. See
+[the native legal contract](../../docs/domain/intercompany-agreements.md#structured-declarations-and-date-previews).
+
+Legacy attribution revocation appends an explicit reviewed successor with unchanged source,
+legal/profile, account and transaction pins plus a rationale. Active resolution omits the revoked
+assertion while retaining history; no posted source, native legal hash or SQL schema is rewritten.
+
 ## Purpose
 
 Compile business persistence and accounting adapters separately from market-data storage primitives.
@@ -48,6 +59,15 @@ boundary and focused test ownership. Register concrete adapters at application c
 do not introduce a reverse reference from Storage primitives.
 
 ## Accounting exports
+
+The opt-in canonical paper adapter uses retained operator grants, immutable policy snapshots and
+exact chart bindings through the same governed append transaction. Migrations 069–071 add grant
+authority and shared automatic/reviewed fee identity without replacing existing posting controls.
+Historical open-position capture retains complete lot quantity and basis at the journal cut.
+
+The additional `general-ledger.v1` ZIP shares one captured population across CSV, exact text-cell
+XLSX, typed-decimal Parquet and symbol P&L evidence. Its API requires `ExportData` plus scoped ledger
+read authority. This versioned layout leaves the existing invariant-text export schemas unchanged.
 
 The `ExportLedgerAsync` extension exports an immutable journal generation, as-of trial balance and
 balance sheet, period income statement, financial summary and reconciled cash-flow statement as

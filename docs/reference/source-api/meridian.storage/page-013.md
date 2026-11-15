@@ -6,6 +6,270 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HealthStatistics
+
+Qualified name: <code>Meridian.Storage.Services.HealthStatistics</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:856](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L856).
+
+Aggregates storage file counts, sizes, corruption, compression, fragmentation, and age statistics.
+
+```csharp
+public sealed class HealthStatistics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:858](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L858) |  |
+| <code>public long TotalBytes { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:859](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L859) |  |
+| <code>public int HealthyFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:860](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L860) |  |
+| <code>public int WarningFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:861](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L861) |  |
+| <code>public int CorruptedFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:862](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L862) |  |
+| <code>public int OrphanedFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:863](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L863) |  |
+| <code>public double CompressionRatio { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:864](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L864) |  |
+| <code>public double FragmentationPct { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:865](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L865) |  |
+| <code>public DateTime? OldestFile { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:866](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L866) |  |
+| <code>public DateTime? NewestFile { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:867](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L867) |  |
+
+## HealthSummary
+
+Qualified name: <code>Meridian.Storage.Services.HealthSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:844](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L844).
+
+```csharp
+public sealed record HealthSummary(int TotalFiles, long TotalBytes, int HealthyFiles, int WarningFiles, int CorruptedFiles, int OrphanedFiles);
+```
+
+## IAuditChainService
+
+Qualified name: <code>Meridian.Storage.Services.IAuditChainService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Services/AuditChainService.cs:45](../../../../src/Meridian.Storage/Services/AuditChainService.cs#L45).
+
+Interface for audit chain service.
+
+```csharp
+public interface IAuditChainService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task AppendEntryAsync(string filePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/AuditChainService.cs:50](../../../../src/Meridian.Storage/Services/AuditChainService.cs#L50) | Append a file entry to the audit chain with SHA256 hash-chaining. |
+| <code>Task&lt;AuditChainVerifyResult&gt; VerifyChainAsync(string chainLogPath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/AuditChainService.cs:55](../../../../src/Meridian.Storage/Services/AuditChainService.cs#L55) | Verify the integrity of the audit chain. |
+
+## IDataLineageService
+
+Qualified name: <code>Meridian.Storage.Services.IDataLineageService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Services/DataLineageService.cs:402](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L402).
+
+Interface for data lineage tracking service.
+
+```csharp
+public interface IDataLineageService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>void RecordIngestion(string filePath, IngestionRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:404](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L404) |  |
+| <code>void RecordTransformation(string sourceFilePath, string targetFilePath, TransformationRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:405](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L405) |  |
+| <code>void RecordMigration(string sourceFilePath, string targetFilePath, MigrationRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:406](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L406) |  |
+| <code>void RecordDeletion(string filePath, string reason);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:407](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L407) |  |
+| <code>LineageGraph? GetLineageGraph(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:408](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L408) |  |
+| <code>IReadOnlyList&lt;string&gt; GetUpstream(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:409](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L409) |  |
+| <code>IReadOnlyList&lt;string&gt; GetDownstream(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:410](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L410) |  |
+| <code>LineageReport GenerateReport();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:411](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L411) |  |
+| <code>Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:412](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L412) |  |
+
+## IDataQualityScoringService
+
+Qualified name: <code>Meridian.Storage.Services.IDataQualityScoringService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Services/DataQualityScoringService.cs:444](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L444).
+
+Interface for data quality scoring service.
+
+```csharp
+public interface IDataQualityScoringService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;QualityAssessment&gt; ScoreFileAsync(string filePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:446](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L446) |  |
+| <code>Task&lt;BestOfBreedResult&gt; SelectBestSourceAsync(string symbol, string eventType, DateTimeOffset? date = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:447](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L447) |  |
+| <code>Task&lt;DataQualityScoringReport&gt; GenerateReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:448](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L448) |  |
+
+## IDataQualityService
+
+Qualified name: <code>Meridian.Storage.Services.IDataQualityService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Services/DataQualityService.cs:1119](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1119).
+
+Interface for data quality service.
+
+```csharp
+public interface IDataQualityService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;DataQualityScore&gt; ScoreAsync(string path, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:1121](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1121) |  |
+| <code>Task&lt;DataQualityReport&gt; GenerateReportAsync(QualityReportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:1122](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1122) |  |
+| <code>Task&lt;DataQualityScore[]&gt; GetHistoricalScoresAsync(string path, TimeSpan window, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:1123](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1123) |  |
+| <code>Task&lt;SourceRanking[]&gt; RankSourcesAsync(string symbol, DateTimeOffset date, MarketEventType type, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:1124](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1124) |  |
+| <code>Task&lt;ConsolidatedDataset&gt; CreateGoldenRecordAsync(string symbol, DateTimeOffset date, ConsolidationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:1125](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1125) |  |
+| <code>Task&lt;QualityTrend&gt; GetTrendAsync(string symbol, TimeSpan window, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:1126](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1126) |  |
+| <code>Task&lt;QualityAlert[]&gt; GetQualityAlertsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:1127](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1127) |  |
+
+## IFileMaintenanceService
+
+Qualified name: <code>Meridian.Storage.Services.IFileMaintenanceService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:814](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L814).
+
+Interface for file maintenance service.
+
+```csharp
+public interface IFileMaintenanceService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;HealthReport&gt; RunHealthCheckAsync(HealthCheckOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:816](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L816) |  |
+| <code>Task&lt;RepairResult&gt; RepairAsync(RepairOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:817](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L817) |  |
+| <code>Task&lt;FileCompressionResult&gt; CompressAsync(FileCompressionOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:818](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L818) |  |
+| <code>Task&lt;DefragResult&gt; DefragmentAsync(DefragOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:819](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L819) |  |
+| <code>Task&lt;OrphanReport&gt; FindOrphansAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:820](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L820) |  |
+
+## ILifecyclePolicyEngine
+
+Qualified name: <code>Meridian.Storage.Services.ILifecyclePolicyEngine</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:408](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L408).
+
+Interface for lifecycle policy engine.
+
+```csharp
+public interface ILifecyclePolicyEngine
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LifecycleEvaluationResult&gt; EvaluateAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:410](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L410) |  |
+| <code>Task&lt;LifecycleExecutionResult&gt; ExecuteAsync(IReadOnlyList&lt;LifecycleAction&gt; actions, bool dryRun = false, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:411](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L411) |  |
+| <code>StoragePolicyConfig ResolvePolicy(string filePath);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:412](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L412) |  |
+| <code>IReadOnlyDictionary&lt;StorageTier, LifecycleTierInfo&gt; GetTierStatistics();</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:413](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L413) |  |
+
+## IMaintenanceScheduler
+
+Qualified name: <code>Meridian.Storage.Services.IMaintenanceScheduler</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1487](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1487).
+
+Interface for maintenance scheduler.
+
+```csharp
+public interface IMaintenanceScheduler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ScheduleDecision&gt; CanRunNowAsync(MaintenanceType operation, ResourceRequirements requirements, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1489](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1489) |  |
+| <code>Task&lt;ScheduleSlot?&gt; FindNextWindowAsync(MaintenanceType operation, TimeSpan estimatedDuration, ResourceRequirements requirements, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1490](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1490) |  |
+| <code>Task&lt;ScheduledJob&gt; ScheduleAsync(MaintenanceJob job, ScheduleOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1491](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1491) |  |
+| <code>Task&lt;OperationalState&gt; GetStateAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1492](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1492) |  |
+| <code>Task&lt;JobExecutionStatus&gt; ExecuteJobAsync(MaintenanceJob job, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1493](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1493) |  |
+| <code>IReadOnlyList&lt;ScheduledJob&gt; GetPendingJobs();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1494](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1494) |  |
+| <code>IReadOnlyList&lt;ScheduledJob&gt; GetRunningJobs();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1495](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1495) |  |
+| <code>JobExecutionStatus? GetJobStatus(string jobId);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1496](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1496) |  |
+| <code>bool IsRealTimeCollectionActive();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1497](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1497) |  |
+| <code>TimeSpan? GetTimeUntilCollectionEnds();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1498](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1498) |  |
+
+## IMetadataTagService
+
+Qualified name: <code>Meridian.Storage.Services.IMetadataTagService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Services/MetadataTagService.cs:545](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L545).
+
+Interface for metadata tagging and lineage tracking on stored data files.
+
+```csharp
+public interface IMetadataTagService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>void SetTag(string filePath, string key, string value);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:547](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L547) |  |
+| <code>void SetTags(string filePath, IReadOnlyDictionary&lt;string, string&gt; tags);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:548](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L548) |  |
+| <code>string? GetTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:549](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L549) |  |
+| <code>IReadOnlyDictionary&lt;string, string&gt; GetAllTags(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:550](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L550) |  |
+| <code>bool RemoveTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:551](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L551) |  |
+| <code>void RecordLineage(string filePath, LineageEntry entry);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:552](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L552) |  |
+| <code>IReadOnlyList&lt;LineageEntry&gt; GetLineage(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:553](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L553) |  |
+| <code>void SetInsight(string filePath, string insightKey, DataInsight insight);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:554](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L554) |  |
+| <code>DataInsight? GetInsight(string filePath, string insightKey);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:555](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L555) |  |
+| <code>IReadOnlyDictionary&lt;string, DataInsight&gt; GetAllInsights(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:556](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L556) |  |
+| <code>void SetQualityScore(string filePath, double score, string? scoredBy = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:557](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L557) |  |
+| <code>double? GetQualityScore(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:558](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L558) |  |
+| <code>IReadOnlyList&lt;string&gt; SearchByTag(string key, string? valuePattern = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:559](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L559) |  |
+| <code>IReadOnlyList&lt;string&gt; SearchByQualityScore(double minScore, double maxScore = 1.0);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:560](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L560) |  |
+| <code>FileMetadataRecord? GetFullMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:561](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L561) |  |
+| <code>void RemoveMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:562](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L562) |  |
+| <code>Task SetQualityAssessmentAsync(string filePath, double score, DataInsight insight, string? scoredBy = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:563](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L563) |  |
+| <code>Task SetQualityAssessmentsAsync(IReadOnlyCollection&lt;QualityAssessmentMetadataUpdate&gt; assessments, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:564](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L564) |  |
+| <code>Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:565](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L565) |  |
+
+## IndexRebuildVerification
+
+Qualified name: <code>Meridian.Storage.Services.IndexRebuildVerification</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:880](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L880).
+
+Verifiable proof returned by an index rebuild. A caller must not claim success unless every discovered input was indexed and the post-swap readback matches the staged index exactly.
+
+```csharp
+public sealed record IndexRebuildVerification(IndexSnapshot Before, IndexSnapshot After, IndexSnapshot Readback, int DiscoveredFileCount)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool AllDiscoveredFilesIndexed =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:887](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L887) |  |
+| <code>public bool ReadbackVerified =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:890](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L890) |  |
+| <code>public bool IsVerified =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:894](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L894) |  |
+
+## IndexSnapshot
+
+Qualified name: <code>Meridian.Storage.Services.IndexSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:870](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L870).
+
+A canonical count-and-digest snapshot of the live file metadata index.
+
+```csharp
+public sealed record IndexSnapshot(int IndexedFileCount, string DigestSha256, DateTimeOffset CapturedAtUtc);
+```
+
 ## IndexUpdateType
 
 Qualified name: <code>Meridian.Storage.Services.IndexUpdateType</code>. Kind: `enum`.
@@ -30,7 +294,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Storage.Services.IngestionRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/DataLineageService.cs:423](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L423).
+Source: [src/Meridian.Storage/Services/DataLineageService.cs:439](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L439).
 
 ```csharp
 public sealed record IngestionRecord(DateTime TimestampUtc, string Provider, string Symbol, string EventType, long EventCount, string? ApiEndpoint = null, TimeSpan? Latency = null, IReadOnlyDictionary<string, string>? Parameters = null);
@@ -40,7 +304,7 @@ public sealed record IngestionRecord(DateTime TimestampUtc, string Provider, str
 
 Qualified name: <code>Meridian.Storage.Services.InsightSeverity</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Services/MetadataTagService.cs:609](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L609).
+Source: [src/Meridian.Storage/Services/MetadataTagService.cs:623](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L623).
 
 Severity level for data insights.
 
@@ -52,10 +316,10 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Info</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:611](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L611) |  |
-| <code>Notable</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:612](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L612) |  |
-| <code>Warning</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:613](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L613) |  |
-| <code>Critical</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:614](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L614) |  |
+| <code>Info</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:625](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L625) |  |
+| <code>Notable</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:626](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L626) |  |
+| <code>Warning</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:627](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L627) |  |
+| <code>Critical</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:628](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L628) |  |
 
 ## IQualityTrendStore
 
@@ -362,7 +626,7 @@ public sealed record LifecycleTierInfo(int FileCount, long TotalBytes, TimeSpan 
 
 Qualified name: <code>Meridian.Storage.Services.LineageEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MetadataTagService.cs:584](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L584).
+Source: [src/Meridian.Storage/Services/MetadataTagService.cs:598](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L598).
 
 A lineage entry tracking the provenance of data.
 
@@ -374,7 +638,7 @@ public sealed record LineageEntry(DateTime TimestampUtc, string Operation, strin
 
 Qualified name: <code>Meridian.Storage.Services.LineageGraph</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Services/DataLineageService.cs:409](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L409).
+Source: [src/Meridian.Storage/Services/DataLineageService.cs:419](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L419).
 
 Captures a file&#x27;s ingestion, transformation, migration, and upstream or downstream lineage.
 
@@ -386,22 +650,22 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string FilePath { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Services/DataLineageService.cs:411](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L411) |  |
-| <code>public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Storage/Services/DataLineageService.cs:412](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L412) |  |
-| <code>public DateTime LastUpdatedUtc { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Storage/Services/DataLineageService.cs:413](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L413) |  |
-| <code>public DateTime? DeletedAtUtc { get; set; }</code> | [src/Meridian.Storage/Services/DataLineageService.cs:414](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L414) |  |
-| <code>public string? DeletionReason { get; set; }</code> | [src/Meridian.Storage/Services/DataLineageService.cs:415](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L415) |  |
-| <code>public List&lt;string&gt; Upstream { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:416](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L416) |  |
-| <code>public List&lt;string&gt; Downstream { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:417](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L417) |  |
-| <code>public List&lt;IngestionRecord&gt; Ingestions { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:418](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L418) |  |
-| <code>public List&lt;TransformationRecord&gt; Transformations { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:419](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L419) |  |
-| <code>public List&lt;MigrationRecord&gt; Migrations { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:420](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L420) |  |
+| <code>[JsonRequired] public string FilePath { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Services/DataLineageService.cs:422](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L422) |  |
+| <code>public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Storage/Services/DataLineageService.cs:423](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L423) |  |
+| <code>public DateTime LastUpdatedUtc { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Storage/Services/DataLineageService.cs:424](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L424) |  |
+| <code>public DateTime? DeletedAtUtc { get; set; }</code> | [src/Meridian.Storage/Services/DataLineageService.cs:425](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L425) |  |
+| <code>public string? DeletionReason { get; set; }</code> | [src/Meridian.Storage/Services/DataLineageService.cs:426](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L426) |  |
+| <code>[JsonRequired] public List&lt;string&gt; Upstream { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:428](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L428) |  |
+| <code>[JsonRequired] public List&lt;string&gt; Downstream { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:430](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L430) |  |
+| <code>[JsonRequired] public List&lt;IngestionRecord&gt; Ingestions { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:432](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L432) |  |
+| <code>[JsonRequired] public List&lt;TransformationRecord&gt; Transformations { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:434](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L434) |  |
+| <code>[JsonRequired] public List&lt;MigrationRecord&gt; Migrations { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:436](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L436) |  |
 
 ## LineageReport
 
 Qualified name: <code>Meridian.Storage.Services.LineageReport</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/DataLineageService.cs:449](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L449).
+Source: [src/Meridian.Storage/Services/DataLineageService.cs:465](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L465).
 
 ```csharp
 public sealed record LineageReport(DateTime GeneratedAtUtc, int TotalTrackedFiles, int ActiveFiles, int DeletedFiles, int TotalIngestions, int TotalTransformations, int TotalMigrations, Dictionary<string, int> SourceDistribution, Dictionary<string, int> TransformationTypes);
@@ -506,7 +770,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.MetadataTagService</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Services/MetadataTagService.cs:12](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L12).
+Source: [src/Meridian.Storage/Services/MetadataTagService.cs:13](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L13).
 
 Service for managing rich metadata tags, insights, and lineage tracking on stored data files. Provides a flexible key-value tagging system with typed metadata, hierarchical taxonomy support, and file-level insights derived from content analysis.
 
@@ -518,26 +782,26 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public MetadataTagService(string metadataStorePath) : this(metadataStorePath, static (path, content) =&gt; AtomicFileWriter.Write(path, content), static (path, content, ct) =&gt; AtomicFileWriter.WriteAsync(path, content, ct));</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:20](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L20) |  |
-| <code>public void SetTag(string filePath, string key, string value);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:40](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L40) |  |
-| <code>public void SetTags(string filePath, IReadOnlyDictionary&lt;string, string&gt; tags);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:52](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L52) |  |
-| <code>public string? GetTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:69](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L69) |  |
-| <code>public IReadOnlyDictionary&lt;string, string&gt; GetAllTags(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:78](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L78) |  |
-| <code>public bool RemoveTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:87](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L87) |  |
-| <code>public void RecordLineage(string filePath, LineageEntry entry);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:111](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L111) |  |
-| <code>public IReadOnlyList&lt;LineageEntry&gt; GetLineage(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:124](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L124) |  |
-| <code>public void SetInsight(string filePath, string insightKey, DataInsight insight);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:133](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L133) |  |
-| <code>public DataInsight? GetInsight(string filePath, string insightKey);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:146](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L146) |  |
-| <code>public IReadOnlyDictionary&lt;string, DataInsight&gt; GetAllInsights(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:155](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L155) |  |
-| <code>public void SetQualityScore(string filePath, double score, string? scoredBy = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:170](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L170) |  |
-| <code>public Task SetQualityAssessmentAsync(string filePath, double score, DataInsight insight, string? scoredBy = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:184](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L184) |  |
-| <code>public Task SetQualityAssessmentsAsync(IReadOnlyCollection&lt;QualityAssessmentMetadataUpdate&gt; assessments, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:206](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L206) |  |
-| <code>public double? GetQualityScore(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:238](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L238) |  |
-| <code>public IReadOnlyList&lt;string&gt; SearchByTag(string key, string? valuePattern = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:247](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L247) |  |
-| <code>public IReadOnlyList&lt;string&gt; SearchByQualityScore(double minScore, double maxScore = 1.0);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:265](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L265) |  |
-| <code>public FileMetadataRecord? GetFullMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:275](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L275) |  |
-| <code>public void RemoveMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:282](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L282) |  |
-| <code>public async Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:288](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L288) |  |
+| <code>public MetadataTagService(string metadataStorePath) : this(metadataStorePath, static (path, content) =&gt; AtomicFileWriter.Write(path, content), static (path, content, ct) =&gt; AtomicFileWriter.WriteAsync(path, content, ct));</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:22](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L22) |  |
+| <code>public void SetTag(string filePath, string key, string value);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:42](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L42) |  |
+| <code>public void SetTags(string filePath, IReadOnlyDictionary&lt;string, string&gt; tags);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:54](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L54) |  |
+| <code>public string? GetTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:71](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L71) |  |
+| <code>public IReadOnlyDictionary&lt;string, string&gt; GetAllTags(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:80](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L80) |  |
+| <code>public bool RemoveTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:89](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L89) |  |
+| <code>public void RecordLineage(string filePath, LineageEntry entry);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:113](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L113) |  |
+| <code>public IReadOnlyList&lt;LineageEntry&gt; GetLineage(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:126](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L126) |  |
+| <code>public void SetInsight(string filePath, string insightKey, DataInsight insight);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:135](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L135) |  |
+| <code>public DataInsight? GetInsight(string filePath, string insightKey);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:148](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L148) |  |
+| <code>public IReadOnlyDictionary&lt;string, DataInsight&gt; GetAllInsights(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:157](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L157) |  |
+| <code>public void SetQualityScore(string filePath, double score, string? scoredBy = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:172](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L172) |  |
+| <code>public Task SetQualityAssessmentAsync(string filePath, double score, DataInsight insight, string? scoredBy = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:186](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L186) |  |
+| <code>public Task SetQualityAssessmentsAsync(IReadOnlyCollection&lt;QualityAssessmentMetadataUpdate&gt; assessments, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:208](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L208) |  |
+| <code>public double? GetQualityScore(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:240](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L240) |  |
+| <code>public IReadOnlyList&lt;string&gt; SearchByTag(string key, string? valuePattern = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:249](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L249) |  |
+| <code>public IReadOnlyList&lt;string&gt; SearchByQualityScore(double minScore, double maxScore = 1.0);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:267](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L267) |  |
+| <code>public FileMetadataRecord? GetFullMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:277](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L277) |  |
+| <code>public void RemoveMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:284](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L284) |  |
+| <code>public async Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:290](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L290) |  |
 
 ## MigrationOptions
 
@@ -573,7 +837,7 @@ public sealed record MigrationProgress(string CurrentFile, int FilesProcessed, i
 
 Qualified name: <code>Meridian.Storage.Services.MigrationRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/DataLineageService.cs:440](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L440).
+Source: [src/Meridian.Storage/Services/DataLineageService.cs:456](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L456).
 
 ```csharp
 public sealed record MigrationRecord(DateTime TimestampUtc, string SourceTier, string TargetTier, string? CompressionChange = null, string? FormatChange = null, long BytesBefore = 0, long BytesAfter = 0);
@@ -635,170 +899,3 @@ Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:960](../../../.
 ```csharp
 public sealed record OrphanReport(DateTime GeneratedAt, IReadOnlyList<OrphanedFile> OrphanedFiles, long TotalOrphanedBytes);
 ```
-
-## ParquetConversionService
-
-Qualified name: <code>Meridian.Storage.Services.ParquetConversionService</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/ParquetConversionService.cs:17](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L17).
-
-Background service that detects completed trading days&#x27; JSONL files and converts them to Parquet format for optimized analytics queries. Only converts files from prior trading days (never the current day&#x27;s live data).
-
-```csharp
-public sealed class ParquetConversionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ParquetConversionService(StorageOptions options);</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:32](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L32) |  |
-| <code>public async Task&lt;ConversionSummary&gt; ConvertCompletedDaysAsync(int maxAgeDays = 30, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:44](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L44) | Scan for JSONL files from completed trading days and convert them to Parquet. |
-
-## PlannedMigrationAction
-
-Qualified name: <code>Meridian.Storage.Services.PlannedMigrationAction</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:602](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L602).
-
-```csharp
-public sealed record PlannedMigrationAction(string SourcePath, StorageTier TargetTier, string Reason, long SizeBytes, TimeSpan FileAge, long EstimatedSavings);
-```
-
-## QualityAlert
-
-Qualified name: <code>Meridian.Storage.Services.QualityAlert</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataQualityService.cs:1230](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1230).
-
-```csharp
-public sealed record QualityAlert(string Symbol, string Issue, double CurrentScore, double Threshold, string Recommendation);
-```
-
-## QualityAssessment
-
-Qualified name: <code>Meridian.Storage.Services.QualityAssessment</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataQualityScoringService.cs:452](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L452).
-
-```csharp
-public sealed record QualityAssessment(string FilePath, string Symbol, string Source, string EventType, double CompositeScore, IReadOnlyDictionary<string, double> Dimensions, DateTime AssessedAtUtc, long FileSize, IReadOnlyList<QualityIssue> Issues)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static QualityAssessment Empty(string filePath) =&gt; …;</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:463](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L463) |  |
-
-## QualityAssessmentMetadataUpdate
-
-Qualified name: <code>Meridian.Storage.Services.QualityAssessmentMetadataUpdate</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/MetadataTagService.cs:558](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L558).
-
-```csharp
-public sealed record QualityAssessmentMetadataUpdate(string FilePath, double Score, DataInsight Insight, string? ScoredBy = null, string InsightKey = "quality_assessment");
-```
-
-## QualityDimension
-
-Qualified name: <code>Meridian.Storage.Services.QualityDimension</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataQualityService.cs:1141](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1141).
-
-```csharp
-public sealed record QualityDimension(string Name, double Score, double Weight, string[] Issues);
-```
-
-## QualityIssue
-
-Qualified name: <code>Meridian.Storage.Services.QualityIssue</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataQualityScoringService.cs:468](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L468).
-
-```csharp
-public sealed record QualityIssue(string Category, string Description, QualityIssueSeverity Severity);
-```
-
-## QualityIssueSeverity
-
-Qualified name: <code>Meridian.Storage.Services.QualityIssueSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Services/DataQualityScoringService.cs:473](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L473).
-
-```csharp
-public enum QualityIssueSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:473](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L473) |  |
-| <code>Warning</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:473](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L473) |  |
-| <code>Error</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:473](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L473) |  |
-
-## QualityReportOptions
-
-Qualified name: <code>Meridian.Storage.Services.QualityReportOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataQualityService.cs:1168](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1168).
-
-```csharp
-public sealed record QualityReportOptions(string[] Paths, DateTimeOffset? From = null, DateTimeOffset? To = null, double MinScoreThreshold = 1.0, bool IncludeRecommendations = true, bool CompareAcrossSources = false);
-```
-
-## QualityReportSummary
-
-Qualified name: <code>Meridian.Storage.Services.QualityReportSummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/DataQualityScoringService.cs:496](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L496).
-
-Summarizes retained file quality scores by quality band, source, and symbol.
-
-```csharp
-public sealed class QualityReportSummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:498](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L498) |  |
-| <code>public double AverageScore { get; set; }</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:499](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L499) |  |
-| <code>public int HighQualityFiles { get; set; }</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:500](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L500) |  |
-| <code>public int MediumQualityFiles { get; set; }</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:501](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L501) |  |
-| <code>public int LowQualityFiles { get; set; }</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:502](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L502) |  |
-| <code>public Dictionary&lt;string, double&gt; BySource { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:503](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L503) |  |
-| <code>public Dictionary&lt;string, double&gt; BySymbol { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:504](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L504) |  |
-
-## QualityTrend
-
-Qualified name: <code>Meridian.Storage.Services.QualityTrend</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataQualityService.cs:1215](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1215).
-
-```csharp
-public sealed record QualityTrend(string Symbol, double CurrentScore, double PreviousScore, double TrendDirection, string[] DegradingDimensions, string[] ImprovingDimensions, DateTimeOffset[] ScoreHistory, double[] ScoreValues, string WindowGranularity = "day", bool HasConfidence = false, bool IsSparseData = true, IReadOnlyDictionary<string, double[]>? DimensionSeries = null);
-```
-
-## QualityTrendPoint
-
-Qualified name: <code>Meridian.Storage.Services.QualityTrendPoint</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/QualityTrendStore.cs:186](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L186).
-
-```csharp
-public sealed record QualityTrendPoint(string Symbol, DateOnly Date, string Provider, DateTimeOffset ScoredAt, double OverallScore, IReadOnlyDictionary<string, double> DimensionScores)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? EvaluationId { get; init; }</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:194](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L194) |  |
-| <code>public string? InputHashSha256 { get; init; }</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:195](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L195) |  |
-| <code>public string? ResultHashSha256 { get; init; }</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:196](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L196) |  |
-| <code>public string? RulesetVersion { get; init; }</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:197](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L197) |  |
-| <code>public VerifiedOperationOutcome? Outcome { get; init; }</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:198](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L198) |  |

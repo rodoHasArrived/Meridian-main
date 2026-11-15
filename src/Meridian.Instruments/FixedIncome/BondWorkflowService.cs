@@ -19,10 +19,10 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
     public const string LegacyModelVersion = BondWorkflowModelVersions.Legacy;
 
     public Task<BondWorkflowResult?> CalculateAsync(BondWorkflowRequest request, CancellationToken ct = default)
-        => CalculateCoreAsync(request, null, ct);
+        => CalculateCoreAsync(request, null, null, ct);
 
     public Task<BondWorkflowResult?> CalculateIncomeScheduleAsync(BondWorkflowRequest request, DateOnly freezeIndexAt,
-        CancellationToken ct = default) => CalculateCoreAsync(request, freezeIndexAt, ct);
+        CancellationToken ct = default) => CalculateCoreAsync(request, freezeIndexAt, null, ct);
 
     public async Task<BondWorkflowResult?> ReplayAsync(BondWorkflowResult retained, CancellationToken ct = default)
     {
@@ -44,13 +44,18 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
             }
         };
         request = await PinRetainedCurvesAsync(retained, request, ct).ConfigureAwait(false);
-        var replay = await CalculateCoreAsync(request with { ModelVersion = retained.ModelVersion }, retained.FrozenIndexAt, ct).ConfigureAwait(false);
+        // A result calculated before the declared-format-invariant terms hash retained the raw-text hash;
+        // it is honoured only while it is the raw-text hash of exactly the terms resolved now.
+        var retainedTermsSha256 = retained.Inputs?.SingleOrDefault(input => input.Kind == "SecurityTerms")?.ContentSha256;
+        var replay = await CalculateCoreAsync(request with { ModelVersion = retained.ModelVersion }, retained.FrozenIndexAt,
+            retainedTermsSha256, ct).ConfigureAwait(false);
         // Historical receipts omitted resolved pins and, in v1, their model selector. Recalculate
         // their exact retained sources, then preserve the original request/context serialization.
         return replay is null ? null : replay with { Request = retained.Request, Context = retained.Context };
     }
 
-    private async Task<BondWorkflowResult?> CalculateCoreAsync(BondWorkflowRequest request, DateOnly? freezeIndexAt, CancellationToken ct)
+    private async Task<BondWorkflowResult?> CalculateCoreAsync(BondWorkflowRequest request, DateOnly? freezeIndexAt,
+        string? retainedTermsSha256, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Context);
@@ -69,7 +74,7 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
         var inputs = new List<BondCalculationInput>
         {
             new("SecurityTerms", security.SecurityId.ToString("D"), security.Version,
-                Sha256Digest.ComputeUtf8(security.CommonTerms.GetRawText() + "\n" + security.AssetSpecificTerms.GetRawText())),
+                BondSecurityTermsDigest.Resolve(security.CommonTerms, security.AssetSpecificTerms, retainedTermsSha256)),
             new("CalculationModel", modelVersion), new("CashFlowModel", legacyAccrual ? BondWorkflowProjection.LegacyModelVersion : BondWorkflowProjection.ModelVersion),
             new("PricingModel", BondWorkflowPricing.ModelVersion), new("CurvePolicy", "signed-positive-discount-v1")
         };

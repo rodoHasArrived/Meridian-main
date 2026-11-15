@@ -8,11 +8,13 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { IntercompanyAgreementEditor, agreementTypes, newAgreementDraft, typeLabel } from "@/components/accounting/intercompany-agreement-editor";
+import { ContractualDatePreview, StructuredTermsSummary } from "@/components/accounting/intercompany-structured-terms-summary";
+import { ExternalLegalReviewFields, ExternalLegalReviewReceipt, isCompleteExternalReview, newExternalReviewInput } from "@/components/accounting/intercompany-external-review";
 import { IntercompanyAgreementJournals } from "@/components/accounting/intercompany-agreement-journals";
 import * as api from "@/lib/api/intercompany-agreements.api";
 import type { AgreementMutation } from "@/lib/api/intercompany-agreements.api";
 import { ApiError } from "@/lib/api-errors";
-import type { AgreementCommand, AgreementDetail, AgreementDraft, AgreementList, AgreementQuery, AgreementRevision } from "@/types/intercompany-agreements";
+import type { AgreementCommand, AgreementDetail, AgreementDraft, AgreementList, AgreementQuery, AgreementRevision, AgreementSchedulePreview } from "@/types/intercompany-agreements";
 
 const today = () => new Date().toISOString().slice(0, 10);
 const errorText = (reason: unknown) => reason instanceof Error ? reason.message : "The agreement request failed.";
@@ -38,6 +40,9 @@ export function IntercompanyAgreementsPanel({ initialEntityId = "", initialAgree
   const [conflict, setConflict] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [rationale, setRationale] = useState("");
+  const [externalReview, setExternalReview] = useState(newExternalReviewInput);
+  const [externalMode, setExternalMode] = useState(false);
+  const [datePreview, setDatePreview] = useState<AgreementSchedulePreview | null>(null);
   const [reload, setReload] = useState(0);
   const lifecycle = useRef<AbortController | null>(null);
   const detailRequest = useRef<AbortController | null>(null);
@@ -63,7 +68,7 @@ export function IntercompanyAgreementsPanel({ initialEntityId = "", initialAgree
     setBusy(true); setError(null); setConflict(false); setMessage(null);
     try {
       const next = await services.getIntercompanyAgreement(agreementId, query.asOf, { signal: controller.signal });
-      if (!controller.signal.aborted) { setDetail(next); setRationale(""); }
+      if (!controller.signal.aborted) { setDetail(next); setRationale(""); setExternalReview(newExternalReviewInput()); setExternalMode(false); setDatePreview(null); }
     } catch (reason) { if (!controller.signal.aborted) setError(errorText(reason)); }
     finally { if (!controller.signal.aborted) setBusy(false); }
   }, [query.asOf, services]);
@@ -74,7 +79,7 @@ export function IntercompanyAgreementsPanel({ initialEntityId = "", initialAgree
     const proposal = detail?.proposals.find(item => item.state === "Draft" || item.state === "Submitted");
     const command = {
       agreementId: editor?.agreementId ?? detail!.agreementId, expectedAggregateVersion: editor?.mutation === "create" ? 0 : detail!.aggregateVersion,
-      proposalId: editor?.proposalId ?? proposal!.proposalId, draft, rationale: note, submittedHash: proposal?.submittedHash
+      proposalId: editor?.proposalId ?? proposal!.proposalId, draft, rationale: note, submittedHash: proposal?.submittedHash, ...(action === "approve" && externalMode && proposal?.submittedHash ? { externalReview: { ...externalReview, submittedHash: proposal.submittedHash } } : {})
     };
     const key = JSON.stringify([action, command]);
     if (lastCommand.current?.key !== key) lastCommand.current = { key, command: { ...command, commandId: crypto.randomUUID() } };
@@ -82,7 +87,7 @@ export function IntercompanyAgreementsPanel({ initialEntityId = "", initialAgree
     try {
       const result = await services.mutateIntercompanyAgreement(action, lastCommand.current.command, { signal });
       if (signal.aborted) return;
-      setEditor(null); setRationale(""); lastCommand.current = null;
+      setEditor(null); setRationale(""); setExternalMode(false); setExternalReview(newExternalReviewInput()); setDatePreview(null); lastCommand.current = null;
       let currentDetail = result.detail;
       if (result.replayed || (query.asOf && currentDetail.asOf !== query.asOf)) {
         try { currentDetail = await services.getIntercompanyAgreement(result.detail.agreementId, query.asOf, { signal }); }
@@ -102,6 +107,11 @@ export function IntercompanyAgreementsPanel({ initialEntityId = "", initialAgree
     } finally { if (!signal.aborted) setBusy(false); }
   }
 
+  async function previewDates(version?: number, proposalId?: string) {
+    if (!detail) return; const signal = lifecycle.current!.signal; setBusy(true); setError(null); setDatePreview(null);
+    try { const result = await services.previewIntercompanyAgreementSchedule(detail.agreementId, { asOf: query.asOf ?? asOf, version, proposalId }, { signal }); if (!signal.aborted) setDatePreview(result); }
+    catch (reason) { if (!signal.aborted) setError(errorText(reason)); } finally { if (!signal.aborted) setBusy(false); }
+  }
   const proposal = detail?.proposals.find(item => item.state === "Draft" || item.state === "Submitted");
   const createDisabledReason = busy ? "Wait for the current agreement request to finish."
     : loading ? "Wait for the agreement registry to finish loading."
@@ -158,6 +168,8 @@ export function IntercompanyAgreementsPanel({ initialEntityId = "", initialAgree
         <p className="text-sm">{detail.effectiveStatus} as of {detail.asOf} · {detail.currency} · Applicable version {detail.applicableRevision?.agreementVersion ?? "none"}; latest approved version {detail.latestApprovedVersion ?? "none"}</p>
         {detail.migrationWarnings?.length ? <div role="status" className="space-y-1 rounded border border-warning/40 bg-warning/10 p-3 text-sm" aria-label="Legal agreement migration warnings"><p className="font-semibold">Lifecycle migration evidence needs review</p><ul className="list-disc space-y-1 pl-5">{detail.migrationWarnings.map((warning, index) => <li key={index}>{warning}</li>)}</ul></div> : null}
         {detail.applicableRevision ? <RevisionSummary revision={detail.applicableRevision} /> : <p className="text-sm text-muted-foreground">There is no approved revision effective on this date.</p>}
+        {detail.applicableRevision ? <Button type="button" variant="outline" disabled={busy || Boolean(editor)} onClick={() => void previewDates(detail.applicableRevision!.agreementVersion)}>Preview approved contractual dates</Button> : null}
+        {datePreview ? <ContractualDatePreview preview={datePreview} /> : null}
         {detail.capabilities.blockingReason ? <p className="text-sm text-muted-foreground">{detail.capabilities.blockingReason}</p> : null}
         {!editor ? <div className="flex flex-wrap gap-2"><Button variant="outline" disabled={busy || !detail.capabilities.canAmend} onClick={() => propose("Amend")}>Draft amendment</Button>
           <Button variant="outline" disabled={busy || !detail.capabilities.canTerminate} onClick={() => propose("Terminate")}>Draft termination</Button>
@@ -173,9 +185,12 @@ export function IntercompanyAgreementsPanel({ initialEntityId = "", initialAgree
           <TechnicalDetails label="Compare proposed and applicable terms"><FormGrid columns={2}><div><h5 className="font-semibold">Applicable version {detail.applicableRevision?.agreementVersion ?? "none"}</h5>{detail.applicableRevision ? <TermsSummary draft={detail.applicableRevision.terms} /> : null}</div><div><h5 className="font-semibold">Proposed revision</h5><TermsSummary draft={proposal.draft} /></div></FormGrid></TechnicalDetails>
           {!editor ? <>
             <FormRow label="Review decision rationale" labelFor={`${id}-rationale`}><Input id={`${id}-rationale`} value={rationale} disabled={busy} onChange={event => setRationale(event.target.value)} /></FormRow>
+            {proposal.state === "Submitted" && detail.capabilities.canAttestExternalReview ? <><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={externalMode} disabled={busy} onChange={event => setExternalMode(event.target.checked)} />Attest external legal review as the operator</label>{externalMode ? <ExternalLegalReviewFields value={externalReview} onChange={setExternalReview} subjectHash={proposal.submittedHash ?? "Unavailable"} busy={busy} /> : null}</> : null}
             <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" disabled={busy} onClick={() => void previewDates(undefined, proposal.proposalId)}>Preview proposed contractual dates</Button>
               <Button variant="outline" disabled={busy || !detail.capabilities.canEdit} onClick={() => setEditor({ agreementId: detail.agreementId, proposalId: proposal.proposalId, mutation: "save", fixedIdentity: detail.latestApprovedVersion != null, initial: proposal.draft })}>Edit agreement draft</Button>
-              {([['submit', 'Submit for independent review', detail.capabilities.canSubmit], ['approve', 'Approve submitted terms', detail.capabilities.canApprove], ['reject', 'Reject proposal', detail.capabilities.canReject], ['withdraw', 'Withdraw proposal', detail.capabilities.canWithdraw]] as const).map(([action, label, allowed]) => <Button key={action} variant={action === "approve" ? "default" : "outline"} disabled={busy || !allowed || !rationale.trim()} onClick={() => void mutate(action)}>{label}</Button>)}
+              {([['submit', 'Submit for independent review', detail.capabilities.canSubmit], ['approve', 'Approve submitted terms', detail.capabilities.canApprove], ['reject', 'Reject proposal', detail.capabilities.canReject], ['withdraw', 'Withdraw proposal', detail.capabilities.canWithdraw]] as const).map(([action, label, allowed]) => <Button key={action} variant={action === "approve" ? "default" : "outline"} disabled={busy || !allowed || !rationale.trim() || (action === "approve" && externalMode)} onClick={() => void mutate(action)}>{label}</Button>)}
+              {externalMode ? <Button type="button" disabled={busy || !detail.capabilities.canAttestExternalReview || !rationale.trim() || !proposal.submittedHash || !isCompleteExternalReview(externalReview)} onClick={() => void mutate("approve")}>Attest external review and approve terms</Button> : null}
             </div>
           </> : null}
         </div> : null}
@@ -191,14 +206,14 @@ export function IntercompanyAgreementsPanel({ initialEntityId = "", initialAgree
 function TermsSummary({ draft }: { draft: AgreementDraft }) {
   return <div className="space-y-2 text-sm"><p>{span(draft)}</p><dl className="grid gap-x-4 gap-y-1 md:grid-cols-2">
     {[["Purpose", draft.purpose], ["Annual rate (fraction)", draft.terms?.fixedAnnualRate], ["Rate terms", draft.terms?.rateDescription], ["Schedule", draft.terms?.scheduleDescription], ["Allocation", draft.terms?.allocationDescription], ["Settlement calendar days", draft.terms?.settlementDays], ["Notes", draft.terms?.notes]].map(([label, value]) => <div key={String(label)}><dt className="text-muted-foreground">{label}</dt><dd className="break-words">{text(value)}</dd></div>)}
-    </dl><ul className="space-y-1 break-all" aria-label="Retained agreement evidence">{draft.evidence?.map((item, index) => {
+    </dl><StructuredTermsSummary terms={draft.terms?.structuredTerms} /><ul className="space-y-1 break-all" aria-label="Retained agreement evidence">{draft.evidence?.map((item, index) => {
       const vaultId = /^evidence:\/\/evidence-vault\/([A-Za-z0-9_-]+)$/.exec(item.reference)?.[1];
       return <li key={`${item.reference}:${index}`}>{vaultId ? <a className="underline underline-offset-4" href={`/workstation/evidence/vault/${encodeURIComponent(vaultId)}`} target="_blank" rel="noreferrer">{item.reference}</a> : item.reference}{item.artifactId ? ` · artifact ${item.artifactId}` : ""}{item.contentHash ? ` · SHA-256 ${item.contentHash}` : ""}</li>;
     })}</ul></div>;
 }
 function RevisionSummary({ revision }: { revision: AgreementRevision }) {
   return <div className="space-y-2 border-l-2 border-border pl-3"><h4 className="font-semibold">Approved version {revision.agreementVersion} · {typeLabel(revision.action)}</h4>
-    <TermsSummary draft={revision.terms} /><p className="text-sm">Approved by {revision.approver} at {revision.approvedAtUtc} · {revision.rationale}</p>
+    <TermsSummary draft={revision.terms} />{revision.externalReview ? <ExternalLegalReviewReceipt review={revision.externalReview} /> : <p className="text-sm">Approved by {revision.approver} at {revision.approvedAtUtc} · {revision.rationale}</p>}
     {(revision.terms.terminationEffectiveDate ?? revision.terms.effectiveFrom) < revision.approvedAtUtc.slice(0, 10) ? <p className="text-sm text-warning">Retrospective change: effective before approval. Posted journal references remain unchanged.</p> : null}
     <TechnicalDetails label={`Version ${revision.agreementVersion} provenance`}><p className="break-all text-sm">Terms hash: {revision.payloadHash} · Base {text(revision.baseAgreementVersion)} · Approval predecessor {text(revision.predecessorAgreementVersion)}</p></TechnicalDetails></div>;
 }

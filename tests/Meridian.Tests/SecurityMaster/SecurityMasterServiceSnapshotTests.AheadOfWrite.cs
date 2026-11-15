@@ -440,7 +440,8 @@ public sealed partial class SecurityMasterServiceSnapshotTests
 
         harness.Upserted.Should().ContainSingle();
         harness.Upserted[0].AssetClass.Should().Be("StructuredCredit", "the profile reclassifies the record");
-        harness.Upserted[0].AssetSpecificTerms.GetRawText().Should().Be(created);
+        harness.Upserted[0].AssetSpecificTerms.GetRawText().Should().Be(SecurityTermsEnvelope.StampDeclaredFormat(created),
+            "the envelope persists verbatim, declaring the customProfile family the shape rule infers (ADR-024 amendment 2026-11-13)");
 
         var amended = ProfileEnvelope(tranche: "A-2");
         await harness.Service.AmendTermsAsync(new AmendSecurityTermsRequest(
@@ -457,7 +458,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
             Reason: "envelope amend"));
 
         harness.Upserted.Should().HaveCount(2);
-        harness.Upserted[1].AssetSpecificTerms.GetRawText().Should().Be(amended);
+        harness.Upserted[1].AssetSpecificTerms.GetRawText().Should().Be(SecurityTermsEnvelope.StampDeclaredFormat(amended));
 
         // An approved workbench edit of profileFields.scheduleConventions, merged into the canonical
         // envelope through the publish fan-out's merge handler and amended by this service.
@@ -491,6 +492,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
 
         var expectedMerged = JsonNode.Parse(amended)!.AsObject();
         expectedMerged["profileFields"]!["scheduleConventions"] = JsonNode.Parse(editedConventions);
+        expectedMerged[SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.CustomProfile;
         harness.Upserted.Should().HaveCount(3, "the approved profile edit merges into the canonical terms");
         JsonNode.DeepEquals(JsonNode.Parse(harness.Upserted[2].AssetSpecificTerms.GetRawText()), expectedMerged)
             .Should().BeTrue("the merged envelope persists verbatim, its root scheduleConventions included");
@@ -519,7 +521,9 @@ public sealed partial class SecurityMasterServiceSnapshotTests
 
         await RunAsync(harness, securityId, Deactivate);
 
-        harness.Upserted.Should().ContainSingle().Which.AssetSpecificTerms.GetRawText().Should().Be(stored.ToJsonString());
+        harness.Upserted.Should().ContainSingle().Which.AssetSpecificTerms.GetRawText().Should().Be(
+            SecurityTermsEnvelope.StampDeclaredFormat(stored.ToJsonString()),
+            "the stored untagged envelope is restored verbatim and declares the family it was inferred as");
         var economic = SecurityMasterMapping.FromEventEnvelope(harness.Appended.Should().ContainSingle().Subject);
         economic.EconomicTerms.GetProperty("accrual").ValueKind.Should().Be(JsonValueKind.Null,
             "versioned class terms are flat-codec-only; a profile envelope's root block is never decoded");
@@ -626,7 +630,8 @@ public sealed partial class SecurityMasterServiceSnapshotTests
 
         await RunAsync(harness, securityId, Deactivate);
 
-        harness.Upserted.Should().ContainSingle().Which.AssetSpecificTerms.GetRawText().Should().Be(stored);
+        harness.Upserted.Should().ContainSingle().Which.AssetSpecificTerms.GetRawText().Should().Be(
+            SecurityTermsEnvelope.StampDeclaredFormat(stored));
         var economic = SecurityMasterMapping.FromEventEnvelope(harness.Appended.Should().ContainSingle().Subject);
         economic.EconomicTerms.GetProperty("call").ValueKind.Should().Be(JsonValueKind.Null,
             "versioned class terms are flat-codec-only; a profile envelope's schedules are never decoded");
@@ -651,7 +656,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
 
         harness.Upserted.Should().ContainSingle();
         harness.Upserted[0].AssetClass.Should().Be("StructuredCredit", "the profile resolves to its class");
-        harness.Upserted[0].AssetSpecificTerms.GetRawText().Should().Be(envelope);
+        harness.Upserted[0].AssetSpecificTerms.GetRawText().Should().Be(SecurityTermsEnvelope.StampDeclaredFormat(envelope));
         var economic = SecurityMasterMapping.FromEventEnvelope(harness.Appended.Should().ContainSingle().Subject);
         economic.EconomicTerms.GetProperty("call").ValueKind.Should().Be(JsonValueKind.Null,
             "a profile envelope's schedules never reach the economic call module");
@@ -674,7 +679,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
 
         await harness.Service.CreateAsync(ProfileEnvelopeCreateRequest(securityId, envelope));
         harness.Appended.Should().ContainSingle();
-        harness.Upserted.Should().ContainSingle().Which.AssetSpecificTerms.GetRawText().Should().Be(envelope,
+        harness.Upserted.Should().ContainSingle().Which.AssetSpecificTerms.GetRawText().Should().Be(SecurityTermsEnvelope.StampDeclaredFormat(envelope),
             "class schedule containers remain outside profile-governed semantics after the write ceiling is raised");
     }
 

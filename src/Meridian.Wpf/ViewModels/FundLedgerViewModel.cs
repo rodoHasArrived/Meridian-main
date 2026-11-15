@@ -2287,6 +2287,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     private void UpdateFinancialOperationsQueuePresentation()
     {
+        RaisePropertyChanged(nameof(IntercompanyAdvisoryText));
         FinancialOperationsQueueItems.Clear();
 
         if (_financialOperationsCommandCenter is not null)

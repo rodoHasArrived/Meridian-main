@@ -1,6 +1,7 @@
-"""Pending migration ordinals, safe scaffolding, and generated planning docs.
+"""Pending and retired migration ordinals, safe scaffolding, and generated planning docs.
 
 Reservation ordinals are an authoring policy, independent of database ledgers.
+Retired ordinals are numbers that were skipped or withdrawn and must never be reused.
 Applied migration filenames are never rewritten by this module.
 """
 
@@ -46,11 +47,18 @@ class MigrationReservation:
 
 
 @dataclass(frozen=True, slots=True)
+class RetiredMigrationOrdinal:
+    ordinal: int
+    reason: str
+
+
+@dataclass(frozen=True, slots=True)
 class MigrationReservationSet:
     id: str
     filename_template: str
     ordinal_pattern: str
     reservations: tuple[MigrationReservation, ...]
+    retired: tuple[RetiredMigrationOrdinal, ...] = ()
 
     def filename(self, ordinal: int, slug: str) -> str:
         return self.filename_template.format(ordinal=ordinal, slug=slug)
@@ -90,9 +98,17 @@ def _repository_path(root: Path, value: Any, label: str) -> str:
         raise ReservationError(f"{label} escapes the repository: {value}") from exc
 
 
-def _mapping(value: Any, fields: set[str], label: str) -> Mapping[str, Any]:
-    if not isinstance(value, Mapping) or set(value) != fields:
-        raise ReservationError(f"{label} must contain exactly {', '.join(sorted(fields))}.")
+def _mapping(
+    value: Any, fields: set[str], label: str, optional: frozenset[str] = frozenset()
+) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping) or not fields <= set(value) <= fields | optional:
+        required = ", ".join(sorted(fields))
+        if optional:
+            allowed = ", ".join(sorted(optional))
+            raise ReservationError(
+                f"{label} must contain {required} and may also contain {allowed}."
+            )
+        raise ReservationError(f"{label} must contain exactly {required}.")
     return value
 
 
@@ -192,6 +208,7 @@ def load_reservation_register(
             entry,
             {"id", "filename_template", "ordinal_pattern", "reservations"},
             "Reservation migration set",
+            optional=frozenset({"retired"}),
         )
         set_id = _nonempty(entry["id"], "Migration set id")
         if set_id not in known or set_id in seen:
@@ -231,10 +248,33 @@ def load_reservation_register(
                     blueprint,
                 )
             )
+        raw_retired = entry.get("retired", [])
+        if not isinstance(raw_retired, list):
+            raise ReservationError(f"Migration set '{set_id}' retired must be a list.")
+        retired: list[RetiredMigrationOrdinal] = []
+        retired_numbers: set[int] = set()
+        for item in raw_retired:
+            item = _mapping(item, {"ordinal", "reason"}, "Retired migration ordinal")
+            number = _ordinal(item["ordinal"])
+            if number in retired_numbers:
+                raise ReservationError(
+                    f"Migration set '{set_id}' repeats retired ordinal {number}."
+                )
+            if number in occupied:
+                raise ReservationError(
+                    f"Migration set '{set_id}' ordinal {number} is both reserved and retired."
+                )
+            retired_numbers.add(number)
+            retired.append(
+                RetiredMigrationOrdinal(
+                    number, _nonempty(item["reason"], "Retired ordinal reason")
+                )
+            )
         sets.append(
             MigrationReservationSet(
                 set_id, template, pattern,
                 tuple(sorted(reservations, key=lambda item: item.ordinal)),
+                tuple(sorted(retired, key=lambda item: item.ordinal)),
             )
         )
     if seen != known:
@@ -262,6 +302,7 @@ def reservation_findings(
     for migration_set in register.migration_sets:
         groups: dict[int, list[MigrationFile]] = defaultdict(list)
         reserved = {item.ordinal for item in migration_set.reservations}
+        retired = {item.ordinal for item in migration_set.retired}
         for item in inventory.files_for(migration_set.id):
             number = migration_set.parse_ordinal(item.filename)
             if number is None:
@@ -281,6 +322,15 @@ def reservation_findings(
                         "migration-reservation-occupied", "error",
                         f"Migration ordinal {number} is both occupied and reserved; "
                         "retire the pending reservation before implementing it.",
+                        item.path, migration_set.id,
+                    )
+                )
+            if number in retired:
+                findings.append(
+                    Finding(
+                        "migration-ordinal-retired", "error",
+                        f"Migration ordinal {number} is retired and must never be reused; "
+                        "scaffold the next free ordinal instead.",
                         item.path, migration_set.id,
                     )
                 )
@@ -380,6 +430,20 @@ def _prepared_docs(
             )
     if not any(item.reservations for item in register.migration_sets):
         lines.append("| — | — | — | No pending reservations. |")
+    if any(item.retired for item in register.migration_sets):
+        lines.extend([
+            "",
+            "Retired ordinals are never reused; scaffolding and validation refuse them.",
+            "",
+            "| Migration set | Retired ordinal | Reason |",
+            "|---|---:|---|",
+        ])
+        for migration_set in register.migration_sets:
+            for item in migration_set.retired:
+                lines.append(
+                    f"| `{_cell(migration_set.id)}` | `{item.ordinal:03d}` | "
+                    f"{_cell(item.reason)} |"
+                )
     block = "\n".join(lines) + "\n\n"
     start = text.index(START_MARKER) + len(START_MARKER)
     end = text.index(END_MARKER)
@@ -483,12 +547,17 @@ def scaffold_migration(
             for item in inventory.files_for(migration_set_id)
         }
         reserved = {item.ordinal for item in rules.reservations}
+        retired = {item.ordinal for item in rules.retired}
         if ordinal is None:
             ordinal = max(occupied, default=0) + 1
-            while ordinal in reserved:
+            while ordinal in reserved or ordinal in retired:
                 ordinal += 1
-        if ordinal in occupied or ordinal in reserved:
-            state = "occupied" if ordinal in occupied else "reserved"
+        if ordinal in occupied or ordinal in reserved or ordinal in retired:
+            state = (
+                "occupied" if ordinal in occupied
+                else "reserved" if ordinal in reserved
+                else "retired and must never be reused"
+            )
             raise ReservationError(
                 f"Migration ordinal {ordinal} is {state} in '{migration_set_id}'."
             )

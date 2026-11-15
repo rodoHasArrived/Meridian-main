@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Ui.Services.ApiEndpointConfiguration</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:757](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L757).
+Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:768](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L768).
 
 Immutable request-generation settings published atomically by ApiClientService.
 
@@ -40,7 +40,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.AppSettings</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:766](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L766).
+Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:777](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L777).
 
 Settings for API client configuration.
 
@@ -52,9 +52,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? ServiceUrl { get; init; }</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:768](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L768) |  |
-| <code>public int ServiceTimeoutSeconds { get; init; } = 30;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:769](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L769) |  |
-| <code>public int BackfillTimeoutMinutes { get; init; } = 60;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:770](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L770) |  |
+| <code>public string? ServiceUrl { get; init; }</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:779](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L779) |  |
+| <code>public int ServiceTimeoutSeconds { get; init; } = 30;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:780](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L780) |  |
+| <code>public int BackfillTimeoutMinutes { get; init; } = 60;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:781](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L781) |  |
 
 ## ArchiveBrowserService
 

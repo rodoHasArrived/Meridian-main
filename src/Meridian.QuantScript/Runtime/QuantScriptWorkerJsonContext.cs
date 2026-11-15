@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
+using Meridian.Backtesting.Sdk;
 using Meridian.QuantScript.Api;
 
 namespace Meridian.QuantScript.Runtime;
@@ -16,7 +17,7 @@ namespace Meridian.QuantScript.Runtime;
     IncludeFields = true,
     PropertyNameCaseInsensitive = false,
     MaxDepth = 64,
-    Converters = new[] { typeof(ReadOnlyLedgerJsonConverter), typeof(ReadOnlyStringSetJsonConverter) })]
+    Converters = new[] { typeof(ReadOnlyLedgerJsonConverter), typeof(ReadOnlyStringSetJsonConverter), typeof(WorkerCashFlowJsonConverter) })]
 [JsonSerializable(typeof(WorkerEnvelope))]
 [JsonSerializable(typeof(WorkerExecutionRequest))]
 [JsonSerializable(typeof(WorkerExecutionResponse))]
@@ -31,6 +32,15 @@ namespace Meridian.QuantScript.Runtime;
 [JsonSerializable(typeof(SecurityDetailDto))]
 [JsonSerializable(typeof(IReadOnlyList<CorporateActionDto>))]
 [JsonSerializable(typeof(List<CorporateActionDto>))]
+[JsonSerializable(typeof(BacktestCanonicalActionSnapshot))]
+[JsonSerializable(typeof(CashFlowEntry))]
+[JsonSerializable(typeof(TradeCashFlow))]
+[JsonSerializable(typeof(CommissionCashFlow))]
+[JsonSerializable(typeof(MarginInterestCashFlow))]
+[JsonSerializable(typeof(ShortRebateCashFlow))]
+[JsonSerializable(typeof(DividendCashFlow))]
+[JsonSerializable(typeof(CashInterestCashFlow))]
+[JsonSerializable(typeof(AssetEventCashFlow))]
 [JsonSerializable(typeof(List<JournalEntry>))]
 [JsonSerializable(typeof(List<string>))]
 internal sealed partial class QuantScriptWorkerJsonContext : JsonSerializerContext;

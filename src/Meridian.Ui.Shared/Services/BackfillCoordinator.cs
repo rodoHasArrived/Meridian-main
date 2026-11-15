@@ -29,7 +29,7 @@ public sealed class BackfillCoordinator : IDisposable
         IProviderCatalog? providerCatalog = null)
     {
         // Convert Ui.Shared.ConfigStore wrapper to the core ConfigStore for the core coordinator
-        var coreStore = new Meridian.Application.UI.ConfigStore(store.ConfigPath);
+        var coreStore = store.CoreStore;
         _core = new CoreBackfillCoordinator(coreStore, registry, factory, providerCatalog: providerCatalog);
         _ownsCore = true;
     }

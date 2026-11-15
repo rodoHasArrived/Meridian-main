@@ -9,7 +9,7 @@ using Xunit;
 namespace Meridian.Tests.Integration;
 
 [Trait("Category", "Integration")]
-public sealed class IntercompanyAgreementStorePostgresTests
+public sealed partial class IntercompanyAgreementStorePostgresTests
 {
     private const string Tenant = "tenant-a";
     private static readonly DateTimeOffset Now = new(2026, 11, 12, 0, 0, 0, TimeSpan.Zero);

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import subprocess
 import sys
 import tempfile
@@ -38,6 +39,68 @@ generate_health_dashboard = load_module(
 
 
 class GenerateStructureDocsTests(unittest.TestCase):
+    def test_ci_outputs_do_not_change_tree_in_git_or_filesystem_mode(self) -> None:
+        for git_available in (False, True):
+            with self.subTest(git_available=git_available), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+                root = Path(tmp)
+                ci_files = [
+                    "src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts",
+                    "src/Meridian.Ui/dashboard/src/lib/workspace-catalog.generated.ts",
+                    "docs/status/wpf-screen-development-tracker.json",
+                ]
+                ci_tree = "src/Meridian.Ui/compiled-workstation"
+                retained = ["src/Example/authored.ts", "src/Example/README.md",
+                            "docs/source/generated/source-module-index.md",
+                            "docs/status/doc-health-dashboard.json",
+                            "src/Example/other.generated.ts"]
+                policy = {"whole_files": ci_files, "whole_trees": [ci_tree],
+                          "hybrid_files": {}, "delivery": {"ci_files": ci_files,
+                          "ci_trees": [ci_tree], "reviewed_baselines": [retained[3]]}}
+                policy_file = root / "build/scripts/maintained-generation-outputs.json"
+                policy_file.parent.mkdir(parents=True)
+                policy_file.write_text(json.dumps(policy), encoding="utf-8")
+                for name in retained:
+                    path = root / name
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text("retained source or reviewed view\n", encoding="utf-8")
+                # Include a CI output in the index too: it must not enter the
+                # structure map even on an old checkout before untracking.
+                visible = retained + [ci_files[0]]
+                git_result = subprocess.CompletedProcess(
+                    args=["git", "ls-files"], returncode=0 if git_available else 1,
+                    stdout="\0".join(visible).encode(), stderr=b"")
+                with patch.object(generate_structure_docs.subprocess, "run", return_value=git_result):
+                    before = generate_structure_docs.render_tree(root)
+                    for name in ci_files + [ci_tree + "/assets/app.js"]:
+                        path = root / name
+                        path.parent.mkdir(parents=True, exist_ok=True)
+                        path.write_text("mechanical output\n", encoding="utf-8")
+                    with patch.object(generate_structure_docs, "load_ci_delivery", wraps=generate_structure_docs.load_ci_delivery) as load:
+                        after = generate_structure_docs.render_tree(root)
+                        load.assert_called_once_with(root)
+                self.assertEqual(before, after)
+                self.assertIn("source-module-index.md", after)
+                self.assertIn("doc-health-dashboard.json", after)
+                self.assertIn("other.generated.ts", after)
+                self.assertIn("authored.ts", after)
+                self.assertNotIn("ui-api-routes.generated.ts", after)
+                self.assertNotIn("workspace-catalog.generated.ts", after)
+                self.assertNotIn("wpf-screen-development-tracker.json", after)
+                self.assertNotIn("compiled-workstation", after)
+
+    def test_invalid_delivery_policy_cannot_hide_reviewed_files(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            policy_file = root / "build/scripts/maintained-generation-outputs.json"
+            policy_file.parent.mkdir(parents=True)
+            policy_file.write_text(json.dumps({"whole_files": [], "whole_trees": [],
+                "hybrid_files": {}, "delivery": {"ci_files": ["docs/reviewed.md"]}}), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "whole-output authority"):
+                generate_structure_docs.render_tree(root)
+            policy_file.write_text("{malformed", encoding="utf-8")
+            with self.assertRaises(json.JSONDecodeError):
+                generate_structure_docs.render_tree(root)
+
     def test_todo_scan_artifact_does_not_change_structure_or_health(self) -> None:
         for git_available in (False, True):
             with self.subTest(git_available=git_available), tempfile.TemporaryDirectory() as tmp:

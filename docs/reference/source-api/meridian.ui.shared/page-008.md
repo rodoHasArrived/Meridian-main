@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyOperationsJsonContext
+
+Qualified name: <code>Meridian.Ui.Shared.Serialization.IntercompanyOperationsJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Serialization/IntercompanyOperationsJsonContext.cs:21](../../../../src/Meridian.Ui.Shared/Serialization/IntercompanyOperationsJsonContext.cs#L21).
+
+Generated transport metadata for lifecycle and intercompany control operations.
+
+```csharp
+public partial class IntercompanyOperationsJsonContext : JsonSerializerContext;
+```
+
 ## RunLedgerExportRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Serialization.RunLedgerExportRequest</code>. Kind: `record`.
@@ -913,21 +925,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static BackfillExecutionHistoryResponse Build(IReadOnlyList&lt;BackfillExecutionLog&gt; executions, string? defaultProvider, DateTimeOffset? nowUtc = null, TimeSpan? dueSoonWindow = null);</code> | [src/Meridian.Ui.Shared/Services/BackfillExecutionContractProjection.cs:18](../../../../src/Meridian.Ui.Shared/Services/BackfillExecutionContractProjection.cs#L18) |  |
-
-## BacktestLedgerExportMapper
-
-Qualified name: <code>Meridian.Ui.Shared.Services.BacktestLedgerExportMapper</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs:13](../../../../src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs#L13).
-
-Builds lot schedules from retained simulated portfolio evidence. No current market quote is substituted for a missing historical snapshot.
-
-```csharp
-public static class BacktestLedgerExportMapper
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static LedgerExportRequest Build(BacktestResult result, DateTimeOffset periodStart, DateTimeOffset asOf, string outputDirectory, ExportFormat format, string? financialAccountId = null);</code> | [src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs:15](../../../../src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs#L15) |  |

@@ -716,3 +716,89 @@ that evidence before statement generation; legacy snapshots retain their availab
 Session creation, fill-time rebuilds and restart replay use retained `CreatedAt` as the opening
 capital journal timestamp. Rebuilding a projection cannot move capital into a later reporting
 period or change the historical opening cash balance. Public portfolio constructors remain intact.
+
+## Canonical synthetic fill accounting
+
+`Execution:TradeFillLedgerPosting:CanonicalAccounting` is opt-in. A null value preserves the
+legacy journal-only handoff. Enabling it creates a distinct `/v2` WAL scope and requires reviewed
+opening cash/lots, an exact active operator posting grant, matching chart configuration revision,
+USD book policy and effective automatic evidence-requiring rules for `execution.trade-fill`,
+`execution.trade-commission` and (when present) `execution.trade-fee`. The grant must be activated
+through the authorized ledger API; merely setting configuration never creates authority.
+
+Configure the cash, securities, realized gain/loss, commission and fee chart paths. Active configured
+accounts are resolved through `IConfiguredLedgerAccountResolver`; unknown, ambiguous, archived,
+wrong-type and foreign-scope mappings block posting. The cash account name must match the ledger's
+native account-scoped `Cash` account. Realized-result mappings must resolve to the
+native account-scoped `Realized Gain` and `Realized Loss` accounts without an instrument symbol,
+as required by canonical disposal validation. Financial-account and instrument identity remain separate
+from the chart classification. This slice supports in-process paper (Synthetic) long USD cash
+equities only. Broker/live or unknown-source events are refused; no host setting converts them into
+synthetic evidence. Legacy scope events retain their original source and replay serialization.
+
+`AutomatedTradeFillAccountingService` retains an immutable, content-hashed accounting intent
+alongside the WAL before attempting an append. Buys create canonical acquisition lots; sales use
+the effective FIFO account policy and retained lot versions to derive book P&L, rather than trusting
+OMS P&L. Commissions and uniquely identified USD fee components are separate expenses. Policy
+mutation authority is held during each new write; the database rechecks the grant, configuration,
+reference versions and period in the same transaction as the journal/lot mutation.
+
+A fill is complete only after authoritative readback proves its trade/lot receipt and every required
+fee journal. Partial completion and failed authority remain pending with the existing durable
+failure evidence. Restart reuses selected lots and original posting identities; committed receipts
+can be recovered after grant revocation, while new writes cannot. Historical journal-only fills
+never gain lots during replay; use the existing reviewed opening-lot backfill before a v2 cutover.
+This path retains a system delegation receipt, not a human reviewer or an Asset Spine approval.
+
+Targeted proof: `AutomatedTradeFillAccountingServiceTests`, `AutomatedPostingGrantTests`,
+`TradeFillCanonicalScopeTests` and the existing `EventDrivenDecouplingTests`/handoff recovery suites.
+The PostgreSQL golden case covers buy, fees, FIFO partial sale, restart, revocation and exact replay;
+its provider evidence is synthetic-verified, not live-provider compatibility.
+
+Grant activation retains the exact operator-authorized policy/rule pack and its integrity hash in
+PostgreSQL. After a full process restart, policy authority restores that snapshot only if its version
+is absent; an existing different policy under the same version blocks posting and requires a new
+policy version/grant. Both preparation and new writes hold policy mutation authority. The append
+transaction independently verifies the retained policy, source rule ID/version and automatic flags,
+so bypassing the application adapter cannot bypass rule authority. Older grants lacking a snapshot
+can recover already-committed receipts but cannot authorize a new posting.
+
+Before preparing a new fill, the canonical adapter requires posted cash history for the exact
+financial account through the fill cutoff. Every contributing line must retain USD/USD at rate 1;
+missing or currency-blind history blocks posting. Proven cash must cover gross consideration plus
+all required commission/fees for a buy; sale proceeds may cover costs but cannot create an overdraft.
+This slice never infers funding or margin from an absent opening.
+Completed receipt recovery bypasses new-purchase checks; partial fills retain their original intent.
+
+The canonical paper host binds its sole actual portfolio account to the grant's financial-account
+GUID; there is no `default` account alias. Before HTTP or OMS admission starts, it recovers pending
+primary-WAL and fallback fills, then hydrates authoritative ledger cash and canonical open lots.
+Startup checks the exact context, current open period, grant, immutable policy and complete mapped
+content. Runtime lots retain the durable acquisition GUID and use the same acquisition-date/GUID
+FIFO ordering as canonical relief, including multiple purchases on the same day.
+
+Recovered market observations come only from retained automatic execution receipts for the same
+book, account and security, including receipts under an earlier grant or period. Startup refuses
+holdings without those receipts, including transformed holdings without a subsequent execution-price
+receipt. Recovery preserves the original observation timestamp. Stale restored observations block
+orders until actual fresh market data arrives; basis never substitutes for a price observation.
+
+Canonical order admission currently supports immediate synthetic market orders with an explicit
+simulated `LimitPrice`, unit quantity, authoritative active USD Equity shares and multiplier one.
+It refuses other accounts, resting orders, amendments, derivatives, notional sizing, short sales and
+insufficient cash before gateway dispatch. The actual configured paper cost model supplies the
+commission/fee bound. Submission is serialized through portfolio fill application. Each admission
+also compares a coherent current book snapshot with runtime cash, quantity and exact basis; pending
+accounting must catch up, and external cash/lot changes require reviewed restart recovery before
+further orders. These restrictions apply only to the opt-in canonical host.
+
+Only the canonical OMS binding enables explicit synthetic-price observations in its unused paper
+gateway. Its required market-order price is the actual simulated fill price and cost-model input;
+it cannot fall back to scaffold pricing. Native paper market orders retain observed-market pricing
+and do not treat a caller's `LimitPrice` as an observation.
+
+The v2 handoff retains the native version-one `AccountingEvidence`, booked money multiplier,
+variation-margin flag and strategy/run lineage alongside its synthetic source and identified costs.
+The native evidence-capturing fill path applies to the configured GUID account. Canonical mode
+refuses financed trades, financing charges and variation-margin settlements; native paper sessions
+retain their existing multiplier, financing recovery and historical evidence behavior.

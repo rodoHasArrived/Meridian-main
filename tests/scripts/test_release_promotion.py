@@ -2,6 +2,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import shutil
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -89,6 +90,102 @@ class ReleasePromotionTests(unittest.TestCase):
         consumer = next(receipt for receipt in receipts if receipt.get('project') == 'consumer-setup')
         self.assertEqual(consumer['currentPackage']['sha256'], assets['Meridian-Setup.exe']['sha256'])
         self.assertEqual(startup['runtime'], 'win-x64')
+
+    def initial_release(self, version='0.1.0-rc.2'):
+        arm = next(path for path in self.manifests if 'win-arm64' in path.name)
+        shutil.rmtree(arm.parent)
+        (self.receipts / 'desktop-installer-win-arm64-lifecycle.json').unlink()
+        self.manifests.remove(arm)
+        for file in self.manifests:
+            manifest = json.loads(file.read_text())
+            manifest['version'] = version
+            file.write_text(json.dumps(manifest))
+            checksums = next(file.parent.glob('*SHA256SUMS'))
+            checksums.write_text('\n'.join(f'{self.gate.digest(path)}  {path.name}'
+                                           for path in file.parent.iterdir() if path != checksums))
+
+    def test_first_release_envelope_requires_exact_x64_installer_and_consumer(self):
+        self.initial_release()
+        assets, receipts, _ = self.gate.verify(self.root, self.receipts, self.smoke, 'abc', '42', '2',
+                                              self.needs, '0.1.0-rc.2')
+        self.assertEqual(len(assets), 8)
+        self.assertEqual(len(receipts), 2)
+        self.consumer_receipt.unlink()
+        with self.assertRaisesRegex(ValueError, 'consumer lifecycle certification receipt'):
+            self.gate.verify(self.root, self.receipts, self.smoke, 'abc', '42', '2', self.needs, '0.1.0-rc.2')
+
+    def test_first_release_scope_does_not_remove_arm64_from_later_or_historic_envelopes(self):
+        for version in (None, '0.1.1', '0.2.0-rc.1', '1.0.0'):
+            self.assertEqual(self.gate.required_families(version), self.gate.FAMILIES)
+        for version in ('0.1.0', '0.1.0-rc.2'):
+            self.assertEqual(self.gate.required_families(version), {
+                ('desktop-installer', 'win-x64'), ('consumer-setup', 'win-x64')})
+        for invalid in ('v0.1.0', '0.1.0; echo unsafe', '', '00.1.0', '0.1.0-'):
+            with self.assertRaises(ValueError):
+                self.gate.required_families(invalid)
+        self.initial_release('0.2.0')
+        with self.assertRaisesRegex(ValueError, 'Missing required release package families'):
+            self.gate.verify(self.root, self.receipts, self.smoke, 'abc', '42', '2', self.needs, '0.2.0')
+        with self.assertRaisesRegex(ValueError, 'Missing required release package families'):
+            self.verify()
+
+    def test_first_release_scope_rejects_mismatched_versions_and_extra_architectures(self):
+        self.initial_release()
+        with self.assertRaisesRegex(ValueError, 'coordinator version'):
+            self.gate.verify(self.root, self.receipts, self.smoke, 'abc', '42', '2', self.needs, '0.1.0')
+        for file in self.manifests:
+            manifest = json.loads(file.read_text())
+            manifest['runtime'] = 'win-arm64'
+            file.write_text(json.dumps(manifest))
+            with self.assertRaisesRegex(ValueError, 'Unexpected or duplicate package family'):
+                self.gate.verify(self.root, self.receipts, self.smoke, 'abc', '42', '2', self.needs, '0.1.0-rc.2')
+            break
+
+    def test_release_report_inventory_tracks_version_bound_scope_and_requires_recovery_acceptance(self):
+        initial = self.gate.required_evidence('42', '7', '2', '0.1.0-rc.2')
+        self.assertFalse(any('arm64' in name for name in initial))
+        self.assertIn('production-recovery-objectives-42-2', initial)
+        self.assertIn('release-signing-readiness-42-2', initial)
+        self.assertIn('desktop-install-certification-win-x64-42-2', initial)
+        self.assertIn('consumer-install-certification-win-x64-42-2', initial)
+        later = self.gate.required_evidence('42', '7', '2', '0.1.1')
+        self.assertIn('desktop-install-certification-win-arm64-42-2', later)
+        self.assertIn('release-attestation-desktop-installer-win-arm64-42-2', later)
+
+    def test_preflight_emits_one_policy_for_build_and_native_lifecycle_matrices(self):
+        output = self.root / 'github-output'
+        environment = dict(GITHUB_EVENT_NAME='workflow_dispatch', GITHUB_REF='refs/heads/main',
+                           GITHUB_SHA='abc', GITHUB_REPOSITORY='owner/repo', GITHUB_OUTPUT=str(output))
+        with patch.dict(os.environ, environment), patch('sys.argv', ['release-preflight.py', '--rehearsal-version', '0.1.0-rc.2']), \
+                patch.object(self.preflight, 'verify_source'), patch.object(self.preflight, 'published_versions', return_value=[]):
+            self.preflight.main()
+        fields = dict(line.split('=', 1) for line in output.read_text().splitlines())
+        self.assertEqual(fields['package_version'], '0.1.0.2')
+        self.assertEqual(fields['support_scope'], 'windows-x64-v0.1.0')
+        self.assertEqual(json.loads(fields['desktop_matrix']), {
+            'include': [dict(runtime='win-x64', architecture='x64', runner='windows-latest')]})
+        future = self.preflight.envelope.desktop_matrix('0.1.1')
+        self.assertIn(dict(runtime='win-arm64', architecture='ARM64', runner='windows-11-arm'), future)
+
+    def test_first_release_rc_revisions_increase_into_stable_without_changing_legacy_versions(self):
+        rc1 = self.preflight.package_version('0.1.0-rc.1')
+        rc2 = self.preflight.package_version('0.1.0-rc.2')
+        stable = self.preflight.package_version('0.1.0')
+        self.assertEqual(rc1, (0, 1, 0, 1))
+        self.assertEqual(rc2, (0, 1, 0, 2))
+        self.assertEqual(stable, (0, 1, 0, 65535))
+        self.preflight.require_increasing(rc2, [rc1])
+        self.preflight.require_increasing(stable, [rc1, rc2])
+        self.preflight.require_increasing(self.preflight.package_version('0.1.1'), [stable])
+        for version in ('0.1.0-rc.0', '0.1.0-rc.01', '0.1.0-rc.65535', '0.1.0-rc.foo'):
+            with self.assertRaises(ValueError):
+                self.preflight.package_version(version)
+        for previous in ([rc2], [stable]):
+            with self.assertRaises(ValueError):
+                self.preflight.require_increasing(rc2, previous)
+        self.assertEqual(self.preflight.package_version('0.1.0-rehearsal'), (0, 1, 0, 0))
+        self.assertEqual(self.preflight.package_version('1.2.3-rc.2'), (1, 2, 3, 0))
+        self.assertEqual(self.preflight.package_version('1.2.3'), (1, 2, 3, 0))
 
     def test_msix_only_lifecycle_and_web_startup_evidence_cannot_promote_consumer_exe(self):
         self.consumer_receipt.unlink()
@@ -365,3 +462,11 @@ class ReleasePromotionTests(unittest.TestCase):
         self.assertEqual(jobs['production']['needs'], ['eligibility', 'ci'])
         self.assertEqual(jobs['smoke']['with']['project'], 'web-workstation')
         self.assertEqual(jobs['smoke']['with']['runtime'], 'win-x64')
+        for name in ('build-msix', 'certify-installed-desktop'):
+            self.assertEqual(jobs[name]['strategy']['matrix'], '${{ fromJSON(needs.eligibility.outputs.desktop_matrix) }}')
+        self.assertEqual(jobs['production']['with']['require-recovery-acceptance'], 'true')
+        steps = jobs['release']['steps']
+        candidate = next(index for index, step in enumerate(steps) if step.get('name') == 'Check P0 release-candidate evidence on the certified commit')
+        validated = next(index for index, step in enumerate(steps) if step.get('name') == 'Retain validated release or rehearsal evidence')
+        self.assertLess(candidate, validated)
+        self.assertNotIn('if', steps[candidate])  # A publication retry rechecks original evidence too.

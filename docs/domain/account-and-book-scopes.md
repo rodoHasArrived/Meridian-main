@@ -27,6 +27,18 @@ a book in a view.
 
 ## Rules and Examples
 
+### Delegated synthetic fill accounting
+
+Automatic fill posting uses an operator-activated, durable grant for one tenant, financial account,
+book, period, source mode, policy version and chart revision. It is a delegation to a deterministic
+service, not an individual journal review or an assistant approval. The initial lane supports synthetic
+USD long cash equities only; it does not activate live trading or authorize adjustments, reversals,
+corporate-action approvals, close or report release. New writes recheck retained active authority in
+the database transaction. Revocation prevents new effects while exact committed receipts remain
+recoverable. The recorded system actor and grant identity must never be represented as a human reviewer.
+
+### Book identity
+
 - Every journal binds the server-owned entity, book, period, basis, currency, policy, and applicable
   dimensions. A financial-account assertion alone does not establish that posting authority.
 - One custody account may map cash, receivables, and investments to different ledger accounts.

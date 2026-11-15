@@ -6,10 +6,23 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.Application
+
+Native intercompany legal rules validate structured declarations without turning them into accrual
+or settlement calculations. The shared preview reuses schedule/day-count/calendar kernels for
+dates only. The separate pure `IntercompanyAccrualPreviewService` (ADR-028) reuses the same schedule
+mapping and day-count kernel to calculate fixed-rate simple loan interest over server-resolved
+revisions and principal; it reads no ledger and authorizes no journal. An explicit evidence-bound external-review attestation lets the preparing operator
+record external legal review while ordinary independent review remains available; legal lifecycle
+revisions retain the same separate audit facts. See
+[terms and review boundaries](../../docs/domain/intercompany-agreements.md).
+
+Structured decimal normalization preserves representable declarations when canonical formatting
+uses an exponent. Retrying an externally reviewed lifecycle append repairs an interrupted local
+profile projection from the latest retained revision while holding the history read lease.
 
 Shared `ConfigStore` saves retain a host-lifetime activation record containing only field names,
 impact classes and timestamps. Symbol changes are `Live`, streaming provider selection/options
@@ -33,6 +46,40 @@ uses Alpaca's fixed-income filter and stages identity evidence for review withou
 The authoritative request establishes availability directly, without an unrelated tolerant symbol
 health probe. Typed failures preserve missing/rejected credentials, transport, malformed payload,
 incomplete response and throttling distinctions. Unsupported strict decoders fail closed.
+
+Runtime credential selection pins the retained tenant, connection, external account and environment.
+Reusing a removed connection ID cannot retarget a host binding; historical selections without those
+pins require explicit rebinding. Asynchronous runtime application publishes success only while the
+exact selection and owner still match, including intervening selection changes back to the same account.
+Production selection changes, operator credential edits/removal and bound connection deletion/disable
+serialize with runtime application and require `StopAndDrainAsync` authority before mutation. The
+default host has no such authority and refuses these changes with a maintenance conflict. A capable
+host must stop new dispatches, drain in-flight work and dispose captured-key instances. Refusal
+without a drain preserves prior application status; a completed drain or uncertain failure/cancellation
+leaves application pending. Connection IDs are normalized before maintenance admission and persistence.
+Provider-owned conditional OAuth rotation retains its
+scope/generation CAS path so an in-flight refresh can finish while an operator's change drains.
+
+The final production ownership policy also guards every supported configuration writer. Browser,
+CLI and desktop setup refuse literal provider credentials before persistence or backup; interactive
+setup refuses provider-wide validation and raw credential previews. Legacy documents remain readable
+for explicit migration and purge. A secret-free write can proceed after all retained generations are
+reviewed and purged, without deleting owned vault credentials or assigning them to another account.
+
+Provider integration HTTP transport checks streamed response length against a declared
+`Content-Length` after enforcing its byte cap. Truncated bodies fail instead of becoming successful
+partial provider evidence. Synthetic transport tests cover connection-time DNS rebinding, redirects,
+mixed public/private DNS answers, declared and unknown-length oversize bodies and truncated-body retry.
+REST dry runs retain partial HTTP response evidence but refuse mapping or staging for HTTP 206 or
+Content-Range responses. Replay checks retained HTTP completeness across the entire source history,
+so a later format marker or newer mapping cannot promote a known partial capture.
+Reaching the page cap with a continuation cursor also leaves incomplete evidence. Review, identity
+preview and selected-row handoff verify complete retained source capture, exact manifests, conserved
+accepted and quarantined populations, and the full cursor-page chain, including empty terminal pages.
+Selected rows still require their own validation and review. Complete source capture may retain
+quarantined rows outside that selection; whole-run activation still requires every row to validate.
+Missing or unfinished source evidence remains reviewable and blocks promotion; replay refuses partial
+captures before publishing a new run.
 
 Loan portfolio reads include server-decimal maturity buckets by contractual quarter and currency;
 these summarize current principal and do not project repayments. Corporate-action calendar reads
@@ -205,6 +252,8 @@ Storage composition registers the PostgreSQL private-capital authority alongside
 Its banking schema follows `BankingStartup.SchemaVariable`; funding requires retained banking rows
 in the same database as the ledger for atomic source validation. Business workflows remain owned
 by Financial Operations and shared workstation services, rather than this composition layer.
+With a ledger connection string, storage composition also selects `PostgresOnboardingWorkspaceStore`
+for onboarding and shadow-mode workspaces, replacing the workstation's file fallback.
 
 Bond cash-flow context receipts now use `bond-cash-flow-context-v5`, retaining fixed-rate interest-principal segments alongside existing declared/floating evidence. Replay dispatches v1–v4 through their original row contracts and arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
@@ -212,6 +261,26 @@ Current unsigned Security Master cash-flow readers return `NegativeInterestUnsup
 schedule when effective interest is negative, after contractual caps and floors. Ledger gates reject
 an entire signed-interest schedule before any period posts. Calculation-only signed-interest
 previews keep their existing signed model; explicit v1/v2 receipt replay retains its original arithmetic.
+
+## Configured direct-lending accounting
+
+Loan journal lines retain their transaction and functional currency through symbol and dimension
+projection. The configured integration slice is opt-in through
+`MERIDIAN_DIRECT_LENDING_LEDGER_BOOK_ID`, `MERIDIAN_DIRECT_LENDING_LEDGER_CHART_MAPPING_REVISION`,
+and `MERIDIAN_DIRECT_LENDING_LEDGER_ACCOUNT_PATHS` (a JSON object mapping economic roles such as
+`LoanPrincipal`, `Cash`, `AccruedInterestReceivable`, and `InterestIncome` to chart paths).
+All three settings are required together. The selected book must be USD, have retained tenant
+ownership, and contain the posting period. Every emitted role must resolve to one active chart
+account of the expected type at the pinned revision. The supported cash account name starts with
+`Cash`, matching the existing statement cash classification. Missing mappings, foreign ownership,
+unsupported currency, and changed configuration block the loan transaction instead of publishing a
+partial state/event/journal. Existing unconfigured deployments retain their period-selection contract;
+this does not enable background lending workers or live-account access.
+
+Statement reconciliation's retained population provider resolves owner-scoped position snapshots
+from the authorized accounting book and retained tenancy. A missing owner partition stays missing;
+it cannot fall back to the legacy unowned run partition. The command and workstation composition
+paths supply the same ledger/tenancy authority to this reader.
 
 `ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
@@ -223,13 +292,18 @@ ineligible for preparer draft checks; no ledger, approval or posting authority i
 `ProviderRuntimeCredentialService` owns explicit host defaults and ownership-checked migration
 commands. Host composition supplies the current `ConfigStore` to `StoredProviderCredentialResolver`;
 it revalidates one retained tenant/connection/account/environment under the configuration lease before
-reading the scoped vault. Owned, ambiguous or dangling selections never fall back. Entirely legacy
-families retain their prior policy. Host selection requires provider reconstruction; credential editing
+reading the scoped vault. Owned, ambiguous or dangling selections never fall back.
+`ProviderCredentialOwnershipPolicy` requires explicit ownership in production and packaged/customer
+workstation compositions, including posture declarations added after feature registration. Entirely
+legacy families retain their prior policy only in unflagged development compositions. The generic background
+OAuth helper also refuses activation without an explicit owned scope in these protected compositions;
+its unassigned token vault is not a separate execution fallback. Host selection requires provider reconstruction; credential editing
 does not hot-activate a running collector. See [credential operations](../../docs/operators/provider-credentials.md#explicit-connection-ownership-and-host-selection).
 Legacy setup refuses a retained runtime binding even when its connection or ownership marker is
 missing. `LegacyProviderRuntimeCredentialStore` guards runtimes that do not yet carry trusted
 tenant/connection identity: every vault read and mutation requires readable configuration and an
-entirely legacy provider family under the configuration lease. Owned families remain unavailable to
+entirely legacy provider family under the configuration lease. Production and distributed workstations
+refuse these unowned execution paths even before a family has retained an owner. Owned families remain unavailable to
 these runtimes until tenant-aware selection is implemented; the guard does not choose another owner.
 Atomic legacy sidecar import validates the complete batch under one configuration lease before vault
 mutation. The shared legacy-runtime DI key makes IB Flex remote retrieval opt in to this guard;
@@ -383,6 +457,16 @@ StructuredCredit proposal, and returns ready proposals (the exact stamped terms 
 path would persist) ahead of blocked ones (the terms carried over plus the blockers). Records whose
 stored terms cannot be mapped are counted as unreadable and logged, never guessed. The service
 writes nothing; applying a proposal is a governed amendment.
+
+`SecurityMasterProfilePromotionService` builds the CustomAsset promotion report for one
+reclassifying profile. For each active `CustomAsset` pinned to it, it runs the main checks an
+envelope amendment runs under the target class: the classification-metadata check, the target
+decode, the target kind's invariants, asset-pack admission and, when a profile catalog is
+registered, the profile catalog validation. It is not full write-path parity (it uses the
+read-tolerant decode and skips the round-trip guards), so a Ready record can still be refused when
+amended. It writes nothing. On the write path, a write without a terms patch (a common-terms-only
+amendment, or a deactivation) keeps a stored `CustomAsset` class. Any write that carries the pinned
+envelope promotes the record, including an approved workbench field edit and a term-block patch.
 
 Security Master event replay that lacks retained flat terms flattens the economic-terms document onto
 the record's asset class, so carried values land at that class's declared keys. The Postgres

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Meridian.Backtesting.Sdk;
 
@@ -45,6 +46,12 @@ public sealed record ExecutionRealismDescriptor(
     string? DefaultBrokerageAccountId = null,
     bool PopulateAssetEventsFromSecurityMaster = false)
 {
+    /// <summary>Absent/default mode preserves canonical fingerprints created before canonical settlement was added.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public BacktestCorporateActionMode CorporateActionMode { get; init; } = BacktestCorporateActionMode.Legacy;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CorporateActionSnapshotHash { get; init; }
+
     /// <summary>Null preserves the canonical fingerprint of descriptors retained before this option existed.</summary>
     public bool? ApplyStoredCorporateActions { get; init; }
 
@@ -98,6 +105,11 @@ public sealed record ExecutionRealismDescriptor(
         {
             Append(builder, nameof(PopulateAssetEventsFromSecurityMaster), "true");
         }
+
+        if (CorporateActionMode != BacktestCorporateActionMode.Legacy)
+            Append(builder, nameof(CorporateActionMode), CorporateActionMode.ToString());
+        if (CorporateActionSnapshotHash is not null)
+            Append(builder, nameof(CorporateActionSnapshotHash), CorporateActionSnapshotHash);
 
         return builder.ToString();
     }

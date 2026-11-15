@@ -18,7 +18,7 @@
     <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/QuotaEnforcementServiceTests.cs" />
     <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/QualityTrendStoreTests.cs" />
     <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/DataValidatorTests.cs" />
-    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/DataLineageServiceTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/DataLineageServiceTests*.cs" />
     <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/DataQualityScoringServiceTests.cs" />
     <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/DataReplacementCostEstimatorTests.cs" />
     <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/ExportValidatorTests.cs" />
@@ -26,7 +26,7 @@
     <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/Analysis*Tests.cs" />
     <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/DuckDbQueryServiceTests.cs" />
     <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/LifecyclePolicyEngineTests.cs" />
-    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/MetadataTagServiceTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/MetadataTagServiceTests*.cs" />
     <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/PositionSnapshotStoreTests.cs" />
     <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/Backfill/**/*.cs" />
     <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/Etl/**/*.cs" />

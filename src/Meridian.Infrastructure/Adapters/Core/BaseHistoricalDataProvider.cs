@@ -274,7 +274,8 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     {
         lock (_rateLimitSync)
         {
-            return GetRateLimitInfo(_timeProvider.GetUtcNow());
+            var budget = RequestRateLimiter.GetBudgetStatus();
+            return GetRateLimitInfo(budget);
         }
     }
 
@@ -283,26 +284,36 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     {
         lock (_rateLimitSync)
         {
-            var observedAt = _timeProvider.GetUtcNow();
-            var info = GetRateLimitInfo(observedAt);
+            var budget = RequestRateLimiter.GetBudgetStatus();
+            var info = GetRateLimitInfo(budget);
+            var dailyLimited = budget.DailyMaximum is { } daily && budget.DailyUnitsUsed >= daily;
             return new ProviderRateLimitDiagnosticSnapshot(
                 info.ProviderName,
                 ProviderRateLimitSurfaces.Historical,
-                observedAt,
+                budget.ObservedAt,
                 info.RequestsMade,
                 info.MaxRequests,
                 info.Window,
                 info.IsLimited,
                 info.ResetsAt,
-                info.UsageRatio,
-                info.IsLimited ? "provider-response" : null);
+                Math.Max(info.UsageRatio, budget.DailyMaximum is { } maximum ? (double)budget.DailyUnitsUsed!.Value / maximum : 0),
+                dailyLimited ? "daily-quota" : budget.UnitsInWindow >= budget.Maximum ? "window-quota" : info.IsLimited ? "provider-response" : null)
+            {
+                QuotaUnit = budget.Unit,
+                DailyUnitsUsed = budget.DailyUnitsUsed,
+                DailyMaximum = budget.DailyMaximum,
+                DailyResetsAt = budget.DailyResetsAt,
+                DailyResetPolicy = budget.DailyMaximum.HasValue
+                    ? budget.DailyReset == DailyQuotaResetMode.UtcMidnight ? "utc-midnight" : "rolling-24-hours"
+                    : null
+            };
         }
     }
 
-    private RateLimitInfo GetRateLimitInfo(DateTimeOffset observedAt)
+    private RateLimitInfo GetRateLimitInfo(RequestBudgetStatus usage)
     {
-        var usage = RequestRateLimiter.GetStatus();
-        if (RequestRateLimiter.GetCooldownUntil() is { } sharedReset && sharedReset > observedAt)
+        var observedAt = usage.ObservedAt;
+        if (usage.CooldownUntil is { } sharedReset && sharedReset > observedAt)
         {
             _isRateLimited = true;
             _rateLimitResetsAt = sharedReset;
@@ -313,14 +324,20 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
             _rateLimitResetsAt = null;
         }
 
+        var quotaLimited = usage.UnitsInWindow >= usage.Maximum ||
+            (usage.DailyMaximum is { } daily && usage.DailyUnitsUsed >= daily);
+        var reset = _rateLimitResetsAt;
+        if (quotaLimited && usage.NextAvailableAt is { } available && (reset is null || available > reset))
+            reset = available;
+
         return new RateLimitInfo(
             Name,
-            usage.RequestsInWindow,
-            usage.MaxRequests,
-            RateLimitWindow,
-            _rateLimitResetsAt,
-            _isRateLimited,
-            _rateLimitResetsAt.HasValue ? _rateLimitResetsAt.Value - observedAt : null
+            usage.UnitsInWindow,
+            usage.Maximum,
+            usage.Window,
+            reset,
+            _isRateLimited || quotaLimited,
+            reset.HasValue ? reset.Value - observedAt : null
         );
     }
 

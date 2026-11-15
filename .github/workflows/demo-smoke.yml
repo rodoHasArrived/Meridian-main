@@ -7,7 +7,12 @@ on:
       - "src/Meridian/Program.cs"
       - "src/Meridian/DemoWorkspaceCli.cs"
       - "src/Meridian/WorkstationAssetTree.cs"
-      - "src/Meridian.Ui/wwwroot/workstation/**"
+      - "src/Meridian.Ui/dashboard/**"
+      - "build/scripts/ensure-workstation-assets.py"
+      - "build/scripts/ci/check-workstation-assets.py"
+      - "build/scripts/generate-ui-api-routes-ts.py"
+      - "build/scripts/generate-workspace-catalog-ts.py"
+      - ".nvmrc"
       - "src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs"
       - "src/Meridian.Contracts/Workstation/FirstRunDtos.cs"
       - "src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs"
@@ -35,7 +40,12 @@ on:
       - "src/Meridian/Program.cs"
       - "src/Meridian/DemoWorkspaceCli.cs"
       - "src/Meridian/WorkstationAssetTree.cs"
-      - "src/Meridian.Ui/wwwroot/workstation/**"
+      - "src/Meridian.Ui/dashboard/**"
+      - "build/scripts/ensure-workstation-assets.py"
+      - "build/scripts/ci/check-workstation-assets.py"
+      - "build/scripts/generate-ui-api-routes-ts.py"
+      - "build/scripts/generate-workspace-catalog-ts.py"
+      - ".nvmrc"
       - "src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs"
       - "src/Meridian.Contracts/Workstation/FirstRunDtos.cs"
       - "src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs"
@@ -97,6 +107,16 @@ jobs:
           key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/*.packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-v1-
+
+      - name: Set up browser build toolchain
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+
+      - name: Build workstation assets before evaluating .NET content
+        run: python3 build/scripts/ensure-workstation-assets.py
 
       - name: Restore demo-smoke test project
         run: dotnet restore tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj /p:EnableWindowsTargeting=true

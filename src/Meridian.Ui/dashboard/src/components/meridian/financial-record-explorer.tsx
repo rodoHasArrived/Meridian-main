@@ -72,6 +72,7 @@ export function FinancialRecordExplorerShell({
   onSaveView,
   onSelectRecord,
   activeRecordId,
+  scopeControls,
   formatRunLabel,
   children,
   className,
@@ -91,6 +92,8 @@ export function FinancialRecordExplorerShell({
   onSelectRecord?: (recordId: string) => void;
   /** A linked authoritative record controls selection; never fall back to another row. */
   activeRecordId?: string;
+  /** Required scope choices render before summaries, records, and supporting results. */
+  scopeControls?: ReactNode;
   /** Display-only run naming; underlying scope, filters, share state and save requests stay exact. */
   formatRunLabel?: (runId: string) => string;
   children: ReactNode;
@@ -308,6 +311,8 @@ export function FinancialRecordExplorerShell({
           </Button>
         </div>
       </div>
+
+      {scopeControls ? <div className={compact ? "mb-2" : "mb-4"}>{scopeControls}</div> : null}
 
       {compact ? (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">

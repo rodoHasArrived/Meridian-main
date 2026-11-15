@@ -1,5 +1,6 @@
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
@@ -51,7 +52,7 @@ public sealed class PostedLedgerAccountReconciliationSource(ILedgerJournalStore 
             var reason = evidence;
             try
             {
-                if ((brokerRows ?? []).Any(p => p.AssetClass.ToLowerInvariant() is not ("us_equity" or "equity" or "stock" or "stk" or "etf")))
+                if ((brokerRows ?? []).Any(p => p.AssetClass.ToLowerInvariant() is not (AlpacaAssetClassCodes.UsEquity or "equity" or "stock" or "stk" or "etf")))
                     throw new InvalidOperationException("Provider quantity and average-cost conventions require explicit instrument multipliers; this comparison supports unit-priced equities.");
                 if (futureActivity)
                     throw new InvalidOperationException("Later journal activity prevents using current open lots at the earlier broker cutoff; capture a fresh broker snapshot.");

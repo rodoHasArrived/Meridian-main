@@ -540,7 +540,8 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         }
         catch (Exception ex)
         {
-            _loggingService.LogWarning($"Shared provider readiness endpoint unavailable; using local provider health projection. {ex.Message}");
+            _loggingService.LogWarning("Shared provider readiness endpoint unavailable; using local provider health projection. {Error}",
+                ("Error", ex.Message));
             return null;
         }
     }

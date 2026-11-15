@@ -1825,6 +1825,11 @@
                                             <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="128" />
                                         </DataGrid.Columns>
                                     </DataGrid>
+                                    <Expander Header="Intercompany advisories — separate from close requirements" Margin="0,12,0,0">
+                                        <TextBox Text="{Binding IntercompanyAdvisoryText, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"
+                                                 AcceptsReturn="True" MinHeight="70" MaxHeight="220" VerticalScrollBarVisibility="Auto"
+                                                 AutomationProperties.Name="Nonblocking intercompany close advisories" />
+                                    </Expander>
                                     <TextBlock Text="Reconciliation Lane Coverage"
                                                Style="{StaticResource CardHeaderStyle}"
                                                Margin="0,16,0,12" />

@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StalePriceAssessment
+
+Qualified name: <code>Meridian.Ledger.StalePriceAssessment</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/StalePricePolicy.cs:66](../../../../src/Meridian.Ledger/StalePricePolicy.cs#L66).
+
+Result of assessing a mark&#x27;s freshness against a StalePricePolicy.
+
+```csharp
+public sealed record StalePriceAssessment(bool IsStale, int AgeDays, StalePriceHandling Handling)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StalePriceAssessment Fresh { get; } = new (false, 0, StalePriceHandling.Allow);</code> | [src/Meridian.Ledger/StalePricePolicy.cs:69](../../../../src/Meridian.Ledger/StalePricePolicy.cs#L69) | A fresh (non-stale) assessment. |
+
+## StalePriceHandling
+
+Qualified name: <code>Meridian.Ledger.StalePriceHandling</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ledger/StalePricePolicy.cs:6](../../../../src/Meridian.Ledger/StalePricePolicy.cs#L6).
+
+How a daily valuation run treats a mark whose price is older than the policy allows.
+
+```csharp
+public enum StalePriceHandling
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Allow</code> | [src/Meridian.Ledger/StalePricePolicy.cs:9](../../../../src/Meridian.Ledger/StalePricePolicy.cs#L9) | Include the mark unchanged; staleness is tolerated without annotation. |
+| <code>Flag</code> | [src/Meridian.Ledger/StalePricePolicy.cs:12](../../../../src/Meridian.Ledger/StalePricePolicy.cs#L12) | Include the mark but flag it as stale so downstream reviewers can see the exception. |
+| <code>Block</code> | [src/Meridian.Ledger/StalePricePolicy.cs:15](../../../../src/Meridian.Ledger/StalePricePolicy.cs#L15) | Exclude the mark from the fair-value draft; the position is surfaced for operator attention. |
+
 ## StalePricePolicy
 
 Qualified name: <code>Meridian.Ledger.StalePricePolicy</code>. Kind: `record`.
@@ -44,8 +82,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static StandardChartOfAccounts Instance { get; } = new ();</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:12](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L12) |  |
-| <code>public LedgerAccount GetDefinition(LedgerAccountRole role);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:60](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L60) |  |
-| <code>public LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId = null, string? symbol = null);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:69](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L69) |  |
+| <code>public LedgerAccount GetDefinition(LedgerAccountRole role);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:61](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L61) |  |
+| <code>public LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId = null, string? symbol = null);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:70](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L70) |  |
 
 ## StructuredNoteAccountingTemplate
 

@@ -475,6 +475,7 @@ function buildSharedFinancialOperationsCommandCenterViewState(
   const actionRows = [...dailyValuationScheduleActions, ...dailyValuationLifecycleAction, ...baseActionRows].slice(0, 4);
 
   return {
+    intercompanyAdvisories: projection?.intercompanyAdvisories ?? null,
     title: "CFO / Controller close command center",
     description: "Controller-facing period readiness, close blockers, evidence gaps, report-pack readiness, and sign-off status from Meridian Financial Operations review data.",
     ariaLabel: "CFO and controller close command center",
@@ -536,6 +537,11 @@ function localCommandCenterRoute(route: string | null | undefined, sourceKind: s
 
 function commandCenterFallbackRoute(sourceKind: string): string | null {
   const normalized = sourceKind.trim().toLowerCase();
+  // Shadow-mode agreement is resolved in the onboarding workspace, which lives under External GL evidence.
+  if (normalized.includes("shadow")) {
+    return WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation;
+  }
+
   if (normalized.includes("break") || normalized.includes("reconciliation")) {
     return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
   }

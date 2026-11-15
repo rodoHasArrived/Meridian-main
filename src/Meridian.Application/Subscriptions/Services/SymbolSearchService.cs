@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.Text.Json;
 using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
+using Meridian.Application.ProviderRouting;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Contracts.Domain;
 using Meridian.Infrastructure.Adapters.Alpaca;
@@ -34,8 +36,11 @@ public sealed class SymbolSearchService : IDisposable
         MetadataEnrichmentService? metadataService = null,
         TimeSpan? searchCacheDuration = null,
         TimeSpan? detailsCacheDuration = null,
-        ILogger? log = null)
+        ILogger? log = null,
+        ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
+        if ((ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment()).RequireExplicitOwnership)
+            throw new ProviderCredentialOwnershipRequiredException();
         _log = log ?? LoggingSetup.ForContext<SymbolSearchService>();
         _metadataService = metadataService ?? new MetadataEnrichmentService();
         _searchCache = new(searchCacheDuration ?? TimeSpan.FromMinutes(5));

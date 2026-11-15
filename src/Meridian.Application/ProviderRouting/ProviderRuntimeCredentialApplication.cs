@@ -18,6 +18,10 @@ public enum ProviderRuntimeCredentialApplyOutcome
 /// </summary>
 public interface IProviderRuntimeCredentialApplier
 {
+    /// <summary>Stops new dispatches, drains in-flight work and disposes every instance holding this selection; false means no such authority exists.</summary>
+    Task<bool> StopAndDrainAsync(ProviderRuntimeCredentialBinding binding, CancellationToken ct = default)
+        => Task.FromResult(false);
+
     Task<ProviderRuntimeCredentialApplyOutcome> ApplyAsync(ProviderRuntimeCredentialBinding binding, string actor, CancellationToken ct = default);
 }
 
@@ -40,7 +44,7 @@ public sealed class ProviderRuntimeCredentialApplicationTracker(TimeProvider? ti
     public void MarkBound(string providerId)
     {
         var now = _timeProvider.GetUtcNow();
-        _entries.AddOrUpdate(Key(providerId), _ => (now, null), (_, entry) => (now, entry.AppliedAt));
+        _entries.AddOrUpdate(Key(providerId), _ => (now, null), (_, _) => (now, null));
     }
 
     public void MarkApplied(string providerId)

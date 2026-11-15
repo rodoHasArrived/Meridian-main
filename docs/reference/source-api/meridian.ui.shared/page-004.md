@@ -87,7 +87,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:20](../../../.
 Maps fund-account management and brokerage synchronization operations with account-specific authorization.
 
 ```csharp
-public static class FundAccountEndpoints
+public static partial class FundAccountEndpoints
 ```
 
 Declared public members:
@@ -95,6 +95,12 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapFundAccountEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs#L22) |  |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.ThreeWayReconciliation.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.ThreeWayReconciliation.cs#L12).
+
+```csharp
+public static partial class FundAccountEndpoints
+```
 
 ## FundProfileScopeEndpointFilters
 
@@ -473,6 +479,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapIntercompanyAgreementEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs#L21) |  |
 
+## IntercompanyObligationEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyObligationEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs#L15).
+
+```csharp
+public static class IntercompanyObligationEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapIntercompanyObligationEndpoints(this WebApplication app, JsonSerializerOptions options);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs#L17) |  |
+
 ## IntercompanyOperationsEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyOperationsEndpoints</code>. Kind: `class`.
@@ -557,6 +579,18 @@ public static partial class LedgerEndpoints
 ```
 
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AuditIntegrity.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AuditIntegrity.cs#L13).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Authorization.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Authorization.cs#L23).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AutomatedPostingGrants.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AutomatedPostingGrants.cs#L15).
 
 ```csharp
 public static partial class LedgerEndpoints
@@ -670,6 +704,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:19](.
 public static partial class LedgerEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.GeneralLedgerExport.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.GeneralLedgerExport.cs#L15).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs#L12).
 
 ```csharp
@@ -730,7 +770,19 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Reporting.cs:15](../..
 public static partial class LedgerEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ReportProjections.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ReportProjections.cs#L23).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RunningBalance.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RunningBalance.cs#L17).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ServiceResolution.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ServiceResolution.cs#L23).
 
 ```csharp
 public static partial class LedgerEndpoints
@@ -1155,21 +1207,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapPortfolioCashLadderEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L23) |  |
-
-## PortfolioImportEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.PortfolioImportEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs#L24).
-
-Account-scoped imports retain their source before subscription changes and opening-draft intake.
-
-```csharp
-public static class PortfolioImportEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapPortfolioImportEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/PortfolioImportEndpoints.cs#L26) |  |

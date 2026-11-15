@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { getFinancialRecordExplorer, getRunLedgerJournal, getRunTrialBalance } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
@@ -48,6 +49,8 @@ export function StrategyRunLedgerScreen() {
   const asOf = asOfDate ? `${asOfDate}T23:59:59.9999999Z` : undefined;
 
   const [explorer, setExplorer] = useState<FinancialRecordExplorerDto | null>(null);
+  const [explorerRunId, setExplorerRunId] = useState<string | null | undefined>(undefined);
+  const [explorerLoading, setExplorerLoading] = useState(true);
   const [explorerError, setExplorerError] = useState<ApiErrorDisplay | null>(null);
   const [trialBalanceRows, setTrialBalanceRows] = useState<LedgerTrialBalanceLine[]>([]);
   const [trialBalanceLoading, setTrialBalanceLoading] = useState(false);
@@ -68,6 +71,7 @@ export function StrategyRunLedgerScreen() {
   useEffect(() => {
     let cancelled = false;
     setExplorerError(null);
+    setExplorerLoading(true);
 
     // Scoped to the run on screen. Unscoped, the explorer answered for whichever run was newest,
     // so an operator reading an older run saw that run's rows under the newest run's header,
@@ -76,11 +80,14 @@ export function StrategyRunLedgerScreen() {
       .then((dto) => {
         if (!cancelled) {
           setExplorer(dto);
+          setExplorerRunId(runId);
+          setExplorerLoading(false);
         }
       })
       .catch((err) => {
         if (!cancelled) {
           setExplorer(null);
+          setExplorerLoading(false);
           setExplorerError(describeApiError(err, "The run ledger explorer failed to load."));
         }
       });
@@ -200,8 +207,10 @@ export function StrategyRunLedgerScreen() {
       }
     }
 
-    return [...seen].map(([id, label]) => ({ id, label }));
-  }, [explorer]);
+    // Deep links may name a run outside the published choices. Keep its exact scope visible.
+    if (runId && !seen.has(runId)) seen.set(runId, runId);
+    return [...seen].map(([value, label]) => ({ value, label }));
+  }, [explorer, runId]);
 
   function selectRun(nextRunId: string) {
     const next = new URLSearchParams(searchParams);
@@ -223,7 +232,7 @@ export function StrategyRunLedgerScreen() {
       scopeItems={[
         { id: "workspace", label: "Workspace", value: "Strategy" },
         { id: "source", label: "Ledger source", value: "Strategy run (simulation) — not the posted journal" },
-        { id: "run-id", label: "Run ID", value: runId ?? "Latest run" },
+        { id: "run-id", label: "Run ID", value: runId ?? "No run selected" },
         { id: "as-of", label: "As of (UTC)", value: asOfDate || "Run end" }
       ]}
       savedViews={[]}
@@ -232,58 +241,67 @@ export function StrategyRunLedgerScreen() {
         { id: "journal", label: "Journal entries", value: journalLoading ? "…" : String(journalEvidence.rows.length) }
       ]}
       appliedFilters={[]}
-      explorer={asOf ? null : explorer}
-    >
-      {runOptions.length > 0 ? (
-        <FormRow
-          label="Strategy run"
-          labelFor="strategy-run-ledger-run-select"
-          className="mb-4 w-full max-w-sm"
-        >
-          <Select
-            id="strategy-run-ledger-run-select"
-            value={runId ?? ""}
-            onChange={(event) => selectRun(event.target.value)}
+      explorer={runId && explorerRunId === runId && !asOf && !explorerLoading ? explorer : null}
+      scopeControls={
+        <div className="flex flex-wrap items-start gap-4" role="group" aria-label="Run ledger scope">
+          <FormRow
+            label="Strategy run"
+            labelFor="strategy-run-ledger-run-select"
+            className="w-full max-w-sm"
+            hint={<span id="run-ledger-run-help">{explorerError
+              ? "Run choices could not be loaded. Refresh this page to try again."
+              : explorerLoading
+                ? "Loading available strategy runs…"
+                : runOptions.length === 0
+                  ? "No retained strategy runs are available. Create a run in Strategy to inspect its ledger."
+                  : "Choose a run to load its simulated ledger and trial balance."}</span>}
           >
-            <option value="">Select a run…</option>
-            {runOptions.map((option) => (
-              <option key={option.id} value={option.id}>{option.label}</option>
-            ))}
-          </Select>
-        </FormRow>
-      ) : null}
-      <FormRow label="As of date (UTC)" labelFor="run-ledger-as-of" className="mb-4 w-full max-w-sm">
-        <div className="flex items-center gap-2">
-          <Input
-            id="run-ledger-as-of"
-            type="date"
-            value={asOfDate}
-            disabled={!runId}
-            onChange={(event) => {
-              const next = new URLSearchParams(searchParams);
-              if (event.target.value) next.set("asOf", event.target.value);
-              else next.delete("asOf");
-              setSearchParams(next, { replace: true });
-              setSelectedRowId(null);
-            }}
-            aria-describedby="run-ledger-as-of-help"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            disabled={!asOfDate}
-            onClick={() => {
-              const next = new URLSearchParams(searchParams);
-              next.delete("asOf");
-              setSearchParams(next, { replace: true });
-              setSelectedRowId(null);
-            }}
-          >Run end</Button>
+            <Combobox
+              id="strategy-run-ledger-run-select"
+              value={runId ?? ""}
+              onChange={selectRun}
+              options={runId ? [{ value: "", label: "Select a run…" }, ...runOptions] : runOptions}
+              placeholder="Select a run…"
+              aria-describedby="run-ledger-run-help"
+              required
+              emptyText={explorerLoading ? "Loading strategy runs…" : "No matching strategy runs"}
+            />
+          </FormRow>
+          <FormRow label="As of date (UTC)" labelFor="run-ledger-as-of" className="w-full max-w-sm">
+            <div className="flex items-center gap-2">
+              <Input
+                id="run-ledger-as-of"
+                type="date"
+                value={asOfDate}
+                disabled={!runId}
+                onChange={(event) => {
+                  const next = new URLSearchParams(searchParams);
+                  if (event.target.value) next.set("asOf", event.target.value);
+                  else next.delete("asOf");
+                  setSearchParams(next, { replace: true });
+                  setSelectedRowId(null);
+                }}
+                aria-describedby="run-ledger-as-of-help"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!asOfDate}
+                onClick={() => {
+                  const next = new URLSearchParams(searchParams);
+                  next.delete("asOf");
+                  setSearchParams(next, { replace: true });
+                  setSelectedRowId(null);
+                }}
+              >Run end</Button>
+            </div>
+            <p id="run-ledger-as-of-help" className="mt-1 text-xs text-muted-foreground">
+              Balances and journal include postings through the selected UTC date.
+            </p>
+          </FormRow>
         </div>
-        <p id="run-ledger-as-of-help" className="mt-1 text-xs text-muted-foreground">
-          Balances and journal include postings through the selected UTC date.
-        </p>
-      </FormRow>
+      }
+    >
       {runId ? (
         <div className="mb-4 flex flex-wrap items-end gap-2">
           <FormRow label="Accounting export format" labelFor="run-ledger-export-format">

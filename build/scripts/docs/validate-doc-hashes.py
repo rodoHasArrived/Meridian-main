@@ -42,7 +42,12 @@ SOURCE_SUFFIXES = {
 SOURCE_EXCLUDES = EXCLUDE_DIRS | {"dist", "coverage", "wwwroot"}
 # Resolver output that npm rewrites on every dependency bump. Module READMEs never
 # describe resolved dependency versions, so lockfile churn is not review evidence.
-SOURCE_EXCLUDED_FILES = {"package-lock.json"}
+SOURCE_EXCLUDED_FILES = {
+    "package-lock.json",
+    # CI-produced mirrors must not make reviewed source depend on whether npm
+    # has run. Their authored inputs remain covered by source and contract checks.
+    "ui-api-routes.generated.ts", "workspace-catalog.generated.ts",
+}
 PACKAGE_MANIFEST = "package.json"
 # package.json sections whose values are dependency version specifiers. Package
 # names stay in the fingerprint, so adding or removing a dependency still drifts.

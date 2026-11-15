@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Meridian.Tests.Storage;
 
-public sealed class MetadataTagServiceTests : IDisposable
+public sealed partial class MetadataTagServiceTests : IDisposable
 {
     private readonly string _tempDir;
     private readonly string _metadataPath;
@@ -223,9 +223,8 @@ public sealed class MetadataTagServiceTests : IDisposable
     public void SetTag_WhenPersistenceWriteFails_Throws()
     {
         var brokenPath = Path.Combine(_tempDir, "broken-store.json");
-        File.WriteAllText(brokenPath, "{}");
-
         var service = new MetadataTagService(brokenPath);
+        service.SaveAsync().GetAwaiter().GetResult();
         File.Delete(brokenPath);
         Directory.CreateDirectory(brokenPath);
 

@@ -1947,7 +1947,7 @@ W10-PERF-001: planned; health green; evidence planned_evidence. Extend or supers
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-11-12 |
+| Last reviewed | 2026-11-13 |
 
 ### Current Summary
 
@@ -1973,6 +1973,8 @@ W10-CONSOL-001: planned; health green; evidence planned_evidence. Retained conso
 - Evidence: [src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs](../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs)
 - Evidence: [tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationTransitionServiceTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationTransitionServiceTests.cs)
 - Evidence: [tests/Meridian.Tests/Storage/ConsolidationBookCreationTests.cs](../../../tests/Meridian.Tests/Storage/ConsolidationBookCreationTests.cs)
+- Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs)
+- Evidence: [tests/Meridian.Tests/Integration/IntercompanyAgreementStorePostgresTests.StructuredTerms.cs](../../../tests/Meridian.Tests/Integration/IntercompanyAgreementStorePostgresTests.StructuredTerms.cs)
 
 
 ### Exit Criteria
@@ -2255,11 +2257,11 @@ W11-STAKE-001: planned; health green; evidence planned_evidence. Planned read-on
 | Priority | medium |
 | Owner lane | Data Confidence and Validation |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-11-13 |
+| Last reviewed | 2026-11-14 |
 
 ### Current Summary
 
-W11-SHADOW-001: in_progress; health green; evidence in_progress. Shadow onboarding extends the existing read-only workspace and book-of-record guard; retained activation and acceptance gates remain open.
+W11-SHADOW-001: in_progress; health green; evidence in_progress. Shadow onboarding extends the existing read-only workspace and book-of-record guard, reports agreement in close readiness, retains workspaces in the ledger database and has WPF parity; retained activation and acceptance gates remain open.
 
 ### Status References
 
@@ -2279,6 +2281,14 @@ W11-SHADOW-001: in_progress; health green; evidence in_progress. Shadow onboardi
 - Evidence: [tests/Meridian.Tests/Reporting/ReportingGovernanceCanonicalValidationTests.cs](../../../tests/Meridian.Tests/Reporting/ReportingGovernanceCanonicalValidationTests.cs)
 - Evidence: [tests/Meridian.Tests/Reconciliation/Connectors/StatementOpeningBalanceRoleTests.cs](../../../tests/Meridian.Tests/Reconciliation/Connectors/StatementOpeningBalanceRoleTests.cs)
 - Evidence: [src/Meridian.Ui/dashboard/src/screens/accounting-screen.onboarding-shadow-panel.test.tsx](../../../src/Meridian.Ui/dashboard/src/screens/accounting-screen.onboarding-shadow-panel.test.tsx)
+- Evidence: [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.CloseInputs.cs](../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.CloseInputs.cs)
+- Evidence: [src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs](../../../src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs)
+- Evidence: [src/Meridian.Storage/Ledger/Migrations/V_ledger_072__onboarding_workspaces.sql](../../../src/Meridian.Storage/Ledger/Migrations/V_ledger_072__onboarding_workspaces.sql)
+- Evidence: [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs](../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs)
+- Evidence: [src/Meridian.Wpf/Views/OnboardingShadowControl.xaml](../../../src/Meridian.Wpf/Views/OnboardingShadowControl.xaml)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.ShadowAgreementTests.cs](../../../tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.ShadowAgreementTests.cs)
+- Evidence: [tests/Meridian.Tests/Storage/OnboardingWorkspacePostgresTests.cs](../../../tests/Meridian.Tests/Storage/OnboardingWorkspacePostgresTests.cs)
+- Evidence: [tests/Meridian.Ui.Tests/Services/OnboardingShadowWorkspaceTests.cs](../../../tests/Meridian.Ui.Tests/Services/OnboardingShadowWorkspaceTests.cs)
 - Evidence: [docs/operators/shadow-mode-onboarding.md](../../operators/shadow-mode-onboarding.md)
 
 
@@ -2614,6 +2624,49 @@ W12-FINRPT-001: planned; health green; evidence planned_evidence. Bind existing 
 - `SRC-UI-SERVICES`
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
+
+## W12-ICACCRUAL-001 - Governed intercompany loan-interest accrual from structured terms
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | in_progress |
+| Health | yellow |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-14 |
+
+### Current Summary
+
+W12-ICACCRUAL-001: in_progress; health yellow; evidence in_progress. Fixed-rate simple interest is calculated from approved structured terms and retained as a reviewed source draft whose counterpart arrives through the existing proposal pipeline; operator screens, fees, floating rates and service-backed evidence remain open.
+
+### Status References
+
+- Decisions: DEC-IC-ACCRUAL-001
+- PR references (not inferred acceptance): none recorded
+- Evidence: [docs/adr/028-governed-intercompany-interest-accrual.md](../../adr/028-governed-intercompany-interest-accrual.md)
+- Evidence: [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs](../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs)
+- Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs)
+- Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs)
+- Evidence: [tests/Meridian.FundStructure.Tests/IntercompanyAccrualPreviewServiceTests.cs](../../../tests/Meridian.FundStructure.Tests/IntercompanyAccrualPreviewServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilderTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilderTests.cs)
+
+
+### Exit Criteria
+
+- Interest for a half-open accrual window is calculated only from the approved legal revision and LoanInterest profile revision applicable on each day, using the shared schedule and day-count kernels; no rate, day count, principal or amount is accepted from the caller.
+- A rate reset or amendment inside an accrual period is prorated by day under the stated intercompany-accrual-v1 rule, slices are rounded once, and any day without approved authority, declared schedule coverage or provable posted principal refuses the whole window.
+- The computed amount becomes a source-side draft in ordinary journal review and its counterpart arrives as a proposal draft in the destination review queue after the source posts; neither side posts automatically.
+- Each accrual retains the agreement version, profile revision, principal journals, calendar and kernel identity and any governed FX conversion; a client save cannot replace that evidence and edited lines block review.
+- Cross-currency loans convert through the governed FX authority or are unavailable; fees, floating rates and compounding stay uncalculated until their missing terms or authorities are declared.
+- Shared browser and WPF surfaces for requesting an accrual, and service-backed post-and-deliver evidence, are recorded before acceptance.
+
+### Source Modules
+
+- `SRC-APP`
+- `SRC-CONTRACTS`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-UI-SHARED`
 
 ## W12-ICAGREE-001 - Intercompany accounting profiles and legacy attribution
 | Field | Value |

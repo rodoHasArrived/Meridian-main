@@ -7,6 +7,8 @@ using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
+using Meridian.Ledger;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Ledger;
 using NSubstitute;
@@ -15,6 +17,95 @@ namespace Meridian.Tests.Application.DirectLending;
 
 public sealed partial class PostgresDirectLendingCommandServiceTests
 {
+    [Theory]
+    [InlineData("loan.drawdown-booked", "{\"amount\":1000}")]
+    [InlineData("loan.daily-accrual-posted", "{\"interestAmount\":10}")]
+    [InlineData("loan.principal-payment-applied", "{\"amount\":1000}")]
+    [InlineData("loan.daily-accrual-reversed", "{\"interestAmount\":10}")]
+    public async Task LoanProjection_PreservesTypedCurrencyAcrossLineReconstruction(string eventType, string json)
+    {
+        var loanId = Guid.NewGuid();
+        using var payload = JsonDocument.Parse(json);
+        var projector = new LoanAccountingProjector(BuildLedgerJournalStore(), new AccountingPolicyService(), BuildSecurityMasterQueryService());
+        var writes = await projector.ProjectAsync(loanId, BuildContract(loanId), eventType,
+            new DateOnly(2026, 3, 24), payload, Guid.NewGuid(), new(null, null, Guid.NewGuid(), "synthetic", false), default);
+
+        var journal = writes.Should().ContainSingle().Subject.Entry;
+        journal.IsBalanced.Should().BeTrue();
+        journal.Lines.Should().OnlyContain(line => line.Currency != null &&
+            line.Currency.TransactionCurrency == "USD" && line.Currency.FunctionalCurrency == "USD" &&
+            line.Currency.FxRateToFunctional == 1m && line.Currency.TransactionDebit == line.Debit &&
+            line.Currency.TransactionCredit == line.Credit);
+    }
+
+    [Fact]
+    public async Task ConfiguredLoanProjection_UsesPinnedChartRetainedOwnerAndExactCustomBookPolicy()
+    {
+        var loanId = Guid.NewGuid();
+        var store = BuildLedgerJournalStore();
+        var period = (await store.ListPeriodsAsync()).Single();
+        var bookId = period.LedgerBookId!.Value;
+        store.ListPeriodsAsync(bookId, null, null, null, Arg.Any<CancellationToken>()).Returns([period]);
+        var book = new LedgerBookRecord(
+            bookId, "synthetic-entity", Guid.NewGuid(), FundStructureNodeKindDto.Fund, "Synthetic USD book", "USD",
+            period.OpenedAt, period.OpenedAt, AccountingBasis: AccountingBasisKindDto.Gaap,
+            AccountingPolicyId: "synthetic-loan-book-policy", AccountingPolicyVersion: "v7");
+        store.GetLedgerBookAsync(bookId, Arg.Any<CancellationToken>()).Returns(book);
+        var policies = new AccountingPolicyService();
+        await policies.CreatePolicyAsync(new CreateAccountingPolicyRequest(book.AccountingBasis,
+            book.AccountingPolicyId, book.AccountingPolicyVersion, "Synthetic scoped loan book policy", new(2026, 1, 1),
+            FundProfileId: book.FundProfileId, FundStructureNodeId: book.FundStructureNodeId));
+        await policies.CreatePolicyAsync(new CreateAccountingPolicyRequest(book.AccountingBasis,
+            book.AccountingPolicyId, "v8", "Later default must not replace the book's pinned version", new(2026, 2, 1),
+            IsDefault: true, FundProfileId: book.FundProfileId, FundStructureNodeId: book.FundStructureNodeId));
+        var owners = Substitute.For<IFundProfileTenancyRegistry>();
+        var caller = Substitute.For<IFundScopeTenantAccessor>();
+        caller.ResolveCallerTenant().Returns("synthetic-tenant");
+        owners.ResolveAsync("synthetic-entity", Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership("synthetic-entity", "synthetic-tenant", "synthetic-company"));
+        var resolver = Substitute.For<IConfiguredLedgerAccountResolver>();
+        resolver.ResolveAsync(Arg.Any<ConfiguredLedgerAccountRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var request = call.Arg<ConfiguredLedgerAccountRequestDto>();
+                return new ChartOfAccountsNodeDto(request.AccountPath, request.AccountPath,
+                    request.AccountPath == "Assets:Cash" ? "Cash" : "Loan Principal", request.ExpectedAccountType);
+            });
+        var options = new DirectLendingOptions
+        {
+            LedgerBookId = bookId,
+            LedgerChartMappingRevision = "approved-chart-v1",
+            LedgerAccountPaths = new(StringComparer.OrdinalIgnoreCase)
+            {
+                ["LoanPrincipal"] = "Assets:Loans",
+                ["Cash"] = "Assets:Cash"
+            }
+        };
+        using var payload = JsonDocument.Parse("{\"amount\":1000}");
+        var projector = new LoanAccountingProjector(store, policies,
+            BuildSecurityMasterQueryService(), options, resolver, owners, caller);
+
+        var writes = await projector.ProjectAsync(loanId, BuildContract(loanId), "loan.drawdown-booked",
+            new DateOnly(2026, 3, 24), payload, Guid.NewGuid(), new(null, null, Guid.NewGuid(), "synthetic", false), default);
+
+        writes.Single().Entry.Lines.Select(line => line.Account.Name).Should().Equal("Loan Principal", "Cash");
+        writes.Single().AccountingBasis.Should().Be(AccountingBasisKindDto.Gaap);
+        writes.Single().AccountingPolicyId.Should().Be(book.AccountingPolicyId);
+        writes.Single().AccountingPolicyVersion.Should().Be(book.AccountingPolicyVersion);
+        await resolver.Received(2).ResolveAsync(Arg.Is<ConfiguredLedgerAccountRequestDto>(request =>
+            request.TenantId == "synthetic-tenant" && request.CompanyId == "synthetic-company" &&
+            request.LedgerBookId == bookId && request.ConfigurationVersion == "approved-chart-v1"), Arg.Any<CancellationToken>());
+        options.LedgerAccountPaths.Remove("Cash");
+        await FluentActions.Awaiting(() => projector.ProjectAsync(loanId, BuildContract(loanId), "loan.drawdown-booked",
+            new DateOnly(2026, 3, 24), payload, Guid.NewGuid(), new(null, null, Guid.NewGuid(), "synthetic", false), default))
+            .Should().ThrowAsync<LedgerValidationException>().WithMessage("*No configured chart mapping*");
+        options.LedgerAccountPaths["Cash"] = "Assets:Cash";
+        caller.ResolveCallerTenant().Returns("other-tenant");
+        await FluentActions.Awaiting(() => projector.ProjectAsync(loanId, BuildContract(loanId), "loan.drawdown-booked",
+            new DateOnly(2026, 3, 24), payload, Guid.NewGuid(), new(null, null, Guid.NewGuid(), "synthetic", false), default))
+            .Should().ThrowAsync<LedgerValidationException>().WithMessage("*outside the caller's tenant*");
+    }
+
     [Fact]
     public async Task ServiceFacade_DerivedRuns_PreserveRetryMetadata()
     {

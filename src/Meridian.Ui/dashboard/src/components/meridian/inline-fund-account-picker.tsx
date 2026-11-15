@@ -1,6 +1,6 @@
-import { useId, useState, type AriaRole, type FormEvent, type ReactNode } from "react";
+import { useEffect, useId, useState, type AriaRole, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Combobox } from "@/components/ui/combobox";
 import { accountKnownOutsideFundScope, narrowInlineAccountOptions } from "@/lib/operating-scope/fund-scope-narrowing";
 import { useFundAccountScopeSelection, useOpenScopePicker } from "@/lib/operating-scope/scope-picker-context";
 import { UNAVAILABLE_SCOPE_STRUCTURE } from "@/lib/operating-scope/structure-options";
@@ -47,8 +47,15 @@ export function InlineFundAccountPicker({
   const selection = useFundAccountScopeSelection();
   const openScopePicker = useOpenScopePicker();
   const id = useId();
-  const [draft, setDraft] = useState("");
+  const scopeAccount = selection?.scope?.fundAccountId ?? "";
+  const preferredAccount = scopeAccount || selection?.lastUsedAccountId || "";
+  const [draft, setDraft] = useState(preferredAccount);
   const [invalid, setInvalid] = useState(false);
+
+  useEffect(() => {
+    setDraft(preferredAccount);
+    setInvalid(false);
+  }, [preferredAccount]);
 
   if (!selection) {
     return <>{fallback}</>;
@@ -67,14 +74,14 @@ export function InlineFundAccountPicker({
       ? "Loading entities and funds…"
       : "Entity and fund lists could not be loaded, so accounts are not narrowed by entity or fund.";
   const fitDimension = fundSelection.fundId?.trim() ? "fund" : "entity";
-  // The account the operator is about to use (or the scope already carries), resolved from a
-  // chosen label, and flagged when the graph places it outside the chosen fund or entity.
-  const resolveAccountId = (text: string) => {
-    const typed = text.trim();
-    const all = [...options, ...selection.options];
-    return all.find((option) => option.label === typed || option.id === typed)?.id ?? typed;
-  };
-  const candidateAccountId = draft.trim() ? resolveAccountId(draft) : selection.scope?.fundAccountId ?? null;
+  // Keep a retained selection visible even when a newly chosen fund narrows it out.
+  // Searching never changes scope; only a listed account and Use account can apply it.
+  const pickerOptions = options.map((option) => ({ value: option.id, label: option.label }));
+  if (scopeAccount && !pickerOptions.some((option) => option.value === scopeAccount)) {
+    pickerOptions.unshift({ value: scopeAccount, label: selection.options.find((option) => option.id === scopeAccount)?.label ?? scopeAccount });
+  }
+  const selectedAccount = pickerOptions.some((option) => option.value === draft) ? draft : "";
+  const candidateAccountId = selectedAccount || null;
   const candidateOutside = accountKnownOutsideFundScope(candidateAccountId, selection.options, structure, fundSelection);
   const candidateLabel = [...structure.accounts, ...selection.options]
     .find((option) => option.id.toLowerCase() === candidateAccountId?.trim().toLowerCase())?.label ?? candidateAccountId;
@@ -84,10 +91,8 @@ export function InlineFundAccountPicker({
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const typed = draft.trim();
-    // A label chosen from the suggestions resolves to its account id.
-    const matched = resolveAccountId(typed);
-    const next = normalize ? normalize(matched) : matched || undefined;
+    const chosen = pickerOptions.find((option) => option.value === selectedAccount)?.value;
+    const next = chosen && (normalize ? normalize(chosen) : chosen);
     if (!next) {
       setInvalid(true);
       return;
@@ -96,7 +101,6 @@ export function InlineFundAccountPicker({
     selection.select(next);
   };
 
-  const listId = options.length > 0 ? `${id}-accounts` : undefined;
   const helpText = [narrowing.help, structureNote].filter(Boolean).join(" ") || null;
   const describedBy = [
     invalid ? `${id}-invalid` : null,
@@ -105,28 +109,24 @@ export function InlineFundAccountPicker({
   ].filter(Boolean).join(" ") || undefined;
   const form = (
     <form className="flex min-w-0 flex-wrap items-center gap-2" onSubmit={submit} aria-label={`${title} form`}>
-      <label className={variant === "row" ? "sr-only" : "text-xs font-medium text-foreground"} htmlFor={`${id}-account`}>Fund account</label>
       <div className={variant === "row" ? "w-56 max-w-full" : "w-72 max-w-full"}>
-        <Input
+        <Combobox
           id={`${id}-account`}
-          autoComplete="off"
-          list={listId}
-          placeholder="Fund account id"
-          value={draft}
-          error={invalid}
+          label="Fund account"
+          options={pickerOptions}
+          placeholder="Search accounts…"
+          emptyText={options.length === 0 ? "No accounts available in this scope. Use All scope options to review the scope." : "No matching accounts."}
+          value={selectedAccount}
+          required
+          aria-invalid={invalid || undefined}
           aria-describedby={describedBy}
-          onChange={(event) => {
-            setDraft(event.target.value);
+          onChange={(value) => {
+            setDraft(value);
             setInvalid(false);
           }}
         />
       </div>
-      {listId ? (
-        <datalist id={listId} data-testid="inline-fund-account-options">
-          {options.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
-        </datalist>
-      ) : null}
-      <Button type="submit" size="sm" disabled={!draft.trim()} disabledReason="Enter or choose a fund account first.">
+      <Button type="submit" size="sm" disabled={!selectedAccount} disabledReason="Choose a fund account first.">
         Use account
       </Button>
       {openScopePicker ? (

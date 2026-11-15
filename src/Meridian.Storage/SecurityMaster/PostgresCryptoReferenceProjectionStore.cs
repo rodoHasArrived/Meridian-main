@@ -10,41 +10,36 @@ public sealed class PostgresCryptoReferenceProjectionStore : ICryptoReferencePro
 {
     internal const string AssetClass = "CryptoCurrency";
 
-    private readonly PostgresReferenceProjectionReader _reader;
+    internal static readonly RegistryProjectionQuery ByNetwork = new(nameof(ByNetwork),
+        """
+        where lower(network) = lower(@network)
+        order by display_name
+        """);
+
+    internal static readonly RegistryProjectionQuery ByBaseCurrency = new(nameof(ByBaseCurrency),
+        """
+        where base_currency = @base_currency
+        order by display_name
+        """);
+
+    private readonly RegistryReferenceProjectionStore<CryptoProjectionRow> _store;
 
     public PostgresCryptoReferenceProjectionStore(SecurityMasterOptions options)
     {
-        _reader = new PostgresReferenceProjectionReader(options);
+        _store = CreateStore(options);
     }
 
+    internal static RegistryReferenceProjectionStore<CryptoProjectionRow> CreateStore(SecurityMasterOptions options)
+        => new(options, AssetClass, MapRow, [ByNetwork, ByBaseCurrency]);
+
     public Task<CryptoProjectionRow?> GetCryptoAsync(Guid securityId, CancellationToken ct = default)
-        => _reader.QuerySingleAsync(
-            _reader.SelectSql(AssetClass, "where security_id = @security_id"),
-            [new NpgsqlParameter("security_id", securityId)],
-            MapRow,
-            ct);
+        => _store.GetBySecurityIdAsync(securityId, ct);
 
     public Task<IReadOnlyList<CryptoProjectionRow>> GetByNetworkAsync(string network, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where lower(network) = lower(@network)
-                order by display_name
-                """),
-            [new NpgsqlParameter("network", network)],
-            MapRow,
-            ct);
+        => _store.ListAsync(ByNetwork, [new NpgsqlParameter("network", network)], ct);
 
     public Task<IReadOnlyList<CryptoProjectionRow>> GetByBaseCurrencyAsync(string baseCurrency, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where base_currency = @base_currency
-                order by display_name
-                """),
-            [new NpgsqlParameter("base_currency", baseCurrency)],
-            MapRow,
-            ct);
+        => _store.ListAsync(ByBaseCurrency, [new NpgsqlParameter("base_currency", baseCurrency)], ct);
 
     internal static CryptoProjectionRow MapRow(ProjectionRow row)
         => new(

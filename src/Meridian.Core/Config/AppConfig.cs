@@ -75,6 +75,10 @@ public sealed record AppConfig(
     TracingConfig? Tracing = null
 )
 {
+    /// <summary>Restart-required vendor quota and entitlement declarations; contains no credentials.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ProviderQuotasConfig? ProviderQuotas { get; init; }
+
     /// <summary>
     /// Preserves top-level configuration sections this model does not declare (host-level
     /// sections such as <c>ApiHost</c>, <c>PaperTrading</c>, <c>Status</c>, and

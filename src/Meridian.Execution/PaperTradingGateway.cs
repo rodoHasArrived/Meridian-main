@@ -48,6 +48,16 @@ public sealed class PaperTradingGateway :
     private bool _connected;
     private int _fillSequence;
     private int _disposed;
+    private bool _canonicalSyntheticPricing;
+
+    /// <summary>The canonical synthetic OMS supplies its reviewed, bounded simulated price.
+    /// Native paper orders continue to use market observations rather than caller limits.</summary>
+    internal void EnableCanonicalSyntheticPricing()
+    {
+        if (Volatile.Read(ref _fillSequence) != 0 || !_restingOrders.IsEmpty)
+            throw new InvalidOperationException("Canonical synthetic pricing requires an unused paper gateway.");
+        _canonicalSyntheticPricing = true;
+    }
 
     /// <summary>One resting limit/stop order, with its stop-trigger state.</summary>
     private sealed class RestingPaperOrder
@@ -133,9 +143,10 @@ public sealed class PaperTradingGateway :
                 if (string.Equals(metadataKey, key, StringComparison.OrdinalIgnoreCase)
                     && !string.IsNullOrWhiteSpace(assetClass))
                 {
-                    return assetClass.Trim().ToLowerInvariant() is
-                        "treasury" or "us_treasury" or "fixed_income_treasury" or
-                        "corporate" or "bond" or "corporate_bond" or "us_corporate";
+                    // The live gateway's fixed-income codes and aliases, from the shared table.
+                    return ProviderAssetClassCodeCatalog.IsFaceValueFixedIncomeInput(
+                        ProviderAssetClassCodeProviders.Alpaca,
+                        assetClass);
                 }
             }
         }
@@ -165,6 +176,8 @@ public sealed class PaperTradingGateway :
     /// <inheritdoc />
     public async Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default)
     {
+        if (_canonicalSyntheticPricing && (request.Type != OrderType.Market || request.LimitPrice is not > 0m))
+            throw new InvalidOperationException("Canonical synthetic pricing requires an immediate market order with an explicit positive simulated price.");
         var fillSeq = Interlocked.Increment(ref _fillSequence);
 
         var lotSizeError = await _tradingParameters.ValidateLotSizeAsync(request, ct).ConfigureAwait(false);
@@ -182,10 +195,13 @@ public sealed class PaperTradingGateway :
         var orderId = request.ClientOrderId ?? $"PAPER-{fillSeq}";
         var gatewayOrderId = $"PAPER-{fillSeq}";
 
-        // Market orders use observed market data; a caller-supplied limit cannot set the fill price.
+        // Native market orders use observed market data. Only the separately authorized
+        // canonical synthetic host treats its required explicit price as a simulated observation.
         if (request.Type is OrderType.Market)
         {
-            var observation = PaperMarketObservation.Capture(_liveFeed, request.Symbol);
+            var observation = _canonicalSyntheticPricing
+                ? PaperMarketObservation.FromCallerPrice(request.LimitPrice!.Value)
+                : PaperMarketObservation.Capture(_liveFeed, request.Symbol);
 
             var match = PaperOrderMatchingPolicy.Evaluate(
                 request.Side, OrderType.Market, limitPrice: null, stopPrice: null,

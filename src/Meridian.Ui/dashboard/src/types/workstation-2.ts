@@ -739,7 +739,8 @@ export type EvidenceDocumentLinkKind =
   | "Fund"
   | "StatementRun"
   | "StatementImport"
-  | "IntercompanyAgreement";
+  | "IntercompanyAgreement"
+  | "LegalEntity";
 
 export type EvidenceDocumentReviewStatus = "Unreviewed" | "NeedsReview" | "Accepted" | "Rejected";
 
@@ -1413,6 +1414,7 @@ export interface DimensionMappingProfile {
 
 /** Server-owned close decision. Missing or incomplete contributors always block. */
 export interface CloseReadinessProjection {
+  intercompanyAdvisories?: import("./intercompany-obligations").IntercompanyObligationMonitor | null;
   scope: { fundProfileId: string | null; ledgerBookId: string | null; fundAccountId: string | null; entityId: string | null; periodId: string | null };
   evaluatedAtUtc: string;
   status: string;

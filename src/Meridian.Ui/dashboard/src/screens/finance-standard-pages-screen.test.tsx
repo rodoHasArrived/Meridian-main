@@ -1,6 +1,7 @@
 import { createLedgerAmountProofPacket } from "@/test/ledger-amount-proof-fixtures";
 import { getLedgerAmountProof } from "@/lib/ledger-amount-proof-api";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { useLocation } from "react-router-dom";
 import * as api from "@/lib/api";
@@ -714,8 +715,9 @@ describe("finance standard pages", () => {
     // The trial-balance tab reads the same scope rather than resolving its own. Holding two
     // independent scopes meant this tab defaulted to the first book and wrote it into the route,
     // so coming back showed book B under a URL that said A.
-    const trialBalanceBookSelect = document.getElementById("trial-balance-book-select") as HTMLSelectElement | null;
-    expect(trialBalanceBookSelect?.value).toBe(FEEDER_BOOK_ID);
+    const trialBalanceBookSelect = screen.getByRole("combobox", { name: "Ledger book" });
+    expect(trialBalanceBookSelect).toHaveValue("Beta Feeder Fund · EUR");
+    expect(ledgerReportsApi.getLedgerPeriods).toHaveBeenLastCalledWith({ ledgerBookId: FEEDER_BOOK_ID });
 
     fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
     await waitForAsyncEffects();
@@ -768,12 +770,11 @@ describe("finance standard pages", () => {
     await waitForAsyncEffects();
 
     // The operator picks the period that closed since, on the tab that can see it.
-    const trialBalancePeriodSelect =
-      document.getElementById("trial-balance-period-select") as HTMLSelectElement | null;
-    expect(trialBalancePeriodSelect).not.toBeNull();
-    fireEvent.change(trialBalancePeriodSelect!, { target: { value: AUGUST_PERIOD_ID } });
+    const trialBalancePeriodSelect = screen.getByRole("combobox", { name: "Period" });
+    await userEvent.click(trialBalancePeriodSelect);
+    await userEvent.click(screen.getByRole("option", { name: "August 2026 · Hard closed" }));
     await waitForAsyncEffects();
-    expect(trialBalancePeriodSelect?.value).toBe(AUGUST_PERIOD_ID);
+    expect(trialBalancePeriodSelect).toHaveValue("August 2026 · Hard closed");
 
     fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
     await waitForAsyncEffects();
@@ -981,10 +982,8 @@ describe("finance standard pages", () => {
     // The sibling tab discovers August and selects it, putting it in the shared route.
     fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
     await waitForAsyncEffects();
-    fireEvent.change(
-      document.getElementById("trial-balance-period-select") as HTMLSelectElement,
-      { target: { value: AUGUST_PERIOD_ID } }
-    );
+    await userEvent.click(screen.getByRole("combobox", { name: "Period" }));
+    await userEvent.click(screen.getByRole("option", { name: "August 2026 · Hard closed" }));
     await waitForAsyncEffects();
 
     // Coming back, this tab cannot refresh, so it can never resolve August.
@@ -1109,10 +1108,8 @@ describe("finance standard pages", () => {
     vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([masterBook, addedBook] as never);
     fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
     await waitForAsyncEffects();
-    fireEvent.change(
-      document.getElementById("trial-balance-book-select") as HTMLSelectElement,
-      { target: { value: SECOND_BOOK_ID } }
-    );
+    await userEvent.click(screen.getByRole("combobox", { name: "Ledger book" }));
+    await userEvent.click(screen.getByRole("option", { name: "Beta Feeder Fund · USD" }));
     await waitForAsyncEffects();
     expect(search()).toContain(SECOND_BOOK_ID);
 
@@ -1289,10 +1286,8 @@ describe("finance standard pages", () => {
 
     fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
     await waitForAsyncEffects();
-    fireEvent.change(
-      document.getElementById("trial-balance-period-select") as HTMLSelectElement,
-      { target: { value: JUNE_PERIOD_ID } }
-    );
+    await userEvent.click(screen.getByRole("combobox", { name: "Period" }));
+    await userEvent.click(screen.getByRole("option", { name: "June 2026 · Hard closed" }));
     await waitForAsyncEffects();
     expect(search()).toContain(JUNE_PERIOD_ID);
 

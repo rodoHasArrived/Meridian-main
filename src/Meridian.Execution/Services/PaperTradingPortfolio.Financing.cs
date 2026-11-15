@@ -32,6 +32,8 @@ public sealed partial class PaperTradingPortfolio
 
         if (annualRate == 0m)
             return;
+        if (_canonicalAccountingRequired)
+            throw new InvalidOperationException("Margin-interest accrual is unsupported in canonical cash-equity accounting.");
 
         var dailyRate = annualRate / 365m;
         var periodRate = dailyRate * days;
@@ -74,6 +76,8 @@ public sealed partial class PaperTradingPortfolio
     public bool ApplyFinancingCharge(PaperFinancingCharge charge)
     {
         charge.Validate();
+        if (_canonicalAccountingRequired)
+            throw new InvalidOperationException("Financing charges are unsupported in canonical cash-equity accounting.");
         lock (_lock)
         {
             if (_financingCharges.TryGetValue(charge.SourceEventId, out var retained))

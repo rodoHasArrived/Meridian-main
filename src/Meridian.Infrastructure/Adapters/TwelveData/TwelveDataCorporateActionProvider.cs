@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using TwelveDataQuotaConfig = Meridian.Core.Config.TwelveDataQuotaConfig;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
@@ -38,8 +39,10 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
     private readonly IConfiguration _configuration;
     private readonly ICredentialContext? _credentials;
     private readonly RateLimiterRegistry _rateLimiterRegistry;
-    private readonly BackfillProviderRuntimeOptions _runtimeOptions;
     private readonly ILogger<TwelveDataCorporateActionProvider> _logger;
+    private readonly TwelveDataQuotaConfig _quotaConfig;
+    private readonly RequestBudgetConfiguration _quotaBudget;
+    private const int FundamentalsCreditCost = 20;
 
     public TwelveDataCorporateActionProvider(
         IHttpClientFactory httpClientFactory,
@@ -47,19 +50,18 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         ILogger<TwelveDataCorporateActionProvider> logger,
         ICredentialContext? credentials = null,
         RateLimiterRegistry? rateLimiterRegistry = null,
+        TwelveDataQuotaConfig? quotaConfig = null,
         BackfillProviderRuntimeOptions? runtimeOptions = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _credentials = credentials;
-        var tierId = configuration["Backfill:Providers:TwelveData:TierId"] ?? "free";
-        var tier = Meridian.Core.Config.BackfillProviderCatalog.GetTier("twelvedata", tierId);
-        var rate = int.TryParse(configuration["Backfill:Providers:TwelveData:RateLimitPerMinute"], out var configuredRate)
-            ? configuredRate : tier.RateLimitPerMinute!.Value;
-        _runtimeOptions = runtimeOptions ?? BackfillProviderRuntimeOptions.FromConfig(new Meridian.Core.Config.BackfillProvidersConfig(
-            TwelveData: new Meridian.Core.Config.TwelveDataConfig(RateLimitPerMinute: rate, TierId: tierId)), "twelvedata");
+        runtimeOptions ??= BackfillProviderRuntimeOptions.FromConfig(
+            configuration.GetSection("Backfill:Providers").Get<Meridian.Core.Config.BackfillProvidersConfig>(), "twelvedata");
         _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _quotaConfig = quotaConfig ?? configuration.GetSection("ProviderQuotas:TwelveData").Get<TwelveDataQuotaConfig>() ?? new();
+        _quotaBudget = ProviderQuotaBudgets.TwelveData(_quotaConfig, runtimeOptions);
     }
 
     public string ProviderId => "twelvedata";
@@ -91,6 +93,11 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
                 ticker);
             return CorporateActionFetchResult.Failed("credentials-missing");
         }
+
+        if (!_quotaConfig.FundamentalsEntitled)
+            return CorporateActionFetchResult.Failed("entitlement-unavailable");
+        if (_quotaBudget.Maximum < FundamentalsCreditCost || _quotaBudget.DailyMaximum is < FundamentalsCreditCost)
+            return CorporateActionFetchResult.Failed("quota-capacity-insufficient");
 
         var normalizedSymbol = SymbolNormalization.Normalize(ticker);
         using var client = _httpClientFactory.CreateClient(HttpClientNames.TwelveDataHistorical);
@@ -222,9 +229,8 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
                 return null;
 
             var budget = _rateLimiterRegistry.GetOrCreate(
-                ProviderId, apiKey, "api-requests", _runtimeOptions.Requests!.Value, _runtimeOptions.Window!.Value,
-                TimeSpan.FromTicks(_runtimeOptions.Window.Value.Ticks / _runtimeOptions.Requests.Value));
-            await budget.WaitForSlotAsync(ct).ConfigureAwait(false);
+                ProviderId, apiKey, "api-requests", _quotaBudget);
+            await budget.WaitForUnitsAsync(FundamentalsCreditCost, ct).ConfigureAwait(false);
             // The selected owner can rotate or delete its credential while waiting.
             // Never send a captured old key after pacing, or charge a different key's quota.
             if (!string.Equals(apiKey, ResolveApiKey(), StringComparison.Ordinal))

@@ -8,7 +8,7 @@ using Meridian.Ui.Services.Services.Accounting;
 namespace Meridian.Wpf.ViewModels.Accounting;
 
 /// <summary>Desktop inspection over the shared read model. All financial amounts come from the host.</summary>
-public sealed class EntityConsolidationViewModel : BindableBase
+public sealed partial class EntityConsolidationViewModel : BindableBase
 {
     private readonly IWorkstationEntityConsolidationApiClient? _client;
     private OrganizationStructureGraphDto? _structure;
@@ -31,10 +31,11 @@ public sealed class EntityConsolidationViewModel : BindableBase
     public EntityConsolidationViewModel(IWorkstationEntityConsolidationApiClient? client)
     {
         _client = client;
-        LoadChoicesCommand = new AsyncRelayCommand(LoadChoicesAsync, () => _client is not null && !IsBusy);
-        LoadTimelineCommand = new AsyncRelayCommand(LoadTimelineAsync, () => _client is not null && !IsBusy && SelectedOrganization is not null && SelectedEntity is not null && AsOf.HasValue);
+        LoadChoicesCommand = new AsyncRelayCommand(LoadChoicesAsync, () => _client is not null && !IsBusy && !IsLifecycleDirty);
+        LoadTimelineCommand = new AsyncRelayCommand(LoadTimelineAsync, () => _client is not null && !IsBusy && !IsLifecycleDirty && SelectedOrganization is not null && SelectedEntity is not null && AsOf.HasValue);
         PreviewCommand = new AsyncRelayCommand(PreviewAsync, () => _client is not null && !IsBusy && Request is not null);
         CreateDraftsCommand = new AsyncRelayCommand(CreateDraftsAsync, () => !IsBusy && _preview is { CanCreateDrafts: true } && _preview.Blockers.Count == 0 && _preview.Request == Request);
+        InitializeLifecycleEditorCommands();
         if (client is null)
             _status = "Entity and consolidation inspection is unavailable: the workstation API client is not registered.";
     }
@@ -70,6 +71,8 @@ public sealed class EntityConsolidationViewModel : BindableBase
         get => _organization;
         set
         {
+            if (IsLifecycleDirty && value?.OrganizationId != _organization?.OrganizationId)
+            { Status = "Retain or discard the reviewed lifecycle draft before changing organization."; return; }
             if (!SetProperty(ref _organization, value))
                 return;
             Invalidate();
@@ -94,7 +97,7 @@ public sealed class EntityConsolidationViewModel : BindableBase
             Replace(Entities, _structure?.Entities.Where(item => reachable.Contains(item.EntityId)) ?? []);
         }
     }
-    public LegalEntitySummaryDto? SelectedEntity { get => _entity; set { if (SetProperty(ref _entity, value)) Invalidate(); } }
+    public LegalEntitySummaryDto? SelectedEntity { get => _entity; set { if (IsLifecycleDirty && value?.EntityId != _entity?.EntityId) { Status = "Retain or discard the lifecycle draft before changing entity."; return; } if (SetProperty(ref _entity, value)) Invalidate(); } }
     public FundSummaryDto? SelectedOwnershipRoot { get => _root; set { if (SetProperty(ref _root, value)) Invalidate(); } }
     public LedgerBookDto? SelectedEliminationBook
     {
@@ -111,7 +114,7 @@ public sealed class EntityConsolidationViewModel : BindableBase
         }
     }
     public LedgerPeriodDto? SelectedPeriod { get => _period; set { if (SetProperty(ref _period, value)) Invalidate(); } }
-    public DateTime? AsOf { get => _asOf; set { if (SetProperty(ref _asOf, value)) Invalidate(); } }
+    public DateTime? AsOf { get => _asOf; set { if (IsLifecycleDirty && value != _asOf) { Status = "Retain or discard the lifecycle draft before changing the cutoff."; return; } if (SetProperty(ref _asOf, value)) Invalidate(); } }
     public ConsolidationSourceDto? SelectedSource
     {
         get => _selectedSource;
@@ -144,6 +147,8 @@ public sealed class EntityConsolidationViewModel : BindableBase
 
     private void Invalidate()
     {
+        if (!IsLifecycleDirty)
+            ResetLifecycleEditor();
         Cancel();
         _preview = null;
         _timeline = null;
@@ -213,7 +218,7 @@ public sealed class EntityConsolidationViewModel : BindableBase
             Replace(TimelineRows, timeline.LifecycleRevisions.OrderByDescending(item => item.Revision).SelectMany(revision => revision.Timeline.Select(state =>
                 new AccountingWorkbenchRow($"Revision {revision.Revision} · {state.Status}", state.EventKind.ToString(),
                     $"[{state.EffectiveFrom:O}, {state.EffectiveTo?.ToString("O", CultureInfo.InvariantCulture) ?? "open"})",
-                    $"{revision.RecordedBy} · {revision.Reason} · {revision.EvidenceReference} · hash {revision.ContentHash}"))));
+                    $"{revision.RecordedBy} · {revision.Reason} · {revision.EvidenceReference} · hash {revision.ContentHash}" + LifecycleExternalReviewSummary(revision)))));
             foreach (var item in timeline.Entity.LifecycleEvents ?? [])
                 TimelineRows.Add(new($"Legal event · {item.EventKind}", "Recorded event", item.OccurredAt.ToString("O", CultureInfo.InvariantCulture),
                     $"{item.RecordedBy} · {item.Summary} · {item.EvidenceReference ?? "Evidence unavailable"}"));
@@ -331,6 +336,7 @@ public sealed class EntityConsolidationViewModel : BindableBase
         LoadTimelineCommand.NotifyCanExecuteChanged();
         PreviewCommand.NotifyCanExecuteChanged();
         CreateDraftsCommand.NotifyCanExecuteChanged();
+        NotifyLifecycleEditorCommands();
     }
 
     private static void Replace<T>(ObservableCollection<T> target, IEnumerable<T> values)

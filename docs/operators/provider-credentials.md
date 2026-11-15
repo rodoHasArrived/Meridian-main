@@ -34,6 +34,12 @@ environment or configuration. Environment fallback is a Development/Test or expl
 migration path and is disabled by default for packaged/customer builds. See
 [environment controls](../reference/environment-variables.md).
 
+Production and packaged/customer workstation compositions require an explicitly owned connection
+for credential-bearing providers, including providers with no previous owner. Provider-wide setup,
+legacy module credentials and execution paths that cannot carry a trusted owner refuse access;
+unassigned records remain available only for explicit ownership migration. Provider-wide readiness
+does not inherit those records. Unflagged development retains the legacy compatibility paths.
+
 Desktop initial setup and Backfill open **Manage owned credentials** in Settings. Select an existing
 connection explicitly before saving, rotating, verifying or removing credentials. These entry points
 do not read, replace or delete legacy user-environment secrets. The editor rechecks the retained
@@ -97,14 +103,27 @@ credential editing still selects an already-owned connection.
    stopped while reconstructing provider instances through the lifecycle supervisor. Verify the
    selected connection's actual provider account and environment before an operator releases activity.
    Binding and vault scope identify the intended owner; neither proves which upstream account a secret
-   reaches. Editing credentials does not hot-activate an already running collector.
+   reaches. Editing credentials does not hot-activate an already running collector. The retained
+   selection pins the exact tenant, connection, external account and environment, with a unique
+   selection identity. Deleting and recreating a connection ID for another account or environment
+   requires explicit rebinding. Older selections without these pins also refuse credential reads
+   until this bind command is repeated; the host never infers account ownership during upgrade.
 4. `GET .../runtime-credentials/status?providerId=alpaca` reports whether that binding has reached
    running provider instances of this host: a binding changed after host start is `pendingRestart`
    until it is applied or the host is deliberately restarted. `POST .../runtime-credentials/apply`
    asks the host's registered applier to recycle the provider's instances under the binding; the
    default host registers no in-process recycle and reports the binding as still pending. Both
    workstations show this state beside the bind action ("Check running instances", "Apply to running
-   instances"). Nothing activates hot.
+   instances"). An apply result for an earlier selection cannot mark a newer selection as applied,
+   even if the operator selects the original account again while application is in progress.
+   Production changes to a bound selection, credentials, or connection first require host authority
+   to stop new dispatches, drain in-flight work and dispose every instance holding the selected keys.
+   The default host cannot prove that boundary: it returns `ProviderCredentialMaintenanceRequired`
+   before changing credentials or ownership. Stop the installed host and perform reviewed offline
+   credential maintenance before restarting. A custom applier may acknowledge a change only after
+   its stop/drain operation succeeds. Cancellation or failure leaves the application state pending;
+   conditional provider-owned OAuth refresh may still retain its exact returned generation while
+   an in-flight request drains. Nothing activates hot.
 5. A separate provider-wide OAuth token (access and refresh token) moves under the owned scope with
    the record during `.../credentials/migrate` and moves back on rollback; the receipt records
    `oAuthTokenTransferred`. The moved token is unverified like the record. Two provider-wide tokens

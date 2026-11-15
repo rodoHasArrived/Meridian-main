@@ -163,12 +163,19 @@ public static class AccountingPostingCommandValidator
                 "Accounting posting command expected version is required at the production ledger append boundary.");
         }
 
-        if (!OperationsOriginGuard.IsHumanOperator(command.ActionOrigin))
+        if (command.ActionOrigin == OperationsActionOriginDto.AuthorizedSystem)
+        {
+            ValidateAutomatedFillAuthority(write, command);
+        }
+        else if (!OperationsOriginGuard.IsHumanOperator(command.ActionOrigin))
         {
             throw new LedgerValidationException(
                 "Material accounting posting commands require a human-operator action origin.",
                 OperationsOriginGuard.Refusal("append material accounting posting commands"));
         }
+
+        else if (command.AutomationGrant is not null)
+            throw new LedgerValidationException("Human posting commands cannot claim automated grant authority.");
 
         if (string.IsNullOrWhiteSpace(command.IdempotencyKey))
         {
@@ -185,6 +192,7 @@ public static class AccountingPostingCommandValidator
         }
 
         ValidateDataProvenance(command);
+        ValidateThreeWayFeeCorrection(write, command);
 
         if (command.Intent is AccountingPostingIntentDto.Reversal or AccountingPostingIntentDto.Rebook or AccountingPostingIntentDto.Restatement)
         {
@@ -202,7 +210,7 @@ public static class AccountingPostingCommandValidator
         ValidateBookContext(write, command);
         ValidateTypedAssertions(command);
 
-        var entry = NormalizeEntryMetadata(write.Entry, command);
+        var entry = NormalizeFeeEconomicIdentity(NormalizeEntryMetadata(write.Entry, command), command);
         IntercompanyAgreementPostingGuard.ValidateShape(entry);
         if (preparerAttested && IntercompanyAgreementPostingGuard.HasReferences(entry))
             throw new LedgerValidationException("Intercompany agreement references require the standalone append transaction so authoritative agreement leases remain held through commit.");
@@ -220,6 +228,79 @@ public static class AccountingPostingCommandValidator
         };
         IntercompanyAgreementPostingGuard.ValidateAccountingDate(normalizedWrite);
         return normalizedWrite;
+    }
+
+    private static void ValidateThreeWayFeeCorrection(LedgerJournalEntryWrite write, AccountingPostingCommandDto command)
+    {
+        if (command.ThreeWayFeeCorrection is not { } correction)
+        {
+            if (command.SourceEventType == "reconciliation.missing-broker-fee")
+                throw new LedgerValidationException("A reconciliation fee correction requires retained typed source evidence.");
+            return;
+        }
+        var expectedKey = ThreeWayFeeCorrectionIdentity.Compute(correction);
+        if (correction.EconomicKey != expectedKey || correction.Amount <= 0m || correction.Currency != "USD"
+            || correction.FinancialAccountId == Guid.Empty || correction.LedgerBookId != command.LedgerBookId
+            || command.AggregateId != correction.LedgerBookId
+            || command.SourceEventId != ThreeWayFeeCorrectionIdentity.SourceEventId(correction)
+            || command.IdempotencyKey != "three-way-correction:" + expectedKey
+            || command.SourceEventType != "reconciliation.missing-broker-fee"
+            || command.Intent != AccountingPostingIntentDto.Adjustment
+            || command.ActionOrigin != OperationsActionOriginDto.HumanOperator
+            || command.ApprovalState != AccountingPostingApprovalStateDto.Approved
+            || string.IsNullOrWhiteSpace(correction.SourceRunId) || string.IsNullOrWhiteSpace(correction.SourceEvidenceHash)
+            || command.EffectiveDate != DateOnly.FromDateTime(correction.FeePostedAtUtc.UtcDateTime))
+            throw new LedgerValidationException("Reconciliation fee correction must retain its approved economic identity and source scope.");
+        var accountId = correction.FinancialAccountId.ToString("D");
+        var cash = write.Entry.Lines.Where(line => line.Account.AccountType == LedgerAccountType.Asset
+            && line.Account.Name.StartsWith("Cash", StringComparison.OrdinalIgnoreCase)).ToArray();
+        var expense = write.Entry.Lines.Where(line => line.Account.AccountType == LedgerAccountType.Expense).ToArray();
+        if (write.Entry.Lines.Count != 2 || cash.Length != 1 || expense.Length != 1
+            || cash[0].Credit != correction.Amount || expense[0].Debit != correction.Amount
+            || write.Entry.Lines.Any(line => !string.Equals(line.Account.FinancialAccountId, accountId, StringComparison.OrdinalIgnoreCase)
+                || line.Currency is not { TransactionCurrency: "USD", FunctionalCurrency: "USD", FxRateToFunctional: 1m }
+                || line.Currency.TransactionDebit != line.Debit || line.Currency.TransactionCredit != line.Credit))
+            throw new LedgerValidationException("Reconciliation fee correction requires exact same-account typed USD expense/cash legs.");
+    }
+
+    private static JournalEntry NormalizeFeeEconomicIdentity(JournalEntry entry, AccountingPostingCommandDto command)
+    {
+        if (command.Intent is AccountingPostingIntentDto.Reversal or AccountingPostingIntentDto.Rebook or AccountingPostingIntentDto.Restatement)
+        {
+            if (entry.Metadata.Tags is not { } originalTags)
+                return entry;
+            var retainedTags = originalTags.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+            var changed = retainedTags.Remove("fee.economicBookId");
+            changed |= retainedTags.Remove("fee.economicAccountId");
+            changed |= retainedTags.Remove("fee.externalTransactionId");
+            return changed ? new JournalEntry(entry.JournalEntryId, entry.Timestamp, entry.Description, entry.Lines,
+                entry.Metadata with { Tags = retainedTags }) : entry;
+        }
+        if (command.SourceEventType is not ("execution.trade-fee" or "reconciliation.missing-broker-fee"))
+            return entry;
+        var feeId = command.ThreeWayFeeCorrection?.FeeTransactionId;
+        if (feeId is null && entry.Metadata.Tags is { } original)
+            original.TryGetValue("externalTransactionId", out feeId);
+        var accountIds = entry.Lines.Select(line => line.Account.FinancialAccountId)
+            .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        if (string.IsNullOrWhiteSpace(feeId) || command.LedgerBookId is not { } bookId || bookId == Guid.Empty
+            || accountIds.Length != 1 || string.IsNullOrWhiteSpace(accountIds[0]))
+            throw new LedgerValidationException("A broker fee requires an exact book, financial account and stable external fee identity.");
+        var tags = entry.Metadata.Tags?.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase)
+            ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var pair in new Dictionary<string, string>
+        {
+            ["fee.economicBookId"] = bookId.ToString("D"),
+            ["fee.economicAccountId"] = accountIds[0]!.Trim().ToUpperInvariant(),
+            ["fee.externalTransactionId"] = feeId,
+            ["externalTransactionId"] = feeId
+        })
+        {
+            tags.Remove(pair.Key);
+            tags.Add(pair.Key, pair.Value);
+        }
+        return new JournalEntry(entry.JournalEntryId, entry.Timestamp, entry.Description, entry.Lines,
+            entry.Metadata with { Tags = tags });
     }
 
     private static bool RequiresApproval(AccountingPostingIntentDto intent)
@@ -249,6 +330,47 @@ public static class AccountingPostingCommandValidator
                  key.EndsWith(".accountBindingRevisionId", StringComparison.OrdinalIgnoreCase) ||
                  key.EndsWith(".intercompanyTransactionId", StringComparison.OrdinalIgnoreCase)) && !validKeys.Contains(key))
                 throw new LedgerValidationException("Agreement line-dimension tags must identify an existing journal line using its canonical line identity.");
+    }
+
+    private static void ValidateAutomatedFillAuthority(LedgerJournalEntryWrite write, AccountingPostingCommandDto command)
+    {
+        var grant = command.AutomationGrant
+            ?? throw new LedgerValidationException("System posting requires a typed automated posting grant.");
+        if (grant.GrantId == Guid.Empty || grant.Version <= 0 || string.IsNullOrWhiteSpace(grant.TenantId)
+            || string.IsNullOrWhiteSpace(grant.FinancialAccountId) || string.IsNullOrWhiteSpace(grant.MappingRevision)
+            || string.IsNullOrWhiteSpace(grant.PolicyId) || string.IsNullOrWhiteSpace(grant.PolicyVersion)
+            || grant.SourceMode != "Synthetic" || !command.Provenance.IsNonReal()
+            || command.Intent != AccountingPostingIntentDto.Originating
+            || command.ApprovalState != AccountingPostingApprovalStateDto.NotRequired
+            || command.ApprovalId is not null || string.IsNullOrWhiteSpace(command.Actor)
+            || command.ControlledCloseAuthorizationId is not null || command.CashDividendAttestation is not null
+            || command.IntercompanyFx is not null || command.BondCouponRecognition is not null
+            || command.LotAmortization is not null || command.LotCorporateAction is not null
+            || command.LotCapitalReturn is not null || command.LotFactorPaydown is not null
+            || command.SourceEventType is not ("execution.trade-fill" or "execution.trade-commission" or "execution.trade-fee")
+            || command.LedgerBookId != grant.LedgerBookId || write.LedgerBookId != grant.LedgerBookId
+            || grant.LedgerBookId == Guid.Empty || command.PeriodId != grant.PeriodId || grant.PeriodId == Guid.Empty
+            || write.PeriodId != grant.PeriodId || write.AccountingPolicyId != grant.PolicyId
+            || write.AccountingPolicyVersion != grant.PolicyVersion
+            || write.PostingKind != LedgerPostingKindDto.Originating
+            || !string.Equals(write.Entry.Metadata.FinancialAccountId, grant.FinancialAccountId, StringComparison.OrdinalIgnoreCase))
+            throw new LedgerValidationException("System posting exceeds its synthetic fill grant scope.");
+
+        if (write.Entry.Lines.Any(line => !string.Equals(line.Account.FinancialAccountId, grant.FinancialAccountId, StringComparison.OrdinalIgnoreCase)
+            || line.Account.AccountType is LedgerAccountType.Liability or LedgerAccountType.Equity
+            || line.Currency is not { TransactionCurrency: "USD", FunctionalCurrency: "USD", FxRateToFunctional: 1m }
+            || line.Currency.TransactionDebit != line.Debit || line.Currency.TransactionCredit != line.Credit))
+            throw new LedgerValidationException("System fill posting requires account-scoped USD long cash-equity lines at FX 1.");
+
+        if (command.SourceEventType is "execution.trade-commission" or "execution.trade-fee")
+        {
+            var expense = write.Entry.Lines.Where(line => line.Account.AccountType == LedgerAccountType.Expense && line.Debit > 0m).ToArray();
+            var cash = write.Entry.Lines.Where(line => line.Account.AccountType == LedgerAccountType.Asset
+                && line.Account.Symbol is null && line.Account.Name.StartsWith("Cash", StringComparison.OrdinalIgnoreCase)
+                && line.Credit > 0m).ToArray();
+            if (write.Entry.Lines.Count != 2 || expense.Length != 1 || cash.Length != 1 || expense[0].Debit != cash[0].Credit)
+                throw new LedgerValidationException("Automatic fees must expense one exact amount against account cash.");
+        }
     }
 
     /// <summary>
@@ -565,7 +687,9 @@ public static class AccountingPostingCommandValidator
             throw new LedgerValidationException("Journal metadata Security Master identity conflicts with the accounting posting command economic event.");
         }
 
-        var tags = MergeCommandTags(metadata.Tags, BuildCommandTags(command));
+        var sourceTags = metadata.Tags?.Where(pair => !pair.Key.Equals("automation.actionOrigin", StringComparison.OrdinalIgnoreCase))
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+        var tags = MergeCommandTags(sourceTags, BuildCommandTags(command));
 
         var normalizedMetadata = metadata with
         {
@@ -607,6 +731,8 @@ public static class AccountingPostingCommandValidator
             [PostingCommandFingerprintTag] = ComputePostingCommandFingerprint(command)
         };
 
+        if (command.ActionOrigin == OperationsActionOriginDto.AuthorizedSystem)
+            tags["automation.actionOrigin"] = command.ActionOrigin.ToString();
         AddTag(tags, "approvalId", command.ApprovalId);
         if (command.CashDividendAttestation is { } preparer)
         {

@@ -77,6 +77,7 @@ Snapshot date: 2026-11-12
 | W12-CREDIT-001 | DirectLoan operations and evidence reconciliation | planned | green | medium | Accounting and Ledger |
 | W12-ENTITY-001 | Effective entity lifecycle and audited book-control migration | in_progress | green | high | Accounting and Ledger |
 | W12-FINRPT-001 | Ledger-backed financial statement control pack | planned | green | medium | Accounting and Ledger |
+| W12-ICACCRUAL-001 | Governed intercompany loan-interest accrual from structured terms | in_progress | yellow | high | Accounting and Ledger |
 | W12-ICAGREE-001 | Intercompany accounting profiles and legacy attribution | in_progress | green | high | Accounting and Ledger |
 | W12-ICINCOME-001 | Policy-governed intercompany revenue and expense elimination | in_progress | green | medium | Accounting and Ledger |
 | W12-ICPAIR-001 | Durable reviewed counterpart proposals and aged intercompany breaks | in_progress | green | high | Accounting and Ledger |

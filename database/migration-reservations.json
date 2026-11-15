@@ -5,7 +5,17 @@
       "id": "security-master",
       "filename_template": "{ordinal:03d}_{slug}.sql",
       "ordinal_pattern": "^(?P<ordinal>\\d+)_",
-      "reservations": []
+      "reservations": [],
+      "retired": [
+        {
+          "ordinal": 61,
+          "reason": "No 061 script ever shipped; 062 followed 060 directly. Never reuse: the migration runner refuses an unapplied ordinal below the highest applied one."
+        },
+        {
+          "ordinal": 63,
+          "reason": "No 063 script ever shipped; 064 followed 062 directly. Never reuse: the migration runner refuses an unapplied ordinal below the highest applied one."
+        }
+      ]
     },
     {
       "id": "direct-lending",

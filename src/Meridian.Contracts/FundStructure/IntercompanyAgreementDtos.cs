@@ -14,7 +14,12 @@ public enum IntercompanyAgreementStatusDto { Unapproved, Scheduled, Active, Expi
 public sealed record IntercompanyAgreementTermsDto(
     [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]
     decimal? FixedAnnualRate = null, string? RateDescription = null, string? ScheduleDescription = null,
-    string? AllocationDescription = null, int? SettlementDays = null, string? Notes = null);
+    string? AllocationDescription = null, int? SettlementDays = null, string? Notes = null)
+{
+    /// <summary>Absent on retained prose-only revisions; omission preserves their exact historical review hashes.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IntercompanyStructuredTermsDto? StructuredTerms { get; init; }
+}
 
 /// <summary>Submitted references are resolved by the evidence authority; supplied hashes are never trusted.</summary>
 public sealed record IntercompanyAgreementEvidenceDto(string Reference, string? ArtifactId = null, string? ContentHash = null);
@@ -30,19 +35,31 @@ public sealed record IntercompanyAgreementDraftDto(
 /// <summary>Actor and tenant are deliberately absent: authenticated service context supplies both.</summary>
 public sealed record IntercompanyAgreementCommandDto(
     Guid CommandId, Guid AgreementId, long ExpectedAggregateVersion, Guid ProposalId,
-    IntercompanyAgreementDraftDto? Draft = null, string? Rationale = null, string? SubmittedHash = null);
+    IntercompanyAgreementDraftDto? Draft = null, string? Rationale = null, string? SubmittedHash = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IntercompanyExternalReviewDto? ExternalReview { get; init; }
+}
 
 public sealed record IntercompanyAgreementProposalDto(
     Guid ProposalId, IntercompanyAgreementActionDto Action, IntercompanyAgreementProposalStateDto State,
     IntercompanyAgreementDraftDto Draft, int? BaseAgreementVersion, IReadOnlyList<string> Authors,
     string? Submitter, DateTimeOffset? SubmittedAtUtc, string? SubmittedHash,
-    DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, string? Rationale);
+    DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, string? Rationale)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IntercompanyExternalReviewAttestationDto? ExternalReview { get; init; }
+}
 
 public sealed record IntercompanyAgreementRevisionDto(
     Guid AgreementId, int AgreementVersion, int? PredecessorAgreementVersion, int? BaseAgreementVersion,
     IntercompanyAgreementActionDto Action, IntercompanyAgreementDraftDto Terms,
     Guid ProposalId, string PayloadHash, IReadOnlyList<string> Authors,
-    string Submitter, string Approver, DateTimeOffset ApprovedAtUtc, string Rationale);
+    string Submitter, string Approver, DateTimeOffset ApprovedAtUtc, string Rationale)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IntercompanyExternalReviewAttestationDto? ExternalReview { get; init; }
+}
 
 public sealed record IntercompanyAgreementAuditDto(
     Guid EventId, Guid ProposalId, string Action, string Actor, DateTimeOffset RecordedAtUtc,
@@ -50,6 +67,8 @@ public sealed record IntercompanyAgreementAuditDto(
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<string>? MigrationWarnings { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IntercompanyExternalReviewAttestationDto? ExternalReview { get; init; }
 }
 
 public sealed record IntercompanyAgreementCapabilitiesDto(
@@ -57,6 +76,8 @@ public sealed record IntercompanyAgreementCapabilitiesDto(
     bool CanAmend, bool CanTerminate, string? BlockingReason = null)
 {
     public bool CanCreateProposal { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool CanAttestExternalReview { get; init; }
 }
 
 public sealed record IntercompanyAgreementDetailDto(

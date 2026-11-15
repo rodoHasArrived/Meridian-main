@@ -1,5 +1,7 @@
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Tenancy;
+using Meridian.Storage.Ledger;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.PortfolioRecords.Accounts;
 using Microsoft.Extensions.Logging;
@@ -24,11 +26,9 @@ namespace Meridian.Application.Reconciliation;
 ///   <item>Positions are read best-effort from the retained position snapshot effective at or before the
 ///     statement period end, selected from snapshot history (see <c>ResolvePeriodSnapshotAsync</c>) so a
 ///     later snapshot never displaces the period-appropriate book; market value is left unspecified so the
-///     engine matches on quantity and account/security identity. Known limitation: this reads the legacy
-///     unowned snapshot partition via the two-argument <see cref="IPositionSnapshotStore.GetLatestSnapshotAsync(string,string,System.Threading.CancellationToken)"/>
-///     and history overloads. Snapshots written through the owner-scoped accounting-capture path
-///     (tenant/company/fund/book/entity) are invisible here and fail closed to position breaks until an
-///     appropriately authorized owner-scoped query seam is resolved for the account.</item>
+///     engine matches on quantity and account/security identity. Governed statement scopes resolve
+///     the exact server-owned tenant/company/fund/book/entity partition. Missing ownership never
+///     falls back to legacy unowned history; only explicitly unscoped compatibility runs use it.</item>
 ///   <item>The statement run's <c>FundAccountId</c> must be a Meridian fund-account GUID; an operator
 ///     label that is not a GUID resolves no internal book, and every row fails closed to a break.</item>
 ///   <item>Internal records are labeled with the run's external (custodian) account key — the same key
@@ -58,7 +58,9 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
     IPositionSnapshotStore? positionSnapshots = null,
     ILogger<RetainedInternalReconciliationPopulationProvider>? logger = null,
     IInternalLedgerTransactionSource? ledgerTransactionSource = null,
-    Func<IAccountQueryService?>? accountQueryResolver = null)
+    Func<IAccountQueryService?>? accountQueryResolver = null,
+    ILedgerJournalStore? ledgerStore = null,
+    IFundProfileTenancyRegistry? tenancy = null)
     : IInternalReconciliationPopulationProvider
 {
     public async Task<InternalReconciliationPopulations> GetPopulationsAsync(
@@ -87,10 +89,7 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
                 return InternalReconciliationPopulations.Empty;
             }
 
-            if (context.AccountingScope is { } scope
-                && (!account.FundId.HasValue
-                    || !Guid.TryParse(scope.FundProfileId, out var fundId)
-                    || account.FundId.Value != fundId))
+            if (context.AccountingScope is { } scope && !await MatchesAccountingScopeAsync(account, scope, ct).ConfigureAwait(false))
             {
                 return InternalReconciliationPopulations.Empty;
             }
@@ -109,7 +108,10 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
                 : context.StatementPeriodEnd;
 
             var cash = await ReadCashAsync(accountQueries, accountId, accountLabel, asOfCeiling, ct).ConfigureAwait(false);
-            var positions = await ReadPositionsAsync(positionSnapshots, account, context.FundAccountId, accountLabel, asOfCeiling, ct).ConfigureAwait(false);
+            var owner = await ResolvePositionOwnerAsync(context, account, ct).ConfigureAwait(false);
+            var positions = context.AccountingScope is not null && owner is null
+                ? []
+                : await ReadPositionsAsync(positionSnapshots, account, context.FundAccountId, accountLabel, asOfCeiling, owner, ct).ConfigureAwait(false);
             var ledgerTransactions = await ReadLedgerTransactionsAsync(ledgerTransactionSource, account, context, accountLabel, ct).ConfigureAwait(false);
 
             return new InternalReconciliationPopulations(positions, cash, ledgerTransactions);
@@ -128,6 +130,45 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
                 ex.GetType().Name);
             return InternalReconciliationPopulations.Empty;
         }
+    }
+
+    private async Task<bool> MatchesAccountingScopeAsync(AccountSummaryDto account,
+        Meridian.Domain.Reconciliation.StatementAccountingScope scope, CancellationToken ct)
+    {
+        // Fund-profile identity is not a fund-node GUID. Resolve that relationship from the
+        // authoritative book rather than parsing an operator/profile identifier as a fund id.
+        if (ledgerStore is not null)
+        {
+            var book = await ledgerStore.GetLedgerBookAsync(scope.LedgerBookId, ct).ConfigureAwait(false);
+            return book is not null && string.Equals(book.FundProfileId, scope.FundProfileId, StringComparison.OrdinalIgnoreCase)
+                && ((book.FundStructureNodeKind == FundStructureNodeKindDto.Fund && book.FundStructureNodeId == account.FundId)
+                    || (book.FundStructureNodeKind == FundStructureNodeKindDto.Account && book.FundStructureNodeId == account.AccountId)
+                    || (book.FundStructureNodeKind == FundStructureNodeKindDto.Entity && book.FundStructureNodeId == account.EntityId));
+        }
+        // Retained compatibility constructors can still forward legacy fund-scoped journal reads.
+        // They cannot resolve owner-scoped positions and never consult an unowned partition.
+        return account.FundId.HasValue && Guid.TryParse(scope.FundProfileId, out var fundId) && account.FundId.Value == fundId;
+    }
+
+    private async Task<PositionSnapshotOwnerScope?> ResolvePositionOwnerAsync(
+        InternalReconciliationPopulationContext context, AccountSummaryDto account, CancellationToken ct)
+    {
+        if (context.AccountingScope is not { } scope || ledgerStore is null || tenancy is null || account.EntityId is null)
+            return null;
+        var book = await ledgerStore.GetLedgerBookAsync(scope.LedgerBookId, ct).ConfigureAwait(false);
+        var period = await ledgerStore.GetPeriodAsync(scope.AccountingPeriodId, ct).ConfigureAwait(false);
+        if (book is null || period?.LedgerBookId != book.LedgerBookId ||
+            !string.Equals(book.FundProfileId, scope.FundProfileId, StringComparison.OrdinalIgnoreCase) ||
+            !((book.FundStructureNodeKind == FundStructureNodeKindDto.Fund && book.FundStructureNodeId == account.FundId)
+                || (book.FundStructureNodeKind == FundStructureNodeKindDto.Account && book.FundStructureNodeId == account.AccountId)
+                || (book.FundStructureNodeKind == FundStructureNodeKindDto.Entity && book.FundStructureNodeId == account.EntityId)) ||
+            !string.Equals(book.BaseCurrency, account.BaseCurrency, StringComparison.OrdinalIgnoreCase))
+            return null;
+        var ownership = await tenancy.ResolveAsync(book.FundProfileId, ct).ConfigureAwait(false);
+        if (ownership is null || string.IsNullOrWhiteSpace(ownership.TenantId) || string.IsNullOrWhiteSpace(ownership.CompanyId))
+            return null;
+        return new PositionSnapshotOwnerScope(ownership.TenantId.Trim(), ownership.CompanyId.Trim(),
+            book.FundProfileId, book.LedgerBookId, account.EntityId.Value.ToString("D"));
     }
 
     private static async Task<IReadOnlyList<InternalCashBalance>> ReadCashAsync(
@@ -224,6 +265,7 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
         string accountIdText,
         string accountLabel,
         DateOnly? asOfCeiling,
+        PositionSnapshotOwnerScope? owner,
         CancellationToken ct)
     {
         if (positionSnapshots is null || string.IsNullOrWhiteSpace(account.RunId))
@@ -231,7 +273,7 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
             return [];
         }
 
-        var snapshot = await ResolvePeriodSnapshotAsync(positionSnapshots, account.RunId.Trim(), accountIdText, asOfCeiling, ct)
+        var snapshot = await ResolvePeriodSnapshotAsync(positionSnapshots, account.RunId.Trim(), accountIdText, asOfCeiling, owner, ct)
             .ConfigureAwait(false);
         if (snapshot is null || snapshot.Positions.Count == 0)
         {
@@ -270,18 +312,22 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
         string runId,
         string accountIdText,
         DateOnly? asOfCeiling,
+        PositionSnapshotOwnerScope? owner,
         CancellationToken ct)
     {
         if (asOfCeiling is null)
         {
-            return await positionSnapshots.GetLatestSnapshotAsync(runId, accountIdText, ct).ConfigureAwait(false);
+            return owner is null
+                ? await positionSnapshots.GetLatestSnapshotAsync(runId, accountIdText, ct).ConfigureAwait(false)
+                : await positionSnapshots.GetLatestSnapshotAsync(runId, accountIdText, owner, ct).ConfigureAwait(false);
         }
 
         var ceiling = new DateTimeOffset(asOfCeiling.Value.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
         AccountSnapshotRecord? latest = null;
-        await foreach (var candidate in positionSnapshots
-            .GetSnapshotHistoryAsync(runId, accountIdText, DateTimeOffset.MinValue, ceiling, ct)
-            .ConfigureAwait(false))
+        var history = owner is null
+            ? positionSnapshots.GetSnapshotHistoryAsync(runId, accountIdText, DateTimeOffset.MinValue, ceiling, ct)
+            : positionSnapshots.GetSnapshotHistoryAsync(runId, accountIdText, owner, DateTimeOffset.MinValue, ceiling, ct);
+        await foreach (var candidate in history.ConfigureAwait(false))
         {
             // Keep the latest snapshot effective at or before the period close; the explicit ceiling
             // check stays correct even if a store streams a record outside the requested bound.

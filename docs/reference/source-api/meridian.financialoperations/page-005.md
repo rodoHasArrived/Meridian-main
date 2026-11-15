@@ -6,6 +6,160 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IAutomatedJournalCapitalAccountReconciliationResolver
+
+Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.IAutomatedJournalCapitalAccountReconciliationResolver</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:33](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L33).
+
+Server-side source for reviewed capital-account balances, confidence, source version, and retained evidence. Implementations must resolve from authoritative state; request payloads and persisted schedule assertions are never an implementation fallback.
+
+```csharp
+public interface IAutomatedJournalCapitalAccountReconciliationResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;AutomatedJournalCapitalAccountReconciliationDto?&gt; ResolveAsync(AutomatedJournalCapitalAccountReconciliationScope scope, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:35](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L35) |  |
+
+## LedgerCapitalAccountReconciliationResolver
+
+Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.LedgerCapitalAccountReconciliationResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:47](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L47).
+
+Reconstructs fee-basis NAV, capital-account equity, and high-water history from immutable, posted ledger journals. Tenant/company ownership, ledger-book identity, accounting period, entity dimensions, book currency, retained evidence, durable posting-command or adjustment approval provenance, and the evaluation-time boundary are all resolved from server-owned state before a reconciliation can be returned.
+
+```csharp
+public sealed class LedgerCapitalAccountReconciliationResolver : IAutomatedJournalCapitalAccountReconciliationResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerCapitalAccountReconciliationResolver(ILedgerJournalStore? journalStore, IFundProfileTenancyRegistry? tenancyRegistry);</code> | [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:55](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L55) |  |
+| <code>public async Task&lt;AutomatedJournalCapitalAccountReconciliationDto?&gt; ResolveAsync(AutomatedJournalCapitalAccountReconciliationScope scope, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:63](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L63) |  |
+
+## PostedPrivateCapitalActivityProjection
+
+Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PostedPrivateCapitalActivityProjection</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:22](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L22).
+
+```csharp
+public sealed record PostedPrivateCapitalActivityProjection(PrivateCapitalFundEventLedgerProjection Projection, IReadOnlyDictionary<Guid, string> JournalEntryCurrencies);
+```
+
+## PrivateCapitalActivityProjectionBuilder
+
+Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalActivityProjectionBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:29](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L29).
+
+Builds private-capital activity views from fund events and associated accounting evidence.
+
+```csharp
+public static class PrivateCapitalActivityProjectionBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static PrivateCapitalActivityProjectionDto Build(PrivateCapitalActivityProjectionInput input);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:63](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L63) |  |
+
+## PrivateCapitalActivityProjectionInput
+
+Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalActivityProjectionInput</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:9](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L9).
+
+```csharp
+public sealed record PrivateCapitalActivityProjectionInput(string FundProfileId, Guid? LedgerBookId, IReadOnlyList<ManualJournalEntryDraftDto> Drafts, IReadOnlyList<AccountingActionAuditEventDto> Audit, IReadOnlyList<BankTransactionDto> BankTransactions, PostedPrivateCapitalActivityProjection? PostedProjection, IReadOnlyList<ReportPackWorkflowRecordDto>? ReportPackWorkflowRecords = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; ReportPackWorkflowRecords { get; init; } = ReportPackWorkflowRecords??[];</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:18](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L18) |  |
+
+## PrivateCapitalCapitalAccountSubledgerBuilder
+
+Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalCapitalAccountSubledgerBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs#L8).
+
+Builds investor capital-account subledger views from private-capital activity.
+
+```csharp
+public static class PrivateCapitalCapitalAccountSubledgerBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerDto&gt; Build(string fundProfileId, Guid? ledgerBookId, DateTimeOffset projectedAtUtc, IReadOnlyList&lt;PrivateCapitalCapitalAccountActivityDto&gt; capitalAccounts, IReadOnlyList&lt;PrivateCapitalFundEventLedgerRecordDto&gt; fundEventRecords, IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerEntryDto&gt; subledgerEntries, IReadOnlyList&lt;PrivateCapitalLedgerImpactDto&gt; ledgerImpacts, IReadOnlyList&lt;PrivateCapitalReportOutputDto&gt; reportOutputs, IReadOnlyList&lt;AccountingConfigurationValidationIssueDto&gt; projectionValidationIssues) =&gt; …;</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs:10](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs#L10) |  |
+
+## PrivateCapitalCloseCockpitService
+
+Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalCloseCockpitService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.AllocationEvidence.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.AllocationEvidence.cs#L5).
+
+```csharp
+public sealed partial class PrivateCapitalCloseCockpitService
+```
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ApprovalHistory.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ApprovalHistory.cs#L8).
+
+```csharp
+public sealed partial class PrivateCapitalCloseCockpitService
+```
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.CloseRequirements.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.CloseRequirements.cs#L5).
+
+```csharp
+public sealed partial class PrivateCapitalCloseCockpitService
+```
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:14](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L14).
+
+Assembles private-capital close readiness, approvals, and evidence for the close cockpit.
+
+```csharp
+public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCockpitService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PrivateCapitalCloseCockpitService(IManualJournalEntryWorkbenchService? manualJournalEntryWorkbenchService, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService, IDailyValuationScheduleStatusSource? dailyValuationScheduleStatusSource = null, IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null, IRecurringJournalQueueSource? recurringJournalQueueSource = null, IIntercompanyBalanceScheduleSource? intercompanyBalances = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:52](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L52) |  |
+| <code>public async Task&lt;PrivateCapitalCloseCockpitDto&gt; GetCockpitAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:68](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L68) |  |
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs#L5).
+
+```csharp
+public sealed partial class PrivateCapitalCloseCockpitService
+```
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ManagementCompany.cs:7](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ManagementCompany.cs#L7).
+
+```csharp
+public sealed partial class PrivateCapitalCloseCockpitService
+```
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.Routes.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.Routes.cs#L8).
+
+```csharp
+public sealed partial class PrivateCapitalCloseCockpitService
+```
+
 ## PrivateCapitalEvidenceCategoryBuilder
 
 Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalEvidenceCategoryBuilder</code>. Kind: `class`.
@@ -515,9 +669,9 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IReadOnlyList&lt;string&gt; Split(string line, char delimiter = &#x27;,&#x27;, char quote = &#x27;&quot;&#x27;);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs:14](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs#L14) |  |
-| <code>public static IReadOnlyList&lt;string&gt; SplitLines(string content) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs:54](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs#L54) | Splits statement text into logical lines, tolerating \r\n and \r endings and a UTF-8 BOM. Blank lines are preserved so callers keep stable row numbers. |
-| <code>public static IReadOnlyList&lt;string&gt; SplitLines(string content, int maxLines) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs:70](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs#L70) | Splits statement text into logical lines, stopping once maxLines lines have been produced. Semantics are identical to the unbounded overload for any content inside the bound, including the trailing empty segment a terminating newline produces. |
-| <code>public static IReadOnlyList&lt;string&gt; SplitLines(string content, int maxLines, int maxLineLength, out bool lineTooLong);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs:90](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs#L90) | As SplitLines(string, int), and additionally reports through lineTooLong whether any discovered line exceeded maxLineLength. Discovery stops at the first such line, so a caller never pays to split its fields. |
+| <code>public static IReadOnlyList&lt;string&gt; SplitLines(string content) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs:77](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs#L77) | Splits statement text into logical lines, tolerating \r\n and \r endings and a UTF-8 BOM. Blank lines are preserved so callers keep stable row numbers. |
+| <code>public static IReadOnlyList&lt;string&gt; SplitLines(string content, int maxLines) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs:93](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs#L93) | Splits statement text into logical lines, stopping once maxLines lines have been produced. Semantics are identical to the unbounded overload for any content inside the bound, including the trailing empty segment a terminating newline produces. |
+| <code>public static IReadOnlyList&lt;string&gt; SplitLines(string content, int maxLines, int maxLineLength, out bool lineTooLong);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs:113](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs#L113) | As SplitLines(string, int), and additionally reports through lineTooLong whether any discovered line exceeded maxLineLength. Discovery stops at the first such line, so a caller never pays to split its fields. |
 
 ## CsvStatementConnector
 
@@ -721,142 +875,3 @@ Declared public members:
 | <code>Task&lt;bool&gt; DeleteAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:52](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L52) |  |
 | <code>Task RecordRunAsync(string scheduleId, DateTimeOffset ranAtUtc, string status, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:53](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L53) |  |
 | <code>Task RecordFailureAsync(string scheduleId, DateTimeOffset attemptedAtUtc, string status, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:54](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L54) |  |
-
-## IStatementImportCommitService
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementImportCommitService</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L60).
-
-Validates statement source requests and commits accepted imports with retained evidence.
-
-```csharp
-public interface IStatementImportCommitService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;StatementImportCommitResultDto&gt; CommitAsync(StatementImportCommitRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:62](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L62) |  |
-| <code>Task&lt;StatementImportValidationResult&gt; ValidateAsync(StatementSourceDocument document, string? connectorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:71](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L71) | Validates a statement document through the connector pipeline (resolve connector, parse, no commit), so the newly supported bank formats are validatable from the CLI just as they are importable. Returns the record count and any blocking parse errors. |
-
-## IStatementMappingProfileStore
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementMappingProfileStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L11).
-
-Lists, saves, and deletes versioned statement mapping profile documents.
-
-```csharp
-public interface IStatementMappingProfileStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;StatementMappingProfileDocument&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L13) |  |
-| <code>Task&lt;StatementMappingProfileDocument&gt; UpsertAsync(StatementMappingProfileDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L16) | Creates or replaces an operator-owned profile document. Built-in ids are rejected. |
-| <code>Task&lt;bool&gt; DeleteAsync(string profileId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L18) |  |
-
-## OfxDocument
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Ofx.OfxDocument</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:447](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L447).
-
-A parsed OFX file flattened into uniform per-entry tag dictionaries.
-
-```csharp
-public sealed record OfxDocument(string? AccountId, IReadOnlyList<IReadOnlyDictionary<string, string>> Entries)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int StatementCount { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:452](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L452) | Number of containing statement sections, including empty sections. |
-
-## OfxDocumentParser
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Ofx.OfxDocumentParser</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L11).
-
-Tolerant OFX parser covering both OFX 1.x (SGML, unclosed leaf tags) and OFX 2.x (XML). Aggregates of interest — bank transactions, ledger balances, investment buys/sells, and investment positions — are flattened into per-entry tag dictionaries (&quot;pseudo-columns&quot;) so the same declarative mapping profiles used for CSV apply to OFX statements.
-
-```csharp
-public static class OfxDocumentParser
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string AggregateColumn = &quot;AGGREGATE&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:14](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L14) | Pseudo-column carrying the aggregate name (STMTTRN, INVBUY, POSSTOCK, ...). |
-| <code>public static bool LooksLikeOfx(string content);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:47](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L47) |  |
-| <code>public static OfxDocument Parse(string content) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:55](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L55) |  |
-| <code>public static OfxDocument Parse(string content, int maxEntries, int maxDepth, int maxNodes, out OfxParseBound bound);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:73](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L73) | Parses an OFX document, refusing one that exceeds the ingress bounds instead of building it first. |
-
-## OfxParseBound
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Ofx.OfxParseBound</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:456](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L456).
-
-Which ingress bound, if any, stopped an OFX parse before the document was complete.
-
-```csharp
-public enum OfxParseBound
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None = 0</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:459](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L459) | The document was parsed in full. |
-| <code>TooManyEntries = 1</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:462](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L462) | Entry discovery stopped the parse. |
-| <code>NestingTooDeep = 2</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:465](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L465) | Aggregate nesting exceeded the depth bound. |
-| <code>TooManyNodes = 3</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:468](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L468) | The retained node budget - aggregates plus leaves - stopped the parse. |
-
-## OfxStatementConnector
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Ofx.OfxStatementConnector</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L12).
-
-OFX statement connector covering bank statements (cash transactions + ledger balance) and investment statements (buys/sells + positions), OFX 1.x SGML and 2.x XML alike. Entries are flattened to tag pseudo-columns and mapped through the same declarative profiles as CSV, so operators can remap or reclassify OFX activity without a release.
-
-```csharp
-public sealed class OfxStatementConnector(StatementMappingProfileCatalog catalog, StatementIngressLimits? ingressLimits = null) : IStatementConnector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ConnectorId = &quot;ofx&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L18) |  |
-| <code>public StatementConnectorDescriptor Descriptor { get; } = new (ConnectorId, &quot;OFX / QFX statement&quot;, [&quot;.ofx&quot;, &quot;.qfx&quot;], SupportsFileImport : true, SupportsRemoteFetch : false, RequiresMappingProfile : true, DefaultProfileId : StatementBuiltInProfiles.OfxBankV1ProfileId);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L20) |  |
-| <code>public bool CanHandle(StatementSourceDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:29](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L29) |  |
-| <code>public async Task&lt;StatementParseResult&gt; ParseAsync(StatementSourceDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:40](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L40) |  |
-
-## StatementBalanceRole
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementBalanceRole</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:74](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L74).
-
-Which booked balance a statement connector emits as its StatementRecordKind.CashBalance row. Reconciliation runs always use Closing; Opening is an explicit opt-in used only by shadow-mode onboarding to read the incumbent&#x27;s opening booked balance (camt.053 OPBD, BAI2 010 only).
-
-```csharp
-public enum StatementBalanceRole
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Closing</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:76](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L76) |  |
-| <code>Opening</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:77](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L77) |  |
