@@ -59,34 +59,46 @@ public sealed class WriteAheadLogFlushFaultTests : TempDirectoryAsyncTestBase
     [Fact]
     public async Task BackgroundFlushFailure_DoesNotBlockLaterWrites()
     {
-        await using var wal = new WriteAheadLog(TestDataRoot, Batched(TimeSpan.FromMilliseconds(40)));
+        await using var wal = new WriteAheadLog(TestDataRoot, Batched(TimeSpan.FromMilliseconds(100)));
         await wal.InitializeAsync();
 
+        // The fault must hit the delayed flush loop, not a flush this test triggers itself: an
+        // append also flushes inline once MaxFlushDelay has elapsed since the last flush, which
+        // on a slow machine can be true for the very first append.
         var faultObserved = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var foreground = 0;
         var failures = 1;
         wal.FlushFault = () =>
         {
-            if (Interlocked.Decrement(ref failures) >= 0)
+            if (Volatile.Read(ref foreground) == 0 && Interlocked.Decrement(ref failures) >= 0)
             {
                 faultObserved.TrySetResult();
                 throw new IOException("Injected: transient flush failure");
             }
         };
 
-        // Sits unflushed until the delayed flush loop picks it up — and fails.
-        var first = await wal.AppendAsync("a", "trade");
-        await faultObserved.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        // Each append that is not flushed inline leaves a record for the loop to pick up.
+        long lastSequence = 0;
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        while (!faultObserved.Task.IsCompleted)
+        {
+            deadline.Token.ThrowIfCancellationRequested();
+            Volatile.Write(ref foreground, 1);
+            lastSequence = (await wal.AppendAsync("a", "trade")).Sequence;
+            Volatile.Write(ref foreground, 0);
+            await Task.WhenAny(faultObserved.Task, Task.Delay(TimeSpan.FromMilliseconds(500), deadline.Token));
+        }
 
         // Before the fix this threw "new writes are blocked" until process restart.
-        var second = await wal.AppendAsync("b", "trade");
+        var after = await wal.AppendAsync("b", "trade");
         await wal.FlushAsync();
-        await wal.CommitAsync(second.Sequence);
+        await wal.CommitAsync(after.Sequence);
 
         var uncommitted = new List<WalRecord>();
         await foreach (var record in wal.GetUncommittedRecordsAsync())
             uncommitted.Add(record);
-        uncommitted.Should().BeEmpty("both records were persisted and then committed");
-        second.Sequence.Should().BeGreaterThan(first.Sequence);
+        uncommitted.Should().BeEmpty("every record was persisted and then committed");
+        after.Sequence.Should().BeGreaterThan(lastSequence);
     }
 
     [Fact]
