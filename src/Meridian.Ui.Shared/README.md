@@ -1448,6 +1448,12 @@ scope is rejected by the shared tenant/company filter as typed `403` Problem Det
 endpoint resolves provider data. The shared service's legacy unscoped snapshot and watch surfaces
 exclude tenant/company-aware providers entirely rather than invoking their compatibility methods.
 
+`POST /api/auth/login` carries its own `login` limiter (10 requests per minute per client address,
+same bypass policy as the mutation limiter). It follows `returnUrl` only when the value is a
+path-absolute local URL, falling back to `/workstation/`, and refuses requests the browser marks
+as cross-site (`Sec-Fetch-Site: cross-site`, or a foreign `Origin` when Fetch Metadata is absent)
+because sign-in is exempt from the CSRF token check.
+
 The shared mutation and global API throttles accept `MDC_DISABLE_RATE_LIMIT=true` only in an
 explicit Development/Test host outside production, packaged and customer postures. Both resolve
 one shared bypass policy from the final host registrations; absent policy or host environment does

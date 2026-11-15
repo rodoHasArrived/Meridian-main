@@ -265,7 +265,23 @@ public sealed class JsonlStorageSink : IStorageSink
         // Flush if buffer is full
         if (buffer.ShouldFlush(_batchOptions.BatchSize))
         {
-            await FlushBufferUnderGateAsync(path, buffer, ct).ConfigureAwait(false);
+            try
+            {
+                await FlushBufferUnderGateAsync(path, buffer, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // The event is already buffered (and a failed flush restores its batch), so
+                // this append has been accepted. Surfacing the flush failure here would tell
+                // the caller the event was NOT accepted; the pipeline would then append it
+                // again and the next successful flush would write it twice. The failure is
+                // not lost: FlushAsync and the periodic flush retry the buffered batch and
+                // report it.
+                _logger.LogWarning(
+                    ex,
+                    "Size-triggered flush for {Path} failed after the event was buffered; the batch stays buffered for the next flush",
+                    path);
+            }
         }
     }
 

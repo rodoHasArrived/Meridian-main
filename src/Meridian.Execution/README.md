@@ -330,6 +330,11 @@ appends a `PaperSessionSettlementRecord` (one per account, symbol and trading da
 restart and replay all merge settlements into the fills at `SettledAt`. Settlements are not yet
 published to the accounting handoff, and the sessionless OMS portfolio is not settled.
 
+Both paper gateways wait for capacity on their bounded update/report channel before emitting a
+fill, cancellation, or terminal update for an order that has already left the working set; only
+gateway disposal abandons a waiting emission. A slow consumer therefore applies backpressure
+instead of losing the update.
+
 Both paper gateways resolve the final fill price through the shared trading-parameter helper.
 Tick-size rounding is best-effort: a rounded price is used only when it remains positive, stays
 inside the captured market-data envelope, and respects any limit or stop-limit price. Otherwise,

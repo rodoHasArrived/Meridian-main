@@ -80,6 +80,10 @@ and atomic lot posting, requires a matching posting-authority scope retained thr
 Controlled-close authorizations bind an approved draft's economics, evidence and version;
 they permit no edits to posted journals. Unmapped historical periods retain explicit warnings.
 
+`JsonlStorageSink.AppendAsync` acknowledges an event once it is buffered: a failed size-triggered
+flush is logged and left for `FlushAsync` or the periodic flush to retry and report, so a caller
+that retries failed appends cannot write the same event twice.
+
 JSONL and Parquet sinks retire empty partition buffers after successful flushes. Admission and
 retirement share the buffer lock, so a producer holding an evicted buffer retries admission to
 the current buffer. Failed flushes restore their batches and retain the buffer. Parquet filenames

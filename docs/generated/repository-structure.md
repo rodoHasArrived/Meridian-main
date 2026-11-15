@@ -14763,6 +14763,7 @@ Meridian-main
 │   │   │   ├── LiveTradingEngineHostRegistrationTests.cs
 │   │   │   ├── LoanMaturityBucketTests.cs
 │   │   │   ├── LoanPortfolioWireContractTests.cs
+│   │   │   ├── LoginRateLimitEndpointTests.cs
 │   │   │   ├── ManualJournalAgreementReviewTests.Corrections.cs
 │   │   │   ├── ManualJournalAgreementReviewTests.cs
 │   │   │   ├── ManualJournalAgreementReviewTests.Currencies.cs

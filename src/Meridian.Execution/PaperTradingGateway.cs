@@ -40,6 +40,7 @@ public sealed class PaperTradingGateway :
     private readonly PaperTradingCostModel _costModel;
     private readonly PaperSymbolEvaluationPump _evaluationPump;
     private readonly System.Threading.Channels.Channel<ExecutionReport> _restingReports;
+    private readonly CancellationTokenSource _disposeCts = new();
     // Limit/stop orders accepted and resting in this gateway, keyed by order id, so
     // cancel/modify can distinguish a real resting order from an unknown id and so market
     // data arrival can re-evaluate them for fills.
@@ -431,12 +432,7 @@ public sealed class PaperTradingGateway :
                     request, orderId, gatewayOrderId: orderId, match.FillPrice!.Value, observation,
                     CancellationToken.None).ConfigureAwait(false);
 
-                if (!_restingReports.Writer.TryWrite(report))
-                {
-                    _logger.LogWarning(
-                        "Paper resting fill for {OrderId} could not be queued because the report channel was unavailable.",
-                        LogSanitizer.Sanitize(orderId));
-                }
+                await EmitRestingReportAsync(report, orderId).ConfigureAwait(false);
             }
             else if (match.StopTriggered)
             {
@@ -445,6 +441,31 @@ public sealed class PaperTradingGateway :
                     resting.StopTriggered = true;
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Queues the fill of a resting order that has already been claimed as complete. The
+    /// report channel is bounded with wait-on-full semantics, so <c>TryWrite</c> fails
+    /// whenever the consumer is behind; dropping the report there would lose the fill for
+    /// good. Wait for capacity instead, giving up only when the gateway is disposed.
+    /// </summary>
+    private async ValueTask EmitRestingReportAsync(ExecutionReport report, string orderId)
+    {
+        if (_restingReports.Writer.TryWrite(report))
+        {
+            return;
+        }
+
+        try
+        {
+            await _restingReports.Writer.WriteAsync(report, _disposeCts.Token).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is OperationCanceledException or System.Threading.Channels.ChannelClosedException)
+        {
+            _logger.LogWarning(
+                "Paper resting fill for {OrderId} was dropped because the gateway was disposed before the report channel had capacity.",
+                LogSanitizer.Sanitize(orderId));
         }
     }
 
@@ -573,7 +594,11 @@ public sealed class PaperTradingGateway :
             return;
         }
 
+        // Release an evaluation parked on a full report channel so disposal cannot hang when
+        // no consumer is draining.
+        await _disposeCts.CancelAsync().ConfigureAwait(false);
         await _evaluationPump.DisposeAsync().ConfigureAwait(false);
         _restingReports.Writer.TryComplete();
+        _disposeCts.Dispose();
     }
 }
