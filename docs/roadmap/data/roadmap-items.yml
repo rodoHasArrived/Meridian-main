@@ -1693,7 +1693,7 @@ items:
       - type: source
         path: src/Meridian.Ui.Shared/Services/LedgerAmountProvenanceService.cs
       - type: source
-        path: src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs
+        path: src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs
       - type: source
         path: src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs
       - type: source
