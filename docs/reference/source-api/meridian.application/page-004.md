@@ -1272,7 +1272,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Integrations.IProviderIntegrationHostResolver</code>. Kind: `interface`.
 
-Source: [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:294](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L294).
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:279](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L279).
 
 Resolves integration endpoint host names to IP addresses for transport validation.
 
@@ -1284,7 +1284,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ValueTask&lt;IReadOnlyList&lt;IPAddress&gt;&gt; ResolveAsync(string host, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:296](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L296) |  |
+| <code>ValueTask&lt;IReadOnlyList&lt;IPAddress&gt;&gt; ResolveAsync(string host, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:281](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L281) |  |
 
 ## IProviderIntegrationHttpTransport
 

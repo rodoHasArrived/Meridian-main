@@ -84,6 +84,10 @@ This layer provides low-level reusable infrastructure. It must stay independent 
 - `Diagnostics/` - low-level runtime redaction helpers used by diagnostic bundles, endpoints, and
   shutdown flows without depending on Application services.
 - `Exceptions/` - base exception and error types published under `Meridian.Core.Exceptions`.
+- `Net/PublicNetworkAddress.cs` - the shared classifier for outbound requests to operator- or
+  provider-supplied destinations. It reports loopback, private, carrier-grade NAT, link-local,
+  unique-local, multicast and reserved addresses as blocked; the provider integration transport and
+  the execution-alert webhook both use it.
 - `Serialization/` - source-generated JSON context support published under
   `Meridian.Core.Serialization`.
 - `Pipeline/`, `Scheduling/`, `Services/`, and `Monitoring/` - reusable runtime primitives,

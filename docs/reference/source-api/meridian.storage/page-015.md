@@ -195,7 +195,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Sinks.JsonlStorageSinkStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1162](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1162).
+Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1219](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1219).
 
 ```csharp
 public sealed record JsonlStorageSinkStatistics(bool IsBatchingEnabled, int BatchSize, TimeSpan FlushInterval, long EventsBuffered, long EventsWritten, long BatchesWritten, int WriterCount, int BufferCount, DateTimeOffset Timestamp, long FsyncCount = 0, int OpenWriterHandles = 0);

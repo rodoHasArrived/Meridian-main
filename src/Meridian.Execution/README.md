@@ -76,6 +76,11 @@ the original order identity.
 Open-order limits recognize a working order's prior broker IDs in stale snapshots. Multiple chain
 members reported as open still consume separate slots.
 
+Tracked order status does not regress on out-of-order reports: a `PendingNew` or `Accepted`
+report for an order that already holds fills resolves to `PartiallyFilled`, and `Accepted` is not
+walked back to `PendingNew`. Enabled execution-alert webhooks must target a public address;
+literal internal addresses are refused when settings are saved.
+
 Broker-dispatched client IDs, run/account ownership and processed fill watermarks are retained by
 `FileBrokerageOrderRecoveryStore` before dispatch. Broker acknowledgement accounts are retained as
 `OrderState.BrokerAccountId`; later reports

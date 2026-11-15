@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CircuitState
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.CircuitState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs:176](../../../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs#L176).
+
+Circuit breaker states.
+
+```csharp
+public enum CircuitState : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Closed = 0</code> | [src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs:179](../../../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs#L179) | Circuit is closed, allowing operations. |
+| <code>Open = 1</code> | [src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs:182](../../../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs#L182) | Circuit is open, rejecting operations. |
+| <code>HalfOpen = 2</code> | [src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs:185](../../../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs#L185) | Circuit is half-open, testing recovery. |
+
 ## CreateScheduleRequest
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.CreateScheduleRequest</code>. Kind: `record`.

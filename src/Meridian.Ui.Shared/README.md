@@ -1408,6 +1408,8 @@ without endpoint or workstation orchestration. The larger cross-domain workflows
 
 The shared host composes equity session/coverage policies, authoritative previews, a durable operational journal, reconciliation/notification workers, an independent disabled-by-default webhook outbox, and retained strategy comparison. Browser Orders, Settings and Strategy reuse these authenticated services. Unavailable baseline, activity or cost evidence remains unassessed. See [execution workflows](../../docs/engineering/execution-workflows.md).
 
+The `execution-webhook` client dials only public addresses: it resolves the host, refuses loopback, private, link-local and other internal addresses at connection time, pins the connection to the validated addresses, follows no redirects and uses no system proxy.
+
 `GET /api/config` requires configuration-read permission and masks every configured backfill
 provider credential in a cloned response projection. Persisted credentials remain unchanged.
 Connection services use the injected `IHttpClientFactory` for credential verification and OAuth

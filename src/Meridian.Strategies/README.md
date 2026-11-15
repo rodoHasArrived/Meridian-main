@@ -40,6 +40,10 @@ P&L financing decomposition is provisional. Continuity and comparison reads expo
 review warning/incomplete cash-flow coverage. No shared account charge is assigned to every run.
 Legacy and backtest results with no coverage declaration retain an unassessed null status.
 
+A live session books a strategy fill only at the price the execution report states. A fill report
+with no price books nothing, matching the paper ledger; a non-positive price fails the run closed.
+The session never substitutes the last market price, the limit price, or zero.
+
 Live strategy-run cash flows scale the quoted fill price by the report's `LotMultiplier` (stamped by the
 OMS), so a run's retained cash-flow history reconciles with the paper portfolio for multiplied contracts;
 face-value fills keep their par scaling.

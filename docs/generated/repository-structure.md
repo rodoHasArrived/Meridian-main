@@ -6418,6 +6418,8 @@ Meridian-main
 │   │   │   ├── IConnectionHealthMonitor.cs
 │   │   │   ├── IReconnectionMetrics.cs
 │   │   │   └── MigrationDiagnostics.cs
+│   │   ├── Net
+│   │   │   └── PublicNetworkAddress.cs
 │   │   ├── Performance
 │   │   │   └── Performance
 │   │   │       ├── ConnectionWarmUp.cs
@@ -12807,6 +12809,7 @@ Meridian-main
 │   │   │   │   ├── DedupWalOrderingTests.cs
 │   │   │   │   ├── DroppedEventAuditTrailTests.cs
 │   │   │   │   ├── DualPathEventPipelineTests.cs
+│   │   │   │   ├── EventPipelineAdmissionRetryTests.cs
 │   │   │   │   ├── EventPipelineMetricsTests.cs
 │   │   │   │   ├── EventPipelineTests.cs
 │   │   │   │   ├── EventPipelineTracePropagationTests.cs
@@ -14464,6 +14467,7 @@ Meridian-main
 │   │   │   ├── WriteAheadLogChecksumTests.cs
 │   │   │   ├── WriteAheadLogChecksumVersionTests.cs
 │   │   │   ├── WriteAheadLogCorruptionModeTests.cs
+│   │   │   ├── WriteAheadLogFlushFaultTests.cs
 │   │   │   ├── WriteAheadLogFuzzTests.cs
 │   │   │   ├── WriteAheadLogProcessTests.cs
 │   │   │   ├── WriteAheadLogTests.cs
@@ -14485,6 +14489,7 @@ Meridian-main
 │   │   │   ├── LiveStrategyBaseTests.cs
 │   │   │   ├── LiveStrategyCatalogFallbackTests.cs
 │   │   │   ├── LiveStrategyRunSessionCompletionTests.cs
+│   │   │   ├── LiveStrategyRunSessionFillPriceTests.cs
 │   │   │   ├── LiveTradingEngineTests.AuditCancellation.cs
 │   │   │   ├── LiveTradingEngineTests.cs
 │   │   │   ├── LiveTradingEngineTests.FinancingCoverage.cs
