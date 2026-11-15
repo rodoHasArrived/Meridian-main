@@ -2,7 +2,7 @@
 
 **Status:** Documentation Automation consolidation implemented in PR #3336; current-head verification and owner review remain explicit.
 **Owner:** core-team
-**Reviewed:** 2026-10-31 (combined with the workflow inventory from merged PR #3337)
+**Reviewed:** 2026-10-31
 **Scope:** remove duplicate execution without deleting required check identities or financial/security validation.
 
 ## Documentation Automation: one worker, two existing results
