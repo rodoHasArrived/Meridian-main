@@ -1,3 +1,4 @@
+import { PageHeading } from "@/components/ui/page-heading";
 import { DetailFields, DetailPane } from "@/components/meridian/detail-pane";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import type { KeyboardEvent } from "react";
@@ -733,14 +734,7 @@ function PortfolioScreenContent({
         aria-label="Portfolio workbench context"
         className="flex flex-wrap items-end justify-between gap-3"
       >
-        <div className="min-w-0">
-          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-            {routeCopy.title}
-          </h2>
-          <p className={showOverview ? "sr-only" : "mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground"}>
-            {routeCopy.description}
-          </p>
-        </div>
+        <PageHeading title={routeCopy.title} purpose={routeCopy.description} descriptionKey={`portfolio:${routeView}`} />
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Button asChild variant="outline" size="sm">
             <Link

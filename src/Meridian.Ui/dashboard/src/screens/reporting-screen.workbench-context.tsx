@@ -1,9 +1,8 @@
+import { PageHeading } from "@/components/ui/page-heading";
 import type { ReactNode } from "react";
 import { Network } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { SectionDescription } from "@/components/ui/section-description";
-import { cn } from "@/lib/utils";
 import type {
   ReportingChipViewModel,
   ReportingWorkbenchAction
@@ -25,17 +24,9 @@ export function ReportingWorkbenchContext({ taskMode, actions, compact = false, 
       className="flex flex-wrap items-end justify-between gap-3"
     >
       <div className="min-w-0 flex-1">
-        <div className={cn("flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1", compact && "sr-only")}>
-          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-            {taskMode.title}
-          </h2>
-          {!compact ? (
-            <SectionDescription descriptionKey={`reporting-${taskMode.id}`} label={`About ${taskMode.title}`}>
-              {taskMode.description}
-            </SectionDescription>
-          ) : null}
-        </div>
-        {context}
+        {/* Every Reporting page, the landing included, opens with the same heading. */}
+        <PageHeading title={taskMode.title} purpose={taskMode.description} descriptionKey={`reporting-${taskMode.id}`} />
+        {context ? <div className={compact ? "mt-2" : undefined}>{context}</div> : null}
       </div>
       <div className="flex flex-wrap items-center justify-end gap-2">
         {actions.map((action) => (

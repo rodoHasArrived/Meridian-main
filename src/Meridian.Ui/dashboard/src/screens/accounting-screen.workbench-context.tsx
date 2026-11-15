@@ -1,9 +1,9 @@
+import { PageHeading } from "@/components/ui/page-heading";
 import type {
   AccountingTaskModeViewModel,
   AccountingWorkstream
 } from "@/screens/accounting-screen.task-mode-view-model";
 import type { WorkspaceSummary } from "@/types";
-import { SectionDescription } from "@/components/ui/section-description";
 
 export interface AccountingChipViewModel {
   label: string;
@@ -28,14 +28,9 @@ export function AccountingWorkbenchContext({
       aria-label={`${workspace.label} workbench context`}
       data-workstream={workstream}
       data-task-mode={taskMode.id}
-      className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1"
+      className="min-w-0"
     >
-      <h2 className="font-display text-sm font-semibold leading-tight text-foreground">
-        {taskMode.title}
-      </h2>
-      <SectionDescription descriptionKey={`accounting:${taskMode.id}`} label={`About ${taskMode.title}`}>
-        {taskMode.description}
-      </SectionDescription>
+      <PageHeading title={taskMode.title} purpose={taskMode.description} descriptionKey={`accounting:${taskMode.id}`} />
     </section>
   );
 }

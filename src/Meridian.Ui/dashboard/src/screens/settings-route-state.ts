@@ -49,8 +49,8 @@ export const SETTINGS_ROUTE_TABS: readonly SettingsRouteTab[] = [
 
 export const SETTINGS_ROUTE_VIEW_COPY: Readonly<Record<SettingsRouteViewId, { title: string; description: string }>> = {
   chooser: {
-    title: "Choose a settings task",
-    description: "Choose the operator task you need without loading unrelated administration controls."
+    title: "Settings overview",
+    description: "Pick the setup task you need."
   },
   preferences: {
     title: "Workstation preferences",

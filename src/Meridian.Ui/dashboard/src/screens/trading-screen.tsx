@@ -1,4 +1,4 @@
-import { SectionDescription } from "@/components/ui/section-description";
+import { PageHeading } from "@/components/ui/page-heading";
 import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
@@ -672,12 +672,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
         aria-label="Execution cockpit context"
         className="min-w-0"
       >
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">{routeCopy.title}</h2>
-          <SectionDescription descriptionKey={`trading:${routeView}`} label={`About ${routeCopy.title}`}>
-            {routeCopy.description}
-          </SectionDescription>
-        </div>
+        <PageHeading title={routeCopy.title} purpose={routeCopy.description} descriptionKey={`trading:${routeView}`} />
       </section>
 
       {/* The full recovery workspace belongs to the overview; every other route keeps one

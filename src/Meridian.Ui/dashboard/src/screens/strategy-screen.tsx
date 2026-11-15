@@ -1,3 +1,4 @@
+import { PageHeading } from "@/components/ui/page-heading";
 import { Histogram } from "@/components/charts";
 import { CompareToggle } from "@/components/charts/SelectionCompare";
 import { Sparkline } from "@/components/charts/Sparkline";
@@ -520,14 +521,7 @@ function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
         aria-label="Strategy workspace context"
         className="flex flex-wrap items-end justify-between gap-3"
       >
-        <div className="min-w-0">
-          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-            {routeCopy.title}
-          </h2>
-          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
-            {routeCopy.description}
-          </p>
-        </div>
+        <PageHeading title={routeCopy.title} purpose={routeCopy.description} descriptionKey={`strategy:${routeCopy.title}`} />
       </section>
 
       <KpiProvider models={{ strategy: { ...data, metrics: data.metrics.map(metric => ({ ...metric, basis: metric.basis ?? "Retained strategy run summaries", source: metric.source ?? "Authorized Strategy workspace run population" })) } }}>
