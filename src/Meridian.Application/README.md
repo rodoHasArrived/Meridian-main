@@ -942,6 +942,12 @@ Core workstation host. Do not introduce a second listener or independent monitor
   entries: version 2 confirms sink durability and suppresses WAL replay, while legacy version-1
   entries only suppress live ingress and are replayed (then upgraded) during recovery, keeping
   crash semantics at-least-once — a replayed duplicate is possible, silent loss is not.
+  A dedup-store or dead-letter failure before the WAL append retains the batch and resumes
+  admission at the failing event rather than discarding it; a dead-letter failure is retried
+  three times, after which only that rejected event is dropped. Disposal waits out the final
+  flush timeout after a force-cancel before disposing the sink and WAL.
+  `EventPipelineShutdownParticipant` drains the `DualPathEventPipeline` ring buffers into the
+  slow path before completing it, and reports an incomplete drain as a failed shutdown step.
   Explicit flush waits for completed consumption, which already includes rejected events.
   Rejected batches cannot be counted twice to acknowledge a later valid event before its
   storage append finishes; gated regression cases cover that ordering across separate batches.

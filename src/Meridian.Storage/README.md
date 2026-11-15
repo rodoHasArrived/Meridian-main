@@ -292,6 +292,13 @@ outcome after restart; changed inputs under the same command identity conflict. 
 is in `PrivateCapitalRecordServiceTests`, `PrivateCapitalRecordAuthorityTests`,
 `PrivateCapitalRecordEndpointTests` and `PostgresPrivateCapitalRecordStoreTests`.
 
+`WriteAheadLog` treats a failed write or flush as a fault on the active segment, not on the log:
+the next append, flush, commit or delayed-flush tick abandons that handle, opens a new segment and
+rewrites the records not yet confirmed flushed. A record can therefore appear in both segments, and
+replay stays at-least-once. New WAL segments fsync their header and directory entry (except in
+`NoSync`), and `JsonlStorageSink` fsyncs the directory of a newly created day file, and the parents
+of directories created for it, at the first durability barrier.
+
 `JsonlAppendWriter` appends lines to an append-only JSONL log in place and fsyncs them, truncating a
 torn final line first; `JsonlStorageSink` uses the same torn-tail repair for its day files. Use it
 for logs that grow with every event. `AtomicFileWriter.AppendLinesAsync` still copies the whole
