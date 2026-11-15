@@ -136,9 +136,9 @@ public sealed class OrderManagementSystemReportStreamTests
         // The broker's "New" acknowledgement arrives after the first fill. Its timestamp is the
         // barrier that proves the report was applied to tracked state.
         var lateAckAt = DateTimeOffset.UtcNow.AddSeconds(1);
-        await gateway.PublishAsync(
-            BuildReport(result.OrderId, OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null, orderQuantity: 10m)
-                with { Timestamp = lateAckAt });
+        var lateAck = BuildReport(
+            result.OrderId, OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null, orderQuantity: 10m);
+        await gateway.PublishAsync(lateAck with { Timestamp = lateAckAt });
         await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.LastUpdatedAt == lateAckAt,
             "the late acknowledgement must be applied to tracked order state");
 
