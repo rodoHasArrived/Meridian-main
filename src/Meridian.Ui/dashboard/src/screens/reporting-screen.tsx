@@ -1,3 +1,4 @@
+import { TimeText } from "@/components/ui/time-text";
 import { EntityLink } from "@/components/meridian/entity-inspector";
 import { GeneralLedgerExportPanel } from "./reporting-screen.general-ledger-export";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
@@ -1384,7 +1385,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                     </p>
                     <div className="mt-2 space-y-1 break-all font-mono text-[11px] text-muted-foreground">
                       <p>Dataset: {structuredExport.dataset}</p>
-                      <p>As of: {structuredExport.asOf}</p>
+                      <p>As of: <TimeText value={structuredExport.asOf} fallback="Unavailable" /></p>
                       <p>API route: {structuredExport.route}</p>
                     </div>
                     {!structuredExport.isReady && structuredExport.readinessBlockers?.length ? (

@@ -127,11 +127,15 @@ export function useRiskControlPanelViewModel(
   setPriceCollar: (value: string) => void;
   savePriceCollarThreshold: () => Promise<void>;
   refresh: () => Promise<void>;
+  loadFailure: unknown;
 } {
   const [statuses, setStatuses] = useState<RiskRuleStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
+  // The caught load failure itself, so the panel can show it through the shared ErrorNotice
+  // (plain reason, Retry, collapsed technical details) instead of a hand-built list.
+  const [loadFailure, setLoadFailure] = useState<unknown>(null);
   const [drawdownPercent, setDrawdownPercentState] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [fatFingerQuantity, setFatFingerQuantityState] = useState("");
@@ -158,6 +162,7 @@ export function useRiskControlPanelViewModel(
     requestRevisionRef.current = revision;
     setLoading(true);
     setError(null);
+    setLoadFailure(null);
     setStatusMessage(null);
     setStatusTone("default");
 
@@ -191,6 +196,7 @@ export function useRiskControlPanelViewModel(
       setFatFingerDeviationState("");
       setPriceCollarState("");
       setError(describeApiError(loadError, "Failed to load risk controls."));
+      setLoadFailure(loadError);
       setStatusTone("danger");
     } finally {
       if (mountedRef.current && requestRevisionRef.current === revision) {
@@ -437,6 +443,7 @@ export function useRiskControlPanelViewModel(
 
   return {
     ...vm,
+    loadFailure,
     setDrawdownPercent,
     saveDrawdownThreshold,
     setFatFingerQuantity,

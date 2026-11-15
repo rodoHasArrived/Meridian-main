@@ -1,3 +1,4 @@
+import { TimeText } from "@/components/ui/time-text";
 import { Network } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -51,7 +52,7 @@ export function ReportingDeliveryHistoryPanel({
                 </div>
                 <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{redactReportingCredentialText(attempt.deliveryReference)}</p>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  Attempt {attempt.attemptNumber} by {attempt.actor} at {attempt.attemptedAtUtc}
+                  Attempt {attempt.attemptNumber} by {attempt.actor} at <TimeText value={attempt.attemptedAtUtc} fallback="time unavailable" />
                 </p>
                 {attempt.package ? (
                   <div className="mt-2 space-y-1 text-xs leading-5 text-muted-foreground">
@@ -69,7 +70,7 @@ export function ReportingDeliveryHistoryPanel({
                     ) : null}
                     {attempt.package.accessExpiresAtUtc ? (
                       <p className="break-all font-mono text-[11px]">
-                        Access expires: {attempt.package.accessExpiresAtUtc}
+                        Access expires: <TimeText value={attempt.package.accessExpiresAtUtc} fallback="not recorded" />
                       </p>
                     ) : null}
                     {attempt.package.brandingTheme ? (
@@ -94,7 +95,7 @@ export function ReportingDeliveryHistoryPanel({
                                 {redactReportingCredentialText(link.label)}
                               </span>
                               <Badge variant="outline">{link.requiresToken ? "Fragment gated" : "Internal"}</Badge>
-                              {link.expiresAtUtc ? <span>Expires {link.expiresAtUtc}</span> : null}
+                              {link.expiresAtUtc ? <span>Expires <TimeText value={link.expiresAtUtc} fallback="time unavailable" /></span> : null}
                             </a>
                           ) : (
                             <span

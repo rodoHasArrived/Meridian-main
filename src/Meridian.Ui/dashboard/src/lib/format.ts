@@ -566,6 +566,24 @@ export function formatUtcTimestamp(date: Date, options: Pick<TimestampFormatOpti
 }
 
 /**
+ * A timestamp for a narrow cell or tile: "Jan 1 '26 00:00Z" in UTC, "Jan 1 '26 09:00 GMT+9" in
+ * another display zone. It never wraps mid-value; pair it with the full `formatTimestamp` on hover
+ * (`<TimeText display="compact">` does). The zone is always shown: "Z" for UTC, else the short name.
+ */
+export function formatCompactTimestamp(value: TimestampInput, options: Pick<TimestampFormatOptions, "timeZone"> = {}): string {
+  const date = toDate(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Invalid Date";
+  }
+  const fields: Partial<Record<Intl.DateTimeFormatPartTypes, string>> = {};
+  for (const part of timestampFormatter(options.timeZone ?? getDisplayTimeZone(), "minute").formatToParts(date)) {
+    fields[part.type] = part.value;
+  }
+  const zone = fields.timeZoneName === "UTC" ? "Z" : ` ${fields.timeZoneName}`;
+  return `${fields.month} ${fields.day} '${(fields.year ?? "").slice(-2)} ${fields.hour}:${fields.minute}${zone}`;
+}
+
+/**
  * Compact relative time from `now`, e.g. "30s ago", "5m ago", "3d ago", or "in 2h" for a future
  * instant. Units round to the nearest whole second, minute, hour and day. Pair it with the absolute
  * `formatTimestamp` (`<TimeText>` puts that in the hover title). An invalid date renders "Invalid Date".

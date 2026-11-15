@@ -1,3 +1,4 @@
+import { executionEventLabel } from "@/lib/display-labels";
 /**
  * Presentation logic for the execution audit trail panel.
  *
@@ -113,7 +114,7 @@ export function auditLedgerLabel(entry: AuditTrailTimelineEntry): string {
     ? "no sequence"
     : `#${entry.actionLedgerSequence}`;
 
-  return `${entry.actionLedgerStatus ?? "Recorded"} ${sequence}`;
+  return `${executionEventLabel(entry.actionLedgerStatus, "Recorded")} ${sequence}`;
 }
 
 export function auditLedgerTone(entry: AuditTrailTimelineEntry): AuditTrailTone {

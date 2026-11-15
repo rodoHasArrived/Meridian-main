@@ -1228,7 +1228,11 @@ function PortfolioScreenContent({
                 onReset={positionsTable.resetControls}
                 shareError={positionsTable.shareError}
               />
-              {vm.hasPositions ? <p className="mb-2 text-xs text-muted-foreground">Bars compare rounded, displayed $ amounts only. Each column uses its largest magnitude across all loaded positions before filters, grouped by supplied source currency. Amounts without currency stay in a separate approximate display group. P&L extends left for losses and right for gains from zero; no currency is inferred from $, and no conversion is applied.</p> : null}
+              {vm.hasPositions ? (
+                <TechnicalDetails label="Bars show each amount against the largest in its column" className="mb-2" contentClassName="text-xs leading-5 text-muted-foreground">
+                  <p>Bars compare rounded, displayed $ amounts only. Each column uses its largest magnitude across all loaded positions before filters, grouped by supplied source currency. Amounts without currency stay in a separate approximate display group. P&L extends left for losses and right for gains from zero; no currency is inferred from $, and no conversion is applied.</p>
+                </TechnicalDetails>
+              ) : null}
               {vm.hasPositions ? (
                 <TableWorkbench
                   workbenchId="portfolio-positions"

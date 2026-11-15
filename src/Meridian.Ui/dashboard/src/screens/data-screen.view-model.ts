@@ -85,7 +85,7 @@ import type {
   ProviderSetupResult
 } from "@/types";
 
-import { formatCount, formatDecimal, formatNumber, formatPercent, formatTimestamp } from "@/lib/format";
+import { formatCount, formatDecimal, formatNumber, formatPercent, formatTimestamp, pluralizeCount } from "@/lib/format";
 export {
   DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
   buildDataLoadingState,
@@ -395,6 +395,8 @@ export interface DataOperationsProviderRow {
   trustScoreText: string;
   signalSourceText: string;
   note: string;
+  /** Why a provider reported healthy is shown as review: its newest evidence is past the staleness threshold. */
+  staleEvidenceReason: string | null;
   statusTone: "success" | "warning" | "danger";
   trustFields: DataOperationsDetailField[];
   reasonLabelText: string;
@@ -2330,9 +2332,60 @@ export function buildProviderSection(
   };
 }
 
+/**
+ * How old a provider's newest evidence may be before "Healthy" stops being believable. Three days
+ * spans a weekend without a market session; past it, health is capped at review until the provider
+ * is verified again.
+ */
+export const PROVIDER_EVIDENCE_STALE_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
+
+export interface ProviderEvidenceStaleness {
+  /** Newest instant any evidence for the provider was observed, or null when none carries a time. */
+  latestEvidenceAt: string | null;
+  stale: boolean;
+  /** Operator copy for a stale provider, e.g. "Last evidence Jun 2, 2026, 14:00 UTC (166 days ago)..." */
+  reason: string | null;
+}
+
+/**
+ * Health is only as current as the evidence behind it. This reads the newest timestamp among the
+ * provider's successful response, verification and readiness evidence; when that is older than
+ * `PROVIDER_EVIDENCE_STALE_AFTER_MS`, the provider cannot be shown as healthy.
+ */
+export function assessProviderEvidenceStaleness(
+  record: DataOperationsProviderCenterRecord,
+  now: number = Date.now()
+): ProviderEvidenceStaleness {
+  const connection = resolveProviderConnection(record);
+  const candidates = [
+    connection?.lastSuccessfulAt,
+    connection?.lastVerifiedAt,
+    ...(record.readiness?.evidence ?? []).map((item) => item.observedAt)
+  ];
+  let latest: number | null = null;
+  let latestEvidenceAt: string | null = null;
+  for (const candidate of candidates) {
+    const time = candidate ? Date.parse(candidate) : Number.NaN;
+    if (Number.isFinite(time) && (latest === null || time > latest)) {
+      latest = time;
+      latestEvidenceAt = candidate ?? null;
+    }
+  }
+  if (latest === null || now - latest <= PROVIDER_EVIDENCE_STALE_AFTER_MS) {
+    return { latestEvidenceAt, stale: false, reason: null };
+  }
+  const days = Math.floor((now - latest) / (24 * 60 * 60 * 1000));
+  return {
+    latestEvidenceAt,
+    stale: true,
+    reason: `Last evidence ${formatTimestamp(latest)} (${pluralizeCount(days, "day")} ago). Health cannot be confirmed until the provider is verified again.`
+  };
+}
+
 export function buildProviderRow(
   provider: DataProviderRecord | DataOperationsProviderCenterRecord,
-  selectedProviderId: string | null = null
+  selectedProviderId: string | null = null,
+  now: number = Date.now()
 ): DataOperationsProviderRow {
   const record = isProviderCenterRecord(provider) ? provider : buildProviderCenterRecordFromWorkspace(provider);
   const rowId = buildProviderCenterRowId(record);
@@ -2359,8 +2412,12 @@ export function buildProviderRow(
   const reasonCodeText = readiness
     ? `READINESS_${readiness.status.toUpperCase()}`
     : formatProviderValue(providerRecord?.reasonCode, record.routingConnection?.productionReady === false ? "CERTIFICATION_PENDING" : "Reason code not reported");
-  const reasonLabelText = formatProviderReasonLabel(reasonCodeText);
-  const recommendedActionText = readiness?.recommendedAction
+  // A provider reported healthy on evidence past the staleness threshold is capped at review.
+  const reportedStatus = resolveProviderDisplayStatus(record);
+  const staleness = assessProviderEvidenceStaleness(record, now);
+  const cappedByStaleEvidence = reportedStatus === "Healthy" && staleness.stale;
+  const reasonLabelText = cappedByStaleEvidence ? "Evidence is stale" : formatProviderReasonLabel(reasonCodeText);
+  const recommendedActionText = cappedByStaleEvidence ? `${staleness.reason} Run verification to refresh it.` : readiness?.recommendedAction
     ?? (record.routingConnection
       ? providerRoutingRecommendedAction(record.routingConnection, trust, bindings, record.routingConnection.enabled)
       : connection
@@ -2370,7 +2427,7 @@ export function buildProviderRow(
     ? `Impacts ${readiness.affectedWorkflows.join(", ")}.`
     : formatProviderValue(providerRecord?.gateImpact, providerGateImpactText(record.routingConnection, trust));
   const selected = rowId === selectedProviderId;
-  const status = resolveProviderDisplayStatus(record);
+  const status: DataOperationsProviderStatus = cappedByStaleEvidence ? "Warning" : reportedStatus;
   const statusTone = resolveProviderStatusTone(status);
   const credentialText = connection ? providerCredentialLabel(connection.credentialState) : "Not reported";
   const verificationText = connection ? providerVerificationLabel(connection.verificationState) : providerRoutingVerificationLabel(record.routingConnection, trust);
@@ -2398,6 +2455,7 @@ export function buildProviderRow(
     trustScoreText,
     signalSourceText,
     note: recommendedActionText ?? providerRecord?.note ?? "No operator action reported",
+    staleEvidenceReason: cappedByStaleEvidence ? staleness.reason : null,
     statusTone,
     trustFields: [
       {

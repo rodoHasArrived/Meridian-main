@@ -343,8 +343,21 @@ function buildFocusRow(
     badgeVariant: badgeVariantForTone(item.tone),
     proof,
     proofPassportItems,
-    proofPassportSummary: `${item.label}: ${statusLabel}, ${outputLabel}, ${proofPassportItems[1]?.value ?? "No freshness evidence"}.`
+    proofPassportSummary: describeFocus(item.label, item.tone, outputLabel, proof?.timestampLabel ?? null)
   };
+}
+
+/**
+ * One readable sentence for the selected item, e.g. "Cash variance needs review. It is blocked and
+ * affects the accounting record or close evidence. No timestamped evidence is linked yet."
+ * The parts are written into a sentence, never comma-joined labels.
+ */
+export function describeFocus(label: string, tone: AppShellWorkflowContinuityStatusTone, outputLabel: string, evidenceTimestamp: string | null): string {
+  const lowerFirst = (text: string) => /^[A-Z][a-z]/.test(text) ? text.charAt(0).toLowerCase() + text.slice(1) : text;
+  const headline = label.trim().replace(/[.:]+$/, "");
+  const evidence = evidenceTimestamp ? `Latest evidence: ${evidenceTimestamp}.` : "No timestamped evidence is linked yet.";
+  const status = { blocked: "is blocked", review: "needs review", pending: "is pending", ready: "is ready" }[tone];
+  return `${headline}. It ${status} and affects the ${lowerFirst(outputLabel.trim())}. ${evidence}`;
 }
 
 function buildProofPassportItems({

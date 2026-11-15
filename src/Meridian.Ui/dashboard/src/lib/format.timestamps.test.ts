@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  formatCompactTimestamp,
   formatRelativeTime,
   formatTimestamp,
   formatUtcTimestamp,
@@ -150,5 +151,13 @@ describe("formatRelativeTime", () => {
     setDisplayTimeZone("Asia/Tokyo");
     expect(formatRelativeTime("2026-05-09T11:55:00.000Z", now)).toBe("5m ago");
     expect(formatRelativeTime("bad", now)).toBe("Invalid Date");
+  });
+});
+
+describe("formatCompactTimestamp", () => {
+  it("fits a narrow cell and always names the zone", () => {
+    expect(formatCompactTimestamp("2026-01-01T00:00:00Z", { timeZone: "UTC" })).toBe("Jan 1 '26 00:00Z");
+    expect(formatCompactTimestamp("2026-06-30T18:05:00Z", { timeZone: "America/New_York" })).toBe("Jun 30 '26 14:05 EDT");
+    expect(formatCompactTimestamp("not a time")).toBe("Invalid Date");
   });
 });

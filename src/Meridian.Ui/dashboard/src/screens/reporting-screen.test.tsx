@@ -1924,7 +1924,7 @@ describe("ReportingScreen", () => {
     expect(within(regulatoryRow).getByText("Csv")).toBeInTheDocument();
     expect(within(regulatoryRow).getAllByText("12")).toHaveLength(2);
     expect(regulatoryRow).toHaveTextContent("Dataset: fund-trial-balance");
-    expect(regulatoryRow).toHaveTextContent("As of: 2026-04-11T16:00:00Z");
+    expect(regulatoryRow).toHaveTextContent("As of: Apr 11, 2026, 16:00 UTC");
     expect(regulatoryRow).toHaveTextContent(
       "API route: /api/workstation/reporting/structured-exports/regulatory-trial-balance?format=csv"
     );
@@ -4618,7 +4618,7 @@ describe("ReportingScreen", () => {
     expect(boardAttempt).toHaveTextContent(
       "3 artifact(s) retained as Csv/Pdf/Xlsx; manifest workstation/reporting/deliveries/report-1/manifest.json."
     );
-    expect(boardAttempt).toHaveTextContent("Access expires: 2026-05-17T20:15:00Z");
+    expect(boardAttempt).toHaveTextContent("Access expires: May 17, 2026, 20:15 UTC");
     expect(boardAttempt).toHaveTextContent(
       "Branding: Allocator Quarterly · Northstar Capital · allocator-quarterly"
     );

@@ -48,6 +48,7 @@ import type { CsvCell } from "@/lib/csv";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { KpiProvider } from "@/lib/kpi-context";
+import { operatorNote } from "@/lib/internal-copy";
 import { workspaceKpiIds } from "@/lib/kpi-registry";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { cn } from "@/lib/utils";
@@ -118,7 +119,8 @@ const dataToneClass: Record<TradingDataTone, string> = {
 };
 
 type TradingRouteViewId = "overview" | "orders" | "positions" | "risk";
-const TRADING_QUOTE_PRICE_BASIS = "Prices in source quote units · currency not supplied.";
+// Stated once on the Orders page (and carried into each CSV export), not under every table.
+const TRADING_QUOTE_PRICE_BASIS = "Prices are as quoted by the source; no currency was supplied.";
 
 
 /**
@@ -803,12 +805,12 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
 
         <Card className="panel-surface-strong min-w-0 bg-panel-strong">
           <CardHeader>
-            <div className="eyebrow-label">Brokerage Wiring</div>
+            <div className="eyebrow-label">Brokerage connection</div>
             <CardTitle className="flex items-center gap-2">
               <Cable className="h-5 w-5 text-primary" />
               Execution adapter health
             </CardTitle>
-            <CardDescription>{data.brokerage.notes}</CardDescription>
+            {operatorNote(data.brokerage.notes) ? <CardDescription>{operatorNote(data.brokerage.notes)}</CardDescription> : null}
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <KeyValueRow label="Provider" value={data.brokerage.provider} />
@@ -896,7 +898,6 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
             id={blotterVm.executionDetailId}
             objectType={blotterVm.selectedExecutionKind === "fill" ? "Fill" : "Order"}
             detail={blotterVm.selectedExecution}
-            priceBasis={TRADING_QUOTE_PRICE_BASIS}
             emptyText={blotterVm.executionEmptyText}
             action={blotterVm.selectedExecutionKind === "order" && selectedOrderRow ? (
               <Button
@@ -1027,7 +1028,6 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
               onRowSelect={(fill) => blotterVm.selectFill(fill.id)}
               emptyText={blotterVm.fillEmptyText}
             />
-            <p className="text-xs text-muted-foreground">{TRADING_QUOTE_PRICE_BASIS}</p>
           </CardContent>
         </Card>
         </div>
@@ -2255,8 +2255,7 @@ function TradingBlotterDetailPanel({
   objectType,
   detail,
   emptyText,
-  action,
-  priceBasis
+  action
 }: {
   id: string;
   objectType: string;
@@ -2264,7 +2263,6 @@ function TradingBlotterDetailPanel({
   emptyText: string;
   /** The next action for the selected row, e.g. cancel the order. */
   action?: ReactNode;
-  priceBasis?: string;
 }) {
   return (
     <DetailPane
@@ -2275,7 +2273,6 @@ function TradingBlotterDetailPanel({
       status={detail ? { label: detail.statusLabel, tone: detail.statusTone } : null}
       subtitle={detail?.subtitle}
       summary={detail?.detail}
-      notice={detail && priceBasis ? <p className="text-xs text-muted-foreground">{priceBasis}</p> : null}
       actions={detail ? action : null}
       fields={detail?.fields}
       shownInRow={detail?.shownInRow}

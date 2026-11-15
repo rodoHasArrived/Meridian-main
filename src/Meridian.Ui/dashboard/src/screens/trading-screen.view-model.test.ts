@@ -528,11 +528,11 @@ describe("execution evidence view model", () => {
       errorText: null
     });
 
-    expect(state.controlsPanel?.statusLabel).toBe("Breaker Closed");
+    expect(state.controlsPanel?.statusLabel).toBe("Trading allowed · breaker closed");
     expect(state.controlsPanel?.ariaLabel).toContain("1 symbol limit");
     expect(state.controlsPanel?.rows).toContainEqual({ id: "default-limit", label: "Default limit", value: "5000" });
     expect(state.controlsPanel?.rows).toContainEqual({ id: "symbol-limits", label: "Symbol limits", value: "AAPL=2500" });
-    expect(state.controlsPanel?.rows).toContainEqual({ id: "active-overrides", label: "Active overrides", value: "BypassOrderControls (AAPL)" });
+    expect(state.controlsPanel?.rows).toContainEqual({ id: "active-overrides", label: "Active overrides", value: "Bypass order controls (AAPL)" });
     expect(state.auditRows[0]).toMatchObject({
       id: "audit-1",
       action: "Paper session replay",
@@ -542,7 +542,7 @@ describe("execution evidence view model", () => {
       technicalMetadataText: "2026-01-01T00:20:00Z · session sess-1"
     });
     expect(state.auditRows[0].ariaLabel).toContain("Replay matched current state");
-    expect(state.statusAnnouncement).toBe("Breaker Closed. 1 audit entry loaded.");
+    expect(state.statusAnnouncement).toBe("Trading allowed · breaker closed. 1 audit entry loaded.");
   });
 
   it("derives loading, empty, and error copy without raw component branching", () => {
@@ -3586,7 +3586,7 @@ describe("execution circuit breaker control", () => {
     });
 
     expect(closed.controlsPanel?.breakerAction).toEqual({ kind: "open-circuit-breaker" });
-    expect(closed.controlsPanel?.breakerActionLabel).toBe("Open breaker");
+    expect(closed.controlsPanel?.breakerActionLabel).toBe("Halt trading (open breaker)");
     expect(closed.controlsPanel?.breakerActionDisabled).toBe(false);
     expect(closed.controlsPanel?.breakerActionAriaLabel).toContain("halt submission and cancel all open orders");
 
@@ -3601,7 +3601,7 @@ describe("execution circuit breaker control", () => {
     });
 
     expect(open.controlsPanel?.breakerAction).toEqual({ kind: "close-circuit-breaker" });
-    expect(open.controlsPanel?.breakerActionLabel).toBe("Reset breaker");
+    expect(open.controlsPanel?.breakerActionLabel).toBe("Resume trading (reset breaker)");
     expect(open.controlsPanel?.breakerActionAriaLabel).toContain("allow order submission to resume");
   });
 

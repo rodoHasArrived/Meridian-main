@@ -1,12 +1,13 @@
 import { OctagonX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { StatusBadge } from "@/design-system/status";
 import type { ExecutionEvidenceViewModel, TradingConfirmAction } from "@/screens/trading-screen.view-model";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
 /**
- * Title row of the execution controls snapshot: the kill switch, the refresh control, and the
- * breaker state readout. The breaker button is absent rather than disabled when no snapshot has
+ * Title row of the execution controls snapshot: the breaker state badge, the kill switch beside
+ * it (destructive, always confirmed), and the refresh control. The breaker button is absent rather than disabled when no snapshot has
  * loaded - an execution control the operator cannot act on should not look like one they can.
  */
 export function ExecutionControlsHeader({
@@ -24,6 +25,11 @@ export function ExecutionControlsHeader({
         {panel?.title ?? "Execution controls snapshot"}
       </p>
       <div className="panel-action-zone">
+        {/* State sits beside the control that changes it, so the two are read together. */}
+        <StatusBadge
+          status={!panel ? "info" : panel.statusTone === "danger" ? "blocked" : "ready"}
+          label={panel?.statusLabel ?? "Snapshot unavailable"}
+        />
         {panel && (
           <Button
             size="sm"
@@ -50,14 +56,6 @@ export function ExecutionControlsHeader({
         >
           {executionEvidence.refreshButtonLabel}
         </Button>
-        <span
-          className={cn(
-            "text-xs font-semibold uppercase tracking-[0.14em]",
-            panel?.statusTone === "danger" ? "text-danger" : "text-success"
-          )}
-        >
-          {panel?.statusLabel ?? "Snapshot unavailable"}
-        </span>
       </div>
     </div>
   );

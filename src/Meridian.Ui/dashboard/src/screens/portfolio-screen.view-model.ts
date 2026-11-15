@@ -2,7 +2,7 @@ import { useState } from "react";
 import { resolveKpi } from "@/lib/kpi-registry";
 import { isBondAssetClass } from "@/lib/fixed-income-navigation";
 import { measureDisplayedPositionAmounts, type PositionValueMeasurement } from "@/lib/position-value-graphic";
-import { presentMarkFreshness, markFreshnessFields, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
+import { presentMarkFreshness, markFreshnessFields, markPriceField, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   buildMultiAssetCoverageGroups,
@@ -1776,7 +1776,7 @@ function buildSelectedBrokeragePositionDetail(
       { label: "Account kind", value: accountKind, tone: "muted" },
       { label: "Quantity", value: formatNumber(position.quantity), tone: "default" },
       { label: "Average entry", value: formatPrefixedCurrency(position.averageEntryPrice, { minimumFractionDigits: 2 }), tone: "muted" },
-      { label: "Recorded mark price", value: formatPrefixedCurrency(position.marketPrice, { minimumFractionDigits: 2 }), tone: "muted" },
+      markPriceField(formatPrefixedCurrency(position.marketPrice, { minimumFractionDigits: 2 }), mark),
       ...markFreshnessFields(mark),
       { label: "Market value", value: formatPrefixedCurrency(position.marketValue, { maximumFractionDigits: 0 }), tone: "default" },
       { label: "Unrealized P&L", value: pnl, tone: pnlStatusTone },
@@ -2337,7 +2337,7 @@ function buildSelectedPositionDetail(
       { label: "Side", value: position.side, tone: "default" },
       { label: "Quantity", value: position.quantity, tone: "default" },
       { label: "Average price", value: position.avgPrice, tone: "muted" },
-      { label: "Recorded mark price", value: position.markPrice, tone: "muted" },
+      markPriceField(position.markPrice, position.markFreshness),
       ...markFreshnessFields(position.markFreshness),
       { label: "Exposure", value: position.exposure, tone: "default" },
       { label: "Day P&L", value: position.dayPnl, tone: pnlFieldTone(position.dayPnl) },

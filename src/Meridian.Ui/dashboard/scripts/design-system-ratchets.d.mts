@@ -13,8 +13,10 @@ export interface RatchetComparison {
 }
 
 export const BASELINE_PATH: string;
-export const RATCHETS: Record<"adHocStatusBadges" | "directIntlFormatting" | "rawTables" | "handRolledNumberFormatting" | "localMoneyFormatters", DesignSystemRatchet>;
+export const RATCHETS: Record<"adHocStatusBadges" | "directIntlFormatting" | "rawTables" | "handRolledNumberFormatting" | "localMoneyFormatters" | "pascalCaseRenderedText" | "isoTimestampsInJsx", DesignSystemRatchet>;
 export function isAdHocBadgeClass(value: string): boolean;
+export function countPascalCaseRenderedText(source: string): number;
+export function countIsoTimestampsInJsx(source: string): number;
 export function scanRatchets(): RatchetCounts;
 export function readBaseline(baselinePath?: string): RatchetCounts;
 export function writeReducedBaseline(current?: RatchetCounts, baselinePath?: string): boolean;
