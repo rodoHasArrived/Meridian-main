@@ -310,6 +310,40 @@ Acceptance criteria:
 - Counts for the same item agree across screens in the seeded scenario, or carry an inline
   scope label that explains the difference.
 
+**Screenshot-review follow-ups 6–12 (landed 2026-11-15):**
+- *System narration (C4).* Method notes left the reading path: Portfolio's bar note, the two
+  execution-journey paragraphs and the journey's matching rules sit behind `TechnicalDetails`;
+  Orders states its price basis once. Wire values get display labels through
+  `@/lib/display-labels` (`formatEnumLabel`, `executionEventLabel`): "PartialFill ·
+  PartiallyFilled" reads "Partial fill · Partly filled". `@/lib/internal-copy` drops
+  self-describing fixture notes outside the mock-data build. Today's detail sentence is written,
+  not comma-joined (`describeFocus`).
+- *Status that cannot contradict itself (C1).* A provider reported healthy on evidence older than
+  `PROVIDER_EVIDENCE_STALE_AFTER_MS` (3 days) is capped at review with the reason shown. A mark
+  price names its source in the same cell ("… (recorded on the position, no observed mark)") and
+  the separate "No mark observed" row is gone. The breaker control reads "Halt trading (open
+  breaker)" with the state badge beside it.
+- *Detail rails (P2/V1).* `DetailRail` fields stack label above value and collapse to one column
+  below two 10rem columns; long values wrap instead of clipping. `formatCompactTimestamp`,
+  `compactTimestampLabel` and `<TimeText display="compact">` give "Jan 1 '26 00:00Z" with the full
+  timestamp on hover. `TableWorkbenchColumn.priority` drops "low" then "medium" columns while the table
+  overflows its frame, instead of scrolling; dropped columns stay in exports.
+- *One time format (P3).* The execution journey, the audit trail, Reporting exports and delivery
+  history and `triageDateLabel` go through `@/lib/format` in the display zone.
+- *Typography and controls (P9).* The typography-floor baseline is at 0. Disabled buttons use a
+  solid edge instead of a dashed one; opacity stays at 1 because dimming the whole button takes
+  the label below the asserted 4.5:1. Risk KPI tiles share one label casing.
+- *Table toolbars (P7).* Density follows the global setting (no per-table select); Export and Save
+  view share one "⋯" menu; search appears above `TABLE_SEARCH_MIN_ROWS` (10) rows; bulk actions
+  live in a selection bar that exists only while rows are selected.
+- *Error states.* `api-errors` drops empty and brace-only bodies; a 404 from the risk service
+  reads "Risk controls aren't available on this host" with Retry and a "What enables this" link;
+  `AsyncRegion` takes `errorSource` to render the shared `ErrorNotice`.
+- *New ratchets:* `pascalCaseRenderedText` and `isoTimestampsInJsx` in
+  `scripts/design-system-ratchets.mjs`, seeded with the existing occurrences.
+- *Still open:* mono/uppercase label clean-up outside the Risk tiles, the three-level action
+  hierarchy, compact row-status pills, and burning the two new ratchet baselines down.
+
 ### Phase 2: Structure and tables (P5–P8, ~4–6 weeks)
 
 Acceptance criteria:

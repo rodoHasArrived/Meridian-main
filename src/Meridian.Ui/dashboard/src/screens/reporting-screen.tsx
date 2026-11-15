@@ -1013,7 +1013,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <span className="min-w-0">
                         <span className="block font-semibold text-foreground">{cut.label}</span>
-                        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{cut.cutId}</span>
+                        <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{cut.cutId}</span>
                       </span>
                       <Badge variant="outline">{cut.kind}</Badge>
                     </div>
@@ -1076,7 +1076,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <span className="min-w-0">
                         <span className="block font-semibold text-foreground">{view.label}</span>
-                        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{view.viewId}</span>
+                        <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{view.viewId}</span>
                       </span>
                       <span className="flex flex-wrap items-center justify-end gap-1.5">
                         <Badge variant="outline">{view.kind}</Badge>
@@ -1106,10 +1106,10 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                         ))}
                       </ul>
                     ) : null}
-                    <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
+                    <p className="mt-2 break-all font-mono text-xs text-muted-foreground">
                       {view.sourceCount} source{view.sourceCount === 1 ? "" : "s"} · {view.sourceAsOfUtc ?? view.asOf}
                     </p>
-                    <p className="mt-1 flex flex-wrap items-center gap-2 break-all font-mono text-[11px] text-muted-foreground">
+                    <p className="mt-1 flex flex-wrap items-center gap-2 break-all font-mono text-xs text-muted-foreground">
                       <span>Freshness: {view.state} · cut={view.asOf} · source={view.sourceAsOfUtc ?? "unavailable"}</span>
                       <FreshnessChip
                         label={`${view.label} source data`}
@@ -1117,11 +1117,11 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                         timestamp={view.sourceAsOfUtc ?? null}
                       />
                     </p>
-                    <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
+                    <p className="mt-1 break-all font-mono text-xs text-muted-foreground">
                       Market tick: {view.isMarketTickLinked ? "linked" : "snapshot"} · provider={view.marketDataProvider ?? "unavailable"} · age={view.marketTickAgeSeconds ?? "n/a"}s · seq={view.marketTickSequence ?? "n/a"} · tick={view.marketTickAsOfUtc ?? view.sourceAsOfUtc ?? "unavailable"}
                     </p>
                     {view.freshnessPolicy ? (
-                      <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
+                      <p className="mt-1 break-all font-mono text-xs text-muted-foreground">
                         Policy: {view.freshnessPolicy.policyName} · evaluated={view.freshnessPolicy.evaluatedAtUtc} · sourceAge={view.freshnessPolicy.sourceAgeSeconds ?? "n/a"}s · liveWindow={view.freshnessPolicy.liveLinkWindowSeconds}s · staleWindow={view.freshnessPolicy.staleWindowSeconds}s
                       </p>
                     ) : null}
@@ -1175,7 +1175,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <span className="min-w-0">
                         <span className="block font-semibold text-foreground">{slice.label}</span>
-                        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">
+                        <span className="mt-1 block font-mono text-xs text-muted-foreground">
                           {formatReportingDateRange(slice.startDate, slice.endDate)}
                         </span>
                       </span>
@@ -1193,7 +1193,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                       <ReportingCutMetric label="Sources" value={formatCount(slice.sourceCount)} />
                     </dl>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{slice.readinessSummary}</p>
-                    <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{slice.versionStamp ?? slice.asOf}</p>
+                    <p className="mt-2 break-all font-mono text-xs text-muted-foreground">{slice.versionStamp ?? slice.asOf}</p>
                     <div className="mt-3 flex justify-end">
                       <Button asChild variant="outline" size="sm">
                         <a href={slice.route} target="_blank" rel="noreferrer" aria-label={`Open ${slice.label} P&L slice`}>
@@ -1230,7 +1230,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <span className="min-w-0">
                         <span className="block font-semibold text-foreground">{row.label}</span>
-                        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">
+                        <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">
                           {row.symbol ?? row.analyticsId}
                         </span>
                       </span>
@@ -1257,7 +1257,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                           style={{ width: formatHeatMapWidth(row.heatMapIntensity) }}
                         />
                       </div>
-                      <div className="mt-1 flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                      <div className="mt-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
                         <span>{formatReportingPercent(row.heatMapIntensity)} intensity</span>
                         <span>
                           {row.sourceCount} source{row.sourceCount === 1 ? "" : "s"}
@@ -1265,7 +1265,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                       </div>
                     </div>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.readinessSummary}</p>
-                    <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{row.versionStamp ?? row.asOf}</p>
+                    <p className="mt-2 break-all font-mono text-xs text-muted-foreground">{row.versionStamp ?? row.asOf}</p>
                     <div className="mt-3 flex justify-end">
                       <Button asChild variant="outline" size="sm">
                         <a href={row.route} target="_blank" rel="noreferrer" aria-label={`Open ${row.label} analytics row`}>
@@ -1302,7 +1302,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <span className="min-w-0">
                         <span className="block font-semibold text-foreground">{row.label}</span>
-                        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.consolidationId}</span>
+                        <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{row.consolidationId}</span>
                       </span>
                       <span className="flex flex-wrap items-center justify-end gap-1.5">
                         <Badge variant="outline">{row.scope}</Badge>
@@ -1320,7 +1320,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                       <ReportingCutMetric label="Variance" value={formatReportingMoney(row.shadowNavVariance, row.currency)} />
                     </dl>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.readinessSummary}</p>
-                    <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
+                    <p className="mt-2 break-all font-mono text-xs text-muted-foreground">
                       {row.sourceCount} source{row.sourceCount === 1 ? "" : "s"} · {row.versionStamp ?? row.asOf}
                     </p>
                     <div className="mt-3 flex justify-end">
@@ -1359,7 +1359,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <span className="min-w-0">
                         <span className="block font-semibold text-foreground">{structuredExport.label}</span>
-                        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">
+                        <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">
                           {structuredExport.exportId}
                         </span>
                       </span>
@@ -1383,7 +1383,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">
                       {structuredExport.consumer} · {structuredExport.validationSummary ?? structuredExport.dataset}
                     </p>
-                    <div className="mt-2 space-y-1 break-all font-mono text-[11px] text-muted-foreground">
+                    <div className="mt-2 space-y-1 break-all font-mono text-xs text-muted-foreground">
                       <p>Dataset: {structuredExport.dataset}</p>
                       <p>As of: <TimeText value={structuredExport.asOf} fallback="Unavailable" /></p>
                       <p>API route: {structuredExport.route}</p>
@@ -1398,26 +1398,26 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                         ))}
                       </ul>
                     ) : null}
-                    <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">Retained path: {structuredExport.retainedPath}</p>
+                    <p className="mt-2 break-all font-mono text-xs text-muted-foreground">Retained path: {structuredExport.retainedPath}</p>
                     {structuredExport.retainedManifestPath ? (
-                      <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
+                      <p className="mt-1 break-all font-mono text-xs text-muted-foreground">
                         Manifest: {structuredExport.retainedManifestPath}
                       </p>
                     ) : null}
                     {structuredExport.integritySummary ? (
-                      <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
+                      <p className="mt-1 break-all font-mono text-xs text-muted-foreground">
                         Integrity: {structuredExport.integritySummary}
                       </p>
                     ) : null}
                     {structuredExport.integrityHashSha256 ? (
-                      <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
+                      <p className="mt-1 break-all font-mono text-xs text-muted-foreground">
                         SHA-256: {structuredExport.integrityHashSha256}
                       </p>
                     ) : null}
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {structuredExport.dataDictionaryRoute ? (
                         <a
-                          className="inline-flex items-center gap-1 rounded-sm border border-border/70 px-2 py-1 text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+                          className="inline-flex items-center gap-1 rounded-sm border border-border/70 px-2 py-1 text-xs font-medium text-primary underline-offset-2 hover:underline"
                           href={structuredExport.dataDictionaryRoute}
                           aria-label={`Open ${structuredExport.label} data dictionary`}
                         >
@@ -1427,7 +1427,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                       ) : null}
                       {structuredExport.evidenceRoute ? (
                         <a
-                          className="inline-flex items-center gap-1 rounded-sm border border-border/70 px-2 py-1 text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+                          className="inline-flex items-center gap-1 rounded-sm border border-border/70 px-2 py-1 text-xs font-medium text-primary underline-offset-2 hover:underline"
                           href={structuredExport.evidenceRoute}
                           aria-label={`Open ${structuredExport.label} evidence`}
                         >
@@ -1444,7 +1444,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                       </div>
                     ) : null}
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                      <span className="break-all font-mono text-[11px] text-muted-foreground">
+                      <span className="break-all font-mono text-xs text-muted-foreground">
                         {structuredExport.versionStamp ?? structuredExport.asOf}
                       </span>
                       <span className="flex flex-wrap justify-end gap-1.5">

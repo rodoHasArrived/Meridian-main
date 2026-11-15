@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  compactTimestampLabel,
   formatCompactTimestamp,
   formatRelativeTime,
   formatTimestamp,
@@ -159,5 +160,15 @@ describe("formatCompactTimestamp", () => {
     expect(formatCompactTimestamp("2026-01-01T00:00:00Z", { timeZone: "UTC" })).toBe("Jan 1 '26 00:00Z");
     expect(formatCompactTimestamp("2026-06-30T18:05:00Z", { timeZone: "America/New_York" })).toBe("Jun 30 '26 14:05 EDT");
     expect(formatCompactTimestamp("not a time")).toBe("Invalid Date");
+  });
+});
+
+describe("compactTimestampLabel", () => {
+  it("shortens a formatted timestamp and leaves other text alone", () => {
+    expect(compactTimestampLabel("Jan 1, 2026, 00:00 UTC")).toBe("Jan 1 '26 00:00Z");
+    expect(compactTimestampLabel("Jun 30, 2026, 14:05:07 EDT")).toBe("Jun 30 '26 14:05 EDT");
+    expect(compactTimestampLabel(formatTimestamp("2026-01-01T00:00:00Z", { timeZone: "UTC" }))).toBe(formatCompactTimestamp("2026-01-01T00:00:00Z", { timeZone: "UTC" }));
+    expect(compactTimestampLabel("3 open tasks")).toBe("3 open tasks");
+    expect(compactTimestampLabel("Not recorded")).toBe("Not recorded");
   });
 });

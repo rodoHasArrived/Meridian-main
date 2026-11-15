@@ -543,7 +543,7 @@ function ProviderSummaryCard({ card }: { card: DataOperationsProviderSummaryCard
 
   return (
     <div className={cn("min-w-[9rem] flex-1 rounded border px-2.5 py-2", toneClass)}>
-      <div className={cn("text-[10px]", supportingTextClass, usesTrackedCaps(card.label) && "font-mono uppercase tracking-[0.14em]")}>{card.label}</div>
+      <div className={cn("text-xs", supportingTextClass, usesTrackedCaps(card.label) && "font-mono uppercase tracking-[0.14em]")}>{card.label}</div>
       <div className="mt-1 break-words text-sm font-semibold leading-5 text-foreground">{card.value}</div>
       <p className={cn("mt-0.5 break-words text-xs leading-5", supportingTextClass)}>{card.detail}</p>
     </div>
@@ -720,7 +720,7 @@ function DataUploadIntakePanel({
                     </div>
                     <div className="mt-1 truncate font-mono text-xs text-foreground" title={field.name}>{field.name}</div>
                     <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{field.description}</p>
-                    <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground" title={field.example}>{field.example}</p>
+                    <p className="mt-1 truncate font-mono text-xs text-muted-foreground" title={field.example}>{field.example}</p>
                   </div>
                 ))}
               </div>
@@ -1736,7 +1736,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
         <dl className="mt-5 grid gap-2 rounded-lg border border-border/80 bg-secondary/20 p-3 sm:grid-cols-3">
           {vm.dialogState.summaryItems.map((item) => (
             <div key={item.id} className="min-w-0">
-              <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(item.label) && "font-mono uppercase tracking-[0.14em]")}>{item.label}</dt>
+              <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(item.label) && "font-mono uppercase tracking-[0.14em]")}>{item.label}</dt>
               <dd className={cn("mt-1 truncate font-mono text-xs", item.tone === "warning" ? "text-warning" : "text-foreground")}>
                 {item.value}
               </dd>
@@ -1786,7 +1786,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
                   onClick={() => vm.updateBackfillForm("provider", provider.value)}
                 >
                   <span className="font-semibold">{provider.label}</span>{" "}
-                  <span className={cn("ml-2 text-[10px] text-primary", usesTrackedCaps(provider.badge) && "font-mono uppercase tracking-[0.12em]")}>{provider.badge}</span>
+                  <span className={cn("ml-2 text-xs text-primary", usesTrackedCaps(provider.badge) && "font-mono uppercase tracking-[0.12em]")}>{provider.badge}</span>
                 </Button>
               ))}
             </div>
@@ -2024,7 +2024,7 @@ function BackfillLiveProgress({ state }: { state: BackfillLiveProgressState }) {
           {state.droppedNotificationWarning}
         </p>
       ) : null}
-      <p className="text-right text-[11px] text-muted-foreground">Observed {state.observedAt}</p>
+      <p className="text-right text-xs text-muted-foreground">Observed {state.observedAt}</p>
     </section>
   );
 }

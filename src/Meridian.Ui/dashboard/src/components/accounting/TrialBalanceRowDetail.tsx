@@ -25,7 +25,7 @@ export const trialBalanceColumns: DenseDataTableColumn<AccountingTrialBalanceRow
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.accountLabel}</span>
-        <span className="mt-1 block break-words font-mono text-[11px] text-muted-foreground">{row.dimensionLabel}</span>
+        <span className="mt-1 block break-words font-mono text-xs text-muted-foreground">{row.dimensionLabel}</span>
       </span>
     )
   },
@@ -106,11 +106,11 @@ export function AccountingTrialBalanceSelectedDetailPanel({
                 <div className="flex items-start justify-between gap-3">
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold text-foreground">{line.description}</span>
-                    <span className="mt-1 block text-[11px] text-muted-foreground">Retained journal posting</span>
+                    <span className="mt-1 block text-xs text-muted-foreground">Retained journal posting</span>
                   </span>
                   <Badge variant="outline">{line.balanceLabel}</Badge>
                 </div>
-                <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                   <span className="font-mono">Debit {line.debitLabel}</span>
                   <span className="font-mono">Credit {line.creditLabel}</span>
                 </div>

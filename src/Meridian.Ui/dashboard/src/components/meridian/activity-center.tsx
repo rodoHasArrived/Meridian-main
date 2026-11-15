@@ -55,7 +55,7 @@ export function ActivityCenter() {
         {unseenCount > 0 ? (
           <span
             aria-hidden="true"
-            className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-background bg-primary px-1 font-mono text-[10px] font-semibold leading-none text-background"
+            className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-background bg-primary px-1 font-mono text-xs font-semibold leading-none text-background"
           >
             {unseenCount > 99 ? "99+" : unseenCount}
           </span>
@@ -126,7 +126,7 @@ function ActivityRow({ entry, onUndo, onOpenRoute }: ActivityRowProps) {
             <span className="truncate font-medium">{entry.title}</span>
           </div>
           {entry.detail ? <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{entry.detail}</p> : null}
-          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground">
             <span>{entry.kind}</span>
             <span aria-hidden="true">·</span>
             <span>{formatRelativeAge(entry.timestamp)}</span>
@@ -175,14 +175,14 @@ function UndoControl({ status, onUndo }: { status: ActivityEntry["undoStatus"]; 
       );
     case "undone":
       return (
-        <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.12em] text-success">
+        <span className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-[0.12em] text-success">
           <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
           Undone
         </span>
       );
     case "expired":
       return (
-        <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+        <span className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
           <X className="h-3.5 w-3.5" aria-hidden="true" />
           Undo expired
         </span>

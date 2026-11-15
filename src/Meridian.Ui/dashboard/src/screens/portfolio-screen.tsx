@@ -865,21 +865,21 @@ function PortfolioScreenContent({
                         </div>
                         <div className="mt-3 grid gap-2 md:grid-cols-3">
                           <div className="rounded-md border border-border/60 bg-background/30 px-3 py-2">
-                            <div className="text-[11px] uppercase text-muted-foreground">Readiness</div>
+                            <div className="text-xs uppercase text-muted-foreground">Readiness</div>
                             <div className="mt-1 text-xs text-foreground">{row.readinessDetail}</div>
                           </div>
                           <div className="rounded-md border border-border/60 bg-background/30 px-3 py-2">
-                            <div className="text-[11px] uppercase text-muted-foreground">Ledger</div>
+                            <div className="text-xs uppercase text-muted-foreground">Ledger</div>
                             <div className="mt-1 text-xs text-foreground">{row.ledgerLabel}</div>
                           </div>
                           <div className="rounded-md border border-border/60 bg-background/30 px-3 py-2">
-                            <div className="text-[11px] uppercase text-muted-foreground">Reconciliation</div>
+                            <div className="text-xs uppercase text-muted-foreground">Reconciliation</div>
                             <div className="mt-1 text-xs text-foreground">{row.reconciliationLabel}</div>
                           </div>
                         </div>
                         <div className="mt-3 grid gap-3 xl:grid-cols-[1fr_0.9fr]">
                           <div>
-                            <div className="text-[11px] uppercase text-muted-foreground">Evidence targets</div>
+                            <div className="text-xs uppercase text-muted-foreground">Evidence targets</div>
                             <div className="mt-2 flex flex-wrap gap-2">
                               {row.evidenceTargets.map((target) => (
                                 <a
@@ -897,7 +897,7 @@ function PortfolioScreenContent({
                             </div>
                           </div>
                           <div>
-                            <div className="text-[11px] uppercase text-muted-foreground">Review targets</div>
+                            <div className="text-xs uppercase text-muted-foreground">Review targets</div>
                             <div className="mt-2 grid gap-2">
                               {row.blockerTargets.length > 0 ? row.blockerTargets.map((target) => (
                                 target.href ? (
@@ -928,7 +928,7 @@ function PortfolioScreenContent({
                         </div>
                         {row.drillThroughTargets.length > 0 ? (
                           <div className="mt-3">
-                            <div className="text-[11px] uppercase text-muted-foreground">Drill-through targets</div>
+                            <div className="text-xs uppercase text-muted-foreground">Drill-through targets</div>
                             <div className="mt-2 flex flex-wrap gap-2">
                               {row.drillThroughTargets.map((target) => (
                                 <a

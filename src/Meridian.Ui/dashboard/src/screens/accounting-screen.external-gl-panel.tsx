@@ -368,7 +368,7 @@ export function AccountingSystemReconciliationPanel({
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <div className="font-semibold text-foreground">Posting/export</div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">
+                  <div className="mt-1 text-xs text-muted-foreground">
                     {selectedMappingProfile ? `Mapping: ${selectedMappingProfile.displayName}` : "Mapping profile required"}
                   </div>
                 </div>
@@ -428,7 +428,7 @@ export function AccountingSystemReconciliationPanel({
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="text-xs font-semibold text-foreground">Guarded export package</div>
-                      <div className="mt-1 text-[11px] text-muted-foreground">
+                      <div className="mt-1 text-xs text-muted-foreground">
                         {formatExternalGlPeriodRange(exportPackage.periodStart, exportPackage.periodEnd)}
                       </div>
                     </div>
@@ -436,7 +436,7 @@ export function AccountingSystemReconciliationPanel({
                       {exportPackage.postingEnabled ? "Posting enabled" : "Posting disabled"}
                     </Badge>
                   </div>
-                  <p className="mt-2 text-[11px] leading-4 text-muted-foreground">{exportPackage.postingDisabledReason}</p>
+                  <p className="mt-2 text-xs leading-4 text-muted-foreground">{exportPackage.postingDisabledReason}</p>
                   <div className="mt-2 grid gap-2">
                     <AccountingValue label="Certification" value={presentExternalGlState(exportPackage.certification?.state, "Not certified")} />
                     <AccountingValue label="Evidence" value={String(exportPackage.evidenceLinks.length)} />
@@ -451,7 +451,7 @@ export function AccountingSystemReconciliationPanel({
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="text-xs font-semibold text-muted-foreground">Retained package history</div>
-                    <div className="mt-1 text-[11px] text-muted-foreground">
+                    <div className="mt-1 text-xs text-muted-foreground">
                       {exportPackages.length} retained package{exportPackages.length === 1 ? "" : "s"} for the selected provider, fund, and ledger book.
                     </div>
                   </div>
@@ -464,7 +464,7 @@ export function AccountingSystemReconciliationPanel({
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
                             <div className="font-semibold text-foreground">Guarded export package</div>
-                            <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                            <div className="mt-0.5 font-mono text-xs text-muted-foreground">
                               {formatExternalGlPeriodRange(packageRow.periodStart, packageRow.periodEnd)} | Created {formatExternalGlTimestamp(packageRow.createdAtUtc)}
                             </div>
                           </div>
@@ -585,7 +585,7 @@ function AccountingSystemEvidencePackageRow({
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="truncate text-xs font-semibold text-foreground">{evidencePackage.label}</div>
-          <div className="mt-1 text-[11px] text-muted-foreground">
+          <div className="mt-1 text-xs text-muted-foreground">
             {evidencePackage.evidenceReferenceCount} retained evidence item{evidencePackage.evidenceReferenceCount === 1 ? "" : "s"}
           </div>
         </div>
@@ -594,13 +594,13 @@ function AccountingSystemEvidencePackageRow({
         </Badge>
       </div>
       {requiredActions.length > 0 ? (
-        <ul className="mt-2 list-disc space-y-1 pl-4 text-[11px] leading-4 text-muted-foreground">
+        <ul className="mt-2 list-disc space-y-1 pl-4 text-xs leading-4 text-muted-foreground">
           {requiredActions.map((action) => (
             <li key={action}>{action}</li>
           ))}
         </ul>
       ) : evidencePackage.evidenceReferenceCount > 0 ? (
-        <p className="mt-2 text-[11px] leading-4 text-muted-foreground">Evidence is retained and ready for operator review.</p>
+        <p className="mt-2 text-xs leading-4 text-muted-foreground">Evidence is retained and ready for operator review.</p>
       ) : null}
       <TechnicalDetails label="Evidence package technical details" className="mt-2">
         <dl className="text-xs">

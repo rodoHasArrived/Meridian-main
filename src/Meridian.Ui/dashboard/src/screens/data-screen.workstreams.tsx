@@ -633,7 +633,7 @@ function EmptyState({ state }: { state: DataOperationsEmptyState }) {
 function FieldTile({ field }: { field: DataOperationsDetailField }) {
   return (
     <div className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
-      <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-wide")}>{field.label}</div>
+      <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-wide")}>{field.label}</div>
       <div className="mt-1 min-w-0 break-words text-sm font-medium text-foreground">{field.value}</div>
     </div>
   );

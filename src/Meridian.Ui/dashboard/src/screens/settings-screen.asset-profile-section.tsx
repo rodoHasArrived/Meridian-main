@@ -549,7 +549,7 @@ export function SettingsAssetProfileSection({ vm, submitAssetProfileDraft, selec
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h3 className="text-sm font-semibold text-foreground">{row.name}</h3>
-                  <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{row.profileId}</p>
+                  <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{row.profileId}</p>
                 </div>
                 <Badge variant={row.statusVariant}>{row.versionLabel}</Badge>
               </div>

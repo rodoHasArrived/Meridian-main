@@ -385,7 +385,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
       render: (row) => (
         <span className="block min-w-0">
           <span className="block font-semibold text-foreground">{row.displayName}</span>
-          <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.securityId}</span>
+          <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{row.securityId}</span>
         </span>
       )
     },
@@ -902,7 +902,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                           key={target.id}
                           href={target.href}
                           aria-label={target.ariaLabel}
-                          className="rounded-sm border border-border/60 px-1.5 py-0.5 text-[11px] text-primary hover:border-primary/50 hover:bg-primary/10"
+                          className="rounded-sm border border-border/60 px-1.5 py-0.5 text-xs text-primary hover:border-primary/50 hover:bg-primary/10"
                         >
                           {target.label}
                         </a>
@@ -1594,7 +1594,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {securityMaster.pageView.metrics.map((metric) => (
                 <div key={metric.id} className="rounded-lg border border-border/60 bg-secondary/25 p-4">
-                  <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-[0.14em]")}>{metric.label}</div>
+                  <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-[0.14em]")}>{metric.label}</div>
                   <div
                     className={cn(
                       "mt-2 min-w-0 break-words font-mono text-lg font-semibold tabular-nums",

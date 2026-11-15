@@ -1247,7 +1247,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
                 <p className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(executionEvidence.auditTitle) && "uppercase tracking-[0.14em]")}>
                   {executionEvidence.auditTitle}
                 </p>
-                <span className="font-mono text-[11px] text-muted-foreground">{executionEvidence.auditCountLabel}</span>
+                <span className="font-mono text-xs text-muted-foreground">{executionEvidence.auditCountLabel}</span>
               </div>
               {executionEvidence.auditRows.length === 0 ? (
                 <p className="text-xs text-muted-foreground">{executionEvidence.auditEmptyText}</p>
@@ -1276,10 +1276,10 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
                         </span>
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">{entry.message}</p>
-                      <p className="mt-1 font-mono text-[11px] text-muted-foreground">{entry.metadataText}</p>
+                      <p className="mt-1 font-mono text-xs text-muted-foreground">{entry.metadataText}</p>
                       {entry.technicalMetadataText ? (
                         <TechnicalDetails label="Execution references" className="mt-2">
-                          <p className="break-all font-mono text-[11px] text-muted-foreground">
+                          <p className="break-all font-mono text-xs text-muted-foreground">
                             {entry.technicalMetadataText}
                           </p>
                         </TechnicalDetails>
@@ -1406,7 +1406,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
                   inputMode="decimal"
                   error={Boolean(sessionReplay.speedValidationText)}
                 />
-                <span id={sessionReplay.speedHelpId} className="text-[11px] text-muted-foreground">
+                <span id={sessionReplay.speedHelpId} className="text-xs text-muted-foreground">
                   {sessionReplay.speedHelpText}
                 </span>
               </div>
@@ -1466,7 +1466,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
                   inputMode="numeric"
                   error={Boolean(sessionReplay.seekValidationText)}
                 />
-                <span id={sessionReplay.seekHelpId} className="text-[11px] text-muted-foreground">
+                <span id={sessionReplay.seekHelpId} className="text-xs text-muted-foreground">
                   {sessionReplay.seekHelpText}
                 </span>
               </div>
@@ -1699,7 +1699,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
                   <dl className="mt-2 grid gap-2 sm:grid-cols-3">
                     {promotionGate.evaluationPanel.metrics.map((metric) => (
                       <div key={metric.id}>
-                        <dt className={cn("text-[10px] opacity-75", usesTrackedCaps(metric.label) && "font-mono uppercase tracking-[0.14em]")}>{metric.label}</dt>
+                        <dt className={cn("text-xs opacity-75", usesTrackedCaps(metric.label) && "font-mono uppercase tracking-[0.14em]")}>{metric.label}</dt>
                         <dd className="font-mono text-xs">{metric.value}</dd>
                       </div>
                     ))}
@@ -2053,7 +2053,7 @@ function PaperSessionReplayPanelView({ panel }: { panel: PaperSessionReplayPanel
 function DataRow({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="data-grid-surface px-3 py-2">
-      <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</div>
+      <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</div>
       <div className="mt-1 font-mono text-sm text-foreground">{value ?? "Unavailable"}</div>
     </div>
   );
@@ -2284,7 +2284,9 @@ function TradingBlotterDetailPanel({
 function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
     <div className="workspace-header-card p-4">
-      <div className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.16em]")}>{label}</div>
+      {/* KPI labels are the one place the tracked-caps eyebrow is used, and every tile in a row
+          uses it: per-label casing left "Buying Power Used" beside "MAX DRAWDOWN". */}
+      <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">{label}</div>
       <div className={cn("mt-2 font-mono text-sm font-semibold text-foreground", tone)}>{value}</div>
     </div>
   );
@@ -2363,7 +2365,7 @@ function OrderPreviewPanel({ preview }: { preview: OrderPreview }) {
       data-testid="order-preview"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <div className="text-[11px] font-medium text-muted-foreground">
+        <div className="text-xs font-medium text-muted-foreground">
           Order impact preview
         </div>
         <div className={cn("font-semibold", effectTone)} data-testid="order-preview-effect">
@@ -2405,7 +2407,7 @@ function OrderPreviewPanel({ preview }: { preview: OrderPreview }) {
 function PreviewStat({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <dt className={cn("text-[11px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</dt>
+      <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</dt>
       <dd className={cn("text-foreground", mono && "font-mono")}>{value}</dd>
     </div>
   );

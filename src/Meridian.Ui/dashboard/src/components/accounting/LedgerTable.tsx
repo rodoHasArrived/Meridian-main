@@ -57,7 +57,7 @@ function inject(): void {
   font-family:var(--font-data,monospace);font-size:12px;}
 .ldg thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;
   background:var(--bg-medium,#EBE8E1);z-index:1;
-  font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
+  font-family:var(--font-body,inherit);font-size:0.75rem;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;color:var(--text-muted,#606870);
   border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
 .ldg thead th:last-child{border-right:none;}
@@ -80,7 +80,7 @@ function inject(): void {
   border-top:2px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);}
 .ldg tfoot td.ldg--r{text-align:right;}
 .ldg__foot-label{font-family:var(--font-body,inherit);font-variant:all-small-caps;letter-spacing:.03em;
-  font-size:11px;color:var(--text-secondary,#535C65);}
+  font-size:0.75rem;color:var(--text-secondary,#535C65);}
 .ldg__sort{cursor:pointer;user-select:none;}
 .ldg__sort:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3);outline-offset:-2px;}
 `;

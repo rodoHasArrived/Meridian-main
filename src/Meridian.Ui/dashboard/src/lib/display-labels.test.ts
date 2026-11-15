@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { containsPascalCaseIdentifier, executionEventLabel, formatEnumLabel } from "@/lib/display-labels";
+import { containsPascalCaseIdentifier, executionEventLabel, formatEnumLabel, humanizeIdentifiersInText } from "@/lib/display-labels";
 
 describe("display labels", () => {
   it("turns enum identifiers into sentence-case words", () => {
@@ -27,5 +27,12 @@ describe("display labels", () => {
   it("detects leftover PascalCase identifiers", () => {
     expect(containsPascalCaseIdentifier("PartialFill · PartiallyFilled")).toBe(true);
     expect(containsPascalCaseIdentifier("Partial fill · Partly filled")).toBe(false);
+  });
+
+  it("spells out identifiers embedded in a service sentence", () => {
+    expect(humanizeIdentifiersInText("SymbolConcentration: NVDA 26.40% (threshold 30.00%, state Observe)."))
+      .toBe("Symbol concentration: NVDA 26.40% (threshold 30.00%, state Observe).");
+    expect(humanizeIdentifiersInText("Blocked by OrderRateThrottle.")).toBe("Blocked by order rate throttle.");
+    expect(humanizeIdentifiersInText("No active guardrails")).toBe("No active guardrails");
   });
 });

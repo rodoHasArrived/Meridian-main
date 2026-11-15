@@ -1,3 +1,4 @@
+import { humanizeIdentifiersInText } from "@/lib/display-labels";
 import { useState } from "react";
 import { resolveKpi } from "@/lib/kpi-registry";
 import { isBondAssetClass } from "@/lib/fixed-income-navigation";
@@ -2019,7 +2020,7 @@ function buildWorkflowTaskPanel({
       { label: "Cash variance", value: cashVarianceLabel ?? "—", tone: cashVarianceLabel ? "warning" : "muted" },
       {
         label: "Guardrails",
-        value: risk?.activeGuardrails.length ? risk.activeGuardrails.join(" · ") : "No active guardrails",
+        value: risk?.activeGuardrails.length ? risk.activeGuardrails.map((guardrail) => humanizeIdentifiersInText(guardrail)).join(" · ") : "No active guardrails",
         tone: risk?.activeGuardrails.length ? "warning" : "success"
       }
     ],
@@ -2123,7 +2124,7 @@ function buildPortfolioReadinessTaskPanel({
       { label: "Cash variance", value: cashVarianceLabel ?? "—", tone: hasCashVariance ? "warning" : "success" },
       {
         label: "Guardrails",
-        value: risk?.activeGuardrails.length ? risk.activeGuardrails.join(" · ") : "No active guardrails",
+        value: risk?.activeGuardrails.length ? risk.activeGuardrails.map((guardrail) => humanizeIdentifiersInText(guardrail)).join(" · ") : "No active guardrails",
         tone: risk?.activeGuardrails.length ? "warning" : "success"
       }
     ],
@@ -2321,7 +2322,7 @@ function buildSelectedPositionDetail(
 ): PortfolioPositionDetail {
   const statusTone = position.markFreshness.reviewRequired ? "warning" : riskTone(risk?.state, position.pnlTone);
   const guardrailSummary = risk?.activeGuardrails.length
-    ? risk.activeGuardrails.join(" · ")
+    ? risk.activeGuardrails.map((guardrail) => humanizeIdentifiersInText(guardrail)).join(" · ")
     : "No active guardrails";
 
   return {

@@ -44,7 +44,7 @@ export function NumberPassport(props: ({
       <dl className="mt-2 grid gap-2">
         {items.map((item) => (
           <div key={item.label} className="rounded-md border border-border/60 bg-background/60 px-3 py-2">
-            <dt className="text-[11px] text-muted-foreground">{item.label}</dt>
+            <dt className="text-xs text-muted-foreground">{item.label}</dt>
             <dd className="mt-1 break-all font-mono text-sm text-foreground">{item.value}</dd>
             <dd className="mt-1 text-xs leading-5 text-muted-foreground">{item.detail}</dd>
           </div>

@@ -997,7 +997,7 @@ export function ReportWriterDesignerGrid({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-foreground">{grid.title}</h3>
-          <p className="mt-1 text-[11px] text-muted-foreground">{grid.isNew ? "New report · not saved yet" : `${presentReportingIdentifier(grid.templateId)} · v${grid.templateVersion}`}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{grid.isNew ? "New report · not saved yet" : `${presentReportingIdentifier(grid.templateId)} · v${grid.templateVersion}`}</p>
         </div>
         <span className="flex flex-wrap items-center gap-1.5">
           <Badge variant="outline">{settings.gridKind}</Badge>
@@ -1013,7 +1013,7 @@ export function ReportWriterDesignerGrid({
         {draftLayoutSummary}
       </div>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-        <span className="flex flex-wrap items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
+        <span className="flex flex-wrap items-center gap-1.5 font-mono text-xs text-muted-foreground">
           <span>{grid.sortLabel}</span>
           <span aria-hidden="true">·</span>
           <span>{grid.filterSummary}</span>
@@ -1031,7 +1031,7 @@ export function ReportWriterDesignerGrid({
       </div>
       <div className="mt-3 grid gap-2 md:grid-cols-2">
         <label className="space-y-1">
-          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Draft name</span>
+          <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Draft name</span>
           <Input
             value={settings.name}
             onChange={(event) => onSettingsChange(grid, "name", event.target.value)}
@@ -1040,7 +1040,7 @@ export function ReportWriterDesignerGrid({
           />
         </label>
         <label className="space-y-1">
-          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Display name</span>
+          <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Display name</span>
           <Input
             value={settings.displayName}
             onChange={(event) => onSettingsChange(grid, "displayName", event.target.value)}
@@ -1048,7 +1048,7 @@ export function ReportWriterDesignerGrid({
           />
         </label>
         <label className="space-y-1">
-          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Preview dataset</span>
+          <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Preview dataset</span>
           <Select
             value={settings.previewDataset}
             onChange={(event) => onSettingsChange(grid, "previewDataset", event.target.value)}
@@ -1061,7 +1061,7 @@ export function ReportWriterDesignerGrid({
         </label>
         <div className="grid gap-2 sm:grid-cols-[1fr_0.7fr]">
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Grid type</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Grid type</span>
             <Select
               value={settings.gridKind}
               onChange={(event) => onSettingsChange(grid, "gridKind", event.target.value)}
@@ -1074,7 +1074,7 @@ export function ReportWriterDesignerGrid({
             </Select>
           </label>
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Top N</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Top N</span>
             <Input
               type="number"
               min={1}
@@ -1087,7 +1087,7 @@ export function ReportWriterDesignerGrid({
           </label>
         </div>
         <label className="space-y-1">
-          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Access</span>
+          <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Access</span>
           <Select
             value={settings.accessMode}
             onChange={(event) => onSettingsChange(grid, "accessMode", event.target.value)}
@@ -1100,7 +1100,7 @@ export function ReportWriterDesignerGrid({
         </label>
         <div className="grid gap-2 sm:grid-cols-[0.8fr_1.2fr]">
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Principal</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Principal</span>
             <Select
               value={settings.principalKind}
               onChange={(event) => onSettingsChange(grid, "principalKind", event.target.value)}
@@ -1113,7 +1113,7 @@ export function ReportWriterDesignerGrid({
             </Select>
           </label>
           <label className="space-y-1">
-            <span className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(accessPrincipalIdLabel) && "uppercase tracking-[0.14em]")}>{accessPrincipalIdLabel}</span>
+            <span className={cn("text-xs text-muted-foreground", usesTrackedCaps(accessPrincipalIdLabel) && "uppercase tracking-[0.14em]")}>{accessPrincipalIdLabel}</span>
             <PrincipalIdInput
               principalKind={settings.principalKind}
               value={settings.principalId}
@@ -1127,7 +1127,7 @@ export function ReportWriterDesignerGrid({
       </div>
       {settings.previewDataset === "customRows" ? (
         <label className="mt-3 block space-y-1">
-          <span className="text-[10px] text-muted-foreground">Custom dataset rows</span>
+          <span className="text-xs text-muted-foreground">Custom dataset rows</span>
           <TextArea
             value={customDatasetText}
             onChange={(event) => onCustomDatasetChange(grid, event.target.value)}
@@ -1150,11 +1150,11 @@ export function ReportWriterDesignerGrid({
             {buildReportWriterDatasetFieldCatalog(selectedDatasetSource).map((field) => (
               <div key={field.name} role="listitem" className="rounded-sm border border-border/60 bg-secondary/25 px-2 py-1.5">
                 <span className="block font-medium text-foreground">{field.label || field.name}</span>
-                <span className="mt-0.5 block font-mono text-[11px] text-muted-foreground">
+                <span className="mt-0.5 block font-mono text-xs text-muted-foreground">
                   {field.name} · {field.role} · {field.dataType}
                 </span>
                 {field.description ? (
-                  <span className="mt-1 block text-[11px] leading-4 text-muted-foreground">{field.description}</span>
+                  <span className="mt-1 block text-xs leading-4 text-muted-foreground">{field.description}</span>
                 ) : null}
               </div>
             ))}
@@ -1178,7 +1178,7 @@ export function ReportWriterDesignerGrid({
         ) : null}
         <div className="mt-2 grid gap-2 md:grid-cols-[1fr_0.8fr_1fr]">
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Field</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Field</span>
             <Select
               value={settings.filterField}
               onChange={(event) => onSettingsChange(grid, "filterField", event.target.value)}
@@ -1191,7 +1191,7 @@ export function ReportWriterDesignerGrid({
             </Select>
           </label>
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Operator</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Operator</span>
             <Select
               value={settings.filterOperator}
               onChange={(event) => onSettingsChange(grid, "filterOperator", event.target.value)}
@@ -1212,7 +1212,7 @@ export function ReportWriterDesignerGrid({
             </Select>
           </label>
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Value</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Value</span>
             <Input
               value={settings.filterValue}
               onChange={(event) => onSettingsChange(grid, "filterValue", event.target.value)}
@@ -1291,7 +1291,7 @@ export function ReportWriterDesignerGrid({
         <div className="eyebrow-label">Custom formula</div>
         <div className="mt-2 grid gap-2 md:grid-cols-[0.8fr_0.9fr_1.3fr]">
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Name</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Name</span>
             <Input
               value={customFormula.name}
               onChange={(event) => onCustomFormulaChange(grid, "name", event.target.value)}
@@ -1300,7 +1300,7 @@ export function ReportWriterDesignerGrid({
             />
           </label>
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Label</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Label</span>
             <Input
               value={customFormula.label}
               onChange={(event) => onCustomFormulaChange(grid, "label", event.target.value)}
@@ -1308,7 +1308,7 @@ export function ReportWriterDesignerGrid({
             />
           </label>
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Expression</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Expression</span>
             <Input
               value={customFormula.expression}
               onChange={(event) => onCustomFormulaChange(grid, "expression", event.target.value)}
@@ -1341,7 +1341,7 @@ export function ReportWriterDesignerGrid({
             {formatRules.map((rule) => (
               <div key={rule.id} className="grid gap-2 md:grid-cols-[1fr_0.8fr_0.8fr_0.8fr_auto] items-end">
                 <label className="space-y-1">
-                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Column</span>
+                  <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Column</span>
                   <Select
                     value={rule.column}
                     onChange={(event) => onFormatRuleChange(grid, rule.id, "column", event.target.value)}
@@ -1354,7 +1354,7 @@ export function ReportWriterDesignerGrid({
                   </Select>
                 </label>
                 <label className="space-y-1">
-                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Operator</span>
+                  <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Operator</span>
                   <Select
                     value={rule.operator}
                     onChange={(event) => onFormatRuleChange(grid, rule.id, "operator", event.target.value)}
@@ -1372,7 +1372,7 @@ export function ReportWriterDesignerGrid({
                   </Select>
                 </label>
                 <label className="space-y-1">
-                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Value</span>
+                  <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Value</span>
                   <Input
                     value={rule.value}
                     onChange={(event) => onFormatRuleChange(grid, rule.id, "value", event.target.value)}
@@ -1382,7 +1382,7 @@ export function ReportWriterDesignerGrid({
                   />
                 </label>
                 <label className="space-y-1">
-                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Style</span>
+                  <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Style</span>
                   <Select
                     value={rule.style}
                     onChange={(event) => onFormatRuleChange(grid, rule.id, "style", event.target.value)}
@@ -1426,7 +1426,7 @@ export function ReportWriterDesignerGrid({
         {chartDraft.enabled ? (
           <div className="mt-2 grid gap-2 md:grid-cols-[0.6fr_1fr_1.4fr]">
             <label className="space-y-1">
-              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Type</span>
+              <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Type</span>
               <Select
                 value={chartDraft.type}
                 onChange={(event) => onChartDraftChange(grid, "type", event.target.value)}
@@ -1440,7 +1440,7 @@ export function ReportWriterDesignerGrid({
               </Select>
             </label>
             <label className="space-y-1">
-              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Category field</span>
+              <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Category field</span>
               <Select
                 value={chartDraft.categoryField}
                 onChange={(event) => onChartDraftChange(grid, "categoryField", event.target.value)}
@@ -1453,7 +1453,7 @@ export function ReportWriterDesignerGrid({
               </Select>
             </label>
             <label className="space-y-1">
-              <span className="text-[10px] text-muted-foreground">Value columns (comma-separated)</span>
+              <span className="text-xs text-muted-foreground">Value columns (comma-separated)</span>
               <Input
                 value={chartDraft.valueColumns}
                 onChange={(event) => onChartDraftChange(grid, "valueColumns", event.target.value)}
@@ -1519,12 +1519,12 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
       </div>
       <div className="mt-2 max-h-56 overflow-auto rounded-sm border border-border/60" role="region" aria-label={`${grid.title} preview table scroll area`} tabIndex={0}>
         <table className="min-w-full table-fixed text-left text-xs" aria-label={`${grid.title} preview rows`}>
-          <thead className="bg-secondary/40 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+          <thead className="bg-secondary/40 text-xs uppercase tracking-[0.12em] text-muted-foreground">
             <tr>
               {preview.columns.map((column) => (
                 <th key={column.key} scope="col" className="min-w-28 px-2 py-1.5 font-semibold">
                   <span className="block truncate" title={column.label}>{column.label}</span>
-                  <span className="mt-0.5 block truncate font-mono text-[9px] normal-case tracking-normal" title={column.role}>
+                  <span className="mt-0.5 block truncate font-mono text-xs normal-case tracking-normal" title={column.role}>
                     {column.role}
                   </span>
                 </th>
@@ -1556,7 +1556,7 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
       {preview.chart ? <ReportWriterChartPreview chart={preview.chart} /> : null}
       {comparison ? (
         <details className="mt-2 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1.5 text-xs">
-          <summary className="cursor-pointer select-none text-[11px] font-semibold text-foreground">
+          <summary className="cursor-pointer select-none text-xs font-semibold text-foreground">
             Changes since previous preview ({comparisonChangeCount} changed)
           </summary>
           <div className="mt-2">
@@ -1569,17 +1569,17 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
           <div className="eyebrow-label">Audit trace</div>
           <dl className="mt-2 grid gap-2 sm:grid-cols-2">
             <div>
-              <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Rows</dt>
+              <dt className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Rows</dt>
               <dd className="mt-1 font-mono text-foreground">
                 {lineage.inputRowCount} input / {lineage.filteredInputRowCount ?? lineage.inputRowCount} filtered / {lineage.outputRowCount} output
               </dd>
             </div>
             <div>
-              <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Sources</dt>
+              <dt className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Sources</dt>
               <dd className="mt-1 break-words font-mono text-foreground">{lineage.sourceFields.length > 0 ? lineage.sourceFields.join(", ") : "None"}</dd>
             </div>
             <div>
-              <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Metrics</dt>
+              <dt className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Metrics</dt>
               <dd className="mt-1 break-words font-mono text-foreground">
                 {lineage.metrics.length > 0
                   ? lineage.metrics.map((metric) => `${metric.name}=${metric.function}(${metric.sourceField})`).join(", ")
@@ -1587,7 +1587,7 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
               </dd>
             </div>
             <div>
-              <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Formulas</dt>
+              <dt className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Formulas</dt>
               <dd className="mt-1 break-words font-mono text-foreground">
                 {lineage.formulas.length > 0
                   ? lineage.formulas.map((formula) => `${formula.name}=${formula.expression} [${formula.sourceFields.join(", ")}]`).join(", ")
@@ -1595,7 +1595,7 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
               </dd>
             </div>
             <div>
-              <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Filters</dt>
+              <dt className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Filters</dt>
               <dd className="mt-1 break-words font-mono text-foreground">
                 {lineage.filters && lineage.filters.length > 0
                   ? lineage.filters.map((filter) => `${filter.field} ${formatReportWriterFilterOperator(normalizeReportWriterFilterOperator(filter.operator))}${filter.value ? ` ${filter.value}` : ""}`).join(", ")
@@ -1616,7 +1616,7 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
                   <Badge variant={field.isGenerated ? "warning" : "outline"}>{field.role}</Badge>
                   <Badge variant="outline">{field.dataType}</Badge>
                 </div>
-                <p className="mt-1 break-words text-[11px] text-muted-foreground">
+                <p className="mt-1 break-words text-xs text-muted-foreground">
                   {field.sourceField}
                   {field.description ? ` · ${field.description}` : ""}
                 </p>
@@ -1634,7 +1634,7 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
                 <Badge variant={reportWriterValidationCheckVariant(check.status)}>{check.status}</Badge>
                 <span className="min-w-0">
                   <span className="block break-all font-mono text-foreground">{check.checkId}</span>
-                  <span className="mt-1 block break-words text-[11px] text-muted-foreground">{check.detail}</span>
+                  <span className="mt-1 block break-words text-xs text-muted-foreground">{check.detail}</span>
                 </span>
               </li>
             ))}
@@ -1698,7 +1698,7 @@ function ReportWriterDropZoneView({
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => onZoneDrop(event, grid, zone)}
     >
-      <div className={cn("mb-2 text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</div>
+      <div className={cn("mb-2 text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</div>
       <div className="flex flex-wrap gap-1.5">
         {tokens.length > 0 ? tokens.map((token, tokenIndex) => (
           <ReportWriterTokenChip
@@ -1744,7 +1744,7 @@ function ReportWriterTokenChip({
       role="listitem"
       draggable={draggable}
       onDragStart={(event) => onDragStart(event, token, dragOrigin ?? null)}
-      className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-1.5 rounded-sm border border-border/70 bg-secondary/35 px-2 py-1 text-[11px] text-foreground"
+      className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-1.5 rounded-sm border border-border/70 bg-secondary/35 px-2 py-1 text-xs text-foreground"
       title={token.detail}
     >
       <span className={cn("inline-flex min-w-0 flex-wrap items-center gap-1.5", (onMove || onRemove) && "w-full")}>

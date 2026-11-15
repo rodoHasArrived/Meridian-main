@@ -291,7 +291,7 @@ function LayoutSection({
 }) {
   return (
     <div className="mb-1">
-      <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+      <div className="flex items-center gap-1.5 px-2 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
         {icon}
         {title}
       </div>

@@ -49,7 +49,7 @@ export function FileUpload({
   return (
     <div className={cn("w-full", className)}>
       {label ? (
-        <span className={cn("mb-1.5 block text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>
+        <span className={cn("mb-1.5 block text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>
           {label}
         </span>
       ) : null}
@@ -80,7 +80,7 @@ export function FileUpload({
       >
         <Upload className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
         <span className="text-xs text-muted-foreground">Drag files here or click to browse</span>
-        <span className="font-mono text-[10px] text-muted-foreground">
+        <span className="font-mono text-xs text-muted-foreground">
           {accept !== "*" ? `Accepts: ${accept}` : "Any file type"}
         </span>
       </button>

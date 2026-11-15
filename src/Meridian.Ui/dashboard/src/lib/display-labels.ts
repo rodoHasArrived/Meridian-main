@@ -58,6 +58,23 @@ export function executionEventLabel(value: string | null | undefined, fallback =
   return EXECUTION_EVENT_LABELS[trimmed] ?? formatEnumLabel(trimmed, fallback);
 }
 
+/**
+ * A sentence from a service that embeds enum identifiers, with each one spelled out:
+ * `"SymbolConcentration: NVDA 26.40% (state Observe)."` → `"Symbol concentration: NVDA 26.40%
+ * (state Observe)."`. Tickers, numbers and ordinary words are left as they are.
+ */
+export function humanizeIdentifiersInText(text: string | null | undefined, fallback = "—"): string {
+  const trimmed = text?.trim();
+  if (!trimmed) {
+    return fallback;
+  }
+  return trimmed.replace(/\b[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]+)+\b/g, (token, offset: number) => {
+    const label = formatEnumLabel(token);
+    const startsSentence = offset === 0 || /[.!?]\s+$/.test(trimmed.slice(0, offset));
+    return startsSentence ? label : label.charAt(0).toLowerCase() + label.slice(1);
+  });
+}
+
 /** True when rendered text still carries a multi-word PascalCase identifier such as "PartiallyFilled". */
 export function containsPascalCaseIdentifier(text: string): boolean {
   return /\b[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]+)+\b/.test(text);

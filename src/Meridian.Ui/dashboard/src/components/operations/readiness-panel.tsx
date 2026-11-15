@@ -18,7 +18,7 @@ const CSS = `
 .mds-rpanel--action{border-color:var(--severity-action-bd,rgba(152,103,23,.42));border-left-color:var(--severity-action-fg,#724D11);}
 .mds-rpanel--blocked{border-color:var(--severity-blocked-bd,rgba(181,75,66,.40));border-left-color:var(--severity-blocked-fg,#883832);}
 .mds-rpanel__head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;}
-.mds-rpanel__score{font-family:var(--font-data,monospace);font-size:11px;font-weight:700;
+.mds-rpanel__score{font-family:var(--font-data,monospace);font-size:0.75rem;font-weight:700;
   color:var(--text-secondary,var(--ws-text-secondary,#535C65));font-variant-numeric:tabular-nums;white-space:nowrap;}
 .mds-rpanel__title{margin:0;color:var(--text-primary,var(--ws-text,#20252B));font-size:13px;font-weight:700;line-height:1.25;
   overflow:hidden;text-overflow:ellipsis;}

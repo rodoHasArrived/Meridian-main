@@ -222,7 +222,7 @@ function OperatorWorkItemList({
               </div>
               <p className="mt-1 text-xs leading-5 text-foreground/80">{item.detail}</p>
               {item.metadataText && (
-                <p className="mt-2 font-mono text-[11px] text-foreground/70">{item.metadataText}</p>
+                <p className="mt-2 font-mono text-xs text-foreground/70">{item.metadataText}</p>
               )}
               {item.action && (
                 <div className="mt-3">
@@ -240,7 +240,7 @@ function OperatorWorkItemList({
         </ul>
       )}
       {workItemOverflowLabel && (
-        <p className="mt-3 font-mono text-[11px] text-muted-foreground">{workItemOverflowLabel}</p>
+        <p className="mt-3 font-mono text-xs text-muted-foreground">{workItemOverflowLabel}</p>
       )}
 
       {warnings.length > 0 && (
@@ -254,7 +254,7 @@ function OperatorWorkItemList({
         </ul>
       )}
       {warningOverflowLabel && (
-        <p className="mt-3 font-mono text-[11px] text-warning/90">{warningOverflowLabel}</p>
+        <p className="mt-3 font-mono text-xs text-warning/90">{warningOverflowLabel}</p>
       )}
     </div>
   );

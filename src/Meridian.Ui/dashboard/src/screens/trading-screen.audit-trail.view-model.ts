@@ -1,4 +1,5 @@
-import { executionEventLabel } from "@/lib/display-labels";
+import { executionEventLabel, formatEnumLabel } from "@/lib/display-labels";
+import { formatTimestamp } from "@/lib/format";
 /**
  * Presentation logic for the execution audit trail panel.
  *
@@ -62,7 +63,7 @@ export function buildAuditTrailPanelViewModel(
     truncationNotice: truncated
       ? `Showing the ${result.returned} most recent of ${result.totalMatched} matches. Narrow the filters or raise the limit above ${limit} to see the rest.`
       : null,
-    asOfLabel: result.asOf,
+    asOfLabel: Number.isFinite(Date.parse(result.asOf)) ? formatTimestamp(result.asOf, { precision: "second" }) : result.asOf,
     emptyState: "No audit entries match these filters."
   };
 }
@@ -76,9 +77,9 @@ export function buildAuditTrailRow(entry: AuditTrailTimelineEntry): AuditTrailRo
   return {
     auditId: entry.auditId,
     occurredAt: entry.occurredAt,
-    objectLabel: `${entry.objectKind} ${entry.objectId}`,
-    actionLabel: `${entry.category} · ${entry.action}`,
-    outcome: entry.outcome,
+    objectLabel: `${formatEnumLabel(entry.objectKind)} ${entry.objectId}`,
+    actionLabel: `${formatEnumLabel(entry.category)} · ${executionEventLabel(entry.action)}`,
+    outcome: executionEventLabel(entry.outcome),
     outcomeTone,
     actor: entry.actor ?? "System",
     context: context || entry.message || "—",

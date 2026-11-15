@@ -583,6 +583,23 @@ export function formatCompactTimestamp(value: TimestampInput, options: Pick<Time
   return `${fields.month} ${fields.day} '${(fields.year ?? "").slice(-2)} ${fields.hour}:${fields.minute}${zone}`;
 }
 
+const FULL_TIMESTAMP_LABEL = /^([A-Z][a-z]{2}) (\d{1,2}), (\d{4}), (\d{2}:\d{2})(?::\d{2}(?:\.\d{3})?)? (\S.*)$/;
+
+/**
+ * The compact form of text already produced by `formatTimestamp` ("Jan 1, 2026, 00:00 UTC" →
+ * "Jan 1 '26 00:00Z"), for a tile or badge whose view model hands it a formatted string. Any other
+ * text is returned unchanged, so it is safe on a value that is only sometimes a timestamp. Show
+ * the original as the hover title.
+ */
+export function compactTimestampLabel(label: string): string {
+  const match = FULL_TIMESTAMP_LABEL.exec(label.trim());
+  if (!match) {
+    return label;
+  }
+  const [, month, day, year, clock, zone] = match;
+  return `${month} ${day} '${year.slice(-2)} ${clock}${zone === "UTC" ? "Z" : ` ${zone}`}`;
+}
+
 /**
  * Compact relative time from `now`, e.g. "30s ago", "5m ago", "3d ago", or "in 2h" for a future
  * instant. Units round to the nearest whole second, minute, hour and day. Pair it with the absolute

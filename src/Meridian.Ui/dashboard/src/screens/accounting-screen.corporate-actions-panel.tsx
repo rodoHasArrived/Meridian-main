@@ -15,7 +15,7 @@ const corporateActionColumns: DenseDataTableColumn<CorporateActionRowViewModel>[
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.eventTypeLabel}</span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.corpActId}</span>
+        <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{row.corpActId}</span>
       </span>
     )
   },

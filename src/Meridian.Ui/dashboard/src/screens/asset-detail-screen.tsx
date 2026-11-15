@@ -184,7 +184,7 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
               )}
             </div>
             <div className="rounded-md border border-border/70 bg-background/70 px-3 py-3">
-              <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Review areas</div>
+              <div className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Review areas</div>
               <div className="mt-2 grid gap-2">
                 {assetDetailReadinessCues.map((cue) => (
                   <div key={cue.label} className="rounded border border-border/60 bg-secondary/20 px-2 py-1.5">
@@ -209,7 +209,7 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
                       {view.symbol}
                     </Button>
                   </div>
-                  <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{view.detail}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{view.detail}</p>
                 </li>
               ))}
             </ul>
@@ -222,7 +222,7 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
                   <Link className="text-xs font-semibold text-primary underline-offset-2 hover:underline" to={action.href}>
                     {action.label}
                   </Link>
-                  <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{action.detail}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{action.detail}</p>
                 </li>
               ))}
             </ul>
@@ -367,7 +367,7 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
               <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {overview.fields.map((field) => (
                   <div key={field.label}>
-                    <dt className={cn("text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "font-mono uppercase tracking-[0.14em]")}>{field.label}</dt>
+                    <dt className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "font-mono uppercase tracking-[0.14em]")}>{field.label}</dt>
                     <dd className="mt-1 text-sm text-foreground">{field.value}</dd>
                   </div>
                 ))}
@@ -376,7 +376,7 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
                 <dl className="grid gap-3 sm:grid-cols-2">
                   {overview.technicalFields.map((field) => (
                     <div key={field.label}>
-                      <dt className={cn("text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "font-mono uppercase tracking-[0.14em]")}>{field.label}</dt>
+                      <dt className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "font-mono uppercase tracking-[0.14em]")}>{field.label}</dt>
                       <dd className="mt-1 break-words font-mono text-sm text-foreground">{field.value}</dd>
                     </div>
                   ))}
@@ -424,27 +424,27 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
               {tradingParameters ? (
                 <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Lot size</dt>
+                    <dt className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Lot size</dt>
                     <dd className="mt-1 text-sm text-foreground">{tradingParameters.lotSize ?? "Not set"}</dd>
                   </div>
                   <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Tick size</dt>
+                    <dt className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Tick size</dt>
                     <dd className="mt-1 text-sm text-foreground">{tradingParameters.tickSize ?? "Not set"}</dd>
                   </div>
                   <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Contract multiplier</dt>
+                    <dt className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Contract multiplier</dt>
                     <dd className="mt-1 text-sm text-foreground">{tradingParameters.contractMultiplier ?? "Not set"}</dd>
                   </div>
                   <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Margin requirement</dt>
+                    <dt className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Margin requirement</dt>
                     <dd className="mt-1 text-sm text-foreground">{tradingParameters.marginRequirementPct != null ? `${tradingParameters.marginRequirementPct}%` : "Not set"}</dd>
                   </div>
                   <div>
-                    <dt className="text-[10px] font-semibold text-muted-foreground">Trading hours (UTC)</dt>
+                    <dt className="text-xs font-semibold text-muted-foreground">Trading hours (UTC)</dt>
                     <dd className="mt-1 text-sm text-foreground">{tradingParameters.tradingHoursUtc ?? "Not set"}</dd>
                   </div>
                   <div>
-                    <dt className="text-[10px] font-semibold text-muted-foreground">Circuit breaker threshold</dt>
+                    <dt className="text-xs font-semibold text-muted-foreground">Circuit breaker threshold</dt>
                     <dd className="mt-1 text-sm text-foreground">{tradingParameters.circuitBreakerThresholdPct != null ? `${tradingParameters.circuitBreakerThresholdPct}%` : "Not set"}</dd>
                   </div>
                 </dl>

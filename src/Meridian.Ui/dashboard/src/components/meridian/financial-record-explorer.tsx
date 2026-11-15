@@ -392,7 +392,7 @@ function ExplorerScopeBar({ items, compact = false }: { items: FinancialRecordEx
     <dl className={compact ? "flex flex-wrap items-baseline gap-x-3 gap-y-1" : "grid gap-2 sm:grid-cols-2 xl:grid-cols-4"} aria-label="Explorer scope">
       {items.map((item) => (
         <div key={item.id} className={compact ? "flex items-baseline gap-1" : "rounded-md border border-border/70 bg-background/60 px-3 py-2"}>
-          <dt className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(item.label) && "uppercase")}>{item.label}</dt>
+          <dt className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(item.label) && "uppercase")}>{item.label}</dt>
           <dd className={cn("font-mono text-foreground", compact ? "text-xs" : "mt-1 truncate text-sm")}>{item.value}</dd>
         </div>
       ))}
@@ -440,7 +440,7 @@ function ExplorerSummaryStrip({ items, compact = false }: { items: FinancialReco
     <div className={compact ? "flex flex-wrap items-baseline gap-2" : "grid gap-2 sm:grid-cols-2 xl:grid-cols-4"} aria-label="Explorer summary">
       {items.map((item) => (
         <div key={item.id} className={cn("rounded-md border", compact ? "flex items-baseline gap-1 px-2 py-1" : "px-3 py-2", summaryToneClass(item.tone))}>
-          <div className={cn("text-[11px] font-semibold text-[var(--text-secondary)]", usesTrackedCaps(item.label) && "uppercase")}>{item.label}</div>
+          <div className={cn("text-xs font-semibold text-[var(--text-secondary)]", usesTrackedCaps(item.label) && "uppercase")}>{item.label}</div>
           <div className={cn("font-mono font-semibold", compact ? "text-xs" : "mt-1 text-lg")}>{item.value}</div>
         </div>
       ))}

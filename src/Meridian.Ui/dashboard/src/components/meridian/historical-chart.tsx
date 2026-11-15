@@ -283,7 +283,7 @@ function CompareChip({ chip }: { chip: CompareChipViewModel }) {
         style={{ backgroundColor: chip.color }}
       />
       <span className="font-mono">{chip.symbol}</span>
-      <span className={cn("text-[10px] uppercase tracking-wide", statusToneClass)}>{chip.statusLabel}</span>
+      <span className={cn("text-xs uppercase tracking-wide", statusToneClass)}>{chip.statusLabel}</span>
       <button
         type="button"
         onClick={chip.remove}
@@ -369,7 +369,7 @@ function CompareLegend({ series }: { series: CompareSeriesViewModel[] }) {
   return (
     <ul
       aria-label="Comparison series legend"
-      className="mt-2 flex flex-wrap gap-3 text-[11px] text-muted-foreground"
+      className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground"
       data-testid="historical-chart-compare-legend"
     >
       {series.map((s) => (
@@ -380,7 +380,7 @@ function CompareLegend({ series }: { series: CompareSeriesViewModel[] }) {
             style={{ backgroundColor: s.color }}
           />
           <span className="font-mono">{s.symbol}</span>
-          {s.isBase ? <span className="text-[10px] uppercase tracking-wide">Base</span> : null}
+          {s.isBase ? <span className="text-xs uppercase tracking-wide">Base</span> : null}
           <span className={cn("font-mono", compareLegendToneClass[s.lastChangeTone])}>
             {s.lastChangeLabel}
           </span>
@@ -512,7 +512,7 @@ function BarChartSparkline({ viewModel }: { viewModel: HistoricalChartSparklineV
 function ChartStat({ stat }: { stat: HistoricalChartStatTile }) {
   return (
     <div className="rounded-md border border-border/60 bg-secondary/25 px-2.5 py-1.5">
-      <div className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(stat.label) && "uppercase tracking-wide")}>{stat.label}</div>
+      <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(stat.label) && "uppercase tracking-wide")}>{stat.label}</div>
       <div className="mt-0.5 font-mono text-sm text-foreground">{stat.value}</div>
     </div>
   );
@@ -783,7 +783,7 @@ function CandlestickChartView({ viewModel: vm }: { viewModel: CandlestickChartVi
       {overlayLegend.length > 0 ? (
         <ul
           aria-label="Indicator overlays"
-          className="mt-2 flex flex-wrap gap-3 text-[11px] text-muted-foreground"
+          className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground"
         >
           {overlayLegend.map((entry) => (
             <li key={entry.key} className="flex items-center gap-1.5">
@@ -960,7 +960,7 @@ function HistoricalChartHoverPanel({ detail }: { detail: CandlestickHoverDetail 
 function HoverField({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline gap-1">
-      <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</dt>
+      <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</dt>
       <dd className="text-foreground">{value}</dd>
     </div>
   );

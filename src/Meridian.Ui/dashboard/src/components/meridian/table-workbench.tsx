@@ -1,13 +1,58 @@
-import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { DenseDataTable, nextDenseSort, sortRowsByValue, type DenseDataTableColumn, type DenseDataTableProps, type DenseDataTableSortState } from "@/components/meridian/ui-kit-primitives";
 import { downloadCsv, type CsvCell } from "@/lib/csv";
+import { readStoredDensity } from "@/lib/density";
 import { pluralizeCount } from "@/lib/format";
 import { loadTableViews, safeTableCsv, saveTableView, type TableView } from "@/lib/table-workbench";
 import { cn } from "@/lib/utils";
 import "@/styles/table-workbench.css";
 
+/** Search earns its toolbar space only once a table is long enough to need it. */
+export const TABLE_SEARCH_MIN_ROWS = 10;
+/** Priorities a table gives up, in order, when it would otherwise overflow its frame. */
+const DROP_ORDER = ["low", "medium"] as const;
+
+/** The table density that follows the operator's global density setting (Settings > Preferences). */
+function tableDensity(): "compact" | "comfortable" {
+  const scope = typeof document === "undefined" ? null : document.body.getAttribute("data-theme-density");
+  return (scope ?? readStoredDensity()) === "spacious" ? "comfortable" : "compact";
+}
+
+function useGlobalTableDensity(): "compact" | "comfortable" {
+  const [density, setDensity] = useState(tableDensity);
+  useEffect(() => {
+    const update = () => setDensity(tableDensity());
+    update();
+    if (typeof MutationObserver === "undefined") return;
+    const observer = new MutationObserver(update);
+    observer.observe(document.body, { attributes: true, attributeFilter: ["data-theme-density"] });
+    return () => observer.disconnect();
+  }, []);
+  return density;
+}
+
+/** Bulk actions for checked rows. The bar floats over the table foot and exists only while rows are selected. */
+export interface TableWorkbenchSelection {
+  count: number;
+  /** Singular noun for the selected things, e.g. "inbox item". Defaults to "row". */
+  noun?: string;
+  actions: ReactNode;
+  onClear: () => void;
+}
+
 export interface TableWorkbenchColumn<T> extends DenseDataTableColumn<T> {
+  /**
+   * How much the column matters when the table sits beside a detail rail. "low" columns are
+   * dropped first, then "medium", so the table never clips or scrolls sideways; "high" (the
+   * default) always stays. A dropped column is still in the Columns menu and in exports.
+   */
+  priority?: "high" | "medium" | "low";
+  /**
+   * Let this column's text wrap (a title with a sentence under it). The table then narrows by
+   * wrapping it before any column is dropped; figures and identifiers stay on one line.
+   */
+  wrap?: boolean;
   /** Original source value, before financial display formatting. Omit for action columns. */
   exportValue?: (row: T) => CsvCell;
   /** Use only for exact, unformatted decimal source strings. Text never acquires numeric semantics implicitly. */
@@ -40,13 +85,15 @@ export interface TableWorkbenchProps<T> extends Omit<DenseDataTableProps<T>, "co
   exportContext?: Record<string, string>;
   /** Name a deliberately bounded source explicitly, for example Export preview CSV. */
   exportLabel?: string;
+  /** Bulk-selection bar, shown only while `selection.count > 0`. */
+  selection?: TableWorkbenchSelection;
   /** Server export for paginated or incomplete populations. Must use the active query. */
   onExportAll?: (columns: string[], search: string, sort?: DenseDataTableSortState | null, signal?: AbortSignal) => Promise<void>;
 }
 
 export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, searchText: controlledSearch,
   onSearchTextChange, getSearchText, filters, compactToolbar = false, filterState, onRestoreFilters, onRestoreView, completePopulation = false,
-  sourceDescription, exportContext, exportLabel = "Export CSV", onExportAll, sort, onToggleSort, defaultSort = null,
+  sourceDescription, exportContext, exportLabel = "Export CSV", onExportAll, selection, sort, onToggleSort, defaultSort = null,
   hiddenColumnIds: controlledHiddenColumnIds, onHiddenColumnIdsChange, ...tableProps }: TableWorkbenchProps<T>) {
   const id = useId();
   const [localSearch, setLocalSearch] = useState("");
@@ -54,7 +101,11 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
   const [visibleIds, setVisibleIds] = useState<string[]>(columns.filter(column => !column.defaultHidden).map(column => column.id));
   const columnSchema = JSON.stringify(columns.map(column => [column.id, Boolean(column.defaultHidden)]));
   const previousSchema = useRef({ workbenchId, columnIds: columns.map(column => column.id) });
-  const [density, setDensity] = useState<"compact" | "comfortable">("compact");
+  // Density is one global preference, not a control on every table.
+  const density = useGlobalTableDensity();
+  // How many priority tiers (see DROP_ORDER) are currently dropped to keep the table inside its frame.
+  const [dropLevel, setDropLevel] = useState(0);
+  const droppedAtWidth = useRef<number[]>([]);
   const [localSort, setLocalSort] = useState<DenseDataTableSortState | null>(defaultSort);
   const ownsSort = onToggleSort === undefined && columns.some(column => column.sortValue !== undefined);
   const sortColumn = ownsSort ? columns.find(column => column.id === localSort?.columnId && column.sortValue) : undefined;
@@ -114,9 +165,16 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
       .filter(columnId => !controlledHiddenColumnIds.includes(columnId) || !hideableColumns.some(column => column.id === columnId))
     : visibleIds;
   const visibleColumns = effectiveVisibleIds.map(columnId => columns.find(column => column.id === columnId)).filter((column): column is TableWorkbenchColumn<T> => Boolean(column));
+  // Beside a detail rail the table drops its least important columns rather than clipping the
+  // last one or scrolling sideways: one tier at a time, only while the table really overflows.
+  const droppedPriorities: readonly string[] = DROP_ORDER.slice(0, dropLevel);
+  const fittedColumns = visibleColumns.filter(column => !droppedPriorities.includes(column.priority ?? "high"));
+  const nextDroppableTier = DROP_ORDER.slice(dropLevel).findIndex(tier => visibleColumns.some(column => column.priority === tier));
+  const droppedColumnCount = visibleColumns.length - fittedColumns.length;
   // TableWorkbench owns the single Columns control, including caller-owned URL state.
   // DenseDataTable must render these exact fields without a second visibility layer.
-  const tableColumns = visibleColumns.map(column => ({ ...column, hideable: false, defaultHidden: false,
+  const tableColumns = fittedColumns.map(column => ({ ...column, hideable: false, defaultHidden: false,
+    className: column.wrap ? cn(column.className, "table-workbench-cell--wrap") : column.className,
     sortable: ownsSort ? Boolean(column.sortValue) : column.sortable }));
   function changeVisibleIds(next: string[]) {
     const required = hasDeclaredHideableColumns ? columns.filter(column => !column.hideable && !column.defaultHidden).map(column => column.id) : [];
@@ -131,6 +189,16 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
       const left = scroller.scrollLeft > 1;
       const right = scroller.scrollLeft + scroller.clientWidth < scroller.scrollWidth - 1;
       setScrollEdges(current => current.left === left && current.right === right ? current : { left, right });
+      const width = scroller.clientWidth;
+      if (width > 0 && scroller.scrollWidth > width + 1 && nextDroppableTier >= 0) {
+        // Still too wide: give up the next tier that has columns, and remember the width it happened at.
+        const level = dropLevel + nextDroppableTier + 1;
+        droppedAtWidth.current[level] = width;
+        setDropLevel(level);
+      } else if (dropLevel > 0 && width > (droppedAtWidth.current[dropLevel] ?? Infinity) + 48) {
+        // The frame grew (the rail closed, the window widened): try the fuller table again.
+        setDropLevel(0);
+      }
     };
     update();
     scroller.addEventListener("scroll", update, { passive: true });
@@ -140,7 +208,7 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
     const table = scroller.querySelector("table");
     if (table) observer?.observe(table);
     return () => { scroller.removeEventListener("scroll", update); window.removeEventListener("resize", update); observer?.disconnect(); };
-  }, [visibleIds, rows, density, search]);
+  }, [visibleIds, rows, density, search, dropLevel, nextDroppableTier]);
   const filteredRows = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     const matches = query && getSearchText ? rows.filter(row => getSearchText(row).toLocaleLowerCase().includes(query)) : rows;
@@ -158,7 +226,6 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
     const validIds = view.columnIds.filter(columnId => columns.some(column => column.id === columnId));
     if (validIds.length) changeVisibleIds(validIds);
     setSearch(view.searchText);
-    setDensity(view.density === "comfortable" ? "comfortable" : "compact");
     if (ownsSort) setLocalSort(view.sortColumnId && columns.some(column => column.id === view.sortColumnId && column.sortValue)
       ? { columnId: view.sortColumnId, direction: view.sortDirection === "desc" ? "desc" : "asc" } : null);
     onRestoreFilters?.(view.filters ?? {});
@@ -204,7 +271,18 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
   const columnControls = hideableColumns.map(column => <label key={column.id}><input type="checkbox" checked={effectiveVisibleIds.includes(column.id)}
     disabled={visibleColumns.length === 1 && effectiveVisibleIds.includes(column.id)}
     onChange={event => changeVisibleIds(event.target.checked ? columns.filter(item => effectiveVisibleIds.includes(item.id) || item.id === column.id).map(item => item.id) : effectiveVisibleIds.filter(value => value !== column.id))} />{column.label || column.srLabel || column.id}</label>);
-  const densityControl = <label>Density<select aria-label={`${tableProps.ariaLabel} density`} value={density} onChange={event => setDensity(event.target.value as typeof density)}><option value="compact">Compact</option><option value="comfortable">Comfortable</option></select></label>;
+  const searchable = Boolean(getSearchText || onSearchTextChange);
+  // A short table is read, not searched. An active query keeps the field so it can be cleared.
+  // A server-backed table (`onExportAll`) searches a population larger than the loaded rows, so
+  // its row count says nothing about whether search is needed.
+  const showSearch = searchable && (rows.length > TABLE_SEARCH_MIN_ROWS || search.trim() !== "" || onExportAll !== undefined);
+  const closeOnEscape = (event: KeyboardEvent<HTMLDetailsElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.currentTarget.open = false;
+      event.currentTarget.querySelector("summary")?.focus();
+    }
+  };
   const exportControl = <Button size="sm" variant="outline" onClick={() => void exportAll()} disabled={exporting || !exportColumns.length || (!completePopulation && !onExportAll)}
     title={!completePopulation && !onExportAll ? "A complete authorized source is required before export." : `Export all ${pluralizeCount(filteredRows.length, "filtered match", { plural: "filtered matches" })}. ${sourceDescription}`}>{exporting ? "Exporting…" : exportLabel}</Button>;
   const viewControls = <>
@@ -215,40 +293,47 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
   const unavailableViews = compactToolbar && notice === "Saved views unavailable. You can continue reviewing this table.";
 
   return (
-    <section className={cn("table-workbench", `table-workbench--${density}`)} aria-label={`${tableProps.ariaLabel} controls and results`}>
+    <section className={cn("table-workbench", `table-workbench--${density}`, fittedColumns.some(column => column.wrap) && "table-workbench--wrapping")} aria-label={`${tableProps.ariaLabel} controls and results`}>
       <div className={cn("table-workbench-toolbar", compactToolbar && "table-workbench-toolbar--compact")} role="group" aria-label={`${tableProps.ariaLabel} table controls`}>
-        {getSearchText || onSearchTextChange ? <label className="table-workbench-search" htmlFor={`${id}-search`}>Search
+        {showSearch ? <label className="table-workbench-search" htmlFor={`${id}-search`}>Search
           <input id={`${id}-search`} type="search" value={search} onChange={event => setSearch(event.target.value)} />
         </label> : null}
         {filters}
-        {compactToolbar ? <details className="table-workbench-disclosure" onKeyDown={event => {
-          if (event.key === "Escape") {
-            event.preventDefault();
-            event.currentTarget.open = false;
-            event.currentTarget.querySelector("summary")?.focus();
-          }
-        }}>
-          <summary aria-label={`${tableProps.ariaLabel} table options`}>Table options</summary>
-          <div className="table-workbench-menu table-workbench-options">
-            <fieldset><legend>Columns</legend>{columnControls}</fieldset>
-            {densityControl}
-            {exportControl}
-            <fieldset><legend>Save view</legend>{viewControls}</fieldset>
-          </div>
-        </details> : <>
-          <details className="table-workbench-disclosure"><summary>Columns</summary><div className="table-workbench-menu">{columnControls}</div></details>
-          {densityControl}
-          {exportControl}
-          <details className="table-workbench-disclosure"><summary>Save view</summary><div className="table-workbench-menu">{viewControls}</div></details>
-        </>}
-        <span className="table-workbench-count">{pluralizeCount(filteredRows.length, "match", { plural: "matches" })}</span>
-        {unavailableViews ? <span role="status" title={notice} className="table-workbench-view-notice">Views unavailable</span> : null}
+        {showSearch || filters ? <span className="table-workbench-count">{pluralizeCount(filteredRows.length, "match", { plural: "matches" })}</span> : null}
+        <div className="table-workbench-tools">
+          {droppedColumnCount > 0 ? <span className="table-workbench-view-notice" title="Widen the table or close the detail pane to show every column. Hidden columns are still exported.">{pluralizeCount(droppedColumnCount, "column")} hidden to fit</span> : null}
+          {unavailableViews ? <span role="status" title={notice} className="table-workbench-view-notice">Views unavailable</span> : null}
+          {compactToolbar ? <details className="table-workbench-disclosure" onKeyDown={closeOnEscape}>
+            <summary aria-label={`${tableProps.ariaLabel} table options`}>Table options</summary>
+            <div className="table-workbench-menu table-workbench-options">
+              <fieldset><legend>Columns</legend>{columnControls}</fieldset>
+              {exportControl}
+              <fieldset><legend>Save view</legend>{viewControls}</fieldset>
+            </div>
+          </details> : <>
+            <details className="table-workbench-disclosure" onKeyDown={closeOnEscape}><summary>Columns</summary><div className="table-workbench-menu">{columnControls}</div></details>
+            <details className="table-workbench-disclosure" onKeyDown={closeOnEscape}>
+              <summary className="table-workbench-more" aria-label={`${tableProps.ariaLabel} more table actions`} title="Export and saved views"><span aria-hidden="true">⋯</span></summary>
+              <div className="table-workbench-menu table-workbench-options">
+                {exportControl}
+                <fieldset><legend>Save view</legend>{viewControls}</fieldset>
+              </div>
+            </details>
+          </>}
+        </div>
       </div>
       {error ? <p role="alert" className="text-danger text-sm">{error}</p> : null}
       {notice && !unavailableViews ? <p role="status" className="text-muted-foreground text-xs">{notice}</p> : null}
       <div ref={frame} className="table-workbench-frame" data-scroll-left={scrollEdges.left} data-scroll-right={scrollEdges.right}>
         <DenseDataTable {...tableProps} columns={tableColumns} rows={filteredRows} sort={effectiveSort} onToggleSort={toggleSort} />
       </div>
+      {selection && selection.count > 0 ? (
+        <div className="table-workbench-selection" role="region" aria-label={`${tableProps.ariaLabel} selection actions`}>
+          <span className="table-workbench-selection-count" role="status">{pluralizeCount(selection.count, selection.noun ?? "row")} selected</span>
+          {selection.actions}
+          <Button type="button" size="sm" variant="ghost" onClick={selection.onClear}>Clear selection</Button>
+        </div>
+      ) : null}
     </section>
   );
 }

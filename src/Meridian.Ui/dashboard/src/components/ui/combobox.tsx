@@ -164,7 +164,7 @@ export function Combobox({
   return (
     <div ref={rootRef} className={cn("relative w-full", className)}>
       {label ? (
-        <label id={labelId} htmlFor={inputId} className={cn("mb-1.5 block text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>
+        <label id={labelId} htmlFor={inputId} className={cn("mb-1.5 block text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>
           {label}
         </label>
       ) : null}
@@ -247,7 +247,7 @@ export function Combobox({
                   )}
                 >
                   {highlight(option.label, query)}
-                  {isSelected ? <span className="ml-auto text-[11px]">✓</span> : null}
+                  {isSelected ? <span className="ml-auto text-xs">✓</span> : null}
                 </div>
               );
             })

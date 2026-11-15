@@ -233,7 +233,7 @@ export function OperatorReadinessConsole({
                   <span className="text-sm font-semibold">{source.label}</span>
                   <SeverityBadge status={toSeverity(source.level)} label={source.status} aria-label={source.statusAriaLabel} />
                 </div>
-                <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{source.endpoint}</p>
+                <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{source.endpoint}</p>
               </div>
             ))}
           </div>
@@ -362,7 +362,7 @@ function SelectedWorkItemDetail({
           <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
         </div>
         <TechnicalDetails label="Audit details" className="mt-3">
-          <p className="break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
+          <p className="break-words font-mono text-xs text-muted-foreground">{detail.meta}</p>
           <DetailFieldList fields={detail.fields} />
         </TechnicalDetails>
         {detail.action ? (
@@ -419,7 +419,7 @@ function PrimaryNextAction({ action }: { action: ReadinessConsoleNextAction }) {
           <div className="mt-1 text-sm font-semibold text-foreground">{action.title}</div>
           <p className="mt-1 text-xs leading-5 text-foreground/80">{action.detail}</p>
           <TechnicalDetails label="Action context" className="mt-2">
-            <p className="break-words font-mono text-[11px] text-muted-foreground">{action.meta}</p>
+            <p className="break-words font-mono text-xs text-muted-foreground">{action.meta}</p>
           </TechnicalDetails>
         </div>
         {actionButton}
@@ -505,7 +505,7 @@ function SelectedEvidenceDetail({
           <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
         </div>
         <TechnicalDetails label="Audit details" className="mt-3">
-          <p className="break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
+          <p className="break-words font-mono text-xs text-muted-foreground">{detail.meta}</p>
           <DetailFieldList fields={detail.fields} />
         </TechnicalDetails>
         {detail.action ? (
