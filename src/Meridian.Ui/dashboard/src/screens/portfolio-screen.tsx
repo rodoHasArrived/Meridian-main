@@ -1,3 +1,4 @@
+import { InfoNote } from "@/components/ui/info-note";
 import { PageHeading } from "@/components/ui/page-heading";
 import { DetailFields, DetailPane } from "@/components/meridian/detail-pane";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
@@ -365,15 +366,15 @@ export function resolvePortfolioRouteView(pathname: string): PortfolioRouteViewI
 const portfolioRouteViewCopy: Record<PortfolioRouteViewId, { title: string; description: string }> = {
   overview: {
     title: "Holdings",
-    description: "Open holdings, cash posture, and the record explorer stay aligned with the active paper workflow."
+    description: "See what the portfolio holds, what it is worth, and how current the prices are."
   },
   attribution: {
     title: "Run attribution evidence",
-    description: "Run-linked equity evidence: comparison signals, drill-ins, and per-run attribution detail."
+    description: "See how each strategy run contributed to portfolio value."
   },
   "brokerage-sync": {
     title: "Brokerage connection and coverage",
-    description: "Live brokerage portfolio, connection trust, and multi-asset coverage posture."
+    description: "Compare the broker's accounts and positions with what Meridian holds."
   }
 };
 
@@ -1219,9 +1220,16 @@ function PortfolioScreenContent({
                     Select a holding to inspect its mark readiness and evidence.
                   </CardDescription>
                 </div>
-                <Badge variant="outline" aria-label={vm.positionCountLabel}>
-                  {vm.positionCountLabel}
-                </Badge>
+                <div className="flex items-center gap-1">
+                  {vm.hasPositions ? (
+                    <InfoNote label="How the bars under each amount are scaled">
+                      Each bar shows an amount against the largest in its column, across all loaded positions in the same currency. P&L bars run left for losses and right for gains. Amounts are compared as displayed, with no currency conversion.
+                    </InfoNote>
+                  ) : null}
+                  <Badge variant="outline" aria-label={vm.positionCountLabel}>
+                    {vm.positionCountLabel}
+                  </Badge>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="px-3 py-2">
@@ -1237,11 +1245,6 @@ function PortfolioScreenContent({
                 onReset={positionsTable.resetControls}
                 shareError={positionsTable.shareError}
               />
-              {vm.hasPositions ? (
-                <TechnicalDetails label="Bars show each amount against the largest in its column" className="mb-2" contentClassName="text-xs leading-5 text-muted-foreground">
-                  <p>Bars compare rounded, displayed $ amounts only. Each column uses its largest magnitude across all loaded positions before filters, grouped by supplied source currency. Amounts without currency stay in a separate approximate display group. P&L extends left for losses and right for gains from zero; no currency is inferred from $, and no conversion is applied.</p>
-                </TechnicalDetails>
-              ) : null}
               {vm.hasPositions ? (
                 <div data-holdings-table data-holdings-loaded-count={vm.positionRows.length}
                   data-holdings-total={vm.holdingsTotal.exposureAmount ?? ""} data-holdings-total-currency={vm.holdingsTotal.currency ?? ""}>

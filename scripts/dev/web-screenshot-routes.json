@@ -46,7 +46,9 @@
       ],
       "waitForTexts": [
         "Net P&L",
-        "Paper cockpit readiness"
+        "Live positions",
+        "Open orders",
+        "Readiness checks"
       ]
     },
     {
@@ -833,7 +835,7 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Reporting owns governed export previews",
+        "Preview exports and review the files and warnings each one produced",
         "Investor PDF",
         "Governed export queue"
       ]
@@ -848,7 +850,7 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Design governed output, report-writer grids, branding, and reusable templates",
+        "Design report layouts, branding, and reusable templates",
         "Template families",
         "Governed report templates"
       ]
@@ -863,7 +865,7 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Reporting owns report-run readiness",
+        "Track report runs and see what is blocking publication",
         "Report run audit and lineage",
         "Audit, lineage, and artifacts",
         "Review approval details"
@@ -895,7 +897,7 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Reporting owns access scope",
+        "Manage who can use each template",
         "Template lifecycle and access",
         "User, group, and company scope"
       ]

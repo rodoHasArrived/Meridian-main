@@ -611,10 +611,42 @@ Use `SectionDescription` only for instructional copy, with a stable `description
 accessible label. `ScreenLayout` and `WorkspaceSection` opt in using `descriptionKey`; dynamic
 financial state, warnings, source evidence, and scope must never use remembered help. The shell
 scopes browser-local reading preferences to the session environment, operator name and role.
-Copy remains inline on its first visit; visibility observation or Hide remembers it for later
-visits. An information disclosure then restores the copy with Enter/Space; Escape closes it and
-returns focus. Storage failures leave help usable. These preferences do not change financial data
-or authorization and do not synchronize between browsers.
+Descriptions show as a line of text on every visit. One operator setting, "Page descriptions"
+under Settings > Preferences (`useSectionDescriptionsHidden`), moves all of them behind an
+information icon instead; there is no per-section "Hide" link and a description no longer
+collapses after it has been seen once. The icon opens with Enter/Space; Escape closes it and
+returns focus. Storage failures leave help usable. The setting does not change financial data
+or authorization and does not synchronize between browsers.
+
+Every workspace overview opens with `PageHeading` (`components/ui/page-heading.tsx`): the page
+name, then an optional one-line purpose on its own line, then page actions. Write the purpose as
+one sentence in the operator's terms, with no internal vocabulary ("posture", "governed",
+"evidence routes"). Method notes and chart scaling rules go behind `InfoNote`
+(`components/ui/info-note.tsx`), not above the table they explain.
+
+Overview pages follow one order: page heading, headline figures, the page's main list or queue
+with its detail panel, then secondary sections collapsed in `TechnicalDetails`. A section is never
+a heading with no content. Trading's overview leads with the position book and the order blotter;
+readiness checks and session history are collapsed below them.
+
+## Trust, scope and refresh are each stated once
+
+- **Trust.** The masthead owns the environment and the worst open issue. Headline figures carry
+  one compact label (`describeCompactProvenance`: data kind, shared as-of time, shared scope); the
+  full source sentence is its hover text and spoken form, and each figure's details icon states
+  its own source. An unverified figure is marked on the figure (dotted underline, reason on
+  hover), not by a sentence under the row; stale figures keep the clock and the word "Stale".
+  `OperationalTrustSummary` renders only when the page's own facts differ from the global state
+  (pass `showWhenClear` where the row is the only place a page names its source and date).
+- **Scope.** The header scope bar is the one scope control. Pages do not restate the scope or
+  carry their own scope button. With no fund account in scope, Trading shows one row that picks
+  the account into the header scope.
+- **Refresh.** The header Refresh is the one refresh button. It reloads the workstation payloads
+  and bumps `GlobalRefreshProvider`; a panel that loads its own data subscribes with
+  `useOnGlobalRefresh(reload)` instead of rendering a refresh button. A panel shows a local
+  "Retry" only inside its error state. An action that starts new verification is named for what
+  it does ("Verify credentials", "Synchronize and reconcile"), never "Refresh". Sub-page panels
+  that still carry their own Refresh button are being moved to this pattern.
 
 `TableWorkbench` can opt in to `compactToolbar` on task queues. Search, active filters and match
 counts stay visible; Table options discloses Columns, Density, Export and saved-view controls.
@@ -635,13 +667,13 @@ The browser shell renders `WorkspaceHeader` as one row above every route:
   a workspace root reads `Trading`, the front door reads `Today`). The masthead shows only
   `Meridian` and announces the workspace to assistive technology, so the location is stated once.
 - **Centre:** the permanent operating-scope bar (`components/meridian/operating-scope-bar.tsx`),
-  `Scope  Entity … › Fund … › Account … › Period …`, with Subject, Run and Provider inserted
-  before Period when set. An unset Entity, Fund or Account reads `All authorized` and an unset
-  Period reads `All periods` (never "None"); set dimensions the current screen does not apply are
+  which lists only the fields that are set (`Scope  Fund … › Period …`, with Subject, Run and
+  Provider before Period) and shrinks to `Scope  All authorized scopes` when nothing is narrowed
+  (never "None"); set dimensions the current screen does not apply are
   muted and described as retained. Entity and fund ids print as names when the organization graph
   has loaded (`valueLabels`), otherwise as ids. It shows on every route and opens the scope picker.
-  The empty scope as a whole reads `All authorized scopes` (`OPERATING_SCOPE_EMPTY_SUMMARY`), the
-  same words Today prints.
+  The empty scope as a whole reads `All authorized scopes` (`OPERATING_SCOPE_EMPTY_SUMMARY`).
+  Today does not repeat the scope.
 - **Right:** Refresh, `Views` (saved-layout and save-current-view controls) and an overflow menu
   holding Copy link and the workspace's About text.
 

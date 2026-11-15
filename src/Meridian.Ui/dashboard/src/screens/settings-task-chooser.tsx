@@ -81,7 +81,7 @@ export function SettingsTaskChooser({ viewModel }: { viewModel: SettingsScreenVi
         <h2 className="text-sm font-semibold text-foreground">Setup checklist</h2>
         <Link className="text-xs text-foreground underline decoration-dotted underline-offset-4" to={WORKSTATION_ROUTE_CATALOG.settingsDiagnostics}>Review diagnostic exceptions</Link>
       </div>
-      <p className="text-xs text-muted-foreground">Completion reflects loaded evidence. A configured connection does not establish live readiness.</p>
+      <p className="text-xs text-muted-foreground">A step counts as done only once it has been verified; saving a connection does not verify it.</p>
       <ol className="divide-y divide-border border-y border-border">
         {settingsTasks.filter((item) => item.id !== "diagnostics").map((item) => {
           const check = checks[item.id as keyof typeof checks];

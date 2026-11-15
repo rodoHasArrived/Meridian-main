@@ -1,5 +1,5 @@
 import { createContext, useContext, useId, useSyncExternalStore, type ReactNode } from "react";
-import { Info } from "lucide-react";
+import { InfoNote } from "@/components/ui/info-note";
 
 const OperatorContext = createContext<string | null>(null);
 
@@ -66,19 +66,5 @@ export function SectionDescription({ label = "About this section", children }: {
     return <div className="min-w-0 text-xs leading-5 text-muted-foreground" id={id}>{children}</div>;
   }
 
-  return (
-    <details className="relative inline-block align-middle" onKeyDown={(event) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        event.currentTarget.open = false;
-        event.currentTarget.querySelector("summary")?.focus();
-      }
-    }}>
-      <summary aria-label={label} title={label}
-        className="flex size-6 cursor-pointer list-none items-center justify-center rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [&::-webkit-details-marker]:hidden">
-        <Info className="size-3.5" aria-hidden="true" />
-      </summary>
-      <div className="absolute left-0 top-full z-30 w-80 max-w-[calc(100vw-4rem)] rounded-sm border border-border bg-card p-3 text-xs leading-5 text-muted-foreground shadow-md">{children}</div>
-    </details>
-  );
+  return <InfoNote label={label}>{children}</InfoNote>;
 }

@@ -247,15 +247,15 @@ export function resolveStrategyRouteView(pathname: string): StrategyRouteViewId 
 const strategyRouteViewCopy: Record<StrategyRouteViewId, { title: string; description: string }> = {
   overview: {
     title: "Strategy overview",
-    description: "Review strategy posture, then open the focused builder, lab, run, and promotion workspaces."
+    description: "Review recent strategy runs and open the one you want to work on."
   },
   promotions: {
     title: "Promotion review",
-    description: "Retained runs, comparison evidence, and paper-promotion review."
+    description: "Compare saved runs and decide which to promote to paper trading."
   },
   lab: {
     title: "Strategy Lab",
-    description: "PlotTool workstation: scatter analysis, notebooks, and statistics."
+    description: "Explore run results with charts, notebooks, and statistics."
   }
 };
 

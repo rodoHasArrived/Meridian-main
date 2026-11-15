@@ -68,7 +68,9 @@ export function SettingsChangeImpactBanner({ loadStatus = loadConfigurationChang
   const pending = status?.pendingChanges ?? [];
   if (pending.length === 0 && !error) return null;
   return (
-    <section aria-label="Setting activation status" aria-live="polite" className="space-y-2">
+    // With nothing pending, an unavailable status is a footnote: it sits below the page's content
+    // (the page lays its sections out in a flex column), not above the setup checklist.
+    <section aria-label="Setting activation status" aria-live="polite" className={pending.length > 0 ? "space-y-2" : "order-last flex flex-wrap items-center gap-2"}>
       {pending.length > 0 ? (
         <StatusBanner
           tone="warning"
