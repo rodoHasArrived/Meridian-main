@@ -364,3 +364,27 @@ decisions:
       - W14-ATTEST-001
       - W11-COVER-001
       - W11-PASSPORT-001
+  - id: DEC-IC-ACCRUAL-001
+    title: Bring governed intercompany loan-interest accrual into scope; register W12-ICACCRUAL-001
+    status: accepted
+    decided_on: 2026-11-14
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Recorded on the repository owner's instruction of 2026-11-14. The intercompany agreement
+      registry and the P1-P5 intercompany plan stated that interest and fees are not calculated and
+      that loan-interest mirroring is outside the implementation. This decision brings one case into
+      scope: fixed-rate simple interest on an intercompany loan, calculated from approved structured
+      terms under rule intercompany-accrual-v1 (ADR-028), with principal read from posted journals of
+      the approved Loan profile. The computed amount is retained as a source-side draft in ordinary
+      journal review, and its counterpart arrives through the existing counterpart proposal pipeline
+      after the source posts; nothing posts automatically. A separately reviewed LoanInterest
+      accounting-profile template carries the interest income and expense mapping, and each accrual
+      pins the agreement version, profile revision and computation evidence. Fees, floating rates,
+      compounding, scheduled runs and operator screens are not brought into scope. W12-ICACCRUAL-001
+      is registered as in_progress with yellow health under active implementation. The decision
+      changes no existing row's rank, status, dependency or acceptance, weakens no review, posting
+      or authorization control, and grants no release authority.
+    related_roadmap_items:
+      - W12-ICACCRUAL-001
+      - W12-ICAGREE-001
+      - W12-ICPAIR-001

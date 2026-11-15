@@ -13,7 +13,9 @@ last_reviewed: 2026-11-14
 
 Native intercompany legal rules validate structured declarations without turning them into accrual
 or settlement calculations. The shared preview reuses schedule/day-count/calendar kernels for
-dates only. An explicit evidence-bound external-review attestation lets the preparing operator
+dates only. The separate pure `IntercompanyAccrualPreviewService` (ADR-028) reuses the same schedule
+mapping and day-count kernel to calculate fixed-rate simple loan interest over server-resolved
+revisions and principal; it reads no ledger and authorizes no journal. An explicit evidence-bound external-review attestation lets the preparing operator
 record external legal review while ordinary independent review remains available; legal lifecycle
 revisions retain the same separate audit facts. See
 [terms and review boundaries](../../docs/domain/intercompany-agreements.md).

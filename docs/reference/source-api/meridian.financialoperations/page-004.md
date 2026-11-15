@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TrueBreakEscalation
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TrueBreakEscalation</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:236](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L236).
+
+An escalation raised for a reconciliation break the platform classified as a genuine (BreakClassification.TrueBreak) or potential break. Carries an escalation level that advances when its SLA timer breaches, plus resolution provenance.
+
+```csharp
+public sealed record TrueBreakEscalation(string EscalationId, string BreakId, string SubjectId, BreakClassification Classification, ReconciliationBreakSeverity Severity, int Level, string AssignedTo, string Reason, TrueBreakEscalationStatus Status, DateTimeOffset RaisedAtUtc, WorkflowSlaTimer? Timer = null, DateTimeOffset? ResolvedAtUtc = null, string? ResolvedBy = null, string? ResolutionNote = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsOpen =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:253](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L253) | True when the escalation is still open or escalated (not yet resolved). |
+
+## TrueBreakEscalationRequest
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TrueBreakEscalationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:213](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L213).
+
+Request to raise a true-break escalation.
+
+```csharp
+public sealed record TrueBreakEscalationRequest(string BreakId, BreakClassification Classification, ReconciliationBreakSeverity Severity, string Reason, string AssignedTo, WorkflowSlaPolicy? SlaPolicy = null, string? SubjectId = null, DateTimeOffset? RaisedAtUtc = null);
+```
+
 ## TrueBreakEscalationStatus
 
 Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TrueBreakEscalationStatus</code>. Kind: `enum`.
@@ -1121,31 +1151,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public LedgerCapitalAccountReconciliationResolver(ILedgerJournalStore? journalStore, IFundProfileTenancyRegistry? tenancyRegistry);</code> | [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:55](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L55) |  |
 | <code>public async Task&lt;AutomatedJournalCapitalAccountReconciliationDto?&gt; ResolveAsync(AutomatedJournalCapitalAccountReconciliationScope scope, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:63](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L63) |  |
-
-## PostedPrivateCapitalActivityProjection
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PostedPrivateCapitalActivityProjection</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:22](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L22).
-
-```csharp
-public sealed record PostedPrivateCapitalActivityProjection(PrivateCapitalFundEventLedgerProjection Projection, IReadOnlyDictionary<Guid, string> JournalEntryCurrencies);
-```
-
-## PrivateCapitalActivityProjectionBuilder
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalActivityProjectionBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:29](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L29).
-
-Builds private-capital activity views from fund events and associated accounting evidence.
-
-```csharp
-public static class PrivateCapitalActivityProjectionBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static PrivateCapitalActivityProjectionDto Build(PrivateCapitalActivityProjectionInput input);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:63](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L63) |  |

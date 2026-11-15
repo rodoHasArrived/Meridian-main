@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OfxDocument
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Ofx.OfxDocument</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:447](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L447).
+
+A parsed OFX file flattened into uniform per-entry tag dictionaries.
+
+```csharp
+public sealed record OfxDocument(string? AccountId, IReadOnlyList<IReadOnlyDictionary<string, string>> Entries)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int StatementCount { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:452](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L452) | Number of containing statement sections, including empty sections. |
+
+## OfxDocumentParser
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Ofx.OfxDocumentParser</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L11).
+
+Tolerant OFX parser covering both OFX 1.x (SGML, unclosed leaf tags) and OFX 2.x (XML). Aggregates of interest — bank transactions, ledger balances, investment buys/sells, and investment positions — are flattened into per-entry tag dictionaries (&quot;pseudo-columns&quot;) so the same declarative mapping profiles used for CSV apply to OFX statements.
+
+```csharp
+public static class OfxDocumentParser
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string AggregateColumn = &quot;AGGREGATE&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:14](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L14) | Pseudo-column carrying the aggregate name (STMTTRN, INVBUY, POSSTOCK, ...). |
+| <code>public static bool LooksLikeOfx(string content);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:47](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L47) |  |
+| <code>public static OfxDocument Parse(string content) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:55](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L55) |  |
+| <code>public static OfxDocument Parse(string content, int maxEntries, int maxDepth, int maxNodes, out OfxParseBound bound);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:73](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L73) | Parses an OFX document, refusing one that exceeds the ingress bounds instead of building it first. |
+
 ## OfxParseBound
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Ofx.OfxParseBound</code>. Kind: `enum`.
@@ -794,44 +833,3 @@ Declared public members:
 | <code>public FileAccountCashReconciliationStore(string dataRoot);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs:35](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs#L35) |  |
 | <code>public static string ScopeFileName(AccountCashReconciliationScope scope);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs:42](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs#L42) | Canonical file-system-safe identity of one scope; the envelope re-states the scope so a misplaced file fails closed. |
 | <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs#L48) |  |
-
-## FileAccountingCalendar
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileAccountingCalendar</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/FileAccountingCalendar.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountingCalendar.cs#L21).
-
-Loads the production IAccountingCalendar from an operator-maintained calendar file under the deployment data root (reconciliation/business-calendar.json), mirroring the FileReconciliationFxRateProvider pattern. This is the seam that turns the weekends-only default into a real market calendar (exchange holidays, regional weekends).
-
-```csharp
-public static class FileAccountingCalendar
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string RelativePath = &quot;reconciliation/business-calendar.json&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/FileAccountingCalendar.cs:28](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountingCalendar.cs#L28) |  |
-| <code>public static IAccountingCalendar Load(string dataRoot, ILogger? logger = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileAccountingCalendar.cs:30](../../../../src/Meridian.FinancialOperations/Reconciliation/FileAccountingCalendar.cs#L30) |  |
-
-## FileReconciliationDecisionJournal
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileReconciliationDecisionJournal</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs#L9).
-
-Retains reconciliation decisions and resolution history in local files.
-
-```csharp
-public sealed class FileReconciliationDecisionJournal : IReconciliationDecisionJournal
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileReconciliationDecisionJournal(string dataRoot);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs:15](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs#L15) |  |
-| <code>public async Task AppendDecisionAsync(BrokerCustodianMatchDecision decision, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs#L21) |  |
-| <code>public async Task AppendHistoryAsync(ReconciliationResolutionHistoryEntry history, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs:27](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs#L27) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;BrokerCustodianMatchDecision&gt;&gt; ListDecisionsAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs#L33) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationResolutionHistoryEntry&gt;&gt; ListHistoryAsync(string decisionId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs:39](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs#L39) |  |
