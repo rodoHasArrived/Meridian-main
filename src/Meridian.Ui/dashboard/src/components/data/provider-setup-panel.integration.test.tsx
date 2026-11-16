@@ -1,11 +1,19 @@
 // The panel with the real `useProviderSetup` hook over a stubbed API client: the inline priority
 // cell, the hook's re-read after a write, and the edit drawer working against one stored value.
+import { useState } from "react";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { ApiError } from "@/lib/api-errors";
 import type { ProviderModuleStatus, UpsertProviderModuleRequest } from "@/types/provider-setup";
+
+/** Stands in for the workstation header: its Refresh is the only refresh control. */
+function HeaderRefreshHarness() {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence((value) => value + 1)}>Header refresh</button><ProviderSetupPanel /></GlobalRefreshProvider>;
+}
 
 const api = vi.hoisted(() => ({
   getProviderModules: vi.fn(),
@@ -175,7 +183,8 @@ describe("ProviderSetupPanel inline priority beside the other write paths", () =
 
   async function mount() {
     const user = userEvent.setup();
-    render(<ProviderSetupPanel />);
+    render(<HeaderRefreshHarness />);
+    expect(screen.queryByRole("button", { name: /^(Refresh|Retry)/ })).not.toBeInTheDocument();
     await screen.findByRole("button", { name: "Edit Polygon priority: 100" });
     return user;
   }
@@ -230,7 +239,7 @@ describe("ProviderSetupPanel inline priority beside the other write paths", () =
     await screen.findByText("No provider modules configured");
     // Configured again elsewhere under the same id, at the default priority.
     store = [{ ...seed }];
-    await user.click(screen.getByRole("button", { name: "Refresh" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
 
     const cell = await screen.findByRole("button", { name: "Edit Polygon priority: 100" });
     expect(cell.closest(".mds-opt")).toHaveAttribute("data-status", "idle");
@@ -309,7 +318,7 @@ describe("ProviderSetupPanel inline priority beside the other write paths", () =
     expect(note).not.toHaveTextContent("back to");
     expect(screen.queryByText("Restart required")).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Refresh" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
 
     // The read shows the write did land: the cell says so, and the restart banner appears.
     await waitFor(() => expect(priorityCell(/Edit Polygon priority: 60, was 100/)).toHaveAttribute("data-status", "confirmed"));

@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as qualityApi from "@/lib/api/data-quality-watch.api";
 import { DataQualityWatch } from "@/screens/data-quality-watch";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 
 vi.mock("@/lib/api/data-quality-watch.api", () => ({
   getQualityHealth: vi.fn(),
@@ -160,14 +160,16 @@ describe("DataQualityWatch", () => {
 
     expect(await screen.findByText("Quality watch unavailable")).toBeInTheDocument();
     expect(screen.getByText(/Health: quality service offline/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retry loading the quality watch" })).toBeEnabled();
   });
 
   it("refetches every rollup on refresh", async () => {
     primeReads();
-    render(<DataQualityWatch />);
+    const { rerender } = render(<GlobalRefreshProvider sequence={0}><DataQualityWatch /></GlobalRefreshProvider>);
     await screen.findByText("Unhealthy");
+    expect(screen.queryByRole("button", { name: /Refresh|Retry/ })).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("button", { name: /Refresh/ }));
+    rerender(<GlobalRefreshProvider sequence={1}><DataQualityWatch /></GlobalRefreshProvider>);
 
     await waitFor(() => expect(api.getQualityHealth).toHaveBeenCalledTimes(2));
     expect(api.getStaleQualitySymbols).toHaveBeenCalledTimes(2);

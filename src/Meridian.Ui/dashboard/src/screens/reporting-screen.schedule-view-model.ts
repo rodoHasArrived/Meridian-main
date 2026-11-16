@@ -82,7 +82,7 @@ function buildScheduleReleaseView(
   if (deliveryTargetCount === 0) {
     return {
       accessPolicySnapshotLabel: accessPolicySnapshotHash ?? "No access policy snapshot retained",
-      releaseGateLabel: "No release delivery handoff required",
+      releaseGateLabel: "No release delivery required",
       releaseGateVariant: "success",
       releaseHandoffs
     };
@@ -100,7 +100,7 @@ function buildScheduleReleaseView(
   if (releaseHandoffs.length === 0) {
     return {
       accessPolicySnapshotLabel: accessPolicySnapshotHash,
-      releaseGateLabel: "Release delivery ready: post-generation handoff will be retained",
+      releaseGateLabel: "Release delivery ready: post-generation delivery request will be retained",
       releaseGateVariant: "success",
       releaseHandoffs
     };
@@ -109,7 +109,7 @@ function buildScheduleReleaseView(
   if (pendingCount > 0) {
     return {
       accessPolicySnapshotLabel: accessPolicySnapshotHash,
-      releaseGateLabel: `${pendingCount} handoff${pendingCount === 1 ? "" : "s"} awaiting governance release; ${enqueuedCount} enqueued`,
+      releaseGateLabel: `${pendingCount} deliver${pendingCount === 1 ? "y" : "ies"} awaiting governance release; ${enqueuedCount} enqueued`,
       releaseGateVariant: "warning",
       releaseHandoffs
     };
@@ -117,7 +117,7 @@ function buildScheduleReleaseView(
 
   return {
     accessPolicySnapshotLabel: accessPolicySnapshotHash,
-    releaseGateLabel: `${enqueuedCount} release delivery handoff${enqueuedCount === 1 ? "" : "s"} enqueued`,
+    releaseGateLabel: `${enqueuedCount} release deliver${enqueuedCount === 1 ? "y" : "ies"} enqueued`,
     releaseGateVariant: "success",
     releaseHandoffs
   };
@@ -143,7 +143,7 @@ function buildScheduledReleaseHandoffRows(
     stateVariant: handoff.state === "Enqueued" ? "success" : "warning",
     createdLabel: formatReportingTimestamp(handoff.createdAtUtc),
     enqueuedLabel: buildScheduledReleaseEnqueuedLabel(handoff),
-    ariaLabel: `${handoff.handoffId} release delivery handoff ${handoff.state} for ${handoff.recipientPrincipalKind ?? "unknown"} recipient`
+    ariaLabel: `${handoff.handoffId} release delivery ${handoff.state} for ${handoff.recipientPrincipalKind ?? "unknown"} recipient`
   }));
 }
 

@@ -266,8 +266,8 @@ export function useQuickTradeTicket(
           ...current,
           phase: "parked" as const,
           message: result.escalationId
-            ? `Order parked for governed approval (escalation ${result.escalationId}). Do not resubmit.`
-            : "Order parked for governed approval. Do not resubmit.",
+            ? `Order parked for approval (escalation ${result.escalationId}). Do not resubmit.`
+            : "Order parked for approval. Do not resubmit.",
           details: [],
           orderId: result.orderId ?? null,
           validationVisible: false,

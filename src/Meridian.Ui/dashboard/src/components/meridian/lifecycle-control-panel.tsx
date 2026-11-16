@@ -1,7 +1,7 @@
 import { formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
 import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Activity, Power, RefreshCcw, RotateCcw } from "lucide-react";
+import { Activity, Power, RotateCcw } from "lucide-react";
 import {
   getLatestRuntimeShutdownReceipt,
   getRuntimeLifecycle,
@@ -17,6 +17,7 @@ import type {
 } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useVisibleInterval } from "@/hooks/use-visible-interval";
@@ -182,10 +183,7 @@ export function LifecycleControlPanel() {
         </div>
 
         <div className="flex flex-wrap justify-end gap-2">
-          <Button type="button" variant="outline" size="sm" disabled={loading || submitting} onClick={() => void refresh()}>
-            <RefreshCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden="true" />
-            Refresh
-          </Button>
+          <PanelReload reload={() => (submitting ? undefined : refresh())} failed={error !== null} busy={loading || submitting} what="runtime lifecycle status" />
           <Button type="button" variant="outline" size="sm" disabled={controlsDisabled} onClick={() => setPendingAction("restart")}>
             <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
             Restart Meridian

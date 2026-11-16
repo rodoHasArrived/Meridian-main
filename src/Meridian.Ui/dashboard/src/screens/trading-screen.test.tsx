@@ -405,7 +405,7 @@ describe("TradingScreen", () => {
     const headline = screen.getByLabelText("Trading headline metrics");
     const positions = screen.getByRole("region", { name: "Position book and selected detail" });
     const orders = screen.getByRole("region", { name: "Order blotter and selected detail" });
-    const posture = screen.getByRole("region", { name: "Trading readiness posture" });
+    const posture = screen.getByRole("region", { name: "Trading readiness" });
     const history = screen.getByRole("region", { name: "Paper session history and execution evidence" });
     // One layout: title, headline figures, the main lists, then secondary sections.
     expect([heading, headline, positions, orders, posture, history].every((element, index, all) => index === 0 || follows(all[index - 1], element))).toBe(true);
@@ -414,7 +414,7 @@ describe("TradingScreen", () => {
     // Secondary sections are collapsed by default, and no section is a heading with no content.
     expect(posture.querySelector("details")).not.toHaveAttribute("open");
     expect(history.querySelector("details")).not.toHaveAttribute("open");
-    expect(screen.queryByText("Trading readiness posture")).not.toBeInTheDocument();
+    expect(screen.queryByText("Trading readiness")).not.toBeInTheDocument();
     // With no account in scope, one row picks it into the header scope; there is no picker box.
     const accountSetup = screen.getByRole("region", { name: "Brokerage recovery" });
     expect(within(accountSetup).queryByRole("heading", { name: "Brokerage recovery" })).not.toBeInTheDocument();
@@ -737,7 +737,7 @@ describe("TradingScreen", () => {
     expect(screen.getAllByText("Blocked").length).toBeGreaterThan(0);
     expect(screen.getByText("Replay mismatch in server gate.")).toBeInTheDocument();
     expect(screen.getByText("DK1 trust gate")).toBeInTheDocument();
-    expect(within(screen.getByRole("region", { name: "Trading readiness posture" })).getAllByText("Review required")).toHaveLength(2);
+    expect(within(screen.getByRole("region", { name: "Trading readiness" })).getAllByText("Review required")).toHaveLength(2);
     expect(screen.getByText("Operator work items")).toBeInTheDocument();
     expect(screen.getByText("Execution evidence incomplete")).toBeInTheDocument();
     expect(screen.getByText("OrderRejected is missing actor, scope, and rationale.")).toBeInTheDocument();

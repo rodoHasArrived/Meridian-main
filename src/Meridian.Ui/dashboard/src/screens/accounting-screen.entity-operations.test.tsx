@@ -1,4 +1,6 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { axe } from "jest-axe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithRouter } from "@/test/render";
@@ -215,14 +217,16 @@ describe("Entity operations", () => {
   it("keeps pending decisions and unsaved mapping edits in their selected scope until completion or explicit cancel", async () => {
     let rejectDecision: (error: Error) => void = () => {};
     vi.mocked(postEntityOperation).mockImplementation(() => new Promise((_resolve, reject) => { rejectDecision = reject; }));
-    renderWithRouter(<EntityAccountingArrangements scope={scope} />);
+    renderWithRouter(<WithHeaderRefresh><EntityAccountingArrangements scope={scope} /></WithHeaderRefresh>);
     const row = await screen.findByRole("button", { name: arrangement.arrangementReference });
     fireEvent.click(row);
+    const headerRefreshReads = () => { const before = vi.mocked(getEntityOperation).mock.calls.length; fireEvent.click(screen.getByRole("button", { name: "Header refresh" })); return vi.mocked(getEntityOperation).mock.calls.length - before; };
+    expect(screen.queryByRole("button", { name: /accounting profiles/ })).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Accounting profile action reason"), { target: { value: "Mappings reviewed" } });
     fireEvent.click(screen.getByRole("button", { name: "Approve accounting mappings" }));
     await waitFor(() => expect(postEntityOperation).toHaveBeenCalledTimes(1));
     expect(row).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Refresh accounting profiles" })).toBeDisabled();
+    expect(headerRefreshReads()).toBe(0);
     expect(screen.getByRole("button", { name: "New accounting profile" })).toBeDisabled();
     expect(screen.getByLabelText("Accounting profile perimeter")).toBeDisabled();
     rejectDecision(new Error("Mapping decision unavailable"));
@@ -230,13 +234,16 @@ describe("Entity operations", () => {
     fireEvent.click(screen.getByRole("button", { name: "Revise accounting mappings" }));
     await screen.findByRole("heading", { name: "Approved legal version 4 · LEGAL-01" });
     fireEvent.change(screen.getByLabelText("Accounting profile reference"), { target: { value: "Unsaved reviewed mapping" } });
-    expect(screen.getByRole("button", { name: "Refresh accounting profiles" })).toBeDisabled();
+    expect(headerRefreshReads()).toBe(0);
     expect(screen.getByRole("button", { name: "New accounting profile" })).toBeDisabled();
     expect(screen.getByLabelText("Accounting profile perimeter")).toBeDisabled();
     expect(screen.getByRole("button", { name: "Approve accounting mappings" })).toBeDisabled();
     expect(screen.getByLabelText("Accounting profile reference")).toHaveValue("Unsaved reviewed mapping");
     fireEvent.click(screen.getByRole("button", { name: "Cancel profile editing" }));
-    expect(screen.getByRole("button", { name: "Refresh accounting profiles" })).toBeEnabled();
+    expect(headerRefreshReads()).toBe(0);
+    expect(screen.getByLabelText("Accounting profile action reason")).toHaveValue("Mappings reviewed");
+    fireEvent.change(screen.getByLabelText("Accounting profile action reason"), { target: { value: "" } });
+    expect(headerRefreshReads()).toBeGreaterThan(0);
     expect(postEntityOperation).toHaveBeenCalledTimes(1);
   });
 
@@ -255,11 +262,15 @@ describe("Entity operations", () => {
     vi.mocked(getEntityOperation).mockImplementation(async (path) => path.endsWith("/rate-sets") ? [rateSet] : null);
     let complete: (value: unknown) => void = () => {};
     vi.mocked(postEntityOperation).mockImplementation(() => new Promise((resolve) => { complete = resolve; }));
-    renderWithRouter(<EntityFxAuthority scope={scope} />);
+    renderWithRouter(<WithHeaderRefresh><EntityFxAuthority scope={scope} /></WithHeaderRefresh>);
     await waitFor(() => expect(screen.getByRole("button", { name: "Configure book translation" })).toBeEnabled());
     fireEvent.click(screen.getByRole("button", { name: editor === "rates" ? "New approved rate set" : "Configure book translation" }));
     expect(screen.getByLabelText("FX configuration as of")).toBeDisabled();
-    for (const name of ["Refresh FX authority", "New approved rate set", "Configure book translation", "Revise rate set 1"]) {
+    const readsBeforeRefresh = vi.mocked(getEntityOperation).mock.calls.length;
+    fireEvent.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(getEntityOperation).toHaveBeenCalledTimes(readsBeforeRefresh);
+    expect(screen.queryByRole("button", { name: /FX authority/ })).not.toBeInTheDocument();
+    for (const name of ["New approved rate set", "Configure book translation", "Revise rate set 1"]) {
       expect(screen.getByRole("button", { name })).toBeDisabled();
       expect(screen.getByRole("button", { name })).toHaveAttribute("title", expect.stringContaining("Save or cancel"));
     }
@@ -401,4 +412,10 @@ describe("Entity operations", () => {
 
 function cutoverPreview(): ConsolidationTransitionPreview {
   return { previewId: "70000000-0000-0000-0000-000000000001", request: { transitionId: "70000000-0000-0000-0000-000000000002", organizationId: "70000000-0000-0000-0000-000000000003", ownershipRootId: "70000000-0000-0000-0000-000000000004", previousEliminationBookId: "70000000-0000-0000-0000-000000000005", newEliminationBookId: "70000000-0000-0000-0000-000000000006", newPeriodId: "70000000-0000-0000-0000-000000000007", cutoverDate: "2026-11-12", reason: "Owned entity joins group", evidenceReference: "vault:ownership-cutover" }, rootVersion: 0, previousTransitionId: null, preparedBy: "preparer-a", preparedAt: "2026-11-12", previousBookEvidenceDigest: "old-reviewed-evidence", previousPostedJournalIds: [], previousLatestPostedAsOf: "2026-11-11", previousEntityIds: ["entity-a"], joinedEntityIds: ["entity-b"], removedEntityIds: [], newEvidence: { ruleVersion: "w10-v4", entityIds: ["entity-a", "entity-b"], sourceFingerprint: "new-source-population", perimeterFingerprint: "new-owned-perimeter" }, blockers: [], fingerprint: "exact-cutover-preview", canApprove: true };
+}
+
+/** Stands in for the shell: the header Refresh is the only control that reloads panel data. */
+function WithHeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence((value) => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
 }

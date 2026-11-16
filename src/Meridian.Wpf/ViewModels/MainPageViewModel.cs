@@ -1037,10 +1037,27 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         SyncNavigationState();
     }
 
+    /// <summary>Test seam for the content the shell refresh reloads; defaults to the navigation frame.</summary>
+    internal Func<object?>? ActivePageContentAccessor { get; set; }
+
+    /// <summary>Supplied by the shell view: the content of visible split panes other than the active one.</summary>
+    internal Func<IEnumerable<object?>>? OtherVisiblePaneContentsAccessor { get; set; }
+
     private void RefreshCurrentPage()
     {
         UpdateShellRefreshStamp();
-        NavigateToWithWorkspaceScope(CurrentPageTag);
+        var content = ActivePageContentAccessor is { } accessor
+            ? accessor()
+            : _wpfNavigationService?.GetActivePageContent(CurrentPageTag);
+        if (!PageRefreshResolver.TryRefreshInPlace(content))
+        {
+            // No reload command: rebuild the page, as before. This adds a Back entry.
+            NavigateToWithWorkspaceScope(CurrentPageTag);
+        }
+
+        // Inactive split panes reload in place when they can; they are never re-navigated.
+        PageRefreshResolver.RefreshAllInPlace(OtherVisiblePaneContentsAccessor?.Invoke());
+
         RequestShellRefresh();
     }
 
@@ -1779,7 +1796,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         var hasOperatingContext = _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null;
         var blocker = hasOperatingContext
             ? new WorkflowBlockerSummary("fallback", "Fallback summary", "Shared workflow guidance is using deterministic fallback text.", WorkspaceTone.Info, false)
-            : new WorkflowBlockerSummary("choose-context", "No operating context selected", "Choose a context to unlock workflow guidance.", WorkspaceTone.Warning, true);
+            : new WorkflowBlockerSummary("choose-context", Meridian.Wpf.Copy.WorkspaceCopyCatalog.Scope.NoneSelected, "Choose a context to unlock workflow guidance.", WorkspaceTone.Warning, true);
 
         return ShellNavigationCatalog.Workspaces
             .Select(workspace => new WorkspaceWorkflowSummary(
@@ -1903,7 +1920,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     {
         var scopeValue = ActiveFundVisibility == Visibility.Visible
             ? $"{ActiveFundName} · {ActiveFundSubtitle}"
-            : "No operating context selected";
+            : Meridian.Wpf.Copy.WorkspaceCopyCatalog.Scope.NoneSelected;
 
         return new WorkspaceShellContext
         {

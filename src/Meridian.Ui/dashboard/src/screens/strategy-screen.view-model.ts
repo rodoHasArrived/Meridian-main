@@ -1073,7 +1073,7 @@ export function useStrategyRunLibraryViewModel(
       }
 
       if (!decision.success || !decision.newRunId) {
-        throw new Error(decision.reason || "The governed promotion approval did not retain a Paper target run.");
+        throw new Error(decision.reason || "The promotion approval did not retain a Paper target run.");
       }
 
       setPromotionDecision(decision);
@@ -1083,7 +1083,7 @@ export function useStrategyRunLibraryViewModel(
         return;
       }
 
-      setPromoteError(err instanceof Error ? err.message : "Governed Paper promotion approval failed.");
+      setPromoteError(err instanceof Error ? err.message : "Paper promotion approval failed.");
       setPromoteState("evaluated");
     } finally {
       promotionApprovalInFlightRef.current = false;
@@ -1442,8 +1442,8 @@ export function buildPromotionPanelState({
       title: `Paper promotion approved - target run ${promotionDecision.newRunId}`,
       targetRunId: promotionDecision.newRunId,
       detail: `${promotionDecision.reason} Durable promotion ${promotionDecision.promotionId ?? "record"} is retained with audit ${promotionDecision.auditReference ?? "pending"}.`,
-      actionLabel: "Open governed Trading record",
-      actionAriaLabel: `Open governed Trading promotion record for target run ${promotionDecision.newRunId}`,
+      actionLabel: "Open Trading record",
+      actionAriaLabel: `Open Trading promotion record for target run ${promotionDecision.newRunId}`,
       actionHref: appendRouteQuery(`${workspacePath("trading")}#promotion-gate-panel`, {
         runId: promotionDecision.newRunId
       })
@@ -1600,10 +1600,10 @@ export function buildPromotionApprovalForm({
     acknowledged
   });
   const acknowledgementDisabledReason = isApproving
-    ? "Governed promotion approval is already running; wait before changing acknowledgement."
+    ? "Promotion approval is already running; wait before changing acknowledgement."
     : null;
   const cancelDisabledReason = isApproving
-    ? "Governed promotion approval is already running; wait for the durable decision before closing review."
+    ? "Promotion approval is already running; wait for the durable decision before closing review."
     : null;
   const acknowledgementDisabledReasonId = acknowledgementDisabledReason
     ? "promote-paper-approval-acknowledgement-disabled-reason"
@@ -1622,7 +1622,7 @@ export function buildPromotionApprovalForm({
     submitLabel: isApproving ? "Approving Paper promotion..." : "Approve Paper promotion",
     submitAriaLabel: disabledReason
       ? `Approve Paper promotion unavailable: ${disabledReason}`
-      : "Approve governed Paper promotion from selected strategy run",
+      : "Approve Paper promotion from selected strategy run",
     cancelLabel: "Cancel",
     cancelAriaLabel: cancelDisabledReason ?? "Cancel Paper promotion review",
     cancelDisabled: isApproving,
@@ -1640,7 +1640,7 @@ function buildPromotionApprovalFormDisabledReason({
   acknowledged: boolean;
 }): string | null {
   if (promoteState === "approving") {
-    return "Governed promotion approval is already running.";
+    return "Promotion approval is already running.";
   }
 
   if (promoteState !== "evaluated") {
@@ -1648,7 +1648,7 @@ function buildPromotionApprovalFormDisabledReason({
   }
 
   if (!eligible) {
-    return "The selected strategy run is not eligible for governed Paper promotion.";
+    return "The selected strategy run is not eligible for Paper promotion.";
   }
 
   if (!acknowledged) {
@@ -1851,7 +1851,7 @@ function buildEmptyPlotToolState(): StrategyPlotToolState {
       toolbarPills: ["No catalog", "No samples", "No overlay", "No diff"],
       notebookToolbarAriaLabel: "Strategy notebook filters",
       notebookToolbarItems: [],
-      studyTableEmptyText: "No retained PlotTool studies are available. Connect a governed PlotTool catalog before selecting notebooks.",
+      studyTableEmptyText: "No retained PlotTool studies are available. Connect an approved PlotTool catalog before selecting notebooks.",
       studyTableCaption: "PlotTool notebooks are available after the Strategy endpoint returns retained studies.",
       selectedStudyEmptyText: "No PlotTool study is selected.",
       metaItems: ["Catalog not connected", "0 obs"],
@@ -1891,12 +1891,12 @@ function buildEmptyPlotToolState(): StrategyPlotToolState {
         }
       ],
       consoleTitle: "Expression editor unavailable",
-      consoleBody: "Connect a governed formula catalog before authoring or previewing PlotTool expressions here.",
+      consoleBody: "Connect an approved formula catalog before authoring or previewing PlotTool expressions here.",
       overlayTitle: "Meridian overlays",
       overlayItems: [
         "Notebook coverage: no retained PlotTool studies.",
-        "Evidence posture: unavailable until strategy analytics are connected.",
-        "Diff posture: unavailable until strategy analytics are connected."
+        "Evidence status: unavailable until strategy analytics are connected.",
+        "Diff status: unavailable until strategy analytics are connected."
       ]
     },
     statistics: {
@@ -1974,7 +1974,7 @@ export function buildPlotToolState({
     { id: "return", label: "Total return", value: formatRatioAsPercentValue(parsedReturn, STRATEGY_SIGNED_RETURN), benchmark: "Run linked" },
     { id: "sharpe", label: "Sharpe ratio", value: formatNullableNumber(parsedSharpe, 3), benchmark: "Operator review" },
     { id: "drawdown", label: "Max drawdown", value: formatRatioAsPercentValue(maxDrawdown, STRATEGY_SIGNED_RETURN), benchmark: "Distribution tail" },
-    { id: "promotion", label: "Promotion state", value: promotionCue, benchmark: "Strategy posture" },
+    { id: "promotion", label: "Promotion state", value: promotionCue, benchmark: "Strategy status" },
     { id: "evidence", label: "Evidence pack", value: evidenceCue, benchmark: "Ledger / audit" }
   ];
   const sampleRows = plotToolSampleRows;
@@ -2041,9 +2041,9 @@ export function buildPlotToolState({
       studySummary: [
         { id: "primary", label: "Primary notebook", value: studyName },
         { id: "companion", label: "Pair target", value: companionName ?? "Select a second run" },
-        { id: "promotion", label: "Promotion posture", value: promotionCue },
+        { id: "promotion", label: "Promotion status", value: promotionCue },
         { id: "evidence", label: "Evidence pack", value: evidenceCue },
-        { id: "diff", label: "Diff posture", value: diffCue },
+        { id: "diff", label: "Diff status", value: diffCue },
         { id: "refresh", label: "Last refresh", value: formatText(activeRun?.lastUpdated ?? latestObservation.timestamp) }
       ],
       legendItems: [
@@ -2079,19 +2079,19 @@ export function buildPlotToolState({
           id: "review",
           label: "Review queue",
           value: reviewMetric,
-          detail: promotionCue === "Unavailable" ? "Promotion posture pending." : promotionCue,
+          detail: promotionCue === "Unavailable" ? "Promotion status pending." : promotionCue,
           tone: reviewMetric === "0" ? "success" : "warning"
         }
       ],
       consoleTitle: "Expression editor",
       consoleBody: companionName
-        ? `Meridian is staging ${chartStudyLabel} for comparison. Pair evidence, diff results, and promotion posture stay aligned with the selected run pair.`
+        ? `Meridian is staging ${chartStudyLabel} for comparison. Pair evidence, diff results, and promotion status stay aligned with the selected run pair.`
         : "Select a second run to promote this notebook into pair analysis. Strategy keeps compare, diff, and promotion evidence attached to the PlotTool console.",
       overlayTitle: "Meridian overlays",
       overlayItems: [
         `Notebook coverage: ${runs.length} retained ${runs.length === 1 ? "study" : "studies"} in Strategy.`,
-        `Evidence posture: ${evidenceCue}`,
-        `Diff posture: ${diffCue}`
+        `Evidence status: ${evidenceCue}`,
+        `Diff status: ${diffCue}`
       ]
     },
     statistics: {
@@ -2352,7 +2352,7 @@ export function buildComparisonDetail(
     eyebrow: "Comparison evidence",
     title: row.strategyName,
     subtitle: row.runId,
-    description: `${row.statusText} ${row.modeText} run with ${row.promotionStateText.toLowerCase()} posture.`,
+    description: `${row.statusText} ${row.modeText} run with ${row.promotionStateText.toLowerCase()} promotion status.`,
     statusLabel: row.statusText,
     statusVariant: row.statusBadgeVariant,
     fields: [

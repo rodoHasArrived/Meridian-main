@@ -42,11 +42,6 @@
                        Foreground="{StaticResource ConsoleTextMutedBrush}"
                        TextWrapping="Wrap"
                        Margin="0,4,0,0" />
-            <Button Content="Refresh"
-                    Command="{Binding RefreshCommand}"
-                    HorizontalAlignment="Left"
-                    Margin="0,8,0,0"
-                    AutomationProperties.AutomationId="PostedLedgerRefreshButton" />
         </StackPanel>
 
         <!-- Explicit states: an unclosed period is a notice, a failure is an error. -->
@@ -72,6 +67,13 @@
                        TextWrapping="Wrap"
                        Margin="0,0,0,8"
                        AutomationProperties.AutomationId="PostedLedgerPnlError" />
+            <Button Content="Retry"
+                    Command="{Binding RefreshCommand}"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,8"
+                    Visibility="{Binding HasLoadError, Converter={StaticResource BoolToVisibilityConverter}}"
+                    AutomationProperties.AutomationId="PostedLedgerRetryButton"
+                    AutomationProperties.Name="Retry loading posted ledger" />
         </StackPanel>
 
         <!-- P&L summary for the selected period. -->

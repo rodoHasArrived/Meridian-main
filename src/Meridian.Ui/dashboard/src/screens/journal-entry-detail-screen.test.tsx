@@ -267,7 +267,7 @@ describe("JournalEntryDetailScreen", () => {
     await renderScreen("/accounting/journal-entries/detail?journalEntryId=je-posted-1&periodId=period-7");
     await waitForAsyncEffects();
 
-    expect(await screen.findByText("Governed posted journal")).toBeInTheDocument();
+    expect(await screen.findByText("Posted journal")).toBeInTheDocument();
     expect(screen.queryByText("Manual journal workbench")).not.toBeInTheDocument();
     // No manual workflow behind a posted entry, so none of its panels — and in particular no
     // "Approval pending" that can never resolve.

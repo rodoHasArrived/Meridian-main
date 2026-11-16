@@ -6,6 +6,94 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AlertModel
+
+Qualified name: <code>Meridian.Wpf.Models.AlertModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Models/DataQualityModels.cs:53](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L53).
+
+Model for alert display.
+
+```csharp
+public sealed class AlertModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:55](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L55) |  |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:56](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L56) |  |
+| <code>public string AlertType { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:57](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L57) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:58](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L58) |  |
+| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:59](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L59) |  |
+| <code>public Brush SeverityBrush { get; set; } = Brushes.Gray;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:60](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L60) |  |
+
+## AlignmentHistoryEntry
+
+Qualified name: <code>Meridian.Wpf.Models.AlignmentHistoryEntry</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Models/AlignmentModels.cs:6](../../../../src/Meridian.Wpf/Models/AlignmentModels.cs#L6).
+
+Display model for a completed time-series alignment run shown in the recent history list.
+
+```csharp
+public sealed class AlignmentHistoryEntry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Name { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/AlignmentModels.cs:8](../../../../src/Meridian.Wpf/Models/AlignmentModels.cs#L8) |  |
+| <code>public string DetailsText { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/AlignmentModels.cs:9](../../../../src/Meridian.Wpf/Models/AlignmentModels.cs#L9) |  |
+| <code>public string DateText { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/AlignmentModels.cs:10](../../../../src/Meridian.Wpf/Models/AlignmentModels.cs#L10) |  |
+
+## AnomalyModel
+
+Qualified name: <code>Meridian.Wpf.Models.AnomalyModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Models/DataQualityModels.cs:64](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L64).
+
+Model for anomaly display.
+
+```csharp
+public sealed class AnomalyModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:66](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L66) |  |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:67](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L67) |  |
+| <code>public string Timestamp { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:68](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L68) |  |
+| <code>public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:69](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L69) |  |
+| <code>public SolidColorBrush SeverityColor { get; set; } = new (Colors.Gray);</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:70](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L70) |  |
+
+## BackfillProviderModel
+
+Qualified name: <code>Meridian.Wpf.Models.BackfillProviderModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Models/ProviderHealthModels.cs:26](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L26).
+
+Display model for a backfill provider card.
+
+```csharp
+public sealed class BackfillProviderModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ProviderId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/ProviderHealthModels.cs:28](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L28) |  |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/ProviderHealthModels.cs:29](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L29) |  |
+| <code>public string StatusText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/ProviderHealthModels.cs:30](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L30) |  |
+| <code>public SolidColorBrush StatusColor { get; set; } = new (Colors.Gray);</code> | [src/Meridian.Wpf/Models/ProviderHealthModels.cs:31](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L31) |  |
+| <code>public string RateLimitText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/ProviderHealthModels.cs:32](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L32) |  |
+| <code>public string LastUsedText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/ProviderHealthModels.cs:33](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L33) |  |
+
 ## BacktestDisplayItem
 
 Qualified name: <code>Meridian.Wpf.Models.BacktestDisplayItem</code>. Kind: `class`.
@@ -48,29 +136,31 @@ Declared public members:
 | <code>public string ProductDescription { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:27](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L27) | Human-readable product description (e.g., &quot;AAPL 150 Call 17Sep25&quot;). |
 | <code>public string TradeId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:30](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L30) | Unique trade/order identifier. |
 | <code>public string PositionKey { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:33](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L33) | Stable key used for broker-aware position actions. |
-| <code>public decimal UnitPrice { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:36](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L36) | Executed unit price of the position. |
-| <code>public string UnitPriceText =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:39](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L39) | Formatted unit price string for display. |
-| <code>public decimal Quantity { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:42](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L42) | Signed quantity (positive = long, negative = short). |
-| <code>public string QuantityText =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:45](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L45) | Formatted quantity for display. |
-| <code>public string Side { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:48](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L48) | Side of the trade (&quot;Buy&quot; or &quot;Sell&quot;). |
-| <code>public string Status { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:51](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L51) | Current order/position status. |
-| <code>public DateOnly? Expiry { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:54](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L54) | Expiry date for options positions. |
-| <code>public string AssetClass { get; set; } = &quot;equity&quot;;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:57](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L57) | Asset class reported by the execution source. |
-| <code>public IReadOnlyDictionary&lt;string, string&gt;? Metadata { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:60](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L60) | Provider-specific metadata required for broker-side actions. |
-| <code>public bool SupportsClose { get; set; } = true;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:63](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L63) | Whether the entry supports close / flatten actions. |
-| <code>public bool SupportsUpsize { get; set; } = true;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:66](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L66) | Whether the entry supports add / upsize actions. |
-| <code>public string ExpiryText =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:69](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L69) | Formatted expiry for display (e.g., &quot;17Sep25&quot;). |
-| <code>public TimeOnly? MarketTime { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:72](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L72) | Market time of last update. |
-| <code>public decimal UnrealisedPnl { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:75](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L75) | Unrealised P&amp;L for this position. |
-| <code>public string UnrealisedPnlText =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:78](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L78) | Formatted unrealised P&amp;L for display. |
-| <code>public SolidColorBrush PnlBrush =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:81](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L81) | Brush applied to the unrealised P&amp;L cell. |
-| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:84](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L84) | Whether the row is currently selected (checkbox). |
+| <code>public decimal UnitPrice { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:36](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L36) | Average cost per unit of the position, as reported by the execution source. |
+| <code>public string UnitPriceText =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:39](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L39) | Formatted average cost for display. |
+| <code>public decimal? MarketValue { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:45](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L45) | Market value reported by the execution source, or null when it supplied none. The row shows this value so it can be reconciled with the account&#x27;s exposure totals. |
+| <code>public string MarketValueText =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:48](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L48) | Formatted market value; a dash when the source supplied no value. |
+| <code>public decimal Quantity { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:51](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L51) | Signed quantity (positive = long, negative = short). |
+| <code>public string QuantityText =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:54](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L54) | Formatted quantity for display. |
+| <code>public string Side { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:57](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L57) | Side of the trade (&quot;Buy&quot; or &quot;Sell&quot;). |
+| <code>public string Status { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:60](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L60) | Current order/position status. |
+| <code>public DateOnly? Expiry { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:63](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L63) | Expiry date for options positions. |
+| <code>public string AssetClass { get; set; } = &quot;equity&quot;;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:66](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L66) | Asset class reported by the execution source. |
+| <code>public IReadOnlyDictionary&lt;string, string&gt;? Metadata { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:69](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L69) | Provider-specific metadata required for broker-side actions. |
+| <code>public bool SupportsClose { get; set; } = true;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:72](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L72) | Whether the entry supports close / flatten actions. |
+| <code>public bool SupportsUpsize { get; set; } = true;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:75](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L75) | Whether the entry supports add / upsize actions. |
+| <code>public string ExpiryText =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:78](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L78) | Formatted expiry for display (e.g., &quot;17Sep25&quot;). |
+| <code>public TimeOnly? MarketTime { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:81](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L81) | Market time of last update. |
+| <code>public decimal UnrealisedPnl { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:84](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L84) | Unrealised P&amp;L for this position. |
+| <code>public string UnrealisedPnlText =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:87](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L87) | Formatted unrealised P&amp;L for display. |
+| <code>public SolidColorBrush PnlBrush =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:90](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L90) | Brush applied to the unrealised P&amp;L cell. |
+| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:93](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L93) | Whether the row is currently selected (checkbox). |
 
 ## BlotterFilterChip
 
 Qualified name: <code>Meridian.Wpf.Models.BlotterFilterChip</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/Models/BlotterModels.cs:187](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L187).
+Source: [src/Meridian.Wpf/Models/BlotterModels.cs:196](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L196).
 
 An active filter chip displayed in the filter bar.
 
@@ -82,7 +172,7 @@ public sealed record BlotterFilterChip(string Label, string Value);
 
 Qualified name: <code>Meridian.Wpf.Models.BlotterGroup</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Models/BlotterModels.cs:100](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L100).
+Source: [src/Meridian.Wpf/Models/BlotterModels.cs:109](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L109).
 
 Represents a grouped set of blotter entries under one underlying symbol.
 
@@ -94,24 +184,24 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public event PropertyChangedEventHandler? PropertyChanged;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:107](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L107) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:113](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L113) | Group name (underlying symbol). |
-| <code>public int Count =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:116](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L116) | Number of positions in this group. |
-| <code>public decimal NetQuantity =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:119](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L119) | Net quantity across all positions in the group. |
-| <code>public decimal TotalPnl =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:122](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L122) | Total unrealised P&amp;L across all positions in the group. |
-| <code>public string TotalPnlText =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:125](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L125) | Formatted total P&amp;L for display. |
-| <code>public SolidColorBrush TotalPnlBrush =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:128](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L128) | Colour brush for the total P&amp;L — green for gains, red for losses. |
-| <code>public bool IsExpanded { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:131](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L131) | Whether the group row is expanded to show child entries. |
-| <code>public string ExpandIcon =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:145](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L145) | Icon character to indicate expand/collapse state. |
-| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:148](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L148) | Whether the group header checkbox is checked (selects all children). |
-| <code>public ObservableCollection&lt;BlotterEntry&gt; Entries { get; } = [];</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:165](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L165) | Child entries belonging to this group. |
-| <code>public void RefreshSelectionFromEntries();</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:171](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L171) | Syncs the group checkbox to the current child-row selection state without reapplying the selection to every child entry. |
+| <code>public event PropertyChangedEventHandler? PropertyChanged;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:116](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L116) |  |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:122](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L122) | Group name (underlying symbol). |
+| <code>public int Count =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:125](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L125) | Number of positions in this group. |
+| <code>public decimal NetQuantity =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:128](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L128) | Net quantity across all positions in the group. |
+| <code>public decimal TotalPnl =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:131](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L131) | Total unrealised P&amp;L across all positions in the group. |
+| <code>public string TotalPnlText =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:134](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L134) | Formatted total P&amp;L for display. |
+| <code>public SolidColorBrush TotalPnlBrush =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:137](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L137) | Colour brush for the total P&amp;L — green for gains, red for losses. |
+| <code>public bool IsExpanded { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:140](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L140) | Whether the group row is expanded to show child entries. |
+| <code>public string ExpandIcon =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:154](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L154) | Icon character to indicate expand/collapse state. |
+| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:157](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L157) | Whether the group header checkbox is checked (selects all children). |
+| <code>public ObservableCollection&lt;BlotterEntry&gt; Entries { get; } = [];</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:174](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L174) | Child entries belonging to this group. |
+| <code>public void RefreshSelectionFromEntries();</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:180](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L180) | Syncs the group checkbox to the current child-row selection state without reapplying the selection to every child entry. |
 
 ## BlotterSelectionPreview
 
 Qualified name: <code>Meridian.Wpf.Models.BlotterSelectionPreview</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/Models/BlotterModels.cs:192](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L192).
+Source: [src/Meridian.Wpf/Models/BlotterModels.cs:201](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L201).
 
 Display-only selection preview shown in the Position Blotter review rail.
 
@@ -820,64 +910,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public FundReconciliationReadAvailability Availability =&gt; …;</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:44](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L44) |  |
-
-## FundReconciliationRunRow
-
-Qualified name: <code>Meridian.Wpf.Models.FundReconciliationRunRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:137](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L137).
-
-```csharp
-public sealed record FundReconciliationRunRow(string RowKey, Guid ReconciliationRunId, Guid AccountId, FundReconciliationSourceType SourceType, string ScopeLabel, string ScopeIcon, string PrimaryLabel, string SecondaryLabel, string Status, string StatusLabel, string StatusIcon, DateOnly AsOfDate, string AsOfDateText, int TotalChecks, int TotalMatched, int TotalBreaks, decimal BreakAmountTotal, string BreakAmountText, DateTimeOffset RequestedAt, string RequestedAtText, DateTimeOffset? CompletedAt, string CompletedAtText, int SecurityIssueCount, bool HasSecurityCoverageIssues, string CoverageLabel, string? StrategyName = null, string? RunId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool HasOpenExceptions =&gt; …;</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:166](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L166) |  |
-
-## FundReconciliationScopeFilter
-
-Qualified name: <code>Meridian.Wpf.Models.FundReconciliationScopeFilter</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:18](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L18).
-
-```csharp
-public enum FundReconciliationScopeFilter : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>All = 0</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:20](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L20) |  |
-| <code>Strategy = 1</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:21](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L21) |  |
-| <code>Account = 2</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:22](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L22) |  |
-
-## FundReconciliationSecurityCoverageRow
-
-Qualified name: <code>Meridian.Wpf.Models.FundReconciliationSecurityCoverageRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:213](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L213).
-
-```csharp
-public sealed record FundReconciliationSecurityCoverageRow(string Source, string Symbol, string AccountName, string Reason);
-```
-
-## FundReconciliationSourceType
-
-Qualified name: <code>Meridian.Wpf.Models.FundReconciliationSourceType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:25](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L25).
-
-```csharp
-public enum FundReconciliationSourceType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>StrategyRun = 0</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:27](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L27) |  |
-| <code>AccountRun = 1</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:28](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L28) |  |

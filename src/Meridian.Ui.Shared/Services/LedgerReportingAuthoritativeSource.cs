@@ -1115,7 +1115,7 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
     {
         var normalized = value?.Trim();
         return string.IsNullOrWhiteSpace(normalized)
-            ? throw Unavailable($"A {label} is required for authoritative reporting.")
+            ? throw Unavailable($"Authoritative reporting requires the {label}.")
             : normalized;
     }
 

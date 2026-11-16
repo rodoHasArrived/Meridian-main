@@ -2,6 +2,8 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import {
   acknowledgeOperationsContinuityChecklistTask,
   approveOperationsContinuityWorkflow,
@@ -1157,7 +1159,7 @@ describe("OperationsContinuityScreen", () => {
     const closeGovernance = screen.getByLabelText("Period close lock and reopen evidence");
     expect(within(closeGovernance).getByText("Period remains open")).toBeInTheDocument();
     expect(within(closeGovernance).getByText("No close audit event")).toBeInTheDocument();
-    expect(within(closeGovernance).getByText("No governed reopen recorded")).toBeInTheDocument();
+    expect(within(closeGovernance).getByText("No period reopen recorded")).toBeInTheDocument();
     const closePackage = screen.getByLabelText("Close package publication summary");
     expect(within(closePackage).getByText("close-package-2026-05")).toBeInTheDocument();
     expect(within(closePackage).getByRole("link", { name: "Open retained close package manifest" }))
@@ -1205,7 +1207,7 @@ describe("OperationsContinuityScreen", () => {
       .toHaveAttribute("href", "/accounting/operations-continuity");
     const commandSpine = screen.getByRole("table", { name: "Financial Operations command spine" });
     expect(within(commandSpine).getByText("Start/import/normalize activity")).toBeInTheDocument();
-    expect(within(commandSpine).getByText("Run reconciliation and refresh posture")).toBeInTheDocument();
+    expect(within(commandSpine).getByText("Run reconciliation and refresh status")).toBeInTheDocument();
     expect(within(commandSpine).getByText("Assign, escalate, or resolve breaks")).toBeInTheDocument();
     expect(within(commandSpine).getByText("Submit or decide approval")).toBeInTheDocument();
     expect(within(commandSpine).getByText("Open evidence package routes")).toBeInTheDocument();
@@ -1275,7 +1277,7 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByText("Complete reopened incident remediation and close the period again with retained evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getAllByText("Command stage")).toHaveLength(4);
     expect(within(operatorQueue).getByText("Match Records")).toBeInTheDocument();
-    expect(within(operatorQueue).getByText("Run reconciliation and refresh posture; Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Run reconciliation and refresh status; Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Complete source-backed reconciliation lanes before approval.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Close Support")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Review checklist and close readiness; Close checklist, period lock, and reopen evidence are governed by the shared workflow.")).toBeInTheDocument();
@@ -1760,7 +1762,7 @@ describe("OperationsContinuityScreen", () => {
     vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([repairedDetail]);
     vi.mocked(getOperationsContinuityWorkflow).mockReturnValueOnce(pendingDetail).mockResolvedValue(repairedDetail);
     vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(repairedDecision);
-    await user.click(screen.getByRole("button", { name: "Refresh operations continuity workflows" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
     await waitFor(() => expect(getOperationsContinuityWorkflow).toHaveBeenCalledTimes(2));
     expect(screen.queryByRole("button", { name: "Publish close package for 2026-05" })).not.toBeInTheDocument();
 
@@ -1803,7 +1805,7 @@ describe("OperationsContinuityScreen", () => {
 
     vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(repairedDetail);
     vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(repairedDetail));
-    await user.click(screen.getByRole("button", { name: "Refresh operations continuity workflows" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
     const repairedPublish = await screen.findByRole("button", { name: "Publish close package for 2026-05" });
     await waitFor(() => expect(repairedPublish).toBeEnabled());
     await user.click(repairedPublish);
@@ -1855,7 +1857,7 @@ describe("OperationsContinuityScreen", () => {
     repairedProjection.approvals.at(-1)!.decidedAtUtc = "2026-05-10T10:45:00.0000001-07:00";
     vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(repairedDetail);
     vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(repairedProjection));
-    await user.click(screen.getByRole("button", { name: "Refresh operations continuity workflows" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Publish close package for 2026-05" })).toBeEnabled());
     await user.click(screen.getByRole("button", { name: "Publish close package for 2026-05" }));
     await waitFor(() => expect(closeOperationsContinuityWorkflow).toHaveBeenCalledWith(workflowId, expect.objectContaining({
@@ -1884,8 +1886,8 @@ describe("OperationsContinuityScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    const reopenForm = screen.getByRole("form", { name: "Governed period reopen command" });
-    const reopen = await within(reopenForm).findByRole("button", { name: "Reopen governed period for 2026-05" });
+    const reopenForm = screen.getByRole("form", { name: "Period reopen command" });
+    const reopen = await within(reopenForm).findByRole("button", { name: "Reopen period for 2026-05" });
     fireEvent.change(within(reopenForm).getByLabelText("Incident id"), {
       target: { value: "incident-2026-05-close-restatement" }
     });
@@ -2236,10 +2238,16 @@ function renderScreen(initialEntry?: string) {
   return render(
     <MemoryRouter initialEntries={[initialEntry ?? `/accounting/operations-continuity?${query.toString()}`]}>
       <Routes>
-        <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
+        <Route path="/accounting/operations-continuity" element={<WithHeaderRefresh><OperationsContinuityScreen /></WithHeaderRefresh>} />
       </Routes>
     </MemoryRouter>
   );
+}
+
+/** Stands in for the shell: the header Refresh is the only control that reloads the workflow list. */
+function WithHeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence((value) => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
 }
 
 function createApprovalDecisionReadyDetail(reportPackEvidence: OperationsEvidenceLink): OperationsContinuityWorkflow {

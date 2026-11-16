@@ -24,6 +24,8 @@ import {
 import { CommandPalette } from "@/components/meridian/command-palette";
 import { KeyboardShortcutsSheet } from "@/components/meridian/keyboard-shortcuts-sheet";
 import { GlobalRefreshProvider } from "@/lib/global-refresh";
+import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
+import { ScopeBarAccountPicker } from "@/components/meridian/scope-bar-account-picker";
 import { getGlobalKeyBinding, matchesKeyCombo } from "@/lib/keymap";
 import { ScopePicker } from "@/components/meridian/scope-picker";
 import { collectScopeFundAccounts, type ScopeFundAccountOption } from "@/lib/operating-scope/fund-accounts";
@@ -1000,6 +1002,8 @@ function AppShell({
                 onEditOperatingScope={openScopePicker}
                 scopeDimensionsInEffect={scopeDimensionsInEffect}
                 valueLabels={scopeBarValueLabels}
+                // Trading works one fund account at a time, so its account step is in the bar.
+                accountPicker={pathname.startsWith("/trading") ? <ScopeBarAccountPicker normalize={normalizeFundAccountGuid} invalidMessage="Trading needs a fund account with a GUID id." /> : undefined}
               />
             )}
             breadcrumbItems={breadcrumbItems}

@@ -1,9 +1,16 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithRouter } from "@/test/render";
 import { FailoverRegion } from "@/screens/data-screen.failover";
 import type { FailoverSettings } from "@/lib/failover-api";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
+
+function HeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
+}
 
 const snapshot: FailoverSettings = {
   enableFailover: true, autoRecover: true, healthCheckIntervalSeconds: 10, failoverTimeoutSeconds: 30,
@@ -84,5 +91,46 @@ describe("FailoverRegion", () => {
     expect(api.deleteRule).toHaveBeenCalledWith("stream", "Retiring this routing policy", expect.anything());
     expect(await screen.findByText("No failover rules configured.")).toBeInTheDocument();
     expect(screen.getByText("Pending host restart")).toBeInTheDocument();
+  });
+
+  it("re-reads failover state with the header refresh and offers Retry only after a failed read", async () => {
+    const api = makeApi(); const user = userEvent.setup();
+    renderWithRouter(<HeaderRefresh><FailoverRegion api={api} /></HeaderRefresh>);
+    await user.click(screen.getByText("Configure streaming failover"));
+    await screen.findByRole("button", { name: "Save failover settings" });
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry loading failover state" })).not.toBeInTheDocument();
+    expect(api.get).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
+    expect(screen.queryByText("Failover state refreshed.")).not.toBeInTheDocument();
+
+    api.get.mockRejectedValueOnce(new Error("Failover host offline."));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Failover host offline.");
+    await user.click(screen.getByRole("button", { name: "Retry loading failover state" }));
+    expect(await screen.findByText("Failover state refreshed.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry loading failover state" })).not.toBeInTheDocument();
+  });
+
+  it("never replaces unsaved failover edits on a header refresh", async () => {
+    const api = makeApi(); const user = userEvent.setup();
+    renderWithRouter(<HeaderRefresh><FailoverRegion api={api} /></HeaderRefresh>);
+    await user.click(screen.getByText("Configure streaming failover"));
+    await screen.findByRole("button", { name: "Save failover settings" });
+    const toggle = screen.getByRole("checkbox", { name: "Automatic failover" });
+    expect(toggle).toBeChecked();
+    await user.click(toggle);
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(api.get).toHaveBeenCalledTimes(1);
+    expect(toggle).not.toBeChecked();
+
+    await user.click(toggle);
+    await user.click(screen.getByRole("button", { name: "Edit stream" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(api.get).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole("button", { name: "Discard rule edit" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
   });
 });

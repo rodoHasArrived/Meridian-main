@@ -59,7 +59,7 @@ function loadStateSourceLabel(loadState: FamilyOfficeLoadState): string {
 function emptyStateCopy(loadState: FamilyOfficeLoadState): { title: string; detail: string | null } {
   switch (loadState) {
     case "loading":
-      return { title: "Loading family office data", detail: "Reading the consolidated household projection." };
+      return { title: "Loading family office data", detail: "Reading the consolidated household view." };
     case "error":
       return {
         title: "Family office data could not be loaded",
@@ -209,7 +209,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
         }}
         blocker={vm.notConnected ? {
           value: "Entity setup required",
-          detail: "Connect governed sources before using consolidated values for decisions",
+          detail: "Connect approved sources before using consolidated values for decisions",
           tone: "blocked"
         } : undefined}
       />

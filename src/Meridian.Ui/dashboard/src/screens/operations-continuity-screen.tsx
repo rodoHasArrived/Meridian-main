@@ -15,6 +15,7 @@ import {
   submitOperationsContinuityApproval
 } from "@/lib/api";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { cn } from "@/lib/utils";
 import { useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
 import { Input } from "@/components/ui/input";
@@ -1176,6 +1177,7 @@ export function OperationsContinuityScreen() {
       periodId: searchParams.get("periodId") ?? undefined
     }
   }, useFundScopeNarrowingContext());
+  useOnGlobalRefresh(vm.refresh);
   const [breakCommand, setBreakCommand] = useState<{
     pending: { breakId: string; kind: BreakCommandKind } | null;
     message: string | null;
@@ -1487,7 +1489,7 @@ export function OperationsContinuityScreen() {
       setReopenWorkflowCommand({
         pending: false,
         message: null,
-        error: disabledReason ?? "Governed reopen command is unavailable."
+        error: disabledReason ?? "Period reopen command is unavailable."
       });
       return;
     }
@@ -1513,7 +1515,7 @@ export function OperationsContinuityScreen() {
 
       setReopenWorkflowCommand({
         pending: false,
-        message: result.message?.trim() || "Governed reopen retained through shared operations command.",
+        message: result.message?.trim() || "Period reopen retained through shared operations command.",
         error: null
       });
       await vm.refresh();
@@ -1527,7 +1529,7 @@ export function OperationsContinuityScreen() {
   }, [reopenWorkflowForm, vm.closeGovernance, vm.refresh]);
 
   const reopenWorkflowDisabledReason = reopenWorkflowCommand.pending
-    ? "Wait for the active governed reopen command to finish."
+    ? "Wait for the active period reopen command to finish."
     : vm.closeGovernance.reopenWorkflowDisabledReason ?? buildReopenWorkflowFormDisabledReason(reopenWorkflowForm);
 
   const financialOperationsCommandSpineColumns = useMemo(
@@ -1583,10 +1585,8 @@ export function OperationsContinuityScreen() {
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Badge variant="outline">{vm.workflowsSummaryLabel}</Badge>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
+          {vm.errorText ? <Button
+            type="button" variant="outline" size="sm"
             onClick={() => void vm.refresh()}
             busy={vm.reloadBusy}
             busyLabel={vm.reloadLabel}
@@ -1596,7 +1596,7 @@ export function OperationsContinuityScreen() {
           >
             <RefreshCcw className="h-4 w-4" aria-hidden="true" />
             {vm.reloadLabel}
-          </Button>
+          </Button> : null}
         </div>
       </section>
 
@@ -1973,7 +1973,7 @@ export function OperationsContinuityScreen() {
               <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
               {vm.evidencePackagesLabel}
             </CardTitle>
-            <CardDescription>Shared package posture for accounting records, report packs, close manifests, and audit support.</CardDescription>
+            <CardDescription>Shared package status for accounting records, report packs, close manifests, and audit support.</CardDescription>
           </CardHeader>
           <CardContent>
             <DenseDataTable
@@ -2157,7 +2157,7 @@ export function OperationsContinuityScreen() {
               <AlertTriangle className="h-5 w-5 text-primary" aria-hidden="true" />
               {vm.breakCasesLabel}
             </CardTitle>
-            <CardDescription>Source-owned reconciliation breaks with retained owner, due-date, escalation, variance, and evidence posture.</CardDescription>
+            <CardDescription>Source-owned reconciliation breaks with retained owner, due-date, escalation, variance, and evidence status.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {breakCommand.error ? (
@@ -2333,7 +2333,7 @@ export function OperationsContinuityScreen() {
               </p>
             ) : null}
             <form
-              aria-label="Governed period reopen command"
+              aria-label="Period reopen command"
               className="border-t border-border/60 pt-4"
               onSubmit={(event) => {
                 event.preventDefault();
@@ -2397,7 +2397,7 @@ export function OperationsContinuityScreen() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <CardTitle>{vm.closePackage.title}</CardTitle>
-                <CardDescription>Governed close publication from the shared operations-continuity workflow.</CardDescription>
+                <CardDescription>Close publication from the shared operations-continuity workflow.</CardDescription>
               </div>
               <Badge variant={statusBadgeVariant(vm.closePackage.statusTone)}>{vm.closePackage.statusLabel}</Badge>
             </div>

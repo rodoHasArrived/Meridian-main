@@ -87,7 +87,7 @@ describe("ExecutionBlotterPanel", () => {
     primeReads();
     render(<ExecutionBlotterPanel />);
 
-    const posture = await screen.findByLabelText("Execution gateway posture");
+    const posture = await screen.findByLabelText("Execution gateway status");
     expect(within(posture).getByText("Alpaca")).toBeInTheDocument();
 
     const table = screen.getByLabelText("Execution blotter positions");

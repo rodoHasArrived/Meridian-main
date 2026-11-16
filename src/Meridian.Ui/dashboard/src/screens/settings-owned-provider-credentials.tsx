@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,6 +32,7 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
   onRefresh?: () => void | Promise<void>;
 }) {
   const [editor, setEditor] = useState<Editor>(emptyEditor);
+  const [failed, setFailed] = useState(false);
   const epoch = useRef(0);
   const request = useRef<AbortController | null>(null);
   const selected = editor.choices.find(choice => choice.connectionId === editor.connectionId);
@@ -46,6 +48,7 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
     request.current?.abort();
     const controller = new AbortController();
     request.current = controller;
+    setFailed(false);
     return { epoch: ++epoch.current, controller };
   }
   function current(token: ReturnType<typeof begin>) { return epoch.current === token.epoch && !token.controller.signal.aborted; }
@@ -62,7 +65,7 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
       const choices = ownedCredentialConnections(rows, row.providerId);
       setEditor({ ...emptyEditor, choices, message: choices.length ? "Select an owned connection before editing credentials." : "No owned connection is available. Ask your provider administrator to establish the account and environment before setup." });
     } catch (error) {
-      if (current(token)) setEditor({ ...emptyEditor, message: describeApiError(error, "Owned connections are unavailable. Credential actions are blocked.").summary });
+      if (current(token)) { setFailed(true); setEditor({ ...emptyEditor, message: describeApiError(error, "Owned connections are unavailable. Credential actions are blocked.").summary }); }
     }
   }
   /**
@@ -85,7 +88,7 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
       const status = await readStatus(retained, token);
       if (current(token)) setEditor(previous => ({ ...previous, choices, connectionId: retained.connectionId, status, busy: null, values: {}, editing: false, acknowledged: false, message: "Owned connections refreshed; selected connection status reloaded." }));
     } catch (error) {
-      if (current(token)) setEditor(previous => ({ ...previous, status: null, values: {}, busy: null, message: describeApiError(error, "Selected connection is unavailable. Refresh owned connections before retrying.").summary }));
+      if (current(token)) { setFailed(true); setEditor(previous => ({ ...previous, status: null, values: {}, busy: null, message: describeApiError(error, "Selected connection is unavailable. Refresh owned connections before retrying.").summary })); }
     }
   }
   useEffect(() => {
@@ -114,7 +117,7 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
       const status = await readStatus(choice, token);
       if (current(token)) setEditor(previous => ({ ...previous, status, busy: null, message: "Selected connection status loaded." }));
     } catch (error) {
-      if (current(token)) setEditor(previous => ({ ...previous, status: null, busy: null, message: describeApiError(error, "Selected connection is unavailable. Refresh owned connections before retrying.").summary }));
+      if (current(token)) { setFailed(true); setEditor(previous => ({ ...previous, status: null, busy: null, message: describeApiError(error, "Selected connection is unavailable. Refresh owned connections before retrying.").summary })); }
     }
   }
   async function mutate(action: "save" | "verify" | "clear") {
@@ -158,7 +161,7 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
       setEditor(previous => ({ ...previous, status, busy: null, values: {}, editing: action === "clear", acknowledged: false, message }));
       await onRefresh?.();
     } catch (error) {
-      if (current(token)) setEditor(previous => ({ ...previous, status: null, values: {}, busy: null, message: describeApiError(error, "Credential operation was not confirmed. Refresh the selected connection before retrying.").summary }));
+      if (current(token)) { setFailed(true); setEditor(previous => ({ ...previous, status: null, values: {}, busy: null, message: describeApiError(error, "Credential operation was not confirmed. Refresh the selected connection before retrying.").summary })); }
     }
   }
 
@@ -171,7 +174,7 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
           {editor.choices.map(choice => <option key={choice.connectionId} value={choice.connectionId}>{choice.displayName} · {choice.externalAccountId} · {choice.credentialEnvironment}</option>)}
         </Select>
       </label>
-      <Button variant="outline" size="sm" onClick={() => void loadConnections()} aria-label={`Refresh connections for ${row.displayName}`}>Refresh connections</Button>
+      <PanelReload what={`connections for ${row.displayName}`} failed={failed} busy={busy} reload={() => busy || (editor.editing && !failed) ? undefined : refreshOwnership()} />
     </div>
     {row.credentialStatus === "not-required" ? <p className="text-xs text-muted-foreground">No credential fields are required for this provider.</p> : null}
     {selected ? <p className="text-xs text-muted-foreground">Account {selected.externalAccountId} · Environment {selected.credentialEnvironment}</p> : null}

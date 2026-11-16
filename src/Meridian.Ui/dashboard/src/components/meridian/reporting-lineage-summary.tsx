@@ -44,7 +44,7 @@ export function ReportingLineageSummary({
       <div>
         <div className="eyebrow-label">Lineage</div>
         <p className="text-xs text-muted-foreground">
-          Each record placed on the governed source-to-publication order. Stages with no retained
+          Each record placed in source-to-publication order. Stages with no retained
           step are named rather than omitted.
         </p>
       </div>

@@ -51,7 +51,7 @@ describe("shared accounting scenarios", () => {
     });
     expect(within(row).getByText(record.strategyName)).toBeVisible();
     expect(within(row).getByText(`${record.openBreakCount} open`)).toBeVisible();
-    expect(screen.getByRole("link", { name: "Open Accounting reconciliation workstream" }))
+    expect(screen.getByRole("link", { name: "Open Accounting reconciliation area" }))
       .toHaveAttribute("href", "/accounting/reconciliation");
   });
 

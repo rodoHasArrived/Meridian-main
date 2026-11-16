@@ -101,8 +101,13 @@ public sealed class AggregatePortfolioViewModelTests
         xaml.Should().Contain("{Binding IsPositionsEmptyStateVisible");
         xaml.Should().Contain("{Binding PositionsEmptyStateTitle}");
         xaml.Should().Contain("{Binding PositionsEmptyStateDetail}");
-        xaml.Should().Contain("Command=\"{Binding RefreshCommand}\"");
-        xaml.Should().Contain("ToolTip=\"{Binding RefreshTooltip}\"");
+        // The shell Refresh reloads this page through RefreshCommand; only the empty-state action stays local.
+        xaml.Should().Contain("ActionCommand=\"{Binding RefreshCommand}\"");
+        xaml.Should().NotContain("AggregatePortfolioRefreshButton");
+        xaml.Should().NotContain("AggregatePortfolioInspectorRefreshButton");
+        xaml.Should().NotContain("Content=\"Refresh\"");
+        xaml.Should().NotContain("Content=\"Refresh Portfolio\"");
+        viewModel.Should().Contain("public IAsyncRelayCommand RefreshCommand { get; }");
         xaml.Should().Contain("ToolTip=\"{Binding SelectedSecurityTooltip}\"");
         xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
         viewModel.Should().Contain("public WorkstationTableModel<AggregatedPositionRow> PositionsTable { get; }");

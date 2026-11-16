@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { axe } from "jest-axe";
 import { IntercompanyAgreementsPanel } from "./accounting-screen.intercompany-agreements";
 import { ApiError } from "@/lib/api-errors";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import * as api from "@/lib/api/intercompany-agreements.api";
 import type { AgreementCommand, AgreementDetail, AgreementDraft } from "@/types/intercompany-agreements";
 
@@ -163,4 +164,17 @@ it("previews the exact retained proposed terms without mutating agreement author
   await screen.findByText("The declared business calendar is unavailable.");
   expect(source.previewIntercompanyAgreementSchedule).toHaveBeenCalledWith(detail.agreementId, expect.objectContaining({ proposalId: "proposal" }), expect.objectContaining({ signal: expect.any(AbortSignal) }));
   expect(source.mutateIntercompanyAgreement).not.toHaveBeenCalled();
+});
+
+it("keeps the open agreement and its typed rationale when the header refresh re-reads the registry", async () => {
+  const source = services();
+  const view = render(<GlobalRefreshProvider sequence={0}><IntercompanyAgreementsPanel services={source} /></GlobalRefreshProvider>);
+  fireEvent.click(await screen.findByRole("button", { name: "IC-LOAN · Operating loan" }));
+  fireEvent.change(await screen.findByLabelText("Review decision rationale"), { target: { value: "Reviewed signed terms" } });
+  expect(screen.queryByRole("button", { name: /Refresh agreements|Retry loading agreements/ })).not.toBeInTheDocument();
+  view.rerender(<GlobalRefreshProvider sequence={1}><IntercompanyAgreementsPanel services={source} /></GlobalRefreshProvider>);
+  await waitFor(() => expect(source.listIntercompanyAgreements).toHaveBeenCalledTimes(2));
+  await screen.findByRole("button", { name: "IC-LOAN · Operating loan" });
+  expect(screen.getByLabelText("Review decision rationale")).toHaveValue("Reviewed signed terms");
+  expect(source.getIntercompanyAgreement).toHaveBeenCalledTimes(1);
 });

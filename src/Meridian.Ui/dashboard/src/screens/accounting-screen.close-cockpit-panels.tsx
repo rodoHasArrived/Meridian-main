@@ -651,7 +651,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
               <div>
                 <div className="text-xs font-semibold text-muted-foreground">Post closing entries</div>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Shared close-service projection of the scoped temporary-account roll before period lock.
+                  Shared close-service view of the scoped temporary-account roll before period lock.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -685,7 +685,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                     <div className="mt-1 text-sm font-semibold text-foreground">{view.closingEntriesGate.temporaryAccountBalanceLabel}</div>
                   </div>
                   <div className="rounded-md border border-border/70 bg-background/45 px-3 py-2">
-                    <div className="text-xs uppercase text-muted-foreground">Lock posture</div>
+                    <div className="text-xs uppercase text-muted-foreground">Lock status</div>
                     <div className="mt-1 text-sm font-semibold text-foreground">
                       {view.closingEntriesGate.isReadyForLock ? "Ready for lock" : "Posting required before lock"}
                     </div>

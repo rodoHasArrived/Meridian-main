@@ -988,8 +988,8 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
       <section id="accounting-posture" className="workspace-section-band" aria-labelledby="accounting-posture-heading">
         <div className="workspace-section-subheader">
           <div className="min-w-0">
-            <p className="eyebrow-label">Posture</p>
-            <h3 id="accounting-posture-heading" className="workspace-section-title">Accounting close posture</h3>
+            <p className="eyebrow-label">Status</p>
+            <h3 id="accounting-posture-heading" className="workspace-section-title">Accounting close status</h3>
             <p className="workspace-section-summary">Close metrics, control center, cash flow, and workspace context stay grouped for monitoring.</p>
           </div>
           <a className="workspace-section-jump" href="#accounting-exceptions">Exceptions</a>
@@ -1068,7 +1068,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           <CardContent className="grid gap-4 md:grid-cols-3">
             <AccountingHighlight
               icon={BookCheck}
-              title="Audit posture"
+              title="Audit status"
               description="Reconciliation health and audit readiness stay visible for every run on the queue."
             />
             <AccountingHighlight
@@ -1345,7 +1345,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle>Reporting exports</CardTitle>
-            <CardDescription>Entry points for report and export handoff using existing export infrastructure.</CardDescription>
+            <CardDescription>Entry points for report and export delivery using existing export infrastructure.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap items-center gap-2">
             <Button asChild>
@@ -1713,10 +1713,8 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                     Identifier ambiguities detected when multiple providers map the same identifier to different securities.
                   </CardDescription>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
+                {securityMaster.conflictRefreshCommand.visible && <Button
+                  type="button" variant="outline" size="sm"
                   busy={securityMaster.conflictRefreshCommand.busy}
                   busyLabel={securityMaster.conflictRefreshCommand.busyLabel}
                   disabled={securityMaster.conflictRefreshCommand.disabled}
@@ -1728,7 +1726,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                 >
                   <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
                   {securityMaster.conflictRefreshCommand.label}
-                </Button>
+                </Button>}
               </div>
             </CardHeader>
             <CardContent>

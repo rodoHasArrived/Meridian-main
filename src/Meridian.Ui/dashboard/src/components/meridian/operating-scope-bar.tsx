@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import {
   buildOperatingScopeBarSegments,
@@ -22,12 +22,15 @@ export function OperatingScopeBar({
   operatingScope,
   onEditOperatingScope,
   scopeDimensionsInEffect,
-  valueLabels
+  valueLabels,
+  accountPicker
 }: {
   operatingScope: AppShellOperatingScopeState;
   onEditOperatingScope?: () => void;
   scopeDimensionsInEffect?: AppShellOperatingScopeQueryKey[];
   valueLabels?: OperatingScopeValueLabels;
+  /** The inline account step for a workspace that needs one account (see ScopeBarAccountPicker). */
+  accountPicker?: ReactNode;
 }) {
   const applicabilityId = useId();
   const allSegments = buildOperatingScopeBarSegments(operatingScope, scopeDimensionsInEffect, valueLabels);
@@ -99,6 +102,7 @@ export function OperatingScopeBar({
           {value}
         </span>
       )}
+      {accountPicker}
     </section>
   );
 }

@@ -8,6 +8,7 @@ import { GateRail, ReadinessPanel, SeverityBadge } from "@/components/operations
 import { MetricTile } from "@/components/data/concrete";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import {
   useOperatorReadinessConsoleViewModel,
   type ReadinessConsolePanel,
@@ -109,6 +110,7 @@ export function OperatorReadinessConsole({
     reporting,
     fundAccountId
   });
+  useOnGlobalRefresh(() => { if (!vm.inboxRefreshDisabled) void vm.refreshInbox(); });
 
   return (
     <div className="space-y-6">
@@ -174,20 +176,6 @@ export function OperatorReadinessConsole({
               </Button>
               <Button asChild variant="outline" size="sm">
                 <Link to="/reporting/report-packs">Report packs</Link>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => void vm.refreshInbox()}
-                disabled={vm.inboxRefreshDisabled}
-                disabledReason={vm.inboxRefreshDisabledReason}
-                busy={vm.inboxRefreshBusy}
-                busyLabel={vm.inboxRefreshLabel}
-                aria-label={vm.inboxRefreshAriaLabel}
-              >
-                <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-                {vm.inboxRefreshLabel}
               </Button>
             </>
           )}

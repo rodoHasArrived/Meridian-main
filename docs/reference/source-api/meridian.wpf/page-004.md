@@ -6,6 +6,67 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundReconciliationRunRow
+
+Qualified name: <code>Meridian.Wpf.Models.FundReconciliationRunRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:137](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L137).
+
+```csharp
+public sealed record FundReconciliationRunRow(string RowKey, Guid ReconciliationRunId, Guid AccountId, FundReconciliationSourceType SourceType, string ScopeLabel, string ScopeIcon, string PrimaryLabel, string SecondaryLabel, string Status, string StatusLabel, string StatusIcon, DateOnly AsOfDate, string AsOfDateText, int TotalChecks, int TotalMatched, int TotalBreaks, decimal BreakAmountTotal, string BreakAmountText, DateTimeOffset RequestedAt, string RequestedAtText, DateTimeOffset? CompletedAt, string CompletedAtText, int SecurityIssueCount, bool HasSecurityCoverageIssues, string CoverageLabel, string? StrategyName = null, string? RunId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool HasOpenExceptions =&gt; …;</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:166](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L166) |  |
+
+## FundReconciliationScopeFilter
+
+Qualified name: <code>Meridian.Wpf.Models.FundReconciliationScopeFilter</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:18](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L18).
+
+```csharp
+public enum FundReconciliationScopeFilter : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>All = 0</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:20](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L20) |  |
+| <code>Strategy = 1</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:21](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L21) |  |
+| <code>Account = 2</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:22](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L22) |  |
+
+## FundReconciliationSecurityCoverageRow
+
+Qualified name: <code>Meridian.Wpf.Models.FundReconciliationSecurityCoverageRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:213](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L213).
+
+```csharp
+public sealed record FundReconciliationSecurityCoverageRow(string Source, string Symbol, string AccountName, string Reason);
+```
+
+## FundReconciliationSourceType
+
+Qualified name: <code>Meridian.Wpf.Models.FundReconciliationSourceType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:25](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L25).
+
+```csharp
+public enum FundReconciliationSourceType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>StrategyRun = 0</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:27](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L27) |  |
+| <code>AccountRun = 1</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:28](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L28) |  |
+
 ## FundReconciliationWorkbenchSnapshot
 
 Qualified name: <code>Meridian.Wpf.Models.FundReconciliationWorkbenchSnapshot</code>. Kind: `record`.
@@ -946,120 +1007,3 @@ Source: [src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs:3](../../..
 ```csharp
 public sealed record SecurityMasterPresentationField(string Label, string Value);
 ```
-
-## SecurityMasterPrintSectionItem
-
-Qualified name: <code>Meridian.Wpf.Models.SecurityMasterPrintSectionItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs:7](../../../../src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs#L7).
-
-```csharp
-public sealed record SecurityMasterPrintSectionItem(string Title, string Description, string Badge);
-```
-
-## SettingsActivityItem
-
-Qualified name: <code>Meridian.Wpf.Models.SettingsActivityItem</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/SettingsModels.cs:20](../../../../src/Meridian.Wpf/Models/SettingsModels.cs#L20).
-
-Activity item for the recent activity list on the settings page.
-
-```csharp
-public sealed class SettingsActivityItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Icon { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/SettingsModels.cs:22](../../../../src/Meridian.Wpf/Models/SettingsModels.cs#L22) |  |
-| <code>public SolidColorBrush IconColor { get; set; } = new (Color.FromRgb(139, 148, 158));</code> | [src/Meridian.Wpf/Models/SettingsModels.cs:23](../../../../src/Meridian.Wpf/Models/SettingsModels.cs#L23) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/SettingsModels.cs:24](../../../../src/Meridian.Wpf/Models/SettingsModels.cs#L24) |  |
-| <code>public string Time { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/SettingsModels.cs:25](../../../../src/Meridian.Wpf/Models/SettingsModels.cs#L25) |  |
-
-## ShellCommandPaletteEntry
-
-Qualified name: <code>Meridian.Wpf.Models.ShellCommandPaletteEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/ShellNavigationModels.cs:101](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L101).
-
-```csharp
-public sealed record ShellCommandPaletteEntry(string PageTag, string Title, string Subtitle, string WorkspaceTitle, string SectionLabel, string Glyph, string VisibilityLabel)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string MetaLine { get; }</code> | [src/Meridian.Wpf/Models/ShellNavigationModels.cs:110](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L110) |  |
-
-## ShellNavigationCatalog
-
-Qualified name: <code>Meridian.Wpf.Models.ShellNavigationCatalog</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/ShellNavigationCatalog.Accounting.cs:7](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Accounting.cs#L7).
-
-```csharp
-public static partial class ShellNavigationCatalog
-```
-
-Source: [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:10](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L10).
-
-Defines desktop pages, workspace shells, aliases, and layout metadata used to resolve navigation.
-
-```csharp
-public static partial class ShellNavigationCatalog
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;ShellPageDescriptor&gt; Pages =&gt; …;</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:42](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L42) |  |
-| <code>public static IReadOnlyList&lt;WorkspaceShellDefinition&gt; WorkspaceShells =&gt; …;</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:44](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L44) |  |
-| <code>public static IReadOnlyList&lt;WorkspaceCapabilityDescriptor&gt; WorkspaceCapabilities =&gt; …;</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:46](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L46) |  |
-| <code>public static WorkspaceShellDescriptor GetDefaultWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:72](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L72) |  |
-| <code>public static WorkspaceShellDescriptor? GetWorkspace(string? workspaceId);</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:75](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L75) |  |
-| <code>public static WorkspaceShellDefinition? GetWorkspaceShell(string? workspaceId);</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:87](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L87) |  |
-| <code>public static ShellPageDescriptor? GetPage(string? pageTag);</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:99](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L99) |  |
-| <code>public static string GetCanonicalPageTag(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:111](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L111) |  |
-| <code>public static bool IsWorkspaceShellPageTag(string? pageTag);</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:114](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L114) |  |
-| <code>public static IReadOnlyCollection&lt;string&gt; GetRegisteredPageTags() =&gt; …;</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:121](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L121) |  |
-| <code>public static IReadOnlyCollection&lt;Type&gt; GetRegisteredPageTypes() =&gt; …;</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:123](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L123) |  |
-| <code>public static string? InferWorkspaceIdForPageTag(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:129](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L129) |  |
-| <code>public static IReadOnlyList&lt;ShellPageDescriptor&gt; GetPagesForWorkspace(string workspaceId);</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:131](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L131) |  |
-| <code>public static IReadOnlyList&lt;ShellPageDescriptor&gt; GetRelatedPages(string? pageTag);</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:141](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L141) |  |
-| <code>public static IReadOnlyList&lt;WorkspacePaneDefinition&gt; ResolveDefaultPanes(WorkspaceShellState state);</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:156](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L156) |  |
-| <code>public static string GetPageTitle(string pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.cs:179](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.cs#L179) |  |
-
-Source: [src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs:3](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs#L3).
-
-```csharp
-public static partial class ShellNavigationCatalog
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static WorkspaceShellLayoutDescriptor GetWorkspaceLayoutDescriptor(string? workspaceId);</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs:8](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs#L8) |  |
-| <code>public static ShellPosture GetWorkspacePosture(string? workspaceId) =&gt; …;</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs:16](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs#L16) |  |
-
-Source: [src/Meridian.Wpf/Models/ShellNavigationCatalog.Strategy.cs:5](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Strategy.cs#L5).
-
-```csharp
-public static partial class ShellNavigationCatalog
-```
-
-Source: [src/Meridian.Wpf/Models/ShellNavigationCatalog.Workspaces.cs:11](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Workspaces.cs#L11).
-
-```csharp
-public static partial class ShellNavigationCatalog
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;WorkspaceShellDescriptor&gt; Workspaces =&gt; …;</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.Workspaces.cs:13](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Workspaces.cs#L13) |  |

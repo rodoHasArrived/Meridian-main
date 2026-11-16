@@ -627,7 +627,7 @@ function TrustedCloseHandoff({ result }: { result: StatementImportPanelViewModel
   return (
     <div
       className="flex flex-col gap-3 rounded-[2px] border border-success/40 bg-success/5 p-3"
-      aria-label="Trusted close handoff"
+      aria-label="Trusted close next step"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>

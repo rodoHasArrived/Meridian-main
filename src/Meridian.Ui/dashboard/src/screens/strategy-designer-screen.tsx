@@ -77,7 +77,7 @@ export function StrategyDesignerScreen() {
           Templates and backtest proof
         </summary>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Load a governed starting point or inspect validation, trace, and endpoint proof after the active design is ready.
+          Load an approved starting point or inspect validation, trace, and endpoint proof after the active design is ready.
         </p>
         <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
           <TemplateGallery vm={vm.workbench} />

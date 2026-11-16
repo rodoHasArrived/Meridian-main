@@ -546,7 +546,7 @@ function buildOperatorFocusViewModel(
 ): OperatorFocusViewModel {
   if (context.loading) {
     return {
-      summary: "Loading cross-workspace operator posture.",
+      summary: "Loading status across workspaces.",
       emptyText: "Ranked focus actions will appear after workspace data loads.",
       overflowLabel: null,
       items: [],
@@ -604,7 +604,7 @@ function buildWorkflowContinuityDisclosureState(
   return {
     label: "Supporting workflow evidence",
     summary: degraded
-      ? "Supporting context is collapsed while the workstation recovers. Expand sections for diagnostics and handoffs."
+      ? "Supporting context is collapsed while the workstation recovers. Expand sections for diagnostics and next steps."
       : "Expand supporting context when you need linked routes, ranked focus items, or recent evidence.",
     panels: [
       {
@@ -770,7 +770,7 @@ function buildLinkedContextViewModel(
       primaryActionLabel: null,
       primaryActionHref: null,
       primaryActionAriaLabel: null,
-      emptyText: "Open a symbol route or load portfolio positions to link data, trading, portfolio, accounting, and evidence routes.",
+      emptyText: "Open a symbol route or load portfolio positions to link data, trading, portfolio, accounting, and supporting records.",
       items: []
     };
   }

@@ -340,13 +340,6 @@ export interface DataOperationsProviderSectionState extends DataOperationsSectio
   selectedDetail: DataOperationsProviderDetailState | null;
   detailEmptyState: DataOperationsEmptyState | null;
   diagnosticsSummary: string;
-  refreshAction: {
-    label: string;
-    ariaLabel: string;
-    busy: boolean;
-    disabled: boolean;
-    disabledReason: string | null;
-  };
 }
 
 export type DataOperationsProviderStatus = DataProviderRecord["status"] | "Blocked";
@@ -886,7 +879,7 @@ export const defaultDataUploadTemplateCatalog: DataUploadTemplateCatalog = {
         "AST-30001,91282CHT1,US Treasury 4.25 2034,Bond,US Treasury,USD,US,2034-05-15,4.25,Custodian Security Master"
       ],
       validationNotes: [
-        "Asset information uploads are candidate facts and should not override governed Security Master approvals.",
+        "Asset information uploads are candidate facts and should not override Security Master approvals.",
         "Include durable source identifiers so conflicting facts can be traced during review."
       ]
     },
@@ -2255,16 +2248,17 @@ export function buildProviderSection(
         disabledReason: null,
         busy: false
       },
-      {
-        id: "refresh",
-        label: evidence.providerRoutingRefreshing ? "Refreshing..." : "Refresh Status",
-        ariaLabel: evidence.providerRoutingRefreshing ? "Provider status refresh in progress" : "Refresh provider status and routing evidence",
+      // The header Refresh re-reads provider status; a local control appears only while that evidence is missing.
+      ...(evidence.onProviderRoutingRefresh && evidence.providerConnections == null ? [{
+        id: "refresh" as const,
+        label: evidence.providerRoutingRefreshing ? "Retrying..." : "Retry",
+        ariaLabel: evidence.providerRoutingRefreshing ? "Provider status reload in progress" : "Retry loading provider status and routing evidence",
         href: null,
-        variant: "outline",
+        variant: "outline" as const,
         disabled: Boolean(evidence.providerRoutingRefreshing),
-        disabledReason: evidence.providerRoutingRefreshing ? "Provider routing refresh is already in progress." : null,
+        disabledReason: evidence.providerRoutingRefreshing ? "Provider status is already reloading." : null,
         busy: Boolean(evidence.providerRoutingRefreshing)
-      },
+      }] : []),
       {
         id: "diagnostics",
         label: "Run Diagnostics",
@@ -2308,13 +2302,6 @@ export function buildProviderSection(
     diagnosticsSummary: selectedDetail
       ? selectedDetail.diagnostics.map((item) => `${item.label}: ${item.statusLabel}`).join("; ")
       : "Select a provider before running diagnostics.",
-    refreshAction: {
-      label: evidence.providerRoutingRefreshing ? "Refreshing..." : "Refresh Status",
-      ariaLabel: evidence.providerRoutingRefreshing ? "Provider status refresh in progress" : "Refresh provider status and routing evidence",
-      busy: Boolean(evidence.providerRoutingRefreshing),
-      disabled: Boolean(evidence.providerRoutingRefreshing),
-      disabledReason: evidence.providerRoutingRefreshing ? "Provider routing refresh is already in progress." : null
-    },
     emptyState: {
       title: "No providers configured",
       description: "Add a provider before relying on live quotes, historical backfill, brokerage, Security Master, or export data."
@@ -3329,7 +3316,7 @@ export function buildExportSection(
     detailEmptyState: exports.length === 0
       ? {
           title: "No export selected",
-          description: "Generated packages and governed export evidence will appear here after a report or package job runs."
+          description: "Generated packages and export evidence will appear here after a report or package job runs."
         }
       : null
   };
@@ -3423,7 +3410,7 @@ function exportActionText(status: DataExportRecord["status"]): string {
   }
 
   if (status === "Running") {
-    return "Wait for the package writer to finish before handoff.";
+    return "Wait for the package writer to finish before delivery.";
   }
 
   return "Review export profile and target before report-pack use.";
@@ -4516,7 +4503,7 @@ export function buildProviderSetupWorkflowSteps(phase: ProviderSetupPhase): Prov
     {
       id: "validate-data",
       label: "Validate Data",
-      description: "Verify credential posture, trust score, freshness, and quality gates.",
+      description: "Verify credential status, trust score, freshness, and quality gates.",
       status: "pending",
       statusLabel: "Pending"
     },

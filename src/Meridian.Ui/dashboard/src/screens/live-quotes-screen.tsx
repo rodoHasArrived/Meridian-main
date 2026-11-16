@@ -173,7 +173,7 @@ export function LiveQuotesScreen() {
                   disabled={vm.refreshCommand.disabled}
                   disabledReason={vm.refreshCommand.disabledReason}
                   busy={vm.refreshCommand.busy}
-                  busyLabel="Refreshing..."
+                  busyLabel="Fetching..."
                 >
                   <RefreshCw className={`h-4 w-4 ${vm.refreshCommand.busy ? "animate-spin" : ""}`} aria-hidden="true" />
                   <span className="ml-1.5">{vm.refreshCommand.label}</span>
@@ -218,7 +218,7 @@ export function LiveQuotesScreen() {
             <EmptyState
               icon="search"
               title="Start a quote list"
-              detail="Add symbols to monitor quotes, spreads, provider posture and latency here. Detail, order book, replay and ticket workflows open once a symbol is selected."
+              detail="Add symbols to monitor quotes, spreads, provider health and latency here. Detail, order book, replay and ticket workflows open once a symbol is selected."
               action="Add starter symbols"
               onAction={workspaceVm.loadStarterSet}
             />

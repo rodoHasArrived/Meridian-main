@@ -39,7 +39,7 @@ export function buildBasisBridgeViewState(
       toBasis: comparisonBasis,
       rows: [],
       hasRows: false,
-      emptyText: "No non-primary basis rows are available for this run yet. The bridge will populate after GAAP, Cash, Tax, or Statutory projection posts journal lines."
+      emptyText: "No non-primary basis rows are available for this run yet. The bridge will populate after GAAP, Cash, Tax, or Statutory journal lines are posted."
     };
   }
 

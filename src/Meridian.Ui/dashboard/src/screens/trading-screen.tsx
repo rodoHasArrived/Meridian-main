@@ -656,7 +656,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
         }}
         blocker={readinessStatus ? {
           value: formatReadinessStatusValue(readinessStatus),
-          detail: "Operator readiness posture",
+          detail: "Operator readiness status",
           tone: readinessTone
         } : undefined}
       />
@@ -910,7 +910,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
       ) : null}
 
       {showOverview ? (
-      <section id="trading-posture" className="workspace-section-band" aria-label="Trading readiness posture">
+      <section id="trading-posture" className="workspace-section-band" aria-label="Trading readiness">
       {/* Secondary to the blotters, so collapsed by default. */}
       <TechnicalDetails label="Readiness checks" contentClassName="p-0">
       <AcceptanceStatusCard

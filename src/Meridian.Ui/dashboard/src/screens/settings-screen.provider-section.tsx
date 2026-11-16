@@ -14,7 +14,7 @@ import { type SettingsRouteViewId } from "@/screens/settings-route-state";
 import { humanizeSettingsIdentifier } from "@/screens/settings-screen.operations-form-options";
 import { type SettingsProviderConnectionRow, type SettingsScreenViewModel } from "@/screens/settings-screen.view-model";
 import type { FeatureCapabilitySettingsResponse, ProviderIntegrationQuarantinedRecord, ProviderIntegrationQuarantineResolutionAction, SessionInfo } from "@/types";
-import { ArrowRight, MonitorCheck, RefreshCcw, Search } from "lucide-react";
+import { ArrowRight, MonitorCheck, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { OwnedProviderCredentialPanel } from "./settings-owned-provider-credentials";
@@ -192,7 +192,7 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
       providerRuntimeErrorDetail(stagingResult, "Staging review"),
       providerRuntimeErrorDetail(identityResult, "Identity resolution"),
       providerRuntimeErrorDetail(promotionResult, "Promotion readiness"),
-      providerRuntimeErrorDetail(handoffResult, "Reconciliation handoff history"),
+      providerRuntimeErrorDetail(handoffResult, "Reconciliation delivery history"),
       providerRuntimeErrorDetail(quarantineResult, "Quarantine review")
     ].filter((detail): detail is string => Boolean(detail));
     const failedCount = details.length;
@@ -359,7 +359,7 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
         [stateKey]: {
           ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
           phase: "loaded",
-          message: "No promotion-ready staging rows are available for reconciliation handoff.",
+          message: "No promotion-ready staging rows are available for reconciliation delivery.",
           details: []
         }
       }));
@@ -371,7 +371,7 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
       [stateKey]: {
         ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
         phase: "loading",
-        message: "Creating provider integration reconciliation handoff.",
+        message: "Creating provider integration reconciliation delivery.",
         details: []
       }
     }));
@@ -392,13 +392,13 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
         [stateKey]: {
           ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
           phase: "loaded",
-          message: `Reconciliation handoff ${result.accepted ? "created" : "reviewed"}: ${result.acceptedRecordCount} accepted / ${result.duplicateRecordCount} duplicate.`,
+          message: `Reconciliation delivery ${result.accepted ? "created" : "reviewed"}: ${result.acceptedRecordCount} accepted / ${result.duplicateRecordCount} duplicate.`,
           details: result.issues.map((issue) => issue.message)
         }
       }));
       await loadProviderRuntimeEvidence(row);
     } catch (error) {
-      const display = describeApiError(error, "Provider integration reconciliation handoff failed.");
+      const display = describeApiError(error, "Provider integration reconciliation delivery failed.");
       setProviderRuntimeState((current) => ({
         ...current,
         [stateKey]: {
@@ -575,6 +575,7 @@ interface SettingsProviderSectionProps {
 }
 
 export function SettingsProviderSection({ vm, showProviderSetupControls, inlineProviderManagementEnabled, showProviderAdvancedControls, onProviderRoutingRefresh, showProviderFilters, providerSearch, setProviderSearch, providerCapabilityFilter, setProviderCapabilityFilter, providerHealthFilter, setProviderHealthFilter, providerVerificationFilter, setProviderVerificationFilter, providerSort, setProviderSort, activeProviderDisplayName, visibleProviderGroups, session, onRefresh, activeTaskView, providerRuntimeState, providerOpenApiImportState, updateProviderOpenApiImportState, submitProviderOpenApiImport, loadProviderRuntimeEvidence, setMutationConfirmation, runProviderRuntimeDueSync, createProviderRuntimeHandoff, replayProviderRuntimeQuarantine, resolveProviderRuntimeQuarantineRecord }: SettingsProviderSectionProps) {
+  const retryRouting = vm.providerConnectionCenter.refreshAction;
   return (
     <Card id="provider-connection-center" className="panel-surface scroll-mt-6 border border-border/70">
       <CardHeader>
@@ -597,23 +598,17 @@ export function SettingsProviderSection({ vm, showProviderSetupControls, inlineP
             </CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {onProviderRoutingRefresh ? (
+            {onProviderRoutingRefresh && retryRouting ? (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => void onProviderRoutingRefresh()}
-                disabled={vm.providerConnectionCenter.refreshAction.disabled}
-                disabledReason={vm.providerConnectionCenter.refreshAction.disabledReason}
-                aria-label={vm.providerConnectionCenter.refreshAction.ariaLabel}
+                disabled={retryRouting.disabled}
+                disabledReason={retryRouting.disabledReason}
+                busy={retryRouting.busy}
+                aria-label={retryRouting.ariaLabel}
               >
-                <RefreshCcw
-                  className={cn(
-                    "h-3.5 w-3.5",
-                    vm.providerConnectionCenter.refreshAction.busy && "animate-spin"
-                  )}
-                  aria-hidden="true"
-                />
-                {vm.providerConnectionCenter.refreshAction.label}
+                {retryRouting.label}
               </Button>
             ) : null}
             <SeverityBadge
@@ -781,10 +776,10 @@ export function SettingsProviderSection({ vm, showProviderSetupControls, inlineP
                       })}
                       onCreateHandoff={() => setMutationConfirmation({
                         id: `provider-handoff-${row.providerId}`,
-                        title: `Create reconciliation handoff for ${row.displayName}?`,
-                        description: "Create retained handoff evidence only for staging rows the shared promotion-readiness service marked ready.",
-                        confirmLabel: "Confirm handoff",
-                        confirmAriaLabel: `Confirm reconciliation handoff for ${row.displayName}`,
+                        title: `Create reconciliation delivery for ${row.displayName}?`,
+                        description: "Create retained delivery evidence only for staging rows the shared promotion-readiness service marked ready.",
+                        confirmLabel: "Confirm delivery",
+                        confirmAriaLabel: `Confirm reconciliation delivery for ${row.displayName}`,
                         run: () => createProviderRuntimeHandoff(row)
                       })}
                       onReplayQuarantine={() => setMutationConfirmation({

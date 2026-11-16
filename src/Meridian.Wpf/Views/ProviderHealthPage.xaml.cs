@@ -52,12 +52,6 @@ public partial class ProviderHealthPage : Page
     private void OnPageUnloaded(object sender, RoutedEventArgs e) =>
         _viewModel.Deactivate();
 
-    private async void Refresh_Click(object sender, RoutedEventArgs e)
-        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => Refresh_ClickCoreAsync(sender, e), nameof(Refresh_Click)).ConfigureAwait(true);
-
-    private async System.Threading.Tasks.Task Refresh_ClickCoreAsync(object sender, RoutedEventArgs e)
-        => await _viewModel.RefreshAsync();
-
     private void AddProvider_Click(object sender, RoutedEventArgs e) =>
         _viewModel.OpenAddProviderWizard();
 

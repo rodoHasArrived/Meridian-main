@@ -338,7 +338,7 @@ describe("finance standard pages", () => {
   it("does not substitute reporting-workspace fixtures when run detail has no runId", async () => {
     await renderPage(<ReportRunDetailScreen data={data} />, "/reporting/runs/detail");
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Select a governed report run");
+    expect(screen.getByRole("alert")).toHaveTextContent("Select a report run");
     expect(screen.queryByText("Entity Scope: Fund Alpha")).not.toBeInTheDocument();
   });
 

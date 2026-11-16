@@ -1049,7 +1049,7 @@ describe("Operations Continuity view model", () => {
       confidenceLabel: "79% confidence",
       evidenceLabel: "No retained evidence",
       evidenceHref: null,
-      evidenceRouteLabel: "No local evidence route",
+      evidenceRouteLabel: "No local supporting record link",
       suggestedActionLabel: "Review each requested support item and assign an owner before audit release."
     });
     expect(vm.financialOperationsQueue).toMatchObject({
@@ -1174,7 +1174,7 @@ describe("Operations Continuity view model", () => {
     expect(vm.financialOperationsQueue.items.find((item) => item.id === "command-stage:match-records")).toMatchObject({
       kindLabel: "Command stage",
       title: "Match Records",
-      detail: "Run reconciliation and refresh posture; Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.",
+      detail: "Run reconciliation and refresh status; Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.",
       statusLabel: "Review Required",
       statusTone: "review",
       ownerLabel: "Reconciliation operations",
@@ -1212,7 +1212,7 @@ describe("Operations Continuity view model", () => {
       label: "Close package manifest",
       statusLabel: "Missing",
       statusTone: "blocked",
-      evidenceRouteLabel: "No local evidence route",
+      evidenceRouteLabel: "No local supporting record link",
       requiredActionsLabel: "Publish the close package manifest and retain the evidence hash."
     });
     expect(vm.evidencePackages[4]).toMatchObject({
@@ -1271,7 +1271,7 @@ describe("Operations Continuity view model", () => {
       statusTone: "neutral",
       lockLabel: "Period remains open",
       closeAuditLabel: "No close audit event",
-      reopenAuditLabel: "No governed reopen recorded",
+      reopenAuditLabel: "No period reopen recorded",
       commandGuardLabel: "Close and reopen command decisions remain enforced by the shared workflow API."
     });
   });
@@ -2158,7 +2158,7 @@ describe("Operations Continuity view model", () => {
       id: "bank-reconciliation",
       evidenceLabel: "1 evidence link",
       evidenceHref: null,
-      evidenceRouteLabel: "No local evidence route",
+      evidenceRouteLabel: "No local supporting record link",
       routeHref: "/accounting/reconciliation",
       routeLabel: "Open lane"
     });
@@ -2199,7 +2199,7 @@ describe("Operations Continuity view model", () => {
       id: "approval-close-2026-05",
       evidenceLabel: "1 evidence link",
       evidenceHref: null,
-      evidenceRouteLabel: "No local evidence route"
+      evidenceRouteLabel: "No local supporting record link"
     });
     expect(vm.financialOperationsQueue.items.find((item) => item.id === "approval:approval-close-2026-05")).toMatchObject({
       routeHref: null,
@@ -2265,7 +2265,7 @@ describe("Operations Continuity view model", () => {
       id: "recon-break-external",
       evidenceLabel: "1 retained evidence link",
       evidenceHref: null,
-      evidenceRouteLabel: "No local evidence route",
+      evidenceRouteLabel: "No local supporting record link",
       caseworkHref: `/accounting/exceptions?workflowId=${workflowId}&breakId=recon-break-external`,
       caseworkRouteLabel: "Open casework",
       commandPostureLabel: "Assignment and escalation ready",
@@ -2855,13 +2855,13 @@ describe("Operations Continuity view model", () => {
       lockLabel: "Closed period is locked",
       closeAuditLabel: "Workflow Closed f4d29af8 / closehash-pa",
       closePackageLabel: "close-package-2026-05 / b5f6c7d8e9a0",
-      reopenAuditLabel: "No governed reopen recorded",
-      commandGuardLabel: "Mutations must use the governed reopen command with incident metadata, justification, approval reference, and impact summary.",
+      reopenAuditLabel: "No period reopen recorded",
+      commandGuardLabel: "Mutations must use the period reopen command with incident metadata, justification, approval reference, and impact summary.",
       workflowId,
       expectedWorkflowVersion: 4,
       canReopenWorkflow: true,
       reopenWorkflowDisabledReason: null,
-      reopenWorkflowAriaLabel: "Reopen governed period for 2026-05"
+      reopenWorkflowAriaLabel: "Reopen period for 2026-05"
     });
     expect(vm.closeGovernance.reopenWorkflowEvidenceLinks).toEqual(expect.arrayContaining([
       expect.objectContaining({ evidenceId: "close-package-evidence-1" })

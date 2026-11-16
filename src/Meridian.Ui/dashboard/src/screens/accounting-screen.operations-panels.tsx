@@ -206,9 +206,9 @@ export function OperationalExceptionWorkbenchPanel({ view }: { view: Operational
           </CardContent>
         </Card>
 
-        <Card className="panel-surface" role="region" aria-label="Exception workflow handoffs">
+        <Card className="panel-surface" role="region" aria-label="Exception workflow next steps">
           <CardHeader>
-            <CardTitle className="text-base">Workflow handoffs</CardTitle>
+            <CardTitle className="text-base">Workflow next steps</CardTitle>
             <CardDescription>Resolution work stays connected to approval, audit, and retained evidence paths.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">

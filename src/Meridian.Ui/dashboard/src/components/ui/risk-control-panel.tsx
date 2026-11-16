@@ -1,10 +1,10 @@
-import { RefreshCcw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { ErrorNotice } from "@/components/ui/error-notice";
 import { isApiError } from "@/lib/api-errors";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { formatEnumLabel } from "@/lib/display-labels";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,8 @@ const toneClass = {
 export function RiskControlPanel() {
   const vm = useRiskControlPanelViewModel();
   const riskControlsUnavailable = isApiError(vm.loadFailure) && vm.loadFailure.status === 404;
+  // The header Refresh re-reads limits, but never over a load, a save, or a typed value not yet saved.
+  useOnGlobalRefresh(() => { if (!vm.refreshAction.disabled && !vm.hasUnsavedEdits) void vm.refresh(); });
 
   return (
     <Card
@@ -35,20 +37,6 @@ export function RiskControlPanel() {
             <CardTitle>Risk control panel</CardTitle>
             <CardDescription>{vm.overallSummary}</CardDescription>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => void vm.refresh()}
-            busy={vm.refreshAction.busy}
-            busyLabel={vm.refreshAction.busyLabel}
-            disabled={vm.refreshAction.disabled}
-            disabledReason={vm.refreshAction.disabledReason}
-            aria-label={vm.refreshAction.ariaLabel}
-          >
-            <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
-            {vm.refreshAction.label}
-          </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

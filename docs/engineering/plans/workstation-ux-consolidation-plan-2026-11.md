@@ -101,6 +101,25 @@ P1, P4, C4, C6):**
   chart-method note is behind an information icon.
 - The WPF workstation does not have these changes yet.
 
+**Follow-ups (landed 2026-11-16, dashboard and WPF source; host bundle not rebuilt):**
+- Scope: Trading's account step is inside the header scope bar (`ScopeBarAccountPicker`); the
+  Trading recovery row has no picker.
+- Refresh: the remaining sub-page Refresh buttons are converted to `PanelReload` (header-driven
+  reload, "Retry" only after a failed load). Buttons that start new work are renamed for what they
+  do ("Run checks again", "Fetch latest prices", "Fetch latest chain", "Recalculate preview",
+  "Check command outcome"). A header-driven reload never discards operator input.
+- Copy: operator-visible strings written by the dashboard no longer use "posture", "governed",
+  "handoff", "workstream", "read model", "evidence route", or "projection" for a derived view.
+  Not changed: server-supplied text, wording sent to the server or stored in audit records,
+  genuine forecasts, page names, and the words "retained" and "authoritative".
+- WPF: shell Refresh and F5 reload the active page, docked panes and visible split panes in place
+  through `IPageRefreshTarget`; redundant page-level Refresh buttons are removed; the seven
+  workspace shells state one plain description and one title each; the empty scope reads "All
+  authorized scopes" or "No scope selected"; the position blotter shows market value. WPF is
+  compile-checked on Linux; its tests run on Windows CI only. Not ported to WPF: the compact trust
+  label, the overview layout order, a currency/weight holdings model, sub-panel Refresh buttons,
+  and the copy pass beyond the seven shell pages.
+
 **P1 first step (landed 2026-11-13):** the bottom status bar no longer repeats the
 masthead's worst issue ("Cash variance needs review +5 more"). It holds Sync and page Freshness
 only, so the trust strip is the one shell place that names the worst open issue.

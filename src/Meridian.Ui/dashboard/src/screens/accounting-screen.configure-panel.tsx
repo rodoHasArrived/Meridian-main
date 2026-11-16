@@ -494,7 +494,7 @@ export function LedgerBookSetupWizard({ view }: { view: AccountingConfigurationV
             <div className="space-y-3" aria-label="Ledger book setup readiness review">
               <p className="text-sm text-muted-foreground">
                 Confirm the setup candidate below before creating the book. These values come from the shared
-                accounting configuration read model.
+                accounting configuration data.
               </p>
               <div className="grid gap-2">
                 {view.setupReadinessRows.map((row) => (
@@ -740,7 +740,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
               <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">External GL</div>
               <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.externalGlLabel}</div>
-              <p className="mt-1 text-xs text-muted-foreground">Import, mapping, reconciliation, and guarded export posture.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Import, mapping, reconciliation, and guarded export status.</p>
             </div>
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
               <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Dimensions</div>

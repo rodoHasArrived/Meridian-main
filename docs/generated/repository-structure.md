@@ -9182,6 +9182,8 @@ Meridian-main
 │   │   │   │   │   │   ├── save-view-dialog.tsx
 │   │   │   │   │   │   ├── scenario-prepayment-inputs.test.ts
 │   │   │   │   │   │   ├── scenario-prepayment-inputs.tsx
+│   │   │   │   │   │   ├── scope-bar-account-picker.test.tsx
+│   │   │   │   │   │   ├── scope-bar-account-picker.tsx
 │   │   │   │   │   │   ├── scope-period-field.tsx
 │   │   │   │   │   │   ├── scope-picker.test.tsx
 │   │   │   │   │   │   ├── scope-picker.tsx
@@ -9339,6 +9341,8 @@ Meridian-main
 │   │   │   │   │       ├── overflow-menu.tsx
 │   │   │   │   │       ├── page-heading.test.tsx
 │   │   │   │   │       ├── page-heading.tsx
+│   │   │   │   │       ├── panel-reload.test.tsx
+│   │   │   │   │       ├── panel-reload.tsx
 │   │   │   │   │       ├── panel-surface.tsx
 │   │   │   │   │       ├── popover.test.tsx
 │   │   │   │   │       ├── popover.tsx
@@ -11455,6 +11459,7 @@ Meridian-main
 │   │   │   ├── IConnectionService.cs
 │   │   │   ├── INavigationService.cs
 │   │   │   ├── IPageActivationLifetime.cs
+│   │   │   ├── IPageRefreshTarget.cs
 │   │   │   └── IRemoteWorkstationClient.cs
 │   │   ├── Controls
 │   │   │   ├── AutomationLeafBorder.cs
@@ -11666,6 +11671,7 @@ Meridian-main
 │   │   │   ├── OfflineTrackingPersistenceService.cs
 │   │   │   ├── OperationsControlCenterClient.cs
 │   │   │   ├── OperatorInboxRouteMap.cs
+│   │   │   ├── PageRefreshResolver.cs
 │   │   │   ├── PendingOperationsQueueService.cs
 │   │   │   ├── QuantScriptExecutionHistoryService.cs
 │   │   │   ├── QuantScriptLayoutService.cs
@@ -15217,6 +15223,7 @@ Meridian-main
 │   │   │   ├── NotificationServiceTests.cs
 │   │   │   ├── OfflineTrackingPersistenceServiceTests.cs
 │   │   │   ├── OperationsContinuityDtoContractTests.cs
+│   │   │   ├── PageRefreshResolverTests.cs
 │   │   │   ├── PendingOperationsQueuePersistenceTests.cs
 │   │   │   ├── PendingOperationsQueueServiceTests.cs
 │   │   │   ├── ProviderVaultWindowsProtectionTests.cs
@@ -15253,6 +15260,7 @@ Meridian-main
 │   │   │   └── ShellRouteRegistryTests.cs
 │   │   ├── Support
 │   │   │   ├── AppServiceTestHost.cs
+│   │   │   ├── CountingCommand.cs
 │   │   │   ├── DesktopNavigationTestHost.cs
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
@@ -15406,6 +15414,7 @@ Meridian-main
 │   │   │   ├── MainPageSmokeTests.cs
 │   │   │   ├── MainPageUiWorkflowTests.cs
 │   │   │   ├── NavigationPageSmokeTests.cs
+│   │   │   ├── PageLevelRefreshRemovalTests.cs
 │   │   │   ├── PageLifecycleCleanupTests.cs
 │   │   │   ├── PlotRenderBehaviorTests.cs
 │   │   │   ├── ProviderPageSimplificationTests.cs

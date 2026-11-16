@@ -6,6 +6,110 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingSafetyCommandService
+
+Qualified name: <code>Meridian.Wpf.Services.TradingSafetyCommandService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/TradingSafetyCommandService.cs:13](../../../../src/Meridian.Wpf/Services/TradingSafetyCommandService.cs#L13).
+
+Carries out the Trading command bar&#x27;s desk safety commands against the shared execution service, and reports what each one actually achieved. Separate from TradingWorkspaceShellPresentationService on purpose. That service composes shell presentation from half a dozen workspace services; executing a halt needs none of them, and hanging the safety seam off it would make the desk&#x27;s kill path depend on the whole presentation graph being constructible.
+
+```csharp
+public sealed class TradingSafetyCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TradingSafetyCommandService(IExecutionSafetyControlClient? client = null);</code> | [src/Meridian.Wpf/Services/TradingSafetyCommandService.cs:22](../../../../src/Meridian.Wpf/Services/TradingSafetyCommandService.cs#L22) |  |
+| <code>public static bool IsSafetyCommand(string? commandId) =&gt; …;</code> | [src/Meridian.Wpf/Services/TradingSafetyCommandService.cs:31](../../../../src/Meridian.Wpf/Services/TradingSafetyCommandService.cs#L31) | Command ids that must reach the shared execution service rather than only rearranging panes. Every other command in the bar is navigation. |
+| <code>public async Task&lt;SafetyCommandOutcome&gt; ExecuteAsync(string commandId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/TradingSafetyCommandService.cs:39](../../../../src/Meridian.Wpf/Services/TradingSafetyCommandService.cs#L39) | Runs a desk safety command and returns its real outcome. Commands that are not safety commands, and hosts with no execution-control connection, both report failure rather than a silent no-op. |
+
+## TradingWorkspaceShellPresentationService
+
+Qualified name: <code>Meridian.Wpf.Services.TradingWorkspaceShellPresentationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs:14](../../../../src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs#L14).
+
+Builds trading workspace context and actions from the active fund and trading state.
+
+```csharp
+public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TradingWorkspaceShellPresentationService(StrategyRunWorkspaceService runService, FundContextService fundContextService, WorkstationOperatingContextService? operatingContextService, CashFinancingReadService cashFinancingReadService, WorkspaceShellContextService shellContextService, WorkstationWorkflowSummaryService? workflowSummaryService = null, TradingOperatorReadinessService? operatorReadinessService = null, DesktopAuthenticationSession? authenticationSession = null);</code> | [src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs:26](../../../../src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs#L26) |  |
+| <code>public event EventHandler? PresentationInvalidated;</code> | [src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs:46](../../../../src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs#L46) |  |
+| <code>public void Start();</code> | [src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs:48](../../../../src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs#L48) |  |
+| <code>public void Stop();</code> | [src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs:66](../../../../src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs#L66) |  |
+
+## TradingWorkspaceShellStateProvider
+
+Qualified name: <code>Meridian.Wpf.Services.TradingWorkspaceShellStateProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:81](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L81).
+
+Supplies the trading workspace definition and shell state.
+
+```csharp
+public sealed class TradingWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TradingWorkspaceShellStateProvider(StrategyRunWorkspaceService runService, FundContextService fundContextService, WorkstationOperatingContextService? operatingContextService) : base(operatingContextService);</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:86](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L86) |  |
+| <code>public override WorkspaceShellDefinition Definition =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:96](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L96) |  |
+| <code>public override async Task&lt;WorkspaceShellState&gt; GetStateAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:99](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L99) |  |
+
+## VerificationJobEventArgs
+
+Qualified name: <code>Meridian.Wpf.Services.VerificationJobEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:508](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L508).
+
+Carries the archive verification job whose state has changed.
+
+```csharp
+public sealed class VerificationJobEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public VerificationJob? Job { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:510](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L510) |  |
+
+## VerificationProgress
+
+Qualified name: <code>Meridian.Wpf.Services.VerificationProgress</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:524](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L524).
+
+Reports archive verification file counts, progress, current file, and processing rate.
+
+```csharp
+public sealed class VerificationProgress
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int ProcessedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:526](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L526) |  |
+| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:527](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L527) |  |
+| <code>public int VerifiedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:528](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L528) |  |
+| <code>public int FailedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:529](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L529) |  |
+| <code>public double ProgressPercent { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:530](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L530) |  |
+| <code>public string? CurrentFile { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:531](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L531) |  |
+| <code>public double FilesPerSecond { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:532](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L532) |  |
+| <code>public int? EstimatedTimeRemainingSeconds { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:533](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L533) |  |
+
 ## ViewModelViewResolver
 
 Qualified name: <code>Meridian.Wpf.Services.ViewModelViewResolver</code>. Kind: `class`.
@@ -253,7 +357,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Services.WorkspaceShellContextService</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/WorkspaceShellContextService.cs:13](../../../../src/Meridian.Wpf/Services/WorkspaceShellContextService.cs#L13).
+Source: [src/Meridian.Wpf/Services/WorkspaceShellContextService.cs:14](../../../../src/Meridian.Wpf/Services/WorkspaceShellContextService.cs#L14).
 
 Composes a consistent shell-context strip from shared workstation state.
 
@@ -265,10 +369,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public WorkspaceShellContextService(FundContextService fundContextService, FixtureModeDetector fixtureModeDetector, NotificationService notificationService, IStatusService statusService, WorkstationOperatingContextService? operatingContextService = null) : this(fundContextService, fixtureModeDetector, notificationService, ct =&gt; MapStatusAsync(statusService, ct), operatingContextService);</code> | [src/Meridian.Wpf/Services/WorkspaceShellContextService.cs:21](../../../../src/Meridian.Wpf/Services/WorkspaceShellContextService.cs#L21) |  |
-| <code>public event EventHandler? SignalsChanged;</code> | [src/Meridian.Wpf/Services/WorkspaceShellContextService.cs:59](../../../../src/Meridian.Wpf/Services/WorkspaceShellContextService.cs#L59) |  |
-| <code>public async Task&lt;WorkspaceShellContext&gt; CreateAsync(WorkspaceShellContextInput input, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WorkspaceShellContextService.cs:61](../../../../src/Meridian.Wpf/Services/WorkspaceShellContextService.cs#L61) |  |
-| <code>public int GetUnreadAlertCount() =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceShellContextService.cs:180](../../../../src/Meridian.Wpf/Services/WorkspaceShellContextService.cs#L180) |  |
+| <code>public WorkspaceShellContextService(FundContextService fundContextService, FixtureModeDetector fixtureModeDetector, NotificationService notificationService, IStatusService statusService, WorkstationOperatingContextService? operatingContextService = null) : this(fundContextService, fixtureModeDetector, notificationService, ct =&gt; MapStatusAsync(statusService, ct), operatingContextService);</code> | [src/Meridian.Wpf/Services/WorkspaceShellContextService.cs:22](../../../../src/Meridian.Wpf/Services/WorkspaceShellContextService.cs#L22) |  |
+| <code>public event EventHandler? SignalsChanged;</code> | [src/Meridian.Wpf/Services/WorkspaceShellContextService.cs:60](../../../../src/Meridian.Wpf/Services/WorkspaceShellContextService.cs#L60) |  |
+| <code>public async Task&lt;WorkspaceShellContext&gt; CreateAsync(WorkspaceShellContextInput input, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WorkspaceShellContextService.cs:62](../../../../src/Meridian.Wpf/Services/WorkspaceShellContextService.cs#L62) |  |
+| <code>public int GetUnreadAlertCount() =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceShellContextService.cs:181](../../../../src/Meridian.Wpf/Services/WorkspaceShellContextService.cs#L181) |  |
 
 ## WorkspaceShellSlotContributionService
 
@@ -1048,88 +1152,3 @@ Declared public members:
 | <code>public static IShellPageRegistry BuildDefault();</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:87](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L87) |  |
 | <code>public static ShellPageDescriptor Page&lt;TPage&gt;(string pageTag, string title, string subtitle, string workspaceId, string sectionLabel, string glyph, int order, ShellNavigationVisibilityTier visibilityTier, IReadOnlyList&lt;string&gt;? searchKeywords = null, IReadOnlyList&lt;string&gt;? relatedPageTags = null, IReadOnlyList&lt;string&gt;? aliases = null, bool hideFromDefaultPalette = false) where TPage : class;</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:115](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L115) |  |
 | <code>public static WorkspacePaneDefinition Pane(string pageTag, PaneDropAction action, WorkspacePaneParameterBinding parameterBinding = WorkspacePaneParameterBinding.None, bool openWithoutBoundParameter = false, string? fallbackPageTag = null, PaneDropAction? fallbackAction = null) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:146](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L146) |  |
-
-## ShellRouteRegistry
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.ShellRouteRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:9](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L9).
-
-Indexes desktop routes and aliases for canonical page and workspace lookup.
-
-```csharp
-public sealed class ShellRouteRegistry : IShellRouteRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ShellRouteRegistry() : this(ShellPageRegistryBuilder.BuildDefault());</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:15](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L15) |  |
-| <code>public ShellRouteRegistry(IShellPageRegistry pageRegistry);</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:20](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L20) |  |
-| <code>public IReadOnlyList&lt;ShellRoute&gt; Routes =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:27](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L27) |  |
-| <code>public ShellRoute? GetRoute(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:29](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L29) |  |
-| <code>public bool IsRegistered(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:41](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L41) |  |
-| <code>public Type? GetPageType(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:43](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L43) |  |
-| <code>public string GetCanonicalPageTag(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:45](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L45) |  |
-| <code>public string? InferWorkspaceIdForPageTag(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:48](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L48) |  |
-| <code>public IReadOnlyList&lt;ShellRoute&gt; GetRoutesForWorkspace(string workspaceId);</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:50](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L50) |  |
-
-## DesktopShellSessionRestorePlan
-
-Qualified name: <code>Meridian.Wpf.Shell.Session.DesktopShellSessionRestorePlan</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:11](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L11).
-
-```csharp
-public sealed record DesktopShellSessionRestorePlan(string? DeferredPageTag, string TargetPageTag);
-```
-
-## DesktopShellSessionService
-
-Qualified name: <code>Meridian.Wpf.Shell.Session.DesktopShellSessionService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:18](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L18).
-
-Coordinates retained desktop session state with window placement and workspace restoration.
-
-```csharp
-public sealed class DesktopShellSessionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DesktopShellSessionService(WorkspaceService workspaceService, FundContextService fundContextService, WorkstationOperatingContextService operatingContextService, NavigationService navigationService, Meridian.Wpf.Services.LoggingService loggingService);</code> | [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:26](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L26) |  |
-| <code>public void SaveWorkspaceSession(DesktopWindowBounds bounds, bool shellIsOpen);</code> | [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:40](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L40) |  |
-| <code>public async Task SynchronizeLastSelectedFundAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:83](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L83) |  |
-| <code>public async Task&lt;DesktopShellSessionRestorePlan?&gt; BuildRestorePlanForContextAsync(WorkstationOperatingContext context, Func&lt;string?, string&gt; resolveDefaultPageTag, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:129](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L129) |  |
-| <code>public Task SetLastSelectedOperatingContextAsync(WorkstationOperatingContext context, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:182](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L182) |  |
-| <code>public Task LoadWorkspacesAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:188](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L188) |  |
-
-## DesktopWindowBounds
-
-Qualified name: <code>Meridian.Wpf.Shell.Session.DesktopWindowBounds</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Shell/Session/DesktopWindowState.cs:5](../../../../src/Meridian.Wpf/Shell/Session/DesktopWindowState.cs#L5).
-
-```csharp
-public sealed record DesktopWindowBounds(double Left, double Top, double Width, double Height, bool IsMaximized);
-```
-
-## DesktopWindowState
-
-Qualified name: <code>Meridian.Wpf.Shell.Session.DesktopWindowState</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Shell/Session/DesktopWindowState.cs:12](../../../../src/Meridian.Wpf/Shell/Session/DesktopWindowState.cs#L12).
-
-```csharp
-public sealed record DesktopWindowState(double Left, double Top, double Width, double Height, bool IsMaximized, DateTime SavedAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DesktopWindowBounds ToBounds() =&gt; …;</code> | [src/Meridian.Wpf/Shell/Session/DesktopWindowState.cs:20](../../../../src/Meridian.Wpf/Shell/Session/DesktopWindowState.cs#L20) |  |

@@ -6,6 +6,167 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MainWindowViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.MainWindowViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:18](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L18).
+
+ViewModel for MainWindow. Owns shell-level commands plus banner state so the window code-behind only handles WPF-specific hooks.
+
+```csharp
+public sealed class MainWindowViewModel : BindableBase, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MainWindowViewModel(IConnectionService connectionService, NavigationService navigationService, WpfServices.NotificationService notificationService, MessagingService messagingService, ThemeService themeService, WpfServices.WatchlistService watchlistService, FixtureModeDetector fixtureModeDetector, DesktopAuthenticationSession authenticationSession, IStatusService statusService, WpfServices.DemoTourService? demoTourService = null);</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:54](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L54) |  |
+| <code>public event EventHandler? LogoutRequested;</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:101](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L101) |  |
+| <code>public event EventHandler? ShellRefreshRequested;</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:107](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L107) | Raised when F5, the refresh shortcut, or the palette asks for a refresh, so the window can run the same shell refresh as the toolbar Refresh button. |
+| <code>public StatusBarViewModel StatusBar { get; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:109](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L109) |  |
+| <code>public IRelayCommand&lt;string&gt; NavigateCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L111) |  |
+| <code>public IAsyncRelayCommand StartCollectorCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:113](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L113) |  |
+| <code>public IAsyncRelayCommand StopCollectorCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:115](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L115) |  |
+| <code>public IRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:117](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L117) |  |
+| <code>public IRelayCommand LogoutCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:119](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L119) |  |
+| <code>public IAsyncRelayCommand AddClipboardSymbolsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L121) |  |
+| <code>public IRelayCommand DismissStartupBannerCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L123) |  |
+| <code>public IRelayCommand StartDemoTourCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L125) |  |
+| <code>public IRelayCommand NextDemoTourStepCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L127) |  |
+| <code>public IRelayCommand EndDemoTourCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L129) |  |
+| <code>public IRelayCommand DismissClipboardBannerCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:131](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L131) |  |
+| <code>public Visibility AuthenticatedSessionVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L133) |  |
+| <code>public string AuthenticatedOperatorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L139) |  |
+| <code>public string AuthenticatedRoleText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:145](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L145) |  |
+| <code>public string AuthenticatedSessionDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:151](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L151) |  |
+| <code>public Visibility FixtureModeBannerVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:157](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L157) |  |
+| <code>public string FixtureModeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:163](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L163) |  |
+| <code>public Brush FixtureModeBannerBackground { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:169](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L169) |  |
+| <code>public Visibility StartupBannerVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:175](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L175) |  |
+| <code>public string StartupBannerStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:181](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L181) |  |
+| <code>public string StartupBannerMessage { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:187](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L187) |  |
+| <code>public string StartupBannerDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L193) |  |
+| <code>public Visibility DemoTourVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:200](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L200) |  |
+| <code>public string DemoTourStepText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:206](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L206) |  |
+| <code>public string DemoTourDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:212](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L212) |  |
+| <code>public Visibility ClipboardBannerVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:218](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L218) |  |
+| <code>public string ClipboardBannerText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:224](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L224) |  |
+| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:230](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L230) |  |
+| <code>public void RefreshAuthenticationState();</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:235](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L235) |  |
+| <code>public void ShowStartupExperience();</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:263](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L263) |  |
+| <code>public void ShowClipboardSymbols(IReadOnlyList&lt;string&gt; symbols);</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:296](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L296) |  |
+| <code>public void HideClipboardBanner();</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:313](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L313) |  |
+| <code>public void HideStartupBanner();</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:322](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L322) |  |
+| <code>public void HandleShortcut(string actionId);</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:335](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L335) |  |
+| <code>public void HandlePaletteAction(string actionId);</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:403](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L403) |  |
+| <code>public void HandleLaunchArgs(string[] args);</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:435](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L435) |  |
+| <code>public void ExecuteRemediationStep(RemediationStep step);</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:454](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L454) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs:489](../../../../src/Meridian.Wpf/ViewModels/MainWindowViewModel.cs#L489) |  |
+
+## MessagingHubViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.MessagingHubViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:15](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L15).
+
+ViewModel for the Messaging Hub page. Owns the refresh timer, message subscription, statistics counters, and all collections.
+
+```csharp
+public sealed class MessagingHubViewModel : BindableBase, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ObservableCollection&lt;MessageTypeItem&gt; MessageTypes { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:35](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L35) |  |
+| <code>public ObservableCollection&lt;ActivityItem&gt; ActivityItems { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:36](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L36) |  |
+| <code>public string TotalMessagesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:40](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L40) |  |
+| <code>public string SubscribersText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:43](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L43) |  |
+| <code>public string FailedMessagesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:46](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L46) |  |
+| <code>public string MessageRateText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:49](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L49) |  |
+| <code>public string ConnectionStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:52](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L52) |  |
+| <code>public Brush ConnectionBadgeBackground { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:55](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L55) |  |
+| <code>public bool NoActivityVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L58) |  |
+| <code>public string MessagingPostureTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:61](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L61) |  |
+| <code>public string MessagingPostureDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:64](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L64) |  |
+| <code>public string RecentActivityScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:67](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L67) |  |
+| <code>public string ActivityEmptyStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:70](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L70) |  |
+| <code>public string ActivityEmptyStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L73) |  |
+| <code>public string LastRefreshText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L76) |  |
+| <code>public bool CanClearActivity =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:78](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L78) |  |
+| <code>public IRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:80](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L80) |  |
+| <code>public IRelayCommand ClearActivityCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:81](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L81) |  |
+| <code>public MessagingHubViewModel(WpfServices.MessagingService messagingService, Brush infoBrush, Brush successBrush, Brush errorBrush);</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:83](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L83) |  |
+| <code>public void Start();</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:105](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L105) |  |
+| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:114](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L114) |  |
+| <code>public void Refresh();</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L123) |  |
+| <code>public void ClearActivity();</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L129) |  |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:298](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L298) |  |
+
+## ActivityItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.MessagingHubViewModel.ActivityItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:313](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L313).
+
+Presents a messaging-hub activity&#x27;s direction, type, detail, and timestamp.
+
+```csharp
+public sealed class ActivityItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string DirectionIcon { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:315](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L315) |  |
+| <code>public Brush DirectionColor { get; set; } = Brushes.Gray;</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:316](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L316) |  |
+| <code>public string MessageType { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:317](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L317) |  |
+| <code>public string Detail { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:318](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L318) |  |
+| <code>public string TimeText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:319](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L319) |  |
+
+## MessageTypeItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.MessagingHubViewModel.MessageTypeItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:304](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L304).
+
+Presents a messaging-hub message type and its formatted occurrence count.
+
+```csharp
+public sealed class MessageTypeItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string TypeName { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:306](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L306) |  |
+| <code>public string CountText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:307](../../../../src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs#L307) |  |
+
+## MetricOption
+
+Qualified name: <code>Meridian.Wpf.ViewModels.MetricOption</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/AnalysisExportViewModel.cs:522](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportViewModel.cs#L522).
+
+Represents a selectable metric for export configuration. Used by both AnalysisExportViewModel and AnalysisExportWizardViewModel.
+
+```csharp
+public sealed class MetricOption : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MetricOption(string name);</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportViewModel.cs:526](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportViewModel.cs#L526) |  |
+| <code>public string Name { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportViewModel.cs:531](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportViewModel.cs#L531) |  |
+| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportViewModel.cs:533](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportViewModel.cs#L533) |  |
+
 ## NotificationAlertSummaryPresentation
 
 Qualified name: <code>Meridian.Wpf.ViewModels.NotificationAlertSummaryPresentation</code>. Kind: `record struct`.
@@ -431,7 +592,7 @@ Source: [src/Meridian.Wpf/ViewModels/PluginManagementViewModel.cs:66](../../../.
 ViewModel for the Plugin Management page. All state, commands, and plugin orchestration live here; the code-behind is limited to InitializeComponent() and constructor wiring.
 
 ```csharp
-public sealed class PluginManagementViewModel : BindableBase
+public sealed class PluginManagementViewModel : BindableBase, Meridian.Wpf.Contracts.IPageRefreshOptOut
 ```
 
 Declared public members:
@@ -445,7 +606,7 @@ Declared public members:
 | <code>public string StatusMessage { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PluginManagementViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/PluginManagementViewModel.cs#L121) |  |
 | <code>public IRelayCommand BrowseCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/PluginManagementViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/PluginManagementViewModel.cs#L129) |  |
 | <code>public IAsyncRelayCommand LoadPluginsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/PluginManagementViewModel.cs:130](../../../../src/Meridian.Wpf/ViewModels/PluginManagementViewModel.cs#L130) |  |
-| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/PluginManagementViewModel.cs:131](../../../../src/Meridian.Wpf/ViewModels/PluginManagementViewModel.cs#L131) |  |
+| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/PluginManagementViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/PluginManagementViewModel.cs#L135) | Re-runs plugin loading from PluginsDirectory. This loads plugin assemblies, so the shell Refresh control does not invoke it (see Meridian.Wpf.Contracts.IPageRefreshOptOut). |
 
 ## PortfolioImportViewModel
 
@@ -496,7 +657,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.PortfolioWorkspaceShellViewModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:194](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L194).
+Source: [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:195](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L195).
 
 Exposes bindable state and commands to review account, aggregate, fund, lending, and import workflows.
 
@@ -508,12 +669,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;WorkspaceQueueItem&gt; CockpitDecisionItems { get; } = [new () { Title = &quot;Account exposure&quot;, Detail = &quot;Open account and aggregate portfolio views.&quot;, StatusLabel = &quot;Compare accounts&quot;, CountLabel = &quot;Review&quot;, Tone = WorkspaceTone.Info, PrimaryActionId = &quot;AccountPortfolio&quot;, PrimaryActionLabel = &quot;Open&quot;, AutomationName = &quot;Portfolio account exposure decision&quot; }, new () { Title = &quot;Fund posture&quot;, Detail = &quot;Inspect fund accounts before reconciliation or reporting handoff.&quot;, StatusLabel = &quot;Accounts and cash&quot;, CountLabel = &quot;Ready&quot;, Tone = WorkspaceTone.Success, PrimaryActionId = &quot;FundAccounts&quot;, PrimaryActionLabel = &quot;Open&quot;, AutomationName = &quot;Portfolio fund posture decision&quot; }, new () { Title = &quot;Import exceptions&quot;, Detail = &quot;Route external snapshots through import and reference-data checks.&quot;, StatusLabel = &quot;Portfolio import&quot;, CountLabel = &quot;Queue&quot;, Tone = WorkspaceTone.Warning, PrimaryActionId = &quot;PortfolioImport&quot;, PrimaryActionLabel = &quot;Open&quot;, AutomationName = &quot;Portfolio import exceptions decision&quot; }, new () { Title = &quot;Multi-asset readiness groups&quot;, Detail = $&quot;Review {nameof(MultiAssetCoverageSummaryDto.AssetClasses)}, {nameof(MultiAssetClassCoverageDto.Status)}, {nameof(MultiAssetClassCoverageDto.Blockers)}, and {nameof(MultiAssetClassCoverageDto.DrillThroughTargets)} from {MultiAssetCoverageRoute}.&quot;, StatusLabel = &quot;Asset class readiness&quot;, CountLabel = &quot;Review&quot;, Tone = WorkspaceTone.Info, PrimaryActionId = &quot;FundPortfolio&quot;, PrimaryActionLabel = &quot;Open Portfolio&quot;, SecondaryActionId = &quot;FundAccounts&quot;, SecondaryActionLabel = &quot;Accounts&quot;, AutomationName = &quot;Portfolio multi-asset readiness grouping decision&quot; }, new () { Title = &quot;Provider evidence degradation&quot;, Detail = $&quot;Inspect {nameof(MultiAssetClassCoverageDto.EvidenceRequirements)}, {nameof(MultiAssetEvidenceRequirementDto.EvidenceRoute)}, and {nameof(MultiAssetDrillThroughTargetDto.TargetType)} references from {MultiAssetCoverageRoute}.&quot;, StatusLabel = &quot;Provider degraded&quot;, CountLabel = &quot;Check&quot;, Tone = WorkspaceTone.Warning, PrimaryActionId = &quot;PortfolioImport&quot;, PrimaryActionLabel = &quot;Open Imports&quot;, SecondaryActionId = &quot;ProviderHealth&quot;, SecondaryActionLabel = &quot;Providers&quot;, AutomationName = &quot;Portfolio multi-asset provider degradation decision&quot; }, new () { Title = &quot;Ledger and reconciliation coverage&quot;, Detail = $&quot;Compare {nameof(MultiAssetClassCoverageDto.LedgerClassification)}, {nameof(MultiAssetClassCoverageDto.ReconciliationSignals)}, and {nameof(MultiAssetDrillThroughTargetDto.Route)} from {MultiAssetCoverageRoute}.&quot;, StatusLabel = &quot;Coverage drift&quot;, CountLabel = &quot;Investigate&quot;, Tone = WorkspaceTone.Warning, PrimaryActionId = &quot;FundReconciliation&quot;, PrimaryActionLabel = &quot;Reconcile&quot;, SecondaryActionId = &quot;FundAuditTrail&quot;, SecondaryActionLabel = &quot;Audit&quot;, AutomationName = &quot;Portfolio multi-asset reconciliation coverage decision&quot; }, new () { Title = &quot;Asset operations detail&quot;, Detail = $&quot;Drill into {nameof(AssetOperationsDetailDto.Subject)}, {nameof(AssetOperationsDetailDto.ProjectedCashFlows)}, {nameof(AssetOperationsDetailDto.ReconciliationResults)}, and {nameof(AssetOperationsDetailDto.LedgerProjections)} through {AssetOperationsRoute}.&quot;, StatusLabel = &quot;Security operations&quot;, CountLabel = &quot;Drill-in&quot;, Tone = WorkspaceTone.Info, PrimaryActionId = &quot;FundPortfolio&quot;, PrimaryActionLabel = &quot;Open Portfolio&quot;, SecondaryActionId = &quot;FundAuditTrail&quot;, SecondaryActionLabel = &quot;Evidence&quot;, AutomationName = &quot;Portfolio asset operations detail decision&quot; }, new () { Title = &quot;Close readiness blockers&quot;, Detail = $&quot;Open blocker evidence carried by {nameof(MultiAssetReadinessBlockerDto.EvidenceRoute)}, {nameof(MultiAssetDrillThroughTargetDto.EvidenceLink)}, and {nameof(MultiAssetCoverageSummaryDto.DrillThroughRoutes)} from {MultiAssetCoverageRoute}.&quot;, StatusLabel = &quot;Close readiness&quot;, CountLabel = &quot;Blocked&quot;, Tone = WorkspaceTone.Danger, IsBlocked = true, PrimaryActionId = &quot;OperationsClose&quot;, PrimaryActionLabel = &quot;Close Review&quot;, SecondaryActionId = &quot;FundAuditTrail&quot;, SecondaryActionLabel = &quot;Evidence&quot;, AutomationName = &quot;Portfolio multi-asset close blocker decision&quot; }, new () { Title = &quot;Specialty exposure&quot;, Detail = &quot;Review lending concentration before accounting close and reports.&quot;, StatusLabel = &quot;Direct lending&quot;, CountLabel = &quot;Review&quot;, Tone = WorkspaceTone.Neutral, PrimaryActionId = &quot;DirectLending&quot;, PrimaryActionLabel = &quot;Open&quot;, AutomationName = &quot;Portfolio specialty exposure decision&quot; }];</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:202](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L202) |  |
-| <code>public PortfolioWorkspaceShellViewModel(WorkspaceShellContextService? shellContextService = null) : base(ShellNavigationCatalog.GetWorkspaceShell(&quot;portfolio&quot;) !);</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:316](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L316) |  |
-| <code>public event EventHandler? RefreshRequested;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:322](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L322) |  |
-| <code>public void Start();</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:324](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L324) |  |
-| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:335](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L335) |  |
-| <code>public async Task RefreshShellContextAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:346](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L346) |  |
+| <code>public IReadOnlyList&lt;WorkspaceQueueItem&gt; CockpitDecisionItems { get; } = [new () { Title = &quot;Account exposure&quot;, Detail = &quot;Open account and aggregate portfolio views.&quot;, StatusLabel = &quot;Compare accounts&quot;, CountLabel = &quot;Review&quot;, Tone = WorkspaceTone.Info, PrimaryActionId = &quot;AccountPortfolio&quot;, PrimaryActionLabel = &quot;Open&quot;, AutomationName = &quot;Portfolio account exposure decision&quot; }, new () { Title = &quot;Fund posture&quot;, Detail = &quot;Inspect fund accounts before reconciliation or reporting handoff.&quot;, StatusLabel = &quot;Accounts and cash&quot;, CountLabel = &quot;Ready&quot;, Tone = WorkspaceTone.Success, PrimaryActionId = &quot;FundAccounts&quot;, PrimaryActionLabel = &quot;Open&quot;, AutomationName = &quot;Portfolio fund posture decision&quot; }, new () { Title = &quot;Import exceptions&quot;, Detail = &quot;Route external snapshots through import and reference-data checks.&quot;, StatusLabel = &quot;Portfolio import&quot;, CountLabel = &quot;Queue&quot;, Tone = WorkspaceTone.Warning, PrimaryActionId = &quot;PortfolioImport&quot;, PrimaryActionLabel = &quot;Open&quot;, AutomationName = &quot;Portfolio import exceptions decision&quot; }, new () { Title = &quot;Multi-asset readiness groups&quot;, Detail = $&quot;Review {nameof(MultiAssetCoverageSummaryDto.AssetClasses)}, {nameof(MultiAssetClassCoverageDto.Status)}, {nameof(MultiAssetClassCoverageDto.Blockers)}, and {nameof(MultiAssetClassCoverageDto.DrillThroughTargets)} from {MultiAssetCoverageRoute}.&quot;, StatusLabel = &quot;Asset class readiness&quot;, CountLabel = &quot;Review&quot;, Tone = WorkspaceTone.Info, PrimaryActionId = &quot;FundPortfolio&quot;, PrimaryActionLabel = &quot;Open Portfolio&quot;, SecondaryActionId = &quot;FundAccounts&quot;, SecondaryActionLabel = &quot;Accounts&quot;, AutomationName = &quot;Portfolio multi-asset readiness grouping decision&quot; }, new () { Title = &quot;Provider evidence degradation&quot;, Detail = $&quot;Inspect {nameof(MultiAssetClassCoverageDto.EvidenceRequirements)}, {nameof(MultiAssetEvidenceRequirementDto.EvidenceRoute)}, and {nameof(MultiAssetDrillThroughTargetDto.TargetType)} references from {MultiAssetCoverageRoute}.&quot;, StatusLabel = &quot;Provider degraded&quot;, CountLabel = &quot;Check&quot;, Tone = WorkspaceTone.Warning, PrimaryActionId = &quot;PortfolioImport&quot;, PrimaryActionLabel = &quot;Open Imports&quot;, SecondaryActionId = &quot;ProviderHealth&quot;, SecondaryActionLabel = &quot;Providers&quot;, AutomationName = &quot;Portfolio multi-asset provider degradation decision&quot; }, new () { Title = &quot;Ledger and reconciliation coverage&quot;, Detail = $&quot;Compare {nameof(MultiAssetClassCoverageDto.LedgerClassification)}, {nameof(MultiAssetClassCoverageDto.ReconciliationSignals)}, and {nameof(MultiAssetDrillThroughTargetDto.Route)} from {MultiAssetCoverageRoute}.&quot;, StatusLabel = &quot;Coverage drift&quot;, CountLabel = &quot;Investigate&quot;, Tone = WorkspaceTone.Warning, PrimaryActionId = &quot;FundReconciliation&quot;, PrimaryActionLabel = &quot;Reconcile&quot;, SecondaryActionId = &quot;FundAuditTrail&quot;, SecondaryActionLabel = &quot;Audit&quot;, AutomationName = &quot;Portfolio multi-asset reconciliation coverage decision&quot; }, new () { Title = &quot;Asset operations detail&quot;, Detail = $&quot;Drill into {nameof(AssetOperationsDetailDto.Subject)}, {nameof(AssetOperationsDetailDto.ProjectedCashFlows)}, {nameof(AssetOperationsDetailDto.ReconciliationResults)}, and {nameof(AssetOperationsDetailDto.LedgerProjections)} through {AssetOperationsRoute}.&quot;, StatusLabel = &quot;Security operations&quot;, CountLabel = &quot;Drill-in&quot;, Tone = WorkspaceTone.Info, PrimaryActionId = &quot;FundPortfolio&quot;, PrimaryActionLabel = &quot;Open Portfolio&quot;, SecondaryActionId = &quot;FundAuditTrail&quot;, SecondaryActionLabel = &quot;Evidence&quot;, AutomationName = &quot;Portfolio asset operations detail decision&quot; }, new () { Title = &quot;Close readiness blockers&quot;, Detail = $&quot;Open blocker evidence carried by {nameof(MultiAssetReadinessBlockerDto.EvidenceRoute)}, {nameof(MultiAssetDrillThroughTargetDto.EvidenceLink)}, and {nameof(MultiAssetCoverageSummaryDto.DrillThroughRoutes)} from {MultiAssetCoverageRoute}.&quot;, StatusLabel = &quot;Close readiness&quot;, CountLabel = &quot;Blocked&quot;, Tone = WorkspaceTone.Danger, IsBlocked = true, PrimaryActionId = &quot;OperationsClose&quot;, PrimaryActionLabel = &quot;Close Review&quot;, SecondaryActionId = &quot;FundAuditTrail&quot;, SecondaryActionLabel = &quot;Evidence&quot;, AutomationName = &quot;Portfolio multi-asset close blocker decision&quot; }, new () { Title = &quot;Specialty exposure&quot;, Detail = &quot;Review lending concentration before accounting close and reports.&quot;, StatusLabel = &quot;Direct lending&quot;, CountLabel = &quot;Review&quot;, Tone = WorkspaceTone.Neutral, PrimaryActionId = &quot;DirectLending&quot;, PrimaryActionLabel = &quot;Open&quot;, AutomationName = &quot;Portfolio specialty exposure decision&quot; }];</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:203](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L203) |  |
+| <code>public PortfolioWorkspaceShellViewModel(WorkspaceShellContextService? shellContextService = null) : base(ShellNavigationCatalog.GetWorkspaceShell(&quot;portfolio&quot;) !);</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:317](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L317) |  |
+| <code>public event EventHandler? RefreshRequested;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:323](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L323) |  |
+| <code>public void Start();</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:325](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L325) |  |
+| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:336](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L336) |  |
+| <code>public async Task RefreshShellContextAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:347](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L347) |  |
 
 ## PositionBlotterViewModel
 
@@ -578,7 +739,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.PostedLedgerAccountPostingRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1082](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1082).
+Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1088](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1088).
 
 One posting to the selected trial-balance account with the balance after it.
 
@@ -606,7 +767,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.PostedLedgerBasisRow</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1016](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1016).
+Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1022](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1022).
 
 One accounting basis a period carries, for the basis picker.
 
@@ -618,16 +779,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PostedLedgerBasisRow(AccountingBasisKindDto basis, string label);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1020](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1020) |  |
-| <code>public AccountingBasisKindDto Basis { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1026](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1026) |  |
-| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1028](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1028) |  |
-| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1030](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1030) |  |
+| <code>public PostedLedgerBasisRow(AccountingBasisKindDto basis, string label);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1026](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1026) |  |
+| <code>public AccountingBasisKindDto Basis { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1032](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1032) |  |
+| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1034](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1034) |  |
+| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1036](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1036) |  |
 
 ## PostedLedgerBookRow
 
 Qualified name: <code>Meridian.Wpf.ViewModels.PostedLedgerBookRow</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:988](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L988).
+Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:994](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L994).
 
 One ledger book the operator can scope the posted journal to. Carries the book&#x27;s declared base currency so amounts are formatted in the book&#x27;s own currency rather than the machine&#x27;s.
 
@@ -639,12 +800,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PostedLedgerBookRow(Guid ledgerBookId, string label, string baseCurrency, string fundProfileId = &quot;&quot;);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:992](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L992) |  |
-| <code>public Guid LedgerBookId { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1000](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1000) |  |
-| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1002](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1002) |  |
-| <code>public string BaseCurrency { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1004](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1004) |  |
-| <code>public string FundProfileId { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1006](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1006) |  |
-| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1008](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1008) |  |
+| <code>public PostedLedgerBookRow(Guid ledgerBookId, string label, string baseCurrency, string fundProfileId = &quot;&quot;);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:998](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L998) |  |
+| <code>public Guid LedgerBookId { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1006](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1006) |  |
+| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1008](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1008) |  |
+| <code>public string BaseCurrency { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1010](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1010) |  |
+| <code>public string FundProfileId { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1012](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1012) |  |
+| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1014](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1014) |  |
 
 ## PostedLedgerJournalLineRow
 
@@ -667,7 +828,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.PostedLedgerMetricRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1079](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1079).
+Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1085](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1085).
 
 ```csharp
 public sealed record PostedLedgerMetricRow(string Label, string Value);
@@ -677,7 +838,7 @@ public sealed record PostedLedgerMetricRow(string Label, string Value);
 
 Qualified name: <code>Meridian.Wpf.ViewModels.PostedLedgerPeriodRow</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1038](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1038).
+Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1044](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1044).
 
 A selectable ledger period in the desktop posted-journal surface.
 
@@ -689,18 +850,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PostedLedgerPeriodRow(Guid periodId, string label, string statusLabel, string rangeLabel);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1042](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1042) |  |
-| <code>public Guid PeriodId { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1050](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1050) |  |
-| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1052](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1052) |  |
-| <code>public string StatusLabel { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1054](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1054) |  |
-| <code>public string RangeLabel { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1056](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1056) |  |
-| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1058](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1058) |  |
+| <code>public PostedLedgerPeriodRow(Guid periodId, string label, string statusLabel, string rangeLabel);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1048](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1048) |  |
+| <code>public Guid PeriodId { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1056](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1056) |  |
+| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1058](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1058) |  |
+| <code>public string StatusLabel { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1060](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1060) |  |
+| <code>public string RangeLabel { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1062](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1062) |  |
+| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1064](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1064) |  |
 
 ## PostedLedgerTrialBalanceRow
 
 Qualified name: <code>Meridian.Wpf.ViewModels.PostedLedgerTrialBalanceRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1065](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1065).
+Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1071](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1071).
 
 ```csharp
 public sealed record PostedLedgerTrialBalanceRow(string AccountName, string AccountType, string? Symbol, string BalanceLabel, int EntryCount, string? FinancialAccountId = null, string ScopeLabel = "", LedgerDimensionSetDto? Dimensions = null)
@@ -710,7 +871,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool HasScope =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1076](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1076) | Whether this row has a dimensional scope worth showing beside the account. |
+| <code>public bool HasScope =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1082](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1082) | Whether this row has a dimensional scope worth showing beside the account. |
 
 ## PostedLedgerViewModel
 
@@ -773,17 +934,18 @@ Declared public members:
 | <code>public string PeriodNotice { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:343](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L343) | Explains an expected empty state (an open period with no closed-period summary). Distinct from the error properties so a period that simply has not closed never reads as an outage. |
 | <code>public bool HasPeriodNotice =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:355](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L355) |  |
 | <code>public string PeriodsErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:357](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L357) |  |
-| <code>public bool HasPeriodsError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:369](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L369) |  |
-| <code>public string TrialBalanceErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:371](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L371) |  |
-| <code>public bool HasTrialBalanceError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:383](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L383) |  |
-| <code>public string PnlErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:385](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L385) |  |
-| <code>public bool HasPnlError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:397](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L397) |  |
-| <code>public void Activate();</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:400](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L400) | Loads once, when the page is first shown. |
-| <code>public void Deactivate();</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:422](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L422) | Stands the page down without ending its life: cancels whatever load is in flight and arms a fresh token so a later Activate reloads. This is what navigating away means. Disposing there instead looked equivalent but was not — the shell&#x27;s Frame can restore this same instance from navigation history, and a disposed view model comes back permanently inert: Activate returns at the _isDisposed guard and refresh, period and book commands all no-op, so Back landed the operator on a dead page with stale figures on it. |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:448](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L448) |  |
-| <code>public async Task RefreshAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:468](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L468) |  |
-| <code>public Task SelectBookAsync(Guid ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:589](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L589) |  |
-| <code>public async Task SelectPeriodAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:687](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L687) |  |
+| <code>public bool HasPeriodsError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:370](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L370) |  |
+| <code>public string TrialBalanceErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:372](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L372) |  |
+| <code>public bool HasTrialBalanceError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:385](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L385) |  |
+| <code>public string PnlErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:387](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L387) |  |
+| <code>public bool HasPnlError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:400](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L400) |  |
+| <code>public bool HasLoadError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:403](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L403) | True when any posted-ledger section failed to load; gates the page&#x27;s Retry action. |
+| <code>public void Activate();</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:406](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L406) | Loads once, when the page is first shown. |
+| <code>public void Deactivate();</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:428](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L428) | Stands the page down without ending its life: cancels whatever load is in flight and arms a fresh token so a later Activate reloads. This is what navigating away means. Disposing there instead looked equivalent but was not — the shell&#x27;s Frame can restore this same instance from navigation history, and a disposed view model comes back permanently inert: Activate returns at the _isDisposed guard and refresh, period and book commands all no-op, so Back landed the operator on a dead page with stale figures on it. |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:454](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L454) |  |
+| <code>public async Task RefreshAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:474](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L474) |  |
+| <code>public Task SelectBookAsync(Guid ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:595](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L595) |  |
+| <code>public async Task SelectPeriodAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:693](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L693) |  |
 
 ## PriceLabelViewModel
 
@@ -904,7 +1066,7 @@ Source: [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:29](../../../../
 ViewModel for the Provider Health page. All state, HTTP loading, timer management, and connection-event tracking live here so that the code-behind is thinned to lifecycle wiring only.
 
 ```csharp
-public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivationLifetime, IDisposable, IPageActionBarProvider
+public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivationLifetime, IDisposable, IPageActionBarProvider, IPageRefreshTarget
 ```
 
 Declared public members:
@@ -943,25 +1105,26 @@ Declared public members:
 | <code>public DiagnosticsChecklistModel SelectedProviderDiagnostics { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:215](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L215) |  |
 | <code>public RoutingMatrixModel SelectedProviderRoutingMatrix { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:221](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L221) |  |
 | <code>public AuditTimelineModel ProviderActivityTimeline { get; } = new () { Title = &quot;Connection History&quot;, EmptyText = &quot;No connection events recorded.&quot; };</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:227](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L227) |  |
-| <code>public string PageTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:234](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L234) |  |
-| <code>public ObservableCollection&lt;ActionEntry&gt; Actions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:235](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L235) |  |
-| <code>public ProviderHealthViewModel(WpfServices.StatusService statusService, WpfServices.ConnectionService connectionService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:259](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L259) |  |
-| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:282](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L282) |  |
-| <code>public CancellationToken ActivationToken =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:284](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L284) |  |
-| <code>public Task StartAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:286](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L286) |  |
-| <code>public async Task ActivateAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:288](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L288) |  |
-| <code>public void Stop() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:318](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L318) |  |
-| <code>public void CancelActivation();</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:320](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L320) |  |
-| <code>public void Deactivate();</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:328](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L328) |  |
-| <code>public async Task RefreshAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:344](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L344) |  |
-| <code>public async Task ToggleProviderConnectionAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:353](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L353) |  |
-| <code>public string GetProviderDetails(string providerId);</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:381](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L381) |  |
-| <code>public void ClearHistory();</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:394](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L394) |  |
-| <code>public async Task ExecuteProviderManagementCommandAsync(string commandId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:405](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L405) |  |
-| <code>public void RunSelectedProviderDiagnostics();</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:424](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L424) |  |
-| <code>public void OpenAddProviderWizard() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:451](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L451) |  |
-| <code>public void OpenProviderSettings() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:454](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L454) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:1661](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L1661) |  |
+| <code>public IAsyncRelayCommand RefreshCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:235](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L235) |  |
+| <code>public string PageTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:239](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L239) |  |
+| <code>public ObservableCollection&lt;ActionEntry&gt; Actions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:240](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L240) |  |
+| <code>public ProviderHealthViewModel(WpfServices.StatusService statusService, WpfServices.ConnectionService connectionService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:264](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L264) |  |
+| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:287](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L287) |  |
+| <code>public CancellationToken ActivationToken =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:289](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L289) |  |
+| <code>public Task StartAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:291](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L291) |  |
+| <code>public async Task ActivateAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:293](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L293) |  |
+| <code>public void Stop() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:322](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L322) |  |
+| <code>public void CancelActivation();</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:324](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L324) |  |
+| <code>public void Deactivate();</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:332](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L332) |  |
+| <code>public async Task RefreshAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:348](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L348) |  |
+| <code>public async Task ToggleProviderConnectionAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:357](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L357) |  |
+| <code>public string GetProviderDetails(string providerId);</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:385](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L385) |  |
+| <code>public void ClearHistory();</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:398](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L398) |  |
+| <code>public async Task ExecuteProviderManagementCommandAsync(string commandId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:409](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L409) |  |
+| <code>public void RunSelectedProviderDiagnostics();</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:428](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L428) |  |
+| <code>public void OpenAddProviderWizard() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:455](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L455) |  |
+| <code>public void OpenProviderSettings() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:458](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L458) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:1664](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L1664) |  |
 
 ## ProviderRateLimitPresentation
 
@@ -1338,7 +1501,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.ReportingWorkspaceShellViewModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:398](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L398).
+Source: [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:399](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L399).
 
 Exposes bindable state and commands to prepare report packs, dashboards, analysis exports, and export presets.
 
@@ -1350,17 +1513,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingWorkspaceShellViewModel(FundContextService? fundContextService = null, FundOperationsWorkspaceReadService? workspaceReadService = null, ReportingGovernanceWorkbenchViewModel? governance = null, WorkspaceShellContextService? shellContextService = null) : base(ShellNavigationCatalog.GetWorkspaceShell(&quot;reporting&quot;) !);</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:412](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L412) |  |
-| <code>public event EventHandler? RefreshRequested;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:426](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L426) |  |
-| <code>public ReportingGovernanceWorkbenchViewModel? Governance { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:432](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L432) | Canonical reporting lifecycle workbench. It remains a thin client projection over the shared reporting API and is optional only for compatibility with isolated shell tests. |
-| <code>public IReadOnlyList&lt;WorkspaceQueueItem&gt; CockpitDecisionItems { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:434](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L434) |  |
-| <code>public string WriterSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:440](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L440) |  |
-| <code>public string ApprovalSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:446](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L446) |  |
-| <code>public string DeliverySummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:452](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L452) |  |
-| <code>public string SummarySnapshotDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:458](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L458) |  |
-| <code>public void Start();</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:464](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L464) |  |
-| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:479](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L479) |  |
-| <code>public async Task RefreshAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:494](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L494) |  |
+| <code>public ReportingWorkspaceShellViewModel(FundContextService? fundContextService = null, FundOperationsWorkspaceReadService? workspaceReadService = null, ReportingGovernanceWorkbenchViewModel? governance = null, WorkspaceShellContextService? shellContextService = null) : base(ShellNavigationCatalog.GetWorkspaceShell(&quot;reporting&quot;) !);</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:413](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L413) |  |
+| <code>public event EventHandler? RefreshRequested;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:427](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L427) |  |
+| <code>public ReportingGovernanceWorkbenchViewModel? Governance { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:433](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L433) | Canonical reporting lifecycle workbench. It remains a thin client projection over the shared reporting API and is optional only for compatibility with isolated shell tests. |
+| <code>public IReadOnlyList&lt;WorkspaceQueueItem&gt; CockpitDecisionItems { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:435](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L435) |  |
+| <code>public string WriterSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:441](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L441) |  |
+| <code>public string ApprovalSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:447](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L447) |  |
+| <code>public string DeliverySummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:453](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L453) |  |
+| <code>public string SummarySnapshotDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:459](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L459) |  |
+| <code>public void Start();</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:465](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L465) |  |
+| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:480](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L480) |  |
+| <code>public async Task RefreshAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:495](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L495) |  |
 
 ## ReportLedgerAmountSelection
 
@@ -1458,160 +1621,3 @@ Declared public members:
 | <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1189](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1189) |  |
 | <code>public string RetentionText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1190](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1190) |  |
 | <code>public bool Enabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1191](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1191) |  |
-
-## RetentionResultItem
-
-Qualified name: <code>Meridian.Wpf.ViewModels.RetentionResultItem</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:737](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L737).
-
-Presents a retention validation result with severity text and styling.
-
-```csharp
-public sealed class RetentionResultItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:739](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L739) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:741](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L741) |  |
-| <code>public Brush SeverityColor { get; set; } = Brushes.Gray;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:743](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L743) |  |
-
-## RiskAttributionRow
-
-Qualified name: <code>Meridian.Wpf.ViewModels.RiskAttributionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:711](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L711).
-
-Row in the attribution data grid on the risk page.
-
-```csharp
-public sealed record RiskAttributionRow(string Symbol, string TotalPnlText, string RealizedPnlText, string UnrealizedPnlText, string TradeCountText, string CommissionsText);
-```
-
-## RunMatViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.RunMatViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:15](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L15).
-
-Exposes bindable state and commands to configure and run strategy scripts for custom analysis.
-
-```csharp
-public sealed class RunMatViewModel : BindableBase, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ObservableCollection&lt;RunMatScriptDocument&gt; Scripts { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:23](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L23) |  |
-| <code>public ObservableCollection&lt;RunMatOutputLine&gt; OutputLines { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:24](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L24) |  |
-| <code>public RunMatScriptDocument? SelectedScript { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:27](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L27) |  |
-| <code>public string ScriptName { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:34](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L34) |  |
-| <code>public string ScriptSource { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:41](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L41) |  |
-| <code>public string ExecutablePath { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:48](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L48) |  |
-| <code>public string WorkingDirectory { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:55](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L55) |  |
-| <code>public string AdditionalArguments { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:62](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L62) |  |
-| <code>public string StatusText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:69](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L69) |  |
-| <code>public string ServiceStatus { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L76) |  |
-| <code>public string ResolvedExecutablePath { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:83](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L83) |  |
-| <code>public string LastRunSummary { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:90](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L90) |  |
-| <code>public bool IsRunning { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:103](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L103) |  |
-| <code>public bool CanRun =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:119](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L119) |  |
-| <code>public bool CanStopRun =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:120](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L120) |  |
-| <code>public bool HasOutputLines =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L121) |  |
-| <code>public bool IsOutputEmptyStateVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:122](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L122) |  |
-| <code>public string OutputLineCountText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L123) |  |
-| <code>public string OutputEmptyStateTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:124](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L124) |  |
-| <code>public string OutputEmptyStateDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L129) |  |
-| <code>public IAsyncRelayCommand InitializeCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L135) |  |
-| <code>public IAsyncRelayCommand RefreshScriptsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L136) |  |
-| <code>public IAsyncRelayCommand SaveScriptCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L137) |  |
-| <code>public IAsyncRelayCommand RunScriptCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:138](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L138) |  |
-| <code>public IAsyncRelayCommand LoadSelectedScriptCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L139) |  |
-| <code>public IRelayCommand NewScriptCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:140](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L140) |  |
-| <code>public IRelayCommand StopRunCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:141](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L141) |  |
-| <code>public RunMatViewModel(RunMatService runMatService, TimeProvider? timeProvider = null);</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:143](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L143) |  |
-| <code>public async Task InitializeAsync();</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:158](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L158) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/RunMatViewModel.cs:304](../../../../src/Meridian.Wpf/ViewModels/RunMatViewModel.cs#L304) |  |
-
-## RunRiskViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.RunRiskViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:18](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L18).
-
-ViewModel for the strategy run risk analytics page. Presents rolling annualised volatility, portfolio exposure metrics, and per-symbol P&amp;L attribution for a completed strategy run.
-
-```csharp
-public sealed class RunRiskViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public object? Parameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:38](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L38) |  |
-| <code>public string Title { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:51](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L51) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L58) |  |
-| <code>public bool IsLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:64](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L64) |  |
-| <code>public string PositionCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:81](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L81) |  |
-| <code>public string LongExposureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:88](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L88) |  |
-| <code>public string ShortExposureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:95](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L95) |  |
-| <code>public string NetExposureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:102](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L102) |  |
-| <code>public string TotalRiskText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L111) | Annualised volatility computed from daily returns (ex-post). |
-| <code>public string EquityText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:118](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L118) |  |
-| <code>public string SharpeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L125) |  |
-| <code>public string MaxDrawdownText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:132](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L132) |  |
-| <code>public PlotRequest? RollingVolatilityPlot { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:145](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L145) | Rolling 21-day annualised volatility time series for the plot render behavior. |
-| <code>public PlotRequest? AttributionPlot { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:160](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L160) | Per-symbol total PnL as a multiline or bar chart. |
-| <code>public ObservableCollection&lt;RiskAttributionRow&gt; Attribution { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:172](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L172) |  |
-| <code>public WorkstationTableModel&lt;RiskAttributionRow&gt; AttributionTable { get; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:174](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L174) |  |
-| <code>public RiskAttributionRow? SelectedAttribution { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:176](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L176) |  |
-| <code>public InspectorPanelModel SelectedAttributionInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:191](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L191) |  |
-| <code>public bool HasSelectedAttribution =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:197](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L197) |  |
-| <code>public bool CanOpenSelectedSymbol =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:199](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L199) |  |
-| <code>public string RunDrillInTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:201](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L201) |  |
-| <code>public string SelectedSymbolTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:205](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L205) |  |
-| <code>public bool HasRiskChart =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:212](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L212) |  |
-| <code>public bool IsRiskEmptyStateVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:214](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L214) |  |
-| <code>public string RiskEmptyStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:216](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L216) |  |
-| <code>public string RiskEmptyStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:222](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L222) |  |
-| <code>public bool HasAttributionRows =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:228](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L228) |  |
-| <code>public bool IsAttributionEmptyStateVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:230](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L230) |  |
-| <code>public string AttributionEmptyStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:232](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L232) |  |
-| <code>public string AttributionEmptyStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:238](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L238) |  |
-| <code>public bool CanOpenRunDrillIns =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:244](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L244) |  |
-| <code>public string RunActionStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:246](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L246) |  |
-| <code>public string RunActionStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:252](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L252) |  |
-| <code>public IRelayCommand OpenBrowserCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:260](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L260) |  |
-| <code>public IRelayCommand OpenRunDetailCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:261](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L261) |  |
-| <code>public IRelayCommand OpenPortfolioCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:262](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L262) |  |
-| <code>public IRelayCommand OpenCashFlowCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:263](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L263) |  |
-| <code>public IRelayCommand OpenSelectedSymbolCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:264](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L264) |  |
-| <code>public RunRiskViewModel(StrategyRunWorkspaceService workspaceService, StrategyRunReadService readService, NavigationService navigationService);</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:268](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L268) |  |
-| <code>public Task LoadRunAsync(string? runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs:300](../../../../src/Meridian.Wpf/ViewModels/RunRiskViewModel.cs#L300) |  |
-
-## SampleSummary
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SampleSummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:401](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L401).
-
-Summarizes a generated sample&#x27;s name, symbol count, date range, and creation time.
-
-```csharp
-public sealed class SampleSummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Name { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:403](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L403) |  |
-| <code>public int SymbolCount { get; init; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:405](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L405) |  |
-| <code>public string DateRange { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:407](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L407) |  |
-| <code>public string CreatedAt { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:409](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L409) |  |

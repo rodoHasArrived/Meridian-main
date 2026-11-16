@@ -395,7 +395,7 @@
       "waitForTexts": [
         "Case queue",
         "Approval gate",
-        "Workflow handoffs"
+        "Workflow next steps"
       ]
     },
     {
@@ -830,14 +830,14 @@
       "name": "web-reporting-exports",
       "path": "/reporting/exports",
       "docLabel": "Reporting \u2014 Exports",
-      "waitForText": "Governed export queue",
+      "waitForText": "Export queue",
       "requiredApiRoutes": [
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
         "Preview exports and review the files and warnings each one produced",
         "Investor PDF",
-        "Governed export queue"
+        "Export queue"
       ]
     },
     {
@@ -852,7 +852,7 @@
       "waitForTexts": [
         "Design report layouts, branding, and reusable templates",
         "Template families",
-        "Governed report templates"
+        "Report templates"
       ]
     },
     {
@@ -912,7 +912,7 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Choose an available governed template",
+        "Choose an available template",
         "Investor Monthly Statement",
         "Browse standard report catalog"
       ]
@@ -927,7 +927,7 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Choose a governed template, review readiness",
+        "Choose a template, review readiness",
         "Or browse the Report Library"
       ]
     },
@@ -966,14 +966,14 @@
         "/api/fund-structure/reporting/distribution/packages/report-run-investor-202605/access-grants"
       ],
       "waitForTexts": [
-        "Governed lifecycle",
+        "Report lifecycle",
         "Immutable release artifacts",
         "Immutable audit trail",
         "Authenticated transport catalog"
       ],
       "waitForAbsentTexts": [
-        "Loading governed report run",
-        "Governed report run unavailable"
+        "Loading report run",
+        "Report run unavailable"
       ]
     },
     {
@@ -1208,7 +1208,7 @@
         "/api/workstation/data"
       ],
       "waitForTexts": [
-        "Governed file import",
+        "File import",
         "Upload data template",
         "Broker execution import",
         "Retained source file"
@@ -1470,7 +1470,7 @@
         "#diagnostic-endpoints"
       ],
       "waitForTexts": [
-        "Event posture",
+        "Event status",
         "Diagnostic service inventory"
       ]
     },
@@ -1496,7 +1496,7 @@
         "#settings-overview"
       ],
       "waitForTexts": [
-        "Profile and access posture"
+        "Profile and access status"
       ]
     },
     {

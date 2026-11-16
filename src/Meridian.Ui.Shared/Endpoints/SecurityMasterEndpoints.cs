@@ -1052,7 +1052,7 @@ public static partial class SecurityMasterEndpoints
                     return Results.Problem(
                         title: "Governed field conflict",
                         detail:
-                            $"Conflict '{conflictId:D}' is a {existing.ConflictKind} field conflict and the governed " +
+                            $"Conflict '{conflictId:D}' is a field conflict of kind {existing.ConflictKind} and the governed " +
                             "workbench command service is not wired in this host; use the workbench resolve-conflict " +
                             $"route (POST {UiApiRoutes.SecurityMasterWorkbenchResolveConflict}).",
                         statusCode: StatusCodes.Status400BadRequest);

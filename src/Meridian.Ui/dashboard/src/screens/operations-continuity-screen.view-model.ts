@@ -1200,11 +1200,11 @@ export function buildOperationsContinuityScreenViewModel({
     statusAnnouncement: buildStatusAnnouncement({ loading, rows, selectedSummary, detailLoading, detailError }),
     errorText: error,
     detailErrorText: detailError,
-    reloadLabel: loading ? "Refreshing" : "Refresh workflows",
-    reloadAriaLabel: loading ? "Refreshing operations continuity workflows" : "Refresh operations continuity workflows",
+    reloadLabel: loading ? "Retrying" : "Retry workflows",
+    reloadAriaLabel: loading ? "Loading operations continuity workflows" : "Retry loading operations continuity workflows",
     reloadBusy: loading,
     reloadDisabled: loading,
-    reloadDisabledReason: loading ? "Operations continuity workflows are already refreshing." : null,
+    reloadDisabledReason: loading ? "Operations continuity workflows are already loading." : null,
     workflowsSummaryLabel: `${rows.length} workflow${rows.length === 1 ? "" : "s"}`,
     workflowsEmptyText: loading
       ? "Loading operations continuity workflows..."
@@ -1223,7 +1223,7 @@ export function buildOperationsContinuityScreenViewModel({
     selectedDetail,
     nextAction,
     gatesLabel: "Gates",
-    gatesEmptyText: detailLoading ? "Loading selected workflow gates..." : "Open a workflow to inspect gate posture.",
+    gatesEmptyText: detailLoading ? "Loading selected workflow gates..." : "Open a workflow to inspect gate status.",
     gates,
     blockersLabel: "Blockers",
     blockersEmptyText: detailLoading ? "Loading selected workflow blockers..." : "No blockers are surfaced for the selected workflow.",
@@ -1419,7 +1419,7 @@ function mapWorkflowApprovalHistoryRow(
     reviewer: reviewer ?? resolveApprovalReviewer(workflow),
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
     evidenceHref,
-    evidenceRouteLabel: evidenceHref ? "Open approval evidence" : "No local evidence route",
+    evidenceRouteLabel: evidenceHref ? "Open approval evidence" : "No local supporting record link",
     decisionGuardLabel,
     approveWorkflowReportPackId: resolveApprovalReportPackId(workflow),
     approveWorkflowEvidenceLinks: collectApprovalDecisionEvidenceLinks(workflow, approval),
@@ -1532,7 +1532,7 @@ function buildNextActionViewModel({
         ? "Start or load an operations continuity workflow before taking an action."
         : !rawAction
           ? workflow.status === "Closed"
-            ? "This workflow is closed and locked; use the governed reopen command with admin incident metadata before applying further transitions."
+            ? "This workflow is closed and locked; use the period reopen command with admin incident metadata before applying further transitions."
             : "No server-recommended next action is available for the selected workflow."
           : !href
             ? "The server did not provide a local workstation route for this action."
@@ -1684,7 +1684,7 @@ function buildBlockerRows(blockers: OperationsWorkflowBlocker[]): OperationsCont
       severityTone: severityTone(blocker.severity),
       evidenceLabel: blocker.evidenceLinks.length === 0 ? "No linked evidence" : `${blocker.evidenceLinks.length} evidence link${blocker.evidenceLinks.length === 1 ? "" : "s"}`,
       evidenceHref,
-      evidenceRouteLabel: evidenceHref ? "Open blocker evidence" : "No local evidence route",
+      evidenceRouteLabel: evidenceHref ? "Open blocker evidence" : "No local supporting record link",
       ariaLabel: `${blocker.code}, ${blocker.severity || "Review"} blocker for ${blocker.gate ? gateLabel(blocker.gate) : "workflow"}`
     };
   });
@@ -1710,7 +1710,7 @@ function buildReconciliationLaneRows(lanes: OperationsReconciliationLaneSummary[
         summary: lane.summary?.trim() || "No reconciliation lane summary returned.",
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
         evidenceHref,
-        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local evidence route",
+        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local supporting record link",
         routeHref,
         routeLabel: routeHref ? "Open lane" : "No local route",
         requiredActionsLabel: actions.length === 0 ? "No required actions" : actions.join("; "),
@@ -2116,7 +2116,7 @@ function buildEvidencePackageRows(packages: OperationsEvidencePackageSummary[]):
         summary: packageDto.summary?.trim() || "No evidence package summary returned.",
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
         evidenceHref,
-        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local evidence route",
+        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local supporting record link",
         requiredActionsLabel: actions.length === 0 ? "No required actions" : actions.join("; "),
         routeHref,
         routeLabel: routeHref ? "Open package" : "No local route",
@@ -2385,7 +2385,7 @@ function mapCloseCalendarErrorQueueRow(
     id: "close-calendar:error",
     kindLabel: "Close calendar",
     title: `${scopeLabel}: Close calendar unavailable`,
-    detail: "Close-calendar projection could not be loaded from the shared operations API.",
+    detail: "Close-calendar view could not be loaded from the shared operations API.",
     statusLabel: "Unavailable",
     statusTone: "blocked",
     ownerLabel: "Operations control",
@@ -2503,7 +2503,7 @@ function mapCloseCockpitErrorQueueRow(
     id: "private-capital-close-cockpit:error",
     kindLabel: "Private-capital close cockpit",
     title: `${scopeLabel}: Private-capital close cockpit unavailable`,
-    detail: "Private-capital proof-lane and NAV-support projection could not be loaded from the shared operations API.",
+    detail: "Private-capital proof-lane and NAV-support view could not be loaded from the shared operations API.",
     statusLabel: "Unavailable",
     statusTone: "blocked",
     ownerLabel: "Operations control",
@@ -2746,7 +2746,7 @@ function buildBreakCaseRows(
         symbolLabel,
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} retained evidence link${evidenceCount === 1 ? "" : "s"}`,
         evidenceHref,
-        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local evidence route",
+        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local supporting record link",
         approvalLabel,
         blockedOutputsLabel,
         actionLabel,
@@ -3049,7 +3049,7 @@ function buildCloseGovernanceViewModel(
         : "Select an operations continuity workflow to inspect close-lock and reopen evidence.",
       closeAuditLabel: "No close audit event",
       closePackageLabel: "No close package published",
-      reopenAuditLabel: "No governed reopen recorded",
+      reopenAuditLabel: "No period reopen recorded",
       reopenIncidentLabel: "No incident correlation",
       reopenEvidenceLabel: "No reopen evidence links",
       reopenRationaleLabel: "No reopen rationale recorded",
@@ -3080,12 +3080,12 @@ function buildCloseGovernanceViewModel(
       ? "Period reopened under governance"
       : "Period remains open";
   const lockDetail = isClosed
-    ? "Closed operations continuity workflows are immutable until a governed admin reopen command succeeds."
+    ? "Closed operations continuity workflows are immutable until an admin period reopen command succeeds."
     : latestReopen
-      ? "The workflow is open after a governed reopen; subsequent close evidence must retain the reopen audit trail."
+      ? "The workflow is open after a period reopen; subsequent close evidence must retain the reopen audit trail."
       : "Close publication has not locked this account period yet.";
   const commandGuardLabel = isClosed
-    ? "Mutations must use the governed reopen command with incident metadata, justification, approval reference, and impact summary."
+    ? "Mutations must use the period reopen command with incident metadata, justification, approval reference, and impact summary."
     : latestReopen
       ? "Close can proceed only after refreshed gate evidence and the reopen incident trail remain linked."
       : "Close and reopen command decisions remain enforced by the shared workflow API.";
@@ -3104,7 +3104,7 @@ function buildCloseGovernanceViewModel(
       : "No close package published",
     reopenAuditLabel: latestReopen
       ? `${eventLabel(latestReopen.eventType)} by ${latestReopen.actor || "unknown actor"} at ${formatDate(latestReopen.occurredAtUtc)} / ${latestReopen.currentHash.slice(0, 12)}`
-      : "No governed reopen recorded",
+      : "No period reopen recorded",
     reopenIncidentLabel: latestReopen?.correlationId?.trim()
       ? `Incident ${latestReopen.correlationId}`
       : "No incident correlation",
@@ -3119,7 +3119,7 @@ function buildCloseGovernanceViewModel(
     canReopenWorkflow: reopenWorkflowDisabledReason === null,
     reopenWorkflowLabel: "Reopen period",
     reopenWorkflowDisabledReason,
-    reopenWorkflowAriaLabel: `Reopen governed period for ${workflow.periodId || "selected period"}`
+    reopenWorkflowAriaLabel: `Reopen period for ${workflow.periodId || "selected period"}`
   };
 }
 
@@ -3129,11 +3129,11 @@ function buildReopenWorkflowDisabledReason(workflow: OperationsContinuityWorkflo
   }
 
   if (workflow.version === null || workflow.version === undefined) {
-    return "Workflow version is unavailable for governed reopen.";
+    return "Workflow version is unavailable for period reopen.";
   }
 
   if (workflow.status !== "Closed") {
-    return "Only closed workflows can be reopened through the governed reopen command.";
+    return "Only closed workflows can be reopened through the period reopen command.";
   }
 
   if (!workflow.closePackage) {
@@ -3186,7 +3186,7 @@ const FINANCIAL_OPERATIONS_DASHBOARD_METRIC_ORDER = [
 
 const FINANCIAL_OPERATIONS_COMMAND_LABELS: Record<string, string> = {
   "receive-activity": "Start/import/normalize activity",
-  "match-records": "Run reconciliation and refresh posture",
+  "match-records": "Run reconciliation and refresh status",
   "resolve-exceptions": "Assign, escalate, or resolve breaks",
   "approve-results": "Submit or decide approval",
   "produce-evidence": "Open evidence package routes",
@@ -3224,11 +3224,11 @@ function buildCloseCalendarViewModel(
       scopeLabel: selectedSummary
         ? `Selected ${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
         : "No close scope selected",
-      freshnessLabel: "Projection pending",
+      freshnessLabel: "Snapshot pending",
       itemCountLabel: "No calendar items",
       blockerCountLabel: "No blockers loaded",
-      checklistCountLabel: "No checklist posture loaded",
-      approvalCountLabel: "No approval posture loaded",
+      checklistCountLabel: "No checklist status loaded",
+      approvalCountLabel: "No approval status loaded",
       nextDueLabel: loading
         ? "Next due task loading"
         : error
@@ -3344,7 +3344,7 @@ function buildCloseCockpitViewModel(
       scopeLabel: selectedSummary
         ? `Selected ${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
         : "No close scope selected",
-      freshnessLabel: "Projection pending",
+      freshnessLabel: "Snapshot pending",
       readinessLabel: "Readiness unavailable",
       laneCountLabel: "No cockpit lanes",
       proofLaneSummaryLabel: loading
@@ -3542,7 +3542,7 @@ function mapCloseCockpitApprovalRow(
     rationale: approval.rationale?.trim() || "No approval rationale returned.",
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
     evidenceHref,
-    evidenceRouteLabel: evidenceHref ? "Open evidence" : "No local evidence route",
+    evidenceRouteLabel: evidenceHref ? "Open evidence" : "No local supporting record link",
     workflowHref,
     routeLabel: workflowHref ? "Open workflow" : "No local route",
     ariaLabel: `${approval.periodId} approval ${approval.approvalId}, ${splitEnumLabel(approval.status)}`

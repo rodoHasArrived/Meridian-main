@@ -372,7 +372,7 @@ describe("DailyControlTowerScreen", () => {
     renderScreen({ search: "" });
 
     const status = screen.getByRole("region", { name: "Workstation status" });
-    expect(within(status).getByRole("link", { name: "Open provider posture" }))
+    expect(within(status).getByRole("link", { name: "Open provider health" }))
       .toHaveAttribute("href", "/data/providers");
 
     // Scope is chosen in the header scope bar and refresh is the header's one button.
@@ -384,7 +384,7 @@ describe("DailyControlTowerScreen", () => {
     renderScreen({ search: "?symbol=MSFT" });
 
     const status = screen.getByRole("region", { name: "Workstation status" });
-    expect(within(status).getByRole("link", { name: "Open provider posture" }))
+    expect(within(status).getByRole("link", { name: "Open provider health" }))
       .toHaveAttribute("href", "/data/providers?symbol=MSFT");
   });
 

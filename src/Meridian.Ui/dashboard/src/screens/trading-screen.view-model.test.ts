@@ -119,7 +119,7 @@ describe("trading shell loading state", () => {
       routeLabel: "Risk guardrails",
       chips: [
         { label: "Route", value: "/trading/risk" },
-        { label: "Workstream", value: "Risk guardrails" },
+        { label: "Area", value: "Risk guardrails" },
         { label: "Snapshots", value: "Pending" }
       ]
     });
@@ -1753,9 +1753,9 @@ describe("trading order ticket view model", () => {
     expect(result.current.phase).toBe("parked");
     expect(result.current.errorText).toBeNull();
     expect(result.current.escalationId).toBe("esc-9001");
-    expect(result.current.parkedText).toContain("parked for governed risk approval");
+    expect(result.current.parkedText).toContain("parked for risk approval");
     expect(result.current.parkedText).toContain("esc-9001");
-    expect(result.current.statusAnnouncement).toContain("parked for governed risk approval");
+    expect(result.current.statusAnnouncement).toContain("parked for risk approval");
   });
 
   it("keeps non-blocking risk warnings visible on an approved order", async () => {
@@ -2396,7 +2396,7 @@ describe("trading promotion gate view model", () => {
         "Reconciliation evidence",
         "Broker order parity",
         "Accounting records",
-        "Governed reporting",
+        "Reporting",
         "Governance sign-off",
         "Exception handling",
         "Rollback/kill-switch",

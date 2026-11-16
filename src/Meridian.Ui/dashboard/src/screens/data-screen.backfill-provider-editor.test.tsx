@@ -4,6 +4,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BackfillProviderEditorRegion } from "@/screens/data-screen.backfill-provider-editor";
 import { renderWithRouter } from "@/test/render";
 import { apiGetJson, apiPutJson } from "@/lib/api";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
+
+function HeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
+}
 
 vi.mock("@/lib/api", () => ({ apiGetJson: vi.fn(), apiPutJson: vi.fn() }));
 const snapshot = [{ metadata: { providerId: "polygon", displayName: "Polygon", tiers: [
@@ -53,5 +60,31 @@ describe("Backfill provider editor", () => {
     expect(await screen.findByText("Host configuration validation refused the save.")).toBeVisible();
     await waitFor(() => expect(screen.getByRole("button", { name: "Save provider" })).toBeEnabled());
     expect(screen.getByLabelText("Vendor tier")).toHaveValue("starter");
+  });
+
+  it("reloads with the header refresh, never over an unsaved draft, and offers Retry only after a failed load", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<HeaderRefresh><BackfillProviderEditorRegion /></HeaderRefresh>);
+    await user.click(screen.getByRole("button", { name: "Edit provider priorities and limits" }));
+    await user.click(await screen.findByRole("button", { name: "Polygon" }));
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry loading provider settings" })).not.toBeInTheDocument();
+    expect(apiGetJson).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    await waitFor(() => expect(apiGetJson).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.queryByText("Loading provider configuration…")).not.toBeInTheDocument());
+
+    await user.selectOptions(screen.getByLabelText("Vendor tier"), "starter");
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(apiGetJson).toHaveBeenCalledTimes(2);
+    expect(screen.getByLabelText("Vendor tier")).toHaveValue("starter");
+
+    await user.click(screen.getByRole("button", { name: "Discard changes" }));
+    vi.mocked(apiGetJson).mockRejectedValueOnce(new Error("Provider host offline."));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(await screen.findByText("Provider host offline.")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Retry loading provider settings" }));
+    await waitFor(() => expect(apiGetJson).toHaveBeenCalledTimes(4));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Retry loading provider settings" })).not.toBeInTheDocument());
   });
 });

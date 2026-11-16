@@ -155,7 +155,7 @@
 
                 <Border Style="{StaticResource WorkspaceWorkbenchCardStyle}"
                         Margin="0,0,0,12"
-                        AutomationProperties.Name="Governed reporting lifecycle workbench"
+                        AutomationProperties.Name="Controlled reporting lifecycle workbench"
                         AutomationProperties.AutomationId="ReportingGovernanceWorkbench">
                     <StackPanel>
                         <Grid>
@@ -327,7 +327,7 @@
                                             ToolTipService.ShowOnDisabled="True"
                                             Margin="0,0,8,0"
                                             AutomationProperties.AutomationId="ReportingGovernanceAssessReadinessButton" />
-                                    <Button Content="Generate governed run"
+                                    <Button Content="Generate controlled run"
                                             Command="{Binding Governance.GenerateGovernedRunCommand}"
                                             Style="{StaticResource PrimaryButtonStyle}"
                                             ToolTip="{Binding Governance.GenerateRunTooltip}"
@@ -378,7 +378,7 @@
 
                             <Border Grid.Column="2" Style="{StaticResource WorkspaceQueueCardStyle}">
                                 <StackPanel>
-                                    <TextBlock Text="Governed run" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="Controlled run" Style="{StaticResource CardHeaderStyle}" />
                                     <Grid Margin="0,8,0,0">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
@@ -506,7 +506,7 @@
 
                             <Border Grid.Column="2" Style="{StaticResource WorkspaceInspectorCardStyle}">
                                 <StackPanel>
-                                    <TextBlock Text="Governed restatement" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="Controlled restatement" Style="{StaticResource CardHeaderStyle}" />
                                     <TextBlock Text="{Binding Governance.RestatementStatusText}"
                                                Margin="0,7,0,0"
                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
@@ -537,7 +537,7 @@
                             </Border>
                         </Grid>
 
-                        <Expander Header="Retained governed &amp; schedule evidence"
+                        <Expander Header="Retained run &amp; schedule evidence"
                                   IsExpanded="True"
                                   Margin="0,12,0,0"
                                   AutomationProperties.AutomationId="ReportingGovernanceRetainedEvidencePanel">
@@ -551,7 +551,7 @@
 
                                     <Border Grid.Column="0" Style="{StaticResource WorkspaceInspectorCardStyle}">
                                         <StackPanel>
-                                            <TextBlock Text="Retained governed readiness" Style="{StaticResource CardHeaderStyle}" />
+                                            <TextBlock Text="Retained run readiness" Style="{StaticResource CardHeaderStyle}" />
                                             <TextBlock Text="{Binding Governance.RetainedReadinessStatusText}"
                                                        Margin="0,6,0,0"
                                                        FontWeight="SemiBold"
@@ -569,7 +569,7 @@
                                                       EnableRowVirtualization="True"
                                                       EnableColumnVirtualization="True"
                                                       MaxHeight="180"
-                                                      AutomationProperties.Name="Retained governed readiness checks"
+                                                      AutomationProperties.Name="Retained run readiness checks"
                                                       AutomationProperties.AutomationId="ReportingGovernanceRetainedReadinessChecks">
                                                 <DataGrid.Columns>
                                                     <DataGridTextColumn Header="Check" Binding="{Binding CheckId}" Width="140" />

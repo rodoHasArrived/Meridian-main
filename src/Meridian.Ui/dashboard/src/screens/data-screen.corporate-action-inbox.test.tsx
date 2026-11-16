@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { CorporateActionInboxRegion, CORPORATE_ACTION_CASE_WORKSPACE_ID } from "@/screens/data-screen.corporate-action-inbox";
 import { useCorporateActionInboxPanel } from "@/screens/data-screen.corporate-action-inbox.view-model";
 import type {
@@ -308,6 +309,25 @@ describe("CorporateActionInboxRegion", () => {
         companyId: "company-alpha"
       }
     });
+  });
+
+  it("re-reads the queue on a header refresh but never under an open acceptance confirmation", async () => {
+    const user = userEvent.setup();
+    const fetchInbox = vi.fn(defaultFetchInbox);
+    const view = render(<GlobalRefreshProvider sequence={0}><Harness fetchInbox={fetchInbox} /></GlobalRefreshProvider>);
+    const headerRefresh = (sequence: number) => view.rerender(<GlobalRefreshProvider sequence={sequence}><Harness fetchInbox={fetchInbox} /></GlobalRefreshProvider>);
+    expect((await screen.findAllByText("case-aapl-dividend")).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry loading corporate action case queue" })).not.toBeInTheDocument();
+    headerRefresh(1);
+    await waitFor(() => expect(fetchInbox).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Accept canonical fact" })).toBeEnabled());
+
+    await user.click(screen.getByRole("button", { name: "Accept canonical fact" }));
+    expect(screen.getByRole("dialog", { name: "Accept Dividend as a canonical fact?" })).toBeInTheDocument();
+    headerRefresh(2);
+    expect(fetchInbox).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole("dialog", { name: "Accept Dividend as a canonical fact?" })).toBeInTheDocument();
   });
 
   it("has no automated accessibility violations in loaded case-workspace state", async () => {

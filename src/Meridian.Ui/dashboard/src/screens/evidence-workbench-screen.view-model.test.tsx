@@ -1799,7 +1799,7 @@ describe("EvidenceWorkbenchScreen", () => {
     await user.selectOptions(classificationSelect, "BankStatement");
     expect(screen.queryByLabelText("Extraction status")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Reviewer state")).not.toBeInTheDocument();
-    expect(screen.getByText(/Extraction and initial review posture are assigned by the server/)).toBeInTheDocument();
+    expect(screen.getByText(/Extraction and initial review status are assigned by the server/)).toBeInTheDocument();
     expect(screen.getByText(
       "Actor, tenant, and company scope are derived from the authenticated workstation session."
     )).toBeInTheDocument();

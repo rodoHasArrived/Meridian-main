@@ -6,6 +6,89 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InfoBarSeverity
+
+Qualified name: <code>Meridian.Wpf.Services.InfoBarSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Services/InfoBarService.cs:12](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L12).
+
+Severity levels for info bar notifications. Maps to the shared InfoBarSeverityLevel for WPF compatibility.
+
+```csharp
+public enum InfoBarSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Informational</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:14](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L14) |  |
+| <code>Success</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:15](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L15) |  |
+| <code>Warning</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:16](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L16) |  |
+| <code>Error</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:17](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L17) |  |
+
+## InlineValidationResult
+
+Qualified name: <code>Meridian.Wpf.Services.InlineValidationResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/ConfigService.cs:35](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L35).
+
+Result of inline validation for a single provider field change. Used to provide immediate feedback in the WPF settings panel.
+
+```csharp
+public sealed class InlineValidationResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string[] Errors { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Wpf/Services/ConfigService.cs:37](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L37) |  |
+| <code>public string[] Warnings { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Wpf/Services/ConfigService.cs:38](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L38) |  |
+| <code>public bool IsValid =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:39](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L39) |  |
+| <code>public bool HasWarnings =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:40](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L40) |  |
+
+## IOperationsControlCenterClient
+
+Qualified name: <code>Meridian.Wpf.Services.IOperationsControlCenterClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Services/OperationsControlCenterClient.cs:10](../../../../src/Meridian.Wpf/Services/OperationsControlCenterClient.cs#L10).
+
+Defines shared approval-policy, close-calendar, continuity-workflow, and close-readiness queries.
+
+```csharp
+public interface IOperationsControlCenterClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OperationsApprovalPolicyMatrixDto?&gt; GetApprovalPolicyMatrixAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/OperationsControlCenterClient.cs:12](../../../../src/Meridian.Wpf/Services/OperationsControlCenterClient.cs#L12) |  |
+| <code>Task&lt;OperationsCloseCalendarDto?&gt; GetCloseCalendarAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/OperationsControlCenterClient.cs:14](../../../../src/Meridian.Wpf/Services/OperationsControlCenterClient.cs#L14) |  |
+| <code>Task&lt;IReadOnlyList&lt;OperationsContinuityWorkflowSummaryDto&gt;?&gt; GetWorkflowsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/OperationsControlCenterClient.cs:21](../../../../src/Meridian.Wpf/Services/OperationsControlCenterClient.cs#L21) | Returns the continuity workflow list, or null when the workstation API call failed — callers that surface workflow state must not render an outage as an empty queue. |
+| <code>Task&lt;OperationsContinuityWorkflowDto?&gt; GetWorkflowAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/OperationsControlCenterClient.cs:27](../../../../src/Meridian.Wpf/Services/OperationsControlCenterClient.cs#L27) | Returns the continuity workflow detail, or null when the workflow does not exist or the workstation API call failed. |
+| <code>Task&lt;FinancialOperationsCommandCenterDto?&gt; GetCloseReadinessAsync(CloseReadinessScopeDto scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/OperationsControlCenterClient.cs:29](../../../../src/Meridian.Wpf/Services/OperationsControlCenterClient.cs#L29) |  |
+
+## IPreparerDraftCheckApiClient
+
+Qualified name: <code>Meridian.Wpf.Services.IPreparerDraftCheckApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:6](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L6).
+
+```csharp
+public interface IPreparerDraftCheckApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;SinglePrincipalAttestationWorkspaceDto&gt;&gt; GetDraftCheckWorkspaceAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:8](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L8) |  |
+| <code>Task&lt;ApiResponse&lt;SinglePrincipalAttestationSubjectSnapshotDto&gt;&gt; InspectDraftCheckAsync(Guid securityId, Guid runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:10](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L10) |  |
+| <code>Task&lt;ApiResponse&lt;PreparerAttestationReceiptDto&gt;&gt; RecordDraftCheckAsync(RecordPreparerAttestationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:12](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L12) |  |
+| <code>Task&lt;ApiResponse&lt;PreparerAttestationRevocationDto&gt;&gt; RevokeDraftCheckAsync(RevokePreparerAttestationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:14](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L14) |  |
+
 ## IQuantScriptLayoutService
 
 Qualified name: <code>Meridian.Wpf.Services.IQuantScriptLayoutService</code>. Kind: `interface`.
@@ -741,15 +824,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static NavigationService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:66](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L66) | Gets the singleton instance of the NavigationService. |
-| <code>public bool IsInitialized =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:69](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L69) |  |
-| <code>public override bool CanGoBack =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:72](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L72) |  |
-| <code>public void SetServiceProvider(IServiceProvider serviceProvider);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:82](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L82) | Sets the DI service provider used to resolve page instances. Called once during application startup after the DI container is built. |
-| <code>public void Initialize(Frame frame) =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:90](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L90) | Initializes the navigation service with the main frame. |
-| <code>public void Initialize(Frame frame, WorkspaceChromePresentationMode presentationMode);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:93](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L93) |  |
-| <code>public void ResetForTests();</code> | [src/Meridian.Wpf/Services/NavigationService.cs:102](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L102) | Clears frame and DI state so WPF tests can start from a known navigation baseline. |
-| <code>public FrameworkElement CreatePageContent(string pageTag, object? parameter = null, WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked, IServiceScope? workspaceScope = null);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:131](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L131) | Creates page content without mutating the frame navigation stack. Used by workstation shells when embedding pages into dock panes. |
-| <code>public bool NavigateTo(string pageTag, object? parameter = null, IServiceScope? workspaceScope = null);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:154](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L154) | Navigates using the explicit scope or the registered workspace&#x27;s retained scope. |
+| <code>public static NavigationService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:84](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L84) | Gets the singleton instance of the NavigationService. |
+| <code>public bool IsInitialized =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:87](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L87) |  |
+| <code>public override bool CanGoBack =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:90](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L90) |  |
+| <code>public void SetServiceProvider(IServiceProvider serviceProvider);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:100](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L100) | Sets the DI service provider used to resolve page instances. Called once during application startup after the DI container is built. |
+| <code>public void Initialize(Frame frame) =&gt; …;</code> | [src/Meridian.Wpf/Services/NavigationService.cs:108](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L108) | Initializes the navigation service with the main frame. |
+| <code>public void Initialize(Frame frame, WorkspaceChromePresentationMode presentationMode);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:111](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L111) |  |
+| <code>public void ResetForTests();</code> | [src/Meridian.Wpf/Services/NavigationService.cs:120](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L120) | Clears frame and DI state so WPF tests can start from a known navigation baseline. |
+| <code>public FrameworkElement CreatePageContent(string pageTag, object? parameter = null, WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked, IServiceScope? workspaceScope = null);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:149](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L149) | Creates page content without mutating the frame navigation stack. Used by workstation shells when embedding pages into dock panes. |
+| <code>public bool NavigateTo(string pageTag, object? parameter = null, IServiceScope? workspaceScope = null);</code> | [src/Meridian.Wpf/Services/NavigationService.cs:172](../../../../src/Meridian.Wpf/Services/NavigationService.cs#L172) | Navigates using the explicit scope or the registered workspace&#x27;s retained scope. |
 
 ## NotificationService
 
@@ -850,6 +933,27 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static string? ResolvePageTag(string? targetRoute);</code> | [src/Meridian.Wpf/Services/OperatorInboxRouteMap.cs:13](../../../../src/Meridian.Wpf/Services/OperatorInboxRouteMap.cs#L13) |  |
+
+## PageRefreshResolver
+
+Qualified name: <code>Meridian.Wpf.Services.PageRefreshResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/PageRefreshResolver.cs:13](../../../../src/Meridian.Wpf/Services/PageRefreshResolver.cs#L13).
+
+Finds the reload command of the page currently shown by the shell so the single shell Refresh control can reload that page in place.
+
+```csharp
+public static class PageRefreshResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ConventionalCommandPropertyName = &quot;RefreshCommand&quot;;</code> | [src/Meridian.Wpf/Services/PageRefreshResolver.cs:16](../../../../src/Meridian.Wpf/Services/PageRefreshResolver.cs#L16) | Name of the view-model property found by convention. |
+| <code>public static ICommand? Resolve(object? pageContent) =&gt; …;</code> | [src/Meridian.Wpf/Services/PageRefreshResolver.cs:28](../../../../src/Meridian.Wpf/Services/PageRefreshResolver.cs#L28) | Resolves the refresh command for pageContent (the navigation frame&#x27;s content). Order: IPageRefreshTarget on the content or its data context, then a public RefreshCommand property on the data context, then on the content itself. Chrome wrappers implementing IPageRefreshContentHost and hosting Frames are unwrapped first. A page or view model marked IPageRefreshOptOut is never matched by convention. |
+| <code>public static bool TryRefreshInPlace(object? pageContent);</code> | [src/Meridian.Wpf/Services/PageRefreshResolver.cs:38](../../../../src/Meridian.Wpf/Services/PageRefreshResolver.cs#L38) | Reloads the page in place when it exposes a refresh command. |
+| <code>public static int RefreshAllInPlace(IEnumerable&lt;object?&gt;? pageContents);</code> | [src/Meridian.Wpf/Services/PageRefreshResolver.cs:60](../../../../src/Meridian.Wpf/Services/PageRefreshResolver.cs#L60) | Reloads every page in pageContents that exposes a refresh command which can execute. Content without a command, and commands that are busy, are skipped; nothing is re-navigated. Used for the pages docked in a workspace shell and for split panes. |
 
 ## PendingOperation
 
@@ -961,94 +1065,3 @@ Declared public members:
 | <code>public async Task&lt;QuantScriptExecutionRecord&gt; RecordExecutionAsync(QuantScriptExecutionRecordRequest request, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:79](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L79) |  |
 | <code>public async Task&lt;string&gt; ExportExecutionRecordAsync(QuantScriptExecutionRecord record, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:136](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L136) |  |
 | <code>public static string ConvertValueToString(object? value);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:161](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L161) |  |
-
-## QuantScriptExecutionRecordRequest
-
-Qualified name: <code>Meridian.Wpf.Services.QuantScriptExecutionRecordRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:12](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L12).
-
-```csharp
-public sealed record QuantScriptExecutionRecordRequest(string DocumentTitle, string DocumentPath, QuantScriptDocumentKind DocumentKind, bool Success, Dictionary<string, string> ParameterSnapshot, List<QuantScriptResolvedParameterDescriptorRecord> RuntimeParameters, string ConsoleExcerpt, List<QuantScriptExecutionMetricRecord> Metrics, List<string> PlotTitles, IReadOnlyList<BacktestResult> CapturedBacktests);
-```
-
-## QuantScriptLayoutService
-
-Qualified name: <code>Meridian.Wpf.Services.QuantScriptLayoutService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/QuantScriptLayoutService.cs:7](../../../../src/Meridian.Wpf/Services/QuantScriptLayoutService.cs#L7).
-
-Stores QuantScript page layout settings (row heights, active tab) in memory for the current session. Values are reset when the application restarts.
-
-```csharp
-public sealed class QuantScriptLayoutService : IQuantScriptLayoutService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public (double ChartHeight, double EditorHeight) LoadRowHeights() =&gt; …;</code> | [src/Meridian.Wpf/Services/QuantScriptLayoutService.cs:17](../../../../src/Meridian.Wpf/Services/QuantScriptLayoutService.cs#L17) |  |
-| <code>public void SaveRowHeights(double chartHeight, double editorHeight);</code> | [src/Meridian.Wpf/Services/QuantScriptLayoutService.cs:20](../../../../src/Meridian.Wpf/Services/QuantScriptLayoutService.cs#L20) |  |
-| <code>public int LoadLastActiveTab() =&gt; …;</code> | [src/Meridian.Wpf/Services/QuantScriptLayoutService.cs:26](../../../../src/Meridian.Wpf/Services/QuantScriptLayoutService.cs#L26) |  |
-| <code>public void SaveLastActiveTab(int tabIndex);</code> | [src/Meridian.Wpf/Services/QuantScriptLayoutService.cs:28](../../../../src/Meridian.Wpf/Services/QuantScriptLayoutService.cs#L28) |  |
-
-## QuantScriptTemplateCatalogService
-
-Qualified name: <code>Meridian.Wpf.Services.QuantScriptTemplateCatalogService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs:12](../../../../src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs#L12).
-
-Lists and loads QuantScript starter templates from the configured template directory.
-
-```csharp
-public sealed class QuantScriptTemplateCatalogService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public QuantScriptTemplateCatalogService(ILogger&lt;QuantScriptTemplateCatalogService&gt; logger) : this(logger, Path.Combine(AppContext.BaseDirectory, &quot;Templates&quot;, &quot;QuantScript&quot;));</code> | [src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs:18](../../../../src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs#L18) |  |
-| <code>public QuantScriptTemplateCatalogService(ILogger&lt;QuantScriptTemplateCatalogService&gt; logger, string catalogRoot);</code> | [src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs:23](../../../../src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs#L23) |  |
-| <code>public IReadOnlyList&lt;QuantScriptTemplateDefinition&gt; ListTemplates();</code> | [src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs:30](../../../../src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs#L30) |  |
-| <code>public async Task&lt;QuantScriptTemplateDocument&gt; LoadTemplateAsync(string templateId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs:55](../../../../src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs#L55) |  |
-
-## ReconciliationReadService
-
-Qualified name: <code>Meridian.Wpf.Services.ReconciliationReadService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/ReconciliationReadService.cs:17](../../../../src/Meridian.Wpf/Services/ReconciliationReadService.cs#L17).
-
-Builds the Accounting reconciliation workbench summary for a fund profile. Reconciliation posture is read exclusively from the server workstation API — the same IWorkstationReconciliationApiClient the workbench break queue already uses — so the summary tiles and the break queue on the same screen share one source of truth (co-equal-lanes contract: neither client forks product state). When the API is unavailable the result preserves that failure separately from a confirmed missing reconciliation record; it never falls back to the desktop-local fund-account JSON stores.
-
-```csharp
-public sealed class ReconciliationReadService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReconciliationReadService(StrategyRunWorkspaceService runWorkspaceService, IWorkstationReconciliationApiClient reconciliationApiClient);</code> | [src/Meridian.Wpf/Services/ReconciliationReadService.cs:22](../../../../src/Meridian.Wpf/Services/ReconciliationReadService.cs#L22) |  |
-| <code>public async Task&lt;FundReconciliationReadResult&gt; GetAsync(string fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ReconciliationReadService.cs:30](../../../../src/Meridian.Wpf/Services/ReconciliationReadService.cs#L30) |  |
-
-## ReportingWorkspaceShellPresentationService
-
-Qualified name: <code>Meridian.Wpf.Services.ReportingWorkspaceShellPresentationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs:10](../../../../src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs#L10).
-
-Builds reporting decision queues and command groups from reporting readiness and governance state.
-
-```csharp
-public static class ReportingWorkspaceShellPresentationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;WorkspaceQueueItem&gt; BuildFallbackDecisionItems() =&gt; …;</code> | [src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs:12](../../../../src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs#L12) |  |
-| <code>public static IReadOnlyList&lt;WorkspaceQueueItem&gt; BuildDecisionItems(FundReportingSummaryDto? reporting);</code> | [src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs:94](../../../../src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs#L94) |  |
-| <code>public static WorkspaceCommandGroup BuildCommandGroup(bool hasFund) =&gt; …;</code> | [src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs:388](../../../../src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs#L388) |  |

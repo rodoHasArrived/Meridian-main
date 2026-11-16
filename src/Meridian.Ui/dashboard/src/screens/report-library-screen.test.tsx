@@ -85,7 +85,7 @@ describe("ReportLibraryScreen", () => {
     expect(screen.getByRole("heading", { name: "Report Library" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Trial Balance" })).toBeInTheDocument();
     expect(screen.getByText("Account-balance proof with debit, credit, and ending balance support.")).toBeInTheDocument();
-    expect(screen.getByText("Ledger, chart of accounts, accounting basis, period close posture")).toBeInTheDocument();
+    expect(screen.getByText("Ledger, chart of accounts, accounting basis, period close status")).toBeInTheDocument();
     expect(screen.getAllByText("Controller").length).toBeGreaterThan(0);
     const trialBalanceLink = screen.getAllByRole("link", { name: "Run Trial Balance Pack" })[0];
     expect(trialBalanceLink).toHaveAttribute("href", "/reporting/run?templateId=trial-balance-pack%3A1.0");

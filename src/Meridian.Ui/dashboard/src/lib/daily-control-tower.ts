@@ -189,7 +189,7 @@ function buildDriverItems({
     },
     {
       id: "trust",
-      label: "Trust posture",
+      label: "Trust status",
       value: trustAttention > 0 ? `${trustAttention} need attention` : "Trusted",
       detail: `${trustItems.length} shell trust signal(s) are folded into the landing decision.`,
       badgeVariant: trustItems.some((item) => item.tone === "blocked") ? "danger" : trustAttention > 0 ? "warning" : "success"

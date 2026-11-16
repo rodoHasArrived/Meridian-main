@@ -208,7 +208,8 @@ public sealed class SettingsWorkspaceShellViewModel : WorkspaceShellViewModelBas
             ],
             SecondaryCommands =
             [
-                new WorkspaceCommandItem { Id = "Refresh", Label = "Refresh", Description = "Refresh Settings workspace posture.", Glyph = "\uE72C" }
+                // Error state only: the shell Refresh control reloads this page otherwise.
+                new WorkspaceCommandItem { Id = "Refresh", Label = "Retry", Description = "Retry loading the Settings workspace posture.", Glyph = "\uE72C" }
             ]
         };
         OperationsItems = Array.Empty<WorkspaceQueueItem>();

@@ -1,6 +1,7 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { getLedgerJournalEntryTaxResults } from "@/lib/ledger-tax-results-api";
 import { JournalEntryTaxResults } from "@/screens/journal-entry-tax-results";
 import type { LedgerDisposalTaxResult, LedgerJournalTaxResults } from "@/types/ledger-tax-results";
@@ -63,10 +64,11 @@ it("keeps a closed replacement window provisional until refresh receives a settl
   vi.mocked(getLedgerJournalEntryTaxResults)
     .mockResolvedValueOnce(result({ disposals: [closed] }))
     .mockResolvedValueOnce(result({ disposals: [{ ...closed, state: "Settled", canChange: false, reEvaluationRequired: false, stateReason: "Replacement evidence is complete." }] }));
-  render(<JournalEntryTaxResults {...scope} />);
+  const view = render(<GlobalRefreshProvider sequence={0}><JournalEntryTaxResults {...scope} /></GlobalRefreshProvider>);
   expect(await screen.findByText("Provisional")).toBeInTheDocument();
   expect(screen.getByText("Required — awaiting retained evidence")).toBeInTheDocument();
-  await userEvent.click(screen.getByRole("button", { name: "Refresh retained results" }));
+  expect(screen.queryByRole("button", { name: /Refresh retained results|Retry loading tax results/ })).not.toBeInTheDocument();
+  view.rerender(<GlobalRefreshProvider sequence={1}><JournalEntryTaxResults {...scope} /></GlobalRefreshProvider>);
   expect(await screen.findByText("Settled")).toBeInTheDocument();
   expect(screen.getByText("Replacement evidence is complete.")).toBeInTheDocument();
   expect(screen.queryByText("This result can still change")).not.toBeInTheDocument();
@@ -77,10 +79,10 @@ it("distinguishes missing retained evidence from an available journal without di
   vi.mocked(getLedgerJournalEntryTaxResults)
     .mockResolvedValueOnce(result({ evidenceState: "MissingEvidence", message: "Retained policy evidence is missing.", disposals: [] }))
     .mockResolvedValueOnce(result({ disposals: [], message: "No retained disposal for this posting." }));
-  render(<JournalEntryTaxResults {...scope} />);
+  const view = render(<GlobalRefreshProvider sequence={0}><JournalEntryTaxResults {...scope} /></GlobalRefreshProvider>);
   expect(await screen.findByText("Missing evidence")).toBeInTheDocument();
   expect(screen.getByText("Retained policy evidence is missing.")).toBeInTheDocument();
-  await userEvent.click(screen.getByRole("button", { name: "Refresh retained results" }));
+  view.rerender(<GlobalRefreshProvider sequence={1}><JournalEntryTaxResults {...scope} /></GlobalRefreshProvider>);
   expect(await screen.findByText("No retained disposal for this posting.")).toBeInTheDocument();
   expect(screen.queryByText("Missing evidence")).not.toBeInTheDocument();
 });
@@ -90,7 +92,7 @@ it("shows unavailable and retry after a failed read without displaying a fabrica
   render(<JournalEntryTaxResults {...scope} />);
   expect(await screen.findByRole("alert")).toHaveTextContent("Tax results unavailable");
   expect(screen.queryByText("Settled")).not.toBeInTheDocument();
-  await userEvent.click(screen.getByRole("button", { name: "Retry tax results" }));
+  await userEvent.click(screen.getByRole("button", { name: "Retry loading tax results" }));
   expect(await screen.findByText("Provisional")).toBeInTheDocument();
 });
 

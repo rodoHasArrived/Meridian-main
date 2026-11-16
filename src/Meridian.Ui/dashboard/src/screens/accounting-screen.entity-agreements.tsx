@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { FormGrid } from "@/components/ui/form";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operations.api";
@@ -39,7 +40,7 @@ export function EntityAccountingArrangements({ scope }: { scope: EntityOperation
     if (result) { arrangements.refresh(); history.refresh(); setEditing(false); }
   }
   return <div className="space-y-4"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">Intercompany accounting profiles</h3><div className="flex flex-wrap gap-2">
-    <Button type="button" variant="outline" onClick={arrangements.refresh} disabled={arrangements.loading || !organizationId || editing || mutation.busy} disabledReason={mutation.busy ? "Wait for the current accounting profile change to finish." : editing ? "Save or cancel the current accounting profile edit." : !organizationId ? "Select an accounting profile organization." : "Wait for accounting profiles to load."}>Refresh accounting profiles</Button>
+    <PanelReload reload={() => { if (!editing && !mutation.busy && !(selected && reason.trim())) arrangements.refresh(); }} failed={Boolean(arrangements.error)} busy={arrangements.loading || editing || mutation.busy} what="accounting profiles" />
     <Button type="button" disabled={!organizationId || editing || mutation.busy} disabledReason={mutation.busy ? "Wait for the current accounting profile change to finish." : editing ? "Save or cancel the current accounting profile edit." : "Select an accounting profile organization."} onClick={() => { setCreating(true); setEditing(true); }}>New accounting profile</Button>
   </div></div>
   <p className="text-sm text-muted-foreground">Profiles govern book mappings and counterpart accounting against an exact approved legal agreement version. Legal terms and their independent review remain in the canonical agreement registry.</p>

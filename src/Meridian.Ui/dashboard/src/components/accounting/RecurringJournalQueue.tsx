@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@/components/ui/error-notice";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { getRecurringJournalQueue, type RecurringJournalQueue as Queue, type RecurringJournalScope } from "@/lib/api/recurring-journals.api";
 
 interface Props {
@@ -22,9 +23,9 @@ export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds 
   useEffect(() => {
     const current = ++generation.current;
     const controller = new AbortController();
-    setQueue(null);
     setError(null);
     if (!fundProfileId || !ledgerBookId || !entityId) {
+      setQueue(null);
       setLoading(false);
       return;
     }
@@ -33,7 +34,7 @@ export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds 
       .then((result) => { if (generation.current === current) setQueue(result); })
       .catch((reason: unknown) => {
         if (generation.current === current && !controller.signal.aborted) {
-          setError(reason ?? new Error("The retained occurrence state could not be read."));
+          setQueue(null); setError(reason ?? new Error("The retained occurrence state could not be read."));
         }
       })
       .finally(() => { if (generation.current === current) setLoading(false); });
@@ -79,7 +80,7 @@ export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds 
               </ul>
             ) : null}
             {row.periodLockOwner ? <p className="mt-2 break-words">Period lock owner: {row.periodLockOwner}</p> : null}
-            {row.governedReopenPath ? <p className="break-words">Governed reopen: {row.governedReopenPath}</p> : null}
+            {row.governedReopenPath ? <p className="break-words">Period reopen: {row.governedReopenPath}</p> : null}
             <details className="mt-2">
               <summary className="cursor-pointer">Source evidence ({row.sourceEvidenceReferences.length})</summary>
               {row.sourceEvidenceReferences.length ? <ul className="mt-1 space-y-1 break-all">{row.sourceEvidenceReferences.map((reference) => <li key={reference}>{reference}</li>)}</ul>
@@ -91,7 +92,7 @@ export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds 
           </article>
         ))}
       </div>
-      {scope ? <Button size="sm" variant="outline" className="mt-3" disabled={loading} onClick={() => setRevision((value) => value + 1)}>{error ? "Retry recurring queue" : "Refresh recurring queue"}</Button> : null}
+      {scope ? <PanelReload className="mt-3" reload={() => { if (!loading) setRevision((value) => value + 1); }} failed={Boolean(error)} busy={loading} what="recurring queue" /> : null}
     </section>
   );
 }

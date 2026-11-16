@@ -1214,6 +1214,24 @@ viewer and corporate-action recording call routes built from `UiApiRoutes`;
 `DesktopClientRouteContractTests` fails on a desktop `/api/` literal the server does not map,
 apart from three listed exceptions (`/api/logs`, `/api/watchlists`, `/api/archive/health`).
 
+## One refresh control, plain shell copy (2026-11)
+
+The shell Refresh button and F5 are the one refresh control. Both reload the active page in place,
+with no extra Back entry: `PageRefreshResolver` finds the page's refresh command through
+`IPageRefreshTarget`, or by convention a public `RefreshCommand` on the view model, and executes
+it. Workspace shell pages are refresh targets that also reload their docked panes, and every
+visible split pane reloads with the active one. A page with no refresh command falls back to
+re-navigation. A view model whose refresh does more than re-read (for example plugin loading)
+implements `IPageRefreshOptOut`. Pages no longer carry a "Refresh" button bound to their main
+refresh command; a "Retry" button appears only in an error state. Sub-panel reload buttons
+("Refresh Statements", "Refresh Queue" and similar) are unchanged.
+
+Each of the seven workspace shells states one plain description and one title, held once in
+`Copy/WorkspaceCopyCatalog.cs`. The empty operating scope reads "All authorized scopes" where the
+page still shows everything the operator may see, and "No scope selected" where the page shows
+nothing until a scope is chosen (`WorkspaceCopyCatalog.Scope`). The position blotter shows the
+market value the execution source reports, and labels the cost column "Avg cost".
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

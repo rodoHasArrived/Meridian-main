@@ -47,7 +47,7 @@ export interface KpiDefinition {
   readonly compute: (models: KpiReadModels) => ComputedKpi;
 }
 
-const unavailable = (reason = "Owning read model unavailable"): ComputedKpi => ({
+const unavailable = (reason = "Source data unavailable"): ComputedKpi => ({
   value: "Unavailable", delta: reason, tone: "warning", status: "unavailable", raw: null, currency: null
 });
 const scalar = (value: string | number, tone: Tone = "default", delta = ""): ComputedKpi => ({
@@ -144,8 +144,8 @@ function sourceMetric(owner: "trading" | "strategy" | "data" | "accounting" | "p
       const metrics = models[owner]?.metrics;
       if (!metrics) return unavailable();
       const matches = metrics.filter((metric) => aliases.includes(metric.id));
-      if (matches.length === 0) return unavailable("Figure not supplied by owning read model");
-      if (new Set(matches.map((metric) => metric.value)).size > 1) return unavailable("Conflicting values in owning read model");
+      if (matches.length === 0) return unavailable("Figure not supplied by its source data");
+      if (new Set(matches.map((metric) => metric.value)).size > 1) return unavailable("Conflicting values in its source data");
       const metric = matches[0];
       if (!metric.value?.trim() || ["—", "Unavailable"].includes(metric.value.trim())) return unavailable(metric.delta || "Value not supplied");
       const money = currency === true ? parseKpiMoney(metric.value) : null;
@@ -390,7 +390,7 @@ export function applyKpiScope(metric: ResolvedKpi, requestedScope?: KpiScope): R
     }
   }
   if (!invalid) return metric;
-  const result = unavailable("Requested scope is not supplied by owning read model");
+  const result = unavailable("Requested scope is not supplied by its source data");
   return {
     ...metric, value: result.value, delta: result.delta, tone: result.tone, status: result.status, currency: null,
     freshness: metric.freshness === "stale" ? "stale" : "unverified",

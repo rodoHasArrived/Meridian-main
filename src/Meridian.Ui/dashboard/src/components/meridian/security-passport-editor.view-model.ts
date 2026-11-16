@@ -115,7 +115,7 @@ export function buildWorkbenchErrorBanner(error: WorkbenchWriteError): PassportB
       return {
         tone: "warning",
         title: "Approval workflow required",
-        message: "Select an approval workflow and an independent reviewer before submitting for governed approval."
+        message: "Select an approval workflow and an independent reviewer before submitting for approval."
       };
     case "unprocessable":
       return {

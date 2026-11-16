@@ -128,6 +128,8 @@ export function useRiskControlPanelViewModel(
   savePriceCollarThreshold: () => Promise<void>;
   refresh: () => Promise<void>;
   loadFailure: unknown;
+  /** True while a threshold input holds a typed value that has not been saved. */
+  hasUnsavedEdits: boolean;
 } {
   const [statuses, setStatuses] = useState<RiskRuleStatus[]>([]);
   const [loading, setLoading] = useState(true);
@@ -143,6 +145,9 @@ export function useRiskControlPanelViewModel(
   const [submittedFatFinger, setSubmittedFatFinger] = useState(false);
   const [priceCollar, setPriceCollarState] = useState("");
   const [submittedPriceCollar, setSubmittedPriceCollar] = useState(false);
+  const [unsaved, setUnsaved] = useState<readonly string[]>([]);
+  const markUnsaved = (group: string) => setUnsaved((groups) => (groups.includes(group) ? groups : [...groups, group]));
+  const markSaved = (group: string) => setUnsaved((groups) => groups.filter((candidate) => candidate !== group));
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [statusTone, setStatusTone] = useState<"default" | "success" | "danger">("default");
   const mountedRef = useRef(true);
@@ -182,6 +187,7 @@ export function useRiskControlPanelViewModel(
       setFatFingerQuantityState(formatFatFingerQuantity(fatFingerConfig));
       setFatFingerDeviationState(formatFatFingerDeviation(fatFingerConfig));
       setPriceCollarState(formatPriceCollar(priceCollarConfig));
+      setUnsaved([]);
       setSubmitted(false);
       setSubmittedFatFinger(false);
       setSubmittedPriceCollar(false);
@@ -195,6 +201,7 @@ export function useRiskControlPanelViewModel(
       setFatFingerQuantityState("");
       setFatFingerDeviationState("");
       setPriceCollarState("");
+      setUnsaved([]);
       setError(describeApiError(loadError, "Failed to load risk controls."));
       setLoadFailure(loadError);
       setStatusTone("danger");
@@ -211,6 +218,7 @@ export function useRiskControlPanelViewModel(
 
   const setDrawdownPercent = (value: string) => {
     setDrawdownPercentState(value);
+    markUnsaved("drawdown");
     setSubmitted(false);
     setStatusMessage(null);
     setStatusTone("default");
@@ -219,6 +227,7 @@ export function useRiskControlPanelViewModel(
 
   const setFatFingerQuantity = (value: string) => {
     setFatFingerQuantityState(value);
+    markUnsaved("fatFinger");
     setSubmittedFatFinger(false);
     setStatusMessage(null);
     setStatusTone("default");
@@ -227,6 +236,7 @@ export function useRiskControlPanelViewModel(
 
   const setFatFingerDeviation = (value: string) => {
     setFatFingerDeviationState(value);
+    markUnsaved("fatFinger");
     setSubmittedFatFinger(false);
     setStatusMessage(null);
     setStatusTone("default");
@@ -235,6 +245,7 @@ export function useRiskControlPanelViewModel(
 
   const setPriceCollar = (value: string) => {
     setPriceCollarState(value);
+    markUnsaved("priceCollar");
     setSubmittedPriceCollar(false);
     setStatusMessage(null);
     setStatusTone("default");
@@ -281,6 +292,7 @@ export function useRiskControlPanelViewModel(
 
       setStatuses(refreshed);
       setDrawdownPercentState(formatDrawdown(updatedConfig));
+      markSaved("drawdown");
       setSubmitted(false);
       setStatusMessage("Drawdown threshold saved.");
       setStatusTone("success");
@@ -343,6 +355,7 @@ export function useRiskControlPanelViewModel(
       setStatuses(refreshed);
       setFatFingerQuantityState(formatFatFingerQuantity(updatedConfig));
       setFatFingerDeviationState(formatFatFingerDeviation(updatedConfig));
+      markSaved("fatFinger");
       setSubmittedFatFinger(false);
       setStatusMessage("Fat-finger limits saved.");
       setStatusTone("success");
@@ -402,6 +415,7 @@ export function useRiskControlPanelViewModel(
 
       setStatuses(refreshed);
       setPriceCollarState(formatPriceCollar(updatedConfig));
+      markSaved("priceCollar");
       setSubmittedPriceCollar(false);
       setStatusMessage("Price collar saved.");
       setStatusTone("success");
@@ -444,6 +458,7 @@ export function useRiskControlPanelViewModel(
   return {
     ...vm,
     loadFailure,
+    hasUnsavedEdits: unsaved.length > 0,
     setDrawdownPercent,
     saveDrawdownThreshold,
     setFatFingerQuantity,
@@ -747,16 +762,16 @@ function buildRiskControlCommandState(state: RiskControlPanelCommandState): {
         : "Save price collar"
     },
     refreshAction: {
-      label: state.loading ? "Refreshing" : "Refresh",
+      label: state.loading ? "Retrying" : "Retry",
       busy: state.loading,
-      busyLabel: "Refreshing risk controls",
+      busyLabel: "Retrying risk controls",
       disabled: state.loading || state.saving,
       disabledReason: state.loading
         ? "Risk controls are already refreshing."
         : state.saving
           ? "Wait for the risk threshold update to finish before refreshing."
           : null,
-      ariaLabel: state.loading ? "Refreshing risk controls" : "Refresh risk controls"
+      ariaLabel: state.loading ? "Retrying risk controls" : "Retry loading risk controls"
     }
   };
 }

@@ -163,19 +163,6 @@ export function WatchlistScreen() {
               <Plus className="h-4 w-4" aria-hidden="true" />
               <span className="ml-1.5">{vm.addButtonLabel}</span>
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => void vm.refresh()}
-              aria-label={vm.refreshButtonAriaLabel}
-              disabled={vm.refreshDisabled}
-              busy={vm.refreshing}
-              busyLabel={vm.refreshButtonLabel}
-            >
-              <RefreshCw className={`h-4 w-4 ${vm.refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
-              <span className="ml-1.5">{vm.refreshButtonLabel}</span>
-            </Button>
           </form>
           <p id={vm.addSymbolField.helperId} className="mt-2 text-xs text-muted-foreground">
             {vm.addSymbolField.helperText}

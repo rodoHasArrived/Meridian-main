@@ -75,13 +75,6 @@
                                 VerticalAlignment="Center"
                                 AutomationProperties.AutomationId="EvidenceWorkbenchActionPosture">
                         <WrapPanel HorizontalAlignment="Right">
-                            <Button Content="Refresh"
-                                    Command="{Binding RefreshCommand}"
-                                    ToolTip="Reload subjects, packet, request lists, and retained documents from the shared workstation API."
-                                    ToolTipService.ShowOnDisabled="True"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    AutomationProperties.AutomationId="EvidenceWorkbenchRefreshButton"
-                                    Margin="0,0,8,8" />
                             <Button Content="Validate"
                                     Command="{Binding ValidateCommand}"
                                     ToolTip="Ask the server to re-evaluate packet completeness for the selected subject."
@@ -112,6 +105,15 @@
                                    Margin="0,3,0,0"
                                    Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"
                                    AutomationProperties.AutomationId="EvidenceWorkbenchErrorText" />
+                        <Button Content="Retry"
+                                Command="{Binding RefreshCommand}"
+                                ToolTip="Reload subjects, packet, request lists, and retained documents from the shared workstation API."
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                HorizontalAlignment="Right"
+                                Margin="0,6,0,0"
+                                Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                AutomationProperties.AutomationId="EvidenceWorkbenchRetryButton"
+                                AutomationProperties.Name="Retry loading evidence workbench" />
                     </StackPanel>
                 </Grid>
             </Border>

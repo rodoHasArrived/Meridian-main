@@ -4,6 +4,13 @@ import { describe, expect, it, vi } from "vitest";
 import { SymbolMappingEditor } from "@/screens/data-screen.symbol-mapping-editor";
 import { renderWithRouter } from "@/test/render";
 import type { symbolMappingApi, SymbolMappingRollout } from "@/lib/api/symbol-mapping.api";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
+
+function HeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
+}
 
 const snapshot: SymbolMappingRollout = { mismatchCount: 1, providers: ["ib", "alpaca", "polygon", "yahoo"].map(provider => ({ provider, savedMode: "Compare", activeMode: "Compare", pendingRestart: false, recentMismatches: provider === "yahoo" ? [{ input: "BRK.B", fromProvider: "alpaca", toProvider: "yahoo", legacyResult: "BRK.B", canonicalResult: "BRK-B", securityId: null, observedAt: "2026-11-13T10:00:00Z" }] : [] })) };
 function apiFixture(): typeof symbolMappingApi {
@@ -55,6 +62,33 @@ describe("SymbolMappingEditor", () => {
     await user.selectOptions(screen.getByLabelText("Rollout provider"), "alpaca");
     expect(screen.getByLabelText(/I reviewed this provider/)).not.toBeChecked();
     expect(screen.getByRole("button", { name: "Promote alpaca to Canonical" })).toBeDisabled();
+  });
+
+  it("keeps an in-progress review across a header refresh and re-reads only when no review is in progress", async () => {
+    const api = apiFixture(), user = userEvent.setup();
+    renderWithRouter(<HeaderRefresh><SymbolMappingEditor api={api} /></HeaderRefresh>);
+    await screen.findByText("Retained yahoo comparison mismatches");
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry loading mapping evidence" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    await waitFor(() => expect(api.rollout).toHaveBeenCalledTimes(2));
+    await screen.findByText("Retained yahoo comparison mismatches");
+
+    await user.click(screen.getByLabelText(/I reviewed this provider/));
+    await user.type(screen.getByLabelText("Promotion reason"), "Checked evidence");
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(api.rollout).toHaveBeenCalledTimes(2);
+    expect(screen.getByLabelText(/I reviewed this provider/)).toBeChecked();
+    expect(screen.getByLabelText("Promotion reason")).toHaveValue("Checked evidence");
+  });
+
+  it("offers Retry only after mapping evidence fails to load", async () => {
+    const api = apiFixture(), user = userEvent.setup();
+    vi.mocked(api.rollout).mockRejectedValueOnce(new Error("Rollout evidence offline"));
+    renderWithRouter(<SymbolMappingEditor api={api} />);
+    await user.click(await screen.findByRole("button", { name: "Retry loading mapping evidence" }));
+    await screen.findByText("Retained yahoo comparison mismatches");
+    expect(screen.queryByRole("button", { name: "Retry loading mapping evidence" })).not.toBeInTheDocument();
   });
 
   it("fails closed after a save error and retains the operator's draft", async () => {

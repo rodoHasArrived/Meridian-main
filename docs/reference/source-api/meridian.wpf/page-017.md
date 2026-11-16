@@ -6,6 +6,102 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingClosePage
+
+Qualified name: <code>Meridian.Wpf.Views.AccountingClosePage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/AccountingClosePage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/AccountingClosePage.xaml.cs#L10).
+
+Provides the desktop page to edit close plans, dependencies, sign-offs, adjustments, evidence, blockers, and locks.
+
+```csharp
+public partial class AccountingClosePage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AccountingClosePage(AccountingCloseViewModel viewModel);</code> | [src/Meridian.Wpf/Views/AccountingClosePage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/AccountingClosePage.xaml.cs#L12) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:89](../../../../src/Meridian.Wpf/Views/Pages.cs#L89).
+
+```csharp
+public partial class AccountingClosePage : Page
+```
+
+## AccountingConfigurePage
+
+Qualified name: <code>Meridian.Wpf.Views.AccountingConfigurePage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/AccountingConfigurePage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/AccountingConfigurePage.xaml.cs#L12).
+
+Provides the desktop page to review books, chart, rules, manual journals, GL evidence, validation, audit readiness.
+
+```csharp
+public partial class AccountingConfigurePage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AccountingConfigurePage(AccountingConfigureViewModel viewModel);</code> | [src/Meridian.Wpf/Views/AccountingConfigurePage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/AccountingConfigurePage.xaml.cs#L17) |  |
+
+## AccountingWorkspaceShellPage
+
+Qualified name: <code>Meridian.Wpf.Views.AccountingWorkspaceShellPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/AccountingWorkspaceShellPage.xaml.cs:21](../../../../src/Meridian.Wpf/Views/AccountingWorkspaceShellPage.xaml.cs#L21).
+
+Provides the desktop page to review ledger, cash, reconciliation, trial balance, and audit workflows.
+
+```csharp
+public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPageBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AccountingWorkspaceShellPage(NavigationService navigationService, AccountingWorkspaceShellStateProvider stateProvider, AccountingWorkspaceShellViewModel viewModel, FundContextService fundContextService, WorkstationOperatingContextService? operatingContextService, WorkspaceShellContextService shellContextService, FundOperationsWorkspaceReadService fundOperationsWorkspaceReadService, Meridian.Wpf.Services.NotificationService notificationService, WorkstationWorkflowSummaryService? workflowSummaryService = null, IAccountingConfigurationService? accountingConfigurationService = null, DesktopAuthenticationSession? authenticationSession = null) : base(navigationService, stateProvider, viewModel);</code> | [src/Meridian.Wpf/Views/AccountingWorkspaceShellPage.xaml.cs:41](../../../../src/Meridian.Wpf/Views/AccountingWorkspaceShellPage.xaml.cs#L41) |  |
+
+## AccountingWorkspaceShellPageBase
+
+Qualified name: <code>Meridian.Wpf.Views.AccountingWorkspaceShellPageBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:350](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L350).
+
+Binds derived pages to the accounting workspace shell definition.
+
+```csharp
+public class AccountingWorkspaceShellPageBase : WorkspaceShellPageBase<AccountingWorkspaceShellStateProvider, AccountingWorkspaceShellViewModel>
+```
+
+## AccountPortfolioPage
+
+Qualified name: <code>Meridian.Wpf.Views.AccountPortfolioPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/AccountPortfolioPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/AccountPortfolioPage.xaml.cs#L11).
+
+Code-behind for AccountPortfolioPage. Wires the ViewModel and delegates lifecycle to it; no business logic here.
+
+```csharp
+public partial class AccountPortfolioPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AccountPortfolioPage(AccountPortfolioViewModel viewModel);</code> | [src/Meridian.Wpf/Views/AccountPortfolioPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/AccountPortfolioPage.xaml.cs#L15) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:79](../../../../src/Meridian.Wpf/Views/Pages.cs#L79).
+
+```csharp
+public partial class AccountPortfolioPage : Page
+```
+
 ## ActivityLogPage
 
 Qualified name: <code>Meridian.Wpf.Views.ActivityLogPage</code>. Kind: `class`.
@@ -619,7 +715,7 @@ public partial class DataSourcesPage : Page
 
 Qualified name: <code>Meridian.Wpf.Views.DataWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:313](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L313).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:336](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L336).
 
 Binds derived pages to the data workspace shell definition.
 
@@ -996,98 +1092,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public HomeWorkspacePage(HomeWorkspaceViewModel viewModel);</code> | [src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs#L15) |  |
-
-## IndexSubscriptionPage
-
-Qualified name: <code>Meridian.Wpf.Views.IndexSubscriptionPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/IndexSubscriptionPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/IndexSubscriptionPage.xaml.cs#L11).
-
-Index subscription page for subscribing to index constituents (S&amp;P 500, Nasdaq 100, Dow 30, sector ETFs) for bulk symbol management.
-
-```csharp
-public partial class IndexSubscriptionPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IndexSubscriptionPage();</code> | [src/Meridian.Wpf/Views/IndexSubscriptionPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/IndexSubscriptionPage.xaml.cs#L15) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:22](../../../../src/Meridian.Wpf/Views/Pages.cs#L22).
-
-```csharp
-public partial class IndexSubscriptionPage : Page
-```
-
-## InstitutionalCommandPaletteControl
-
-Qualified name: <code>Meridian.Wpf.Views.InstitutionalCommandPaletteControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs:11](../../../../src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs#L11).
-
-Displays searchable shell commands and handles keyboard selection and activation.
-
-```csharp
-public partial class InstitutionalCommandPaletteControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public InstitutionalCommandPaletteControl();</code> | [src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs:13](../../../../src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs#L13) |  |
-| <code>public void FocusInput();</code> | [src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs:18](../../../../src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs#L18) |  |
-| <code>public bool TryHandleDirectionalKey(Key key);</code> | [src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs:24](../../../../src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs#L24) |  |
-
-## InstitutionalShellFrameControl
-
-Qualified name: <code>Meridian.Wpf.Views.InstitutionalShellFrameControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs:10](../../../../src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs#L10).
-
-Exposes the shell posture used to style the desktop frame.
-
-```csharp
-public class InstitutionalShellFrameControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty ShellPostureProperty = DependencyProperty.Register(nameof(ShellPosture), typeof(ShellPosture), typeof(InstitutionalShellFrameControl), new PropertyMetadata(ShellPosture.Workbench));</code> | [src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs:12](../../../../src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs#L12) |  |
-| <code>public ShellPosture ShellPosture { get; set; }</code> | [src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs:19](../../../../src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs#L19) |  |
-
-## IntercompanyAgreementsControl
-
-Qualified name: <code>Meridian.Wpf.Views.IntercompanyAgreementsControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs#L5).
-
-```csharp
-public partial class IntercompanyAgreementsControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IntercompanyAgreementsControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs#L7) |  |
-
-## IntercompanyCounterpartProposalsControl
-
-Qualified name: <code>Meridian.Wpf.Views.IntercompanyCounterpartProposalsControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/IntercompanyCounterpartProposalsControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyCounterpartProposalsControl.xaml.cs#L5).
-
-```csharp
-public partial class IntercompanyCounterpartProposalsControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IntercompanyCounterpartProposalsControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyCounterpartProposalsControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyCounterpartProposalsControl.xaml.cs#L7) |  |

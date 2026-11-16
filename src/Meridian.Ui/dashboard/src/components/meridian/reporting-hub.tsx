@@ -274,7 +274,7 @@ function ReportingHubContent({
                 { label: "Owner", value: selectedWork.owner },
                 { label: "Affected output", value: selectedWork.affectedOutputLabel },
                 { label: "Next action", value: selectedWork.nextActionLabel },
-                { label: "Proof posture", value: selectedWork.proofLabel, tone: selectedWork.evidenceGaps.length > 0 ? "warning" : "success" }
+                { label: "Proof status", value: selectedWork.proofLabel, tone: selectedWork.evidenceGaps.length > 0 ? "warning" : "success" }
               ]
             : undefined}
           fieldsLabel={selectedWork ? `${selectedWork.title} decision facts` : undefined}

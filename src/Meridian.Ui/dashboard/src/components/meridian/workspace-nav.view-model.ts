@@ -228,7 +228,7 @@ export function buildWorkspaceNavViewModel(
     brandSubtitle: "Operator Workstation",
     modelEyebrow: "Operating model",
     modelDescription:
-      "Workflow-centric shell for trading, portfolio, accounting, reporting, strategy, data, and settings posture.",
+      "Workflow-centric shell for trading, portfolio, accounting, reporting, strategy, data, and settings.",
     currentWorkspace: {
       label: currentWorkspace.label,
       description: currentWorkspace.description,

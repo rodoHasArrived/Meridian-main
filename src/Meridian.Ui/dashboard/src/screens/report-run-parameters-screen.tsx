@@ -290,7 +290,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
     };
   }, [readinessPreflight, readinessRequest, readinessRequestJson]);
   const runBlockedReason = draft.restatementTargetRunId
-    ? "Restatements must use the governed restatement-request workflow."
+    ? "Restatements must use the restatement-request workflow."
     : parameterValidation.issues[0]
       ?? (readinessPreflight.phase === "checking"
         ? "Wait for the server readiness preflight to finish."
@@ -421,7 +421,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
       {
         id: "library",
         label: "Open library",
-        detail: `${templates.length} governed template(s) available`,
+        detail: `${templates.length} template(s) available`,
         href: WORKSTATION_ROUTE_CATALOG.reportingLibrary,
         tone: "outline" as const
       },
@@ -439,7 +439,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <CardTitle>Report Parameters</CardTitle>
-            <CardDescription>Choose a governed template, review readiness, then run or open one from the Report Library.</CardDescription>
+            <CardDescription>Choose a template, review readiness, then run or open one from the Report Library.</CardDescription>
           </div>
           <Badge variant={advisoryReadinessGate.isClear ? "success" : "warning"}>
             {advisoryReadinessGate.isClear ? "Readiness clear" : "Review readiness"}
@@ -518,7 +518,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
                 </ul>
               ) : (
                 <p className="border border-border bg-background/50 p-3 text-sm text-muted-foreground">
-                  No runnable templates are available. Open the library to review approval posture.
+                  No runnable templates are available. Open the library to review approval status.
                 </p>
               )}
             </section>
@@ -793,7 +793,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
               <CardTitle>Can this report run?</CardTitle>
               <CardDescription>
                 {readinessPreflight.phase === "checking"
-                  ? "The server is resolving the exact template, scope, accounting dependencies, dataset, and evidence posture."
+                  ? "The server is resolving the exact template, scope, accounting dependencies, dataset, and evidence status."
                   : readinessPreflight.phase === "complete"
                     ? authoritativeReadinessGate?.summary
                     : readinessPreflight.phase === "error"

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { isApiError } from "@/lib/api-errors";
 import { TimeText } from "@/components/ui/time-text";
 import {
@@ -46,6 +47,9 @@ function CashDividendControls({ caseId, scope, onCommitted }: {
   const [postConfirmed, setPostConfirmed] = useState(false);
   const alive = useRef(true);
   const inFlight = useRef(false);
+  // Set by a reload the operator asked for: the shown error clears only once that read succeeds.
+  const clearErrorOnLoad = useRef(false);
+  const hasDraft = Boolean(declarationReason || attestReason || postReason || declareConfirmed || bindingConfirmed || attestConfirmed || postConfirmed);
   const expectedScope = JSON.stringify({ tenantId: scope.tenantId, companyId: scope.companyId, ledgerBookId: scope.ledgerBookId });
 
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
@@ -56,6 +60,7 @@ function CashDividendControls({ caseId, scope, onCommitted }: {
     void getCashDividendAttestationWorkspace(caseId, selectedScope, { signal: controller.signal }).then(value => {
       if (controller.signal.aborted) return;
       setWorkspace(value); setLoading(false);
+      if (clearErrorOnLoad.current) { clearErrorOnLoad.current = false; setError(null); }
       if (!inFlight.current) {
         const recovered = readRecovery(caseId, value);
         setPending(recovered);
@@ -138,7 +143,7 @@ function CashDividendControls({ caseId, scope, onCommitted }: {
     <div className="flex flex-wrap items-start justify-between gap-2">
       <div><h4 className="text-sm font-semibold">Cash-dividend preparer attestation</h4>
         <p className="mt-1 text-sm text-muted-foreground">Regular mandatory cash dividends in one declared USD book. Limits are USD 10,000 per related event and USD 100,000 per book calendar month; the server evaluates gross impact and all posting controls.</p></div>
-      <Button type="button" variant="outline" size="sm" disabled={loading || busy} onClick={() => { setError(null); setReload(value => value + 1); }}>Refresh cash-dividend controls</Button>
+      <PanelReload reload={() => { if (busy || (!error && hasDraft)) return; clearErrorOnLoad.current = true; setReload(value => value + 1); }} failed={error !== null} busy={loading || busy} what="cash-dividend controls" />
     </div>
     <p className="text-sm">Required attestation disclosure: <span className="font-semibold">{PREPARER_ATTESTATION_DISCLOSURE}</span></p>
     {loading ? <p role="status" className="text-sm">Loading the native case, declaration and cash-dividend eligibility…</p> : null}

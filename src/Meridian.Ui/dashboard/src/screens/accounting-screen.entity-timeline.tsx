@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ExternalLegalReviewFields, ExternalLegalReviewReceipt, isCompleteExternalReview, newExternalReviewInput } from "@/components/accounting/intercompany-external-review";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { FormGrid } from "@/components/ui/form";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operations.api";
@@ -16,14 +17,15 @@ export function EntityLifecycleTimeline({ scope }: { scope: EntityOperationScope
   const [entityId, setEntityId] = useState(scope.graph?.entities.find((entity) => entity.entityId === scope.book.fundStructureNodeId)?.entityId ?? scope.graph?.entities[0]?.entityId ?? "");
   const [organizationId, setOrganizationId] = useState(scope.graph?.organizations[0]?.organizationId ?? "");
   const [asOf, setAsOf] = useState(today());
+  const [drafting, setDrafting] = useState(false);
   const query = new URLSearchParams({ organizationId, asOf: `${asOf}T23:59:59.9999999Z` });
   const timeline = useEntityData<EntityTimeline>(entityId && organizationId && asOf ? `/api/fund-structure/entities/${entityId}/timeline?${query}` : null);
   const currentLifecycle = useEntityData<EntityLifecycleRevision>(entityId && scope.capabilities.canManageLifecycle ? endpoints.lifecycle(entityId) : null);
   return <section className="space-y-4"><h3 className="font-semibold">Entity timeline and legal perimeter</h3><FormGrid columns={3}>
     <OperationField label="Timeline organization" value={organizationId} onChange={setOrganizationId} required><option value="">Select organization</option>{scope.graph?.organizations.map((organization) => <option key={organization.organizationId} value={organization.organizationId}>{organization.name}</option>)}</OperationField>
-    <OperationField label="Timeline entity" value={entityId} onChange={setEntityId} required><option value="">Select entity</option>{scope.graph?.entities.map((entity) => <option key={entity.entityId} value={entity.entityId}>{entity.name}</option>)}</OperationField>
+    <OperationField label="Timeline entity" value={entityId} onChange={(value) => { setEntityId(value); setDrafting(false); }} required><option value="">Select entity</option>{scope.graph?.entities.map((entity) => <option key={entity.entityId} value={entity.entityId}>{entity.name}</option>)}</OperationField>
     <OperationField label="Timeline as of (UTC)" value={asOf} onChange={setAsOf} type="date" required />
-  </FormGrid><Button type="button" variant="outline" onClick={() => { timeline.refresh(); currentLifecycle.refresh(); }} disabled={timeline.loading} disabledReason="Wait for the entity timeline to load.">Refresh entity timeline</Button>
+  </FormGrid><PanelReload reload={() => { if (drafting && !timeline.error && !currentLifecycle.error) return; timeline.refresh(); currentLifecycle.refresh(); }} failed={Boolean(timeline.error || currentLifecycle.error)} busy={timeline.loading} what="entity timeline" />
     <OperationError error={timeline.error} />{timeline.loading ? <p role="status">Loading shared entity history…</p> : null}
     {timeline.data ? <div className="space-y-4"><p className="text-sm"><strong>{timeline.data.entity.name}</strong> · {timeline.data.entity.baseCurrency} · server as of {timeline.data.asOf}</p>
       {timeline.data.warnings.map((warning, index) => <p role="status" className="text-sm text-warning" key={index}>{warning}</p>)}
@@ -39,7 +41,7 @@ export function EntityLifecycleTimeline({ scope }: { scope: EntityOperationScope
         <div><h4 className="mb-2 text-sm font-semibold">Books</h4><ul className="space-y-2 text-xs">{timeline.data.books.map((book) => <li key={book.ledgerBookId}>{book.displayName} · {book.accountingBasis} · {book.baseCurrency}</li>)}</ul></div></div></TechnicalDetails>
     </div> : null}
     <OperationError error={currentLifecycle.error} />
-    {scope.capabilities.canManageLifecycle && timeline.data?.canAttestExternalLifecycleReview === true && currentLifecycle.data ? <LifecycleTransitionEditor key={`${entityId}:${currentLifecycle.data.revision}`} scope={scope} current={currentLifecycle.data} onSaved={() => { timeline.refresh(); currentLifecycle.refresh(); }} />
+    {scope.capabilities.canManageLifecycle && timeline.data?.canAttestExternalLifecycleReview === true && currentLifecycle.data ? <LifecycleTransitionEditor key={`${entityId}:${currentLifecycle.data.revision}`} scope={scope} current={currentLifecycle.data} onSaved={() => { setDrafting(false); timeline.refresh(); currentLifecycle.refresh(); }} onDraft={() => setDrafting(true)} />
       : !scope.capabilities.canManageLifecycle ? <p className="text-sm text-muted-foreground">Entity lifecycle transitions require fund-structure management permission. Historical posted balances remain inspectable.</p> : timeline.data && timeline.data.canAttestExternalLifecycleReview !== true ? <p className="text-sm text-muted-foreground">External lifecycle-review attestation requires compliance management capability for this entity.</p> : null}
   </section>;
 }
@@ -48,7 +50,7 @@ interface LifecyclePreparedRequest {
   entityId: string; expectedRevision: number; reason: string; evidenceReference: string;
   timeline: EntityLifecycleRevision["timeline"];
 }
-function LifecycleTransitionEditor({ scope, current, onSaved }: { scope: EntityOperationScope; current: EntityLifecycleRevision; onSaved: () => void }) {
+function LifecycleTransitionEditor({ scope, current, onSaved, onDraft }: { scope: EntityOperationScope; current: EntityLifecycleRevision; onSaved: () => void; onDraft: () => void }) {
   const [status, setStatus] = useState("Active");
   const [eventKind, setEventKind] = useState("Amendment");
   const [effectiveFrom, setEffectiveFrom] = useState(today());
@@ -58,7 +60,7 @@ function LifecycleTransitionEditor({ scope, current, onSaved }: { scope: EntityO
   const [externalReview, setExternalReview] = useState(newExternalReviewInput);
   const [prepared, setPrepared] = useState<{ request: LifecyclePreparedRequest; submittedHash: string } | null>(null);
   const mutation = useEntityMutation();
-  function change(setter: (value: string) => void) { return (value: string) => { setter(value); setPrepared(null); }; }
+  function change(setter: (value: string) => void) { return (value: string) => { setter(value); setPrepared(null); onDraft(); }; }
   async function prepare(event: FormEvent) {
     event.preventDefault();
     const date = effectiveUtc(effectiveFrom);

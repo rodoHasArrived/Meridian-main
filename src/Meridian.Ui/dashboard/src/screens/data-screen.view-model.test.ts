@@ -533,7 +533,7 @@ describe("data-screen view model", () => {
     expect(importFocus).toMatchObject({
       ariaLabel: "Data import route focus",
       eyebrow: "File Intake",
-      title: "Governed file import"
+      title: "File import"
     });
   });
 
@@ -1315,6 +1315,12 @@ describe("data-screen view model", () => {
     );
 
     expect(providerSection.title).toBe("Provider Management");
+    // Loaded provider status is re-read by the header Refresh; Retry appears only while that evidence is missing.
+    expect(providerSection.commandActions.map((action) => action.id)).toEqual(["add", "diagnostics", "settings"]);
+    expect(buildProviderSection(providers, null, { providerConnections: null, onProviderRoutingRefresh: () => undefined }).commandActions[1])
+      .toMatchObject({ id: "refresh", label: "Retry", ariaLabel: "Retry loading provider status and routing evidence", disabled: false });
+    expect(buildProviderSection(providers, null, { providerConnections: null, providerRoutingRefreshing: true, onProviderRoutingRefresh: () => undefined }).commandActions[1])
+      .toMatchObject({ id: "refresh", label: "Retrying...", disabled: true, busy: true });
     expect(providerSection.providerOptions).toEqual([
       expect.objectContaining({
         value: "provider-row-polygon",
@@ -1481,7 +1487,7 @@ describe("data-screen view model", () => {
     // Polygon's readiness is Ready but its connection health is Warning: the row shows the worse
     // of the two, as the server's provider list does, so readiness cannot hide the warning.
     expect(providerSection.rows.find((row) => row.provider === "Polygon.io")?.status).toBe("Warning");
-    expect(providerSection.readinessSummary).toContain("Displayed posture: 1 ready / 1 review / 0 degraded / 1 blocked.");
+    expect(providerSection.readinessSummary).toContain("Displayed status: 1 ready / 1 review / 0 degraded / 1 blocked.");
     expect(providerSection.readinessSummary).toContain("Shared readiness covers 2 of 3 displayed providers.");
     } finally {
       vi.useRealTimers();
@@ -2103,7 +2109,7 @@ describe("data-screen view model", () => {
 
     expect(exportSection.rows[0].statusVariant).toBe("paper");
     expect(exportSection.rows[0].rowClassName).toBe("bg-paper/5");
-    expect(exportSection.rows[0].actionText).toBe("Wait for the package writer to finish before handoff.");
+    expect(exportSection.rows[0].actionText).toBe("Wait for the package writer to finish before delivery.");
     expect(exportSection.rows[1].statusVariant).toBe("warning");
     expect(exportSection.rows[1].rowClassName).toBe("bg-warning/5");
     expect(exportSection.rows[1].actionText).toBe("Review export profile and target before report-pack use.");

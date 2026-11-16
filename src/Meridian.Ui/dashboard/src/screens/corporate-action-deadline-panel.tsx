@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getCorporateActionCaseDeadlines, importCorporateActionDeadlines, previewCorporateActionDeadlineImport, recordCorporateActionDeadline } from "@/lib/api/corporate-action-calendar.api";
@@ -110,7 +111,7 @@ function DeadlineCaseEditor({ caseId, onChanged }: { caseId: string; onChanged: 
     finally { if (active.current) setBusy(false); }
   }
   return <section className="space-y-3 rounded-sm border border-border p-3" aria-label={`Election deadlines for case ${caseId}`}>
-    <div className="flex flex-wrap items-center justify-between gap-2"><h4 className="text-sm font-semibold">Sourced election deadlines</h4><Button size="sm" variant="outline" disabled={busy || Boolean(command)} onClick={() => { setPreview(null); setRevision((value) => value + 1); }}>Refresh deadlines</Button></div>
+    <div className="flex flex-wrap items-center justify-between gap-2"><h4 className="text-sm font-semibold">Sourced election deadlines</h4><PanelReload what="deadlines" failed={Boolean(readError)} busy={locked || loading} reload={() => { if (locked || (preview && !readError)) return; setPreview(null); setRevision((value) => value + 1); }} /></div>
     <p className="break-all font-mono text-xs">Case {caseId}{data ? ` · ${data.case.state} · version ${data.case.version} · ${data.case.scope.tenantId} / ${data.case.scope.companyId}` : ""}</p>
     <p className="text-xs text-muted-foreground">Issuer, broker and custodian cutoffs remain distinct. Captured evidence is operator-recorded; the provided digest does not verify external source bytes.</p>
     {loading ? <p role="status">Loading authoritative deadline history…</p> : null}

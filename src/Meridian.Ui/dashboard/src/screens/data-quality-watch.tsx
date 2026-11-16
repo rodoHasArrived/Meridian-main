@@ -8,9 +8,9 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Activity, RefreshCcw } from "lucide-react";
+import { Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -148,10 +148,7 @@ export function DataQualityWatch() {
               Which symbols are unhealthy, slow, error-prone, incomplete, or silent right now.
             </CardDescription>
           </div>
-          <Button size="sm" variant="outline" onClick={() => void refresh()} disabled={loading}>
-            <RefreshCcw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
+          <PanelReload reload={refresh} failed={errors.length > 0} busy={loading} what="the quality watch" />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

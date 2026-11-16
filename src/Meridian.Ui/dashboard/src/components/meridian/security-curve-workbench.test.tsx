@@ -65,7 +65,8 @@ describe("retained curve workflow", () => {
     vi.mocked(listSecurityCurves).mockRejectedValueOnce(new ApiError({ path: "curves", status: 404, detail: "Curve store unavailable" }));
     render(<SecurityCurveWorkbench />);
     expect(await screen.findByRole("alert")).toHaveTextContent("Curve store unavailable");
-    fireEvent.click(screen.getByRole("button", { name: "Refresh curves" }));
+    fireEvent.click(screen.getByRole("button", { name: "Retry loading curves" }));
     await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
+    expect(screen.queryByRole("button", { name: /Retry loading curves|Refresh curves/ })).not.toBeInTheDocument();
   });
 });

@@ -839,7 +839,7 @@ export function buildPortfolioScreenViewModel({
     selectBrokeragePosition,
     brokerageEmptyText: brokeragePortfolio
       ? `No ${providerLabel} positions are available for the selected account.`
-      : `${providerLabel} portfolio sync has not produced a household projection yet.`,
+      : `${providerLabel} portfolio sync has not produced a household view yet.`,
     brokerageSetupAction: buildBrokerageSetupAction({
       connection: brokerageConnection,
       portfolio: brokeragePortfolio,
@@ -1637,7 +1637,7 @@ function buildSelectedBrokerageAccountDetail(
     title: kind,
     subtitle: `${providerLabel} / ${account.displayName}`,
     ariaLabel: `${kind} brokerage account detail`,
-    statusTitle: warningCount > 0 ? "Account sync warning" : "Account sync posture",
+    statusTitle: warningCount > 0 ? "Account sync warning" : "Account sync status",
     statusDetail: warningCount > 0
       ? account.warnings.join(" ")
       : `${kind} account is ${account.health.toLowerCase()} with ${formatCountLabel(account.positionCount, "position")} and ${formatCountLabel(account.cashTransactionCount, "cash transaction")} in the latest household snapshot.`,
@@ -1997,14 +1997,14 @@ function buildWorkflowTaskPanel({
     : "Provider unavailable";
   const accountLabel = brokerage?.account ?? "Account unavailable";
   const selectedSummary = !hasPosture
-    ? "Portfolio workspace data is unavailable; refresh the workstation backend before accepting brokerage-sync posture."
+    ? "Portfolio workspace data is unavailable; refresh the workstation backend before accepting brokerage-sync status."
     : `${providerLabel} account ${accountLabel} is ${brokerage?.connection ?? "unavailable"} with order ingress ${brokerage?.orderIngress ?? "unknown"} and fill feed ${brokerage?.fillFeed ?? "unknown"}.`;
 
   return {
     regionLabel: "Brokerage sync task",
     eyebrow: "Portfolio workflow",
     title: "Brokerage sync review",
-    description: "Review account connection, execution feed health, exposure, and risk posture before accepting portfolio state.",
+    description: "Review account connection, execution feed health, exposure, and risk status before accepting portfolio state.",
     statusLabel,
     statusTone,
     selectedSummary,
@@ -2099,15 +2099,15 @@ function buildPortfolioReadinessTaskPanel({
     : "Provider unavailable";
   const accountLabel = brokerage?.account ?? "Account unavailable";
   const selectedSummary = !hasPosture
-    ? "Portfolio posture is unavailable. Repair provider setup or refresh workstation data before accepting holdings."
+    ? "Portfolio status is unavailable. Repair provider setup or refresh workstation data before accepting holdings."
     : continuityBlockers.length > 0
-      ? `${providerLabel} account ${accountLabel} is the current portfolio source. Resolve ${formatCountLabel(continuityBlockers.length, "selected-run continuity blocker")} before accepting the portfolio-to-ledger handoff.`
+      ? `${providerLabel} account ${accountLabel} is the current portfolio source. Resolve ${formatCountLabel(continuityBlockers.length, "selected-run continuity blocker")} before accepting the portfolio into the ledger.`
     : `${providerLabel} account ${accountLabel} is the current portfolio source. Review brokerage sync, trading readiness, cash variance, and linked run evidence before accepting holdings.`;
 
   return {
-    regionLabel: "Portfolio readiness handoff",
+    regionLabel: "Portfolio readiness review",
     eyebrow: "Portfolio readiness",
-    title: "Portfolio acceptance handoff",
+    title: "Portfolio acceptance review",
     description: "Review brokerage sync, paper readiness, cash variance, and linked run evidence before accepting portfolio state.",
     statusLabel,
     statusTone,
@@ -2174,7 +2174,7 @@ function buildPortfolioReadinessActions({
       label: "Repair provider setup",
       href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
       ariaLabel: "Repair Alpaca provider setup from Portfolio readiness",
-      detail: "Verify credentials and connection posture before accepting portfolio state.",
+      detail: "Verify credentials and connection status before accepting portfolio state.",
       detailId: portfolioWorkflowTaskActionDetailId("readiness", "provider-setup"),
       variant: "default"
     });
@@ -2238,7 +2238,7 @@ function buildWorkflowTaskActions({
       label: "Repair provider setup",
       href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
       ariaLabel: `Repair ${providerSetupTarget} from brokerage sync review`,
-      detail: "Verify credentials and connection posture before accepting brokerage-sync state.",
+      detail: "Verify credentials and connection status before accepting brokerage-sync state.",
       detailId: portfolioWorkflowTaskActionDetailId("brokerage-sync", "provider-setup"),
       variant: "default"
     });
@@ -2486,8 +2486,8 @@ function buildRunContinuityBlockers(continuity: StrategyRunContinuityDto | null)
 
   const blockers: PortfolioRunContinuityBlocker[] = [];
   const status = continuity.continuityStatus;
-  addMissingContinuityBlocker(blockers, !status.hasPortfolio, "missing-portfolio", "Portfolio coverage", "Portfolio read model is missing for the selected run.", "danger");
-  addMissingContinuityBlocker(blockers, !status.hasLedger, "missing-ledger", "Ledger coverage", "Ledger read model is missing for the selected run.", "danger");
+  addMissingContinuityBlocker(blockers, !status.hasPortfolio, "missing-portfolio", "Portfolio coverage", "Portfolio data is missing for the selected run.", "danger");
+  addMissingContinuityBlocker(blockers, !status.hasLedger, "missing-ledger", "Ledger coverage", "Ledger data is missing for the selected run.", "danger");
   addMissingContinuityBlocker(blockers, !status.hasCashFlow, "missing-cash-flow", "Cash-flow coverage", "Cash-flow digest is missing for the selected run.", "warning");
   addMissingContinuityBlocker(blockers, !status.hasReconciliation, "missing-reconciliation", "Reconciliation coverage", "Reconciliation summary is missing for the selected run.", "warning");
   addMissingContinuityBlocker(blockers, status.openReconciliationBreaks > 0, "open-reconciliation-breaks", "Open reconciliation breaks", `${formatCountLabel(status.openReconciliationBreaks, "reconciliation break")} remain open for the selected run.`, "warning");

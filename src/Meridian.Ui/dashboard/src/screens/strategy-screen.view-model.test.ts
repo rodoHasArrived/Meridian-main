@@ -948,11 +948,11 @@ describe("strategy-screen view model", () => {
     });
 
     expect(approving.canSubmit).toBe(false);
-    expect(approving.disabledReason).toBe("Governed promotion approval is already running.");
+    expect(approving.disabledReason).toBe("Promotion approval is already running.");
     expect(approving.submitLabel).toBe("Approving Paper promotion...");
     expect(approving.acknowledgementDisabled).toBe(true);
     expect(approving.acknowledgementDisabledReason).toBe(
-      "Governed promotion approval is already running; wait before changing acknowledgement."
+      "Promotion approval is already running; wait before changing acknowledgement."
     );
     expect(approving.acknowledgementDisabledReasonId).toBe(
       "promote-paper-approval-acknowledgement-disabled-reason"
@@ -962,10 +962,10 @@ describe("strategy-screen view model", () => {
     );
     expect(approving.cancelDisabled).toBe(true);
     expect(approving.cancelDisabledReason).toBe(
-      "Governed promotion approval is already running; wait for the durable decision before closing review."
+      "Promotion approval is already running; wait for the durable decision before closing review."
     );
     expect(approving.cancelAriaLabel).toBe(
-      "Governed promotion approval is already running; wait for the durable decision before closing review."
+      "Promotion approval is already running; wait for the durable decision before closing review."
     );
   });
 
@@ -1112,7 +1112,7 @@ describe("strategy-screen view model", () => {
     expect(done.approval).toMatchObject({
       title: "Paper promotion approved - target run paper-run-123",
       detail: "Strategy promoted from Backtest to Paper. Durable promotion promotion-123 is retained with audit audit-123.",
-      actionAriaLabel: "Open governed Trading promotion record for target run paper-run-123",
+      actionAriaLabel: "Open Trading promotion record for target run paper-run-123",
       actionHref: "/trading?runId=paper-run-123#promotion-gate-panel"
     });
   });
@@ -1288,7 +1288,7 @@ describe("strategy-screen view model", () => {
     expect(state.selectedPlotStudyId).toBeNull();
     expect(state.selectedPlotStudyDetail).toBeNull();
     expect(state.plotTool.workspace.title).toBe("Strategy analytics not connected");
-    expect(state.plotTool.workspace.studyTableEmptyText).toBe("No retained PlotTool studies are available. Connect a governed PlotTool catalog before selecting notebooks.");
+    expect(state.plotTool.workspace.studyTableEmptyText).toBe("No retained PlotTool studies are available. Connect an approved PlotTool catalog before selecting notebooks.");
     expect(state.plotTool.workspace.points).toEqual([]);
     expect(state.plotTool.workspace.scatterChart.points).toEqual([]);
     expect(state.plotTool.statistics.title).toBe("PlotTool statistics not connected");

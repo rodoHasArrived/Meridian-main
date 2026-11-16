@@ -100,7 +100,7 @@ describe("buildRiskControlPanelViewModel", () => {
     expect(vm.panelAriaBusy).toBe(true);
     expect(vm.emptyRowsText).toBe("Loading risk rules...");
     expect(vm.refreshAction).toMatchObject({
-      label: "Refreshing",
+      label: "Retrying",
       busy: true,
       disabledReason: "Risk controls are already refreshing."
     });

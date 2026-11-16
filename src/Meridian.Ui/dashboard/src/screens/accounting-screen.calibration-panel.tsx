@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { cn } from "@/lib/utils";
 import type { CalibrationProfileRowViewModel, CalibrationSummaryViewModel } from "./accounting-screen.view-model";
 import { usesTrackedCaps } from "@/design-system/label-case";
@@ -74,7 +75,7 @@ function calibrationSeverityClass(severity: string): string {
 
 export function CalibrationSummaryPanel({ view, compact = false }: { view: CalibrationSummaryViewModel; compact?: boolean }) {
   const StatusIcon = view.statusIcon === "check" ? CheckCircle2 : AlertCircle;
-
+  useOnGlobalRefresh(view.refresh);
   const panel = (
     <Card id="accounting-history" className="panel-surface">
       <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -85,10 +86,8 @@ export function CalibrationSummaryPanel({ view, compact = false }: { view: Calib
           </CardTitle>
           <CardDescription>Tolerance profile health, break trend, auto-match rate, and T+0 closure rate across active reconciliation routes.</CardDescription>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
+        {view.refreshCommand.visible && <Button
+          type="button" variant="outline" size="sm"
           onClick={view.refresh}
           disabled={view.refreshCommand.disabled}
           disabledReason={view.refreshCommand.disabledReason}
@@ -97,7 +96,7 @@ export function CalibrationSummaryPanel({ view, compact = false }: { view: Calib
         >
           <RefreshCcw className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
           {view.refreshCommand.label}
-        </Button>
+        </Button>}
       </CardHeader>
       <CardContent className="space-y-4">
         <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
@@ -169,7 +168,7 @@ export function CalibrationSummaryPanel({ view, compact = false }: { view: Calib
                       />
                     ) : (
                       <div role="status" className="rounded-lg border border-border/70 bg-secondary/25 px-4 py-3 text-sm text-muted-foreground">
-                        Select a tolerance profile to inspect its calibration posture.
+                        Select a tolerance profile to inspect its calibration status.
                       </div>
                     )}
                   </div>

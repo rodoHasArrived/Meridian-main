@@ -39,7 +39,7 @@ export function DataOverviewHub({
     {
       id: "import",
       title: "Import retained files",
-      description: "Choose a governed template and preview a retained source before validation handoff.",
+      description: "Choose a template and preview a retained source before sending it to validation.",
       href: WORKSTATION_ROUTE_CATALOG.dataImport,
       status: pluralizeCount(vm.uploadPanelState.templateOptions.length, "template")
     },
@@ -53,7 +53,7 @@ export function DataOverviewHub({
     {
       id: "exports",
       title: "Export packages",
-      description: "Review retained export records and downstream handoff posture.",
+      description: "Review retained export records and their downstream delivery status.",
       href: WORKSTATION_ROUTE_CATALOG.dataExports,
       status: pluralizeCount(vm.exportSection.rows.length, "package")
     },
@@ -69,7 +69,7 @@ export function DataOverviewHub({
       title: "Evidence workbench",
       description: "Inspect retained documents, request lists, lineage, and completeness.",
       href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
-      status: "Governed"
+      status: "Controlled"
     }
   ];
 
@@ -126,7 +126,7 @@ export function DataOverviewHub({
       </section>
       <ProviderFreshnessChart providers={providerEvidence} />
       <ProviderVerificationTimeline connections={connections} />
-      <WorkspaceTaskWorkbench title="Historical repair jobs" description="Inspect loaded backfill work and its scope before opening the recovery workstream." items={jobs} stateKey="dataJob" emptyText="No historical repair jobs are loaded. Import data or open Backfill queue to review available work." />
+      <WorkspaceTaskWorkbench title="Historical repair jobs" description="Inspect loaded backfill work and its scope before opening the recovery queue." items={jobs} stateKey="dataJob" emptyText="No historical repair jobs are loaded. Import data or open Backfill queue to review available work." />
       <details className="workspace-task-disclosure">
         <summary>Data tools and connections</summary>
         <WorkspaceTaskWorkbench title="Data tasks" description="File intake, providers, exports, and read-only discovery." items={routes.map((route) => ({ ...route, actionLabel: `Open ${route.title}` }))} stateKey="dataTask" />

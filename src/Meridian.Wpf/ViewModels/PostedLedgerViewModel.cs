@@ -362,6 +362,7 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
             if (SetProperty(ref _periodsErrorText, value))
             {
                 OnPropertyChanged(nameof(HasPeriodsError));
+                OnPropertyChanged(nameof(HasLoadError));
             }
         }
     }
@@ -376,6 +377,7 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
             if (SetProperty(ref _trialBalanceErrorText, value))
             {
                 OnPropertyChanged(nameof(HasTrialBalanceError));
+                OnPropertyChanged(nameof(HasLoadError));
             }
         }
     }
@@ -390,11 +392,15 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
             if (SetProperty(ref _pnlErrorText, value))
             {
                 OnPropertyChanged(nameof(HasPnlError));
+                OnPropertyChanged(nameof(HasLoadError));
             }
         }
     }
 
     public bool HasPnlError => !string.IsNullOrEmpty(PnlErrorText);
+
+    /// <summary>True when any posted-ledger section failed to load; gates the page's Retry action.</summary>
+    public bool HasLoadError => HasPeriodsError || HasTrialBalanceError || HasPnlError;
 
     /// <summary>Loads once, when the page is first shown.</summary>
     public void Activate()

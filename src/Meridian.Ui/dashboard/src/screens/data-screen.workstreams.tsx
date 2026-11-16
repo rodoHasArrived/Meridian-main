@@ -288,7 +288,7 @@ export function DataExportWorkstream({ vm }: { vm: DataOperationsVm }) {
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.48fr)]">
           {vm.exportSection.hasRows ? (
             <TableWorkbench workbenchId="data-export-packages" sourceKey={vm.exportSection.rows.map((row) => row.exportId).join("|")}
-              sourceDescription="Complete current Data workspace package projection; not the historical report-package catalog."
+              sourceDescription="Complete current Data workspace package snapshot; not the historical report-package catalog."
               onExportAll={(columns, search, sort, signal) => exportTableQuery("data-export-packages", columns, search, sort?.columnId, sort?.direction, signal)}
               getSearchText={(row) => `${row.exportId} ${row.profile} ${row.target} ${row.statusLabel}`}
               columns={exportColumns}
@@ -576,7 +576,7 @@ function ExportDetailPanel({
           {emptyState?.title ?? "No export selected"}
         </h3>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          {emptyState?.description ?? "Select an export row to inspect readiness, target, row count, and handoff guidance."}
+          {emptyState?.description ?? "Select an export row to inspect readiness, target, row count, and delivery guidance."}
         </p>
       </aside>
     );

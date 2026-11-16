@@ -14,4 +14,4 @@
  * the view-model still advertised the proof as ready to run.
  */
 export const BACKTEST_EVIDENCE_BLOCKER =
-  "Backtest execution needs governed evidence references (operator acceptance, retained evidence, accounting, approvals, paper validation, governed reports) that this screen cannot collect yet.";
+  "Backtest execution needs evidence references (operator acceptance, retained evidence, accounting, approvals, paper validation, reports) that this screen cannot collect yet.";

@@ -22,6 +22,18 @@ public static class WorkspaceCopyCatalog
     public const string DataShellTitle = Data.ShellTitle;
 
     /// <summary>
+    /// Provides the two shared phrases the desktop shell uses when no scope is selected.
+    /// </summary>
+    public static class Scope
+    {
+        /// <summary>Shown where the page still lists everything the operator may see.</summary>
+        public const string AllAuthorized = "All authorized scopes";
+
+        /// <summary>Shown where the page stays empty or locked until a scope is chosen.</summary>
+        public const string NoneSelected = "No scope selected";
+    }
+
+    /// <summary>
     /// Provides titles, descriptions, and scope copy for the trading workspace.
     /// </summary>
     public static class Trading
@@ -35,8 +47,8 @@ public static class WorkspaceCopyCatalog
             WorkstationWorkspaceCatalog.TradingDesktopTileSummary,
             WorkstationWorkspaceCatalog.TradingDesktopShellDisplayName);
 
-        public const string ShellTitle = "Trading Desk";
-        public const string ShellSubtitle = "Risk-aware trading shell for live readiness, blotter review, safe staging, and docked execution detail.";
+        public const string ShellTitle = "Trading Workspace";
+        public const string ShellSubtitle = "See your positions and open orders, and check whether the account is ready to trade.";
         public const string PrimaryScopeLabel = "Desk";
     }
 
@@ -55,7 +67,7 @@ public static class WorkspaceCopyCatalog
             WorkstationWorkspaceCatalog.PortfolioDesktopShellDisplayName);
 
         public const string ShellTitle = "Portfolio Workspace";
-        public const string ShellSubtitle = "Account, aggregate, fund, lending, and import workflows for portfolio review.";
+        public const string ShellSubtitle = "See what the portfolio holds, what it is worth, and how current the prices are.";
     }
 
     /// <summary>
@@ -73,8 +85,8 @@ public static class WorkspaceCopyCatalog
             WorkstationWorkspaceCatalog.AccountingDesktopShellDisplayName);
 
         public const string ShellTitle = "Accounting Workspace";
-        public const string ShellSubtitleNoFund = "Fund-aware accounting shell for ledger, reconciliation, trial balance, and audit readiness.";
-        public const string ShellSubtitleFund = "Review accounting, reconciliations, cash, financing, and approval gates without leaving the shell.";
+        public const string ShellSubtitleNoFund = "See what is blocking the close, who owns it, and the next action.";
+        public const string ShellSubtitleFund = ShellSubtitleNoFund;
     }
 
     /// <summary>
@@ -92,7 +104,7 @@ public static class WorkspaceCopyCatalog
             WorkstationWorkspaceCatalog.ReportingDesktopShellDisplayName);
 
         public const string ShellTitle = "Reporting Workspace";
-        public const string ShellSubtitle = "Report packs, dashboards, and analysis export workflows.";
+        public const string ShellSubtitle = "See which reports are blocked today, who owns each one, and the next action.";
     }
 
     /// <summary>
@@ -110,7 +122,7 @@ public static class WorkspaceCopyCatalog
             WorkstationWorkspaceCatalog.StrategyDesktopShellDisplayName);
 
         public const string ShellTitle = "Strategy Workspace";
-        public const string ShellSubtitle = "Market briefing, run studio, and promotion-aware strategy workflow.";
+        public const string ShellSubtitle = "Review recent strategy runs and open the one you want to work on.";
         public const string PrimaryScopeLabel = "Strategy";
     }
 
@@ -129,7 +141,7 @@ public static class WorkspaceCopyCatalog
             WorkstationWorkspaceCatalog.DataDesktopShellDisplayName);
 
         public const string ShellTitle = "Data Workspace";
-        public const string ShellSubtitle = "Provider freshness, backfill pressure, storage health, and export job visibility in one operator shell.";
+        public const string ShellSubtitle = "Check that data providers are healthy and that data is arriving.";
         public const string PrimaryScopeLabel = "Queue";
         public const string DefaultScopeLabel = "Provider and storage health";
         public const string DefaultScopeSummary = "Provider health, backfill priority, storage follow-up, and export delivery stay in one fixed shell.";
@@ -150,7 +162,7 @@ public static class WorkspaceCopyCatalog
             WorkstationWorkspaceCatalog.SettingsDesktopShellDisplayName);
 
         public const string ShellTitle = "Settings Workspace";
-        public const string ShellSubtitle = "Workstation configuration, diagnostics, support, and operator setup.";
+        public const string ShellSubtitle = "Pick the setup task you need.";
     }
 
     /// <summary>

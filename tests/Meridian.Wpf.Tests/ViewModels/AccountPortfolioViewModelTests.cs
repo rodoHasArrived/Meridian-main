@@ -112,9 +112,13 @@ public sealed class AccountPortfolioViewModelTests
         xaml.Should().Contain("{Binding IsPositionsEmptyStateVisible");
         xaml.Should().Contain("{Binding PositionsEmptyStateTitle}");
         xaml.Should().Contain("{Binding PositionsEmptyStateDetail}");
-        xaml.Should().Contain("{Binding RefreshCommand}");
-        xaml.Should().Contain("{Binding CanRefreshAccount}");
-        xaml.Should().Contain("ToolTip=\"{Binding RefreshTooltip}\"");
+        // The shell Refresh reloads this page through RefreshCommand; only the empty-state action stays local.
+        xaml.Should().Contain("ActionCommand=\"{Binding RefreshCommand}\"");
+        xaml.Should().NotContain("AccountPortfolioRefreshButton");
+        xaml.Should().NotContain("AccountPortfolioInspectorRefreshButton");
+        xaml.Should().NotContain("Content=\"Refresh\"");
+        xaml.Should().NotContain("Content=\"Refresh Account\"");
+        viewModel.Should().Contain("public IAsyncRelayCommand RefreshCommand { get; }");
         xaml.Should().Contain("ToolTip=\"{Binding SelectedSecurityTooltip}\"");
         xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
         viewModel.Should().Contain("public WorkstationTableModel<AccountPositionRow> PositionsTable { get; }");

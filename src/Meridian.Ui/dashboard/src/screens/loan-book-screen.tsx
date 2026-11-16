@@ -11,11 +11,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ContractualCashFlowWorkbench } from "@/components/meridian/contractual-cash-flow-workbench";
 import { Select } from "@/components/ui/select";
-import { Landmark, RefreshCcw } from "lucide-react";
+import { Landmark } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
 import { getLoanPortfolioSummary } from "@/lib/api/direct-lending.api";
@@ -185,19 +185,7 @@ export function LoanBookScreen({ summary }: { summary?: LoanPortfolioSummary | n
           </CardTitle>
           <CardDescription>{view.description}</CardDescription>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => void refresh()}
-          disabled={loading}
-          disabledReason={loading ? "A loan book read is already in flight." : undefined}
-          aria-label="Refresh the loan book"
-          className="shrink-0"
-        >
-          <RefreshCcw className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
-          {loading ? "Refreshing" : "Refresh"}
-        </Button>
+        <PanelReload reload={() => (summary === undefined ? refresh() : undefined)} failed={error !== null} busy={loading} what="the loan book" className="shrink-0" />
       </CardHeader>
       <CardContent className="space-y-4">
         <span className="sr-only" aria-live="polite">

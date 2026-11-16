@@ -215,7 +215,7 @@ export function buildCloseCommandCenterViewState({
   ].slice(0, 8);
   return {
     title: "CFO / Controller close command center",
-    description: "Controller-facing period readiness, close blockers, evidence gaps, provider warnings, report-pack readiness, and sign-off status from shared Accounting read models.",
+    description: "Shows the controller period readiness, close blockers, evidence gaps, provider warnings, report-pack readiness, and sign-off status from shared Accounting data.",
     ariaLabel: "CFO and controller close command center",
     status,
     statusLabel: status === "loading" ? "Loading" : "Blocked",

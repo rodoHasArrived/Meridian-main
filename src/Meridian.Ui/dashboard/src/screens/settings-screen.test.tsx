@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
 import { SettingsScreen } from "@/screens/settings-screen";
 import { renderWithRouter } from "@/test/render";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
 import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import type {
@@ -523,6 +525,11 @@ const securityAssetProfiles: SecurityAssetProfileDefinition[] = [
   }
 ];
 
+function HeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
+}
+
 describe("SettingsScreen", () => {
   beforeEach(() => {
     apiMocks.approveSecurityAssetProfile.mockReset();
@@ -587,7 +594,7 @@ describe("SettingsScreen", () => {
     expect(screen.queryByLabelText("Operator control posture metrics")).not.toBeInTheDocument();
     expect(screen.getByText("Defaults or saved preferences active")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Preferences" })).toHaveAttribute("href", "/settings/preferences");
-    expect(screen.queryByRole("region", { name: "Profile and authentication posture" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Profile and authentication status" })).not.toBeInTheDocument();
   });
 
   it("keeps legacy hash deep links winning over the bare-route chooser", () => {
@@ -720,8 +727,8 @@ describe("SettingsScreen", () => {
       { initialEntries: ["/settings/access"] }
     );
 
-    const profileRegion = screen.getByRole("region", { name: "Profile and authentication posture" });
-    expect(profileRegion).toHaveTextContent("Profile and access posture");
+    const profileRegion = screen.getByRole("region", { name: "Profile and authentication status" });
+    expect(profileRegion).toHaveTextContent("Profile and access status");
     expect(profileRegion).toHaveTextContent("Access ready");
     expect(profileRegion).toHaveTextContent("Andrew Rowden");
     expect(profileRegion).toHaveTextContent("Fund Manager");
@@ -732,10 +739,10 @@ describe("SettingsScreen", () => {
       name: "Profile authentication and authorization readiness steps"
     })).toBeInTheDocument();
     expect(within(profileRegion).getByRole("link", {
-      name: "Open Trading readiness from verified profile authentication posture"
+      name: "Open Trading readiness from verified profile authentication status"
     })).toHaveAttribute("href", "/trading/readiness");
     expect(within(profileRegion).getByRole("link", {
-      name: "Open Settings diagnostic services from profile authentication posture"
+      name: "Open Settings diagnostic services from profile authentication status"
     })).toHaveAttribute("href", "/settings/diagnostics");
     expect(document.querySelector("#diagnostic-endpoints")).not.toBeInTheDocument();
   });
@@ -751,15 +758,15 @@ describe("SettingsScreen", () => {
       { initialEntries: ["/settings/access"] }
     );
 
-    const profileRegion = screen.getByRole("region", { name: "Profile and authentication posture" });
+    const profileRegion = screen.getByRole("region", { name: "Profile and authentication status" });
     expect(profileRegion).toHaveTextContent("Access review");
     expect(profileRegion).toHaveTextContent("Brokerage evidence delayed");
     expect(within(profileRegion).queryByText("Access ready")).not.toBeInTheDocument();
     expect(within(profileRegion).queryByRole("link", {
-      name: "Open Trading readiness from verified profile authentication posture"
+      name: "Open Trading readiness from verified profile authentication status"
     })).not.toBeInTheDocument();
     expect(within(profileRegion).getByRole("link", {
-      name: "Review Alpaca provider setup from profile authentication posture"
+      name: "Review Alpaca provider setup from profile authentication status"
     })).toHaveAttribute("href", "/settings#alpaca-provider-setup");
   });
 
@@ -1557,7 +1564,8 @@ describe("SettingsScreen", () => {
     expect(screen.getByText("Data providers")).toBeInTheDocument();
     expect(screen.getByText("Alpaca")).toBeInTheDocument();
     expect(screen.getByText("Polygon.io")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Refresh Provider Connection Center routing data" })).toBeInTheDocument();
+    // Loaded routing evidence is re-read by the header Refresh; no local refresh or retry control shows.
+    expect(screen.queryByRole("button", { name: /Provider Connection Center routing data/ })).not.toBeInTheDocument();
     expect(screen.getByText("Reference data")).toBeInTheDocument();
     expect(screen.getByText("97% · Healthy")).toBeInTheDocument();
     expect(screen.getByText("Routing evidence missing")).toBeInTheDocument();
@@ -1973,7 +1981,7 @@ describe("SettingsScreen", () => {
     });
 
     renderWithRouter(
-      <SettingsScreen
+      <HeaderRefresh><SettingsScreen
         session={session}
         overview={overview}
         brokerageConnection={alpacaConnection}
@@ -1981,7 +1989,7 @@ describe("SettingsScreen", () => {
         providerRoutingConnections={providerRoutingConnections}
         providerRoutingBindings={providerRoutingBindings}
         providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
-      />,
+      /></HeaderRefresh>,
       { initialEntries: ["/settings/providers/polygon/advanced"] }
     );
 
@@ -2000,6 +2008,8 @@ describe("SettingsScreen", () => {
       expect(apiMocks.getProviderIntegrationQuarantineReview).toHaveBeenCalledWith("provider-reference", 5);
     });
     expect(await within(panel).findByText("Provider integration runtime evidence loaded.")).toBeInTheDocument();
+    // Once loaded, the header Refresh re-reads runtime evidence; no local load, refresh, or retry control remains.
+    expect(within(panel).queryByRole("button", { name: /provider integration runtime evidence for Polygon\.io/ })).not.toBeInTheDocument();
     expect(within(panel).getByText("provider-reference")).toBeInTheDocument();
     expect(within(panel).getByText("Jun 16, 2026, 12:30 UTC")).toBeInTheDocument();
     expect(within(panel).getByText("2 / 4")).toBeInTheDocument();
@@ -2010,7 +2020,7 @@ describe("SettingsScreen", () => {
     expect(within(panel).getByText("1 rows")).toBeInTheDocument();
     expect(within(panel).getByText("1 review required")).toBeInTheDocument();
     expect(within(panel).getByText("1 ready / 0 blocked")).toBeInTheDocument();
-    expect(within(panel).getByText("0 handoffs")).toBeInTheDocument();
+    expect(within(panel).getByText("0 deliveries")).toBeInTheDocument();
     expect(within(panel).getByText("sync-positions-2")).toBeInTheDocument();
     expect(within(panel).getByText("quarantine-position-1")).toBeInTheDocument();
     expect(within(panel).getByText("quarantine-position-3")).toBeInTheDocument();
@@ -2046,10 +2056,10 @@ describe("SettingsScreen", () => {
     });
 
     await user.click(within(panel).getByRole("button", {
-      name: "Create reconciliation handoff for 1 provider integration staging rows for Polygon.io"
+      name: "Create reconciliation delivery for 1 provider integration staging rows for Polygon.io"
     }));
     expect(apiMocks.createProviderIntegrationReconciliationHandoff).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "Confirm reconciliation handoff for Polygon.io" }));
+    await user.click(screen.getByRole("button", { name: "Confirm reconciliation delivery for Polygon.io" }));
 
     await waitFor(() => {
       expect(apiMocks.createProviderIntegrationReconciliationHandoff).toHaveBeenCalledWith(expect.objectContaining({
@@ -2167,6 +2177,14 @@ describe("SettingsScreen", () => {
         queryParametersByCapability: {}
       }));
     });
+
+    // The header Refresh re-reads loaded runtime evidence; a failed read brings back one Retry.
+    await within(panel).findByText(/Provider integration runtime (evidence )?loaded/);
+    const monitorReads = apiMocks.getProviderIntegrationConnectionMonitor.mock.calls.length;
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    await waitFor(() => expect(apiMocks.getProviderIntegrationConnectionMonitor.mock.calls.length).toBe(monitorReads + 1));
+    await within(panel).findByText(/Provider integration runtime (evidence )?loaded/);
+    expect(within(panel).queryByRole("button", { name: /provider integration runtime evidence for Polygon\.io/ })).not.toBeInTheDocument();
   });
 
   it("runs the guided provider integration workbench over shared setup and dry-run endpoints", async () => {
@@ -2840,7 +2858,7 @@ describe("SettingsScreen", () => {
     expect(screen.getByText("********1234")).toBeInTheDocument();
     expect(screen.getByText("PA123")).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Alpaca provider setup checklist" })).toBeInTheDocument();
-    expect(screen.getByText("Stored paper credentials and current account verification support the readiness handoff.")).toBeInTheDocument();
+    expect(screen.getByText("Stored paper credentials and current account verification support the readiness review.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Trading readiness after Alpaca account verification" })).toHaveAttribute(
       "href",
       "/trading/readiness"

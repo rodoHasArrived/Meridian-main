@@ -773,7 +773,7 @@ function PortfolioScreenContent({
       />
       {showOverview || showAttribution ? (
         <TechnicalDetails label="Compare position sources">
-          <p className="text-xs leading-5 text-muted-foreground">Live holdings are the current portfolio projection. Retained records belong to {retainedRunLabel === "Retained run" ? "the run supplied by the record source" : retainedRunLabel}. Market value and exposure have different financial meanings; neither substitutes for the other.</p>
+          <p className="text-xs leading-5 text-muted-foreground">Live holdings are the current portfolio view. Retained records belong to {retainedRunLabel === "Retained run" ? "the run supplied by the record source" : retainedRunLabel}. Market value and exposure have different financial meanings; neither substitutes for the other.</p>
           {figureDifferenceNote ? <FigureDifferenceNote note={figureDifferenceNote} /> : null}
           {retainedRunId ? (
             <TechnicalDetails label="Retained source identity" className="mt-3">
@@ -1512,7 +1512,7 @@ function PortfolioScreenContent({
               <div>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <BriefcaseBusiness className="h-4 w-4 text-primary" />
-                  Cash-flow posture
+                  Cash-flow position
                 </CardTitle>
                 <CardDescription>{vm.cashFlowSummary}</CardDescription>
               </div>

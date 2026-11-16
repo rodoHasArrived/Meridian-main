@@ -284,7 +284,7 @@ export function ReconciliationBulkTriageBar({ triage, visibleCount }: { triage: 
                 <FormRow label="Owner" labelFor="bulk-route-owner">
                   <Input id="bulk-route-owner" value={draft.assignee} onChange={(event) => triage.updateDraft({ assignee: event.target.value })} placeholder="Operator or desk" />
                 </FormRow>
-                <FormRow label="Handoff note (optional)" labelFor="bulk-route-note">
+                <FormRow label="Note for the new owner (optional)" labelFor="bulk-route-note">
                   <Input id="bulk-route-note" value={draft.reason} onChange={(event) => triage.updateDraft({ reason: event.target.value })} />
                 </FormRow>
               </div>

@@ -123,7 +123,7 @@ export function SettingsAccessPostureSection({ vm, overview, providerHealth }: S
         <CardHeader>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <div className="eyebrow-label">System posture</div>
+              <div className="eyebrow-label">System status</div>
               <CardTitle className="mt-2 flex items-center gap-2">
                 <MonitorCheck className="h-5 w-5 text-primary" />
                 {vm.systemTitle}

@@ -6,6 +6,53 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceShellDefinition
+
+Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellDefinition</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/ShellNavigationModels.cs:40](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L40).
+
+```csharp
+public sealed record WorkspaceShellDefinition(string WorkspaceId, string LayoutId, string DisplayName, IReadOnlyList<WorkspacePaneDefinition> DefaultPanes, IReadOnlyDictionary<string, IReadOnlyList<WorkspacePaneDefinition>> PresetPanes, IReadOnlyList<WorkspacePaneDefinition> ContextlessPanes, Type? StateProviderType = null, Type? ViewModelType = null);
+```
+
+## WorkspaceShellDescriptor
+
+Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/ShellNavigationModels.cs:18](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L18).
+
+```csharp
+public sealed record WorkspaceShellDescriptor(string Id, string Title, string Description, string Summary, string HomePageTag, string TileSummary);
+```
+
+## WorkspaceShellLayoutDescriptor
+
+Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellLayoutDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/WorkspaceShellLayoutModels.cs:17](../../../../src/Meridian.Wpf/Models/WorkspaceShellLayoutModels.cs#L17).
+
+```csharp
+public sealed record WorkspaceShellLayoutDescriptor(string WorkspaceId, ShellPosture Posture, string HomeTemplateAutomationId, string EvidenceStripAutomationId, string CommandSurfaceAutomationId, string InspectorHostAutomationId, IReadOnlyList<WorkspaceVisualPriority> VisualPriority);
+```
+
+## WorkspaceShellSlot
+
+Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellSlot</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:3](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L3).
+
+```csharp
+public enum WorkspaceShellSlot
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ContextStrip</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:5](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L5) |  |
+| <code>ActionBar</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:6](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L6) |  |
+
 ## WorkspaceShellSlotContributionRequest
 
 Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellSlotContributionRequest</code>. Kind: `record`.
@@ -1122,108 +1169,3 @@ Declared public members:
 | <code>public CollectionSession? ActiveSession { get; init; }</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1032](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1032) |  |
 | <code>public IReadOnlyList&lt;CollectionSession&gt; Sessions { get; init; } = Array.Empty&lt;CollectionSession&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1033](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1033) |  |
 | <code>public IReadOnlyList&lt;ExportJob&gt; ExportJobs { get; init; } = Array.Empty&lt;ExportJob&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1034](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1034) |  |
-
-## DataWorkspacePresentation
-
-Qualified name: <code>Meridian.Wpf.Services.DataWorkspacePresentation</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1040](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1040).
-
-Carries the data workspace context, commands, overview metrics, workflow steps, and queue presentation.
-
-```csharp
-public sealed class DataWorkspacePresentation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkspaceShellContextInput Context { get; init; } = new ();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1042](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1042) |  |
-| <code>public WorkspaceCommandGroup CommandGroup { get; init; } = new ();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1043](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1043) |  |
-| <code>public DataHeroState HeroState { get; init; } = DataHeroState.Loading();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1044](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1044) |  |
-| <code>public IReadOnlyList&lt;DataHeroMetric&gt; HeroMetrics { get; init; } = DataHeroMetric.LoadingMetrics();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1045](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1045) |  |
-| <code>public IReadOnlyList&lt;DataIntegrationWorkflowStep&gt; IntegrationWorkflowSteps { get; init; } = DataIntegrationWorkflowStep.LoadingSteps();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1046](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1046) |  |
-| <code>public string QueueScopeBadgeText { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1047](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1047) |  |
-| <code>public string QueueSummaryText { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1048](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1048) |  |
-| <code>public IReadOnlyList&lt;WorkspaceQueueItem&gt; ProviderQueueItems { get; init; } = Array.Empty&lt;WorkspaceQueueItem&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1049](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1049) |  |
-| <code>public IReadOnlyList&lt;WorkspaceQueueItem&gt; BackfillQueueItems { get; init; } = Array.Empty&lt;WorkspaceQueueItem&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1050](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1050) |  |
-| <code>public IReadOnlyList&lt;WorkspaceQueueItem&gt; StorageQueueItems { get; init; } = Array.Empty&lt;WorkspaceQueueItem&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1051](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1051) |  |
-| <code>public string OperationsSummaryTitleText { get; init; } = &quot;Data&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1052](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1052) |  |
-| <code>public string OperationsSummaryDetailText { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1053](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1053) |  |
-| <code>public string SummaryProvidersText { get; init; } = DataWorkspacePresentationBuilder.ProvidersUnavailableSummary;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1054](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1054) |  |
-| <code>public string SummaryProvidersTone { get; init; } = WorkspaceTone.Warning;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1055](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1055) |  |
-| <code>public string SummaryBackfillText { get; init; } = DataWorkspacePresentationBuilder.BackfillUnavailableSummary;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1056](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1056) |  |
-| <code>public string SummaryBackfillTone { get; init; } = WorkspaceTone.Neutral;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1057](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1057) |  |
-| <code>public string SummaryStorageText { get; init; } = DataWorkspacePresentationBuilder.StorageUnavailableSummary;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1058](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1058) |  |
-| <code>public string SummaryStorageTone { get; init; } = WorkspaceTone.Success;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1059](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1059) |  |
-| <code>public IReadOnlyList&lt;WorkspaceRecentItem&gt; RecentOperations { get; init; } = Array.Empty&lt;WorkspaceRecentItem&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1060](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1060) |  |
-| <code>public WorkspaceQueueRegionState ProviderQueueState { get; init; } = WorkspaceQueueRegionState.None;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1061](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1061) |  |
-| <code>public WorkspaceQueueRegionState BackfillQueueState { get; init; } = WorkspaceQueueRegionState.None;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1062](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1062) |  |
-| <code>public WorkspaceQueueRegionState StorageQueueState { get; init; } = WorkspaceQueueRegionState.None;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1063](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1063) |  |
-
-## DataWorkspacePresentationBuilder
-
-Qualified name: <code>Meridian.Wpf.Services.DataWorkspacePresentationBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:16](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L16).
-
-Projects data-workspace snapshots into context badges, commands, workflow steps, and queue presentation.
-
-```csharp
-public static class DataWorkspacePresentationBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static DataWorkspacePresentation Build(DataWorkspaceData data);</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:25](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L25) |  |
-
-## DataWorkspaceShellStateProvider
-
-Qualified name: <code>Meridian.Wpf.Services.DataWorkspaceShellStateProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:115](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L115).
-
-Supplies the data workspace definition and shell state.
-
-```csharp
-public sealed class DataWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DataWorkspaceShellStateProvider(WorkstationOperatingContextService? operatingContextService) : base(operatingContextService);</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:117](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L117) |  |
-| <code>public override WorkspaceShellDefinition Definition =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:122](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L122) |  |
-
-## DemoTourService
-
-Qualified name: <code>Meridian.Wpf.Services.DemoTourService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/DemoTourService.cs:11](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L11).
-
-Coordinates the safe, fixture-backed desktop tour used for first-launch onboarding and Settings.
-
-```csharp
-public sealed class DemoTourService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static DemoTourService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:19](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L19) |  |
-| <code>public DemoTourService(FixtureModeDetector fixtureModeDetector, NavigationService navigationService);</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:21](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L21) |  |
-| <code>public event EventHandler? TourChanged;</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:27](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L27) |  |
-| <code>public IReadOnlyList&lt;DemoTourStep&gt; Steps { get; } = [new (1, &quot;Data/provider status&quot;, &quot;DataShell&quot;, &quot;Review sample provider health and queue telemetry before any live provider credentials are connected.&quot;), new (2, &quot;Portfolio records&quot;, &quot;PortfolioShell&quot;, &quot;Inspect sample portfolio records that are isolated from retained source-backed books.&quot;), new (3, &quot;Accounting reconciliation&quot;, &quot;FundReconciliation&quot;, &quot;Walk through safe sample breaks, match context, and close-readiness posture.&quot;), new (4, &quot;Evidence/audit context&quot;, &quot;FundAuditTrail&quot;, &quot;Confirm retained evidence, audit history, and source references are visibly sample-only.&quot;), new (5, &quot;Reporting readiness&quot;, &quot;ReportingShell&quot;, &quot;Preview governed report readiness without publishing provider-backed operational data.&quot;), new (6, &quot;Settings&quot;, &quot;SettingsShell&quot;, &quot;Finish in Settings, where the tour can be restarted and demo/sample mode is clearly labeled.&quot;)];</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:29](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L29) |  |
-| <code>public bool IsTourActive =&gt; …;</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:39](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L39) |  |
-| <code>public DemoTourStep? CurrentStep =&gt; …;</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:41](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L41) |  |
-| <code>public string CurrentStepText =&gt; …;</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:43](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L43) |  |
-| <code>public string CurrentStepDetail =&gt; …;</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:47](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L47) |  |
-| <code>public bool CanMoveNext =&gt; …;</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:50](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L50) |  |
-| <code>public void StartTour();</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:52](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L52) |  |
-| <code>public void MoveNext();</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:61](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L61) |  |
-| <code>public void EndTour();</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:73](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L73) |  |

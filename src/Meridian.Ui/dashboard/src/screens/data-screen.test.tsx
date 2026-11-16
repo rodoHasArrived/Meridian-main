@@ -506,7 +506,7 @@ describe("DataScreen", () => {
     expect(screen.getByText(/1 provider blocks dependent workflows/i)).toBeInTheDocument();
     expect(screen.getByText(/Next action: Repair Plaid credentials/i)).toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Provider health" })).toBeInTheDocument();
-    expect(screen.getByRole("columnheader", { name: "Credential posture" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Credential status" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Trust / last good" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Next Action" })).toBeInTheDocument();
     const plaidRow = screen.getByRole("row", { name: /Inspect provider Plaid/i });

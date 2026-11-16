@@ -127,7 +127,7 @@ describe("daily control tower model", () => {
       }),
       expect.objectContaining({
         id: "trust",
-        label: "Trust posture",
+        label: "Trust status",
         value: "3 need attention",
         badgeVariant: "warning"
       }),

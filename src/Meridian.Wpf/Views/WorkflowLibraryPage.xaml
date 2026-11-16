@@ -34,12 +34,6 @@
                             <TextBlock Text="{Binding SummaryText}" Style="{StaticResource CardDescriptionStyle}" />
                         </StackPanel>
                     </StackPanel>
-
-                    <Button Grid.Column="1"
-                            Content="Refresh"
-                            Command="{Binding RefreshCommand}"
-                            Style="{StaticResource GhostButtonStyle}"
-                            VerticalAlignment="Center" />
                 </Grid>
             </Border>
 

@@ -303,13 +303,13 @@ const selectedRunContinuity: StrategyRunContinuityDto = {
       {
         code: "missing-portfolio",
         severity: "Critical",
-        message: "Portfolio read model is missing for the selected run.",
+        message: "Portfolio data is missing for the selected run.",
         sourceSeam: "portfolio"
       },
       {
         code: "missing-ledger",
         severity: "Critical",
-        message: "Ledger read model is missing for the selected run.",
+        message: "Ledger data is missing for the selected run.",
         sourceSeam: "ledger"
       }
     ]
@@ -643,8 +643,8 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.selectedRun?.statusTitle).toBe("Mean Reversion continuity review");
     expect(vm.selectedRun?.statusTone).toBe("danger");
     expect(vm.selectedRun?.statusBadgeLabel).toBe("2 blockers");
-    expect(vm.selectedRun?.statusDetail).toContain("Portfolio read model is missing for the selected run.");
-    expect(vm.selectedRun?.statusDetail).toContain("Ledger read model is missing for the selected run.");
+    expect(vm.selectedRun?.statusDetail).toContain("Portfolio data is missing for the selected run.");
+    expect(vm.selectedRun?.statusDetail).toContain("Ledger data is missing for the selected run.");
     expect(vm.selectedRun?.fields.find((field) => field.label === "Continuity")).toEqual({
       label: "Continuity",
       value: "2 blockers",
@@ -653,7 +653,7 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.workflowTaskPanel).toMatchObject({
       statusLabel: "Continuity blocked",
       statusTone: "danger",
-      selectedSummary: expect.stringContaining("Resolve 2 selected-run continuity blockers before accepting the portfolio-to-ledger handoff.")
+      selectedSummary: expect.stringContaining("Resolve 2 selected-run continuity blockers before accepting the portfolio into the ledger.")
     });
     expect(vm.workflowTaskPanel?.statusRows.find((row) => row.label === "Run continuity")).toEqual({
       label: "Run continuity",
@@ -1050,8 +1050,8 @@ describe("buildPortfolioScreenViewModel", () => {
     const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy), trading, strategy, accounting, pathname: "/portfolio" });
 
     expect(vm.workflowTaskPanel).toMatchObject({
-      regionLabel: "Portfolio readiness handoff",
-      title: "Portfolio acceptance handoff",
+      regionLabel: "Portfolio readiness review",
+      title: "Portfolio acceptance review",
       statusLabel: "Review blockers",
       statusTone: "warning",
       actionListLabel: "Portfolio readiness next actions",
@@ -1184,7 +1184,7 @@ describe("buildPortfolioScreenViewModel", () => {
       label: "Repair provider setup",
       href: "/settings#alpaca-provider-setup",
       ariaLabel: "Repair provider setup from brokerage sync review",
-      detail: "Verify credentials and connection posture before accepting brokerage-sync state.",
+      detail: "Verify credentials and connection status before accepting brokerage-sync state.",
       detailId: "portfolio-brokerage-sync-provider-setup-detail",
       variant: "default"
     });
@@ -1413,7 +1413,7 @@ describe("buildPortfolioScreenViewModel", () => {
     });
 
     expect(vm.brokerageConnectionLabel).toBe("Not configured");
-    expect(vm.brokerageEmptyText).toBe("Alpaca paper portfolio sync has not produced a household projection yet.");
+    expect(vm.brokerageEmptyText).toBe("Alpaca paper portfolio sync has not produced a household view yet.");
     expect(vm.brokerageSetupAction).toEqual({
       label: "Open provider setup",
       href: "/settings#alpaca-provider-setup",

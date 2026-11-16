@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
@@ -17,8 +18,8 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
     private bool _isLoading;
     private bool _hasError;
     private string _errorMessage = string.Empty;
-    private string _activeFundText = "No operating context selected";
-    private string _activeFundDetailText = "Runs, allocations, and accounting posture scope to the active operating context.";
+    private string _activeFundText = WorkspaceCopyCatalog.Scope.AllAuthorized;
+    private string _activeFundDetailText = "Runs, allocations, and accounting status narrow to an operating context once one is selected.";
     private string _paperRunsText = "-";
     private string _liveRunsText = "-";
     private string _totalEquityText = "-";

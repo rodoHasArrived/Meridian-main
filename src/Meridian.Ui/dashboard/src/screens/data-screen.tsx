@@ -26,6 +26,8 @@ import {
 } from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -149,7 +151,7 @@ const providerHealthColumns: TableWorkbenchColumn<DataOperationsProviderRow>[] =
   {
     id: "credential-posture",
     exportValue: (provider) => `${provider.credentialText}; ${provider.verificationText}`,
-    label: "Credential posture",
+    label: "Credential status",
     render: (provider) => (
       <span className="block min-w-0">
         <span className="block text-xs text-foreground">{provider.credentialText}</span>
@@ -234,7 +236,9 @@ function DataScreenContent({
     providerRoutingTrustSnapshots
   ]);
   const operatorIdentity = session?.displayName.trim() || null;
+  // Provider status belongs to the header Refresh; routing evidence is re-read with it on the provider route.
   const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence, operatorIdentity);
+  useOnGlobalRefresh(() => { if (vm.workstream === "providers") void onProviderRoutingRefresh?.(); });
   // "Providers healthy" counts the providers in use with the status this page shows for each, so
   // the figure is a count of the health cards beneath it.
   const kpiProviders = useMemo(
@@ -342,7 +346,7 @@ function DataScreenContent({
         </div>
       ) : null}
 
-      <section className="data-management-main" aria-label="Data workstreams">
+      <section className="data-management-main" aria-label="Data sections">
         {activeWorkstream !== "overview" && !showBackfillWorkstream && !showOperationsWorkstream && !showAssuranceWorkstream ? (
           <RouteFocusCard
             state={vm.routeFocusCard}
@@ -449,7 +453,7 @@ function DataScreenContent({
                   </label>
                 <TableWorkbench
                   workbenchId="data-provider-health" sourceKey={vm.providerSection.rows.map((row) => row.providerId).join("|")}
-                  sourceDescription="Complete loaded provider health projection; readiness and verification remain separate."
+                  sourceDescription="Complete loaded provider health snapshot; readiness and verification remain separate."
                   completePopulation getSearchText={(row) => `${row.provider} ${row.status} ${row.affectedWorkflowsText}`}
                   columns={providerHealthColumns}
                   rows={vm.providerSection.rows}
@@ -1097,7 +1101,7 @@ function ProviderDetailTabPanel({
         {detail.reasonLabelText !== detail.reasonCodeText ? (
           <TechnicalDetails
             label="System details"
-            description="Raw provider status retained for diagnostics and support handoff."
+            description="Raw provider status retained for diagnostics and passing to support."
             className="mt-3"
           >
             <div className="grid gap-1 text-xs">
@@ -1179,7 +1183,7 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
               role="region"
               aria-label={vm.providerSetupDialogState.successMetadata.metadataAriaLabel}
             >
-              <div className="eyebrow-label">Routing posture</div>
+              <div className="eyebrow-label">Routing status</div>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {vm.providerSetupDialogState.successMetadata.rows.map((row) => (
                   <FieldTile key={row.id} field={row} />
@@ -2044,17 +2048,7 @@ function CapabilityMatrixRegion({ panel }: { panel: CapabilityMatrixViewModel })
               {panel.model ? ` ${panel.model.summary}` : null}
             </CardDescription>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => void panel.refresh()}
-            disabled={panel.loading}
-            aria-label="Refresh provider capability matrix"
-          >
-            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-            <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
-          </Button>
+          <PanelReload reload={panel.refresh} failed={Boolean(panel.error)} busy={panel.loading} what="provider capability matrix" />
         </CardHeader>
         <CardContent>
           {panel.error ? (

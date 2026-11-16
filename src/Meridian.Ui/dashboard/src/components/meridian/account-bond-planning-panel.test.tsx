@@ -41,7 +41,7 @@ describe("AccountBondPlanningPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Retain expected obligations for monitoring" }));
     await screen.findByRole("region", { name: "Bond collection and watch" }); expect(capture.mock.calls[0][2].obligations).toEqual([{ obligationId: "coupon" }]);
     expect(screen.getByText("60")).toBeInTheDocument(); expect(screen.getByText(/PartialOverdue/)).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText(/Evidence handoff JSON with complete selected payments/), { target: { value: '{"payments":[]}' } });
+    fireEvent.change(screen.getByLabelText(/Evidence JSON with complete selected payments/), { target: { value: '{"payments":[]}' } });
     fireEvent.change(screen.getByLabelText("Monitoring correction rationale"), { target: { value: "Retain corrected custodian evidence" } });
     fireEvent.click(screen.getByRole("button", { name: "Retain receipt and watch evidence" }));
     await waitFor(() => expect(capture).toHaveBeenCalledTimes(2));

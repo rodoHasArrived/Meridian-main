@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ExecutionJourneyPanel } from "@/screens/execution-journey";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { buildExecutionJourney } from "@/screens/execution-journey.view-model";
 import * as api from "@/lib/api/execution-audit.api";
 import type { AuditTrailExplorerResult, AuditTrailTimelineEntry } from "@/types/execution-audit.types";
@@ -46,6 +47,17 @@ describe("execution journey", () => {
     render(<ExecutionJourneyPanel orderId="order-1" />);
     expect(await screen.findByText(/Execution audit source is not configured/)).toBeInTheDocument();
     expect(screen.getByText(/Results truncated/)).toBeInTheDocument();
+  });
+  it("reloads on the header refresh and offers Retry only after a failed read", async () => {
+    search.mockRejectedValueOnce(new Error("audit offline")).mockResolvedValue(result([audit]));
+    const { rerender } = render(<GlobalRefreshProvider sequence={0}><ExecutionJourneyPanel orderId="order-1" /></GlobalRefreshProvider>);
+    expect(await screen.findByRole("alert")).toHaveTextContent("audit offline");
+    expect(screen.queryByRole("button", { name: "Refresh journey" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Retry loading the execution journey" }));
+    await waitFor(() => expect(search).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.queryByRole("button", { name: /Retry/ })).not.toBeInTheDocument());
+    rerender(<GlobalRefreshProvider sequence={1}><ExecutionJourneyPanel orderId="order-1" /></GlobalRefreshProvider>);
+    await waitFor(() => expect(search).toHaveBeenCalledTimes(3));
   });
   it("does not mix ambiguous order evidence with previous links or loaded fills", async () => {
     const ambiguous = { ...result([audit]), orderIdentityStatus: "Ambiguous" };

@@ -79,6 +79,26 @@ public partial class MainPage
         }
     }
 
+    /// <summary>
+    /// Content of every visible split pane except the active one, which the shell refresh reloads
+    /// through the navigation frame. Empty while a deep page covers the split-pane surface.
+    /// </summary>
+    private IEnumerable<object?> GetInactiveVisiblePaneContents()
+    {
+        var host = _splitPaneHost;
+        if (host is null ||
+            !IsWorkspaceHomePage(ShellNavigationCatalog.GetCanonicalPageTag(_viewModel.CurrentPageTag)))
+        {
+            return [];
+        }
+
+        var activePaneIndex = _viewModel.PaneHost.ActivePaneIndex;
+        return _shellNavigationCoordinator.GetVisiblePaneContentStates(_viewModel.PaneHost)
+            .Where(state => state.PaneIndex != activePaneIndex)
+            .Select(state => host.GetPaneFrame(state.PaneIndex)?.Content)
+            .ToList();
+    }
+
     private void OnSplitPaneHostLoaded(object sender, RoutedEventArgs e)
     {
         if (sender is not SplitPaneHostControl host)
