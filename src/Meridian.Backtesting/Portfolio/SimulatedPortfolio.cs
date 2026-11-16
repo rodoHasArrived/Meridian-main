@@ -449,6 +449,10 @@ internal sealed partial class SimulatedPortfolio
                     ],
                     BuildAccountMetadata(account, "short_rebate", symbol));
             }
+
+            // Rebates and borrow fees move cash after the margin-interest gate above, so the
+            // cached balance must follow them or the next day's interest uses a stale figure.
+            account.MarginBalance = account.Cash < 0m ? account.Cash : 0m;
         }
     }
 
