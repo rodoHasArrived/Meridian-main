@@ -16,11 +16,12 @@ public partial interface IWorkstationIntercompanyAgreementApiClient
 
 public sealed partial class WorkstationIntercompanyAgreementApiClient
 {
-    private const string AccrualRoute = "/api/ledger/intercompany/accruals";
+    private const string AccrualPreviewRoute = "/api/ledger/intercompany/accruals/preview";
+    private const string AccrualDraftRoute = "/api/ledger/intercompany/accruals/drafts";
 
     public async Task<ApiResponse<IntercompanyAccrualProposalDto>> PreviewInterestAccrualAsync(IntercompanyAccrualRequestDto request, CancellationToken ct = default)
     {
-        var response = await apiClient.PostWithResponseAsync<IntercompanyAccrualProposalDto>($"{AccrualRoute}/preview", request, ct).ConfigureAwait(false);
+        var response = await apiClient.PostWithResponseAsync<IntercompanyAccrualProposalDto>(AccrualPreviewRoute, request, ct).ConfigureAwait(false);
         if (!response.Success)
             return response;
         // A preview for another window, or a "ready" one without the evidence the draft is bound to, is not this request's answer.
@@ -39,7 +40,7 @@ public sealed partial class WorkstationIntercompanyAgreementApiClient
 
     public async Task<ApiResponse<ManualJournalEntryDraftDto>> CreateInterestAccrualDraftAsync(CreateIntercompanyAccrualDraftRequest request, CancellationToken ct = default)
     {
-        var response = await apiClient.PostWithResponseAsync<ManualJournalEntryDraftDto>($"{AccrualRoute}/drafts", request, ct).ConfigureAwait(false);
+        var response = await apiClient.PostWithResponseAsync<ManualJournalEntryDraftDto>(AccrualDraftRoute, request, ct).ConfigureAwait(false);
         return response.Success && (response.Data is not { } draft || draft.LedgerBookId != request.Accrual.SourceBookId
             || !string.Equals(draft.IntercompanyAccrualEvidenceDigest, request.ExpectedEvidenceDigest, StringComparison.Ordinal))
             ? ApiResponse<ManualJournalEntryDraftDto>.Fail("The server returned a draft for a different book or accrual computation.", 502) : response;
