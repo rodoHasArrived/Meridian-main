@@ -26,6 +26,7 @@ This layer should express ledger calculations in functional form while keeping p
 - `Meridian.FSharp.Ledger.fsproj` - F# ledger project boundary.
 - `AccrualTypes.fs` - direct-lending accrual entry validation and deterministic period summaries.
 - `ReconciliationCaseWorkflow.fs` - pure transition legality and provider-ledger tolerance checks for reconciliation cases.
+- `ReturnMeasurement.fs` - W10-PERF-001 return kernels: time-weighted (sub-periods break at external flows; a flow date without a valuation falls back to a labeled `LinkedModifiedDietz` approximation), single-period Modified Dietz, and money-weighted XIRR (Actual/365) that finds every root and returns `ReviewRequired` with candidates when there are none or several. Mixed currency blocks a figure, unposted inputs make it `ProForma`, and translation is explicit at each item's as-of rate. Pure; callers filter inputs to scope and period.
 - Ledger calculation modules and functional domain types.
 
 ## Important workflows

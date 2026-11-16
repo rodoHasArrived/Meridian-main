@@ -1490,6 +1490,12 @@ public sealed class BrokeragePortfolioSyncServiceTests
             performance.EndingEquity.Should().Be(125000m);
             performance.NetCashFlow.Should().Be(42.50m);
             performance.CashAdjustedReturn.Should().Be(4957.50m);
+            var timeWeighted = performance.ReturnFigures.Should()
+                .ContainSingle(figure => figure.Convention == "TimeWeighted").Subject;
+            timeWeighted.Status.Should().Be("Reported");
+            // 125,000 / 120,000 − 1: the 42.50 dividend is income inside the return, not capital.
+            timeWeighted.Value.Should().Be(0.0416666667m);
+            timeWeighted.Source.Should().Be(PerformanceReturnFigures.BrokerageSource);
         }
         finally
         {
