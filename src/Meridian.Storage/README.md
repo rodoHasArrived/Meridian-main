@@ -1550,7 +1550,10 @@ Canonical `AssetAccounting.*` commands use the stricter evidence contract: opera
 string links are navigation only, and storage requires complete typed retained identity, SHA-256,
 source reference, accepted reviewer, UTC review/retention timestamps, effective date, positive
 version, retained-by actor, and subject scope before append.
-The durable aggregate remains `JournalEntry` with balanced child `LedgerEntry` rows. Candidate
+The durable aggregate remains `JournalEntry` with balanced child `LedgerEntry` rows. `LedgerDurableBalanceRule`
+applies the journal seal's rule (at least two legs, stored debits and credits exactly equal at 10
+decimal places) before an append opens its transaction, so an entry that only balances within the
+in-memory tolerance is refused with a validation error naming the journal and the residual. Candidate
 journals, Asset Operations economic state, projection events, and balance snapshots are not accepted
 as alternate accounting facts.
 Retained journal aggregates are sealed at the posting transaction's deferred boundary. Parent and
