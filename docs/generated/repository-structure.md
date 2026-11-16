@@ -14660,6 +14660,7 @@ Meridian-main
 │   │   │   ├── AccountingSystemIntegrationServiceTests.Onboarding.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.StructuredFixture.cs
 │   │   │   ├── AccountingSystemIntercompanyControlsTests.cs
+│   │   │   ├── AggregatePortfolioExposureProviderFreshnessTests.cs
 │   │   │   ├── AggregatePortfolioExposureProviderTests.cs
 │   │   │   ├── AlpacaBrokerageConnectionServiceTests.cs
 │   │   │   ├── AlpacaCredentialEnvironmentCollection.cs

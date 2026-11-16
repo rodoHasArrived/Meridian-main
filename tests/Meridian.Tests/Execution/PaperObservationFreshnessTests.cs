@@ -4,9 +4,7 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Execution.Adapters;
 using Meridian.Execution.PaperMatching;
 using Meridian.Execution.Sdk;
-using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Xunit;
 using AdapterGateway = Meridian.Execution.Adapters.PaperTradingGateway;
 using ExecutionGateway = Meridian.Execution.PaperTradingGateway;
@@ -16,8 +14,7 @@ namespace Meridian.Tests.Execution;
 
 /// <summary>
 /// The opt-in observation freshness window: a stalled tick feed must not price, trigger, or fill
-/// a paper order, the default must keep matching the cache as it is, and the pre-trade guard
-/// must drop exactly the observations the matcher drops.
+/// a paper order, and the default must keep matching the cache as it is.
 /// </summary>
 public sealed class PaperObservationFreshnessTests
 {
@@ -218,29 +215,5 @@ public sealed class PaperObservationFreshnessTests
         }
 
         Assert.Fail("No order update was received from the paper gateway.");
-    }
-
-    [Fact]
-    public void PreTradeGuard_SharesTheWindow_SoItDropsThePrintTheMatcherDrops()
-    {
-        var aggregate = new Mock<Meridian.Strategies.Services.IAggregatePortfolioService>();
-        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
-
-        var cache = new LiveMarketDataCache();
-        cache.RecordTrade("AAPL", TradeAt(Now.AddMinutes(-6), 130m, "AAPL"));
-        cache.RecordQuote("AAPL", QuoteAt(Now.AddSeconds(-1), 90m, 100m, "AAPL"));
-
-        Meridian.Risk.IPortfolioExposureProvider Guard(PaperObservationFreshnessPolicy? freshness) =>
-            new AggregatePortfolioExposureProvider(
-                aggregate.Object,
-                clock: () => Now,
-                liveFeedAccessor: () => cache,
-                paperMatchingIsAuthoritative: () => true,
-                paperObservationFreshness: freshness);
-
-        Guard(null).TryGetTriggerReferencePrice("AAPL", OrderSide.Buy)
-            .Should().Be(130m, "with no window the matcher still fires from the old print");
-        Guard(Policy()).TryGetTriggerReferencePrice("AAPL", OrderSide.Buy)
-            .Should().Be(100m, "under the window the matcher resolves the trigger from the fresh ask");
     }
 }
