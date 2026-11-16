@@ -24,4 +24,14 @@ public sealed class PaperTradingGatewayOptions
     /// time it is used.
     /// </summary>
     public decimal ScaffoldMarketFillPrice { get; set; } = 1m;
+
+    /// <summary>
+    /// Maximum age, in seconds, of a quote or trade print that may still price, trigger, or
+    /// fill a paper order. Unset (the default) applies no freshness window: orders match
+    /// against the feed cache as it is, however old. When set, a market order whose only tick
+    /// data is older than this is rejected, resting orders do not fill or trigger off it, and
+    /// scaffold pricing does not stand in for it. Bar-only symbols are unaffected. Must be
+    /// positive when set. See <see cref="PaperMatching.PaperObservationFreshnessPolicy"/>.
+    /// </summary>
+    public int? MaxObservationAgeSeconds { get; set; }
 }

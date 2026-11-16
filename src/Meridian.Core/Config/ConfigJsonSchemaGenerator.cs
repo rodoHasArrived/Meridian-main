@@ -175,7 +175,8 @@ public sealed class ConfigJsonSchemaGenerator
                     ["properties"] = new JsonObject
                     {
                         ["AllowScaffoldMarketFills"] = CreateTypedSchema("boolean"),
-                        ["ScaffoldMarketFillPrice"] = CreateTypedSchema("number")
+                        ["ScaffoldMarketFillPrice"] = CreateTypedSchema("number"),
+                        ["MaxObservationAgeSeconds"] = AllowNull(CreateTypedSchema("integer"))
                     }
                 },
                 ["Costs"] = new JsonObject

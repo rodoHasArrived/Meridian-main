@@ -5,7 +5,7 @@ namespace Meridian.Execution.Events;
 /// <summary>Adapts only the new canonical trade attribution to an immutable pre-attribution journal.</summary>
 internal static class TradeFillCashFlowReplayCompatibility
 {
-    internal const string StrategyRunIdTag = "strategy.runId";
+    internal const string StrategyRunIdTag = LedgerQuery.StrategyRunIdTag;
 
     internal static JournalEntry SelectCandidate(JournalEntry expected, JournalEntry retained)
         => SelectCashFlowCandidate(SelectStrategyAttributionCandidate(expected, retained), retained);
