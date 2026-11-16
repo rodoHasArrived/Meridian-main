@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IEquityReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.IEquityReferenceProjectionStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:6](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L6).
+
+Queries equity reference projections by security, exchange, and issuer.
+
+```csharp
+public interface IEquityReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;EquityProjectionRow?&gt; GetEquityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L8) |  |
+| <code>Task&lt;IReadOnlyList&lt;EquityProjectionRow&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L9) |  |
+| <code>Task&lt;IReadOnlyList&lt;EquityProjectionRow&gt;&gt; GetByIssuerAsync(string issuerName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L10) |  |
+
 ## IFutureReferenceProjectionStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.IFutureReferenceProjectionStore</code>. Kind: `interface`.
@@ -1039,24 +1059,3 @@ Declared public members:
 | <code>public PostgresFutureReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs:21](../../../../src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs#L21) |  |
 | <code>public Task&lt;FutureProjectionRow?&gt; GetFutureAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs:29](../../../../src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs#L29) |  |
 | <code>public Task&lt;IReadOnlyList&lt;FutureProjectionRow&gt;&gt; GetByRootSymbolAsync(string rootSymbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs:32](../../../../src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs#L32) |  |
-
-## PostgresFxSpotReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresFxSpotReferenceProjectionStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs#L9).
-
-Reads spot foreign exchange reference projections from PostgreSQL by security, pair, and currency.
-
-```csharp
-public sealed class PostgresFxSpotReferenceProjectionStore : IFxSpotReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresFxSpotReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs:23](../../../../src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs#L23) |  |
-| <code>public Task&lt;FxSpotProjectionRow?&gt; GetFxSpotAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs:31](../../../../src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs#L31) |  |
-| <code>public Task&lt;FxSpotProjectionRow?&gt; GetByPairCodeAsync(string pairCode, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs:34](../../../../src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs#L34) |  |
-| <code>public Task&lt;IReadOnlyList&lt;FxSpotProjectionRow&gt;&gt; GetByCurrencyAsync(string currency, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs:37](../../../../src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs#L37) |  |

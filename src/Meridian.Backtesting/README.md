@@ -235,7 +235,9 @@ See the [expanded objectives](../../docs/product/implementation-todo-list.md#exp
 Every native day-end snapshot reconciles as-of trial balance, per-account cash, long lot basis,
 short proceeds, and transfer clearing balances. Differences remain on
 `BacktestResult.LedgerIntegrityBreaks`; `BacktestRequest.FailOnLedgerIntegrityBreak` aborts with
-inspectable `LedgerIntegrityException.Breaks`. Comparisons use the shared ledger balance tolerance
+inspectable `LedgerIntegrityException.Breaks`. A run that completes with differences logs a warning
+and adds a `ledger-integrity-break` Warning item to its bias disclosure, so every surface that shows
+the result also shows that its books did not reconcile. Comparisons use the shared ledger balance tolerance
 and include residual accounts for closed positions. Return-of-capital distributions reduce each
 long lot/component's exact basis to zero before recognizing excess gain. `BasisReturned` stays
 separate from income in cash-flow evidence and symbol attribution; short payments remain expenses.
