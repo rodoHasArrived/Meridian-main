@@ -6,6 +6,67 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolRegistryService
+
+Qualified name: <code>Meridian.Storage.Services.SymbolRegistryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/SymbolRegistryService.cs:16](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L16).
+
+Service for managing the symbol registry with comprehensive alias resolution. Stored at _catalog/symbols.json.
+
+```csharp
+public sealed partial class SymbolRegistryService : ISymbolRegistryService, ISymbolRegistrySecurityMasterWriter, ISymbolRegistryMigrationWriter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolRegistryService(string storagePath) : this(storagePath, static (path, contents, ct) =&gt; AtomicFileWriter.WriteAsync(path, contents, ct));</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:34](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L34) |  |
+| <code>public SymbolRegistry GetRegistry() =&gt; …;</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:56](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L56) |  |
+| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:58](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L58) |  |
+| <code>public async Task RegisterSymbolAsync(SymbolRegistryEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:96](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L96) |  |
+| <code>public SymbolLookupResult LookupSymbol(string query);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:124](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L124) |  |
+| <code>public string ResolveAlias(string alias);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:223](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L223) |  |
+| <code>public string? GetProviderSymbol(string canonical, string provider);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:231](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L231) |  |
+| <code>public async Task AddAliasAsync(string canonical, SymbolAlias alias, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:260](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L260) |  |
+| <code>public Task AddProviderMappingAsync(string canonical, string provider, string providerSymbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:289](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L289) |  |
+| <code>public async Task AddProviderMappingAsync(string canonical, string provider, string providerSymbol, string source, bool isOverride, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:298](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L298) |  |
+| <code>public async Task&lt;bool&gt; RemoveProviderMappingAsync(string canonical, string provider, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:349](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L349) |  |
+| <code>public IEnumerable&lt;SymbolRegistryEntry&gt; GetAllSymbols();</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:383](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L383) |  |
+| <code>public IEnumerable&lt;SymbolRegistryEntry&gt; GetSymbolsByAssetClass(string assetClass);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:388](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L388) |  |
+| <code>public async Task&lt;string?&gt; GetMigrationMarkerAsync(string migrationId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:395](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L395) |  |
+| <code>public async Task SetMigrationMarkerAsync(string migrationId, string fingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:412](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L412) |  |
+| <code>public async Task SaveRegistryAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:433](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L433) |  |
+| <code>public async Task&lt;int&gt; ImportSymbolsAsync(IEnumerable&lt;SymbolRegistryEntry&gt; symbols, bool merge = true, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:440](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L440) |  |
+| <code>public async Task&lt;int&gt; ApplyMigrationAsync(string migrationId, string fingerprint, IEnumerable&lt;SymbolRegistryEntry&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.cs:472](../../../../src/Meridian.Storage/Services/SymbolRegistryService.cs#L472) |  |
+
+Source: [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:9](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L9).
+
+```csharp
+public sealed partial class SymbolRegistryService : ISecurityMasterLegacyIdentifierCleanupWriter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;string&gt; GetLegacyIdentifierCleanupFingerprintAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:12](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L12) |  |
+| <code>public async Task&lt;SecurityMasterLegacyIdentifierCleanupValidation&gt; ValidateLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupManifest manifest, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:26](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L26) |  |
+| <code>public async Task&lt;SecurityMasterLegacyIdentifierCleanupReceipt&gt; ApplyLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupValidation validation, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:51](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L51) |  |
+
+Source: [src/Meridian.Storage/Services/SymbolRegistryService.SecurityMaster.cs:7](../../../../src/Meridian.Storage/Services/SymbolRegistryService.SecurityMaster.cs#L7).
+
+```csharp
+public sealed partial class SymbolRegistryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;int&gt; ReconcileSecurityMasterAsync(IReadOnlyCollection&lt;Guid&gt; securityIds, IEnumerable&lt;SymbolRegistryEntry&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.SecurityMaster.cs:13](../../../../src/Meridian.Storage/Services/SymbolRegistryService.SecurityMaster.cs#L13) | Reconciles a bounded Security Master snapshot without replacing operator/provider authority. Builds and persists a private candidate before publishing any changed resolver state. |
+
 ## TierInfo
 
 Qualified name: <code>Meridian.Storage.Services.TierInfo</code>. Kind: `record`.

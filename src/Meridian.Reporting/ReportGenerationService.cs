@@ -79,7 +79,7 @@ public sealed class ReportGenerationService
             GeneratedAt: DateTimeOffset.UtcNow,
             TrialBalance: snapshot.Rows,
             AssetClassSections: assetClassSections,
-            TotalNetAssets: snapshot.Rows.Sum(static row => row.NetBalance),
+            TotalNetAssets: CalculateNetAssets(trialBalance),
             SnapshotReceipt: snapshot.Receipt);
     }
 
@@ -106,6 +106,25 @@ public sealed class ReportGenerationService
         }
 
         return references;
+    }
+
+    /// <summary>
+    /// Net assets are assets less liabilities. Every balance in the trial balance is positive in
+    /// its account's normal direction, so summing all rows would add liabilities, equity, revenue
+    /// and expenses to assets instead of netting them.
+    /// </summary>
+    private static decimal CalculateNetAssets(IReadOnlyDictionary<LedgerAccount, decimal> trialBalance)
+    {
+        var netAssets = 0m;
+        foreach (var (account, balance) in trialBalance)
+        {
+            if (account.AccountType == LedgerAccountType.Asset)
+                netAssets += balance;
+            else if (account.AccountType == LedgerAccountType.Liability)
+                netAssets -= balance;
+        }
+
+        return netAssets;
     }
 
     private static IReadOnlyDictionary<LedgerAccount, decimal> BuildTrialBalance(

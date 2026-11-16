@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DefaultInterestCalculator
+
+Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.DefaultInterestCalculator</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs:11](../../../../src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs#L11).
+
+Detects unfunded capital-call installments past their grace period and computes simple default interest on the unfunded principal. Pure and deterministic.
+
+```csharp
+public static class DefaultInterestCalculator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static decimal ComputeSimpleInterest(decimal principal, decimal annualRate, DateOnly from, DateOnly to, DefaultInterestConvention convention);</code> | [src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs:18](../../../../src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs#L18) | Computes simple interest on a defaulted principal from from (exclusive of the grace period, handled by the caller) to to under the given day-count convention, rounded to 2dp. |
+| <code>public static IReadOnlyList&lt;CapitalCallDefault&gt; Evaluate(InvestorCommitment commitment, IReadOnlyList&lt;DrawdownInstallment&gt; installments, IReadOnlyList&lt;CapitalCallFundingReceipt&gt; fundingReceipts, DateOnly asOf);</code> | [src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs:46](../../../../src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs#L46) | Evaluates each installment against its funding evidence and, where the call is unfunded past its grace period, produces a CapitalCallDefault with a single accrual span from the grace end to the cure date (if fully funded later) or to asOf. |
+
 ## IAutomatedJournalCapitalAccountReconciliationResolver
 
 Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.IAutomatedJournalCapitalAccountReconciliationResolver</code>. Kind: `interface`.
@@ -853,25 +872,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;StatementAccountingScope&gt; AuthorizeAsync(StatementFetchAuthorizationCommand command, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:52](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L52) |  |
 | <code>Task&lt;StatementImportCommitResultDto&gt; IngestAsync(StatementFetchIngestionCommand command, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:56](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L56) |  |
-
-## IStatementFetchScheduleStore
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementFetchScheduleStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L48).
-
-Maintains statement fetch schedules and records their run and failure outcomes.
-
-```csharp
-public interface IStatementFetchScheduleStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;StatementFetchSchedule&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:50](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L50) |  |
-| <code>Task&lt;StatementFetchSchedule&gt; UpsertAsync(StatementFetchSchedule schedule, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:51](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L51) |  |
-| <code>Task&lt;bool&gt; DeleteAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:52](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L52) |  |
-| <code>Task RecordRunAsync(string scheduleId, DateTimeOffset ranAtUtc, string status, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:53](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L53) |  |
-| <code>Task RecordFailureAsync(string scheduleId, DateTimeOffset attemptedAtUtc, string status, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:54](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L54) |  |

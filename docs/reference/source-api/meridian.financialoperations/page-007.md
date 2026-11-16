@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EngineReconciliationResult
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.EngineReconciliationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs:232](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs#L232).
+
+Result of a single reconciliation engine run.
+
+```csharp
+public sealed record EngineReconciliationResult(Guid RunId, string PortfolioId, DateTimeOffset AsOf, DateTimeOffset StartedAt, DateTimeOffset CompletedAt, int TotalChecks, int MatchCount, int BreakCount, PortfolioLedgerCheckResultDto[] Matches, PortfolioLedgerCheckResultDto[] Breaks, IReadOnlyDictionary<string, SecurityDetailDto> ResolvedSecurities);
+```
+
 ## ExternalStatementCaseIntakeResult
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ExternalStatementCaseIntakeResult</code>. Kind: `record`.
@@ -913,19 +925,3 @@ Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine
 ```csharp
 public sealed record NormalizedStatementCashBalance(string CashBalanceId, string Account, string Currency, decimal EndingBalance, string EvidenceReference, DateOnly AsOfDate, bool IsForStatementPeriodEnd = true) : IStatementMatchItem
 ```
-
-## NormalizedStatementPosition
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.NormalizedStatementPosition</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:894](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L894).
-
-```csharp
-public sealed record NormalizedStatementPosition(string PositionId, string Account, string SecurityId, DateOnly AsOfDate, decimal Quantity, decimal? MarketValue, string EvidenceReference) : IStatementMatchItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:904](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L904) | Unit price in the same currency as the monetary amount, when explicitly available. |

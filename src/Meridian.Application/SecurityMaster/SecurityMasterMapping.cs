@@ -1064,8 +1064,15 @@ internal static partial class SecurityMasterMapping
 
     // Listed options historically normalize recognized styles and leave unknown historical
     // labels undeclared. Keep that codec rule while storing the result in the shared module.
+    // The stored label is spelled out per case, so renaming a union case cannot change it.
     private static FSharpOption<string> CanonicalExerciseStyle(FSharpOption<ExerciseStyle> style)
-        => style is null ? null! : FSharpOption<string>.Some(style.Value.ToString());
+        => style is null ? null! : FSharpOption<string>.Some(style.Value switch
+        {
+            { IsAmerican: true } => "American",
+            { IsEuropean: true } => "European",
+            { IsBermudan: true } => "Bermudan",
+            var unknown => throw new InvalidOperationException($"Exercise style case {unknown.Tag} has no stored label.")
+        });
 
     private static FSharpOption<RateConventionTerms> ToRateConventionOption(string? token)
         => token is null ? null! : FSharpOption<RateConventionTerms>.Some(new RateConventionTerms(token));

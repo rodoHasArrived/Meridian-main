@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Reporting.AssetClassSection</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportGenerationService.cs:310](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L310).
+Source: [src/Meridian.Reporting/ReportGenerationService.cs:329](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L329).
 
 A section of a report grouped by asset class.
 
@@ -138,7 +138,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Reporting.EnrichedLedgerRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportGenerationService.cs:282](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L282).
+Source: [src/Meridian.Reporting/ReportGenerationService.cs:301](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L301).
 
 A single ledger row enriched with Security Master classification data.
 
