@@ -71,7 +71,7 @@ public sealed class PostedStrategyRunLedgerSource(
             {
                 ct.ThrowIfCancellationRequested();
                 var entry = record.Entry;
-                if (entry.Metadata.Tags?.TryGetValue("strategy.runId", out var sourceRunId) != true
+                if (entry.Metadata.Tags?.TryGetValue(LedgerQuery.StrategyRunIdTag, out var sourceRunId) != true
                     || !string.Equals(sourceRunId, run.RunId, StringComparison.Ordinal))
                     continue;
                 if (!periods.TryGetValue(record.PeriodId, out var period))
