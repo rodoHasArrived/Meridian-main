@@ -150,6 +150,18 @@ public static class RateUnitNormalizer
     };
 
     /// <summary>
+    /// Converts an observed value to a fraction, or <see langword="null"/> when its unit is not an
+    /// annual rate unit (an index level is not a rate).
+    /// </summary>
+    public static decimal? ToFractionOrNull(decimal value, SecurityRateUnit unit) => unit switch
+    {
+        SecurityRateUnit.Fraction => ToFraction(value, RateUnit.Fraction),
+        SecurityRateUnit.Percent => ToFraction(value, RateUnit.Percent),
+        SecurityRateUnit.BasisPoints => ToFraction(value, RateUnit.BasisPoints),
+        _ => null
+    };
+
+    /// <summary>
     /// The record-declared unit a <c>couponRateUnit</c> token states, or <see langword="null"/> when the
     /// token is absent or not one of the block's closed vocabulary (Percent, Fraction).
     /// </summary>
