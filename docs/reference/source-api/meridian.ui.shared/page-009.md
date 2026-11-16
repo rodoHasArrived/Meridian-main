@@ -299,7 +299,7 @@ Source: [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:40](..
 Pulls read-only broker account, portfolio, order, fill, and cash activity snapshots into a durable workstation projection. This service is operator-triggered and intentionally avoids live-trading readiness decisions.
 
 ```csharp
-public sealed class BrokeragePortfolioSyncService
+public sealed partial class BrokeragePortfolioSyncService
 ```
 
 Declared public members:
@@ -317,9 +317,20 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;FundAccountBrokerageFillDto&gt;&gt; GetFillHistoryAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:441](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L441) | Every fill a sync has observed for the account, deduplicated by provider fill id. |
 | <code>public async Task&lt;FundAccountBrokerageSyncActivityDto?&gt; GetViewAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:472](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L472) |  |
 | <code>public async Task&lt;WorkstationBrokerageAccountLinkDto?&gt; LinkAccountAsync(Guid fundAccountId, BrokerageAccountLinkRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:475](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L475) |  |
-| <code>public async Task&lt;BrokeragePortfolioPerformanceDto&gt; GetPerformanceAsync(Guid fundAccountId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:516](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L516) |  |
-| <code>public async Task&lt;BrokerageCashFlowSummaryDto&gt; GetCashFlowAsync(Guid fundAccountId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:580](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L580) |  |
-| <code>public async Task&lt;BrokerageHouseholdPortfolioDto&gt; GetHouseholdAsync(string? providerId, Func&lt;IReadOnlyCollection&lt;Guid&gt;, CancellationToken, Task&lt;IReadOnlySet&lt;Guid&gt;&gt;&gt; authorizeFundAccounts, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:616](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L616) |  |
+| <code>public async Task&lt;BrokerageCashFlowSummaryDto&gt; GetCashFlowAsync(Guid fundAccountId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:516](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L516) |  |
+| <code>public async Task&lt;BrokerageHouseholdPortfolioDto&gt; GetHouseholdAsync(string? providerId, Func&lt;IReadOnlyCollection&lt;Guid&gt;, CancellationToken, Task&lt;IReadOnlySet&lt;Guid&gt;&gt;&gt; authorizeFundAccounts, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:552](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L552) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.Performance.cs:9](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.Performance.cs#L9).
+
+```csharp
+public sealed partial class BrokeragePortfolioSyncService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BrokeragePortfolioPerformanceDto&gt; GetPerformanceAsync(Guid fundAccountId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.Performance.cs:11](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.Performance.cs#L11) |  |
 
 ## BrokerageSyncActualCashActivitySource
 
