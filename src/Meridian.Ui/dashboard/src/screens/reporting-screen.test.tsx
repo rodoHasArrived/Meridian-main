@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { ReportingScreen } from "@/screens/reporting-screen";
 import { renderWithRouter } from "@/test/render";
 import { useReportRunStream } from "@/hooks/use-report-run-stream";
@@ -1383,6 +1385,12 @@ function withReportingSchedule(state: "Active" | "Paused" | "Disabled" = "Active
   };
 }
 
+/** Stands in for the workstation header: its Refresh is the only refresh control. */
+function HeaderRefreshHarness({ onRefreshLivePortfolioViews }: { onRefreshLivePortfolioViews: () => Promise<void> }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence((value) => value + 1)}>Header refresh</button><ReportingScreen data={accounting} onRefreshLivePortfolioViews={onRefreshLivePortfolioViews} /></GlobalRefreshProvider>;
+}
+
 describe("ReportingScreen", () => {
   const fetchMock = vi.fn();
 
@@ -1756,10 +1764,12 @@ describe("ReportingScreen", () => {
   it("renders live portfolio views from the shared reporting payload", async () => {
     const user = userEvent.setup();
     const refreshLivePortfolioViews = vi.fn().mockResolvedValue(undefined);
-    renderWithRouter(<ReportingScreen data={accounting} onRefreshLivePortfolioViews={refreshLivePortfolioViews} />, { initialEntries: ["/reporting/report-builder"] });
+    renderWithRouter(<HeaderRefreshHarness onRefreshLivePortfolioViews={refreshLivePortfolioViews} />, { initialEntries: ["/reporting/report-builder"] });
 
-    expect(screen.getByRole("region", { name: "Live portfolio views" })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Revalue live portfolio reporting views" }));
+    const liveViews = screen.getByRole("region", { name: "Live portfolio views" });
+    expect(within(liveViews).queryByRole("button", { name: /Refresh|Revalue|Retry/ })).not.toBeInTheDocument();
+    expect(refreshLivePortfolioViews).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
     expect(refreshLivePortfolioViews).toHaveBeenCalledTimes(1);
     await waitFor(() => {
       expect(screen.getByText("Live portfolio views refreshed.")).toBeInTheDocument();
@@ -1831,14 +1841,19 @@ describe("ReportingScreen", () => {
   it("surfaces live portfolio refresh failures in the reporting workspace", async () => {
     const user = userEvent.setup();
     const refreshLivePortfolioViews = vi.fn().mockRejectedValue(new Error("Portfolio summary refresh failed."));
-    renderWithRouter(<ReportingScreen data={accounting} onRefreshLivePortfolioViews={refreshLivePortfolioViews} />, { initialEntries: ["/reporting/report-builder"] });
+    renderWithRouter(<HeaderRefreshHarness onRefreshLivePortfolioViews={refreshLivePortfolioViews} />, { initialEntries: ["/reporting/report-builder"] });
 
-    await user.click(screen.getByRole("button", { name: "Revalue live portfolio reporting views" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
 
     expect(refreshLivePortfolioViews).toHaveBeenCalledTimes(1);
     await waitFor(() => {
       expect(screen.getByText("Portfolio summary refresh failed.")).toBeInTheDocument();
     });
+    refreshLivePortfolioViews.mockResolvedValue(undefined);
+    await user.click(screen.getByRole("button", { name: "Retry loading live portfolio views" }));
+    await waitFor(() => expect(screen.getByText("Live portfolio views refreshed.")).toBeInTheDocument());
+    expect(refreshLivePortfolioViews).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole("button", { name: "Retry loading live portfolio views" })).not.toBeInTheDocument();
   });
 
   it("renders P&L slices from retained portfolio run timestamps", () => {

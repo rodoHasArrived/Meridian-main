@@ -54,6 +54,7 @@ function AccountCashCasesScopePanel({ scope: incomingScope, context, onDirtyChan
   const active = useRef<AbortController | null>(null);
   const mutation = useRef(false);
   const fileSequence = useRef(0);
+  const clearNoticesOnLoad = useRef(false);
   const dirty = preview !== null || assignmentDirty || busy || readingFile;
   useEffect(() => { onDirtyChange?.(dirty); }, [dirty, onDirtyChange]);
   useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
@@ -70,6 +71,7 @@ function AccountCashCasesScopePanel({ scope: incomingScope, context, onDirtyChan
       if (next.some(item => !scopeMatches(item.scope, scope))) throw new Error("Cash cases belong to a different account or ledger book. Refresh the selected scope.");
       setCases(next);
       setHistoryUnavailable(false);
+      if (clearNoticesOnLoad.current) { clearNoticesOnLoad.current = false; setError(""); setMessage(""); }
       setSelectedId(current => next.some(item => item.caseId === current) ? current : "");
       setAssignmentConflict(false);
       setLoading(false);
@@ -85,7 +87,7 @@ function AccountCashCasesScopePanel({ scope: incomingScope, context, onDirtyChan
           if (!controller.signal.aborted) setRunErrors(current => ({ ...current, [runId]: errorMessage(reason) }));
         }
       }));
-    }).catch(reason => { if (!controller.signal.aborted) { setHistoryUnavailable(true); setError(errorMessage(reason)); } })
+    }).catch(reason => { if (!controller.signal.aborted) { clearNoticesOnLoad.current = false; setHistoryUnavailable(true); setError(errorMessage(reason)); } })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [scope, reload]);
@@ -170,7 +172,7 @@ function AccountCashCasesScopePanel({ scope: incomingScope, context, onDirtyChan
       {message ? <StatusBanner role="status" tone="success" title={<span className="text-foreground">{message}</span>} /> : null}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">{loading ? "Loading authoritative retained cases…" : historyUnavailable ? "Retained cash history is unavailable. Retry the load; previously loaded cases remain visible." : `${cases.length} retained cash ${cases.length === 1 ? "case" : "cases"}`}</p>
-        <PanelReload reload={() => { if (loading || busy || readingFile) return; setError(""); setMessage(""); setReload(value => value + 1); }} failed={historyUnavailable} busy={loading || busy || readingFile} what="retained cash cases" />
+        <PanelReload reload={() => { if (loading || busy || readingFile || (assignmentDirty && !assignmentConflict && !historyUnavailable)) return; clearNoticesOnLoad.current = true; setReload(value => value + 1); }} failed={historyUnavailable} busy={loading || busy || readingFile} what="retained cash cases" />
       </div>
       <DenseDataTable<AccountCashReconciliationCase>
         ariaLabel="Retained account cash cases" rows={cases} getRowId={item => item.caseId}

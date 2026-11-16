@@ -139,16 +139,17 @@ function ClosePreparationTemplateEditor({ workflowId }: { workflowId: string }) 
   const [busy, setBusy] = useState(false);
   const [hasPending, setHasPending] = useState(false);
   const controller = useRef<AbortController | null>(null);
-  useOnGlobalRefresh(() => { if (!busy && !hasPending) setRevision(value => value + 1); });
+  const softRevision = useRef(-1); // A header refresh re-reads the plan without resetting the operator's template selection.
+  useOnGlobalRefresh(() => { if (!busy && !hasPending) { softRevision.current = revision + 1; setRevision(revision + 1); } });
   useEffect(() => {
     const request = new AbortController();
     controller.current = request;
-    setLoaded(null); setError(null); setSelected(""); setPrevious(null); setHasPending(false);
+    if (softRevision.current !== revision) { setLoaded(null); setError(null); setSelected(""); setPrevious(null); setHasPending(false); }
     void Promise.all([getClosePreparationSource(workflowId, request.signal), listClosePlanTemplates(workflowId, request.signal)])
       .then(async ([plan, templates]) => {
         const books = await getClosePreparationBooks(plan.ledgerBookId!, request.signal);
         if (!request.signal.aborted) {
-          setLoaded({ plan, templates, books });
+          setLoaded({ plan, templates, books }); setError(null);
           const pendingTemplate = templates.find(item => matchingPendingCreation(item, books));
           setHasPending(Boolean(pendingTemplate));
           if (pendingTemplate) setSelected(templateKey(pendingTemplate));

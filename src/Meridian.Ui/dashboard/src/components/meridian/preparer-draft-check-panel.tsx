@@ -105,7 +105,7 @@ function DraftCheck({ securityId, runId }: { securityId: string; runId: string }
     <div className="flex flex-wrap items-start justify-between gap-2">
       <div><h3 className="font-semibold">Preparer check for this retained calculation</h3>
         <p className="break-all text-muted-foreground">Run {runId}. This task does not approve, post or release anything.</p></div>
-      <PanelReload reload={() => { if (!loading && !busy) setRefresh(value => value + 1); }} failed={!loading && (!workspace || !snapshot)} busy={busy} what="draft check" />
+      <PanelReload reload={() => { if (!loading && !busy && !(workspace && snapshot && (reason || declarationReason || confirmed || pending || Object.values(revocationReasons).some(Boolean)))) setRefresh(value => value + 1); }} failed={!loading && (!workspace || !snapshot)} busy={busy} what="draft check" />
     </div>
     {loading ? <p role="status">Loading scoped draft-check support…</p> : null}
     {error ? <p role="alert" className="text-danger">{error}</p> : null}

@@ -59,17 +59,18 @@ export function AccountingOnboardingPanel() {
   const [selectedId, setSelectedId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [reload, setReload] = useState(0);
   const scopeController = useRef<AbortController | null>(null);
   useEffect(() => {
     const controller = new AbortController();
     scopeController.current = controller;
-    setLoading(true); setError(null);
+    setLoading(true); setLoadFailed(false);
     api.listOnboardingWorkspaces({ signal: controller.signal }).then(next => {
       if (controller.signal.aborted) return;
-      setWorkspaces(next);
+      setWorkspaces(next); setError(null);
       setSelectedId(current => next.some(item => item.workspaceId === current) ? current : "");
-    }).catch(reason => { if (!controller.signal.aborted) setError(errorText(reason)); })
+    }).catch(reason => { if (!controller.signal.aborted) { setLoadFailed(true); setError(errorText(reason)); } })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [reload]);
@@ -112,7 +113,7 @@ export function AccountingOnboardingPanel() {
             {workspaces.map(item => <option key={item.workspaceId} value={item.workspaceId}>{item.name} · {item.scope.entityId} · {item.scope.startDate} – {item.scope.endDate}</option>)}
           </Select>
         </FormRow>
-        <PanelReload reload={() => { if (!loading) setReload(value => value + 1); }} failed={Boolean(error)} busy={loading} what="onboarding workspaces" />
+        <PanelReload reload={() => { if (!loading) setReload(value => value + 1); }} failed={loadFailed} busy={loading} what="onboarding workspaces" />
       </div>
       {!loading && !error && workspaces.length === 0 ? <p role="status" className="text-sm">No onboarding workspaces retained. Define a bounded scope to begin.</p> : null}
       <TechnicalDetails label="Define onboarding scope">

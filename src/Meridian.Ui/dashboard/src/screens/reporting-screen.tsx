@@ -2,13 +2,14 @@ import { TimeText } from "@/components/ui/time-text";
 import { EntityLink } from "@/components/meridian/entity-inspector";
 import { GeneralLedgerExportPanel } from "./reporting-screen.general-ledger-export";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
-import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
+import { FileText, Landmark, Network, PencilLine, XCircle } from "lucide-react";
 import { NewCustomReportBar } from "@/screens/reporting-screen.new-custom-report";
 import { useLocation } from "react-router-dom";
 import { formatCount, formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount, pluralizeCount } from "@/lib/format";
 import { utcToday } from "@/lib/local-date";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { useReportRunStream } from "@/hooks/use-report-run-stream";
@@ -499,7 +500,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     livePortfolioRefreshInFlight.current = true;
     setLivePortfolioRefreshStatus({
       id: "live-portfolio-views",
-      label: "Revalue live portfolio views",
+      label: "Refresh live portfolio views",
       state: "running",
       message: trigger === "auto" ? "Refreshing live portfolio views from market tick cadence." : "Refreshing live portfolio views.",
       details: [
@@ -513,7 +514,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       await onRefreshLivePortfolioViews();
       setLivePortfolioRefreshStatus({
         id: "live-portfolio-views",
-        label: "Revalue live portfolio views",
+        label: "Refresh live portfolio views",
         state: "success",
         message: trigger === "auto" ? "Live portfolio views refreshed from market tick cadence." : "Live portfolio views refreshed.",
         details: ["Portfolio summary data was refreshed through the shared workstation portfolio route."]
@@ -522,7 +523,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       const display = describeApiError(error, "Live portfolio view refresh failed.");
       setLivePortfolioRefreshStatus({
         id: "live-portfolio-views",
-        label: "Revalue live portfolio views",
+        label: "Refresh live portfolio views",
         state: "error",
         message: display.summary,
         details: display.details
@@ -1046,17 +1047,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                   <CardTitle>Tick-linked portfolio reporting</CardTitle>
                   <CardDescription>Reporting cuts carry shared live-summary routes, source freshness, liquidity, and cash-ladder evidence.</CardDescription>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => void handleRefreshLivePortfolioViews()}
-                  disabled={!onRefreshLivePortfolioViews || isRefreshingLivePortfolioViews}
-                  aria-label="Revalue live portfolio reporting views"
-                >
-                  <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                  Revalue
-                </Button>
+                <PanelReload reload={() => handleRefreshLivePortfolioViews()} failed={livePortfolioRefreshStatus?.state === "error"} busy={isRefreshingLivePortfolioViews} what="live portfolio views" />
               </div>
               {livePortfolioRefreshStatus ? (
                 <div className="pt-2">

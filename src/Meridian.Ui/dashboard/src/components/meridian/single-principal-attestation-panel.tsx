@@ -112,7 +112,7 @@ function AttestationPanel({ vaultId, documentId }: { vaultId: string; documentId
           <h4 className="text-sm font-semibold">Preparer attestation</h4>
           <p className="mt-1 text-sm text-muted-foreground">Acknowledge inspecting retained evidence. This does not accept the document, approve a journal, or independently review an amount.</p>
         </div>
-        <PanelReload reload={() => { if (!loading && !busy) setReload((value) => value + 1); }} failed={!loading && (!workspace || !subject)} busy={busy} what="attestation" />
+        <PanelReload reload={() => { if (!loading && !busy && !(workspace && subject && (reason || declarationReason || revokeReason || confirmed || pending))) setReload((value) => value + 1); }} failed={!loading && (!workspace || !subject)} busy={busy} what="attestation" />
       </div>
       {loading ? <p role="status" className="text-sm">Loading attestation policy and retained document snapshot…</p> : null}
       {error ? <p role="alert" className="break-words text-sm text-danger">{error}</p> : null}
