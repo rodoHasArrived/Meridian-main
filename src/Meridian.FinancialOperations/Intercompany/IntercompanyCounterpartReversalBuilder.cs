@@ -116,7 +116,7 @@ public static class IntercompanyCounterpartReversalBuilder
             target.BaseCurrency, $"Exact counterpart reversal of journal {original.Entry.JournalEntryId:D}", "intercompany-proposal-service", now, now, 1,
             inverse, [$"journal:{source.SourceJournalId:D}", $"journal:{original.Entry.JournalEntryId:D}", $"intercompany-agreement:{agreement.ArrangementId:D}/revision:{agreement.RevisionId:D}"], [],
             EntryType: ManualJournalEntryTypeDto.Reversal,
-            TreasuryContext: new(source.EffectiveDate, $"intercompany-proposal:{source.ProposalId:D}", FundEventType: "IntercompanyMirror"),
+            TreasuryContext: new(source.EffectiveDate, $"intercompany-proposal:{source.ProposalId:D}", FundEventType: IntercompanyProposalDraftBuilder.MirrorFundEventType),
             ReversalOfJournalEntryId: original.Entry.JournalEntryId,
             Reversal: new(original.Entry.JournalEntryId, source.ProposalId, "Source-linked exact counterpart reversal proposal.", now, "intercompany-proposal-service"),
             TenantId: source.TenantId, CompanyId: source.CompanyId)

@@ -2077,6 +2077,9 @@
                 <TabItem Header="Counterpart proposals">
                     <agreementViews:IntercompanyCounterpartProposalsControl DataContext="{Binding CounterpartProposals}" />
                 </TabItem>
+                <TabItem Header="Interest accrual">
+                    <agreementViews:IntercompanyInterestAccrualControl DataContext="{Binding InterestAccrual}" />
+                </TabItem>
             </TabControl>
         </StackPanel>
     </ScrollViewer>

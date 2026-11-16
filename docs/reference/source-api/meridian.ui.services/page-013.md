@@ -6,6 +6,69 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IQualityArchiveStore
+
+Qualified name: <code>Meridian.Ui.Services.Services.IQualityArchiveStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:17](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L17).
+
+Interface for persisting and retrieving daily quality records.
+
+```csharp
+public interface IQualityArchiveStore : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task RecordAsync(string symbol, DateOnly date, double completenessScore, CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:22](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L22) | Records a daily quality score for a symbol. |
+| <code>Task&lt;IReadOnlyList&lt;DailyQualityRecord&gt;&gt; GetHistoryAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:27](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L27) | Retrieves historical quality records for a symbol within a date range. |
+| <code>Task&lt;IReadOnlyList&lt;string&gt;&gt; GetSymbolsAsync(CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:32](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L32) | Gets all tracked symbols. |
+
+## LiveStatusEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.Services.LiveStatusEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:106](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L106).
+
+Event arguments for live status monitoring updates.
+
+```csharp
+public sealed class LiveStatusEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SimpleStatus? Status { get; init; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:108](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L108) |  |
+| <code>public DateTime Timestamp { get; init; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:109](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L109) |  |
+| <code>public bool IsStale { get; init; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:110](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L110) |  |
+
+## LogEntryEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.Services.LogEntryEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L20).
+
+Event arguments for log entry events.
+
+```csharp
+public sealed class LogEntryEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LogLevel Level { get; }</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L22) |  |
+| <code>public DateTime Timestamp { get; }</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:23](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L23) |  |
+| <code>public string Message { get; }</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:24](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L24) |  |
+| <code>public Exception? Exception { get; }</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:25](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L25) |  |
+| <code>public (string key, string value)[] Properties { get; }</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:26](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L26) |  |
+| <code>public LogEntryEventArgs(LogLevel level, DateTime timestamp, string message, Exception? exception, (string key, string value)[] properties);</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:28](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L28) |  |
+
 ## LoggingServiceBase
 
 Qualified name: <code>Meridian.Ui.Services.Services.LoggingServiceBase</code>. Kind: `class`.
@@ -1065,65 +1128,3 @@ Declared public members:
 | <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:143](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L143) |  |
 | <code>public string Reason { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:144](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L144) |  |
 | <code>public long Size { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:145](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L145) |  |
-
-## SmartRecommendationsService
-
-Qualified name: <code>Meridian.Ui.Services.SmartRecommendationsService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:13](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L13).
-
-Service that analyzes existing data and provides smart recommendations for backfill operations, gap repairs, and data quality improvements.
-
-```csharp
-public sealed class SmartRecommendationsService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SmartRecommendationsService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:23](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L23) | Gets the singleton instance. |
-| <code>public async Task&lt;BackfillRecommendations&gt; GetRecommendationsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:35](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L35) | Generates smart recommendations based on current data state. |
-
-## StaleIndicatorResult
-
-Qualified name: <code>Meridian.Ui.Services.StaleIndicatorResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/FormatHelpers.cs:141](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L141).
-
-Result of stale data indicator formatting. Used by pages to display consistent &quot;last update&quot; text with stale/fresh coloring.
-
-```csharp
-public sealed class StaleIndicatorResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string DisplayText { get; }</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:143](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L143) |  |
-| <code>public bool IsStale { get; }</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:144](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L144) |  |
-| <code>public StaleIndicatorResult(string displayText, bool isStale);</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:146](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L146) |  |
-
-## StorageAnalysisOptions
-
-Qualified name: <code>Meridian.Ui.Services.StorageAnalysisOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1322](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1322).
-
-Options for storage analysis.
-
-```csharp
-public sealed class StorageAnalysisOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool CalculateHashes { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1324](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1324) |  |
-| <code>public bool FindDuplicates { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1325](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1325) |  |
-| <code>public bool AnalyzeCompression { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1326](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1326) |  |
-| <code>public bool FindSmallFiles { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1327](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1327) |  |
-| <code>public bool AnalyzeTiering { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1328](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1328) |  |
-| <code>public int ColdTierAgeDays { get; set; } = 90;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1329](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1329) |  |

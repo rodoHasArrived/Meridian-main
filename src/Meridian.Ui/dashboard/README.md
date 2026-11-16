@@ -106,6 +106,11 @@ settlement** action exposes the existing preparation service for bond acquisitio
 dates, face, booked factor, clean price, fees, observed cash, retained evidence and distinct accounts
 produce a reconciliation review or named blockers. Preparation creates no trade, journal or lot.
 
+An approved loan-interest accounting profile exposes **Accrue interest**: the operator selects the
+loan principal profile of the same legal agreement and a window, previews the server-computed
+interest with its slices and evidence, and creates the source-book draft bound to that preview's
+evidence digest. No rate, principal or amount is entered, and nothing is approved or posted there.
+
 Accounting's journal workbench exposes **Accrual schedules** with reviewed fixed amounts, cadence,
 dates, accounts, source evidence, authoritative period preview, occurrence generation and the
 retained journal queue. Account-owned and sleeve-owned books accept a reviewed fund-account

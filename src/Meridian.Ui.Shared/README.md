@@ -189,6 +189,10 @@ server-authoritative gross/proposed/posted/actual/preview values and separate FX
 Browser and WPF consume the same seams; destination permissions remain authoritative.
 An accounting arrangement the tenant registry no longer returns fails only its own proposal in
 counterpart delivery and is classified `AgreementAuthorityUnavailable` in the aged-break list.
+A delivered counterpart's treasury label `IntercompanyMirror` is a classification, not a fund event:
+on a draft with a server-retained proposal identity the workbench does not require a fund event
+identity or capital account for it, keeps it as the posting's source event type and does not write
+it as treasury fund-event metadata, so the counterpart can pass ordinary review and posting.
 See [intercompany operations](../../docs/operators/intercompany-entity-controls.md).
 
 Entity lifecycle revisions, book-control preflight/activation, and controlled-close authorization

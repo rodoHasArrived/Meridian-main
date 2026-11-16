@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolOperationResult
+
+Qualified name: <code>Meridian.Ui.Services.SymbolOperationResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:565](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L565).
+
+Reports an operation&#x27;s success for one symbol with an optional message and error.
+
+```csharp
+public sealed class SymbolOperationResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:567](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L567) |  |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:568](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L568) |  |
+| <code>public string? Message { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:569](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L569) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:570](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L570) |  |
+
+## SymbolPathResponse
+
+Qualified name: <code>Meridian.Ui.Services.SymbolPathResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:81](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L81).
+
+Carries the API storage-folder path for a symbol.
+
+```csharp
+public sealed class SymbolPathResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:83](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L83) |  |
+| <code>public string FolderPath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:84](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L84) |  |
+
+## SymbolQualityInfo
+
+Qualified name: <code>Meridian.Ui.Services.SymbolQualityInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1203](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1203).
+
+Quality info for a single symbol.
+
+```csharp
+public sealed class SymbolQualityInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1205](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1205) |  |
+| <code>public double Completeness { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1206](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1206) |  |
+| <code>public long RecordCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1207](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1207) |  |
+| <code>public bool HasGaps { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1208](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1208) |  |
+| <code>public string QualityGrade { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1209](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1209) |  |
+
 ## SymbolSearchApiResponse
 
 Qualified name: <code>Meridian.Ui.Services.SymbolSearchApiResponse</code>. Kind: `class`.
@@ -1077,72 +1139,3 @@ Enum declarations:
 | <code>Unknown</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:523](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L523) |  |
 | <code>Buy</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:524](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L524) |  |
 | <code>Sell</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:525](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L525) |  |
-
-## TradingCalendarService
-
-Qualified name: <code>Meridian.Ui.Services.TradingCalendarService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataCompletenessService.cs:599](../../../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs#L599).
-
-Service for trading calendar information.
-
-```csharp
-public sealed class TradingCalendarService : IOperationalTradingCalendar
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TradingCalendarService() : this(new TradingCalendar());</code> | [src/Meridian.Ui.Services/Services/DataCompletenessService.cs:603](../../../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs#L603) |  |
-| <code>public TradingCalendarService(IOperationalTradingCalendar calendar);</code> | [src/Meridian.Ui.Services/Services/DataCompletenessService.cs:607](../../../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs#L607) |  |
-| <code>public bool IsHoliday(DateOnly date) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DataCompletenessService.cs:612](../../../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs#L612) |  |
-| <code>public bool IsTradingDay(DateOnly date) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DataCompletenessService.cs:614](../../../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs#L614) |  |
-| <code>public List&lt;DateOnly&gt; GetTradingDays(DateOnly start, DateOnly end);</code> | [src/Meridian.Ui.Services/Services/DataCompletenessService.cs:616](../../../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs#L616) |  |
-| <code>public IReadOnlyList&lt;TradingSession&gt; GetTradingSessions(DateOnly date, string market = &quot;US&quot;) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DataCompletenessService.cs:631](../../../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs#L631) |  |
-| <code>public DateOnly GetNextTradingDay(DateOnly after, string market = &quot;US&quot;) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DataCompletenessService.cs:634](../../../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs#L634) |  |
-| <code>public IReadOnlyList&lt;DateOnly&gt; GetHolidays(int year, string market = &quot;US&quot;) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DataCompletenessService.cs:636](../../../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs#L636) |  |
-
-## UnsubscribeResponse
-
-Qualified name: <code>Meridian.Ui.Services.UnsubscribeResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/LiveDataService.cs:320](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L320).
-
-Carries the API success flag for removing a live subscription.
-
-```csharp
-public sealed class UnsubscribeResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:322](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L322) |  |
-
-## UpdateBackfillScheduleRequest
-
-Qualified name: <code>Meridian.Ui.Services.UpdateBackfillScheduleRequest</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:265](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L265).
-
-Carries optional changes to a historical-data schedule&#x27;s timing, scope, provider, and priority.
-
-```csharp
-public sealed class UpdateBackfillScheduleRequest
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? Name { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:267](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L267) |  |
-| <code>public string? Description { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:268](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L268) |  |
-| <code>public string? CronExpression { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:269](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L269) |  |
-| <code>public List&lt;string&gt;? Symbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:270](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L270) |  |
-| <code>public string? Provider { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:271](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L271) |  |
-| <code>public string? Granularity { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:272](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L272) |  |
-| <code>public int? LookbackDays { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:273](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L273) |  |
-| <code>public string? Priority { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:274](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L274) |  |
-| <code>public List&lt;string&gt;? Tags { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduleManagerService.cs:275](../../../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs#L275) |  |

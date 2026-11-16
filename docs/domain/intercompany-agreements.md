@@ -65,6 +65,10 @@ A separate, operator-requested accrual turns a fixed-rate, simple-interest loan'
 terms into an amount for a half-open window `[AccrualFrom, AccrualTo)`. [ADR-028](../adr/028-governed-intercompany-interest-accrual.md)
 records the decision and the calculation rule `intercompany-accrual-v1`.
 
+An operator requests it from the browser's accounting-profile panel ("Accrue interest" on an approved
+`LoanInterest` profile) or from the WPF Interest accrual tab. Both preview the server's computation
+and then draft exactly that preview by its evidence digest; neither enters a rate, principal or amount.
+
 Each day accrues under the approved `LoanInterest` accounting-profile revision applicable on that day
 and the legal revision it pins. The window is cut at every profile-revision boundary, schedule-period
 boundary and principal change; each slice is principal times annual rate times the day-count fraction
