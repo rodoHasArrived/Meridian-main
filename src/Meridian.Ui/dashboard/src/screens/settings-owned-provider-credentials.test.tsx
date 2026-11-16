@@ -4,6 +4,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { OwnedProviderCredentialPanel } from "./settings-owned-provider-credentials";
 import type { SettingsProviderConnectionRow } from "./settings-screen.view-model";
 import type { ProviderConnectionRow, ProviderRoutingConnection, SessionInfo } from "@/types";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
+
+function HeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
+}
 
 const api = vi.hoisted(() => ({ getProviderRoutingConnections: vi.fn(), getProviderConnections: vi.fn(), putProviderCredentials: vi.fn(), verifyProviderConnection: vi.fn(), deleteProviderCredentials: vi.fn() }));
 vi.mock("@/lib/api", () => api);
@@ -195,6 +202,29 @@ describe("owned provider credential editor", () => {
     view.rerender(<OwnedProviderCredentialPanel row={row} session={null} />);
     expect(screen.getByLabelText("Alpaca owned connection")).toHaveValue("");
     expect(screen.getByRole("button", { name: "Save Alpaca credentials" })).toBeDisabled();
+  });
+  it("reloads with the header refresh while keeping the selection, never over an open credential editor", async () => {
+    render(<HeaderRefresh><OwnedProviderCredentialPanel row={row} session={session} /></HeaderRefresh>);
+    await select();
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry loading connections for Alpaca" })).not.toBeInTheDocument();
+    expect(api.getProviderRoutingConnections).toHaveBeenCalledTimes(1);
+    await userEvent.click(screen.getByRole("button", { name: "Header refresh" }));
+    await screen.findByText("Owned connections refreshed; selected connection status reloaded.");
+    expect(api.getProviderRoutingConnections).toHaveBeenCalledTimes(2);
+    expect(screen.getByLabelText("Alpaca owned connection")).toHaveValue("paper-a");
+
+    await fill();
+    await userEvent.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(api.getProviderRoutingConnections).toHaveBeenCalledTimes(2);
+    expect(screen.getByLabelText("Alpaca Secret key")).toHaveValue("secret");
+  });
+  it("offers Retry only after owned connections fail to load", async () => {
+    api.getProviderRoutingConnections.mockRejectedValueOnce(new Error("offline"));
+    render(<OwnedProviderCredentialPanel row={row} session={session} />);
+    await userEvent.click(await screen.findByRole("button", { name: "Retry loading connections for Alpaca" }));
+    await screen.findByRole("option", { name: /paper-a/ });
+    expect(screen.queryByRole("button", { name: "Retry loading connections for Alpaca" })).not.toBeInTheDocument();
   });
   it("invalidates selection on exposed session change and ignores delayed status", async () => {
     const pending = deferred<ProviderConnectionRow[]>(); api.getProviderConnections.mockReturnValue(pending.promise);

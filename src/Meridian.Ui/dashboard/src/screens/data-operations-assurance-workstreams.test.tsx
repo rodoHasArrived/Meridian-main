@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import {
   IngestionOperationsWorkstream,
   StorageAssuranceWorkstream
@@ -16,7 +18,29 @@ const api = vi.hoisted(() => ({
 
 vi.mock("@/lib/api/data-operations-assurance.api", () => api);
 
+function HeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
+}
+
 describe("data operations assurance workstreams", () => {
+  it("reloads both workstreams with the header refresh and offers Retry only after a failed load", async () => {
+    render(<MemoryRouter><HeaderRefresh><IngestionOperationsWorkstream /><StorageAssuranceWorkstream /></HeaderRefresh></MemoryRouter>);
+    expect(await screen.findByText("job-1")).toBeInTheDocument();
+    expect(await screen.findByText("Temporary candidates")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Retry loading/ })).not.toBeInTheDocument();
+
+    api.getIngestionOperations.mockRejectedValueOnce(new Error("Ingestion read model offline"));
+    fireEvent.click(screen.getByRole("button", { name: "Header refresh" }));
+    await waitFor(() => expect(api.getStorageAssurance).toHaveBeenCalledTimes(2));
+    const retry = await screen.findByRole("button", { name: "Retry loading ingestion operations" });
+    expect(screen.queryByRole("button", { name: "Retry loading storage assurance" })).not.toBeInTheDocument();
+    fireEvent.click(retry);
+    await waitFor(() => expect(api.getIngestionOperations).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Retry loading ingestion operations" })).not.toBeInTheDocument());
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     api.getIngestionOperations.mockResolvedValue({

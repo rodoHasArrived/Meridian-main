@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
 import { SettingsScreen } from "@/screens/settings-screen";
 import { renderWithRouter } from "@/test/render";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
 import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import type {
@@ -522,6 +524,11 @@ const securityAssetProfiles: SecurityAssetProfileDefinition[] = [
     approvalReference: "MERIDIAN-SEED-APPROVAL"
   }
 ];
+
+function HeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
+}
 
 describe("SettingsScreen", () => {
   beforeEach(() => {
@@ -1974,7 +1981,7 @@ describe("SettingsScreen", () => {
     });
 
     renderWithRouter(
-      <SettingsScreen
+      <HeaderRefresh><SettingsScreen
         session={session}
         overview={overview}
         brokerageConnection={alpacaConnection}
@@ -1982,7 +1989,7 @@ describe("SettingsScreen", () => {
         providerRoutingConnections={providerRoutingConnections}
         providerRoutingBindings={providerRoutingBindings}
         providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
-      />,
+      /></HeaderRefresh>,
       { initialEntries: ["/settings/providers/polygon/advanced"] }
     );
 
@@ -2001,6 +2008,8 @@ describe("SettingsScreen", () => {
       expect(apiMocks.getProviderIntegrationQuarantineReview).toHaveBeenCalledWith("provider-reference", 5);
     });
     expect(await within(panel).findByText("Provider integration runtime evidence loaded.")).toBeInTheDocument();
+    // Once loaded, the header Refresh re-reads runtime evidence; no local load, refresh, or retry control remains.
+    expect(within(panel).queryByRole("button", { name: /provider integration runtime evidence for Polygon\.io/ })).not.toBeInTheDocument();
     expect(within(panel).getByText("provider-reference")).toBeInTheDocument();
     expect(within(panel).getByText("Jun 16, 2026, 12:30 UTC")).toBeInTheDocument();
     expect(within(panel).getByText("2 / 4")).toBeInTheDocument();
@@ -2168,6 +2177,14 @@ describe("SettingsScreen", () => {
         queryParametersByCapability: {}
       }));
     });
+
+    // The header Refresh re-reads loaded runtime evidence; a failed read brings back one Retry.
+    await within(panel).findByText(/Provider integration runtime (evidence )?loaded/);
+    const monitorReads = apiMocks.getProviderIntegrationConnectionMonitor.mock.calls.length;
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    await waitFor(() => expect(apiMocks.getProviderIntegrationConnectionMonitor.mock.calls.length).toBe(monitorReads + 1));
+    await within(panel).findByText(/Provider integration runtime (evidence )?loaded/);
+    expect(within(panel).queryByRole("button", { name: /provider integration runtime evidence for Polygon\.io/ })).not.toBeInTheDocument();
   });
 
   it("runs the guided provider integration workbench over shared setup and dry-run endpoints", async () => {

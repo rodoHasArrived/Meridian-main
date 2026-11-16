@@ -1315,6 +1315,12 @@ describe("data-screen view model", () => {
     );
 
     expect(providerSection.title).toBe("Provider Management");
+    // Loaded provider status is re-read by the header Refresh; Retry appears only while that evidence is missing.
+    expect(providerSection.commandActions.map((action) => action.id)).toEqual(["add", "diagnostics", "settings"]);
+    expect(buildProviderSection(providers, null, { providerConnections: null, onProviderRoutingRefresh: () => undefined }).commandActions[1])
+      .toMatchObject({ id: "refresh", label: "Retry", ariaLabel: "Retry loading provider status and routing evidence", disabled: false });
+    expect(buildProviderSection(providers, null, { providerConnections: null, providerRoutingRefreshing: true, onProviderRoutingRefresh: () => undefined }).commandActions[1])
+      .toMatchObject({ id: "refresh", label: "Retrying...", disabled: true, busy: true });
     expect(providerSection.providerOptions).toEqual([
       expect.objectContaining({
         value: "provider-row-polygon",
