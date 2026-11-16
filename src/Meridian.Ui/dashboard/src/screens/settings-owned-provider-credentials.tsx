@@ -117,7 +117,7 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
       const status = await readStatus(choice, token);
       if (current(token)) setEditor(previous => ({ ...previous, status, busy: null, message: "Selected connection status loaded." }));
     } catch (error) {
-      if (current(token)) setEditor(previous => ({ ...previous, status: null, busy: null, message: describeApiError(error, "Selected connection is unavailable. Refresh owned connections before retrying.").summary }));
+      if (current(token)) { setFailed(true); setEditor(previous => ({ ...previous, status: null, busy: null, message: describeApiError(error, "Selected connection is unavailable. Refresh owned connections before retrying.").summary })); }
     }
   }
   async function mutate(action: "save" | "verify" | "clear") {
@@ -161,7 +161,7 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
       setEditor(previous => ({ ...previous, status, busy: null, values: {}, editing: action === "clear", acknowledged: false, message }));
       await onRefresh?.();
     } catch (error) {
-      if (current(token)) setEditor(previous => ({ ...previous, status: null, values: {}, busy: null, message: describeApiError(error, "Credential operation was not confirmed. Refresh the selected connection before retrying.").summary }));
+      if (current(token)) { setFailed(true); setEditor(previous => ({ ...previous, status: null, values: {}, busy: null, message: describeApiError(error, "Credential operation was not confirmed. Refresh the selected connection before retrying.").summary })); }
     }
   }
 

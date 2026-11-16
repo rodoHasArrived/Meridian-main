@@ -225,7 +225,7 @@ public sealed class RecurringJournalRunner(
                 throw new InvalidOperationException(
                     $"The {previousDate:yyyy-MM-dd} occurrence was reversed or rebooked and its correction journal is not posted yet. This amount depends on it; post the correction first.");
             }
-            status = draft is null ? "missing its retained draft" : $"a {draft.Status} draft";
+            status = draft is null ? "missing its retained draft" : $"a draft in status {draft.Status}";
         }
 
         throw new InvalidOperationException(

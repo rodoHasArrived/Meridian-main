@@ -70,9 +70,7 @@ export function StrategyRobustness() {
       <CardDescription>Compare retained parameter results across one experiment. This is in-sample sensitivity; out-of-sample robustness requires separate walk-forward evidence.</CardDescription>
     </CardHeader>
     <CardContent className="space-y-4">
-      {loaded || loading || error !== null
-        ? <PanelReload reload={load} failed={error !== null} busy={loading} what="retained experiments" />
-        : <Button onClick={() => void load()}>Load retained experiments</Button>}
+      {loaded || loading || error !== null ? <PanelReload reload={load} failed={error !== null} busy={loading} what="retained experiments" /> : <Button onClick={() => void load()}>Load retained experiments</Button>}
       {error ? <p role="alert">{error} Retry loading retained experiments.</p> : null}
       {loading ? <p role="status">Loading retained sweep evidence…</p> : null}
       {loaded && groups.length === 0 ? <p role="status">No retained sweep experiments are available in this scope. Run a parameter sweep before comparing its landscape.</p> : null}
