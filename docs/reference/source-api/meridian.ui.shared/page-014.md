@@ -703,6 +703,26 @@ Declared public members:
 | <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:247](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L247) |  |
 | <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:249](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L249) |  |
 
+## PerformanceReturnFigures
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PerformanceReturnFigures</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:11](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L11).
+
+Maps the shared F# return kernel (ReturnMeasurement) onto the workstation contract, and supplies the brokerage seam&#x27;s choice of which cash activity is external capital. Fund, share-class, and investor lanes reuse ToDto with their own source label.
+
+```csharp
+public static class PerformanceReturnFigures
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string BrokerageSource = &quot;brokerage-balance-snapshots&quot;;</code> | [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:14](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L14) | Source label for figures measured from synced brokerage balance snapshots. |
+| <code>public static PerformanceReturnFigureDto ToDto(ReturnFigure figure, string source);</code> | [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:23](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L23) |  |
+| <code>public static IReadOnlyList&lt;PerformanceReturnFigureDto&gt; MeasureBrokerage(IEnumerable&lt;(DateOnly AsOf, decimal Equity, string Currency)&gt; valuations, IEnumerable&lt;BrokerageCashFlowEntryDto&gt; cashEntries, string currency);</code> | [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:49](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L49) | Time-weighted and money-weighted figures for a brokerage account from its balance snapshots and categorized cash activity. Snapshot equity is end-of-day; deposits, withdrawals, and transfers are the only external flows. Any cash transaction the categorizer could not classify makes every figure review-required, because an unrecognized deposit would otherwise be reported as performance. |
+
 ## PeriodAdjustmentPreparationService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PeriodAdjustmentPreparationService</code>. Kind: `class`.
@@ -1014,13 +1034,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public PrivateCapitalFundEventCommandCenterService(IManualJournalEntryWorkbenchService manualJournalEntryWorkbenchService);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L28) |  |
 | <code>public async Task&lt;PrivateCapitalFundEventCommandCenterDto?&gt; GetCommandCenterAsync(string? fundProfileId, Guid? ledgerBookId, string fundEventId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:33](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L33) |  |
-
-## PrivateCapitalLifecycleRead
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalLifecycleRead</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:8](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L8).
-
-```csharp
-public sealed record PrivateCapitalLifecycleRead(IReadOnlyList<CapitalCommitmentDto> Commitments, IReadOnlyList<CapitalActivityDto> Activities, IReadOnlyList<string> Warnings, bool IsAvailable = true);
-```

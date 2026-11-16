@@ -1810,6 +1810,7 @@ Meridian-main
 │   │   │   ├── direct-lending-pik-capitalization-and-rate-resets.md
 │   │   │   ├── financing-liabilities-depreciation-blueprint.md
 │   │   │   ├── intercompany-agreement-registry.md
+│   │   │   ├── investor-performance-pack-blueprint.md
 │   │   │   ├── portfolio-cash-ladder-blueprint-2026-07.md
 │   │   │   ├── README.md
 │   │   │   ├── report-writer-auto-preview-blueprint.md
@@ -6320,6 +6321,7 @@ Meridian-main
 │   │   │   ├── OperatorScopePreferenceDtos.cs
 │   │   │   ├── OperatorSurfaceVisitDtos.cs
 │   │   │   ├── OperatorTriageDtos.cs
+│   │   │   ├── PerformanceReturnDtos.cs
 │   │   │   ├── PilotReadinessArtifactDtos.cs
 │   │   │   ├── PreparerAttestationEvidenceDtos.cs
 │   │   │   ├── PreparerAttestationProofExportDto.cs
@@ -7161,7 +7163,8 @@ Meridian-main
 │   │   ├── ReconciliationCaseWorkflow.fs
 │   │   ├── ReconciliationClassification.fs
 │   │   ├── ReconciliationRules.fs
-│   │   └── ReconciliationTypes.fs
+│   │   ├── ReconciliationTypes.fs
+│   │   └── ReturnMeasurement.fs
 │   ├── Meridian.FSharp.Trading
 │   │   ├── Interop.fs
 │   │   ├── Meridian.FSharp.Trading.fsproj
@@ -11197,6 +11200,7 @@ Meridian-main
 │   │   │   ├── OptionAssessmentImportService.cs
 │   │   │   ├── OptionScreeningService.cs
 │   │   │   ├── PaperFuturesSettlementService.cs
+│   │   │   ├── PerformanceReturnFigures.cs
 │   │   │   ├── PeriodAdjustmentPreparationService.cs
 │   │   │   ├── PlaidWebhookVerifier.cs
 │   │   │   ├── PlaidWorkstationService.cs
@@ -12533,6 +12537,7 @@ Meridian-main
 │   │   ├── PromotionPolicyTests.fs
 │   │   ├── ReconciliationCaseWorkflowTests.fs
 │   │   ├── ReportPackValidationRulesTests.fs
+│   │   ├── ReturnMeasurementTests.fs
 │   │   ├── RiskPolicyTests.fs
 │   │   ├── SecurityCalculationsTests.fs
 │   │   ├── SecurityDefinitionValidationTests.fs
@@ -14816,6 +14821,7 @@ Meridian-main
 │   │   │   ├── OptionReferenceEndpointsRoundtripTests.cs
 │   │   │   ├── OptionScreeningServiceTests.cs
 │   │   │   ├── PackagingEndpointsPathContainmentTests.cs
+│   │   │   ├── PerformanceReturnFiguresTests.cs
 │   │   │   ├── PeriodAdjustmentPreparationTests.cs
 │   │   │   ├── PlaidWebhookVerifierTests.cs
 │   │   │   ├── PlaidWorkstationServiceTests.cs

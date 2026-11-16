@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingSecureDistributionHostedService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingSecureDistributionHostedService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs:17](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs#L17).
+
+Continuously drains the durable delivery outbox; no tenant-scoped HTTP pump is exposed.
+
+```csharp
+public sealed class ReportingSecureDistributionHostedService : BackgroundService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingSecureDistributionHostedService(ReportingDeliveryDispatcher dispatcher, ReportingScheduleService scheduleService, ReportingSecureDistributionApplicationService applicationService, SecureReportingDistributionOptions options, ILogger&lt;ReportingSecureDistributionHostedService&gt; logger) : this(dispatcher, scheduleService, applicationService, options, logger, readiness : null);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs#L39) |  |
+| <code>public ReportingSecureDistributionHostedService(ReportingDeliveryDispatcher dispatcher, ReportingScheduleService scheduleService, ReportingSecureDistributionApplicationService applicationService, SecureReportingDistributionOptions options, ILogger&lt;ReportingSecureDistributionHostedService&gt; logger, ReportingDeliveryWorkerReadinessState? readiness);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs:55](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs#L55) |  |
+| <code>public override Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs:127](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs#L127) |  |
+| <code>public override async Task StopAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs:133](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs#L133) |  |
+
 ## ReportingSecureDistributionServiceCollectionExtensions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingSecureDistributionServiceCollectionExtensions</code>. Kind: `class`.
@@ -819,23 +840,3 @@ Credential-free transport readiness exposed to authenticated reporting operators
 ```csharp
 public sealed record SecureReportingTransportCapability(string TransportId, string DisplayName, string DeliveryMode, bool IsExternal, bool RequiresDestination, bool UsesGovernedRecipientScope, bool IssuesAccessGrant, bool SupportsProviderReceipts, bool IsConfigured, bool IsInfrastructureReady, string? InfrastructureDisabledReasonCode, bool IsReady, string? DisabledReasonCode);
 ```
-
-## SecurityMasterExceptionCaseworkService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterExceptionCaseworkService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:40](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L40).
-
-Reads Security Master-tagged cases from the authoritative reconciliation queue.
-
-```csharp
-public sealed class SecurityMasterExceptionCaseworkService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string QualityRunId = &quot;security-master-quality&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:45](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L45) | Canonical run identifier used by genuinely owner-scoped Security Master quality cases. |
-| <code>public SecurityMasterExceptionCaseworkService(IReconciliationBreakQueueRepository? breakQueueRepository, ILogger&lt;SecurityMasterExceptionCaseworkService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:49](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L49) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;&gt; GetAgingExceptionsAsync(ReconciliationBreakQueueScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:60](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L60) | Returns exact-scope open Security Master cases whose SLA deadline has elapsed. |

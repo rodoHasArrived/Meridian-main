@@ -1,11 +1,11 @@
 {
-  "total_files": 1272,
+  "total_files": 1273,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:eb85e901d3268ffd278eded76ed741b8ec3a759f3a16c9ae1217ac475559f955",
+  "signal_digest": "sha256:4c39820e5f8e6820de17bcfd79297c468dabdc3d4871fe3460928bb492c5546d",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2384,6 +2384,13 @@
     },
     {
       "path": "docs/engineering/blueprints/intercompany-agreement-registry.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/blueprints/investor-performance-pack-blueprint.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
