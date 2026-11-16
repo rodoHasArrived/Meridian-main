@@ -101,6 +101,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IntercompanyCounterpartProposalsControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyCounterpartProposalsControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyCounterpartProposalsControl.xaml.cs#L7) |  |
 
+## IntercompanyInterestAccrualControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyInterestAccrualControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyInterestAccrualControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyInterestAccrualControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs#L7) |  |
+
 ## IssueDisplayItem
 
 Qualified name: <code>Meridian.Wpf.Views.IssueDisplayItem</code>. Kind: `class`.
@@ -1087,21 +1103,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public SecurityMasterPage(SecurityMasterViewModel viewModel);</code> | [src/Meridian.Wpf/Views/SecurityMasterPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/SecurityMasterPage.xaml.cs#L14) |  |
-
-## SecurityPassportEditorPage
-
-Qualified name: <code>Meridian.Wpf.Views.SecurityPassportEditorPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/SecurityPassportEditorPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/SecurityPassportEditorPage.xaml.cs#L10).
-
-Hosts governed instrument-passport field editing and review.
-
-```csharp
-public partial class SecurityPassportEditorPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityPassportEditorPage(SecurityPassportEditorViewModel viewModel);</code> | [src/Meridian.Wpf/Views/SecurityPassportEditorPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/SecurityPassportEditorPage.xaml.cs#L12) |  |

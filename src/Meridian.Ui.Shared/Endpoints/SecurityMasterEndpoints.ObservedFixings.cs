@@ -72,13 +72,8 @@ public static partial class SecurityMasterEndpoints
                 if (matches.Length != 1 || matches[0].ObservationDate != request.ResetDate)
                     throw new InvalidOperationException("The observed fixing must uniquely match this bond's index, currency and exact reset date. A fixing-date lag requires a separately supported declared mapping; stale observations are never carried forward.");
                 var observation = matches[0];
-                var fraction = observation.Unit switch
-                {
-                    SecurityRateUnit.Fraction => observation.Value,
-                    SecurityRateUnit.Percent => observation.Value / 100m,
-                    SecurityRateUnit.BasisPoints => observation.Value / 10_000m,
-                    _ => throw new ArgumentException("Observed interest fixings require explicit Fraction, Percent or BasisPoints units.")
-                };
+                var fraction = RateUnitNormalizer.ToFractionOrNull(observation.Value, observation.Unit)
+                    ?? throw new ArgumentException("Observed interest fixings require explicit Fraction, Percent or BasisPoints units.");
                 var receipt = await store.RetainAsync(new(securityId, security.Version, leg.IndexName.Trim(), request.ResetDate,
                     fraction, observation, ResolveActor(context), request.Justification), ct).ConfigureAwait(false);
                 return Results.Json(receipt, jsonOptions);

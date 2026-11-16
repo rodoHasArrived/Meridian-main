@@ -121,8 +121,6 @@ public sealed class ClusterStatusViewModelTests
         xaml.Should().NotContain("ClusterStatusRefreshButton");
         xaml.Should().NotContain("Command=\"{Binding RefreshCommand}\"");
         viewModel.Should().Contain("public IAsyncRelayCommand RefreshCommand { get; }");
-        // The disabled-state tooltip belonged to the removed page Refresh button, the page's only action.
-        xaml.Should().NotContain("ToolTipService.ShowOnDisabled");
         xaml.Should().Contain("Table=\"{Binding NodesTable}\"");
         xaml.Should().Contain("SelectedItem=\"{Binding SelectedNode, Mode=TwoWay}\"");
         xaml.Should().Contain("Inspector=\"{Binding SelectedNodeInspector}\"");

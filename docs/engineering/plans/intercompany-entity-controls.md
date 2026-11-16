@@ -97,9 +97,36 @@ cross-currency loans.
 | Routing | The source side is a draft in ordinary journal review. The destination side is a counterpart proposal draft after the source posts. Nothing posts automatically. |
 | Evidence | Agreement version and hash, profile revision, principal journals, calendar and kernel identity and FX conversion are retained with a digest on the draft and the posted journal. |
 
-Fees, floating rates, compounding, scheduled runs, and browser or WPF screens for requesting an
-accrual are not part of this increment. Unit-level tests cover the calculation, refusals, evidence
-retention and the counterpart mirror; no PostgreSQL-backed post-and-deliver run is recorded yet.
+Fees, floating rates, compounding and scheduled runs are not part of this increment. Unit-level
+tests cover the calculation, refusals, evidence retention and the counterpart mirror.
+
+### Operator surfaces and service-backed evidence (2026-11-16)
+
+This records development verification of the two exit criteria that were open. All fixtures are
+synthetic; it is not a release decision and `W12-ICACCRUAL-001` stays `in_progress` until the
+repository owner accepts it.
+
+| Piece | What exists | Verification |
+| --- | --- | --- |
+| Browser | "Accrue interest" on an approved `LoanInterest` profile in Accounting's accounting-profile panel (`accounting-screen.entity-interest-accrual.tsx`). The operator picks the loan principal profile of the same legal agreement and the window; the rate, principal and amount come from the server. Changing the selection withdraws the preview. | `accounting-screen.entity-interest-accrual.test.tsx` (Linux) |
+| Desktop | Interest accrual tab on the Fund Ledger page (`IntercompanyInterestAccrualControl.xaml` over `IntercompanyInterestAccrualWorkspace`), using the same `/api/ledger/intercompany/accruals/preview` and `/drafts` routes. Profiles and book are typed identifiers, as in the counterpart queue. | `IntercompanyInterestAccrualWorkspaceTests`, `WorkstationIntercompanyAgreementApiClientTests` (Linux); `IntercompanyNativeControlSmokeTests.InterestAccrualControl_*` compiles on Linux and runs only on Windows |
+| Post and deliver | `IntercompanyAccrualPostAndDeliverPostgresTests`: a posted drawdown, the accrual drafted from approved terms, ordinary review and posting in the lender's book, one counterpart draft delivered to the borrower, and the borrower's own review and posting. No second proposal is mirrored back and the same days cannot be accrued again. | PostgreSQL |
+
+In the PostgreSQL run the ledger, proposal outbox, account bindings, chart and book ownership are
+the durable stores and `IntercompanyLedgerPostingAuthority` is the production class. The legal
+agreement registry, the accounting-profile history, entity lifecycle and journal drafts are
+in-memory stand-ins, so the run does not prove those stores together with the accrual.
+
+**Defect found and fixed.** Every generated counterpart draft carries the treasury label
+`IntercompanyMirror` as its fund event type. Both the journal workbench and the durable ledger guard
+read any fund event type as a private-capital fund event that also needs a fund event identity and
+a capital account, which a counterpart does not have. A delivered counterpart could therefore be
+saved but never submitted or posted through journal review; earlier PostgreSQL tests posted
+counterparts by direct append and did not reach this. The workbench now treats that label on a
+retained counterpart as a classification: it is kept as the posting's source event type and is not
+written as treasury fund-event metadata. The exemption needs the server-retained proposal identity
+and applies only when no fund event identity, capital account or investor is stated; the ledger
+guard is unchanged. `IntercompanyProposalDeliveryRetryTests` covers this in memory.
 
 ## Verification record (2026-11-14)
 
@@ -148,7 +175,7 @@ by `integration-gate`.
 | No legal novation through a profile | `IntercompanyAccountingArrangementTests` (`LegalNovation` partial) | In-memory |
 | Missing or stale FX; period and historical conventions; reserve and rounding | `ConsolidationFxTests`; `ConsolidationGovernedServiceTests.V3_MissingFxAuthorityCannotProduceEliminatedFigures` | In-memory |
 | Income-rule gating | `ConsolidationGovernedServiceTests.V4_IncomeEliminationRequiresItsExplicitTypedPolicyRule`, `V4_WorkbenchPostsBothGovernedTreatmentsAndLaterCorrectionOnlyMovesRemainingDelta` | In-memory |
-| Shared workstation consumers | `IntercompanyAgreementWorkspaceTests`, `IntercompanyCounterpartQueueWorkspaceTests`, `WorkstationIntercompanyAgreementApiClientTests` | In-memory |
+| Shared workstation consumers | `IntercompanyAgreementWorkspaceTests`, `IntercompanyCounterpartQueueWorkspaceTests`, `IntercompanyInterestAccrualWorkspaceTests`, `WorkstationIntercompanyAgreementApiClientTests` | In-memory |
 | | `IntercompanyNativeControlSmokeTests`, `EntityConsolidationViewModelTests`, `EntityConsolidationLifecycleViewModelTests` | Windows |
 
 ### Defect found and fixed

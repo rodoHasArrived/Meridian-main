@@ -106,6 +106,8 @@ legal-only lines retain their separate advisory coverage. See [intercompany agre
 (ADR-028): profile authority by day, principal read from posted `Loan`-profile journals, posted-window
 overlap detection and the evidence-pinned source draft. It posts nothing; the counterpart still
 arrives through `IntercompanyProposalDraftBuilder` after the source journal commits.
+Counterpart and counterpart-reversal drafts label their treasury context with
+`IntercompanyProposalDraftBuilder.MirrorFundEventType`; it classifies the draft and is not a fund event.
 
 The asset-accounting event spine freezes an optional canonical redemption disposal instruction
 at projection and requires the same instruction at drafting. Selections are compared by their

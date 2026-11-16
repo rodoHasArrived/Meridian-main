@@ -1762,8 +1762,10 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("ManualJournalLedgerImpactGrid");
         xaml.Should().Contain("ManualJournalReportOutputGrid");
         xaml.Should().Contain("Report Output Route");
-        // The status tooltip belonged to the removed page Refresh button.
-        xaml.Should().NotContain("ToolTip=\"{Binding StatusText}\"");
+        // The page's own Refresh button carried the status tooltip; the shell Refresh replaced it and the
+        // status stays visible as text.
+        xaml.Should().NotContain("AccountingConfigureRefreshButton");
+        xaml.Should().Contain("AccountingConfigureStatusText");
         xaml.Should().Contain("ToolTip=\"{Binding ConfigurationDetailText}\"");
         xaml.Should().Contain("ToolTip=\"{Binding CloseDetailText}\"");
         xaml.Should().Contain("ToolTip=\"{Binding PostingCandidateDetailText}\"");

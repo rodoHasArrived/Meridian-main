@@ -129,6 +129,12 @@ book, retained source lines and provenance, delivery retry, explicit FX repricin
 before-and-after preview, and linking an existing counterpart journal. The desktop holds no
 proposal state and never posts; the same Windows-only validation boundary applies.
 
+An Interest accrual tab (`Views/IntercompanyInterestAccrualControl.xaml`) binds the shared
+`IntercompanyInterestAccrualWorkspace`: preview the server-computed fixed-rate interest for a
+loan-interest profile, its loan principal profile and a window, review the slices, proposed lines
+and evidence, then create the source-book draft for ordinary journal review. The desktop enters no
+rate, principal or amount and never posts; the same Windows-only validation boundary applies.
+
 Security Master's Schedule Book evidence includes the shared typed declared call/put outcome,
 evaluation date, retained security version, window count, coded blockers and notice diagnostics.
 It also displays the host's effective governance profile, source, restart latch, enforced edit and
