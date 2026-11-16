@@ -361,6 +361,9 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<LegacyProviderRuntimeCredentialStore>(), sp.GetRequiredService<IHttpClientFactory>().CreateClient("external-gl-read-only")));
         services.AddSingleton<IAccountingSystemProvider>(sp => sp.GetRequiredService<XeroAccountingProvider>());
         services.AddSingleton<IAccountingSystemProvider>(sp => sp.GetRequiredService<NetSuiteAccountingProvider>());
+        // Imports, mapping profiles and certified export packages survive a restart.
+        services.TryAddSingleton(sp => new AccountingSystemIntegrationStateStore(
+            Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "external-gl")));
         services.TryAddSingleton<AccountingSystemIntegrationService>();
         services.TryAddSingleton<IOnboardingWorkspaceStore>(sp => new FileOnboardingWorkspaceStore(
             Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "onboarding-workspaces.json")));

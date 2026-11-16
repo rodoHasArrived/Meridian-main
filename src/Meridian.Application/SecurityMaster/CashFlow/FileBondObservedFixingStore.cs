@@ -18,13 +18,8 @@ public sealed class FileBondObservedFixingStore(StorageOptions options, TimeProv
     public async Task<BondObservedFixingReceipt> RetainAsync(BondObservedFixingCandidate fixing, CancellationToken ct = default)
     {
         var observation = fixing.Observation ?? throw new ArgumentException("An observed source is required.");
-        var expectedFraction = observation.Unit switch
-        {
-            SecurityRateUnit.Fraction => observation.Value,
-            SecurityRateUnit.Percent => observation.Value / 100m,
-            SecurityRateUnit.BasisPoints => observation.Value / 10_000m,
-            _ => throw new ArgumentException("An observed fixing requires explicit annual rate units.")
-        };
+        var expectedFraction = RateUnitNormalizer.ToFractionOrNull(observation.Value, observation.Unit)
+            ?? throw new ArgumentException("An observed fixing requires explicit annual rate units.");
         if (fixing.SecurityId == Guid.Empty || fixing.SecurityVersion <= 0 || fixing.ResetDate == default ||
             string.IsNullOrWhiteSpace(fixing.IndexName) || string.IsNullOrWhiteSpace(fixing.RecordedBy) || string.IsNullOrWhiteSpace(fixing.Justification) ||
             fixing.Observation.Kind != SecurityRateObservationKind.ObservedFixing || fixing.Observation.ObservationDate != fixing.ResetDate ||

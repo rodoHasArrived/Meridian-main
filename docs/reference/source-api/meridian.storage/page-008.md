@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PackageDateRange
+
+Qualified name: <code>Meridian.Storage.Packaging.PackageDateRange</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:210](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L210).
+
+Date range information for the package.
+
+```csharp
+public sealed class PackageDateRange
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;start&quot;)] public DateTime Start { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:213](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L213) |  |
+| <code>[JsonPropertyName(&quot;end&quot;)] public DateTime End { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:216](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L216) |  |
+| <code>[JsonPropertyName(&quot;tradingDays&quot;)] public int TradingDays { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:219](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L219) |  |
+| <code>[JsonPropertyName(&quot;calendarDays&quot;)] public int CalendarDays { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:222](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L222) |  |
+
 ## PackageFileEntry
 
 Qualified name: <code>Meridian.Storage.Packaging.PackageFileEntry</code>. Kind: `class`.
@@ -1115,38 +1136,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public PostgresReportingReleaseConsistencyGate(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs:20](../../../../src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs#L20) |  |
 | <code>public async ValueTask&lt;IAsyncDisposable&gt; AcquireAsync(string accountingPeriodId, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs:26](../../../../src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs#L26) |  |
-
-## PostgresReportingRunStore
-
-Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingRunStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:17](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L17).
-
-PostgreSQL-backed operational snapshot store for reporting runs. Run identities are isolated by tenant, exact retries are no-ops, and every retained JSON payload is re-hashed before use.
-
-```csharp
-public sealed class PostgresReportingRunStore : IReportingRunStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool SupportsDurableCreateClaims =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:19](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L19) |  |
-| <code>public PostgresReportingRunStore(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:26](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L26) |  |
-| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(int limit = 25);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:35](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L35) |  |
-| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, int limit = 25);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:59](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L59) |  |
-| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int limit = 25) =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:90](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L90) |  |
-| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int offset, int limit);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:96](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L96) |  |
-| <code>public ReportingOutputManifest? GetManifest(string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:170](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L170) |  |
-| <code>public ReportingOutputManifest? GetManifest(string tenantId, string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:180](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L180) |  |
-| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:196](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L196) |  |
-| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string tenantId, string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:206](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L206) |  |
-| <code>public string? GetRevision(string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:223](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L223) |  |
-| <code>public string? GetRevision(string tenantId, string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:237](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L237) |  |
-| <code>public async Task&lt;ReportingRunCreateClaimResult&gt; TryClaimCreateAsync(string tenantId, string runId, string leaseOwner, DateTimeOffset nowUtc, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:255](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L255) |  |
-| <code>public async Task&lt;bool&gt; RenewCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:391](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L391) |  |
-| <code>public async Task ReleaseCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:445](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L445) |  |
-| <code>public Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:488](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L488) |  |
-| <code>public Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string? expectedRevision, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:494](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L494) |  |
-| <code>public Task SaveClaimedCreateAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string leaseOwner, long leaseVersion, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:507](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L507) |  |

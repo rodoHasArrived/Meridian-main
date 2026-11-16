@@ -634,16 +634,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public AccountingSystemIntegrationService(IEnumerable&lt;IAccountingSystemProvider&gt; providers, ILedgerJournalStore? ledgerJournalStore = null, IIntercompanyBalanceScheduleSource? intercompanyBalances = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:75](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L75) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;AccountingSystemProviderDto&gt;&gt; ListProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:85](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L85) |  |
-| <code>public Task&lt;IReadOnlyList&lt;ExternalGlMappingProfileDto&gt;&gt; ListMappingProfilesAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:110](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L110) |  |
-| <code>public Task&lt;ExternalGlMappingProfileDto&gt; UpsertMappingProfileAsync(AccountingSystemMappingProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:137](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L137) |  |
-| <code>public async Task&lt;ExternalGlExportPackageDto&gt; CreateExportPackageAsync(AccountingSystemExportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:187](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L187) |  |
-| <code>public async Task&lt;ExternalGlExportPackageDto?&gt; CertifyExportPackageAsync(CertifyAccountingSystemExportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:284](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L284) |  |
-| <code>public async Task&lt;ExternalGlExportPackageManifestDto?&gt; GetExportPackageManifestAsync(string exportPackageId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:383](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L383) |  |
-| <code>public Task&lt;IReadOnlyList&lt;ExternalGlExportPackageDto&gt;&gt; ListExportPackagesAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, AccountingCertificationStateDto? certificationState = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:400](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L400) |  |
-| <code>public async Task&lt;AccountingSystemImportDetailDto&gt; ImportAsync(AccountingSystemImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:429](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L429) |  |
-| <code>public async Task&lt;AccountingSystemImportDetailDto&gt; GetLatestImportAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:455](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L455) | Returns the latest persisted import for the scope. When none has been persisted, an unpersisted preview is computed and returned instead. The preview is never cached: this method backs HTTP GET routes, which must stay free of side effects, and caching it would make a read silently record (possibly fixture) evidence as the scope&#x27;s latest import. |
+| <code>public AccountingSystemIntegrationService(IEnumerable&lt;IAccountingSystemProvider&gt; providers, ILedgerJournalStore? ledgerJournalStore = null, IIntercompanyBalanceScheduleSource? intercompanyBalances = null, AccountingSystemIntegrationStateStore? stateStore = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:79](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L79) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AccountingSystemProviderDto&gt;&gt; ListProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:114](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L114) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ExternalGlMappingProfileDto&gt;&gt; ListMappingProfilesAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:139](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L139) |  |
+| <code>public Task&lt;ExternalGlMappingProfileDto&gt; UpsertMappingProfileAsync(AccountingSystemMappingProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:166](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L166) |  |
+| <code>public async Task&lt;ExternalGlExportPackageDto&gt; CreateExportPackageAsync(AccountingSystemExportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:225](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L225) |  |
+| <code>public async Task&lt;ExternalGlExportPackageDto?&gt; CertifyExportPackageAsync(CertifyAccountingSystemExportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:322](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L322) |  |
+| <code>public async Task&lt;ExternalGlExportPackageManifestDto?&gt; GetExportPackageManifestAsync(string exportPackageId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:421](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L421) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ExternalGlExportPackageDto&gt;&gt; ListExportPackagesAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, AccountingCertificationStateDto? certificationState = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:438](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L438) |  |
+| <code>public async Task&lt;AccountingSystemImportDetailDto&gt; ImportAsync(AccountingSystemImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:467](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L467) |  |
+| <code>public async Task&lt;AccountingSystemImportDetailDto&gt; GetLatestImportAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:498](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L498) | Returns the latest persisted import for the scope. When none has been persisted, an unpersisted preview is computed and returned instead. The preview is never cached: this method backs HTTP GET routes, which must stay free of side effects, and caching it would make a read silently record (possibly fixture) evidence as the scope&#x27;s latest import. |
 
 Source: [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs:24](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs#L24).
 
@@ -677,6 +677,24 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public Task&lt;AccountingSystemReconciliationSummaryDto&gt; ReconcileLatestAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Reconciliation.cs:8](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Reconciliation.cs#L8) |  |
+
+## AccountingSystemIntegrationStateStore
+
+Qualified name: <code>Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationStateStore</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationStateStore.cs:13](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationStateStore.cs#L13).
+
+Retains external-GL imports, mapping profiles and export packages (including their human certifications) across restarts. Each collection is one JSON document replaced atomically, so a crash leaves either the previous or the new document. Single-process local authority: writers in one process are serialized per directory; it does not fence a second host on the same files.
+
+```csharp
+public sealed class AccountingSystemIntegrationStateStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AccountingSystemIntegrationStateStore(string directory);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationStateStore.cs:20](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationStateStore.cs#L20) |  |
 
 ## BankingConflictException
 
@@ -996,26 +1014,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;IAsyncDisposable&gt; AcquireValidatedLeaseAsync(ConsolidationEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs:18](../../../../src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs#L18) |  |
-
-## DesignModule
-
-Qualified name: <code>Meridian.FinancialOperations.DesignModule</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/DesignModule.cs:4](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L4).
-
-Physical module marker for the Financial Operations bounded context.
-
-```csharp
-public static class DesignModule
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Name = &quot;Meridian.FinancialOperations&quot;;</code> | [src/Meridian.FinancialOperations/DesignModule.cs:6](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L6) |  |
-| <code>public const string Conformance = &quot;physical&quot;;</code> | [src/Meridian.FinancialOperations/DesignModule.cs:7](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L7) |  |
-| <code>public const string BoundedContext = &quot;Financial Operations&quot;;</code> | [src/Meridian.FinancialOperations/DesignModule.cs:8](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L8) |  |
-| <code>public const string PrimaryCurrentOwner = &quot;Accounting and Ledger&quot;;</code> | [src/Meridian.FinancialOperations/DesignModule.cs:9](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L9) |  |
-| <code>public static readonly string[] RequiredFacets = [&quot;Domain model&quot;, &quot;Application services&quot;, &quot;Contracts / APIs&quot;, &quot;Infrastructure&quot;, &quot;UI components&quot;, &quot;Tests&quot;];</code> | [src/Meridian.FinancialOperations/DesignModule.cs:10](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L10) |  |
-| <code>public static readonly string[] CurrentSourcePaths = [&quot;src/Meridian.FinancialOperations&quot;, &quot;src/Meridian.Application&quot;, &quot;src/Meridian.Contracts&quot;, &quot;src/Meridian.Ledger&quot;, &quot;src/Meridian.FSharp.Ledger&quot;, &quot;src/Meridian.Ui.Shared&quot;, &quot;src/Meridian.Wpf&quot;, &quot;src/Meridian.Ui/dashboard&quot;];</code> | [src/Meridian.FinancialOperations/DesignModule.cs:20](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L20) |  |

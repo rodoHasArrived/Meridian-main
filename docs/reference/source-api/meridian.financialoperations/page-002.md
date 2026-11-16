@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DesignModule
+
+Qualified name: <code>Meridian.FinancialOperations.DesignModule</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/DesignModule.cs:4](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L4).
+
+Physical module marker for the Financial Operations bounded context.
+
+```csharp
+public static class DesignModule
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Name = &quot;Meridian.FinancialOperations&quot;;</code> | [src/Meridian.FinancialOperations/DesignModule.cs:6](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L6) |  |
+| <code>public const string Conformance = &quot;physical&quot;;</code> | [src/Meridian.FinancialOperations/DesignModule.cs:7](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L7) |  |
+| <code>public const string BoundedContext = &quot;Financial Operations&quot;;</code> | [src/Meridian.FinancialOperations/DesignModule.cs:8](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L8) |  |
+| <code>public const string PrimaryCurrentOwner = &quot;Accounting and Ledger&quot;;</code> | [src/Meridian.FinancialOperations/DesignModule.cs:9](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L9) |  |
+| <code>public static readonly string[] RequiredFacets = [&quot;Domain model&quot;, &quot;Application services&quot;, &quot;Contracts / APIs&quot;, &quot;Infrastructure&quot;, &quot;UI components&quot;, &quot;Tests&quot;];</code> | [src/Meridian.FinancialOperations/DesignModule.cs:10](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L10) |  |
+| <code>public static readonly string[] CurrentSourcePaths = [&quot;src/Meridian.FinancialOperations&quot;, &quot;src/Meridian.Application&quot;, &quot;src/Meridian.Contracts&quot;, &quot;src/Meridian.Ledger&quot;, &quot;src/Meridian.FSharp.Ledger&quot;, &quot;src/Meridian.Ui.Shared&quot;, &quot;src/Meridian.Wpf&quot;, &quot;src/Meridian.Ui/dashboard&quot;];</code> | [src/Meridian.FinancialOperations/DesignModule.cs:20](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L20) |  |
+
 ## DistributionDeclarationRecord
 
 Qualified name: <code>Meridian.FinancialOperations.FundAdministration.DistributionDeclarationRecord</code>. Kind: `record`.
@@ -845,27 +868,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public AccountingJournalDraftService(IAccountingPolicyService accountingPolicyService, IAccountingBasisProjectionService projectionService);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:79](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L79) |  |
 | <code>public async Task&lt;AccountingJournalDraftResult&gt; BuildDraftAsync(AccountingJournalDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:87](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L87) |  |
-
-## AccountingPolicyService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingPolicyService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:69](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L69).
-
-Maintains accounting policies and resolves applicable rules under mutation and authority leases.
-
-```csharp
-public sealed class AccountingPolicyService : IAccountingPolicyService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AccountingPolicyService() : this(TimeProvider.System);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:76](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L76) |  |
-| <code>public AccountingPolicyService(TimeProvider timeProvider);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:86](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L86) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireConsolidationAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:97](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L97) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireRetainedPolicyAuthorityLeaseAsync(AccountingPolicyDto snapshot, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:103](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L103) |  |
-| <code>public async Task&lt;AccountingPolicyDto&gt; CreatePolicyAsync(CreateAccountingPolicyRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:128](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L128) |  |
-| <code>public Task&lt;AccountingPolicyDto&gt; ResolvePolicyAsync(AccountingPolicyQuery query, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:154](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L154) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountingPolicyDto&gt;&gt; ListPoliciesAsync(AccountingBasisKindDto? accountingBasis = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:184](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L184) |  |
