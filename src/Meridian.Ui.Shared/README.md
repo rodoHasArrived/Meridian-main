@@ -1206,6 +1206,12 @@ WPF. Each count is gated by the permission of the route that owns its source, an
 caller may not read it. `tests/fixtures/cross-screen-counts/cross-screen-counts.json` holds this
 class and the browser's `lib/cross-screen-counts.ts` to the same expected values.
 
+`Services/WorkstationKpiDefinitions.cs` is the one catalog of workstation headline figures: each
+registered figure's label, the population it counts and what a change in it is measured against.
+`GET /api/workstation/kpi-definitions` serves it for the WPF desktop; the browser's
+`lib/kpi-registry.ts` mirrors it, and `tests/fixtures/kpi-definitions/kpi-definitions.json` holds the
+two to the same values. The catalog describes figures, not data.
+
 The providers the Data workspace lists are the providers in use: those with metrics, a saved
 connection, a routing connection or a trust snapshot. Each one's status comes from
 `ResolveProviderStatus`: the worse of its listed status (connection health, or the trust rationale)

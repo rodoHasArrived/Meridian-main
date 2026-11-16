@@ -518,6 +518,16 @@ Portfolio defaults to Live holdings. The source selector reveals retained run re
 with their own market-value and record-count definitions; exposure and market value
 are distinct measures. Compare position sources is a collapsed disclosure.
 
+Every registered figure also has a fixed population and comparison basis (`KPI_DEFINITIONS`),
+mirrored by the shared catalog at `/api/workstation/kpi-definitions`. A strip states one shared
+population once ("Covers: …") and mixed populations under each figure, and publishes it as
+`data-kpi-population`. Provider health on Today, Data and Settings is the shared cross-screen count;
+Data counts its own cards only when the shared count is withheld ("Providers visible to you").
+Position tables name their source through `lib/position-source.ts` (`data-position-source`), and
+Compare position sources lists symbols that differ between live holdings and the Trading session.
+The status bar's Freshness starts from `resolveShellFreshness` (masthead provenance and provider
+items); a page can make it worse but never clear it.
+
 The holdings table, the headline figures and the holding detail panel read one model,
 `lib/holdings-model.ts`, so they cannot disagree. Values the source supplies are shown
 unchanged. When the source omits them, the model derives two row figures and says so:

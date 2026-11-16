@@ -473,6 +473,10 @@ persistence port without referencing the Storage implementation.
 provider health and open breaks) with the definition each was counted with. A count the caller may
 not read, or whose source is not registered, is null, so clients show "—" rather than a substitute.
 
+`Workstation/KpiDefinitionDtos.cs` carries the headline-figure catalog: each figure's id, label,
+population and comparison basis (null when the figure carries no change), so the browser and WPF
+state a figure with the same name over the same population.
+
 `Workstation/OperatorScopePreferenceDtos.cs` carries the signed-in operator's default operating
 scope (symbol, fund account, run, provider and date dimensions, plus the optional legal entity and
 fund dimensions `EntityId`/`FundId`, appended last), which browser and WPF apply when a session opens

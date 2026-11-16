@@ -331,6 +331,12 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
 
+The host-served bundle carries UX Phase A (figures and status): every registered headline figure
+states the population it counts; Data, Today and Settings show one shared provider-health count;
+Trading and Portfolio position tables name their source; and the status bar starts from the
+masthead pill's provenance and provider checks, so it never says "up to date" over a stale source.
+The new shared contract is `/api/workstation/kpi-definitions` (see `src/Meridian.Ui.Shared/README.md`).
+
 ## Change rules
 
 Do not create mobile product surfaces here. Keep browser operator UI work under `dashboard/` and shared behavior in contracts/services consumed by the browser workstation and retained WPF compatibility surfaces.
