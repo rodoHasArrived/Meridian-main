@@ -17,8 +17,9 @@ namespace Meridian.Tests.Ui;
 /// Entity A posted an intercompany loan receivable and entity B booked the payable. A reviewer in
 /// tenant A links the manual counterpart, reprices the generated draft or reads the aged breaks.
 /// Guards against any of those acting on a destination or source book whose retained owner is
-/// another tenant, another company where the path compares company, or no registered owner at all:
-/// nothing may be linked, saved, repriced or reported as reconciled across that boundary.
+/// another tenant, another company, or no registered owner at all: nothing may be linked, saved,
+/// repriced or reported as reconciled across that boundary. The service enforces the company rule
+/// itself, so a caller that bypasses the HTTP endpoints cannot cross companies inside one tenant.
 /// </summary>
 public sealed class IntercompanyProposalDestinationAuthorityTests
 {
@@ -72,8 +73,8 @@ public sealed class IntercompanyProposalDestinationAuthorityTests
         var fixture = new AuthorityFixture();
         var delivered = await fixture.DeliverGeneratedDraftAsync();
 
-        var preview = () => fixture.Service.RefreshPreviewAsync("tenant-a", fixture.ProposalId);
-        var refresh = () => fixture.Service.RefreshAsync("tenant-a", fixture.ProposalId,
+        var preview = () => fixture.Service.RefreshPreviewAsync("tenant-a", "company-a", fixture.ProposalId);
+        var refresh = () => fixture.Service.RefreshAsync("tenant-a", "company-a", fixture.ProposalId,
             new(Guid.NewGuid(), delivered.Version, "reviewed-preview-fingerprint", "Reprice at the approved rate"), "reviewer");
 
         // A same-currency loan needs no repricing; reaching this rule shows the caller was accepted as the owner.
@@ -84,19 +85,25 @@ public sealed class IntercompanyProposalDestinationAuthorityTests
     }
 
     [Theory]
-    [InlineData("foreign-tenant")]
-    [InlineData("unbound")]
-    public async Task Refresh_DestinationBookOutsideTheCallingTenant_IsRefusedBeforeFxAuthorityAndTheDraftIsUntouched(string ownership)
+    [InlineData("foreign-tenant", "company-a")]
+    [InlineData("foreign-company", "company-a")]
+    [InlineData("unbound", "company-a")]
+    // The destination is owned by company-a, but the caller acts for another company of the same tenant.
+    [InlineData("owned", "company-b")]
+    [InlineData("owned", null)]
+    public async Task Refresh_DestinationBookOutsideTheCallingTenantOrCompany_IsRefusedBeforeFxAuthorityAndTheDraftIsUntouched(
+        string ownership, string? callerCompany)
     {
         var fixture = new AuthorityFixture();
         var delivered = await fixture.DeliverGeneratedDraftAsync();
-        fixture.Owners["target-fund"] = Owner("target-fund", ownership);
+        if (ownership != "owned")
+            fixture.Owners["target-fund"] = Owner("target-fund", ownership);
 
-        var preview = () => fixture.Service.RefreshPreviewAsync("tenant-a", fixture.ProposalId);
-        var refresh = () => fixture.Service.RefreshAsync("tenant-a", fixture.ProposalId,
+        var preview = () => fixture.Service.RefreshPreviewAsync("tenant-a", callerCompany, fixture.ProposalId);
+        var refresh = () => fixture.Service.RefreshAsync("tenant-a", callerCompany, fixture.ProposalId,
             new(Guid.NewGuid(), delivered.Version, "reviewed-preview-fingerprint", "Reprice at the approved rate"), "reviewer");
 
-        await preview.Should().ThrowAsync<UnauthorizedAccessException>().WithMessage("*destination is outside the current tenant*");
+        await preview.Should().ThrowAsync<UnauthorizedAccessException>().WithMessage("*destination is outside the current tenant or company*");
         await refresh.Should().ThrowAsync<UnauthorizedAccessException>().WithMessage("*destination book is unavailable*");
         fixture.Fx.Verify(authority => authority.AcquireAuthorityLeaseAsync(It.IsAny<CancellationToken>()), Times.Never);
         fixture.Fx.Verify(authority => authority.ResolveAsync(It.IsAny<Guid>(), It.IsAny<DateOnly>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -104,17 +111,39 @@ public sealed class IntercompanyProposalDestinationAuthorityTests
     }
 
     [Theory]
-    [InlineData("foreign-tenant")]
-    [InlineData("unbound")]
-    public async Task Breaks_SourceBookOutsideTheCallingTenant_AreRefused(string ownership)
+    [InlineData("foreign-tenant", "company-a")]
+    [InlineData("foreign-company", "company-a")]
+    [InlineData("unbound", "company-a")]
+    // The source book is owned by company-a, but the caller acts for another company of the same tenant.
+    [InlineData("owned", "company-b")]
+    [InlineData("owned", null)]
+    public async Task Breaks_SourceBookOutsideTheCallingTenantOrCompany_AreRefusedBeforeAnyProposalIsRead(
+        string ownership, string? callerCompany)
     {
         var fixture = new AuthorityFixture();
         fixture.DeliverPostedCounterpart();
-        fixture.Owners["source-fund"] = Owner("source-fund", ownership);
+        if (ownership != "owned")
+            fixture.Owners["source-fund"] = Owner("source-fund", ownership);
 
-        var breaks = () => fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, AsOf);
+        var breaks = () => fixture.Service.BreaksAsync("tenant-a", callerCompany, IntercompanyProposalTestData.BookA, AsOf);
 
-        await breaks.Should().ThrowAsync<UnauthorizedAccessException>().WithMessage("*source book is outside the current tenant*");
+        await breaks.Should().ThrowAsync<UnauthorizedAccessException>().WithMessage("*source book is outside the current tenant or company*");
+        fixture.Proposals.Verify(store => store.ListAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Breaks_SourceBookWithNoCompanyBinding_IsReadableByAnyCompanyOfTheOwningTenant()
+    {
+        var fixture = new AuthorityFixture();
+        fixture.DeliverPostedCounterpart();
+        fixture.Owners["source-fund"] = new("source-fund", "tenant-a", null);
+
+        // A tenant-level book matches the endpoint rule: no company comparison applies, so the
+        // caller passes the scope gate and the retained proposals are evaluated.
+        var breaks = await fixture.Service.BreaksAsync("tenant-a", "company-b", IntercompanyProposalTestData.BookA, AsOf);
+
+        breaks.Should().NotBeNull();
+        fixture.Proposals.Verify(store => store.ListAsync("tenant-a", IntercompanyProposalTestData.BookA, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -130,7 +159,7 @@ public sealed class IntercompanyProposalDestinationAuthorityTests
         if (ownership != "owned")
             fixture.Owners["target-fund"] = Owner("target-fund", ownership);
 
-        var breaks = await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, AsOf);
+        var breaks = await fixture.Service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, AsOf);
 
         if (expectedClassification is null)
         {
