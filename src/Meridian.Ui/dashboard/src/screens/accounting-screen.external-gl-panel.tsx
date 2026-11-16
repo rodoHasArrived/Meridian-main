@@ -237,7 +237,7 @@ export function AccountingSystemReconciliationPanel({
               sourceDescription="All authorized External GL provider capabilities in the current catalog snapshot."
               completePopulation={!loading && !error} rows={providers} getRowId={(provider) => provider.providerId}
               getSearchText={(provider) => `${provider.displayName} ${provider.state} ${provider.connection?.statusLabel ?? ""}`}
-              ariaLabel="External GL provider import posture" emptyText="No External GL providers are available."
+              ariaLabel="External GL provider import status" emptyText="No External GL providers are available."
               columns={[
                 { id: "provider", label: "Provider", render: (provider) => presentExternalGlProviderName(provider.displayName), exportValue: (provider) => provider.displayName },
                 { id: "state", label: "State", render: (provider) => <DesignSystemStatus status={provider.state === "Available" ? "ready" : provider.state === "Planned" ? "info" : "action"}>{presentExternalGlState(provider.state)}</DesignSystemStatus>, exportValue: (provider) => provider.state },

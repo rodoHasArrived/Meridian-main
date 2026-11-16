@@ -225,7 +225,7 @@ describe("StrategyScreen", () => {
 
     expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
     expect(screen.getAllByText("Strategy analytics not connected").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("No retained PlotTool studies are available. Connect a governed PlotTool catalog before selecting notebooks.")).toBeInTheDocument();
+    expect(screen.getByText("No retained PlotTool studies are available. Connect an approved PlotTool catalog before selecting notebooks.")).toBeInTheDocument();
     expect(screen.getByRole("status", { name: "PlotTool scatter observations unavailable" }))
       .toHaveTextContent("No PlotTool observations yet");
     expect(screen.getByRole("link", { name: "Review provider connections for PlotTool" }))
@@ -815,7 +815,7 @@ describe("StrategyScreen", () => {
     );
 
     await user.click(acknowledgement);
-    approveButton = screen.getByRole("button", { name: "Approve governed Paper promotion from selected strategy run" });
+    approveButton = screen.getByRole("button", { name: "Approve Paper promotion from selected strategy run" });
     await user.click(approveButton);
 
     await waitFor(() => {
@@ -837,7 +837,7 @@ describe("StrategyScreen", () => {
     });
     expect(screen.getByText("Paper promotion approved - target run paper-run-1")).toBeInTheDocument();
     expect(screen.getByRole("button", {
-      name: "Open governed Trading promotion record for target run paper-run-1"
+      name: "Open Trading promotion record for target run paper-run-1"
     })).toBeInTheDocument();
   });
 
@@ -870,7 +870,7 @@ describe("StrategyScreen", () => {
       name: "I reviewed the four canonical promotion checks and the exact retained Evidence Vault source."
     });
     await user.click(acknowledgement);
-    await user.click(screen.getByRole("button", { name: "Approve governed Paper promotion from selected strategy run" }));
+    await user.click(screen.getByRole("button", { name: "Approve Paper promotion from selected strategy run" }));
 
     await waitFor(() => {
       expect(api.approvePromotion).toHaveBeenCalledTimes(1);
@@ -878,19 +878,19 @@ describe("StrategyScreen", () => {
     expect(acknowledgement).toBeDisabled();
     expect(acknowledgement).toHaveAttribute(
       "title",
-      "Governed promotion approval is already running; wait before changing acknowledgement."
+      "Promotion approval is already running; wait before changing acknowledgement."
     );
     expect(acknowledgement).toHaveAttribute(
       "aria-describedby",
       "promote-paper-approval-acknowledgement-disabled-reason"
     );
     expect(acknowledgement).toHaveAccessibleDescription(
-      "Governed promotion approval is already running; wait before changing acknowledgement."
+      "Promotion approval is already running; wait before changing acknowledgement."
     );
-    expect(screen.getByRole("button", { name: /Approve Paper promotion unavailable: Governed promotion approval is already running/i }))
+    expect(screen.getByRole("button", { name: /Approve Paper promotion unavailable: Promotion approval is already running/i }))
       .toHaveTextContent("Approving Paper promotion...");
     expect(screen.getByRole("button", {
-      name: "Governed promotion approval is already running; wait for the durable decision before closing review."
+      name: "Promotion approval is already running; wait for the durable decision before closing review."
     })).toBeDisabled();
 
     await act(async () => {

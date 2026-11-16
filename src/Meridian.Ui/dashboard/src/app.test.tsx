@@ -466,7 +466,7 @@ describe("App", () => {
 
     expect(await screen.findByTestId("data-provenance-unknown")).toBeVisible();
     expect(screen.queryByTestId("data-provenance-simulated")).toBeNull();
-    const trust = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
+    const trust = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider health" });
     await userEvent.click(trust.querySelector("summary") as HTMLElement);
     const retry = await within(trust).findByRole("button", {
       name: "Retry live Meridian workspace data"
@@ -497,7 +497,7 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
 
     const strip = await screen.findByRole("region", {
-      name: "Workstation build, environment, provenance, and provider posture"
+      name: "Workstation build, environment, provenance, and provider health"
     });
     expect(strip).toHaveAttribute("aria-live", "polite");
     await userEvent.click(strip.querySelector("summary") as HTMLElement);
@@ -641,7 +641,7 @@ describe("App", () => {
     expect(within(confidence).getByText("Selected evidence")).toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "Priority decision" })).getByRole("region", { name: "Workstation status" })).toHaveAttribute("data-status-tone", "blocked");
     expect(screen.getByTestId("today-attention-count")).toHaveTextContent(/^\d+ needs? attention · blocked \+ action, excluding snoozed/);
-    const trust = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
+    const trust = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider health" });
     await user.click(trust.querySelector("summary") as HTMLElement);
     expect(within(trust).getByRole("link", { name: "Blocked Brokerage sync failed" }))
       .toHaveAttribute("href", "/");
@@ -784,7 +784,7 @@ describe("App", () => {
     expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveClass("mds-masthead");
     expect(screen.queryByText("Data", { selector: ".sub" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Providers");
-    const strip = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
+    const strip = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider health" });
     await userEvent.click(strip.querySelector("summary") as HTMLElement);
     const trustDetails = within(strip).getByRole("group", {
       name: "Environment, provenance, and provider details"
@@ -795,7 +795,7 @@ describe("App", () => {
     expect(within(trustDetails).getByRole("link", { name: /Data provenance SEEDED/ }))
       .toHaveTextContent("ProvenanceSEEDED");
     expect(within(trustDetails).getByRole("link", {
-      name: "Providers 1 degraded. 1 provider degraded; open Data provider posture before trading decisions. Open provider posture."
+      name: "Providers 1 degraded. 1 provider degraded; open Data providers before trading decisions. Open provider health."
     })).toHaveAttribute("href", "/data/providers");
   });
 
@@ -810,7 +810,7 @@ describe("App", () => {
     expect(within(sessionContext).getByText("Operator")).toBeInTheDocument();
     // The environment badge moved into the trust pill so the masthead fits one row; it
     // leads that pill and is still announced through the session group's name above.
-    const strip = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
+    const strip = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider health" });
     expect(await within(strip).findByText("PAPER")).toHaveAttribute("data-environment", "paper");
   });
 

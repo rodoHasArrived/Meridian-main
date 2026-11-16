@@ -892,7 +892,7 @@ export function ReportingReportWriterSection({ children }: { children: ReactNode
         <CardHeader>
           <div className="eyebrow-label">Report writer</div>
           <CardTitle>No-code grid designer</CardTitle>
-          <CardDescription>Pivot, Top-N, contribution, and formula grids from governed template metadata.</CardDescription>
+          <CardDescription>Pivot, Top-N, contribution, and formula grids from template metadata.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 xl:grid-cols-2">
@@ -1482,7 +1482,7 @@ export function ReportWriterDesignerGrid({
         <Button
           type="button"
           size="sm"
-          aria-label={`Save ${grid.title} as governed report template draft`}
+          aria-label={`Save ${grid.title} as report template draft`}
           disabled={isSaving}
           busy={isSaving}
           busyLabel="Saving"

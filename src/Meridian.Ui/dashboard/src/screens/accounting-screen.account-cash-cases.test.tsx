@@ -35,7 +35,7 @@ async function selectCase() {
 }
 async function importFile() {
   await userEvent.click(screen.getByText("Import next cash comparison"));
-  await userEvent.upload(screen.getByLabelText("Reconciliation handoff (.json)"), new File(['{"typed":"handoff"}'], "cash-handoff.json", { type: "application/json" }));
+  await userEvent.upload(screen.getByLabelText("Reconciliation source file (.json)"), new File(['{"typed":"handoff"}'], "cash-handoff.json", { type: "application/json" }));
   return screen.findByRole("region", { name: "Cash comparison preview" });
 }
 beforeEach(() => {
@@ -160,7 +160,7 @@ describe("account cash continuity operator panel", () => {
     expect(screen.getByRole("button", { name: "Retain owner assignment" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Reproduce retained run" })).toBeEnabled();
     await userEvent.click(screen.getByText("Import next cash comparison"));
-    expect(screen.getByLabelText("Reconciliation handoff (.json)")).toBeDisabled();
+    expect(screen.getByLabelText("Reconciliation source file (.json)")).toBeDisabled();
     expect(api.runCashComparison).not.toHaveBeenCalled();
   });
 
@@ -195,7 +195,7 @@ describe("account cash continuity operator panel", () => {
     render(<AccountCashCasesPanel scope={scope} context={context} />);
     await screen.findByText("cash-pilot · v4");
     await userEvent.click(screen.getByText("Import next cash comparison"));
-    await userEvent.upload(screen.getByLabelText("Reconciliation handoff (.json)"), new File(["{}"], "wrong-account.json", { type: "application/json" }));
+    await userEvent.upload(screen.getByLabelText("Reconciliation source file (.json)"), new File(["{}"], "wrong-account.json", { type: "application/json" }));
     await screen.findByText("Every source row must belong to the selected account.");
     expect(screen.getByRole("row", { name: /USD cash case stable-cash-case/ })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Capture cash comparison" })).not.toBeInTheDocument();

@@ -133,7 +133,7 @@ export function ExecutionBlotterPanel() {
         {notice ? <StatusBanner tone="success" title="Execution action accepted" detail={notice} /> : null}
         <StatusBanner tone={bannerTone(provenance.tone)} title={provenance.label} detail={provenance.detail} />
 
-        <div className="grid gap-2 md:grid-cols-4" aria-label="Execution gateway posture">
+        <div className="grid gap-2 md:grid-cols-4" aria-label="Execution gateway status">
           {metrics.map((metric) => (
             <div key={metric.id} className="rounded-[2px] border border-border bg-secondary/20 p-3">
               <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-wide")}>{metric.label}</div>

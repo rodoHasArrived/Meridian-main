@@ -38,7 +38,7 @@ const standardReportCatalog = [
     name: "Trial Balance",
     family: "Financial Statements",
     produces: "Account-balance proof with debit, credit, and ending balance support.",
-    requiredData: "Ledger, chart of accounts, accounting basis, period close posture",
+    requiredData: "Ledger, chart of accounts, accounting basis, period close status",
     owner: "Controller",
     keywords: ["trial", "balance"]
   },
@@ -46,7 +46,7 @@ const standardReportCatalog = [
     name: "Balance Sheet",
     family: "Financial Statements",
     produces: "Assets, liabilities, and capital roll-forward for the selected scope.",
-    requiredData: "Ledger, consolidation, valuation, period close posture",
+    requiredData: "Ledger, consolidation, valuation, period close status",
     owner: "Controller",
     keywords: ["balance sheet", "statement of financial position"]
   },
@@ -155,7 +155,7 @@ export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <CardTitle>Report Library</CardTitle>
-              <CardDescription className="mt-1">Choose an available governed template, or browse the standard catalog when a new report family needs setup.</CardDescription>
+              <CardDescription className="mt-1">Choose an available template, or browse the standard catalog when a new report family needs setup.</CardDescription>
             </div>
             <Badge variant={templateRows.length > 0 ? "success" : "warning"}>
               {templateRows.length} available template{templateRows.length === 1 ? "" : "s"}
@@ -195,7 +195,7 @@ export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
             </section>
           ) : (
             <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-3 text-sm text-warning">
-              No governed templates are available. Browse the standard catalog to choose the report family to configure.
+              No templates are available. Browse the standard catalog to choose the report family to configure.
             </p>
           )}
 

@@ -48,7 +48,7 @@ export function buildDataAnalyticsDegradedViewModel(
     affectedIds: new Set(affected.map((panel) => panel.id)),
     title: "Data analytics services degraded",
     detail:
-      "The analytics reads behind these panels are unavailable, so their posture is paused. Provider streaming and backfills are unaffected.",
+      "The analytics reads behind these panels are unavailable, so their status is paused. Provider streaming and backfills are unaffected.",
     affectsLabel: affected.map((panel) => panel.label).join(" · "),
     retryLabel: "Retry all",
     retryBusyLabel: "Retrying…",

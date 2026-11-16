@@ -151,7 +151,7 @@ const providerHealthColumns: TableWorkbenchColumn<DataOperationsProviderRow>[] =
   {
     id: "credential-posture",
     exportValue: (provider) => `${provider.credentialText}; ${provider.verificationText}`,
-    label: "Credential posture",
+    label: "Credential status",
     render: (provider) => (
       <span className="block min-w-0">
         <span className="block text-xs text-foreground">{provider.credentialText}</span>
@@ -346,7 +346,7 @@ function DataScreenContent({
         </div>
       ) : null}
 
-      <section className="data-management-main" aria-label="Data workstreams">
+      <section className="data-management-main" aria-label="Data sections">
         {activeWorkstream !== "overview" && !showBackfillWorkstream && !showOperationsWorkstream && !showAssuranceWorkstream ? (
           <RouteFocusCard
             state={vm.routeFocusCard}
@@ -453,7 +453,7 @@ function DataScreenContent({
                   </label>
                 <TableWorkbench
                   workbenchId="data-provider-health" sourceKey={vm.providerSection.rows.map((row) => row.providerId).join("|")}
-                  sourceDescription="Complete loaded provider health projection; readiness and verification remain separate."
+                  sourceDescription="Complete loaded provider health snapshot; readiness and verification remain separate."
                   completePopulation getSearchText={(row) => `${row.provider} ${row.status} ${row.affectedWorkflowsText}`}
                   columns={providerHealthColumns}
                   rows={vm.providerSection.rows}
@@ -1101,7 +1101,7 @@ function ProviderDetailTabPanel({
         {detail.reasonLabelText !== detail.reasonCodeText ? (
           <TechnicalDetails
             label="System details"
-            description="Raw provider status retained for diagnostics and support handoff."
+            description="Raw provider status retained for diagnostics and passing to support."
             className="mt-3"
           >
             <div className="grid gap-1 text-xs">
@@ -1183,7 +1183,7 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
               role="region"
               aria-label={vm.providerSetupDialogState.successMetadata.metadataAriaLabel}
             >
-              <div className="eyebrow-label">Routing posture</div>
+              <div className="eyebrow-label">Routing status</div>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {vm.providerSetupDialogState.successMetadata.rows.map((row) => (
                   <FieldTile key={row.id} field={row} />

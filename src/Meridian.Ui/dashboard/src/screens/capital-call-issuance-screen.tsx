@@ -185,7 +185,7 @@ function CallDetail({ call, generatedAtUtc, notices, locked, mutate }: { call: P
     </div>
     <CapitalFundingForm call={call} locked={locked} mutate={mutate} />
     <section className="space-y-2" aria-label="Investor notices"><h3 className="text-sm font-semibold">Investor notices</h3>
-      <p className="text-sm text-muted-foreground">Generate a draft notice from posted issuance. Regenerate creates a new notice run; retrying an unconfirmed request recovers its original run. Release and delivery use the governed Reporting workflow and remain separate from cash.</p>
+      <p className="text-sm text-muted-foreground">Generate a draft notice from posted issuance. Regenerate creates a new notice run; retrying an unconfirmed request recovers its original run. Release and delivery use the Reporting workflow and remain separate from cash.</p>
       {call.lines.map(line => {
         const installmentNotices = callNotices.filter(notice => notice.investorId === line.investorId && notice.commitmentId === line.commitmentId);
         const investorInstallmentCount = call.lines.filter(candidate => candidate.investorId === line.investorId).length;

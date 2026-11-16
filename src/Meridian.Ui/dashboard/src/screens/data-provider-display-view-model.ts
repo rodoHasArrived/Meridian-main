@@ -62,14 +62,14 @@ export function buildProviderReadinessSummaryText(
 
   if (!readiness) {
     return counts.rowCount > 0
-      ? `Displayed posture: ${displayedCounts}. Provider readiness is assembled from connection, routing, and workspace evidence while the shared readiness summary is unavailable.`
+      ? `Displayed status: ${displayedCounts}. Provider readiness is assembled from connection, routing, and workspace evidence while the shared readiness summary is unavailable.`
       : "Provider readiness will appear after the shared provider setup, validation, degradation, and evidence data loads.";
   }
 
   const coverage = readiness.totalProviders === counts.rowCount
     ? ""
     : ` Shared readiness covers ${readiness.totalProviders} of ${counts.rowCount} displayed providers.`;
-  return `${readiness.summary} Displayed posture: ${displayedCounts}.${coverage} Next action: ${readiness.recommendedAction}`;
+  return `${readiness.summary} Displayed status: ${displayedCounts}.${coverage} Next action: ${readiness.recommendedAction}`;
 }
 
 export function normalizeProviderTrustScore(score: number): number {

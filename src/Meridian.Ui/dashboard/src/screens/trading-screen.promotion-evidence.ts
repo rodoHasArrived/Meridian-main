@@ -328,9 +328,9 @@ export function buildPromotionApprovalChecklist(
       },
       {
         id: "governed-reporting",
-        label: "Governed reporting",
+        label: "Reporting",
         status: evidenceStatus("GOVERNED_REPORTING_REVIEWED"),
-        description: "Governed report-pack evidence supports the live readiness decision"
+        description: "Report-pack evidence supports the live readiness decision"
       },
       {
         id: "governance-signoff",
@@ -342,13 +342,13 @@ export function buildPromotionApprovalChecklist(
         id: "exception-handling",
         label: "Exception handling",
         status: evidenceStatus("EXCEPTION_HANDLING_REVIEWED"),
-        description: "Open exceptions and escalation posture have been reviewed"
+        description: "Open exceptions and escalation status have been reviewed"
       },
       {
         id: "rollback-kill-switch",
         label: "Rollback/kill-switch",
         status: evidenceStatus("ROLLBACK_KILL_SWITCH_REVIEWED"),
-        description: "Rollback and kill-switch posture are ready before live operation"
+        description: "Rollback and kill-switch are ready before live operation"
       },
       {
         id: "audit-retention",

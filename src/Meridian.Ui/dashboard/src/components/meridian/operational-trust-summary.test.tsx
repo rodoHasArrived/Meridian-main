@@ -21,7 +21,7 @@ function shellSignal(overrides: Partial<AppShellAttentionSignal>): AppShellAtten
     kind: "source",
     label: "Providers",
     value: "4/4 healthy",
-    detail: "4 providers healthy in the loaded data posture.",
+    detail: "4 providers healthy in the loaded provider data.",
     tone: "ready",
     headline: "Providers: 4/4 healthy",
     href: null,
@@ -139,7 +139,7 @@ describe("OperationalTrustSummary", () => {
           label: "Connectivity",
           value: "Provider degraded",
           tone: "blocked",
-          action: <a href="/data/providers">Open provider posture</a>
+          action: <a href="/data/providers">Open provider health</a>
         }}
         scope={{
           value: "All authorized scopes",
@@ -160,7 +160,7 @@ describe("OperationalTrustSummary", () => {
     const scopeCard = within(breakdown).getByText("Scope").parentElement as HTMLElement;
     const freshnessCard = within(breakdown).getByText("Freshness").parentElement as HTMLElement;
 
-    expect(within(connectivityCard).getByRole("link", { name: "Open provider posture" }))
+    expect(within(connectivityCard).getByRole("link", { name: "Open provider health" }))
       .toHaveAttribute("href", "/data/providers");
     expect(within(scopeCard).getByRole("button", { name: "Set operating scope" })).toBeInTheDocument();
     expect(within(freshnessCard).getByRole("button", { name: "Refresh evidence" })).toBeInTheDocument();
@@ -223,7 +223,7 @@ describe("OperationalTrustSummary", () => {
           tone: "review",
           headline: "Providers: 1 warning",
           href: "/data/providers",
-          actionLabel: "Open provider posture"
+          actionLabel: "Open provider health"
         })
       ]);
 
@@ -235,7 +235,7 @@ describe("OperationalTrustSummary", () => {
       expect(summary).not.toHaveTextContent(/All sources current/);
       // The shell issue and its recovery link stay available under Details.
       expect(within(container.querySelector("dl")!).getByText("Providers")).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: "Open provider posture" })).toHaveAttribute("href", "/data/providers");
+      expect(screen.getByRole("link", { name: "Open provider health" })).toHaveAttribute("href", "/data/providers");
     });
 
     it("stays on all sources current when the shell signals are ready", () => {

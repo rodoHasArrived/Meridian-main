@@ -387,7 +387,7 @@ function StatementFetchSchedulesTable({
                       </div>
                     </>}]} getRowId={schedule=>schedule.scheduleId} getSearchText={schedule=>[schedule.scheduleId,schedule.sourceInstitution,schedule.externalAccountId,schedule.fundAccountId].join(" ")} completePopulation sourceDescription={fundScope.status === "applied"
               ? `Authorized persisted statement schedules under the chosen ${fundScope.dimension}; cadence is in hours and timestamps are in the display time zone.`
-              : "Authorized persisted statement schedules; cadence is in hours and timestamps are in the display time zone."} ariaLabel="Statement fetch schedules" caption="Persisted remote statement fetch schedules and run posture" emptyText={fundScope.status === "applied"
+              : "Authorized persisted statement schedules; cadence is in hours and timestamps are in the display time zone."} ariaLabel="Statement fetch schedules" caption="Persisted remote statement fetch schedules and run status" emptyText={fundScope.status === "applied"
               ? `No statement schedules under the chosen ${fundScope.dimension}.`
               : "No statement schedules returned."} />
           </div>

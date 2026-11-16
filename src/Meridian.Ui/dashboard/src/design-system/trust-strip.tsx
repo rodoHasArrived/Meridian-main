@@ -65,7 +65,7 @@ export function DesignSystemTrustStrip({
   const headline = attention && !attention.clear ? attention.title : decisionBrief && decisionBrief.statusTone !== "ready" ? decisionBrief.title : summaryValue;
   const statusLabel = attention?.statusLabel ?? decisionBrief?.statusLabel;
   const showEnvironment = viewModel.environment.variant !== "live" || provenance === "real";
-  const summaryAriaLabel = `Environment, provenance, and provider posture. ${attention?.ariaLabel ?? ""} ${badge.ariaLabel} ${decisionBrief ? `${decisionBrief.statusLabel}: ${decisionBrief.title}. ` : ""}${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
+  const summaryAriaLabel = `Environment, provenance, and provider health. ${attention?.ariaLabel ?? ""} ${badge.ariaLabel} ${decisionBrief ? `${decisionBrief.statusLabel}: ${decisionBrief.title}. ` : ""}${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
 
   return (
     <section

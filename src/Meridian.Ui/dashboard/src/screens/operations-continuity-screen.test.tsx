@@ -1159,7 +1159,7 @@ describe("OperationsContinuityScreen", () => {
     const closeGovernance = screen.getByLabelText("Period close lock and reopen evidence");
     expect(within(closeGovernance).getByText("Period remains open")).toBeInTheDocument();
     expect(within(closeGovernance).getByText("No close audit event")).toBeInTheDocument();
-    expect(within(closeGovernance).getByText("No governed reopen recorded")).toBeInTheDocument();
+    expect(within(closeGovernance).getByText("No period reopen recorded")).toBeInTheDocument();
     const closePackage = screen.getByLabelText("Close package publication summary");
     expect(within(closePackage).getByText("close-package-2026-05")).toBeInTheDocument();
     expect(within(closePackage).getByRole("link", { name: "Open retained close package manifest" }))
@@ -1207,7 +1207,7 @@ describe("OperationsContinuityScreen", () => {
       .toHaveAttribute("href", "/accounting/operations-continuity");
     const commandSpine = screen.getByRole("table", { name: "Financial Operations command spine" });
     expect(within(commandSpine).getByText("Start/import/normalize activity")).toBeInTheDocument();
-    expect(within(commandSpine).getByText("Run reconciliation and refresh posture")).toBeInTheDocument();
+    expect(within(commandSpine).getByText("Run reconciliation and refresh status")).toBeInTheDocument();
     expect(within(commandSpine).getByText("Assign, escalate, or resolve breaks")).toBeInTheDocument();
     expect(within(commandSpine).getByText("Submit or decide approval")).toBeInTheDocument();
     expect(within(commandSpine).getByText("Open evidence package routes")).toBeInTheDocument();
@@ -1277,7 +1277,7 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByText("Complete reopened incident remediation and close the period again with retained evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getAllByText("Command stage")).toHaveLength(4);
     expect(within(operatorQueue).getByText("Match Records")).toBeInTheDocument();
-    expect(within(operatorQueue).getByText("Run reconciliation and refresh posture; Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Run reconciliation and refresh status; Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Complete source-backed reconciliation lanes before approval.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Close Support")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Review checklist and close readiness; Close checklist, period lock, and reopen evidence are governed by the shared workflow.")).toBeInTheDocument();
@@ -1886,8 +1886,8 @@ describe("OperationsContinuityScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    const reopenForm = screen.getByRole("form", { name: "Governed period reopen command" });
-    const reopen = await within(reopenForm).findByRole("button", { name: "Reopen governed period for 2026-05" });
+    const reopenForm = screen.getByRole("form", { name: "Period reopen command" });
+    const reopen = await within(reopenForm).findByRole("button", { name: "Reopen period for 2026-05" });
     fireEvent.change(within(reopenForm).getByLabelText("Incident id"), {
       target: { value: "incident-2026-05-close-restatement" }
     });

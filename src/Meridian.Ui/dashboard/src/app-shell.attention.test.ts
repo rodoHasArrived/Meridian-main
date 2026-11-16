@@ -137,7 +137,7 @@ describe("app shell attention state", () => {
       tone: "review",
       value: "1 warning",
       href: "/data/providers",
-      actionLabel: "Open provider posture"
+      actionLabel: "Open provider health"
     });
   });
 

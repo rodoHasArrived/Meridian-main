@@ -647,7 +647,7 @@ export function InstrumentPassportPanel({ view }: { view: InstrumentPassportView
                             </div>
                             {item.route ? (
                               <Button asChild variant="ghost" size="sm" className="mt-2 h-7 px-2 text-xs">
-                                <Link to={item.route} aria-label={`Follow handoff action ${item.label}`}>
+                                <Link to={item.route} aria-label={`Follow next-step action ${item.label}`}>
                                   Follow
                                 </Link>
                               </Button>

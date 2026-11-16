@@ -143,7 +143,7 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
   return (
     <div className="space-y-4">
       <OperationalTrustSummary
-        source={{ value: run ? "Retained report run" : selectedTemplate ? "Governed template" : "No report selected", tone: hasPreviewSubject ? "ready" : "unknown" }}
+        source={{ value: run ? "Retained report run" : selectedTemplate ? "Approved template" : "No report selected", tone: hasPreviewSubject ? "ready" : "unknown" }}
         scope={{ value: reportName, detail: run ? presentStatusLabel(runStatus) : "Template preview", tone: hasPreviewSubject ? "ready" : "unknown" }}
         freshness={{
           value: run ? presentReportingAsOfDate(retainedAsOfDate) : "Preview not generated",
@@ -758,7 +758,7 @@ function AccountingScopedWorkflowScreen({ kind }: { kind: "factor-paydown" | "co
       <Card className="panel-surface">
         <CardHeader>
           <CardTitle>Accounting scope</CardTitle>
-          <CardDescription>Choose the governed book and period before preparing a review draft.</CardDescription>
+          <CardDescription>Choose the book and period before preparing a review draft.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
           <FormRow label="Ledger book" labelFor={`${kind}-book`}>
@@ -816,7 +816,7 @@ export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScre
         {selectedBreak ? (
           <Button asChild size="sm" variant="outline"><Link to={evidenceWorkbenchPath("reconciliation-break", selectedBreak.breakId)}>Review retained evidence</Link></Button>
         ) : null}
-        <Button type="button" size="sm" variant="outline" disabled disabledReason="Match decisions are recorded from the governed reconciliation casework route.">Record match decision</Button>
+        <Button type="button" size="sm" variant="outline" disabled disabledReason="Match decisions are recorded from the reconciliation casework route.">Record match decision</Button>
       </div>
       <Card className="panel-surface">
         <CardHeader>
@@ -829,7 +829,7 @@ export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScre
           <FinanceFact label="Status" value={selectedBreak ? presentStatusLabel(selectedBreak.status) : "No case"} />
           <FinanceFact label="Variance" value={selectedBreak ? formatCurrency(selectedBreak.variance) : "Not supplied"} mono />
           <FinanceFact label="Owner" value={selectedBreak?.assigneeDisplayName ?? selectedBreak?.assignedTo ?? "Unassigned"} />
-          <FinanceFact label="Next action" value={selectedBreak?.recommendedAction ?? "Review the governed case before taking action."} />
+          <FinanceFact label="Next action" value={selectedBreak?.recommendedAction ?? "Review the case before taking action."} />
         </CardContent>
       </Card>
       {selectedBreak ? (
@@ -873,7 +873,7 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
       .catch(() => {
         if (!cancelled) {
           setCalendar(null);
-          setErrorText("The governed close calendar could not be loaded. No synthetic tasks or readiness state are shown.");
+          setErrorText("The close calendar could not be loaded. No synthetic tasks or readiness state are shown.");
         }
       })
       .finally(() => {
@@ -937,7 +937,7 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
         <Card className="panel-surface">
           <CardHeader className="px-3 py-2">
             <CardTitle className="text-base">Close workflow queue</CardTitle>
-            <SectionDescription descriptionKey="close-calendar:queue" label="About the close workflow queue">Open a period to acknowledge tasks, submit approvals, or close from the governed workflow.</SectionDescription>
+            <SectionDescription descriptionKey="close-calendar:queue" label="About the close workflow queue">Open a period to acknowledge tasks, submit approvals, or close from the close workflow.</SectionDescription>
           </CardHeader>
           <CardContent className="p-3">
             {closeRows.length > 0 ? (
@@ -1014,14 +1014,14 @@ export function ApprovalInboxScreen({ data }: FinanceStandardScreenProps) {
         <CardContent className="grid gap-3 md:grid-cols-3">
           <FinanceFact label="Pending approvals" value={String(approvalRows.length)} />
           <FinanceFact label="Queue source" value={approvals.length > 0 ? "Accounting workspace" : "No approval feed supplied"} />
-          <FinanceFact label="Decision authority" value="Governed approval workflow" />
+          <FinanceFact label="Decision authority" value="Approval workflow" />
         </CardContent>
       </Card>
       {approvalRows.length > 0 ? (
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle className="text-base">Approval queue</CardTitle>
-            <CardDescription>Open a pending approval to review its evidence and record the decision in the governed workflow.</CardDescription>
+            <CardDescription>Open a pending approval to review its evidence and record the decision in the approval workflow.</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2" aria-label="Pending approvals">
@@ -1057,7 +1057,7 @@ export function ApprovalInboxScreen({ data }: FinanceStandardScreenProps) {
           role="status"
           tone="info"
           title="No approvals in the supplied accounting scope"
-          detail="Open governed approvals to inspect the authoritative queue, or review the close calendar to resolve prerequisites that create approval work."
+          detail="Open approvals to inspect the authoritative queue, or review the close calendar to resolve prerequisites that create approval work."
         />
       )}
       <FinanceList title="Reviewer checklist" items={[
@@ -1069,7 +1069,7 @@ export function ApprovalInboxScreen({ data }: FinanceStandardScreenProps) {
         "What are the risks?"
       ]} />
       <div className="flex flex-wrap gap-2">
-        <Button asChild size="sm"><Link to={WORKSTATION_ROUTE_CATALOG.accountingApprovals}>Open governed approvals</Link></Button>
+        <Button asChild size="sm"><Link to={WORKSTATION_ROUTE_CATALOG.accountingApprovals}>Open approvals</Link></Button>
         <Button asChild size="sm" variant="outline"><Link to={WORKSTATION_ROUTE_CATALOG.accountingCloseCalendar}>Review close calendar</Link></Button>
       </div>
     </div>
@@ -1187,7 +1187,7 @@ function buildReportPreviewItems({
   return [
     sections.length > 0
       ? `Template sections: ${sections.join(", ")}.`
-      : `${sectionCount} retained report section${sectionCount === 1 ? "" : "s"} will be rendered from the governed template.`,
+      : `${sectionCount} retained report section${sectionCount === 1 ? "" : "s"} will be rendered from the approved template.`,
     sectionCount > 0
       ? `${lineageLinkedSections} of ${sectionCount} sections carry retained lineage into approval review.`
       : "No retained section manifest is available; generate a preview before release.",

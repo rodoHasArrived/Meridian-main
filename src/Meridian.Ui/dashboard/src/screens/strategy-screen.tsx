@@ -719,7 +719,7 @@ function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
                 <form
                   className="flex flex-wrap items-center gap-3"
                   onSubmit={(e) => { e.preventDefault(); void vm.confirmPromotion(); }}
-                  aria-label="Governed Paper promotion approval"
+                  aria-label="Paper promotion approval"
                   noValidate
                 >
                   <label
@@ -1683,7 +1683,7 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
         <Card className="border-border/70 bg-background/35">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Regression frame</CardTitle>
-            <CardDescription>OLS summary anchored to run evidence and operator review posture.</CardDescription>
+            <CardDescription>OLS summary anchored to run evidence and operator review status.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-lg border border-border/70 bg-secondary/20 px-4 py-4 text-center font-mono text-lg text-foreground">
@@ -1762,7 +1762,7 @@ function PlotToolScatterChart({
         <ChartScatter className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
         <div className="mt-3 font-semibold text-foreground">No PlotTool observations yet</div>
         <p className="mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
-          Connect a governed Strategy analytics source to load retained notebooks, scatter observations, and statistical evidence.
+          Connect an approved Strategy analytics source to load retained notebooks, scatter observations, and statistical evidence.
         </p>
         <Button asChild variant="outline" size="sm" className="mt-4">
           <Link to="/settings/providers" aria-label="Review provider connections for PlotTool">

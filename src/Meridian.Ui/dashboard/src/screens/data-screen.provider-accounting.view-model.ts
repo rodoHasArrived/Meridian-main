@@ -251,7 +251,7 @@ function normalizeProviderId(value: string): string {
 }
 
 function buildRetryPosture(provider: ProviderRateLimitSnapshot, resetCountdown: string): string {
-  if (!provider.stateAvailable) return "Retry posture unavailable until runtime diagnostics are exposed.";
+  if (!provider.stateAvailable) return "Retry status unavailable until runtime diagnostics are exposed.";
   if (!provider.isRateLimited) return "Requests may proceed within the reported window.";
   if (provider.resetAt) return `Retry after ${resetCountdown.toLowerCase()}.`;
   return "Retry is blocked; the provider did not report a reset time.";

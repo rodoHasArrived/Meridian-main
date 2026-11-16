@@ -1094,7 +1094,7 @@ export function buildSecurityMasterPageViewState({
       : instrumentPassport
         ? totalOperationCount > 0
           ? `${readyOperationCount}/${totalOperationCount} operations checks ready; trading controls ${tradingParameters ? "loaded" : "pending"}.`
-          : `Trust posture ${passportTrustSummary}; trading controls ${tradingParameters ? "loaded" : "pending"}.`
+          : `Trust status ${passportTrustSummary}; trading controls ${tradingParameters ? "loaded" : "pending"}.`
         : selectedSecurityId
           ? "Passport and control readiness are queued for the selected record."
           : "Select a security to inspect passport and control readiness.";

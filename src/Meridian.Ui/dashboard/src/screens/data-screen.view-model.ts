@@ -879,7 +879,7 @@ export const defaultDataUploadTemplateCatalog: DataUploadTemplateCatalog = {
         "AST-30001,91282CHT1,US Treasury 4.25 2034,Bond,US Treasury,USD,US,2034-05-15,4.25,Custodian Security Master"
       ],
       validationNotes: [
-        "Asset information uploads are candidate facts and should not override governed Security Master approvals.",
+        "Asset information uploads are candidate facts and should not override Security Master approvals.",
         "Include durable source identifiers so conflicting facts can be traced during review."
       ]
     },
@@ -3316,7 +3316,7 @@ export function buildExportSection(
     detailEmptyState: exports.length === 0
       ? {
           title: "No export selected",
-          description: "Generated packages and governed export evidence will appear here after a report or package job runs."
+          description: "Generated packages and export evidence will appear here after a report or package job runs."
         }
       : null
   };
@@ -3410,7 +3410,7 @@ function exportActionText(status: DataExportRecord["status"]): string {
   }
 
   if (status === "Running") {
-    return "Wait for the package writer to finish before handoff.";
+    return "Wait for the package writer to finish before delivery.";
   }
 
   return "Review export profile and target before report-pack use.";
@@ -4503,7 +4503,7 @@ export function buildProviderSetupWorkflowSteps(phase: ProviderSetupPhase): Prov
     {
       id: "validate-data",
       label: "Validate Data",
-      description: "Verify credential posture, trust score, freshness, and quality gates.",
+      description: "Verify credential status, trust score, freshness, and quality gates.",
       status: "pending",
       statusLabel: "Pending"
     },

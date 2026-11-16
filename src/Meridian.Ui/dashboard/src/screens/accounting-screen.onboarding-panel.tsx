@@ -104,7 +104,7 @@ export function AccountingOnboardingPanel() {
       <CardDescription>Compare one entity and account population over required dates. Every comparison retains its source snapshots, mapping version, differences and review evidence.</CardDescription>
     </CardHeader>
     <CardContent className="space-y-4">
-      <p className="text-sm text-muted-foreground">External books remain read-only. A readiness packet supports review; any accounting-authority transition requires the separately governed process.</p>
+      <p className="text-sm text-muted-foreground">External books remain read-only. A readiness packet supports review; any accounting-authority transition requires the separately controlled process.</p>
       {error ? <StatusBanner tone="danger" role="alert" title="Onboarding unavailable" detail={error} /> : null}
       <div className="flex flex-wrap items-end gap-3">
         <FormRow label="Retained workspace" labelFor="onboarding-workspace" className="min-w-[16rem] flex-1">

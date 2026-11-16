@@ -89,7 +89,7 @@ export function ReportingPrivateCapitalReadinessPanel({ data }: { data: Accounti
                   <TableWorkbench workbenchId="reporting-private-capital-events" sourceKey={activity.projectedAtUtc}
                     rows={fundEventRecords} columns={fundEventColumns(activity)} getRowId={record => record.fundEventRecordId}
                     getSearchText={record => [record.fundEventType, record.fundEventId, record.capitalAccountId, record.memo].join(" ")}
-                    completePopulation={activity.fundEventCount === fundEventRecords.length} sourceDescription="Private-capital activity projection, as of the displayed projection time; amounts retain their source currency."
+                    completePopulation={activity.fundEventCount === fundEventRecords.length} sourceDescription="Private-capital activity snapshot, as of the displayed snapshot time; amounts retain their source currency."
                     ariaLabel="Private-capital report-ready fund event records" emptyText="No private-capital fund event records returned." />
                 </div>
               ) : (
@@ -103,7 +103,7 @@ export function ReportingPrivateCapitalReadinessPanel({ data }: { data: Accounti
                   <TableWorkbench workbenchId="reporting-capital-subledgers" sourceKey={activity.projectedAtUtc}
                     rows={subledgers} columns={subledgerColumns()} getRowId={subledger => subledger.subledgerId}
                     getSearchText={subledger => JSON.stringify(subledger)} completePopulation={activity.capitalAccountCount === subledgers.length}
-                    sourceDescription="Capital-account references from the authorized private-capital projection."
+                    sourceDescription="Capital-account references from the authorized private-capital snapshot."
                     ariaLabel="Private-capital capital account subledger references" emptyText="No account-level capital-account subledger references were included." />
                 </div>
 

@@ -562,7 +562,7 @@ export function buildReconciliationComparisonViewState({
 
   return {
     title: "Cash reconciliation - broker statement vs. ledger",
-    subtitle: cashFlow?.summary ?? "Broker and custodian statements are compared with Meridian ledger balances from shared reconciliation read models.",
+    subtitle: cashFlow?.summary ?? "Broker and custodian statements are compared with Meridian ledger balances from shared reconciliation data.",
     statementHeading,
     ledgerHeading,
     matchedBadgeLabel: `${formatCount(matchedCount)} matched`,
@@ -660,7 +660,7 @@ function buildReconciliationRunDetailTabs(run: StatementRunSummaryWithMetadata |
     { id: "positions", label: "Positions", badgeLabel: run ? matchTotal(run.positionMatches) : null, description: matchDescription("Position match totals supplied by the reconciliation service.", "Position match") },
     { id: "cash", label: "Cash", badgeLabel: run ? matchTotal(run.cashMatches) : null, description: matchDescription("Cash match totals supplied by the reconciliation service.", "Cash match") },
     { id: "transactions", label: "Transactions", badgeLabel: run ? matchTotal(run.transactionMatches) : null, description: matchDescription("Transaction match totals supplied by the reconciliation service.", "Transaction match") },
-    { id: "breaks-cases", label: "Breaks & Cases", badgeLabel: run ? String(run.breakCount ?? openExceptionCount) : null, description: "Break and case counts from reconciliation/casework read models; no case-state logic runs in React." },
+    { id: "breaks-cases", label: "Breaks & Cases", badgeLabel: run ? String(run.breakCount ?? openExceptionCount) : null, description: "Break and case counts from reconciliation/casework data; no case-state logic runs in React." },
     { id: "evidence", label: "Evidence", badgeLabel: run ? matchTotal(matchCount) : null, description: "Evidence packet and imported statement references available for review." }
   ];
 
@@ -686,10 +686,10 @@ export function buildReconciliationQueuePanelViewState(
     description: "Select a run to inspect its active reconciliation detail panel.",
     overviewTitle: "Reconciliation queue",
     overviewDescription: "Open breaks, timing drift, and balanced runs stay visible without leaving Accounting.",
-    overviewCaption: "Read-only reconciliation queue summary. Open the reconciliation workstream to inspect selected run detail.",
+    overviewCaption: "Read-only reconciliation queue summary. Open the reconciliation area to inspect selected run detail.",
     overviewActionHref: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
     overviewActionLabel: "Open reconciliation",
-    overviewActionAriaLabel: "Open Accounting reconciliation workstream",
+    overviewActionAriaLabel: "Open Accounting reconciliation area",
     listLabel: "Reconciliation runs",
     emptyText: "No reconciliation runs are available for this accounting scope.",
     detailPanelId,
@@ -839,7 +839,7 @@ export function buildOperationalExceptionWorkbenchState({
 
   return {
     title: "Operational exception workbench",
-    description: "Unified review for reconciliation breaks, workflow state, comments, audit evidence, and approval handoffs.",
+    description: "One review for reconciliation breaks, workflow state, comments, audit evidence, and approval next steps.",
     metricRows: [
       {
         id: "active-breaks",

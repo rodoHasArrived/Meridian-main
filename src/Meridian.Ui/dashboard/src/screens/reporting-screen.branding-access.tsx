@@ -104,7 +104,7 @@ export function ReportingBrandingAccessPanel({
               <div className="min-w-0">
                 <h4 className="text-sm font-semibold text-foreground">Custom styling override</h4>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  Stage firm-specific colors, logo, footer, and disclaimer metadata for a schedule or governed run.
+                  Stage firm-specific colors, logo, footer, and disclaimer metadata for a schedule or report run.
                 </p>
               </div>
               <Badge variant="outline">Override</Badge>
@@ -187,10 +187,10 @@ export function ReportingBrandingAccessPanel({
             </div>
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-md border border-primary/25 bg-primary/10 px-3 py-2">
               <p role="status" className="max-w-3xl text-xs leading-5 text-primary">
-                Pack preview and generation now use the canonical governed-run workflow, where readiness, certified artifacts, and release evidence are server-owned.
+                Pack preview and generation now use the canonical report-run workflow, where readiness, certified artifacts, and release evidence are server-owned.
               </p>
               <Button asChild type="button" size="sm" variant="outline">
-                <Link to={WORKSTATION_ROUTE_CATALOG.reportingRunParameters}>Configure governed run</Link>
+                <Link to={WORKSTATION_ROUTE_CATALOG.reportingRunParameters}>Configure report run</Link>
               </Button>
             </div>
           </div>

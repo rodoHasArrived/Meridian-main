@@ -61,7 +61,7 @@ export function ExecutionAuditTrailPanel() {
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="eyebrow-label">Governed actions</div>
+            <div className="eyebrow-label">Controlled actions</div>
             <CardTitle className="flex items-center gap-2">
               <ScrollText className="h-5 w-5 text-primary" />
               Execution audit trail

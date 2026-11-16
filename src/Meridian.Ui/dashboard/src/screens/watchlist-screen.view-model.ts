@@ -899,7 +899,7 @@ export function buildWatchlistSelectedDetail(
     ? "No live quote has been returned for this symbol yet. Check provider setup or refresh prices after the subscription settles."
     : row.quoteStale
       ? "The latest quote is stale. Fetch latest prices or verify provider connectivity before using this row as current evidence."
-      : "Live quote, provider posture, and collection evidence are ready for operator review.";
+      : "Live quote, provider health, and collection evidence are ready for operator review.";
 
   return {
     symbol: row.symbol,

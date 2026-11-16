@@ -76,9 +76,9 @@ function handoffFile(input: AccountCashForecastRequest) {
 }
 
 async function importHandoff(user: ReturnType<typeof userEvent.setup>, input = request()) {
-  await user.click(screen.getByText("Capture cash forecast from source handoff"));
-  await user.upload(screen.getByLabelText("Cash forecast handoff file"), handoffFile(input));
-  return screen.findByRole("region", { name: "Cash forecast handoff preview" });
+  await user.click(screen.getByText("Capture cash forecast from source file"));
+  await user.upload(screen.getByLabelText("Cash forecast source file"), handoffFile(input));
+  return screen.findByRole("region", { name: "Cash forecast source file preview" });
 }
 
 beforeEach(() => {
@@ -183,7 +183,7 @@ describe("AccountCashForecastsPanel", () => {
     await user.click(screen.getByRole("button", { name: "Capture cash forecast" }));
     await waitFor(() => expect(api.captureCashForecast).toHaveBeenCalledWith(scope, input, { signal: expect.any(AbortSignal) }));
     expect(await screen.findByText("Cash forecast captured. Earlier predictions and their source revisions remain retained.")).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "Cash forecast handoff preview" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Cash forecast source file preview" })).not.toBeInTheDocument();
     expect(dirty).toHaveBeenLastCalledWith(false);
   });
 
@@ -228,7 +228,7 @@ describe("AccountCashForecastsPanel", () => {
     render(view(scope, { ...context, canWrite: false }));
     expect(await screen.findByText("Cash reconciliation blocked")).toBeInTheDocument();
     expect(screen.getByText("Read-only cash forecasts")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Cash forecast handoff file")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Cash forecast source file")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Capture cash forecast" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Prepare from retained inputs" })).not.toBeInTheDocument();
   });
@@ -253,8 +253,8 @@ describe("AccountCashForecastsPanel", () => {
     const user = userEvent.setup();
     render(view());
     await screen.findByText("No cash forecasts retained for this account and book.");
-    await user.click(screen.getByText("Capture cash forecast from source handoff"));
-    const link = screen.getByRole("link", { name: "Download scoped handoff template" });
+    await user.click(screen.getByText("Capture cash forecast from source file"));
+    const link = screen.getByRole("link", { name: "Download scoped source file template" });
     const template = JSON.parse(decodeURIComponent(link.getAttribute("href")!.split(",")[1]));
     expect(template.scope).toEqual({ tenantId: "", companyId: "", accountId: scope.accountId, bookId: scope.ledgerBookId, baseCurrency: "USD" });
     expect(template.openingCash.amount).toBe("");
@@ -273,8 +273,8 @@ describe("AccountCashForecastsPanel", () => {
     await importHandoff(user, input);
     await user.click(screen.getByRole("button", { name: "Capture cash forecast" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Durable forecast store requires recovery.");
-    expect(screen.getByRole("region", { name: "Cash forecast handoff preview" })).toHaveTextContent("Run cash-run-1");
-    await user.click(screen.getByRole("button", { name: "Keep handoff and retry" }));
+    expect(screen.getByRole("region", { name: "Cash forecast source file preview" })).toHaveTextContent("Run cash-run-1");
+    await user.click(screen.getByRole("button", { name: "Keep source file and retry" }));
     await user.click(screen.getByRole("button", { name: "Capture cash forecast" }));
     await screen.findByText("Cash forecast captured. Earlier predictions and their source revisions remain retained.");
     expect(api.captureCashForecast.mock.calls.map(call => call[1])).toEqual([input, input]);
@@ -323,12 +323,12 @@ describe("AccountCashForecastsPanel", () => {
     Object.defineProperty(file, "text", { value: () => new Promise<string>(resolve => { finish = resolve; }) });
     const rendered = render(view());
     await screen.findByText("No cash forecasts retained for this account and book.");
-    await user.click(screen.getByText("Capture cash forecast from source handoff"));
-    await user.upload(screen.getByLabelText("Cash forecast handoff file"), file);
+    await user.click(screen.getByText("Capture cash forecast from source file"));
+    await user.upload(screen.getByLabelText("Cash forecast source file"), file);
     const otherScope = { ...scope, accountId: "eeb2ec51-0493-402e-9581-ecf6e3f6b893" };
     rendered.rerender(view(otherScope, { ...context, accountId: otherScope.accountId }));
     await act(async () => { finish(JSON.stringify(request())); });
-    expect(screen.queryByRole("region", { name: "Cash forecast handoff preview" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Cash forecast source file preview" })).not.toBeInTheDocument();
     expect(api.parseCashForecastImport).not.toHaveBeenCalled();
     expect(api.captureCashForecast).not.toHaveBeenCalled();
   });

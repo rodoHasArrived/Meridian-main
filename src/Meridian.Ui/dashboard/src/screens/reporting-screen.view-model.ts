@@ -948,7 +948,7 @@ export function useReportingScreenViewModel(
       workflowTaskPanel: null,
       loadingState: buildLoadingState(pathname),
       loadingTitle: "Loading Reporting",
-      loadingDetail: "Waiting for governed report-pack and export evidence.",
+      loadingDetail: "Waiting for report-pack and export evidence.",
       exportStatus,
       runningProfileId,
       runExport: runExportCommand,
@@ -1062,7 +1062,7 @@ export function useReportingScreenViewModel(
     hasRows: rows.length > 0,
     rows,
     emptyText:
-      "No export profiles are configured. Add a governed profile to restore reporting evidence.",
+      "No export profiles are configured. Add a profile to restore reporting evidence.",
     listLabel,
     visibleCountLabel,
     workbenchActions: buildWorkbenchActions(selectedProfileData),
@@ -1106,7 +1106,7 @@ export function useReportingScreenViewModel(
     workflowTaskPanel,
     loadingState: buildLoadingState(pathname),
     loadingTitle: "Loading Reporting",
-    loadingDetail: "Waiting for governed report-pack and export evidence.",
+    loadingDetail: "Waiting for report-pack and export evidence.",
     exportStatus,
     runningProfileId,
     runExport: runExportCommand,
@@ -2163,7 +2163,7 @@ function buildLoadingState(pathname: string): ReportingLoadingState {
     titleId: "reporting-loading-title",
     detailId: "reporting-loading-detail",
     title,
-    detail: "Waiting for governed report-pack and export evidence.",
+    detail: "Waiting for report-pack and export evidence.",
     badgeLabel: "Loading",
     routeLabel: taskMode.routeLabel
   };
@@ -2335,7 +2335,7 @@ function buildWorkflowTaskPanel({
     eyebrow: "Workflow task",
     title: "Report-pack approval",
     description:
-      "Review report-pack recipients, pick the export profile that carries the packet evidence, then preview or run the governed export before approval.",
+      "Review report-pack recipients, pick the export profile that carries the packet evidence, then preview or run the export before approval.",
     statusLabel,
     statusTone,
     statusVariant: workflowStatusVariant(statusTone),
@@ -2385,7 +2385,7 @@ function buildWorkflowTaskPanel({
       };
     }),
     hasProfiles: rows.length > 0,
-    profilesEmptyText: "No export profiles are configured. Add a governed profile before report-pack approval.",
+    profilesEmptyText: "No export profiles are configured. Add a profile before report-pack approval.",
     profilesEmptyAriaLabel: "No report-pack export profiles",
     selectedSummary: selectedProfile
       ? `${selectedProfile.name} is selected for report-pack approval using ${selectedProfile.format} output to ${selectedProfile.targetTool}.`
@@ -2538,7 +2538,7 @@ function reportPackProfileScore(profile: GovernanceReportingProfile, recommended
 
 function buildProfileReadinessSummary(profile: GovernanceReportingProfile): string {
   if (profile.loaderScript && profile.dataDictionary) {
-    return "Loader and dictionary evidence are ready for governed packet generation.";
+    return "Loader and dictionary evidence are ready for packet generation.";
   }
 
   if (profile.loaderScript) {
@@ -2565,7 +2565,7 @@ function buildProfileActions(
     ? `${profile.name} export is running. Wait for the result before starting another export.`
     : evidenceDisabledReason
       ? evidenceDisabledReason
-      : "Runs the governed export service and reports generated artifacts here.";
+      : "Runs the export service and reports generated artifacts here.";
 
   return [
     {
@@ -2640,7 +2640,7 @@ function buildProfileExportEvidenceDisabledReason(profile: GovernanceReportingPr
   const missingLabel = missing.length === 1
     ? missing[0]
     : `${missing.slice(0, -1).join(", ")} and ${missing[missing.length - 1]}`;
-  return `${profile.name} export requires ${missingLabel} evidence before running governed export analysis. Preview remains available.`;
+  return `${profile.name} export requires ${missingLabel} evidence before running export analysis. Preview remains available.`;
 }
 
 export function buildExportStatusStarting(profileName: string): ReportingExportStatusState {

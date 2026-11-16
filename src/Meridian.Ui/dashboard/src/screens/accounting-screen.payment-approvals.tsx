@@ -178,7 +178,7 @@ function EntityPaymentApprovalsPanel({ entityId }: { entityId?: string }) {
           />
         ) : null}
 
-        <div className="grid gap-2 md:grid-cols-3" aria-label="Payment approval posture">
+        <div className="grid gap-2 md:grid-cols-3" aria-label="Payment approval status">
           <Metric label="Awaiting review" value={String(summary.pendingCount)} />
           <Metric label="Pending value" value={summary.pendingValueLabel} />
           <Metric label="Evidence recorded" value={String(summary.evidenceCount)} />
@@ -234,7 +234,7 @@ function EntityPaymentApprovalsPanel({ entityId }: { entityId?: string }) {
                   ) : null}
 </>}]} getRowId={row => row.pendingPaymentId} getRowAriaLabel={row => row.ariaLabel}
  getSearchText={row => `${row.externalRef} ${row.currencyLabel} ${row.effectiveDate} ${row.statusLabel}`}
- completePopulation={Boolean(entityId && !loading && !error)} sourceDescription="All payment intents returned by the authorized entity payment queue. Decisions remain in the governed payment workflow."
+ completePopulation={Boolean(entityId && !loading && !error)} sourceDescription="All payment intents returned by the authorized entity payment queue. Decisions remain in the payment approval workflow."
  exportContext={{ Entity: entityId ?? "Unselected" }}
  emptyText={!entityId ? "Select an entity to load payment intents." : loading ? "Loading payment intents…" : summary.emptyMessage}
  ariaLabel="Payment intents" />

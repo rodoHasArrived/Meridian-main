@@ -163,7 +163,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                         </a>
 </> }]}
  getRowId={row => row.id} getSearchText={row => `${row.title} ${row.subtitle}`}
- completePopulation={!view.loading && !view.errorText} sourceDescription="Complete authorized capital-account workbench projection. Monetary cells retain producer display units."
+ completePopulation={!view.loading && !view.errorText} sourceDescription="Complete authorized capital-account workbench view. Monetary cells retain producer display units."
  exportContext={{ "Projected at": view.projectedAtLabel, "Workbench": view.workbenchRouteLabel }}
  emptyText="No records match these controls." ariaLabel="Capital-account fund-event command centers" />
             </div>
@@ -229,7 +229,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                         </a>
 </> }]}
  getRowId={row => row.id} getSearchText={row => `${row.title} ${row.subtitle}`}
- completePopulation={!view.loading && !view.errorText} sourceDescription="Complete authorized capital-account workbench projection. Monetary cells retain producer display units."
+ completePopulation={!view.loading && !view.errorText} sourceDescription="Complete authorized capital-account workbench view. Monetary cells retain producer display units."
  exportContext={{ "Projected at": view.projectedAtLabel, "Workbench": view.workbenchRouteLabel }}
  emptyText="No records match these controls." ariaLabel="Investor capital accounts" />
             </div>

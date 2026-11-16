@@ -15,7 +15,7 @@ const settingsTasks = [
   {
     id: "access",
     title: "Review access and authority",
-    description: "Check authentication posture and manage scoped grants with audit evidence.",
+    description: "Check authentication status and manage scoped grants with audit evidence.",
     href: WORKSTATION_ROUTE_CATALOG.settingsAccess,
     actionLabel: "Open Access",
     status: "Scoped authority"
@@ -23,10 +23,10 @@ const settingsTasks = [
   {
     id: "accounting-systems",
     title: "Configure accounting systems",
-    description: "Manage external ledger connections and governed accounting configuration.",
+    description: "Manage external ledger connections and controlled accounting configuration.",
     href: WORKSTATION_ROUTE_CATALOG.settingsAccountingSystems,
     actionLabel: "Open Accounting Systems",
-    status: "Governed configuration"
+    status: "Controlled configuration"
   },
   {
     id: "providers",

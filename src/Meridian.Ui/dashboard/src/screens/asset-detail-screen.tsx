@@ -23,7 +23,7 @@ import { usesTrackedCaps } from "@/design-system/label-case";
 const assetSearchSuggestions = ["AAPL", "MSFT", "US91282CHT18"];
 const assetDetailReadinessCues = [
   { label: "Identity", value: "Identifiers, aliases, and current status" },
-  { label: "Passport", value: "Governed edits, approvals, and trust evidence" },
+  { label: "Passport", value: "Controlled edits, approvals, and trust evidence" },
   { label: "Lots", value: "Open lots, cost basis, and accounting impact" },
   { label: "Trading", value: "Lot size, tick size, hours, and circuit breakers" }
 ];
@@ -33,7 +33,7 @@ const assetSavedViews = [
   { id: "exceptions", label: "Review queue", symbol: "MSFT", detail: "Assets with missing identifiers or stale trust evidence" }
 ];
 const assetDetailNextActions = [
-  { id: "security-master", label: "Open Security Master", href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster, detail: "Review governed identity, approvals, and passport posture." },
+  { id: "security-master", label: "Open Security Master", href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster, detail: "Review the security's identity, approvals, and passport status." },
   { id: "live-quotes", label: "Open live quotes", href: WORKSTATION_ROUTE_CATALOG.dataQuotes, detail: "Check current provider price and freshness before trading decisions." },
   { id: "reconciliation", label: "Open reconciliation", href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation, detail: "Inspect accounting impact for lots, cash, and unmatched records." }
 ];
@@ -159,7 +159,7 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
                 <>
                   <div className="font-semibold text-foreground">Search results</div>
                   <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    Select a result to open governed identity, passport, lot, and trading parameters without leaving the operator workflow.
+                    Select a result to open its identity, passport, lot, and trading parameters without leaving the operator workflow.
                   </p>
                   {searching ? <p className="mt-3 text-sm text-muted-foreground">Searching...</p> : null}
                   {results.length > 0 ? (

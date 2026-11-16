@@ -33,7 +33,7 @@ export function SettingsDiagnosticsSection({ vm, overview, recentEventsVm, showA
         <CardHeader>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <div className="eyebrow-label">Event posture</div>
+              <div className="eyebrow-label">Event status</div>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Activity className="h-4 w-4 text-primary" />
                 {vm.recentEventsSection.title}

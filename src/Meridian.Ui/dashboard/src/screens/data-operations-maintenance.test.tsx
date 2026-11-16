@@ -110,7 +110,7 @@ describe("ArchiveMaintenanceOperations", () => {
     // behavior so userEvent's Tab traversal does not enter hidden menu controls.
     render(<><style>{"details:not([open]) > :not(summary) { display: none; }"}</style><ArchiveMaintenanceOperations /></>);
 
-    const posture = await screen.findByLabelText("Archive maintenance posture");
+    const posture = await screen.findByLabelText("Archive maintenance status");
     expect(within(posture).getByText("Running")).toBeInTheDocument();
     expect(within(posture).getByText("95.0%")).toBeInTheDocument();
     expect(within(posture).getByText("Next due: Nightly health check")).toBeInTheDocument();
@@ -158,7 +158,7 @@ describe("ArchiveMaintenanceOperations", () => {
     const user = userEvent.setup();
     render(<ArchiveMaintenanceOperations />);
 
-    await screen.findByLabelText("Archive maintenance posture");
+    await screen.findByLabelText("Archive maintenance status");
     await user.selectOptions(screen.getByLabelText("Maintenance task type"), "Cleanup");
     await user.click(screen.getByRole("button", { name: "Run maintenance now" }));
 
@@ -173,7 +173,7 @@ describe("ArchiveMaintenanceOperations", () => {
     const user = userEvent.setup();
     render(<ArchiveMaintenanceOperations />);
 
-    await screen.findByLabelText("Archive maintenance posture");
+    await screen.findByLabelText("Archive maintenance status");
     const cancelButtons = screen.getAllByRole("button", { name: "Cancel" });
     expect(cancelButtons).toHaveLength(1);
 
@@ -187,7 +187,7 @@ describe("ArchiveMaintenanceOperations", () => {
     const user = userEvent.setup();
     render(<ArchiveMaintenanceOperations />);
 
-    await screen.findByLabelText("Archive maintenance posture");
+    await screen.findByLabelText("Archive maintenance status");
     await user.click(screen.getByRole("button", { name: "Show failed only" }));
 
     await waitFor(() => expect(api.getFailedMaintenanceExecutions).toHaveBeenCalledWith(25));
@@ -214,7 +214,7 @@ describe("ArchiveMaintenanceOperations", () => {
     render(<ArchiveMaintenanceOperations />);
 
     expect(await screen.findByText(/1 of 5 maintenance reads failed/)).toBeInTheDocument();
-    const posture = screen.getByLabelText("Archive maintenance posture");
+    const posture = screen.getByLabelText("Archive maintenance status");
     expect(within(posture).getByText("Running")).toBeInTheDocument();
     // Both statistics-backed metrics fall back together; neither reports a zero.
     expect(within(posture).getAllByText("Execution statistics have not loaded.")).toHaveLength(2);
@@ -224,7 +224,7 @@ describe("ArchiveMaintenanceOperations", () => {
     primeReads();
     const user = userEvent.setup();
     render(<HeaderRefresh><ArchiveMaintenanceOperations /></HeaderRefresh>);
-    await screen.findByLabelText("Archive maintenance posture");
+    await screen.findByLabelText("Archive maintenance status");
     await waitFor(() => expect(api.getMaintenanceExecutions).toHaveBeenCalledTimes(1));
     expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Retry loading archive maintenance" })).not.toBeInTheDocument();

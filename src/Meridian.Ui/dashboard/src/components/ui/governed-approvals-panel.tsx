@@ -151,7 +151,7 @@ export function GovernedApprovalsPanel({ model }: GovernedApprovalsPanelProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <PauseCircle className="h-4 w-4" />
-          Governed approvals
+          Risk approvals
         </CardTitle>
         <CardDescription>
           {pending.length === 0

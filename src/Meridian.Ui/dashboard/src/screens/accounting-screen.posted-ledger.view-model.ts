@@ -599,7 +599,7 @@ export function buildAccountingPostedLedgerViewState({
 
   return {
     title: "Posted-journal trial balance",
-    description: "Account balances from the governed, immutable journal — the fund's book of record — scoped by ledger period. Strategy-run ledgers are simulation artifacts and live in the strategy-run explorer below.",
+    description: "Account balances from the immutable journal — the fund's book of record — scoped by ledger period; strategy-run ledgers are simulations and live in the strategy-run explorer below.",
     sourceBadgeLabel: "Source: posted journal",
     periodSelector: {
       label: "Ledger period",
@@ -614,7 +614,7 @@ export function buildAccountingPostedLedgerViewState({
       // would have found one is still in flight or has failed.
       emptyText: periodsLoading || booksLoading || periodsError || booksErrorText || periods.length > 0
         ? null
-        : "No ledger periods exist yet. Create a ledger book and period in Accounting → Configure to start the governed book."
+        : "No ledger periods exist yet. Create a ledger book and period in Accounting → Configure to start the book of record."
     },
     periodNotice,
     selectedBookLabel,

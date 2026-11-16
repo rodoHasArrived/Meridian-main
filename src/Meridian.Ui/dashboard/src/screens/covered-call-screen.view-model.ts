@@ -348,7 +348,7 @@ const COVERED_CALL_FORM_FIELD_DEFINITIONS: CoveredCallFormFieldDefinition[] = [
     label: "Underlying",
     type: "text",
     required: true,
-    helperText: "Ticker symbol used for historical bars, chain preview, and result handoffs.",
+    helperText: "Ticker symbol used for historical bars, the chain preview, and the results you send on.",
     errorId: "cc-underlyingSymbol-error",
     options: []
   },

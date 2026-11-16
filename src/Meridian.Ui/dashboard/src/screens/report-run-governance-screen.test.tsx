@@ -112,7 +112,7 @@ describe("ReportRunGovernanceScreen", () => {
   it("does not fall back to a recent or fixture run when runId is missing", async () => {
     renderWithRouter(<ReportRunGovernanceScreen />, { initialEntries: ["/reporting/runs/detail"] });
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Select a governed report run");
+    expect(screen.getByRole("alert")).toHaveTextContent("Select a report run");
     expect(governanceApi.getGovernedReportingRun).not.toHaveBeenCalled();
   });
 

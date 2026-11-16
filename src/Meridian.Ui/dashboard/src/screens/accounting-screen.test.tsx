@@ -1689,7 +1689,7 @@ describe("AccountingScreen", () => {
       "href",
       "/accounting/operations-continuity"
     );
-    expect(screen.getByRole("link", { name: "Open Data provider posture while Accounting loads" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open Data provider health while Accounting loads" })).toHaveAttribute(
       "href",
       "/data/providers"
     );
@@ -2591,7 +2591,7 @@ describe("AccountingScreen", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Build journal candidate" }));
     const candidate = await screen.findByRole("region", { name: "Accounting rule journal draft candidate" });
-    expect(within(candidate).getByText("Governed journal draft candidate")).toBeInTheDocument();
+    expect(within(candidate).getByText("Journal draft candidate")).toBeInTheDocument();
     expect(within(candidate).getByText("Selected rule rule-trade-buy version v3")).toBeInTheDocument();
     expect(within(candidate).getByText("Balanced $250,000 / $250,000")).toBeInTheDocument();
     expect(within(candidate).getByText(/Draft command 00000000-0000-4000-8000-000000000101 is pending and remains lifecycle-gated/)).toBeInTheDocument();
@@ -2968,7 +2968,7 @@ describe("AccountingScreen", () => {
 
     const { container } = await renderAccountingScreen(data, "/accounting/reconciliation/external-gl");
 
-    const providerPosture = await screen.findByRole("table", { name: "External GL provider import posture" });
+    const providerPosture = await screen.findByRole("table", { name: "External GL provider import status" });
     expect(providerPosture).toHaveTextContent("QuickBooks import");
     expect(providerPosture).not.toHaveTextContent("QuickBooks Fixture");
     expect(screen.getByRole("heading", { name: "Imported QuickBooks evidence" })).toBeInTheDocument();
@@ -4627,7 +4627,7 @@ describe("AccountingScreen", () => {
     expect(comparison).toHaveTextContent("Ledger balance");
     expect(comparison).toHaveTextContent("Out by $500");
     expect(screen.getAllByRole("treegrid", { name: "Reconciliation runs" })).toHaveLength(1);
-    expect(screen.queryByRole("link", { name: "Open Accounting reconciliation workstream" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Open Accounting reconciliation area" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();
     const selectedRun = screen.getByRole("row", { name: "Inspect reconciliation run Paper Index Mean Reversion" });
     expect(selectedRun).toHaveAttribute("aria-selected", "true");
@@ -4980,7 +4980,7 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("heading", { name: "Delivery Evidence", level: 2 })).toBeInTheDocument();
     expect(screen.queryByRole("tablist", { name: "Accounting routes" })).not.toBeInTheDocument();
 
-    expect(screen.getByText("Report packet posture")).toBeInTheDocument();
+    expect(screen.getByText("Report packet status")).toBeInTheDocument();
     expect(screen.getAllByText(/Board, Audit/).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Inspect reporting profile Excel for Excel Xlsx" })).toHaveAttribute("aria-pressed", "true");
 
@@ -5505,7 +5505,7 @@ describe("AccountingScreen", () => {
 
     await user.click(screen.getByRole("tab", { name: /^Lots\b/i }));
 
-    expect(screen.getByRole("treegrid", { name: "Open lot read model for sec-1" })).toHaveTextContent("lot-1");
+    expect(screen.getByRole("treegrid", { name: "Open lot summary for sec-1" })).toHaveTextContent("lot-1");
     expect(screen.getByRole("row", { name: "Inspect open lot lot-1 for AAPL" })).toHaveAttribute("aria-controls", "security-open-lot-detail-panel");
     expect(screen.getByRole("region", { name: "Open lot detail for lot-1 on AAPL" })).toHaveTextContent("85,500");
   });

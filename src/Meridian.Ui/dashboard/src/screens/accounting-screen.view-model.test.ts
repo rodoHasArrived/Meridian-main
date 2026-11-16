@@ -938,7 +938,7 @@ describe("accounting-screen view model", () => {
       titleId: "reporting-workspace-loading-title",
       detailId: "reporting-workspace-loading-detail",
       title: "Loading Reporting",
-      detail: "Waiting for report-pack, governed export, and approval summaries from workspace data.",
+      detail: "Waiting for report-pack, export, and approval summaries from workspace data.",
       workstreamLabel: "Reporting"
     });
   });
@@ -2247,8 +2247,8 @@ describe("accounting-screen view model", () => {
       isExpanded: true
     });
     expect(state).toMatchObject({
-      title: "Open lot read model",
-      tableLabel: "Open lot read model for sec-1",
+      title: "Open lot summary",
+      tableLabel: "Open lot summary for sec-1",
       selectedRowId: "lot-1",
       hasRows: true,
       statusAnnouncement: "1 open lot loaded for sec-1."
@@ -2284,8 +2284,8 @@ describe("accounting-screen view model", () => {
       selectedRowId: null,
       loading: true
     })).toMatchObject({
-      loadingText: "Loading open lot read model...",
-      statusAnnouncement: "Loading open lot read model for sec-1."
+      loadingText: "Loading open lot summary...",
+      statusAnnouncement: "Loading open lot summary for sec-1."
     });
     expect(buildSecurityOpenLotReadModelViewState({
       securityId: "sec-1",
@@ -2295,7 +2295,7 @@ describe("accounting-screen view model", () => {
     })).toMatchObject({
       errorText: "Trust snapshot offline",
       errorDetails: [],
-      statusAnnouncement: "Open lot read model error: Trust snapshot offline"
+      statusAnnouncement: "Open lot summary error: Trust snapshot offline"
     });
   });
 
@@ -2347,7 +2347,7 @@ describe("accounting-screen view model", () => {
         value: "Ready: 1 active provider evidence row retained on the passport. Evidence 2; blockers 0.",
         tone: "success"
       },
-      { label: "Operations handoff", value: "1 enabled / 1 total handoff(s).", tone: "success" },
+      { label: "Operations next steps", value: "1 enabled / 1 total next step(s).", tone: "success" },
       {
         label: "Operations workbench",
         value: "Ready: Security Master operations workbench is ready for downstream portfolio, accounting, reconciliation, close, and reporting use.",
@@ -2428,7 +2428,7 @@ describe("accounting-screen view model", () => {
     });
     expect(view.fields).toEqual(expect.arrayContaining([
       { label: "Display name", value: "Apple Inc." },
-      { label: "Trust", value: "Trust posture is unavailable.", tone: "default" },
+      { label: "Trust", value: "Trust status is unavailable.", tone: "default" },
       { label: "Identifiers", value: "Identifier summary is unavailable." },
       { label: "Usage", value: "Downstream usage is unavailable." }
     ]));

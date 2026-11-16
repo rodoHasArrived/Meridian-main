@@ -30,7 +30,7 @@ export function ProviderAccountingRegion({ services }: { services?: ProviderAcco
               Provider registration and rate limits
             </CardTitle>
             <CardDescription className="mt-2">
-              Current server-owned registration failures, quota usage, declared daily limits, reset posture, and retry guidance.
+              Current server-owned registration failures, quota usage, declared daily limits, reset status, and retry guidance.
             </CardDescription>
           </div>
           <Button
@@ -101,7 +101,7 @@ export function ProviderAccountingRegion({ services }: { services?: ProviderAcco
                   { id: "daily", label: "Daily quota", render: (row) => row.dailyUsage, exportValue: (row) => row.dailyUsage },
                   { id: "reset", label: "Reset countdown", render: (row) => row.resetCountdown, exportValue: (row) => row.source.resetAt },
                   { id: "reason", label: "Failure / reason", render: (row) => row.failureReason, exportValue: (row) => row.source.reason },
-                  { id: "retry", label: "Retry posture", render: (row) => row.retryPosture, exportValue: (row) => row.retryPosture }
+                  { id: "retry", label: "Retry status", render: (row) => row.retryPosture, exportValue: (row) => row.retryPosture }
                 ]} />
             </div>
           ) : (
@@ -109,7 +109,7 @@ export function ProviderAccountingRegion({ services }: { services?: ProviderAcco
               No current provider rate-limit rows are available. Meridian will not infer request capacity from configuration alone.
             </div>
           )}
-          <p className="mt-2 text-xs text-muted-foreground" aria-label="Provider rate-limit history posture">
+          <p className="mt-2 text-xs text-muted-foreground" aria-label="Provider rate-limit history status">
             History: {panel.historyPosture}
           </p>
         </div>

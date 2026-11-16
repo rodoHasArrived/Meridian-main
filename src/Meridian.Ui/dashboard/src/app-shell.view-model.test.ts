@@ -155,7 +155,7 @@ describe("app shell view model", () => {
     expect(trustStripSource).toContain("function buildProviderTrustStripItem");
     expect(trustStripSource).toContain("function formatCount");
     expect(trustStripSource).toContain("__APP_VERSION__");
-    expect(trustStripSource).toContain("Provider posture has not loaded yet.");
+    expect(trustStripSource).toContain("Provider health has not loaded yet.");
     expect(commandPaletteSource).toContain("export function buildCommandPaletteTriggerState");
     expect(commandPaletteSource).toContain("export function resolveAppShellCommandPaletteShortcut");
     expect(commandPaletteSource).toContain("export function isAppShellEditableShortcutTarget");
@@ -257,7 +257,7 @@ describe("app shell view model", () => {
     expect(source).not.toContain("function titleCase");
     expect(source).not.toContain("function formatCount");
     expect(source).not.toContain("__APP_VERSION__");
-    expect(source).not.toContain("Provider posture has not loaded yet.");
+    expect(source).not.toContain("Provider health has not loaded yet.");
     expect(source).not.toContain("export function buildCommandPaletteTriggerState");
     expect(source).not.toContain("export function resolveAppShellCommandPaletteShortcut");
     expect(source).not.toContain("export function isAppShellEditableShortcutTarget");
@@ -334,7 +334,7 @@ describe("app shell view model", () => {
     expect(state.activeWorkspace.label).toBe("Trading");
     expect(state.canRenderRoutes).toBe(false);
     expect(state.workflowContinuity).toMatchObject({
-      operatorFocusSummary: "Loading cross-workspace operator posture.",
+      operatorFocusSummary: "Loading status across workspaces.",
       operatorFocusEmptyText: "Ranked focus actions will appear after workspace data loads.",
       operatorFocusItems: [],
       evidenceTimelineSummary: "Loading cross-workspace evidence timeline.",
@@ -346,7 +346,7 @@ describe("app shell view model", () => {
     });
     expect(state.workflowContinuity.disclosure).toMatchObject({
       label: "Supporting workflow evidence",
-      summary: "Supporting context is collapsed while the workstation recovers. Expand sections for diagnostics and handoffs."
+      summary: "Supporting context is collapsed while the workstation recovers. Expand sections for diagnostics and next steps."
     });
     expect(state.workflowContinuity.disclosure.panels.map((panel) => [panel.id, panel.defaultExpanded])).toEqual([
       ["linked-context", false],
@@ -434,7 +434,7 @@ describe("app shell view model", () => {
     });
 
     expect(state.trustStrip).toMatchObject({
-      ariaLabel: "Workstation build, environment, provenance, and provider posture",
+      ariaLabel: "Workstation build, environment, provenance, and provider health",
       items: [
         {
           id: "build",
@@ -466,7 +466,7 @@ describe("app shell view model", () => {
           tone: "review",
           detail: "1 provider warning; review provider trust before relying on fresh data.",
           href: "/data/providers",
-          actionLabel: "Open provider posture"
+          actionLabel: "Open provider health"
         }
       ]
     });
@@ -521,7 +521,7 @@ describe("app shell view model", () => {
       value: "1 blocked",
       tone: "blocked",
       href: "/data/providers",
-      actionLabel: "Open provider posture"
+      actionLabel: "Open provider health"
     });
     expect(liveSimulatedState.workflowContinuity.operatorFocusItems).toContainEqual(
       expect.objectContaining({

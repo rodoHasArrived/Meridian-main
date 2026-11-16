@@ -116,7 +116,7 @@ export function buildOrderTicketState({
     ? `Order submitted${orderId ? ` - ${orderId}` : ""}.`
     : null;
   const parkedText = phase === "parked"
-    ? `Order parked for governed risk approval${escalationId ? ` - escalation ${escalationId}` : ""}. `
+    ? `Order parked for risk approval${escalationId ? ` - escalation ${escalationId}` : ""}. `
       + "It routes only once the risk desk approves it."
     : null;
   const invalidField = getOrderTicketInvalidField(form);

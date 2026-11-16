@@ -3136,7 +3136,7 @@ function buildAccountingProductionReadinessViewModel(
           ? `Fund ${workspace.fundProfileId}`
           : "Accounting scope not loaded",
       issueSummaryLabel: error?.summary ?? "Load accounting configuration to assess rollout readiness.",
-      externalGlLabel: "External GL posture unavailable",
+      externalGlLabel: "External GL status unavailable",
       ledgerBookRolloutLabel: "Ledger-book rollout unavailable",
       dimensionalReportingLabel: "Dimensional reporting unavailable",
       dimensionalReportingEvidenceLabel: "No dimensional reporting evidence loaded",
@@ -3359,7 +3359,7 @@ function buildAccountingProductionCertificationProfileControls(
     {
       id: "direct-lending-book",
       label: "Direct lending by book",
-      description: "Loan-account and borrower projections retain the selected ledger book.",
+      description: "Loan-account and borrower views retain the selected ledger book.",
       checked: draft?.directLendingLedgerBookNativeCertified ?? false
     },
     {
@@ -3571,7 +3571,7 @@ function buildAccountingTenantAdministrationProfileControls(
     {
       id: "admin-roles",
       label: "Admin roles",
-      description: "Accounting admin role profiles are configured for governed setup.",
+      description: "Accounting admin role profiles are configured for controlled setup.",
       checked: draft?.adminRoleProfileConfigured ?? false
     },
     {
@@ -3589,7 +3589,7 @@ function buildAccountingTenantAdministrationProfileControls(
     {
       id: "operator-surface",
       label: "Operator surface",
-      description: "Accounting setup controls are exposed through the governed operator surface.",
+      description: "Accounting setup controls are exposed through the controlled operator surface.",
       checked: draft?.accountingAdminSurfaceConfigured ?? false
     },
     {
@@ -4472,7 +4472,7 @@ function buildAccountingRulesStudioJournalCandidateViewModel(
     : "Approval state unavailable.";
 
   return {
-    title: "Governed journal draft candidate",
+    title: "Journal draft candidate",
     selectedRuleLabel: result.selectedRuleId
       ? `Selected rule ${result.selectedRuleId}${result.selectedRuleVersion ? ` version ${result.selectedRuleVersion}` : ""}`
       : "No selected posting rule",

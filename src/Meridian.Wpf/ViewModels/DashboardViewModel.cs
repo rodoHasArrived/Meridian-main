@@ -584,7 +584,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         if (message == "RefreshStatus")
         {
             // F5 also runs the shell refresh, which executes RefreshStatusCommand; do not load twice.
-            _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(() =>
             {
                 if (!RefreshStatusCommand.IsRunning)
                 {

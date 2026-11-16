@@ -312,7 +312,7 @@ function DailyControlTowerQueue({
             workbenchId="operator-inbox"
             sourceKey={`${triage.inbox?.actorId ?? "pending"}:${fundAccountId ?? "all"}`}
             completePopulation={Boolean(triage.inbox && !triage.loading && !triage.error)}
-            sourceDescription={`Today queue: workspace signals from the workstation read models and ${triage.inbox ? `the shared inbox as of ${triage.inbox.asOf}` : "no loaded shared inbox"}. Counts are ${ATTENTION_COUNT_RULE}.`}
+            sourceDescription={`Today queue: workspace signals from the workstation data and ${triage.inbox ? `the shared inbox as of ${triage.inbox.asOf}` : "no loaded shared inbox"}. Counts are ${ATTENTION_COUNT_RULE}.`}
             searchText={triage.search}
             onSearchTextChange={triage.setSearch}
             filterState={{ source: queueSource, visibility: triage.visibility, mineOnly: String(triage.mineOnly) }}

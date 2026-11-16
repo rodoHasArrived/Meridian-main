@@ -331,7 +331,7 @@ export function buildTradingLoadingState(pathname: string): TradingLoadingState 
     routeLabel: routeCopy.title,
     chips: [
       { label: "Route", value: pathname },
-      { label: "Workstream", value: routeCopy.title },
+      { label: "Area", value: routeCopy.title },
       { label: "Snapshots", value: "Pending" }
     ]
   };
@@ -776,7 +776,7 @@ export function useTradingReadinessViewModel({
   const refreshRef = useRef<(options?: { attempt?: number }) => Promise<void>>(async () => {});
   const readinessLifecycle = useRequestLifecycle({
     operation: "trading readiness handoff refresh",
-    runningMessage: "Refreshing trading readiness handoff evidence.",
+    runningMessage: "Refreshing trading readiness evidence.",
     successMessage: "Trading readiness refreshed.",
     failureMessage: "Trading readiness refresh failed.",
     staleMessage: "Older trading readiness response discarded.",

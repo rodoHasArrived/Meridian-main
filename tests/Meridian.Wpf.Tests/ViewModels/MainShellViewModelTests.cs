@@ -117,6 +117,120 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void RefreshPageCommand_WhenActivePageExposesRefreshCommand_ReloadsInPlaceWithoutNavigating()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+            vm.ActivateShell();
+            var pageTagBefore = vm.CurrentPageTag;
+            var historyBefore = NavigationService.Instance.GetBreadcrumbs().Count;
+            var pageViewModel = new RefreshablePageViewModelStub();
+            vm.ActivePageContentAccessor = () => pageViewModel;
+            var changedProperties = new List<string?>();
+            vm.PropertyChanged += (_, e) => changedProperties.Add(e.PropertyName);
+
+            vm.RefreshPageCommand.Execute(null);
+
+            pageViewModel.RefreshCommand.ExecuteCount.Should().Be(1);
+            NavigationService.Instance.GetBreadcrumbs().Should().HaveCount(
+                historyBefore,
+                "an in-place refresh must not push a Back entry");
+            vm.CurrentPageTag.Should().Be(pageTagBefore);
+            changedProperties.Should().Contain(nameof(MainPageViewModel.ShellLastRefreshText));
+        });
+    }
+
+    [Fact]
+    public void RefreshPageCommand_WhenActivePageIsBusy_DoesNotExecuteOrNavigate()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+            vm.ActivateShell();
+            var historyBefore = NavigationService.Instance.GetBreadcrumbs().Count;
+            var pageViewModel = new RefreshablePageViewModelStub(canExecute: false);
+            vm.ActivePageContentAccessor = () => pageViewModel;
+
+            vm.RefreshPageCommand.Execute(null);
+
+            pageViewModel.RefreshCommand.ExecuteCount.Should().Be(0);
+            NavigationService.Instance.GetBreadcrumbs().Should().HaveCount(historyBefore);
+        });
+    }
+
+    [Fact]
+    public void RefreshPageCommand_WhenActivePageHasNoRefreshCommand_FallsBackToNavigation()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+            vm.ActivateShell();
+            var pageTagBefore = vm.CurrentPageTag;
+            var historyBefore = NavigationService.Instance.GetBreadcrumbs().Count;
+            vm.ActivePageContentAccessor = () => new object();
+
+            vm.RefreshPageCommand.Execute(null);
+
+            NavigationService.Instance.GetBreadcrumbs().Should().HaveCount(
+                historyBefore + 1,
+                "a page without a reload command is rebuilt by re-navigation");
+            vm.CurrentPageTag.Should().Be(pageTagBefore);
+        });
+    }
+
+    [Fact]
+    public void MainWindowRefreshCommand_SendsRefreshStatusAndRequestsShellRefresh()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainWindowViewModel();
+            var messages = new List<string>();
+            var shellRefreshRequests = 0;
+            EventHandler<string> onMessage = (_, message) => messages.Add(message);
+            MessagingService.Instance.MessageReceived += onMessage;
+            vm.ShellRefreshRequested += (_, _) => shellRefreshRequests++;
+            try
+            {
+                // F5 is bound to RefreshCommand; the shortcut service and palette route "RefreshStatus".
+                vm.RefreshCommand.Execute(null);
+                vm.HandleShortcut("RefreshStatus");
+                vm.HandlePaletteAction("RefreshStatus");
+            }
+            finally
+            {
+                MessagingService.Instance.MessageReceived -= onMessage;
+            }
+
+            messages.Where(message => message == "RefreshStatus").Should().HaveCount(3);
+            shellRefreshRequests.Should().Be(3);
+        });
+    }
+
+    [Fact]
+    public void MainWindowAndMainPageSource_ShouldRouteF5ThroughTheShellRefresh()
+    {
+        var window = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\MainWindow.xaml"));
+        var windowCode = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\MainWindow.xaml.cs"));
+        var mainPageCode = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\MainPage.xaml.cs"));
+
+        window.Should().Contain("<KeyBinding Key=\"F5\" Command=\"{Binding RefreshCommand}\" />");
+        windowCode.Should().Contain("_viewModel.ShellRefreshRequested += OnShellRefreshRequested;");
+        windowCode.Should().Contain("mainPage.RefreshCurrentPage();");
+        mainPageCode.Should().Contain("_viewModel.RefreshPageCommand.Execute(null);");
+    }
+
+    private sealed class RefreshablePageViewModelStub
+    {
+        public RefreshablePageViewModelStub(bool canExecute = true)
+        {
+            RefreshCommand = new CountingCommand(canExecute);
+        }
+
+        public CountingCommand RefreshCommand { get; }
+    }
+
+    [Fact]
     public void CommandPaletteQuery_FiltersRegisteredPages()
     {
         WpfTestThread.Run(() =>

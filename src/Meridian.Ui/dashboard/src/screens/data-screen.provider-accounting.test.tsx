@@ -43,6 +43,6 @@ describe("ProviderAccountingRegion", () => {
     expect(screen.getByText("8 / 10 requests")).toBeInTheDocument();
     expect(screen.getByText("Current rate-limit reason: provider response.")).toBeInTheDocument();
     expect(screen.getByText("Unknown — reachability unavailable; no runtime diagnostics.")).toBeInTheDocument();
-    expect(screen.getByLabelText("Provider rate-limit history posture")).toHaveTextContent("cleared on host restart");
+    expect(screen.getByLabelText("Provider rate-limit history status")).toHaveTextContent("cleared on host restart");
   });
 });

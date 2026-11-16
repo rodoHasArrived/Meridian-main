@@ -1611,7 +1611,7 @@ describe("ReportingScreen", () => {
       initialEntries: ["/reporting/report-builder"]
     });
     expect(screen.getByRole("region", { name: "No-code report writer" })).toBeInTheDocument();
-    expect(screen.getByText("Governed report templates")).toBeInTheDocument();
+    expect(screen.getByText("Report templates")).toBeInTheDocument();
     expect(screen.queryByText("Reporting schedules")).not.toBeInTheDocument();
     expect(screen.queryByText("Report run audit and lineage")).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Report-pack approval task" })).not.toBeInTheDocument();
@@ -1624,7 +1624,7 @@ describe("ReportingScreen", () => {
     });
     expect(screen.getByText("Reporting schedules")).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "No-code report writer" })).not.toBeInTheDocument();
-    expect(screen.queryByText("Governed report templates")).not.toBeInTheDocument();
+    expect(screen.queryByText("Report templates")).not.toBeInTheDocument();
 
     schedulesRender.unmount();
     const runStatusRender = renderWithRouter(<ReportingScreen data={accounting} />, {
@@ -1641,7 +1641,7 @@ describe("ReportingScreen", () => {
       initialEntries: ["/reporting/exports"]
     });
     expect(screen.getByRole("region", { name: "Structured reporting exports" })).toBeInTheDocument();
-    expect(screen.getByText("Governed export queue")).toBeInTheDocument();
+    expect(screen.getByText("Export queue")).toBeInTheDocument();
     expect(screen.queryByText("Report run audit and lineage")).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Report-pack approval task" })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Reporting access audit" })).not.toBeInTheDocument();
@@ -2097,8 +2097,8 @@ describe("ReportingScreen", () => {
 
     fireEvent.change(screen.getByLabelText("Custom branding theme name"), { target: { value: "Allocator Blue" } });
     expect(screen.getByLabelText("Custom branding theme name")).toHaveValue("Allocator Blue");
-    expect(screen.getByRole("link", { name: "Configure governed run" })).toHaveAttribute("href", "/reporting/run");
-    expect(screen.getByText(/Pack preview and generation now use the canonical governed-run workflow/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Configure report run" })).toHaveAttribute("href", "/reporting/run");
+    expect(screen.getByText(/Pack preview and generation now use the canonical report-run workflow/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /branded report pack/i })).not.toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -2474,7 +2474,7 @@ describe("ReportingScreen", () => {
     fireEvent.change(within(grid).getByLabelText("Sector Pivot custom formula expression"), {
       target: { value: "{pnl} / {marketValue}" }
     });
-    await user.click(within(grid).getByRole("button", { name: "Save Sector Pivot as governed report template draft" }));
+    await user.click(within(grid).getByRole("button", { name: "Save Sector Pivot as report template draft" }));
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/fund-structure/reporting/templates/drafts",
@@ -2575,7 +2575,7 @@ describe("ReportingScreen", () => {
     fireEvent.dragStart(within(sourceFields).getByText("Gross exposure").closest("[role='listitem']")!, { dataTransfer });
     fireEvent.drop(within(grid).getByRole("list", { name: "Custom report 1 Metrics" }), { dataTransfer });
 
-    await user.click(within(grid).getByRole("button", { name: "Save Custom report 1 as governed report template draft" }));
+    await user.click(within(grid).getByRole("button", { name: "Save Custom report 1 as report template draft" }));
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/fund-structure/reporting/templates/drafts",
@@ -2693,7 +2693,7 @@ describe("ReportingScreen", () => {
       target: { value: "controller.admin" }
     });
     expect(grid).toHaveTextContent("Access policy: user-locked to controller.admin.");
-    await user.click(within(grid).getByRole("button", { name: "Save Sector Pivot as governed report template draft" }));
+    await user.click(within(grid).getByRole("button", { name: "Save Sector Pivot as report template draft" }));
 
     const [, request] = fetchMock.mock.calls[0];
     const body = JSON.parse((request as RequestInit).body as string);
@@ -2745,7 +2745,7 @@ describe("ReportingScreen", () => {
       target: { value: "company-alpha" }
     });
     expect(grid).toHaveTextContent("Access policy: company company-alpha.");
-    await user.click(within(grid).getByRole("button", { name: "Save Sector Pivot as governed report template draft" }));
+    await user.click(within(grid).getByRole("button", { name: "Save Sector Pivot as report template draft" }));
 
     const [, request] = fetchMock.mock.calls[0];
     const body = JSON.parse((request as RequestInit).body as string);
@@ -3385,7 +3385,7 @@ describe("ReportingScreen", () => {
 
   it("keeps governed run controls out of Report Builder", () => {
     renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
-    expect(screen.getByText("Governed report templates")).toBeInTheDocument();
+    expect(screen.getByText("Report templates")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /run .* report on demand/i })).not.toBeInTheDocument();
     expect(screen.queryByText("Run dataset")).not.toBeInTheDocument();
   });
@@ -3523,10 +3523,10 @@ describe("ReportingScreen", () => {
     expect(screen.queryByRole("button", {
       name: "Approve reporting run service reference retained for diagnostics"
     })).not.toBeInTheDocument();
-    expect(screen.getByLabelText("investor-monthly-statement-20260501 governed workflow continuation")).toHaveTextContent(
+    expect(screen.getByLabelText("investor-monthly-statement-20260501 workflow continuation")).toHaveTextContent(
       "Report packs can no longer be changed here"
     );
-    expect(screen.getByRole("link", { name: "Open governed run" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open report run" })).toHaveAttribute(
       "href",
       "/reporting/runs/detail?runId=investor-monthly-statement-20260501"
     );
@@ -4560,8 +4560,8 @@ describe("ReportingScreen", () => {
     expect(scheduleRow).toHaveTextContent("Portfolio reporting cuts (2)");
     expect(scheduleRow).toHaveTextContent("Release delivery gated");
     expect(scheduleRow).toHaveTextContent("sha256:schedule-policy-screen");
-    expect(scheduleRow).toHaveTextContent("1 handoff awaiting governance release; 1 enqueued");
-    const handoffHistory = within(scheduleRow).getByLabelText("sched-investor release delivery handoff history");
+    expect(scheduleRow).toHaveTextContent("1 delivery awaiting governance release; 1 enqueued");
+    const handoffHistory = within(scheduleRow).getByLabelText("sched-investor release delivery history");
     expect(handoffHistory).toHaveTextContent("handoff-board-pending");
     expect(handoffHistory).toHaveTextContent("run-board-pending");
     expect(handoffHistory).toHaveTextContent("secure-portal");
@@ -5001,7 +5001,7 @@ describe("ReportingScreen", () => {
     expect(attempt).toHaveTextContent("Board reporting committee");
     expect(attempt).toHaveTextContent("Reporting run: investor-monthly-statement-20260501");
     expect(within(attempt).queryByRole("button", { name: "Record delivery failure" })).not.toBeInTheDocument();
-    expect(within(attempt).getByRole("link", { name: "Open governed run" })).toHaveAttribute(
+    expect(within(attempt).getByRole("link", { name: "Open report run" })).toHaveAttribute(
       "href",
       "/reporting/runs/detail?runId=investor-monthly-statement-20260501"
     );
@@ -5200,7 +5200,7 @@ describe("ReportingScreen", () => {
     expect(gatedExcelExport).toBeDisabled();
     expect(gatedExcelExport).toHaveAttribute(
       "title",
-      "Excel export requires loader automation evidence before running governed export analysis. Preview remains available."
+      "Excel export requires loader automation evidence before running export analysis. Preview remains available."
     );
     expect(within(task).getByLabelText("Excel export analysis is gated by missing evidence")).toHaveTextContent("Gated");
     expect(within(task).getByRole("link", { name: "Open Report-pack catalog service reference" })).toHaveAttribute(
@@ -5388,7 +5388,7 @@ describe("ReportingScreen", () => {
 
     const approvalTask = screen.getByRole("region", { name: "Report-pack approval task" });
     expect(within(approvalTask).queryByRole("button", { name: "Approve May report pack" })).not.toBeInTheDocument();
-    expect(within(approvalTask).getByRole("link", { name: "Open governed run" })).toHaveAttribute(
+    expect(within(approvalTask).getByRole("link", { name: "Open report run" })).toHaveAttribute(
       "href",
       "/reporting/runs/detail?runId=monthly-board-pack-20260531"
     );
@@ -5738,7 +5738,7 @@ describe("ReportingScreen", () => {
       "No report-pack recipients loaded. Configure distribution records before approving this packet."
     );
     expect(within(task).getByRole("status", { name: "No report-pack export profiles" })).toHaveTextContent(
-      "No export profiles are configured. Add a governed profile before report-pack approval."
+      "No export profiles are configured. Add a profile before report-pack approval."
     );
     expect(within(task).queryByRole("list", { name: "Report-pack export profiles" })).not.toBeInTheDocument();
   });

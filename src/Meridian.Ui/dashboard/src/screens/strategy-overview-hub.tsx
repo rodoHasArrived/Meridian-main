@@ -32,7 +32,7 @@ export const strategyHubRoutes = [
   {
     id: "quant-lab",
     title: "Run Quant Lab",
-    description: "Compile scripts against governed price, statistics, and backtest APIs.",
+    description: "Compile scripts against controlled price, statistics, and backtest APIs.",
     href: "/strategy/quant-lab",
     action: "Open Quant Lab"
   },
@@ -75,7 +75,7 @@ export function StrategyOverviewHub({ vm }: { vm: StrategyRunLibraryState }) {
         <Badge variant={vm.plotTool.workspace.statusBadgeVariant}>{vm.plotTool.workspace.statusBadgeLabel}</Badge>
         {!plotToolConnected ? <Link to="/settings/providers" className="text-xs font-semibold text-primary underline" aria-label="Review provider connections for PlotTool analytics">Review provider connections</Link> : null}
       </div>
-      <TechnicalDetails label="Run coverage and analytics posture">
+      <TechnicalDetails label="Run coverage and analytics status">
         <section aria-label={vm.runHistorySummary.ariaLabel} className="workspace-task-facts">
           {vm.runHistorySummary.cards.map((card) => <div key={card.id}><strong>{card.label}: {card.value}</strong><p>{card.detail}</p></div>)}
         </section>

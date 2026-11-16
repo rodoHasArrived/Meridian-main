@@ -1166,7 +1166,7 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
               </label>
             </div>
             <p className="text-xs leading-5 text-muted-foreground">
-              Extraction and initial review posture are assigned by the server after intake. Record an operator decision through document review.
+              Extraction and initial review status are assigned by the server after intake. Record an operator decision through document review.
             </p>
           </div>
           <div className="space-y-3">

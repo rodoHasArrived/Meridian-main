@@ -63,7 +63,7 @@ const LANE_DEFINITIONS: readonly LaneDefinition[] = [
   { key: "Review", label: "Review", purpose: "Check data, commentary and changes before publication.", stage: "Review", routeKey: "reportingPreviewValidation" },
   { key: "Published", label: "Published", purpose: "Canonical immutable output history.", stage: "Preserve", routeKey: "reportingReportPacks" },
   { key: "Schedules", label: "Schedules", purpose: "Recurring reporting obligations.", stage: "Plan", routeKey: "reportingScheduled" },
-  { key: "Templates", label: "Templates", purpose: "Governed report and module definitions.", stage: "Approve", routeKey: "reportingGovernance" }
+  { key: "Templates", label: "Templates", purpose: "Report and module definitions.", stage: "Approve", routeKey: "reportingGovernance" }
 ];
 
 export interface ReportingLane {

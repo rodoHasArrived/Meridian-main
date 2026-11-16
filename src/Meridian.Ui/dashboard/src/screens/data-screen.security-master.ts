@@ -381,7 +381,7 @@ const baseCompanySections: SecurityMasterCompanySection[] = [
   },
   {
     id: "company-coverage",
-    title: "Coverage posture",
+    title: "Coverage status",
     badge: "02",
     meta: "Meridian-specific routing and support metadata.",
     rows: [
@@ -524,7 +524,7 @@ const equityPrintSections: SecurityMasterPrintSection[] = [
   { id: "packet-1", title: "Canonical identifiers", description: "Primary identifiers, aliases, and routing keys with validity windows." },
   { id: "packet-2", title: "Company reference profile", description: "Issuer description, legal facts, SIC, and contact evidence." },
   { id: "packet-3", title: "Corporate actions log", description: "Upcoming and historical events with filing traceability." },
-  { id: "packet-4", title: "Operational sign-off", description: "Provider, backfill, and export attestations for workstation handoff." }
+  { id: "packet-4", title: "Operational sign-off", description: "Provider, backfill, and export attestations for delivery to the workstation." }
 ];
 
 const equityChecklist: SecurityMasterPrintChecklistItem[] = [
@@ -614,7 +614,7 @@ function makeEquityRecord(overrides: Partial<SecurityMasterRecord> & Pick<Securi
     printPacketId: "SM-PACKET-2026-05-31-GS",
     printGeneratedAt: "2026-05-31 09:18 UTC",
     printDistribution: "Data · Reporting · Fund Accounting",
-    printSummary: "Print/export evidence packet combines identifiers, venue routing, and corporate actions into a reviewable handoff for downstream workflows.",
+    printSummary: "Print/export evidence packet combines identifiers, venue routing, and corporate actions into a reviewable packet for downstream workflows.",
     printSections: equityPrintSections,
     printChecklist: equityChecklist,
     exportEvidence: equityExports,

@@ -68,7 +68,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
           <>
             <div className="overflow-x-auto rounded-md border border-border/70">
               <TableWorkbench<(typeof activity.paymentIntents)[number]> tableClassName={"w-full min-w-[1040px] text-sm"} maxVisibleRows={null}
- workbenchId="accounting-payment-evidence-workflows" sourceDescription="Payment intent and cash evidence workflows · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
+ workbenchId="accounting-payment-evidence-workflows" sourceDescription="Payment intent and cash evidence workflows · complete authorized shared data supplied to this view; source text is retained without financial recomputation."
  sourceKey={JSON.stringify(activity.paymentIntents.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.paymentIntents} getRowId={(intent) => intent.id} getSearchText={(intent) => JSON.stringify(intent)}
  ariaLabel="Payment intent and cash evidence workflows" emptyText="No retained records are available in this scope."
  columns={[{ id: "column-1", label: "Payment intent", render: (intent) => (<>
@@ -100,7 +100,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
 { id: "column-4", label: "Approvals", render: (intent) => (<>{intent.approvalLabel}</>), exportValue: (intent) => [intent.approvalLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-5", label: "Cash evidence", render: (intent) => (<>
                         <div>{intent.bankEvidenceLabel}</div>
-                        {intent.evidenceRouteLabel !== "No evidence route" ? (
+                        {intent.evidenceRouteLabel !== "No supporting record link" ? (
                           <a
                             className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                             href={intent.evidenceRouteLabel}
@@ -146,7 +146,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                               </div>
                               <div className="mt-1 text-muted-foreground">{step.roleLabel} / {step.actorLabel}</div>
                               <div className="mt-1 text-xs text-muted-foreground">{step.decidedLabel}</div>
-                              {step.evidenceRouteLabel !== "No approval evidence route" ? (
+                              {step.evidenceRouteLabel !== "No approval record link" ? (
                                 <a
                                   className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                                   href={step.evidenceRouteLabel}
@@ -180,7 +180,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                               <div className="mt-1 text-xs text-muted-foreground">{item.referenceLabel}</div>
                               <div className="mt-1 text-xs text-muted-foreground">{item.recordedLabel}</div>
                               <div className="mt-1 text-xs text-muted-foreground">{item.recorderLabel}</div>
-                              {item.evidenceRouteLabel !== "No bank evidence route" ? (
+                              {item.evidenceRouteLabel !== "No bank record link" ? (
                                 <a
                                   className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                                   href={item.evidenceRouteLabel}
@@ -211,7 +211,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                               </div>
                               <div className="mt-1 text-muted-foreground">{link.summaryLabel}</div>
                               <div className="mt-1 text-xs text-muted-foreground">{link.caseLabel}</div>
-                              {link.routeLabel !== "No reconciliation evidence route" ? (
+                              {link.routeLabel !== "No reconciliation record link" ? (
                                 <a
                                   className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                                   href={link.routeLabel}
@@ -269,7 +269,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
         {activity.fundEventLedgerRecords.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
             <TableWorkbench<(typeof activity.fundEventLedgerRecords)[number]> tableClassName={"w-full min-w-[980px] text-sm"} maxVisibleRows={null}
- workbenchId="accounting-private-capital-events" sourceDescription="Private-capital fund event ledger records · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
+ workbenchId="accounting-private-capital-events" sourceDescription="Private-capital fund event ledger records · complete authorized shared data supplied to this view; source text is retained without financial recomputation."
  sourceKey={JSON.stringify(activity.fundEventLedgerRecords.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.fundEventLedgerRecords} getRowId={(record) => record.id} getSearchText={(record) => JSON.stringify(record)}
  ariaLabel="Private-capital fund event ledger records" emptyText="No retained records are available in this scope."
  columns={[{ id: "column-1", label: "Fund event", render: (record) => (<>
@@ -352,7 +352,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                     </>), exportValue: (record) => [record.reportOutputLabel, record.reportOutputDetailLabel, record.reportOutputRouteLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
 { id: "column-8", label: "Evidence", render: (record) => (<>
                       <div>{record.evidenceLabel}</div>
-                      {record.evidenceRouteLabel !== "No evidence route" ? (
+                      {record.evidenceRouteLabel !== "No supporting record link" ? (
                         <a
                           className="mt-1 block break-all font-mono text-xs text-primary hover:underline"
                           href={record.evidenceRouteLabel}
@@ -391,7 +391,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
         {activity.capitalAccounts.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
             <TableWorkbench<(typeof activity.capitalAccounts)[number]> tableClassName={"w-full min-w-[760px] text-sm"} maxVisibleRows={null}
- workbenchId="accounting-private-capital-activity" sourceDescription="Private-capital capital account activity · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
+ workbenchId="accounting-private-capital-activity" sourceDescription="Private-capital capital account activity · complete authorized shared data supplied to this view; source text is retained without financial recomputation."
  sourceKey={JSON.stringify(activity.capitalAccounts.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.capitalAccounts} getRowId={(account) => account.id} getSearchText={(account) => JSON.stringify(account)}
  ariaLabel="Private-capital capital account activity" emptyText="No retained records are available in this scope."
  columns={[{ id: "column-1", label: "Capital account", render: (account) => (<>
@@ -417,7 +417,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
         {activity.capitalAccountSubledgers.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
             <TableWorkbench<(typeof activity.capitalAccountSubledgers)[number]> tableClassName={"w-full min-w-[980px] text-sm"} maxVisibleRows={null}
- workbenchId="accounting-private-capital-subledgers" sourceDescription="Private-capital capital account subledgers · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
+ workbenchId="accounting-private-capital-subledgers" sourceDescription="Private-capital capital account subledgers · complete authorized shared data supplied to this view; source text is retained without financial recomputation."
  sourceKey={JSON.stringify(activity.capitalAccountSubledgers.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.capitalAccountSubledgers} getRowId={(subledger) => subledger.id} getSearchText={(subledger) => JSON.stringify(subledger)}
  ariaLabel="Private-capital capital account subledgers" emptyText="No retained records are available in this scope."
  columns={[{ id: "column-1", label: "Capital account", render: (subledger) => (<>
@@ -493,7 +493,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
         {activity.capitalAccountSubledgerEntries.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
             <TableWorkbench<(typeof activity.capitalAccountSubledgerEntries)[number]> tableClassName={"w-full min-w-[820px] text-sm"} maxVisibleRows={null}
- workbenchId="accounting-private-capital-subledger" sourceDescription="Private-capital capital account subledger · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
+ workbenchId="accounting-private-capital-subledger" sourceDescription="Private-capital capital account subledger · complete authorized shared data supplied to this view; source text is retained without financial recomputation."
  sourceKey={JSON.stringify(activity.capitalAccountSubledgerEntries.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.capitalAccountSubledgerEntries} getRowId={(entry) => entry.id} getSearchText={(entry) => JSON.stringify(entry)}
  ariaLabel="Private-capital capital account subledger" emptyText="No retained records are available in this scope."
  columns={[{ id: "column-1", label: "Event", render: (entry) => (<>
@@ -517,7 +517,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
         {activity.ledgerImpacts.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
             <TableWorkbench<(typeof activity.ledgerImpacts)[number]> tableClassName={"w-full min-w-[820px] text-sm"} maxVisibleRows={null}
- workbenchId="accounting-private-capital-ledger-impacts" sourceDescription="Private-capital ledger impacts · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
+ workbenchId="accounting-private-capital-ledger-impacts" sourceDescription="Private-capital ledger impacts · complete authorized shared data supplied to this view; source text is retained without financial recomputation."
  sourceKey={JSON.stringify(activity.ledgerImpacts.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.ledgerImpacts} getRowId={(impact) => impact.id} getSearchText={(impact) => JSON.stringify(impact)}
  ariaLabel="Private-capital ledger impacts" emptyText="No retained records are available in this scope."
  columns={[{ id: "column-1", label: "Impact", render: (impact) => (<>
@@ -543,7 +543,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
         {activity.reportOutputs.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
             <TableWorkbench<(typeof activity.reportOutputs)[number]> tableClassName={"w-full min-w-[960px] text-sm"} maxVisibleRows={null}
- workbenchId="accounting-private-capital-report-outputs" sourceDescription="Private-capital report outputs · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
+ workbenchId="accounting-private-capital-report-outputs" sourceDescription="Private-capital report outputs · complete authorized shared data supplied to this view; source text is retained without financial recomputation."
  sourceKey={JSON.stringify(activity.reportOutputs.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.reportOutputs} getRowId={(output) => output.id} getSearchText={(output) => JSON.stringify(output)}
  ariaLabel="Private-capital report outputs" emptyText="No retained records are available in this scope."
  columns={[{ id: "column-1", label: "Output", render: (output) => (<>
@@ -707,7 +707,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
           role={view.errorText ? "alert" : "status"}
           tone={view.errorText ? "danger" : "info"}
           title={view.errorText ? "Journal workbench unavailable" : "Loading journal workbench"}
-          detail={view.errorText ?? "Loading the chart of accounts, governed draft state, validation rules, and retained evidence before editing is enabled."}
+          detail={view.errorText ?? "Loading the chart of accounts, draft state, validation rules, and retained evidence before editing is enabled."}
         />
         <div>
           <Button size="sm" variant="outline" disabled={view.loading} busy={view.loading} onClick={() => void view.refresh()}>
@@ -756,7 +756,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
       ) : null}
 
       {recurringQueue}
-      {view.draft.assetAccountingDraft ? <p role="status" className="rounded border border-warning/30 bg-warning/10 p-3 text-sm">{view.assetWorkflow?.capability ? "This asset accounting draft is immutable. Available approval and posting decisions use the authenticated governed asset workflow below. Corrections remain unavailable here." : "This is an immutable asset accounting review draft. Validate and submit it for review here. Approval, posting and corrections require retained approval evidence through the governed asset workflow and remain unavailable until supported workflow capabilities are loaded."}</p> : null}
+      {view.draft.assetAccountingDraft ? <p role="status" className="rounded border border-warning/30 bg-warning/10 p-3 text-sm">{view.assetWorkflow?.capability ? "This asset accounting draft is immutable. Available approval and posting decisions use the authenticated asset workflow below. Corrections remain unavailable here." : "This is an immutable asset accounting review draft. Validate and submit it for review here. Approval, posting and corrections require retained approval evidence through the asset workflow and remain unavailable until supported workflow capabilities are loaded."}</p> : null}
       <ManualJournalHealthBar view={view} hasInvalidAmountEdits={hasInvalidAmountEdits} invalidAmountReason={invalidAmountReason} />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(14rem,0.28fr)_minmax(0,1fr)]">
@@ -1144,14 +1144,14 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
                   <div key={link} className="rounded border border-border/70 bg-background/50 px-3 py-2 text-sm">
                     <div className="font-semibold text-foreground">Retained evidence link {index + 1}</div>
                     <div className="mt-1 text-xs text-muted-foreground">Available to validation and approval controls.</div>
-                    <TechnicalDetails label="Evidence route" className="mt-2">
+                    <TechnicalDetails label="Supporting record link" className="mt-2">
                       <div className="break-all font-mono text-xs text-foreground">{link}</div>
                     </TechnicalDetails>
                   </div>
                 ))}
                 {evidenceCount === 0 ? (
                   <p className="rounded border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-                    No source evidence is attached yet. Approval submission remains blocked until at least one evidence route or source document is linked.
+                    No source evidence is attached yet. Approval submission remains blocked until at least one supporting record link or source document is linked.
                   </p>
                 ) : null}
               </div>

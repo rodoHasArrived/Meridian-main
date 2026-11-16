@@ -1069,7 +1069,7 @@ function buildManualJournalPrivateCapitalActivityView(
         id: "published-report-outputs",
         label: "Published outputs",
         value: formatCount(publishedReportOutputCount),
-        detail: "Governed report-pack outputs",
+        detail: "Report-pack outputs",
         tone: publishedReportOutputCount > 0 ? "success" : "default"
       },
       {
@@ -1213,7 +1213,7 @@ export function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
     paymentEvidenceRequiredLabel: paymentEvidence.required,
     activityRouteLabel: record.activityRoute || "No activity route",
     commandCenterRouteLabel: buildPrivateCapitalFundEventCommandCenterRoute(fundProfileId, ledgerBookId, record.fundEventId),
-    evidenceRouteLabel: record.evidenceRoute || "No evidence route",
+    evidenceRouteLabel: record.evidenceRoute || "No supporting record link",
     approvalRouteLabel: record.approvalRoute ?? (record.approvalId ? `/accounting/approvals?approvalId=${encodeURIComponent(record.approvalId)}` : "No approval route"),
     evidenceLabel: `${formatCount(record.evidenceLinkCount)} evidence`,
     ledgerImpactLabel: `${formatCount(record.ledgerImpactCount)} ledger impact(s)${record.isPostingReady ? " / posting ready" : ""}`,
@@ -1271,7 +1271,7 @@ function buildManualJournalPaymentIntentWorkflowRow(
     auditLabel: `${formatCount(workflow.auditHistory.length)} audit event(s)`,
     readinessReasonLabel: workflow.readinessReason || "Payment intent readiness requires review.",
     executionDeferredLabel: workflow.executionDeferredReason || "Full payment execution is deferred.",
-    evidenceRouteLabel: workflow.evidenceRoute || "No evidence route",
+    evidenceRouteLabel: workflow.evidenceRoute || "No supporting record link",
     workbenchRouteLabel: workflow.workbenchRoute || "No workbench route",
     approvalSteps: workflow.approvalChain.map((step) => ({
       id: `${workflow.paymentIntentId}-approval-${step.sequence}-${step.role}`,
@@ -1280,7 +1280,7 @@ function buildManualJournalPaymentIntentWorkflowRow(
       actorLabel: step.actor || "No actor assigned",
       statusLabel: step.status || "No status",
       decidedLabel: step.decidedAtUtc ? formatDateTimeLabel(step.decidedAtUtc) : "Decision pending",
-      evidenceRouteLabel: step.evidenceRoute || "No approval evidence route"
+      evidenceRouteLabel: step.evidenceRoute || "No approval record link"
     })),
     bankEvidence: workflow.bankEvidence.map((item) => ({
       id: item.evidenceId,
@@ -1298,13 +1298,13 @@ function buildManualJournalPaymentIntentWorkflowRow(
         item.transactionType ?? null,
         item.externalRef ?? null
       ].filter((value): value is string => Boolean(value)).join(" / ") || "No external reference",
-      evidenceRouteLabel: item.evidenceRoute || "No bank evidence route"
+      evidenceRouteLabel: item.evidenceRoute || "No bank record link"
     })),
     reconciliationLinks: workflow.reconciliationLinks.map((link) => ({
       id: link.linkId,
       statusLabel: link.status || "No status",
       summaryLabel: link.summary || "No reconciliation summary",
-      routeLabel: link.evidenceRoute || "No reconciliation evidence route",
+      routeLabel: link.evidenceRoute || "No reconciliation record link",
       caseLabel: [
         link.reconciliationCaseId ? `case ${link.reconciliationCaseId}` : null,
         link.reconciliationRunId ? `run ${link.reconciliationRunId}` : null

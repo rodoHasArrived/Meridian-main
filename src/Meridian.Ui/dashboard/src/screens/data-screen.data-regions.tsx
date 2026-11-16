@@ -168,7 +168,7 @@ export function DataQualityRegion({
           <div>
             <CardTitle id="data-quality-title">Data quality</CardTitle>
             <CardDescription>
-              Unified completeness, freshness, gap, and anomaly posture across tracked symbols.
+              Unified completeness, freshness, gap, and anomaly status across tracked symbols.
               {panel.model ? ` ${panel.model.summary}` : null}
             </CardDescription>
           </div>
@@ -206,7 +206,7 @@ export function DataQualityRegion({
                 <StatusBanner
                   tone="warning"
                   title="Partial quality evidence"
-                  detail="Missing or stale source signals are shown explicitly and cannot produce a Green posture."
+                  detail="Missing or stale source signals are shown explicitly and cannot produce a Green status."
                 />
               ) : null}
               {panel.model.symbols.length > 0 && (

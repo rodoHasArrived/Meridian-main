@@ -268,7 +268,7 @@ function LotPreview({ rows }: { rows: CorporateActionLotPreview[] }) {
 
 function JournalPreview({ rows }: { rows: CorporateActionJournalPreview[] }) {
   if (rows.length === 0) {
-    return <UnavailableState title="Journal preview unavailable" reason="No balanced, versioned journal projection was supplied. Accepting the canonical fact does not post accounting." />;
+    return <UnavailableState title="Journal preview unavailable" reason="No balanced, versioned journal preview was supplied. Accepting the canonical fact does not post accounting." />;
   }
   return (
     <div className="overflow-x-auto">

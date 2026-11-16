@@ -436,7 +436,23 @@ Parameter passing follows the standard MVVM drill-in pattern: `NavigationService
 | `Ctrl+F` | Search symbols |
 | `Ctrl+S` | Save |
 | `F1` | Help |
-| `F5` | Refresh |
+| `F5` | Refresh (same shell refresh as the toolbar Refresh button) |
+
+### One refresh control
+
+The shell toolbar Refresh button and `F5` are the single refresh control. `MainPageViewModel`
+asks `PageRefreshResolver` (`Services/PageRefreshResolver.cs`) for the active page's reload command
+and executes it in place, so selection, filters, and typed input survive and no Back entry is
+added. The resolver looks for `IPageRefreshTarget` (`Contracts/IPageRefreshTarget.cs`) on the page
+or its `DataContext`, then for a public `RefreshCommand` property, and unwraps chrome hosts that
+implement `IPageRefreshContentHost` (`WorkspaceDeepPageHostPage`). A page with no reload command is
+re-navigated, which rebuilds it and adds a Back entry. `F5` also still sends the `RefreshStatus`
+message.
+
+Pages do not carry their own page-level Refresh button. A page may show a local `Retry` bound to
+the same command inside an error state, keep an empty-state action, and keep buttons that reload
+one sub-panel through a different command. Workspace shell pages (`*WorkspaceShellPage`) expose no
+reload command yet, so the shell refresh still rebuilds them together with their docked panes.
 
 ---
 

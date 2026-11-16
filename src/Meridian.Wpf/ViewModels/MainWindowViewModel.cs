@@ -327,7 +327,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
 
     private void RequestRefresh()
     {
-        // Status listeners (dashboard, provider health) still rely on the message.
+        // The dashboard still listens for this message.
         _messagingService.Send("RefreshStatus");
         ShellRefreshRequested?.Invoke(this, EventArgs.Empty);
     }

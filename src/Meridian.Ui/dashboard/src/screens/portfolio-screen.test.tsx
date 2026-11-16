@@ -553,7 +553,7 @@ describe("PortfolioScreen", () => {
     expect(screen.queryByRole("region", { name: "Portfolio Explorer" })).not.toBeInTheDocument();
     const comparison = screen.getByText("Compare position sources").closest("details")!;
     expect(comparison).not.toHaveAttribute("open");
-    const handoff = screen.getByRole("region", { name: "Portfolio readiness handoff" });
+    const handoff = screen.getByRole("region", { name: "Portfolio readiness review" });
     expect(holdings.compareDocumentPosition(handoff) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const disclosure = handoff.querySelector("details")!;
     expect(disclosure).not.toHaveAttribute("open");
@@ -976,8 +976,8 @@ describe("PortfolioScreen", () => {
       initialEntries: ["/portfolio"]
     });
 
-    const handoff = screen.getByRole("region", { name: "Portfolio readiness handoff" });
-    expect(within(handoff).getByText("Portfolio acceptance handoff")).toBeInTheDocument();
+    const handoff = screen.getByRole("region", { name: "Portfolio readiness review" });
+    expect(within(handoff).getByText("Portfolio acceptance review")).toBeInTheDocument();
     const actions = within(handoff).getByLabelText("Portfolio readiness next actions");
     const brokerageSyncLink = within(actions).getByRole("link", { name: "Open brokerage sync review from Portfolio readiness" });
     expect(brokerageSyncLink).toHaveAttribute("href", "/portfolio/brokerage-sync");

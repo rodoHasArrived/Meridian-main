@@ -1234,11 +1234,11 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
     id: "data-workspace",
     label: "Data workspace",
     href: WORKSTATION_API_ENDPOINTS.data,
-    description: "Provider posture, backfill queues, and export readiness.",
+    description: "Provider health, backfill queues, and export readiness.",
     ariaLabel: "Open Data workspace diagnostic service",
     workspaceKey: "data",
     isAvailable: (payload) => payload.data !== null && payload.data !== undefined,
-    unavailableDetail: "Data workspace provider posture has not loaded."
+    unavailableDetail: "Data workspace provider health has not loaded."
   },
   {
     id: "strategy-workspace",
@@ -1274,7 +1274,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
     id: "reporting-workspace",
     label: "Reporting workspace",
     href: WORKSTATION_API_ENDPOINTS.reporting,
-    description: "Reporting profiles and governed report-pack recipients.",
+    description: "Reporting profiles and report-pack recipients.",
     ariaLabel: "Open Reporting workspace diagnostic service",
     workspaceKey: "reporting",
     isAvailable: (payload) => payload.reporting !== null && payload.reporting !== undefined,
@@ -1348,8 +1348,8 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     workspaceKey: "reporting",
     workspaceLabel: "Reporting",
     route: WORKSTATION_ROUTE_CATALOG.reporting,
-    title: "Governed reports and exports",
-    description: "Reporting workspace posture, analysis exports, report-pack recipients, data dictionaries, and approval queues.",
+    title: "Reports and exports",
+    description: "Reporting workspace status, analysis exports, report-pack recipients, data dictionaries, and approval queues.",
     isAvailable: (payload) => payload.reporting !== null && payload.reporting !== undefined,
     unavailableDetail: "Reporting workspace data has not loaded.",
     endpoints: [
@@ -1459,7 +1459,7 @@ function buildRecentEventsSection(overview: SystemOverviewResponse | null): Sett
       listLabel: "Recent system events unavailable",
       countLabel: "0",
       statusLabel: "Event stream unavailable",
-      statusDetail: "System overview is unavailable. Reconnect to the Meridian API before reviewing event posture.",
+      statusDetail: "System overview is unavailable. Reconnect to the Meridian API before reviewing event status.",
       state: "unavailable",
       rows: []
     };
@@ -1707,7 +1707,7 @@ function buildAlpacaConnectionPanel(
     setupChecklistDetail: connectionNeedsRefresh
       ? "Re-verify the paper connection before relying on readiness evidence."
       : state === "Connected"
-        ? "Stored paper credentials and current account verification support the readiness handoff."
+        ? "Stored paper credentials and current account verification support the readiness review."
         : "Move from demo data to a verified paper connection before relying on readiness evidence.",
     setupChecklistAriaLabel: "Alpaca provider setup checklist",
     setupChecklist: buildAlpacaSetupChecklist(connection, isLive, verificationFreshness)
@@ -1811,8 +1811,8 @@ function buildAlpacaSetupChecklist(
       detail: isConnected && isVerificationFresh
         ? "Open Trading readiness to confirm brokerage-sync and execution-control evidence."
         : isConnected
-          ? "Readiness handoff is paused until the stored connection is re-verified."
-          : "Readiness handoff unlocks after account verification succeeds.",
+          ? "Readiness review is paused until the stored connection is re-verified."
+          : "Readiness review unlocks after account verification succeeds.",
       tone: isConnected ? isVerificationFresh ? "success" : "warning" : "muted",
       badgeVariant: isConnected ? isVerificationFresh ? "success" : "warning" : "outline",
       actionLabel: isConnected && isVerificationFresh ? "Open readiness" : null,
@@ -1852,7 +1852,7 @@ function connectionStatusDetail(
     const historicalAccountDetail = account
       ? `Alpaca account ${account} was last verified.`
       : "The Alpaca account was last verified.";
-    return `${historicalAccountDetail} ${verificationFreshness.label}; re-verify before readiness handoff.`;
+    return `${historicalAccountDetail} ${verificationFreshness.label}; re-verify before readiness review.`;
   }
 
   if (connection?.lastError) {
@@ -1950,12 +1950,12 @@ function buildProfileAuthenticationPanel(
     ? connection?.lastError?.trim() || "Brokerage authorization needs operator review."
     : hasCurrentBrokerageAuthority
       ? account
-        ? `Alpaca account ${account} is verified for readiness handoffs.`
+        ? `Alpaca account ${account} is verified for readiness reviews.`
         : "Alpaca account verification succeeded."
       : brokerageEvidenceNeedsRefresh
-        ? `${account ? `Alpaca account ${account}` : "The Alpaca account"} was last verified, but the evidence is ${verificationFreshness.status === "unavailable" ? "not current" : verificationFreshness.status}. ${verificationFreshness.label}; re-verify before readiness handoff.`
+        ? `${account ? `Alpaca account ${account}` : "The Alpaca account"} was last verified, but the evidence is ${verificationFreshness.status === "unavailable" ? "not current" : verificationFreshness.status}. ${verificationFreshness.label}; re-verify before readiness review.`
         : isConfigured
-          ? "Stored Alpaca keys still need account verification before readiness handoff."
+          ? "Stored Alpaca keys still need account verification before readiness review."
           : "Connect paper Alpaca credentials before relying on brokerage-backed workflows.";
   const summary = !session
     ? "Operator identity has not loaded, so authorization-sensitive workflows should stay blocked until session data returns."
@@ -1964,7 +1964,7 @@ function buildProfileAuthenticationPanel(
       : hasCurrentBrokerageAuthority
         ? `${session.displayName} has ${withIndefiniteArticle(session.role)} session with verified brokerage authority for ${workspaceLabel}.`
         : brokerageEvidenceNeedsRefresh
-          ? `${session.displayName} has ${withIndefiniteArticle(session.role)} session for ${workspaceLabel}, but brokerage evidence is ${verificationFreshness.status === "unavailable" ? "not current" : verificationFreshness.status} and needs re-verification before readiness handoff.`
+          ? `${session.displayName} has ${withIndefiniteArticle(session.role)} session for ${workspaceLabel}, but brokerage evidence is ${verificationFreshness.status === "unavailable" ? "not current" : verificationFreshness.status} and needs re-verification before readiness review.`
           : `${session.displayName} has ${withIndefiniteArticle(session.role)} session in ${environmentLabel}; brokerage authority still needs verification.`;
   const notice = !session
     ? {
@@ -1997,8 +1997,8 @@ function buildProfileAuthenticationPanel(
           : null;
 
   return {
-    regionLabel: "Profile and authentication posture",
-    title: "Profile and access posture",
+    regionLabel: "Profile and authentication status",
+    title: "Profile and access status",
     summary,
     statusLabel,
     statusTone,
@@ -2101,8 +2101,8 @@ function buildProfileAuthenticationPanel(
         actionLabel: hasCurrentBrokerageAuthority ? "Open readiness" : "Review provider setup",
         actionHref: hasCurrentBrokerageAuthority ? WORKSTATION_ROUTE_CATALOG.tradingReadiness : WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
         actionAriaLabel: hasCurrentBrokerageAuthority
-          ? "Open Trading readiness from verified profile authentication posture"
-          : "Review Alpaca provider setup from profile authentication posture"
+          ? "Open Trading readiness from verified profile authentication status"
+          : "Review Alpaca provider setup from profile authentication status"
       },
       {
         id: "audit-diagnostics",
@@ -2115,7 +2115,7 @@ function buildProfileAuthenticationPanel(
         badgeVariant: diagnosticBlocked ? "warning" : "success",
         actionLabel: "Open diagnostics",
         actionHref: WORKSTATION_ROUTE_CATALOG.settingsDiagnostics,
-        actionAriaLabel: "Open Settings diagnostic services from profile authentication posture"
+        actionAriaLabel: "Open Settings diagnostic services from profile authentication status"
       }
     ]
   };
@@ -2213,7 +2213,7 @@ function buildProviderConnectionCenter(
       {
         id: "brokerage",
         label: "Brokerage capable",
-        summary: "Trading and account-sync providers with credential or gateway posture.",
+        summary: "Trading and account-sync providers with credential or gateway status.",
         rows: brokerageRows,
         emptyLabel: "No brokerage-capable provider rows loaded."
       },
@@ -2554,7 +2554,7 @@ function buildProviderReadiness({
       label: "Review",
       tone: "warning",
       productionStateLabel: "Source evidence missing",
-      recommendedAction: "Refresh provider credentials so their governed source is reported."
+      recommendedAction: "Refresh provider credentials so their credential source is reported."
     };
   }
 
@@ -2893,7 +2893,7 @@ export function buildSettingsScreenViewModel(
       diagnosticSection.diagnosticStatusVariant,
       evaluatedAt
     ),
-    systemTitle: "System posture",
+    systemTitle: "System status",
     systemSummary: sysSummary,
     systemTone: sysTone,
     systemFreshness,

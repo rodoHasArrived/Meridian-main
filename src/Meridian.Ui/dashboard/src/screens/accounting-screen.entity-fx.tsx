@@ -19,7 +19,7 @@ export function EntityFxAuthority({ scope }: { scope: EntityOperationScope }) {
   const editing = editingRates || editingPolicy;
   const editingReason = "Save or cancel the current FX authority edit before changing its scope.";
   const currentSets = rates.data?.filter((set) => !rates.data?.some((other) => other.rateSetId === set.rateSetId && other.revision > set.revision)) ?? [];
-  return <section className="space-y-4"><h3 className="font-semibold">Governed FX translation authority</h3>
+  return <section className="space-y-4"><h3 className="font-semibold">FX translation authority</h3>
     <p className="text-sm text-muted-foreground">Consolidation translates the whole trial balance under the selected book policy. Booking breaks, translation differences and rounding are distinct. Missing or superseded rate authority blocks draft creation.</p>
     <OperationError error={rates.error} /><OperationError error={configuration.error} />
     <div className="flex flex-wrap items-end gap-3"><OperationField label="FX configuration as of" disabled={editing} value={asOf} onChange={(value) => { setAsOf(value); setEditingPolicy(false); }} type="date" required />

@@ -25,7 +25,7 @@ import { usesTrackedCaps } from "@/design-system/label-case";
 
 const JOURNAL_ENTRY_SOURCE_LABELS: Record<JournalEntryDetailSourceKind, string> = {
   "manual-draft": "Manual journal workbench",
-  "posted-journal": "Governed posted journal",
+  "posted-journal": "Posted journal",
   "run-summary": "Run ledger summary",
   none: "Unknown"
 };
@@ -165,7 +165,7 @@ export function JournalEntryDetailScreen() {
         if (workbenchUnavailable) {
           setJournalLine(null);
           setPostedEntry(null);
-          setErrorText("The journal-entry record could not be loaded from the governed workbench. No posting detail is shown until the source responds.");
+          setErrorText("The journal-entry record could not be loaded from the workbench. No posting detail is shown until the source responds.");
         }
 
         setLoading(false);

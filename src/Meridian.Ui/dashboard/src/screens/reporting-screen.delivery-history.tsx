@@ -32,7 +32,7 @@ export function ReportingDeliveryHistoryPanel({
       </CardHeader>
       <CardContent className="space-y-2">
         <p role="status" className="rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-xs leading-5 text-primary">
-          Dispatch and provider failure receipts are server-owned. Use the governed run detail for release and distribution controls; this panel remains read-only evidence.
+          Dispatch and provider failure receipts are server-owned. Use the report run detail for release and distribution controls; this panel remains read-only evidence.
         </p>
         {deliveryAttempts.length > 0 ? (
           <div role="list" aria-label="Report-pack delivery attempts" className="space-y-2">
@@ -109,7 +109,7 @@ export function ReportingDeliveryHistoryPanel({
                       </div>
                     ) : attempt.package.secureLink ? (
                       <p className="text-xs text-muted-foreground">
-                        Legacy package access reference retained as non-actionable evidence. Use the governed run for scoped recipient access.
+                        Legacy package access reference retained as non-actionable evidence. Use the report run for scoped recipient access.
                       </p>
                     ) : (
                       <p className="text-xs text-warning">Legacy or query-credential package link suppressed.</p>
@@ -169,7 +169,7 @@ export function ReportingDeliveryHistoryPanel({
                           className="font-sans font-medium text-primary underline-offset-2 hover:underline"
                           to={workstationRouteWithQuery("reportingRunDetail", { runId: attempt.package.reportingRunId })}
                         >
-                          Open governed run
+                          Open report run
                         </Link>
                       </p>
                     ) : null}

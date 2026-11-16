@@ -192,7 +192,7 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
       providerRuntimeErrorDetail(stagingResult, "Staging review"),
       providerRuntimeErrorDetail(identityResult, "Identity resolution"),
       providerRuntimeErrorDetail(promotionResult, "Promotion readiness"),
-      providerRuntimeErrorDetail(handoffResult, "Reconciliation handoff history"),
+      providerRuntimeErrorDetail(handoffResult, "Reconciliation delivery history"),
       providerRuntimeErrorDetail(quarantineResult, "Quarantine review")
     ].filter((detail): detail is string => Boolean(detail));
     const failedCount = details.length;
@@ -359,7 +359,7 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
         [stateKey]: {
           ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
           phase: "loaded",
-          message: "No promotion-ready staging rows are available for reconciliation handoff.",
+          message: "No promotion-ready staging rows are available for reconciliation delivery.",
           details: []
         }
       }));
@@ -371,7 +371,7 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
       [stateKey]: {
         ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
         phase: "loading",
-        message: "Creating provider integration reconciliation handoff.",
+        message: "Creating provider integration reconciliation delivery.",
         details: []
       }
     }));
@@ -392,13 +392,13 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
         [stateKey]: {
           ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
           phase: "loaded",
-          message: `Reconciliation handoff ${result.accepted ? "created" : "reviewed"}: ${result.acceptedRecordCount} accepted / ${result.duplicateRecordCount} duplicate.`,
+          message: `Reconciliation delivery ${result.accepted ? "created" : "reviewed"}: ${result.acceptedRecordCount} accepted / ${result.duplicateRecordCount} duplicate.`,
           details: result.issues.map((issue) => issue.message)
         }
       }));
       await loadProviderRuntimeEvidence(row);
     } catch (error) {
-      const display = describeApiError(error, "Provider integration reconciliation handoff failed.");
+      const display = describeApiError(error, "Provider integration reconciliation delivery failed.");
       setProviderRuntimeState((current) => ({
         ...current,
         [stateKey]: {
@@ -776,10 +776,10 @@ export function SettingsProviderSection({ vm, showProviderSetupControls, inlineP
                       })}
                       onCreateHandoff={() => setMutationConfirmation({
                         id: `provider-handoff-${row.providerId}`,
-                        title: `Create reconciliation handoff for ${row.displayName}?`,
-                        description: "Create retained handoff evidence only for staging rows the shared promotion-readiness service marked ready.",
-                        confirmLabel: "Confirm handoff",
-                        confirmAriaLabel: `Confirm reconciliation handoff for ${row.displayName}`,
+                        title: `Create reconciliation delivery for ${row.displayName}?`,
+                        description: "Create retained delivery evidence only for staging rows the shared promotion-readiness service marked ready.",
+                        confirmLabel: "Confirm delivery",
+                        confirmAriaLabel: `Confirm reconciliation delivery for ${row.displayName}`,
                         run: () => createProviderRuntimeHandoff(row)
                       })}
                       onReplayQuarantine={() => setMutationConfirmation({

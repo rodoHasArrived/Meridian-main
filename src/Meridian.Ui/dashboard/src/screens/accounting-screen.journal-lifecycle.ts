@@ -10,7 +10,7 @@ import type {
 import type { JournalEntryLifecycleAction, JournalEntryLifecycleTransition, ManualJournalEntryDraft } from "@/types";
 import { formatCount as formatCountValue, formatCurrencyWithCode } from "@/lib/format";
 
-export const ASSET_REVIEW_ONLY_REASON = "Asset accounting drafts require retained approval evidence through the governed asset workflow; generic approval, posting and corrections are unavailable.";
+export const ASSET_REVIEW_ONLY_REASON = "Asset accounting drafts require retained approval evidence through the asset workflow; generic approval, posting and corrections are unavailable.";
 
 export function lifecycleActionNotes(action: JournalEntryLifecycleAction, draft: ManualJournalEntryDraft): string {
   switch (action) {
@@ -199,7 +199,7 @@ export function buildManualJournalLifecycleChecklist(
       label: "Audit transitions",
       value: transitions.length > 0 ? formatCount(transitions.length, "transition") : "None",
       detail: transitions.length > 0
-        ? "Lifecycle transitions retain audit id, correlation id, actor, notes, and evidence routes."
+        ? "Lifecycle transitions retain audit id, correlation id, actor, notes, and supporting record links."
         : "No lifecycle transition audit rows are retained on this journal entry yet.",
       tone: transitions.length > 0 ? "success" : lifecycleState.has("Draft") ? "warning" : "default"
     }

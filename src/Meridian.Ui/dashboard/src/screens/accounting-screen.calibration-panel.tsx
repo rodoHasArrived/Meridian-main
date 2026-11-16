@@ -168,7 +168,7 @@ export function CalibrationSummaryPanel({ view, compact = false }: { view: Calib
                       />
                     ) : (
                       <div role="status" className="rounded-lg border border-border/70 bg-secondary/25 px-4 py-3 text-sm text-muted-foreground">
-                        Select a tolerance profile to inspect its calibration posture.
+                        Select a tolerance profile to inspect its calibration status.
                       </div>
                     )}
                   </div>

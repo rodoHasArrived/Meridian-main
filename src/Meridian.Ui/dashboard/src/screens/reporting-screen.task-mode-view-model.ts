@@ -64,7 +64,7 @@ const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskMod
   exports: {
     id: "exports",
     label: "Exports",
-    title: "Governed exports",
+    title: "Exports",
     description: "Preview exports and review the files and warnings each one produced.",
     routeLabel: "Exports",
     ariaLabel: "Reporting task mode exports"

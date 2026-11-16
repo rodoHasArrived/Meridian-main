@@ -80,7 +80,7 @@ export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds 
               </ul>
             ) : null}
             {row.periodLockOwner ? <p className="mt-2 break-words">Period lock owner: {row.periodLockOwner}</p> : null}
-            {row.governedReopenPath ? <p className="break-words">Governed reopen: {row.governedReopenPath}</p> : null}
+            {row.governedReopenPath ? <p className="break-words">Period reopen: {row.governedReopenPath}</p> : null}
             <details className="mt-2">
               <summary className="cursor-pointer">Source evidence ({row.sourceEvidenceReferences.length})</summary>
               {row.sourceEvidenceReferences.length ? <ul className="mt-1 space-y-1 break-all">{row.sourceEvidenceReferences.map((reference) => <li key={reference}>{reference}</li>)}</ul>

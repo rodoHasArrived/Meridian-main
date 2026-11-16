@@ -185,7 +185,7 @@ export function ArchiveMaintenanceOperations() {
         {error ? <StatusBanner tone="danger" title="Maintenance read needs attention" detail={error} /> : null}
         {notice ? <StatusBanner tone="success" title="Maintenance action accepted" detail={notice} /> : null}
 
-        <div className="grid gap-2 md:grid-cols-4" aria-label="Archive maintenance posture">
+        <div className="grid gap-2 md:grid-cols-4" aria-label="Archive maintenance status">
           {metrics.map((metric) => (
             <div key={metric.id} className="rounded-[2px] border border-border bg-secondary/20 p-3">
               <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-wide")}>{metric.label}</div>

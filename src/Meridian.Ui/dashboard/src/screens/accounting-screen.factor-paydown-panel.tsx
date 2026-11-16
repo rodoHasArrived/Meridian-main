@@ -108,7 +108,7 @@ function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileI
         description.trim(), { signal: requestController.signal });
       if (!requestController.signal.aborted) {
         setDraft(result); setUncertain(false);
-        setMessage(result.candidate.journalEntryId ? "Review draft retained. Open the journal workbench for validation and review submission. Approval and posting are available only when the authenticated governed asset workflow permits them."
+        setMessage(result.candidate.journalEntryId ? "Review draft retained. Open the journal workbench for validation and review submission. Approval and posting are available only when the authenticated asset workflow permits them."
           : "The server did not retain an eligible draft. Inspect its blockers before preparing again.");
       }
     } catch (cause) {

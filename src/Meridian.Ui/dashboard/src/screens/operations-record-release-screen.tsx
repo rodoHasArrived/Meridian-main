@@ -111,7 +111,7 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
             <div className="eyebrow-label">Release path</div>
             <h2 className="mt-2 text-base font-semibold text-foreground">Source data to report pack</h2>
             <p className="mt-1 max-w-3xl text-xs leading-5 text-muted-foreground">
-              Selecting a step keeps the release path in place while updating the inspector with step-specific posture.
+              Selecting a step keeps the release path in place while updating the inspector with step-specific status.
             </p>
           </div>
           <Button asChild variant="outline" size="sm">
@@ -203,7 +203,7 @@ function OperationsRecordContextRail({
   return (
     <div className="grid gap-3">
       <div>
-        <div className="eyebrow-label">Route posture</div>
+        <div className="eyebrow-label">Route status</div>
         <p className="mt-2 text-sm font-semibold text-foreground">{vm.statusLabel}</p>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">{vm.rootAreaSummary}</p>
       </div>
@@ -303,7 +303,7 @@ function OperationsRecordEvidenceDrawer({ vm }: { vm: OperationsRecordReleaseVie
       <section aria-label={vm.distributionLabel}>
         <h2 className="text-sm font-semibold text-foreground">{vm.distributionLabel}</h2>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">
-          Recipient, owner, channel, and pending-item state remain attached to the governed packet.
+          Recipient, owner, channel, and pending-item state remain attached to the packet.
         </p>
         {vm.distributions.length > 0 ? (
           <div role="list" aria-label={vm.distributionLabel} className="mt-3 grid gap-2">

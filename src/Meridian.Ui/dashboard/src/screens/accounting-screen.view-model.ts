@@ -2496,7 +2496,7 @@ export function buildAccountingLoadingViewState(pathname: string): AccountingLoa
     {
       id: "approvals-exceptions",
       label: "Approvals and exceptions",
-      detail: "Preparing dedicated approval and exception workstreams from close-control data."
+      detail: "Preparing dedicated approval and exception queues from close-control data."
     },
     {
       id: "security-reporting",
@@ -2508,12 +2508,12 @@ export function buildAccountingLoadingViewState(pathname: string): AccountingLoa
     {
       id: "report-packs",
       label: "Report packs",
-      detail: "Loading governed report-pack runs, retained manifests, and evidence-bundle readiness."
+      detail: "Loading report-pack runs, retained manifests, and evidence-bundle readiness."
     },
     {
       id: "approvals",
       label: "Approval context",
-      detail: "Preparing accounting approval and exception handoffs for report evidence review."
+      detail: "Preparing accounting approval and exception next steps for report evidence review."
     },
     {
       id: "exports",
@@ -2538,10 +2538,10 @@ export function buildAccountingLoadingViewState(pathname: string): AccountingLoa
     },
     {
       id: "provider-posture",
-      label: "Provider posture",
+      label: "Provider health",
       detail: "Check source and provider diagnostics before relying on fresh close data.",
       href: WORKSTATION_ROUTE_CATALOG.dataProviders,
-      ariaLabel: "Open Data provider posture while Accounting loads"
+      ariaLabel: "Open Data provider health while Accounting loads"
     },
     {
       id: "report-evidence",
@@ -2584,7 +2584,7 @@ export function buildAccountingLoadingViewState(pathname: string): AccountingLoa
     eyebrow: `${workspaceLabel} workspace data`,
     title: `Loading ${workspaceLabel}`,
     detail: workspaceLabel === "Reporting"
-      ? "Waiting for report-pack, governed export, and approval summaries from workspace data."
+      ? "Waiting for report-pack, export, and approval summaries from workspace data."
       : "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries from workspace data.",
     routeLabel: pathname,
     workstreamLabel,
@@ -3375,7 +3375,7 @@ export function buildAccountingReportingViewState({
     hasRows: rows.length > 0,
     emptyText: "No reporting profiles available. Sync report-pack metadata before export review.",
     selectedProfile,
-    statusTitle: "Report packet posture",
+    statusTitle: "Report packet status",
     statusDetail: profileCount > 0
       ? `${formatCount(profileCount, "profile")} configured. ${targetSummary}`
       : "No reporting profiles are configured for packet generation.",
@@ -3604,7 +3604,7 @@ export function buildAccountingTrialBalanceViewState({
     selectedDetail: selectedRow ? buildTrialBalanceDetail(selectedRow, runLabel, runId, periodId) : null,
     detailEmptyTitle: "No account selected",
     detailEmptyText: hasRows
-      ? "Select an account line to inspect balance evidence for report handoff."
+      ? "Select an account line to inspect balance evidence for report delivery."
       : normalizedAccountFilter
         ? `No ${accountingBasisDisplayName(resolvedBasis)} ledger accounts match "${accountFilter ?? ""}". Clear the filter or search another GL account.`
         : "Trial-balance account detail appears after ledger rows load.",
@@ -3613,7 +3613,7 @@ export function buildAccountingTrialBalanceViewState({
     emptyTitle: "No trial balance lines",
     emptyDetail: normalizedAccountFilter && basisRows.length > 0
       ? `No ${accountingBasisDisplayName(resolvedBasis)} ledger accounts match "${accountFilter ?? ""}". Clear the GL account filter or search another account.`
-      : `Meridian did not return account-balance rows for ${runLabel}. ${scopeLabel ? "Select another ledger period" : "Select another reconciliation run"} or refresh ledger evidence before report handoff.`,
+      : `Meridian did not return account-balance rows for ${runLabel}. ${scopeLabel ? "Select another ledger period" : "Select another reconciliation run"} or refresh ledger evidence before report delivery.`,
     errorText,
     errorDetails: normalizedError?.details ?? [],
     statusAnnouncement: buildTrialBalanceAnnouncement({ runLabel, state, rowCount: viewRows.length, loading, errorText })

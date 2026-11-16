@@ -1154,7 +1154,7 @@ export function buildLiveMarketDataWorkspaceViewModel({
 
   return {
     title: "Live Market Data Workspace",
-    description: "Monitor real-time quotes, trades, BBO, spreads, provider posture, and latency from one symbol set.",
+    description: "Monitor real-time quotes, trades, BBO, spreads, provider health, and latency from one symbol set.",
     symbolSet: [...symbolSet],
     symbolSetLabel: symbolSet.join(", "),
     hasSymbols: symbolSet.length > 0,
@@ -1267,7 +1267,7 @@ function buildLiveMarketDataDetail(
       ariaLabel: "Selected symbol summary",
       title: "No symbol selected",
       subtitle: "Load a symbol set to inspect detail",
-      description: "The selected-symbol detail panel announces quote posture, venue, spread, tick health, and latency once a row is selected.",
+      description: "The selected-symbol detail panel announces quote status, venue, spread, tick health, and latency once a row is selected.",
       statusLabel: "Empty",
       statusTone: "default",
       fields: []
@@ -1346,7 +1346,7 @@ function buildLiveMarketDataDiagnostics({
     connectionQualityLabel,
     tickHealthLabel,
     items: [
-      { id: "provider-latency", label: "Provider posture", value: providerLatencyLabel },
+      { id: "provider-latency", label: "Provider health", value: providerLatencyLabel },
       { id: "throughput", label: "Throughput", value: throughputLabel },
       { id: "connection", label: "Connection quality", value: connectionQualityLabel },
       { id: "tick-health", label: "Tick health", value: tickHealthLabel }

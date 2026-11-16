@@ -859,7 +859,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
 
   const reportingConfidence = (
     <OperationalTrustSummary
-      source={{ value: "Governed Reporting service", tone: "ready" }}
+      source={{ value: "Reporting service", tone: "ready" }}
       scope={{ value: vm.taskMode.label, detail: vm.taskMode.description, tone: "ready" }}
       freshness={{
         value: latestRetainedAsOfDate ? presentReportingAsOfDate(latestRetainedAsOfDate) : "No as-of date retained",
@@ -980,7 +980,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
           explorerLabel="Report-line provenance"
           title="Report-Line Provenance Explorer"
           titleId="report-line-provenance-explorer-title"
-          description="Drill from governed report lines into retained source records, reconciliations, journals, approvals, delivery history, and restatement evidence."
+          description="Drill from report lines into retained source records, reconciliations, journals, approvals, delivery history, and restatement evidence."
           scopeItems={[]}
           savedViews={[]}
           summaryItems={[]}
@@ -1336,7 +1336,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
             <CardHeader>
               <div className="eyebrow-label">Structured exports</div>
               <CardTitle>Regulatory, warehouse, and decision outputs</CardTitle>
-              <CardDescription>Source-backed JSON descriptors keep downstream exports tied to governed Reporting evidence.</CardDescription>
+              <CardDescription>Source-backed JSON descriptors keep downstream exports tied to Reporting evidence.</CardDescription>
             </CardHeader>
             <CardContent>
               <div role="list" aria-label="Structured export rows" className="grid gap-3 lg:grid-cols-3">
@@ -1495,10 +1495,10 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 {focusedReportBuilderTemplate
                   ? `Template v${focusedReportBuilderTemplate.version} and its report-writer controls are prioritized below.`
                   : requestedReportBuilderTemplateId
-                    ? "The requested template is no longer available to this operator. Choose another governed template below."
+                    ? "The requested template is no longer available to this operator. Choose another template below."
                     : reportBuilderFamilyTemplates.length > 0
                       ? `${reportBuilderFamilyTemplates.length} existing ${formatReportingFamilyLabel(requestedReportBuilderFamily)} template version${reportBuilderFamilyTemplates.length === 1 ? " is" : "s are"} prioritized below.`
-                      : "No governed template exists for this family yet. Use the available builder controls and templates below as the starting point."}
+                      : "No template exists for this family yet. Use the available builder controls and templates below as the starting point."}
               </p>
             </div>
             <Badge variant={focusedReportBuilderTemplate || reportBuilderFamilyTemplates.length > 0 ? "success" : "warning"}>
@@ -1575,11 +1575,11 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
         <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">{isGovernanceTaskMode ? "Template governance" : "Template families"}</div>
-            <CardTitle>{isGovernanceTaskMode ? "Template lifecycle and access" : "Governed report templates"}</CardTitle>
+            <CardTitle>{isGovernanceTaskMode ? "Template lifecycle and access" : "Report templates"}</CardTitle>
             <CardDescription>
               {isGovernanceTaskMode
                 ? "Review template access, validation, approval lineage, and the next permitted lifecycle decision."
-                : "Design reusable report templates, review versions, and open the governed authoring surface. Run operations remain in Report Parameters."}
+                : "Design reusable report templates, review versions, and open the authoring surface. Run operations remain in Report Parameters."}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -1704,7 +1704,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
             <div className="eyebrow-label">Run status</div>
             <CardTitle>Report run audit and lineage</CardTitle>
             <CardDescription>Recent manifests keep approval status, retry attempts, and dataset lineage visible.</CardDescription>
-            <p id="report-run-keyboard-help" className="text-xs text-muted-foreground">j/k select a run. Tab to its review and evidence controls. Approval and release stay in the governed workflow.</p>
+            <p id="report-run-keyboard-help" className="text-xs text-muted-foreground">j/k select a run. Tab to its review and evidence controls. Approval and release stay in the controlled workflow.</p>
           </CardHeader>
           <CardContent className="space-y-2">
             {vm.hasRunStatusRows ? <div role="list" aria-label="Report run review queue" aria-describedby="report-run-keyboard-help" onKeyDownCapture={runReviewKeyboard} className="space-y-2">{vm.runStatusRows.map((run) => (
@@ -1759,13 +1759,13 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                   </Button>
                 ) : null}
                 {run.hasNextActions ? (
-                  <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-primary/25 bg-primary/10 px-3 py-2" aria-label={`${run.id} governed workflow continuation`}>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-primary/25 bg-primary/10 px-3 py-2" aria-label={`${run.id} workflow continuation`}>
                     <p className="min-w-0 flex-1 text-xs leading-5 text-primary">
                       Report packs can no longer be changed here. Continue validation, approval, release, restatement, and distribution from the report run.
                     </p>
                     <Button asChild size="sm" variant="outline">
                       <a href={workstationRouteWithQuery("reportingRunDetail", { runId: run.id })}>
-                        Open governed run
+                        Open report run
                       </a>
                     </Button>
                   </div>
@@ -1843,7 +1843,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 {reportPackWorkflowRun ? (
                   <Button asChild size="sm">
                     <a href={workstationRouteWithQuery("reportingRunDetail", { runId: reportPackWorkflowRun.id })}>
-                      Open governed run
+                      Open report run
                     </a>
                   </Button>
                 ) : null}
@@ -2267,21 +2267,21 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
               Evidence and distribution
             </CardTitle>
             <CardDescription>
-              Export profiles stay tied to accounting evidence, loader posture, and governed distribution recipients.
+              Export profiles stay tied to accounting evidence, loader status, and approved distribution recipients.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-3">
             <ReportingHighlight
               title="Profile wiring"
-              description="Each queue row keeps profile ID, format, target tool, and loader posture visible before export."
+              description="Each queue row keeps profile ID, format, target tool, and loader status visible before export."
             />
             <ReportingHighlight
               title="Pack routing"
               description="Report-pack distribution records show the recipient, delivery channel, and pending work."
             />
             <ReportingHighlight
-              title="Review posture"
-              description="Dictionary and loader evidence remain attached so governed output can be reviewed without context switching."
+              title="Review status"
+              description="Dictionary and loader evidence remain attached so output can be reviewed without context switching."
             />
           </CardContent>
         </Card>
@@ -2367,7 +2367,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
               <div>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Landmark className="h-4 w-4 text-primary" />
-                  Governed export queue
+                  Export queue
                 </CardTitle>
                 <CardDescription className="mt-2">{vm.description}</CardDescription>
               </div>
@@ -2673,7 +2673,7 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     dueAtUtc,
     maxRetries: String(Math.max(0, schedule?.maxRetries ?? 1)),
     requestedBy: normalizeDraftText(schedule?.requestedBy ?? distribution?.owner, "browser-workstation"),
-    description: normalizeDraftText(schedule?.description, "Scheduled governed report pack."),
+    description: normalizeDraftText(schedule?.description, "Scheduled report pack."),
     datasetSourceId: normalizeOptionalDatasetSourceId(schedule?.datasetSourceId ?? buildDefaultReportWriterDatasetSourceId(reporting)) ?? "",
     distributionId: normalizeIdentifierToken(firstTarget?.distributionId ?? distribution?.distributionId, "board-reporting-committee"),
     deliveryMode: normalizeReportingScheduleDeliveryMode(firstTarget?.deliveryMode),
@@ -2747,7 +2747,7 @@ function buildReportingScheduleUpsertRequest(
     dueAtUtc: normalizeDraftText(draft.dueAtUtc, `${nextAsOfDate}T20:00:00Z`),
     maxRetries: parseScheduleMaxRetries(draft.maxRetries),
     requestedBy: normalizeDraftText(draft.requestedBy, "browser-workstation"),
-    description: normalizeDraftText(draft.description, "Scheduled governed report pack."),
+    description: normalizeDraftText(draft.description, "Scheduled report pack."),
     state: "Active",
     deliveryTargets: buildReportingScheduleDeliveryTargets(draft, deliveryNote),
     datasetSourceId: normalizeOptionalDatasetSourceId(draft.datasetSourceId),

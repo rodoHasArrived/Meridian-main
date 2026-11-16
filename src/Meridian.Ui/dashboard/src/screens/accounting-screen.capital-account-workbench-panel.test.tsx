@@ -201,7 +201,7 @@ describe("CapitalAccountWorkbenchPanel rollforward proof", () => {
     expect(proof).toHaveAttribute("open");
     const reason = within(proof).getByText(/Not proved — no subledger entries are loaded for this account/);
     expect(reason).toBeVisible();
-    expect(within(proof).getByText(/Opening is set by the capital-account projection with no subledger entries behind it/)).toBeVisible();
+    expect(within(proof).getByText(/Opening is set by the capital-account summary with no subledger entries behind it/)).toBeVisible();
     // The single net movement row the trace always shows for this case is still there.
     expect(within(proof).getByText("Net capital activity")).toBeVisible();
     expect(within(proof).getAllByText("$125.00")).toHaveLength(2);

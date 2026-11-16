@@ -1288,7 +1288,7 @@ describe("accounting-screen journal-entry view model", () => {
       expect.objectContaining({
         id: "audit",
         value: "1 transition",
-        detail: "Lifecycle transitions retain audit id, correlation id, actor, notes, and evidence routes.",
+        detail: "Lifecycle transitions retain audit id, correlation id, actor, notes, and supporting record links.",
         tone: "success"
       })
     ]));

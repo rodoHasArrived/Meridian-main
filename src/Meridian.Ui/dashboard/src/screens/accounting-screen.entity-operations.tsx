@@ -30,7 +30,7 @@ export function EntityOperationsPanel({ book }: { book: LedgerBook }) {
   const scope: EntityOperationScope | null = capabilities.data ? { book, books: books.data ?? [book], graph: graph.data, capabilities: capabilities.data } : null;
   return <Card id="entity-operations" className="panel-surface min-w-0" aria-labelledby="entity-operations-title"><CardHeader>
     <CardTitle id="entity-operations-title">Entity operations</CardTitle>
-    <CardDescription>{book.displayName} · {book.baseCurrency} · accounting profiles, lifecycle, intercompany delivery and governed account/FX authority.</CardDescription>
+    <CardDescription>{book.displayName} · {book.baseCurrency} · accounting profiles, lifecycle, intercompany delivery and account/FX authority.</CardDescription>
   </CardHeader><CardContent className="space-y-4">
     <OperationError error={capabilities.error} /><OperationError error={books.error} />
     {graph.error ? <p role="status" className="text-sm text-warning">Entity graph access is unavailable: {graph.error} Book-scoped controls and evidence remain available according to your permission.</p> : null}

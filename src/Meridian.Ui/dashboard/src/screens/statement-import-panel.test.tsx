@@ -338,7 +338,7 @@ describe("StatementImportPanel", () => {
       "href",
       "/accounting/reconciliation/match?runId=stmt-run-77"
     );
-    expect(screen.getByLabelText("Trusted close handoff")).toHaveTextContent("Trusted close workflow ready");
+    expect(screen.getByLabelText("Trusted close next step")).toHaveTextContent("Trusted close workflow ready");
     expect(screen.getByLabelText("Trusted close scope")).toHaveTextContent("fund-profile-alpha");
     expect(screen.getByLabelText("Trusted close scope")).toHaveTextContent("5dca0d66-b576-44d9-a24a-9f2651bf163c");
     expect(screen.getByLabelText("Trusted close scope")).toHaveTextContent("44a5b4ac-7068-4775-8978-d76138a9428e");
