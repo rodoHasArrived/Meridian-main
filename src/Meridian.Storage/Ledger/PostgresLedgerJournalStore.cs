@@ -255,6 +255,7 @@ public sealed partial class PostgresLedgerJournalStore :
         entry = RetainPostingAuthorityDecision(transaction, entry, period);
         await ValidateAndRecordCouponRecognitionAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         var auditHead = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
+        await ValidatePostingDateNotHardClosedElsewhereAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         await ValidateOpeningCutoverAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         await ValidateAgreementReversalNotAlreadyPostedAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await ValidateCurrentConsolidationSourcesAsync(connection, transaction, entry, ct).ConfigureAwait(false);

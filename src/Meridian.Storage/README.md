@@ -1559,6 +1559,13 @@ marker owned by the parent transaction. A racing or later child therefore fails 
 repeatable-read snapshot that cannot observe a newly committed seal. Migration backfill holds both
 journal tables against writers until validation, sealing, and trigger installation complete.
 
+Periods of one ledger book may overlap, for example an adjustment period. Because the period guard
+inspects only the period a posting names, `PostgresLedgerJournalStore` also rejects an append whose
+posting date falls inside a different hard-closed period of the same book, after taking the
+audit-head write lock. An open overlapping period therefore cannot add activity to dates a hard
+close has finalized; date the entry outside the closed range or use a governed reopen. Legacy
+periods without a ledger book are not compared.
+
 Ledger period close writes also fail closed for reviewed automation. `PostgresLedgerBookService`
 rejects assistant or automation-origin close requests before saving the period status, period-close
 event, or operator inbox sign-off work item so period locks remain human-approved accounting

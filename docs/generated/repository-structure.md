@@ -8330,6 +8330,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.BondCouponRecognition.cs
 │   │   │   ├── PostgresLedgerJournalStore.CapitalReturn.cs
 │   │   │   ├── PostgresLedgerJournalStore.CashDividendAttestation.cs
+│   │   │   ├── PostgresLedgerJournalStore.ClosedDateCoverage.cs
 │   │   │   ├── PostgresLedgerJournalStore.CloseSnapshots.cs
 │   │   │   ├── PostgresLedgerJournalStore.Consolidation.cs
 │   │   │   ├── PostgresLedgerJournalStore.ControlledClose.cs
