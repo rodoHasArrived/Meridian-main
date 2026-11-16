@@ -250,7 +250,8 @@ public sealed class WorkspaceDeepPageChromeTests
         xaml.Should().Contain("ClusterStatusSummaryInspector");
         xaml.Should().Contain("ClusterStatusSelectionInspector");
         xaml.Should().Contain("ClusterStatusActionInspector");
-        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+        // The shell Refresh reloads cluster status; the page keeps no Refresh button of its own.
+        xaml.Should().NotContain("ClusterStatusRefreshButton");
     }
 
     [Fact]

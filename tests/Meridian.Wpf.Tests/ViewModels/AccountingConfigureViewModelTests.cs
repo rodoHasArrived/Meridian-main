@@ -1762,7 +1762,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("ManualJournalLedgerImpactGrid");
         xaml.Should().Contain("ManualJournalReportOutputGrid");
         xaml.Should().Contain("Report Output Route");
-        xaml.Should().Contain("ToolTip=\"{Binding StatusText}\"");
+        // The status tooltip belonged to the removed page Refresh button.
+        xaml.Should().NotContain("ToolTip=\"{Binding StatusText}\"");
         xaml.Should().Contain("ToolTip=\"{Binding ConfigurationDetailText}\"");
         xaml.Should().Contain("ToolTip=\"{Binding CloseDetailText}\"");
         xaml.Should().Contain("ToolTip=\"{Binding PostingCandidateDetailText}\"");

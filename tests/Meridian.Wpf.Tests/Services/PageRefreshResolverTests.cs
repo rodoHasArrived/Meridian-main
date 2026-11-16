@@ -96,6 +96,8 @@ public sealed class PageRefreshResolverTests
         {
             var command = new CountingCommand();
             var frame = new Frame { Content = new Page { DataContext = new ConventionalTarget(command) } };
+            // A frame navigates to its content asynchronously; it hosts the page once the dispatcher has run.
+            RunMatUiAutomationFacade.DrainDispatcher();
 
             PageRefreshResolver.Resolve(frame).Should().BeSameAs(command);
             PageRefreshResolver.Resolve(new Frame()).Should().BeNull();
