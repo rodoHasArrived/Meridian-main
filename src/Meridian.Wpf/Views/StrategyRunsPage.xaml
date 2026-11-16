@@ -68,20 +68,6 @@
                 </StackPanel>
 
                 <WrapPanel Grid.Column="2" MaxWidth="320" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <Button AutomationProperties.AutomationId="StrategyRunsRefreshButton"
-                            Command="{Binding RefreshCommand}"
-                            Style="{DynamicResource SecondaryButtonStyle}"
-                            ToolTip="{Binding StatusText}"
-                            ToolTipService.ShowOnDisabled="True"
-                            Margin="0,0,8,8">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{StaticResource IconRefresh}"
-                                       FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                       FontSize="14"
-                                       VerticalAlignment="Center" />
-                            <TextBlock Text="Refresh" Margin="8,0,0,0" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
                     <Button AutomationProperties.AutomationId="StrategyRunsOpenDetailButton"
                             Command="{Binding OpenDetailCommand}"
                             Style="{DynamicResource PrimaryButtonStyle}"

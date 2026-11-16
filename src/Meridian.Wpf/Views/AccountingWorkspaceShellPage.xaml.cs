@@ -7,6 +7,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Ui.Shared.Services;
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -118,12 +119,12 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
             {
                 ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
                 {
-                    WorkspaceTitle = "Accounting Workspace",
-                    WorkspaceSubtitle = "Organization-aware review shell for operations, accounting, reconciliation, reporting, and audit posture.",
+                    WorkspaceTitle = WorkspaceCopyCatalog.Accounting.ShellTitle,
+                    WorkspaceSubtitle = WorkspaceCopyCatalog.Accounting.ShellSubtitleNoFund,
                     PrimaryScopeLabel = "Context",
-                    PrimaryScopeValue = operatingContext?.DisplayName ?? "Awaiting fund-linked scope",
-                    AsOfValue = "Awaiting fund-linked scope",
-                    FreshnessValue = operatingContext is null ? "No active operating context" : $"{operatingContext.ScopeKind.ToDisplayName()} selected",
+                    PrimaryScopeValue = operatingContext?.DisplayName ?? WorkspaceCopyCatalog.Scope.NoneSelected,
+                    AsOfValue = WorkspaceCopyCatalog.Scope.NoneSelected,
+                    FreshnessValue = operatingContext is null ? WorkspaceCopyCatalog.Scope.NoneSelected : $"{operatingContext.ScopeKind.ToDisplayName()} selected",
                     ReviewStateLabel = "Access",
                     ReviewStateValue = "Locked",
                     ReviewStateTone = WorkspaceTone.Warning,
@@ -136,7 +137,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
                 CommandBar.CommandGroup = ViewModel.CommandGroup;
                 NoFundEmptyState.Visibility = Visibility.Visible;
                 AttentionQueueScrollViewer.Visibility = Visibility.Collapsed;
-                QueueScopeBadgeText.Text = operatingContext?.DisplayName ?? "Awaiting fund-linked scope";
+                QueueScopeBadgeText.Text = operatingContext?.DisplayName ?? WorkspaceCopyCatalog.Scope.NoneSelected;
                 QueueSummaryText.Text = "Accounting queues unlock after a fund-linked operating context is selected.";
                 var workflow = await workflowSummaryTask.ConfigureAwait(true);
                 ApplyFinancialOperationsWorkflowCheckpoint(
@@ -178,8 +179,8 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
 
             ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
             {
-                WorkspaceTitle = "Accounting Workspace",
-                WorkspaceSubtitle = "Review operations, accounting, reconciliations, reporting, and approval gates without leaving the workstation shell.",
+                WorkspaceTitle = WorkspaceCopyCatalog.Accounting.ShellTitle,
+                WorkspaceSubtitle = WorkspaceCopyCatalog.Accounting.ShellSubtitleFund,
                 PrimaryScopeLabel = "Accounting Scope",
                 PrimaryScopeValue = operatingContext?.DisplayName ?? $"{profile.DisplayName} · {profile.BaseCurrency}",
                 AsOfValue = FormatHelpers.FormatUtcTimestamp(ledger?.AsOf, "Awaiting ledger snapshot"),
@@ -419,7 +420,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
 
     private void PopulateInspector(WorkstationOperatingContext? operatingContext, FundProfileDetail? profile, FundLedgerSummary? ledger, ReconciliationSummary? reconciliation, CashFinancingSummary? cash, IReadOnlyList<NotificationHistoryItem> notifications)
     {
-        FundSummaryTitleText.Text = operatingContext?.DisplayName ?? profile?.DisplayName ?? "No operating context selected";
+        FundSummaryTitleText.Text = operatingContext?.DisplayName ?? profile?.DisplayName ?? WorkspaceCopyCatalog.Scope.NoneSelected;
         FundSummaryDetailText.Text = profile is null ? "Switch to a fund-linked operating context to unlock operations, accounting, reconciliation, reporting, and audit review." : $"{profile.LegalEntityName} · {profile.BaseCurrency} · default {profile.DefaultLedgerScope}";
         FundSummaryMetaText.Text = ledger is null ? "No current ledger snapshot." : $"As of {ledger.AsOf:MMM dd yyyy HH:mm} · {ledger.EntityCount} entities · {ledger.VehicleCount} vehicles";
         SummaryCashText.Text = cash is null || cash.TotalCash == 0m ? "-" : cash.TotalCash.ToString("C0");

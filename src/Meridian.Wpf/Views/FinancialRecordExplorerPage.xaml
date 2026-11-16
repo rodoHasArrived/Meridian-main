@@ -70,13 +70,6 @@
                                 VerticalAlignment="Center"
                                 AutomationProperties.AutomationId="FinancialRecordExplorerActionPosture">
                         <WrapPanel HorizontalAlignment="Right">
-                            <Button Content="Refresh"
-                                    Command="{Binding RefreshCommand}"
-                                    ToolTip="{Binding RefreshTooltip}"
-                                    ToolTipService.ShowOnDisabled="True"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    AutomationProperties.AutomationId="FinancialRecordExplorerRefreshButton"
-                                    Margin="0,0,8,8" />
                         </WrapPanel>
                         <TextBlock Text="{Binding EmptyStateTitle}"
                                    FontSize="12"

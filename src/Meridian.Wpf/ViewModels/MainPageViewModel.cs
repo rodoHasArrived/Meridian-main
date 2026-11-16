@@ -1790,7 +1790,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         var hasOperatingContext = _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null;
         var blocker = hasOperatingContext
             ? new WorkflowBlockerSummary("fallback", "Fallback summary", "Shared workflow guidance is using deterministic fallback text.", WorkspaceTone.Info, false)
-            : new WorkflowBlockerSummary("choose-context", "No operating context selected", "Choose a context to unlock workflow guidance.", WorkspaceTone.Warning, true);
+            : new WorkflowBlockerSummary("choose-context", Meridian.Wpf.Copy.WorkspaceCopyCatalog.Scope.NoneSelected, "Choose a context to unlock workflow guidance.", WorkspaceTone.Warning, true);
 
         return ShellNavigationCatalog.Workspaces
             .Select(workspace => new WorkspaceWorkflowSummary(
@@ -1914,7 +1914,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     {
         var scopeValue = ActiveFundVisibility == Visibility.Visible
             ? $"{ActiveFundName} · {ActiveFundSubtitle}"
-            : "No operating context selected";
+            : Meridian.Wpf.Copy.WorkspaceCopyCatalog.Scope.NoneSelected;
 
         return new WorkspaceShellContext
         {

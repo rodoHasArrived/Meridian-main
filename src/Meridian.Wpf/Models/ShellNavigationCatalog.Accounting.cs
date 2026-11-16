@@ -1,3 +1,4 @@
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Features.Reporting.Shell;
 using Meridian.Wpf.Features.Settings.Shell;
 using Meridian.Wpf.Views;
@@ -8,7 +9,7 @@ public static partial class ShellNavigationCatalog
 {
     private static readonly ShellPageDescriptor[] AccountingPages =
     [
-        Page<AccountingWorkspaceShellPage>("AccountingShell", "Accounting Workspace", "Review ledger, cash, reconciliation, trial balance, and audit workflows.", "accounting", "Launchpad", "\uE8D7", 0, ShellNavigationVisibilityTier.Primary, ["accounting", "ledger", "workspace", "control"], ["FundLedger", "FundReconciliation", "FundTrialBalance", "FundAuditTrail"], LegacyAccountingShellAliases),
+        Page<AccountingWorkspaceShellPage>("AccountingShell", "Accounting Workspace", WorkspaceCopyCatalog.Accounting.ShellSubtitleNoFund, "accounting", "Launchpad", "\uE8D7", 0, ShellNavigationVisibilityTier.Primary, ["accounting", "ledger", "workspace", "control"], ["FundLedger", "FundReconciliation", "FundTrialBalance", "FundAuditTrail"], LegacyAccountingShellAliases),
         Page<FundStructureSetupPage>("FundStructureSetup", "Entity setup", "Create fund-structure entities, ownership links, and account handoff drafts.", "accounting", "Fund Ops", "\uE8EF", 5, ShellNavigationVisibilityTier.Primary, ["entity setup", "fund structure", "onboarding", "ownership"], ["FundLedger", "FundAccounts"], ["EntitySetup"]),
         Page<FundLedgerPage>("FundLedger", "Fund operations", "Review journal, account, and accounting readiness in one view.", "accounting", "Fund Ops", "\uE82D", 10, ShellNavigationVisibilityTier.Primary, ["fund ledger", "journal", "operations", "close readiness"], ["FundAccounts", "FundTrialBalance", "FundAuditTrail", "FundStructureSetup", "OperationsContinuity"], ["FundOperations", "OperationsClose"]),
         Page<OperationsContinuityPage>("OperationsContinuity", "Operations continuity", "Review continuity workflows, gates, close calendar, and governed approval policy.", "accounting", "Fund Ops", "\uE7C3", 12, ShellNavigationVisibilityTier.Primary, ["operations continuity", "close workflow", "gates", "close calendar", "approval policy", "operator queue"], ["FundLedger", "FundAccountingClose", "FundReconciliation", "OperationsRecordRelease"]),
@@ -28,7 +29,7 @@ public static partial class ShellNavigationCatalog
 
     private static readonly ShellPageDescriptor[] ReportingPages =
     [
-        Page<ReportingWorkspaceShellPage>("ReportingShell", "Reporting Workspace", "Prepare report packs, dashboards, analysis exports, and export presets.", "reporting", "Launchpad", "\uE8A5", 0, ShellNavigationVisibilityTier.Primary, ["reporting", "reports", "workspace", "export"], ["FundReportPack", "ReportRunStatus", "ReportLineProvenanceExplorer", "Dashboard", "AnalysisExport", "ExportPresets"]),
+        Page<ReportingWorkspaceShellPage>("ReportingShell", "Reporting Workspace", WorkspaceCopyCatalog.Reporting.ShellSubtitle, "reporting", "Launchpad", "\uE8A5", 0, ShellNavigationVisibilityTier.Primary, ["reporting", "reports", "workspace", "export"], ["FundReportPack", "ReportRunStatus", "ReportLineProvenanceExplorer", "Dashboard", "AnalysisExport", "ExportPresets"]),
         Page<FundLedgerPage>("FundReportPack", "Fund report pack", "Preview report packs and downstream handoff readiness.", "reporting", "Report Packs", "\uE8A5", 10, ShellNavigationVisibilityTier.Primary, ["report pack", "reporting", "board pack"], ["ReportRunStatus", "ReportLineProvenanceExplorer", "FundCashFinancing", "FundAuditTrail", "FundTrialBalance"]),
         Page<DashboardPage>("ReportRunStatus", "Report run status", "Review run manifests, approval gates, retry audits, and dataset lineage.", "reporting", "Report Packs", "\uE9D9", 15, ShellNavigationVisibilityTier.Primary, ["report status", "approval", "lineage", "audit", "schedule"], ["FundReportPack", "ReportLineProvenanceExplorer", "Dashboard", "FundAuditTrail"]),
         Page<EvidenceWorkbenchPage>("EvidenceWorkbench", "Evidence packets", "Review evidence packets, proof chains, lineage, and retained vault documents.", "reporting", "Report Packs", "\uE8D7", 16, ShellNavigationVisibilityTier.Primary, ["evidence", "workbench", "packet", "proof chain", "lineage", "vault", "manifest", "audit"], ["FundAuditTrail", "ReportLineProvenanceExplorer", "FundReportPack"]),

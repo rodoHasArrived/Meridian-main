@@ -203,7 +203,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
 
     private string _statusText = "Select a fund-linked context to load accounting configuration.";
 
-    private string _activeFundText = "No fund selected";
+    private string _activeFundText = Meridian.Wpf.Copy.WorkspaceCopyCatalog.Scope.NoneSelected;
 
     private string _storagePostureText = "Storage has not been inspected.";
 
@@ -1765,7 +1765,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         _selectedDraft = null;
         _newManualJournalDraftId = Guid.NewGuid();
         _newManualJournalDraftTimestamp = DateTimeOffset.UtcNow;
-        ActiveFundText = "No fund selected";
+        ActiveFundText = Meridian.Wpf.Copy.WorkspaceCopyCatalog.Scope.NoneSelected;
         ConfigurationStatusText = "Locked";
         ConfigurationDetailText = "Select a fund-linked context before configuring chart accounts, templates, rules, or manual journal entries.";
         RulesStudioStatusText = "Locked";

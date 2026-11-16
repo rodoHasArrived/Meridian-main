@@ -138,7 +138,6 @@
                             <Button Content="Report Pack" Command="{Binding OpenReportPackCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
                             <Button Content="Reconciliation" Command="{Binding OpenReconciliationCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,8" />
                             <Button Content="Switch Fund" Command="{Binding SwitchFundCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,8" />
-                            <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,0,8" />
                         </WrapPanel>
                     </StackPanel>
                 </Grid>

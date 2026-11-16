@@ -88,13 +88,6 @@
                                 VerticalAlignment="Center"
                                 AutomationProperties.AutomationId="OperatorReadinessConsoleActionPosture">
                         <WrapPanel HorizontalAlignment="Right">
-                            <Button Content="Refresh"
-                                    Command="{Binding RefreshCommand}"
-                                    ToolTip="Reload readiness, inbox, reconciliation, and run sources."
-                                    ToolTipService.ShowOnDisabled="True"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    AutomationProperties.AutomationId="OperatorReadinessConsoleRefreshButton"
-                                    Margin="0,0,8,8" />
                             <Button Content="Open trading"
                                     Command="{Binding OpenPageCommand}"
                                     CommandParameter="TradingShell"

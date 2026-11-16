@@ -1,3 +1,4 @@
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Models;
@@ -6,7 +7,7 @@ public static partial class ShellNavigationCatalog
 {
     private static readonly ShellPageDescriptor[] StrategyPages =
     [
-        Page<StrategyWorkspaceShellPage>("StrategyShell", "Strategy Workspace", "Monitor strategy priorities, review watchlists, and open run workflows.", "strategy", "Launchpad", "\uEC35", 0, ShellNavigationVisibilityTier.Primary, ["strategy", "research", "home", "workspace", "monitor"], ["StrategyRuns", "Backtest", "RunDetail", "TradingShell"], LegacyStrategyShellAliases),
+        Page<StrategyWorkspaceShellPage>("StrategyShell", "Strategy Workspace", WorkspaceCopyCatalog.Strategy.ShellSubtitle, "strategy", "Launchpad", "\uEC35", 0, ShellNavigationVisibilityTier.Primary, ["strategy", "research", "home", "workspace", "monitor"], ["StrategyRuns", "Backtest", "RunDetail", "TradingShell"], LegacyStrategyShellAliases),
         Page<BacktestPage>("Backtest", "Backtest", "Configure simulation inputs and launch backtest runs.", "strategy", "Studio", "\uEC35", 10, ShellNavigationVisibilityTier.Primary, ["simulation", "backtest", "configure", "scenario"], ["StrategyRuns", "RunDetail", "RunPortfolio", "LeanIntegration", "LiveData", "PortfolioImport"], ["BacktestStudio"]),
         Page<StrategyRunsPage>("StrategyRuns", "Strategy runs", "Review active and completed runs, then compare outcomes.", "strategy", "Studio", "\uE8FD", 20, ShellNavigationVisibilityTier.Primary, ["runs", "review", "compare", "history"], ["RunDetail", "RunPortfolio", "RunLedger", "TradingShell"], ["RunBrowser"]),
         Page<RunDetailPage>("RunDetail", "Run detail", "Review diagnostics and execution details for a selected run.", "strategy", "Inspectors", "\uE8A5", 30, ShellNavigationVisibilityTier.Primary, ["detail", "diagnostics", "review"], ["RunPortfolio", "RunLedger", "RunCashFlow"], ["SimulationDetail"]),
