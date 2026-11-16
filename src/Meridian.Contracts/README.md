@@ -487,6 +487,12 @@ fund or entity the caller may not see is null, and every list may be empty. On a
 fund or entity that exists but is not visible to the caller; they never carry its id or name. Its source-generated
 `WorkstationScopeOptionsJsonContext` is registered in the Ui.Shared endpoint JSON options.
 
+`Workstation/PerformanceReturnDtos.cs` defines `PerformanceReturnFigureDto`, the single labeled
+return figure (W10-PERF-001): convention, status (`Reported`, `ProForma`, `ReviewRequired`),
+period, currency, source and reasons, with a null `Value` whenever no single number may be shown.
+`BrokeragePortfolioPerformanceDto` carries it as the optional trailing `ReturnFigures` list rather
+than a parallel performance contract; `CashAdjustedReturn` keeps its original arithmetic.
+
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser
 and WPF Accounting queues. It carries retained schedule/template versions, source evidence
 references, authoritative draft approval status, blockers, lock owner and governed reopen path.

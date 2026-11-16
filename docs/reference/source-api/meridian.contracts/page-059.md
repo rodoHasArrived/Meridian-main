@@ -314,7 +314,7 @@ public sealed record FreezeOnboardingPacketRequestDto(int ExpectedVersion);
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundAccountBrokerageBalanceSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:208](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L208).
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:212](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L212).
 
 ```csharp
 public sealed record FundAccountBrokerageBalanceSnapshotDto(decimal Cash, decimal Equity, decimal BuyingPower, string Currency, decimal MarginBalance);
@@ -324,7 +324,7 @@ public sealed record FundAccountBrokerageBalanceSnapshotDto(decimal Cash, decima
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundAccountBrokerageCashTransactionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:262](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L262).
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:266](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L266).
 
 ```csharp
 public sealed record FundAccountBrokerageCashTransactionDto(string TransactionId, string TransactionType, decimal Amount, string Currency, DateTimeOffset PostedAt, string? Symbol = null, string? Description = null);
@@ -334,7 +334,7 @@ public sealed record FundAccountBrokerageCashTransactionDto(string TransactionId
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundAccountBrokerageCorporateActionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:271](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L271).
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:275](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L275).
 
 ```csharp
 public sealed record FundAccountBrokerageCorporateActionDto(string EventId, string EventType, string? Symbol, DateOnly? EffectiveDate, DateOnly? ExDate, decimal? Amount = null, decimal? Quantity = null, decimal? Factor = null, string? Currency = null, string? Description = null);
@@ -344,7 +344,7 @@ public sealed record FundAccountBrokerageCorporateActionDto(string EventId, stri
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundAccountBrokerageFillDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:250](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L250).
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:254](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L254).
 
 ```csharp
 public sealed record FundAccountBrokerageFillDto(string FillId, string? OrderId, string Symbol, string Side, decimal Quantity, decimal Price, DateTimeOffset FilledAt, string? Venue = null, decimal? Commission = null, decimal? RealizedPnl = null);
@@ -354,7 +354,7 @@ public sealed record FundAccountBrokerageFillDto(string FillId, string? OrderId,
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundAccountBrokerageOrderDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:236](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L236).
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:240](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L240).
 
 ```csharp
 public sealed record FundAccountBrokerageOrderDto(string OrderId, string? ClientOrderId, string Symbol, string Side, string Type, string Status, decimal Quantity, decimal FilledQuantity, decimal? LimitPrice, decimal? StopPrice, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt = null);
@@ -364,7 +364,7 @@ public sealed record FundAccountBrokerageOrderDto(string OrderId, string? Client
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundAccountBrokeragePositionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:215](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L215).
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:219](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L219).
 
 ```csharp
 public sealed record FundAccountBrokeragePositionDto(string Symbol, decimal Quantity, decimal AverageEntryPrice, decimal MarketPrice, decimal MarketValue, decimal UnrealizedPnl, string AssetClass, WorkstationSecurityReference? Security, string? Description = null, string? PositionId = null, string? Currency = null, MarkFreshnessAssessmentDto? MarkFreshness = null)
@@ -374,14 +374,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:230](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L230) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? ValuationBasis { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:233](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L233) | ProviderReported, CostDerived, or Unavailable; a cost proxy is not an observed mark. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:234](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L234) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? ValuationBasis { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:237](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L237) | ProviderReported, CostDerived, or Unavailable; a cost proxy is not an observed mark. |
 
 ## FundAccountBrokerageSyncActivityDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundAccountBrokerageSyncActivityDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:283](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L283).
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:287](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L287).
 
 ```csharp
 public sealed record FundAccountBrokerageSyncActivityDto(Guid FundAccountId, WorkstationBrokerageAccountLinkDto Link, WorkstationBrokerageSyncStatusDto Status, FundAccountBrokerageBalanceSnapshotDto? Balance, IReadOnlyList<FundAccountBrokeragePositionDto> Positions, IReadOnlyList<FundAccountBrokerageOrderDto> Orders, IReadOnlyList<FundAccountBrokerageFillDto> Fills, IReadOnlyList<FundAccountBrokerageCashTransactionDto> CashTransactions, DateTimeOffset SyncedAt, string RawSnapshotPath, string ProjectionPath, IReadOnlyList<FundAccountBrokerageCorporateActionDto>? CorporateActions = null);
@@ -391,7 +391,7 @@ public sealed record FundAccountBrokerageSyncActivityDto(Guid FundAccountId, Wor
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundAccountCloseReadinessActionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:581](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L581).
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:585](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L585).
 
 ```csharp
 public sealed record FundAccountCloseReadinessActionDto(string Code, string Label, string Severity, string? RouteHint = null);
@@ -401,7 +401,7 @@ public sealed record FundAccountCloseReadinessActionDto(string Code, string Labe
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundAccountCloseReadinessBlockerDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:573](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L573).
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:577](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L577).
 
 ```csharp
 public sealed record FundAccountCloseReadinessBlockerDto(string Code, string Category, string Severity, string Message, string? RouteHint = null, string? EvidenceLink = null);
@@ -411,7 +411,7 @@ public sealed record FundAccountCloseReadinessBlockerDto(string Code, string Cat
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundAccountCloseReadinessComponentDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:559](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L559).
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:563](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L563).
 
 ```csharp
 public sealed record FundAccountCloseReadinessComponentDto(string Key, string Label, FundAccountCloseReadinessStatusDto Status, int Score, int Weight, string Severity, string Reason, string? RouteHint = null, string? EvidenceLink = null)
@@ -421,13 +421,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string BlockingReason =&gt; …;</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:570](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L570) |  |
+| <code>public string BlockingReason =&gt; …;</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:574](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L574) |  |
 
 ## FundAccountCloseReadinessDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundAccountCloseReadinessDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:587](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L587).
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:591](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L591).
 
 ```csharp
 public sealed record FundAccountCloseReadinessDto(Guid AccountId, DateTimeOffset EvaluatedAtUtc, FundAccountCloseReadinessStatusDto Status, bool IsReadyToClose, int Score, DateTimeOffset? LatestProviderSyncedAt, DateOnly? LatestLedgerAsOfDate, Guid? LatestReconciliationRunId, IReadOnlyList<FundAccountCloseReadinessComponentDto> Components, IReadOnlyList<FundAccountCloseReadinessBlockerDto> Blockers, IReadOnlyList<FundAccountCloseReadinessActionDto> NextActions);
@@ -437,7 +437,7 @@ public sealed record FundAccountCloseReadinessDto(Guid AccountId, DateTimeOffset
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundAccountCloseReadinessStatusDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:552](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L552).
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:556](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L556).
 
 ```csharp
 public enum FundAccountCloseReadinessStatusDto
@@ -447,9 +447,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Ready = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:554](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L554) |  |
-| <code>ReviewRequired = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:555](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L555) |  |
-| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:556](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L556) |  |
+| <code>Ready = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:558](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L558) |  |
+| <code>ReviewRequired = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:559](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L559) |  |
+| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:560](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L560) |  |
 
 ## FundAccountSummary
 
