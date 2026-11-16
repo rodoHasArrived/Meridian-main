@@ -1435,7 +1435,7 @@ describe("ReportingScreen", () => {
     expect(loading).toHaveAttribute("aria-busy", "true");
     expect(loading).toHaveAttribute("aria-live", "polite");
     expect(loading).toHaveClass("border-[var(--state-pending-bd)]", "bg-[var(--state-pending-bg)]");
-    expect(screen.getByText(/waiting for governed report-pack and export evidence/i)).toBeInTheDocument();
+    expect(screen.getByText(/waiting for report-pack and export evidence/i)).toBeInTheDocument();
     expect(screen.getByLabelText("Route Daily Reporting Cockpit")).toBeInTheDocument();
   });
 
