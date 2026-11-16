@@ -2539,16 +2539,16 @@ W12-CREDIT-001: planned; health green; evidence planned_evidence. Converge exist
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | ready_for_acceptance |
+| Status | accepted |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | complete |
-| Last reviewed | 2026-11-14 |
+| Last reviewed | 2026-11-15 |
 
 ### Current Summary
 
-W12-ENTITY-001: ready_for_acceptance; health green; evidence complete. Development verification recorded 2026-11-14 on hosted quality, PostgreSQL integration and Windows lanes (PR 3591), including legacy-book activation after a passing preflight; operator acceptance pending.
+W12-ENTITY-001: accepted; health green; evidence complete. Accepted by the repository owner on 2026-11-15 on the development verification recorded 2026-11-14 (hosted quality, PostgreSQL integration and Windows lanes, PR 3591). Synthetic evidence only; no live-provider or release claim.
 
 ### Status References
 
@@ -2680,16 +2680,16 @@ W12-ICACCRUAL-001: in_progress; health yellow; evidence in_progress. Fixed-rate 
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | ready_for_acceptance |
+| Status | accepted |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | complete |
-| Last reviewed | 2026-11-14 |
+| Last reviewed | 2026-11-15 |
 
 ### Current Summary
 
-W12-ICAGREE-001: ready_for_acceptance; health green; evidence complete. Development verification recorded 2026-11-14 on hosted quality, PostgreSQL integration and Windows lanes (PR 3591); operator acceptance pending. Profile owner approval still never replaces independent legal approval.
+W12-ICAGREE-001: accepted; health green; evidence complete. Accepted by the repository owner on 2026-11-15 on the development verification recorded 2026-11-14 (hosted quality, PostgreSQL integration and Windows lanes, PR 3591). Synthetic evidence only; no live-provider or release claim.
 
 ### Status References
 
@@ -2730,16 +2730,16 @@ W12-ICAGREE-001: ready_for_acceptance; health green; evidence complete. Developm
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | ready_for_acceptance |
+| Status | accepted |
 | Health | green |
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | complete |
-| Last reviewed | 2026-11-14 |
+| Last reviewed | 2026-11-15 |
 
 ### Current Summary
 
-W12-ICINCOME-001: ready_for_acceptance; health green; evidence complete. Development verification recorded 2026-11-14 on hosted quality and PostgreSQL integration lanes (PR 3591); operator acceptance pending. Populations above two entities are proven for w10-v2 only; investment/equity elimination stays unsupported.
+W12-ICINCOME-001: accepted; health green; evidence complete. Accepted by the repository owner on 2026-11-15 on the development verification recorded 2026-11-14 (PR 3591). Populations above two entities are proven for w10-v2 only; investment/equity elimination stays unsupported.
 
 ### Status References
 
@@ -2775,16 +2775,16 @@ W12-ICINCOME-001: ready_for_acceptance; health green; evidence complete. Develop
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | ready_for_acceptance |
+| Status | accepted |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | complete |
-| Last reviewed | 2026-11-14 |
+| Last reviewed | 2026-11-15 |
 
 ### Current Summary
 
-W12-ICPAIR-001: ready_for_acceptance; health green; evidence complete. Development verification recorded 2026-11-14 on hosted quality, PostgreSQL integration and Windows lanes (PR 3591); operator acceptance pending. Delivery never posts; repricing and break reads check tenant, not company, at the service.
+W12-ICPAIR-001: accepted; health green; evidence complete. Accepted by the repository owner on 2026-11-15 on the development verification recorded 2026-11-14 (PR 3591). Delivery never posts; repricing and break reads check tenant, not company, at the service. Synthetic evidence only.
 
 ### Status References
 
