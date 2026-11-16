@@ -529,12 +529,15 @@ public sealed class BrokeragePortfolioSyncService
         var cashByDate = cashEntries
             .GroupBy(static entry => DateOnly.FromDateTime(entry.PostedAt.UtcDateTime))
             .ToDictionary(static group => group.Key, static group => group.Sum(entry => entry.Amount));
+        static decimal Equity(AccountBalanceSnapshotDto snapshot)
+            => snapshot.CashBalance + (snapshot.SecuritiesMarketValue ?? 0m)
+                + (HasDisjointBalanceComponents(snapshot.Source) ? snapshot.AccruedInterest ?? 0m : 0m);
+
         var points = timeline
             .OrderBy(static snapshot => snapshot.AsOfDate)
             .Select(snapshot => new BrokeragePortfolioPerformancePointDto(
                 snapshot.AsOfDate,
-                snapshot.CashBalance + (snapshot.SecuritiesMarketValue ?? 0m)
-                    + (HasDisjointBalanceComponents(snapshot.Source) ? snapshot.AccruedInterest ?? 0m : 0m),
+                Equity(snapshot),
                 snapshot.CashBalance,
                 cashByDate.GetValueOrDefault(snapshot.AsOfDate)))
             .ToArray();
@@ -574,7 +577,13 @@ public sealed class BrokeragePortfolioSyncService
             CashAdjustedReturn: cashAdjustedReturn,
             CashAdjustedReturnPercent: cashAdjustedReturnPercent,
             Points: points,
-            Warnings: warnings);
+            Warnings: warnings,
+            ReturnFigures: PerformanceReturnFigures.MeasureBrokerage(
+                timeline.Select(static snapshot => (snapshot.AsOfDate, Equity(snapshot), snapshot.Currency)),
+                cashEntries,
+                projection?.Balance?.Currency
+                    ?? timeline.Select(static snapshot => snapshot.Currency).FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))
+                    ?? "USD"));
     }
 
     public async Task<BrokerageCashFlowSummaryDto> GetCashFlowAsync(

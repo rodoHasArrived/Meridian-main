@@ -63,7 +63,7 @@ Snapshot date: 2026-11-12
 | W10-SEAM-001 | Unified close-readiness projection behind one shared contract | in_progress | green | high | Workstation Shell and UX |
 | W10-RECON-003 | Unified tolerance model and what-if replay workbench | planned | green | medium | Accounting and Ledger |
 | W10-RECON-004 | Operator-taught match rules with promotion gate | planned | green | medium | Accounting and Ledger |
-| W10-PERF-001 | Portfolio and investor return measurement | planned | green | high | Accounting and Ledger |
+| W10-PERF-001 | Portfolio and investor return measurement | in_progress | green | high | Accounting and Ledger |
 | W10-CONSOL-001 | Intercompany elimination on consolidated ledger views | planned | green | medium | Accounting and Ledger |
 | W10-LOT-002 | Security-identified open-lot convergence | in_progress | green | critical | Accounting and Ledger |
 | W11-PASSPORT-001 | Number Passport contract across amount surfaces | planned | green | high | Workstation Shell and UX |
