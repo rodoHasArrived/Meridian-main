@@ -96,7 +96,14 @@ public sealed class PageRefreshResolverTests
         {
             var command = new CountingCommand();
             var frame = new Frame { Content = new Page { DataContext = new ConventionalTarget(command) } };
+            // A frame navigates to its content asynchronously, so Content stays null until the dispatcher
+            // has processed that navigation. The shell only ever resolves a frame that has finished navigating.
+            for (var attempt = 0; attempt < 20 && frame.Content is null; attempt++)
+            {
+                frame.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+            }
 
+            frame.Content.Should().NotBeNull("the frame must finish navigating to its page before it is resolved");
             PageRefreshResolver.Resolve(frame).Should().BeSameAs(command);
             PageRefreshResolver.Resolve(new Frame()).Should().BeNull();
         });
