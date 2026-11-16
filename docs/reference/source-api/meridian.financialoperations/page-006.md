@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IStatementFetchScheduleStore
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementFetchScheduleStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L48).
+
+Maintains statement fetch schedules and records their run and failure outcomes.
+
+```csharp
+public interface IStatementFetchScheduleStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;StatementFetchSchedule&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:50](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L50) |  |
+| <code>Task&lt;StatementFetchSchedule&gt; UpsertAsync(StatementFetchSchedule schedule, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:51](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L51) |  |
+| <code>Task&lt;bool&gt; DeleteAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:52](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L52) |  |
+| <code>Task RecordRunAsync(string scheduleId, DateTimeOffset ranAtUtc, string status, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:53](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L53) |  |
+| <code>Task RecordFailureAsync(string scheduleId, DateTimeOffset attemptedAtUtc, string status, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:54](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L54) |  |
+
 ## IStatementImportCommitService
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementImportCommitService</code>. Kind: `interface`.
@@ -829,16 +851,4 @@ Request payload for ReconciliationEngineService.RunAsync.
 
 ```csharp
 public sealed record EngineReconciliationRequest(string PortfolioId, DateTimeOffset AsOf, IReadOnlyList<PortfolioPositionInput> PortfolioPositions, IReadOnlyDictionary<string, decimal> LedgerBalances, IEnumerable<SecurityLookupKey> SecurityIdentifiers, decimal AmountTolerance = 0.01m, int MaxAsOfDriftMinutes = 5);
-```
-
-## EngineReconciliationResult
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.EngineReconciliationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs:232](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs#L232).
-
-Result of a single reconciliation engine run.
-
-```csharp
-public sealed record EngineReconciliationResult(Guid RunId, string PortfolioId, DateTimeOffset AsOf, DateTimeOffset StartedAt, DateTimeOffset CompletedAt, int TotalChecks, int MatchCount, int BreakCount, PortfolioLedgerCheckResultDto[] Matches, PortfolioLedgerCheckResultDto[] Breaks, IReadOnlyDictionary<string, SecurityDetailDto> ResolvedSecurities);
 ```

@@ -6843,7 +6843,8 @@ Meridian-main
 │   │   │   ├── AccountingSystemIntegrationService.cs
 │   │   │   ├── AccountingSystemIntegrationService.Onboarding.cs
 │   │   │   ├── AccountingSystemIntegrationService.ProviderMetadata.cs
-│   │   │   └── AccountingSystemIntegrationService.Reconciliation.cs
+│   │   │   ├── AccountingSystemIntegrationService.Reconciliation.cs
+│   │   │   └── AccountingSystemIntegrationStateStore.cs
 │   │   ├── Banking
 │   │   │   ├── BankingException.cs
 │   │   │   ├── IBankingService.cs
@@ -8300,6 +8301,7 @@ Meridian-main
 │   │   │   ├── LedgerBalanceSnapshotExtensions.cs
 │   │   │   ├── LedgerBookServiceException.cs
 │   │   │   ├── LedgerCurrencyBackfill.cs
+│   │   │   ├── LedgerDurableBalanceRule.cs
 │   │   │   ├── LedgerJournalStoreHydrationExtensions.cs
 │   │   │   ├── LedgerJournalStoreOptions.cs
 │   │   │   ├── LedgerMigrationRunner.cs
@@ -12398,6 +12400,7 @@ Meridian-main
 │   │   ├── FillModelExpansionTests.cs
 │   │   ├── FillModelTests.cs
 │   │   ├── GlobalUsings.cs
+│   │   ├── LedgerIntegrityDisclosureTests.cs
 │   │   ├── LedgerIntegrityTests.cs
 │   │   ├── LedgerQueryTests.cs
 │   │   ├── LotLevelTrackingTests.cs
@@ -14418,6 +14421,7 @@ Meridian-main
 │   │   │   ├── LedgerCurrencyBackfillTests.cs
 │   │   │   ├── LedgerDatabaseFactAttribute.cs
 │   │   │   ├── LedgerDatabaseTestDiscoveryTests.cs
+│   │   │   ├── LedgerDurableBalanceRuleTests.cs
 │   │   │   ├── LedgerEventAuditPostgresTests.cs
 │   │   │   ├── LedgerJournalExporterTests.cs
 │   │   │   ├── LedgerJournalStoreHydrationTests.cs
@@ -14649,6 +14653,7 @@ Meridian-main
 │   │   │   ├── AccountingSystemIntegrationServiceTests.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.LiveProviders.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.Onboarding.cs
+│   │   │   ├── AccountingSystemIntegrationServiceTests.Persistence.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.StructuredFixture.cs
 │   │   │   ├── AccountingSystemIntercompanyControlsTests.cs
 │   │   │   ├── AggregatePortfolioExposureProviderTests.cs
