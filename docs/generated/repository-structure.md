@@ -6307,6 +6307,7 @@ Meridian-main
 │   │   │   ├── InvestmentAccountingTransactionLabDtos.cs
 │   │   │   ├── IOperatorInboxService.cs
 │   │   │   ├── IReportingRunNotifier.cs
+│   │   │   ├── KpiDefinitionDtos.cs
 │   │   │   ├── LedgerAmountProofDtos.cs
 │   │   │   ├── LedgerReconciliationContractCompatibility.cs
 │   │   │   ├── MarginControlCenterDtos.cs
@@ -9687,6 +9688,7 @@ Meridian-main
 │   │   │   │   │   ├── keymap.ts
 │   │   │   │   │   ├── kpi-context.test.tsx
 │   │   │   │   │   ├── kpi-context.tsx
+│   │   │   │   │   ├── kpi-registry.contract.test.ts
 │   │   │   │   │   ├── kpi-registry.test.ts
 │   │   │   │   │   ├── kpi-registry.ts
 │   │   │   │   │   ├── ledger-amount-proof-api.test.ts
@@ -9713,6 +9715,8 @@ Meridian-main
 │   │   │   │   │   ├── plaid-link.ts
 │   │   │   │   │   ├── portfolio-positions-table.test.ts
 │   │   │   │   │   ├── portfolio-positions-table.ts
+│   │   │   │   │   ├── position-source.test.ts
+│   │   │   │   │   ├── position-source.ts
 │   │   │   │   │   ├── position-value-graphic.test.ts
 │   │   │   │   │   ├── position-value-graphic.ts
 │   │   │   │   │   ├── positive-decimal.test.ts
@@ -11331,6 +11335,7 @@ Meridian-main
 │   │   │   ├── TradingOperatorReadinessService.cs
 │   │   │   ├── TradingOperatorReadinessService.Strategy.cs
 │   │   │   ├── UiConfigurationSaveGuard.cs
+│   │   │   ├── WorkstationKpiDefinitions.cs
 │   │   │   ├── WorkstationServiceCollectionExtensions.cs
 │   │   │   ├── WorkstationWorkflowReadScope.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
@@ -12311,6 +12316,8 @@ Meridian-main
 │   │   ├── fund-economics
 │   │   │   └── golden
 │   │   │       └── fund-economics-worked-examples.json
+│   │   ├── kpi-definitions
+│   │   │   └── kpi-definitions.json
 │   │   ├── portfolio
 │   │   │   ├── source-payloads
 │   │   │   │   ├── bank-statement-2026-06-04.csv
@@ -15032,6 +15039,7 @@ Meridian-main
 │   │   │   ├── WorkstationFinancialRecordExplorerEndpointTests.PreparerAttestation.cs
 │   │   │   ├── WorkstationFinancialRecordExplorerPersonalViewEndpointTests.cs
 │   │   │   ├── WorkstationFinancialRecordExplorerPersonalViewScopeTests.cs
+│   │   │   ├── WorkstationKpiDefinitionsTests.cs
 │   │   │   ├── WorkstationMaintenanceTableExportTests.cs
 │   │   │   ├── WorkstationMultiAssetCoverageEndpointsTests.cs
 │   │   │   ├── WorkstationPersonalTableViewStoreTests.cs

@@ -66,6 +66,30 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:905](../
 public sealed record WorkstationKernelObservabilityPayload(DateTimeOffset? UpdatedAtUtc, bool DeterminismChecksEnabled, int ActiveAlerts, int TotalAlerts, int Alerts, IReadOnlyList<WorkstationKernelDomainPayload> Domains);
 ```
 
+## WorkstationKpiDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKpiDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/KpiDefinitionDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/KpiDefinitionDtos.cs#L12).
+
+One headline figure&#x27;s identity. ComparisonBasis is null when the figure carries no change.
+
+```csharp
+public sealed record WorkstationKpiDefinitionDto(string Id, string Label, string Population, string? ComparisonBasis);
+```
+
+## WorkstationKpiDefinitionsDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKpiDefinitionsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/KpiDefinitionDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/KpiDefinitionDtos.cs#L9).
+
+The fixed definition of every workstation headline figure: the label it is shown under, the population it counts and what a change in it is measured against. The browser workstation&#x27;s lib/kpi-registry.ts and the WPF desktop read the same catalog, so a figure with the same name always covers the same group on every screen.
+
+```csharp
+public sealed record WorkstationKpiDefinitionsDto(IReadOnlyList<WorkstationKpiDefinitionDto> Definitions);
+```
+
 ## WorkstationMetricCard
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationMetricCard</code>. Kind: `record`.
@@ -520,28 +544,4 @@ One live guardrail from the enforced risk-rule registry, rendered as a utilizati
 
 ```csharp
 public sealed record WorkstationRiskGuardrail(string RuleName, string State, string CurrentValue, string Threshold, decimal? UtilizationPercent, string Severity);
-```
-
-## WorkstationRunDigest
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRunDigest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:115](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L115).
-
-Minimal run digest attached to session and strategy payloads. Fields match BuildRunDigest in WorkstationEndpoints.
-
-```csharp
-public sealed record WorkstationRunDigest(string RunId, string StrategyName, string Mode, string Status, string LastUpdated, bool HasLedger, bool HasPortfolio, WorkstationSecurityCoveragePayload SecurityCoverage);
-```
-
-## WorkstationRunDrillInLinks
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRunDrillInLinks</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L34).
-
-Shared drill-in links attached to strategy, trading, and accounting run records.
-
-```csharp
-public sealed record WorkstationRunDrillInLinks(string EquityCurve, string Fills, string Attribution, string? Ledger, string CashFlows, string Continuity, string Comparison);
 ```
