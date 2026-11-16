@@ -64,14 +64,14 @@ public sealed class EffectiveConfigurationProjectionTests
         var config = new AppConfig(
             Alpaca: new AlpacaOptions("sensitive-key-123", "sensitive-secret-456"),
             Backfill: new BackfillConfig(Providers: new BackfillProvidersConfig(
-                Polygon: new PolygonConfig(ApiKey: "sensitive-polygon-789"))));
+                Polygon: new PolygonConfig(ApiKey: "zzzz-zzzz-zzzz"))));
 
         var entries = EffectiveConfigurationProjection.Build(config, NoEnvironment);
 
         var json = JsonSerializer.Serialize(entries);
         json.Should().NotContain("sensitive-key-123")
             .And.NotContain("sensitive-secret-456")
-            .And.NotContain("sensitive-polygon-789");
+            .And.NotContain("zzzz-zzzz-zzzz");
         entries.Single(entry => entry.Key == "alpaca.secretKey").Source.Should().Be("config");
     }
 
