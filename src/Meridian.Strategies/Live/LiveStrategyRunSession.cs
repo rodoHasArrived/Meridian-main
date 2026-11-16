@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Threading.Channels;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Operations;
@@ -46,6 +48,14 @@ internal sealed class LiveStrategyRunSession
 
     /// <summary>How many times a cancellation that did not take is retried before giving up.</summary>
     private const int MaxCancellationAttempts = 3;
+
+    /// <summary>How often a stop re-checks whether OMS-accepted fills have reached the event loop.</summary>
+    private static readonly TimeSpan AcceptedFillDrainPollInterval = TimeSpan.FromMilliseconds(10);
+
+    // Cumulative fill quantity this session has received per submitted client order id. Written
+    // on the event loop, read by an operator stop comparing it with the OMS-accepted quantity.
+    private readonly ConcurrentDictionary<string, decimal> _receivedFillQuantities = new(StringComparer.Ordinal);
+    private int _eventLoopExited;
     private readonly LiveRunMetricsTracker _metrics;
     private readonly string _clientOrderIdPrefix;
 
@@ -359,6 +369,8 @@ internal sealed class LiveStrategyRunSession
         }
         finally
         {
+            Volatile.Write(ref _eventLoopExited, 1);
+
             // A directly hosted session owns its inbox. Engine-hosted sessions keep admission
             // open until FinishAsync closes and drains the engine's delivery worker.
             if (_closeReportAdmission is null)
@@ -559,6 +571,7 @@ internal sealed class LiveStrategyRunSession
             var request = MapOrder(order, clientOrderId);
             _ordersByClientId[clientOrderId] = order;
             _clientIdsByOrderId[order.OrderId] = clientOrderId;
+            _receivedFillQuantities[clientOrderId] = 0m;
 
             try
             {
@@ -655,6 +668,13 @@ internal sealed class LiveStrategyRunSession
         if (report.OrderStatus is ExecutionSdk.OrderStatus.Filled or ExecutionSdk.OrderStatus.PartiallyFilled
             && report.FilledQuantity > 0m)
         {
+            // Counted as received before any strategy callback runs: a stop draining accepted
+            // fills waits for delivery to this loop, not for the strategy to finish handling it.
+            _receivedFillQuantities.AddOrUpdate(
+                clientOrderId,
+                report.FilledQuantity,
+                (_, received) => received + report.FilledQuantity);
+
             if (report.FillPrice is not { } fillPrice)
             {
                 // The execution price is the venue's to state. Substituting the last market
@@ -807,6 +827,62 @@ internal sealed class LiveStrategyRunSession
         _clientIdsByOrderId.Remove(orderId);
         _parkedClientOrderIds.Remove(clientOrderId);
         _cancellationAttempts.Remove(orderId);
+        _receivedFillQuantities.TryRemove(clientOrderId, out _);
+    }
+
+    /// <summary>
+    /// Waits until every fill the order manager has already accepted for this run's orders has
+    /// reached the session's event loop. An operator stop calls this after closing outbound
+    /// admission and before closing report admission, so a fill that is between OMS acceptance
+    /// (and its accounting handoff) and engine delivery is applied to the run instead of being
+    /// rejected as undeliverable. Fills the venue has not yet produced are not waited for.
+    /// </summary>
+    /// <returns>
+    /// True when no accepted fill remains undelivered; false when the wait ended at
+    /// <paramref name="timeout"/>, because the event loop exited, or because the run is failing.
+    /// </returns>
+    internal async Task<bool> WaitForAcceptedFillDeliveryAsync(TimeSpan timeout, CancellationToken ct = default)
+    {
+        if (_useSynchronousFillFallback)
+        {
+            // Without an OMS report pump every fill is applied synchronously on placement.
+            return true;
+        }
+
+        var elapsed = Stopwatch.StartNew();
+        while (true)
+        {
+            if (!HasUndeliveredAcceptedFills())
+            {
+                return true;
+            }
+
+            bool failing;
+            lock (_stopSync)
+            {
+                failing = _requestedFailure is not null;
+            }
+
+            if (failing || Volatile.Read(ref _eventLoopExited) != 0 || elapsed.Elapsed >= timeout)
+            {
+                return false;
+            }
+
+            await Task.Delay(AcceptedFillDrainPollInterval, ct).ConfigureAwait(false);
+        }
+    }
+
+    private bool HasUndeliveredAcceptedFills()
+    {
+        foreach (var (clientOrderId, received) in _receivedFillQuantities)
+        {
+            if (_orderManager.GetOrder(clientOrderId) is { } accepted && accepted.FilledQuantity > received)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -1300,9 +1376,12 @@ internal sealed class LiveStrategyRunSession
         try
         {
             var latest = await _repository.GetRunByIdAsync(_run.RunId, CancellationToken.None).ConfigureAwait(false);
-            if (latest is { EndedAt: not null, LastLifecycleEvent: StrategyRunLifecycleEventType.Failed } && faulted is null)
+            if (latest is { EndedAt: not null, LastLifecycleEvent: StrategyRunLifecycleEventType.Failed })
             {
-                return RequireTerminalOutcome(latest, StrategyRunLifecycleEventType.Failed);
+                // Another owner (the engine's undeliverable-fill path) already retained this
+                // run's single Failed terminal. A second Failed append is never a valid
+                // transition, and rebuilding it would move the retained end timestamp.
+                return AdoptRetainedFailure(latest, faulted);
             }
 
             if (suspending)
@@ -1344,6 +1423,16 @@ internal sealed class LiveStrategyRunSession
                 return retainedOutcome;
             }
 
+            // The append can lose a race with the engine retaining Failed for an undeliverable
+            // fill. That retained failure is the run's terminal; a recovery warning appended on
+            // top of it would itself be an invalid Failed -> EvidencePersistenceFailed step.
+            retainedOutcome = await TryAdoptConcurrentRetainedFailureAsync(faulted ?? persistenceException)
+                .ConfigureAwait(false);
+            if (retainedOutcome is not null)
+            {
+                return retainedOutcome;
+            }
+
             var failure = CombineFailures(terminalFailure ?? priorPersistenceFailure, persistenceException)!;
             var warning = terminal.EvidencePersistenceFailed(
                 failure,
@@ -1369,6 +1458,38 @@ internal sealed class LiveStrategyRunSession
                     $"Run '{_run.RunId}' ended, but neither its terminal transition nor recovery warning could be retained.",
                     new AggregateException(failure, warningPersistenceException));
             }
+        }
+    }
+
+    private VerifiedOperationOutcome AdoptRetainedFailure(StrategyRunEntry retained, Exception? sessionFailure)
+    {
+        if (sessionFailure is not null &&
+            !string.Equals(retained.ExceptionMessage, sessionFailure.Message, StringComparison.Ordinal))
+        {
+            _logger.LogWarning(
+                sessionFailure,
+                "Run {RunId} already retained a Failed terminal ({RetainedFailure}); the session's own failure is logged only.",
+                _run.RunId,
+                retained.ExceptionMessage ?? retained.Reason);
+        }
+
+        return RequireTerminalOutcome(retained, StrategyRunLifecycleEventType.Failed);
+    }
+
+    private async Task<VerifiedOperationOutcome?> TryAdoptConcurrentRetainedFailureAsync(Exception sessionFailure)
+    {
+        try
+        {
+            var retained = await _repository.GetRunByIdAsync(_run.RunId, CancellationToken.None).ConfigureAwait(false);
+            return retained is { EndedAt: not null, LastLifecycleEvent: StrategyRunLifecycleEventType.Failed }
+                ? AdoptRetainedFailure(retained, sessionFailure)
+                : null;
+        }
+        catch (Exception verificationException)
+        {
+            _logger.LogWarning(verificationException,
+                "Run {RunId} retained failure could not be verified.", _run.RunId);
+            return null;
         }
     }
 
