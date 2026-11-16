@@ -864,6 +864,14 @@ function canonicalJson(value) {
 }
 
 /**
+ * A positions table is one whose accessible name says "positions" (the same test the capture
+ * probe applies in the page). "Position contributions" or an accounts table is not a position book.
+ */
+export function isPositionsTableLabel(label) {
+  return /\bpositions\b/i.test(String(label ?? ""));
+}
+
+/**
  * The status bar may say "up to date" only when neither the page's freshness fact nor the masthead
  * pill's source items (provenance, provider health) need review.
  */
@@ -1251,13 +1259,16 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     };
   });
   const statusContradictions = findStatusContradictions(statusProbe);
-  // Every positions table names its source (paper session, live holdings or a retained run).
+  // Every positions table names its source (paper session, live holdings, a brokerage household,
+  // the execution gateway or a retained run). A positions table is one whose own accessible name
+  // says "positions"; captions describe interaction and per-position breakdowns ("position
+  // contributions") are not position books.
   const positionSourceProbe = await page.evaluate(() =>
-    Array.from((document.querySelector("main") ?? document.body).querySelectorAll("table"))
+    Array.from((document.querySelector("main") ?? document.body).querySelectorAll("table[aria-label]"))
       .filter((table) => table.getClientRects().length > 0)
-      .filter((table) => /\bpositions?\b/i.test(`${table.getAttribute("aria-label") ?? ""} ${table.querySelector("caption")?.textContent ?? ""}`))
+      .filter((table) => /\bpositions\b/i.test(table.getAttribute("aria-label") ?? ""))
       .filter((table) => !table.closest("[data-position-source]"))
-      .map((table) => (table.getAttribute("aria-label") ?? table.querySelector("caption")?.textContent ?? "").replace(/\s+/g, " ").trim())
+      .map((table) => (table.getAttribute("aria-label") ?? "").replace(/\s+/g, " ").trim())
   );
   const unsourcedPositionTables = Array.isArray(positionSourceProbe) ? positionSourceProbe : [];
   // A clipped status badge ("OPE") reads as a different status. Badges are measured, not read:

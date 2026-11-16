@@ -4,7 +4,7 @@
  * session for the selected account; Portfolio shows live holdings across every account, or the
  * records retained by one run.
  */
-export type PositionSourceKind = "paper-session" | "live-session" | "live-holdings" | "retained-run";
+export type PositionSourceKind = "paper-session" | "live-session" | "live-holdings" | "retained-run" | "brokerage-household" | "execution-gateway";
 
 export interface PositionSource {
   kind: PositionSourceKind;
@@ -41,6 +41,18 @@ export function describeLiveHoldingsSource(): PositionSource {
 export function describeRetainedRunSource(runId: string | null | undefined, asOf: string | null | undefined): PositionSource {
   const parts = [runId?.trim() ? `run ${runId.trim()}` : null, asOf?.trim() ? `as of ${asOf.trim()}` : null].filter(Boolean);
   return { kind: "retained-run", accountRef: null, label: parts.length ? `Retained records · ${parts.join(" · ")}` : "Retained records" };
+}
+
+/** Positions a brokerage household reports for its accounts, e.g. "Alpaca paper household". */
+export function describeBrokerageHouseholdSource(providerLabel: string | null | undefined): PositionSource {
+  const provider = providerLabel?.trim();
+  return { kind: "brokerage-household", accountRef: null, label: provider ? `${provider} household` : "Brokerage household" };
+}
+
+/** The position book the execution gateway acts on, named as its provenance names it. */
+export function describeExecutionGatewaySource(provenanceLabel: string | null | undefined): PositionSource {
+  const label = provenanceLabel?.trim();
+  return { kind: "execution-gateway", accountRef: null, label: label ? `Execution gateway · ${label}` : "Execution gateway" };
 }
 
 /** Attributes the screenshot harness and tests read to confirm a positions table names its source. */

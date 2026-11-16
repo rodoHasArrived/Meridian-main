@@ -46,7 +46,7 @@
       ],
       "waitForTexts": [
         "Net P&L",
-        "Live positions",
+        "Source: Paper session",
         "Open orders",
         "Readiness checks"
       ]
@@ -75,7 +75,7 @@
         "/api/workstation/trading"
       ],
       "waitForTexts": [
-        "Live positions",
+        "Source: Paper session",
         "AAPL"
       ]
     },

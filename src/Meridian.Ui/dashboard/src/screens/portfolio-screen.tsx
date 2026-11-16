@@ -87,7 +87,7 @@ import { metricFreshnessFromTrustTone, withMetricContext } from "@/lib/metric-tr
 import { resolveFigureEvidence, resolveFigureScope, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { FigureDifferenceNote } from "@/components/meridian/figure-difference-note";
 import { buildPositionSourceDifferences, buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
-import { describeBrokerageSessionSource, describeLiveHoldingsSource, describeRetainedRunSource, positionSourceAttributes } from "@/lib/position-source";
+import { describeBrokerageHouseholdSource, describeBrokerageSessionSource, describeLiveHoldingsSource, describeRetainedRunSource, positionSourceAttributes } from "@/lib/position-source";
 import { withPortfolioMarkEvidence } from "@/screens/portfolio-screen.headline-evidence";
 import { toSeverity } from "@/design-system/status-styles";
 
@@ -1112,7 +1112,7 @@ function PortfolioScreenContent({
                 selectedRowId={brokerageInspector === "account" && vm.selectedBrokerageAccount.id !== "all" ? vm.selectedBrokerageAccount.id : null}
                 emptyText={vm.brokerageAccountEmptyText} ariaLabel={vm.brokerageAccountsTableLabel}
                 caption="Select an account to filter positions and update the shared brokerage inspector." />
-              {vm.hasBrokeragePositions ? <TableWorkbench workbenchId="portfolio-brokerage-positions"
+              {vm.hasBrokeragePositions ? <div {...positionSourceAttributes(describeBrokerageHouseholdSource(vm.brokerageProviderLabel))}><TableWorkbench workbenchId="portfolio-brokerage-positions"
                 sourceKey={`${location.search}:${vm.selectedBrokerageAccountKey}`}
                 columns={brokeragePositionColumns.map(column => ({ ...column, exportValue: (row: PortfolioBrokeragePositionRow) => ({
                   "mark-readiness": `${row.markFreshness.label}; ${row.markFreshness.observedOn}; ${row.markFreshness.age}`,
@@ -1132,7 +1132,7 @@ function PortfolioScreenContent({
                 onRowSelect={row => { setBrokerageInspector("position"); vm.selectBrokeragePosition(row.id); }}
                 selectedRowId={brokerageInspector === "position" ? vm.selectedBrokeragePositionId : null}
                 emptyText={vm.brokerageEmptyText} ariaLabel={vm.brokeragePositionsTableLabel}
-                caption="Select a position to update the shared brokerage inspector." /> :
+                caption="Select a position to update the shared brokerage inspector." /></div> :
                 <div role="status" className="text-sm text-muted-foreground">{vm.brokerageEmptyText}
                   {vm.brokerageSetupAction ? <><Button asChild variant="outline" size="sm"><Link to={vm.brokerageSetupAction.href} aria-label={vm.brokerageSetupAction.ariaLabel}>{vm.brokerageSetupAction.label}</Link></Button><p className="mt-2 text-xs">{vm.brokerageSetupAction.detail}</p></> : null}
                 </div>}

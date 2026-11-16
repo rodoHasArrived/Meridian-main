@@ -12,6 +12,7 @@ import {
   checkKpiConsistency,
   checkKpiLabelConsistency,
   findStatusContradictions,
+  isPositionsTableLabel,
   loadKpiDefinitions,
   collectKpiSnapshots,
   collectAllowedContentIssueKinds,
@@ -1022,4 +1023,12 @@ test("figures sharing a label and population must agree across ids and routes", 
     capture("/data", [kpi("data.providers-healthy", "0 of 3 providers")], "stale"),
     capture("/settings", [kpi("data.providers-healthy", "0 of 3 providers", "Providers visible to you")])
   ], definitions).conflicts.length, 0);
+});
+
+test("only tables named as positions books must name their source", () => {
+  assert.equal(isPositionsTableLabel("Execution blotter positions"), true);
+  assert.equal(isPositionsTableLabel("Alpaca paper current positions"), true);
+  assert.equal(isPositionsTableLabel("Alpaca paper brokerage accounts"), false);
+  assert.equal(isPositionsTableLabel("Retained account margin position contributions"), false);
+  assert.equal(isPositionsTableLabel(null), false);
 });
