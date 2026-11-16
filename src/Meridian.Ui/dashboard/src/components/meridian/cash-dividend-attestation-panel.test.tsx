@@ -87,7 +87,7 @@ describe("bounded native cash-dividend preparer attestation", () => {
     if (condition === "unknown-policy") value.policyVersion = "future-policy";
     vi.mocked(api.getCashDividendAttestationWorkspace).mockResolvedValue(value);
     render(<CashDividendAttestationPanel caseId={cashDividendCaseId} scope={cashDividendScope} />);
-    await screen.findByRole("button", { name: "Refresh cash-dividend controls" });
+    await screen.findByRole("region", { name: "Bounded cash-dividend preparer attestation" });
     await waitFor(() => expect(screen.queryByText(/Loading the native case/)).not.toBeInTheDocument());
     const button = screen.queryByRole("button", { name: "Attest this cash-dividend projection" });
     if (button) expect(button).toBeDisabled();

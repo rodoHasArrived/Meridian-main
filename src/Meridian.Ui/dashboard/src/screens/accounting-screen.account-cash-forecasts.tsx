@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormGrid, FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -172,7 +173,7 @@ function ScopedCashForecastsPanel({ scope, context, onDirtyChange }: AccountCash
             {history.map(item => <option key={item.snapshotId} value={item.snapshotId}>{item.inputs.periodStart} – {item.inputs.periodEnd} · {item.inputs.runId} · {item.inputs.previousSnapshotId ? "Correction" : "Original"} · {item.isCertified ? "Certified" : "Blocked"}</option>)}
           </Select>
         </FormRow>
-        <Button variant="outline" disabled={loading || busy !== null || preparing} onClick={() => setRevision(value => value + 1)}>Refresh cash history</Button>
+        <PanelReload reload={() => { if (!loading && busy === null && !preparing) setRevision(value => value + 1); }} failed={!loading && !historyAvailable} busy={busy !== null || preparing} what="cash forecast history" />
       </div>
       {loading ? <p role="status" className="text-sm">Loading authoritative cash forecast history…</p> : null}
       {!loading && !error && history.length === 0 ? <p role="status" className="text-sm">No cash forecasts retained for this account and book.</p> : null}

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { privateCapitalApi } from "@/lib/api/private-capital-records.api";
@@ -171,7 +172,7 @@ export function PrivateCapitalLifecyclePanel({ holderEntityIds, scopeKey = "", a
         <label className="text-sm">Group vehicles by<Select value={group} onChange={event => {
           const value = event.target.value === "strategy" ? "strategy" : "vintage"; setGroup(value); setView("pcGroup", value);
         }}><option value="vintage">Vintage</option><option value="strategy">Strategy</option></Select></label>
-        <Button variant="outline" size="sm" disabled={loading || locked} onClick={() => setRefresh(value => value + 1)}>Refresh private-capital records</Button>
+        <PanelReload reload={() => { if (!locked) setRefresh(value => value + 1); }} failed={Boolean(error)} busy={loading || locked} what="private-capital records" />
         {data && <span className="text-xs text-muted-foreground">Read generated {data.generatedAt}</span>}
       </div>
       {loading && <p role="status">Loading retained private-capital records…</p>}

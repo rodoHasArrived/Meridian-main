@@ -9,8 +9,9 @@ import { TableWorkbench } from "@/components/meridian/table-workbench";
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Briefcase, RefreshCcw } from "lucide-react";
+import { Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
@@ -125,10 +126,7 @@ export function ExecutionBlotterPanel() {
               account figures behind it.
             </CardDescription>
           </div>
-          <Button size="sm" variant="outline" onClick={() => void refresh()}>
-            <RefreshCcw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
+          <PanelReload reload={refresh} failed={readState === "error"} what="the execution blotter" />
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

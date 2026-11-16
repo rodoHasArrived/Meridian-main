@@ -1,10 +1,12 @@
-import { screen, within } from "@testing-library/react";
+import { useState } from "react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderWithRouter } from "@/test/render";
 import type { StrategyRunSummary, StrategySweepResultGroup } from "@/types/workstation-6";
 import { getRunSweeps } from "@/lib/api";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { StrategyRobustness } from "./strategy-robustness";
 import { buildRobustnessGrid, classifyRobustnessCell, fixedSlice, numericParameter } from "./strategy-robustness.model";
 vi.mock("@/lib/api", () => ({ getRunSweeps: vi.fn() }));
@@ -16,6 +18,10 @@ const run = (id: string, x: string, y: string, overrides: Partial<StrategyRunSum
 });
 const runs = [run("a", "10", "1"), run("b", "20", "1", { status: "Failed", totalReturn: null }), run("c", "10", "2", { totalReturn: -0.1 })];
 const group: StrategySweepResultGroup = { sweepId: "sweep-1", sweepDefinitionHash: "sweep-v2:ABC", objective: "TotalReturn", startedAt: runs[0].startedAt, runCount: 3, runs, objectiveRankings: [], comparisonContextVerified: true };
+function HeaderRefreshHarness() {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button><StrategyRobustness /></GlobalRefreshProvider>;
+}
 beforeEach(() => vi.mocked(getRunSweeps).mockResolvedValue([group]));
 describe("retained robustness grid", () => {
   it("preserves missing and failed cells instead of inventing a continuous surface", () => {
@@ -57,11 +63,16 @@ describe("retained robustness grid", () => {
   });
   it("shows explicit empty and failed retrieval states", async () => {
     vi.mocked(getRunSweeps).mockResolvedValueOnce([]).mockRejectedValueOnce(new Error("Forbidden"));
-    const user = userEvent.setup(); renderWithRouter(<StrategyRobustness />);
+    const user = userEvent.setup(); renderWithRouter(<HeaderRefreshHarness />);
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(getRunSweeps).not.toHaveBeenCalled();
     await user.click(screen.getByRole("button", { name: "Load retained experiments" }));
     expect(await screen.findByText(/No retained sweep experiments/)).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Refresh retained experiments" }));
+    expect(screen.queryByRole("button", { name: /retained experiments/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Forbidden");
+    await user.click(screen.getByRole("button", { name: "Retry loading retained experiments" }));
+    await waitFor(() => expect(getRunSweeps).toHaveBeenCalledTimes(3));
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
   it("keeps same-ID legacy experiments with different mode, feed and objective independently selectable", async () => {

@@ -1,9 +1,10 @@
 import { TableWorkbench } from "@/components/meridian/table-workbench";
-import { ArrowRight, Play, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { ArrowRight, Play, Plus, Trash2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -293,17 +294,7 @@ function StatementFetchSchedulesTable({
             <CardTitle>Saved statement fetch schedules</CardTitle>
             <CardDescription>Run a schedule now, edit its configuration, or remove it.</CardDescription>
           </div>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            busy={viewModel.loading}
-            busyLabel="Refreshing…"
-            onClick={() => void viewModel.refreshSchedules()}
-          >
-            <RefreshCw className="size-3.5" aria-hidden="true" />
-            Refresh
-          </Button>
+          <PanelReload reload={viewModel.refreshSchedules} failed={viewModel.loadError !== null} busy={viewModel.loading} what="saved statement fetch schedules" />
         </div>
       </CardHeader>
       <CardContent>

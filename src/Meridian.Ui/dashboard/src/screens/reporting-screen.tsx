@@ -499,7 +499,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     livePortfolioRefreshInFlight.current = true;
     setLivePortfolioRefreshStatus({
       id: "live-portfolio-views",
-      label: "Refresh live portfolio views",
+      label: "Revalue live portfolio views",
       state: "running",
       message: trigger === "auto" ? "Refreshing live portfolio views from market tick cadence." : "Refreshing live portfolio views.",
       details: [
@@ -513,7 +513,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       await onRefreshLivePortfolioViews();
       setLivePortfolioRefreshStatus({
         id: "live-portfolio-views",
-        label: "Refresh live portfolio views",
+        label: "Revalue live portfolio views",
         state: "success",
         message: trigger === "auto" ? "Live portfolio views refreshed from market tick cadence." : "Live portfolio views refreshed.",
         details: ["Portfolio summary data was refreshed through the shared workstation portfolio route."]
@@ -522,7 +522,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       const display = describeApiError(error, "Live portfolio view refresh failed.");
       setLivePortfolioRefreshStatus({
         id: "live-portfolio-views",
-        label: "Refresh live portfolio views",
+        label: "Revalue live portfolio views",
         state: "error",
         message: display.summary,
         details: display.details
@@ -1052,10 +1052,10 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                   size="sm"
                   onClick={() => void handleRefreshLivePortfolioViews()}
                   disabled={!onRefreshLivePortfolioViews || isRefreshingLivePortfolioViews}
-                  aria-label="Refresh live portfolio reporting views"
+                  aria-label="Revalue live portfolio reporting views"
                 >
                   <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                  Refresh
+                  Revalue
                 </Button>
               </div>
               {livePortfolioRefreshStatus ? (

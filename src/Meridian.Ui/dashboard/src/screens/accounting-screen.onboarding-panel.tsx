@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type InputHTMLAttributes } from "react";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormGrid, FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -111,7 +112,7 @@ export function AccountingOnboardingPanel() {
             {workspaces.map(item => <option key={item.workspaceId} value={item.workspaceId}>{item.name} · {item.scope.entityId} · {item.scope.startDate} – {item.scope.endDate}</option>)}
           </Select>
         </FormRow>
-        <Button variant="outline" disabled={loading} onClick={() => { setSelectedId(""); setReload(value => value + 1); }}>Refresh workspaces</Button>
+        <PanelReload reload={() => { if (!loading) setReload(value => value + 1); }} failed={Boolean(error)} busy={loading} what="onboarding workspaces" />
       </div>
       {!loading && !error && workspaces.length === 0 ? <p role="status" className="text-sm">No onboarding workspaces retained. Define a bounded scope to begin.</p> : null}
       <TechnicalDetails label="Define onboarding scope">
@@ -199,7 +200,7 @@ function WorkspaceDetail({ workspace, onChanged }: { workspace: OnboardingWorksp
             {sources.map((source, index) => <option key={index} value={index}>{source.asOfDate} · {source.providerId} · {source.importId} · mapping {source.mappingVersion}</option>)}
           </Select>
         </FormRow>
-        <Button variant="outline" disabled={busy} onClick={() => setSourceReload(value => value + 1)}>Refresh sources</Button>
+        <PanelReload reload={() => { if (!busy) setSourceReload(value => value + 1); }} failed={Boolean(sourceError)} busy={busy} what="onboarding sources" />
       </div>
       <form aria-label="Capture onboarding comparison" className="space-y-3" onSubmit={event => {
         event.preventDefault(); const data = new FormData(event.currentTarget);

@@ -163,8 +163,6 @@ export interface ReadinessConsoleState {
   inboxSummary: string;
   inboxLoadingLabel: string | null;
   inboxErrorText: string | null;
-  inboxRefreshLabel: string;
-  inboxRefreshAriaLabel: string;
   inboxRefreshDisabled: boolean;
   inboxRefreshDisabledReason: string | null;
   inboxRefreshBusy: boolean;
@@ -492,10 +490,6 @@ export function buildOperatorReadinessConsoleState({
     inboxSummary: operatorInbox?.summary ?? "Operator inbox not loaded; using workstation data where available.",
     inboxLoadingLabel: inboxLoading ? "Loading operator inbox..." : null,
     inboxErrorText: inboxError,
-    inboxRefreshLabel: inboxLoading ? "Refreshing inbox" : "Refresh inbox",
-    inboxRefreshAriaLabel: inboxLoading
-      ? "Refreshing operator inbox work items"
-      : "Refresh operator inbox work items",
     inboxRefreshDisabled: inboxLoading,
     inboxRefreshDisabledReason: inboxLoading ? "Operator inbox is already refreshing." : null,
     inboxRefreshBusy: inboxLoading,

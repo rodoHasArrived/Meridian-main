@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormGrid, FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -45,17 +46,18 @@ export function SecurityCurveWorkbench() {
   const [writeDenied, setWriteDenied] = useState(false);
   const [reload, setReload] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const request = useRef<AbortController | null>(null);
   const mutation = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    setLoading(true); setError(null); setReadDenied(false);
+    setLoading(true); setError(null); setReadDenied(false); setLoadFailed(false);
     listSecurityCurves({ signal: controller.signal }).then((rows) => {
       if (!controller.signal.aborted) setDefinitions(rows);
     }).catch((failure) => {
       if (controller.signal.aborted) return;
-      setDefinitions([]); setVersions([]);
+      setDefinitions([]); setVersions([]); setLoadFailed(true);
       setReadDenied(isApiError(failure) && [401, 403].includes(failure.status));
       setError(describeApiError(failure, "Curves unavailable. This host needs the Security Master curve store.").summary);
     }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
@@ -66,12 +68,12 @@ export function SecurityCurveWorkbench() {
     const controller = new AbortController(); request.current = controller;
     setVersions([]); setLeft(""); setRight(""); setConfirmed(false); setMessage(null);
     if (!selected) return () => controller.abort();
-    setLoading(true); setError(null);
+    setLoading(true); setError(null); setLoadFailed(false);
     listSecurityCurveVersions(selected, { signal: controller.signal }).then((rows) => {
       if (controller.signal.aborted) return;
       if (rows.some((row) => row.curveId !== selected)) throw new Error("The response contains versions of a different curve. Refresh the curve list.");
       setVersions(rows);
-    }).catch((failure) => { if (!controller.signal.aborted) setError(describeApiError(failure, "Curve history unavailable.").summary); })
+    }).catch((failure) => { if (!controller.signal.aborted) { setLoadFailed(true); setError(describeApiError(failure, "Curve history unavailable.").summary); } })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [selected, reload]);
@@ -137,7 +139,7 @@ export function SecurityCurveWorkbench() {
         <FormRow label="Stored curve" labelFor={`${id}-select`}><Select id={`${id}-select`} value={selected} disabled={busy || readDenied} onChange={(e) => { setSelected(e.target.value); setPoints([emptyPoint(), emptyPoint()]); setSource(""); setAsOf(""); setSourcedAt(""); }}>
           <option value="">Select a curve</option>{definitions.map((row) => <option key={row.curveId} value={row.curveId}>{row.curveKey} · {row.kind} · {row.currency}</option>)}
         </Select></FormRow>
-        <Button type="button" variant="outline" disabled={busy} onClick={() => { setWriteDenied(false); setReload((value) => value + 1); }}>Refresh curves</Button>
+        <PanelReload reload={() => { if (busy) return; setWriteDenied(false); setReload((value) => value + 1); }} failed={loadFailed} busy={busy || loading} what="curves" />
       </div>
       {loading ? <p role="status">Loading retained curves…</p> : null}
       {!loading && !error && definitions.length === 0 ? <p>No curve definitions are retained. Create a definition to publish market inputs.</p> : null}

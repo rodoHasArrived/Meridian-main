@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@/components/ui/error-notice";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { getRecurringJournalQueue, type RecurringJournalQueue as Queue, type RecurringJournalScope } from "@/lib/api/recurring-journals.api";
 
 interface Props {
@@ -91,7 +92,7 @@ export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds 
           </article>
         ))}
       </div>
-      {scope ? <Button size="sm" variant="outline" className="mt-3" disabled={loading} onClick={() => setRevision((value) => value + 1)}>{error ? "Retry recurring queue" : "Refresh recurring queue"}</Button> : null}
+      {scope ? <PanelReload className="mt-3" reload={() => { if (!loading) setRevision((value) => value + 1); }} failed={Boolean(error)} busy={loading} what="recurring queue" /> : null}
     </section>
   );
 }

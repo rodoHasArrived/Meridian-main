@@ -4,6 +4,7 @@ import { MemoryRouter } from "react-router-dom";
 import { StrictMode } from "react";
 import { RiskControlPanel } from "@/components/ui/risk-control-panel";
 import * as api from "@/lib/api";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 
 vi.mock("@/lib/api", async () => {
@@ -105,6 +106,15 @@ describe("RiskControlPanel", () => {
     expect(document.getElementById("risk-control-status")).toHaveTextContent("Drawdown threshold saved.");
   });
 
+  it("reloads on the header refresh without a refresh button of its own", async () => {
+    const { rerender } = render(<GlobalRefreshProvider sequence={0}><RiskControlPanel /></GlobalRefreshProvider>);
+    await screen.findByText("Position limit");
+    expect(screen.queryByRole("button", { name: /Refresh|Retry/ })).not.toBeInTheDocument();
+    expect(api.getRiskRules).toHaveBeenCalledTimes(1);
+    rerender(<GlobalRefreshProvider sequence={1}><RiskControlPanel /></GlobalRefreshProvider>);
+    await waitFor(() => expect(api.getRiskRules).toHaveBeenCalledTimes(2));
+  });
+
   it("settles on loaded risk controls under React StrictMode", async () => {
     render(
       <StrictMode>
@@ -195,7 +205,8 @@ describe("RiskControlPanel", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("The risk service is restarting.");
     expect(screen.getByText("Risk runtime unavailable")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Refresh risk controls" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retry" })).toBeEnabled();
     expect(screen.getByText("No risk rules are currently available.")).toBeInTheDocument();
   });
 });

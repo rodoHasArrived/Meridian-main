@@ -1200,11 +1200,11 @@ export function buildOperationsContinuityScreenViewModel({
     statusAnnouncement: buildStatusAnnouncement({ loading, rows, selectedSummary, detailLoading, detailError }),
     errorText: error,
     detailErrorText: detailError,
-    reloadLabel: loading ? "Refreshing" : "Refresh workflows",
-    reloadAriaLabel: loading ? "Refreshing operations continuity workflows" : "Refresh operations continuity workflows",
+    reloadLabel: loading ? "Retrying" : "Retry workflows",
+    reloadAriaLabel: loading ? "Loading operations continuity workflows" : "Retry loading operations continuity workflows",
     reloadBusy: loading,
     reloadDisabled: loading,
-    reloadDisabledReason: loading ? "Operations continuity workflows are already refreshing." : null,
+    reloadDisabledReason: loading ? "Operations continuity workflows are already loading." : null,
     workflowsSummaryLabel: `${rows.length} workflow${rows.length === 1 ? "" : "s"}`,
     workflowsEmptyText: loading
       ? "Loading operations continuity workflows..."

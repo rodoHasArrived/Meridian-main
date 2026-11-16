@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiGetJson, apiPutJson } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
@@ -26,6 +27,7 @@ export function BackfillProviderEditorRegion() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dragged, setDragged] = useState<string | null>(null);
   const requests = useRef(new Set<AbortController>());
@@ -35,12 +37,12 @@ export function BackfillProviderEditorRegion() {
   const dirty = !!provider && JSON.stringify(provider.options) !== JSON.stringify(draft);
   const tier = provider?.metadata.tiers.find(t => t.id === draft?.tierId);
   const refresh = useCallback(async (signal?: AbortSignal) => {
-    setLoading(true); setError(null);
+    setLoading(true); setError(null); setLoadFailed(false);
     try {
       const data = await apiGetJson<ProviderStatus[]>("/api/backfill/providers/statuses", { signal, allowDevelopmentFallback: false });
       if (mounted.current && !signal?.aborted) setProviders(data);
     } catch (cause) {
-      if (mounted.current && !signal?.aborted) setError(cause instanceof Error ? cause.message : "Provider configuration is unavailable.");
+      if (mounted.current && !signal?.aborted) { setLoadFailed(true); setError(cause instanceof Error ? cause.message : "Provider configuration is unavailable."); }
     } finally { if (mounted.current && !signal?.aborted) setLoading(false); }
   }, []);
   useEffect(() => { if (!open) return; const controller = new AbortController(); const activeRequests = requests.current; activeRequests.add(controller); void refresh(controller.signal); return () => { controller.abort(); activeRequests.delete(controller); }; }, [open, refresh]);
@@ -126,7 +128,7 @@ export function BackfillProviderEditorRegion() {
               <Button type="button" variant="outline" disabled={saving || !dirty} onClick={() => { setDraft({ ...provider.options }); setError(null); }}>Discard changes</Button></div>
           </form> : <p className="text-sm text-muted-foreground">Select a provider to edit its tier, priority and limits.</p>}
         </div>
-        <Button type="button" variant="outline" size="sm" disabled={loading || saving || dirty} onClick={() => { const controller = new AbortController(); requests.current.add(controller); void refresh(controller.signal).finally(() => requests.current.delete(controller)); }}>Refresh provider settings</Button>
+        <PanelReload what="provider settings" failed={loadFailed} busy={loading || saving || dirty} reload={() => { if (loading || saving || dirty) return; const controller = new AbortController(); requests.current.add(controller); void refresh(controller.signal).finally(() => requests.current.delete(controller)); }} />
       </CardContent> : null}
     </Card>
   </section>;

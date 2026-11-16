@@ -2,7 +2,8 @@ import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { formatNumber, formatPercent, formatRatioAsPercent } from "@/lib/format";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { DatabaseZap, HardDrive, RefreshCcw, ShieldCheck } from "lucide-react";
+import { DatabaseZap, HardDrive, ShieldCheck } from "lucide-react";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,13 +37,14 @@ export function IngestionOperationsWorkstream() {
   const [busy, setBusy] = useState<string | null>(null);
   const [rationale, setRationale] = useState("Operator-reviewed ingestion recovery");
   const [stateFilter, setStateFilter] = useState("All");
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const refresh = useCallback(async () => {
-    setError(null);
+    setError(null); setLoadFailed(false);
     try {
       setSnapshot(await getIngestionOperations());
     } catch (reason) {
-      setError(errorMessage(reason));
+      setLoadFailed(true); setError(errorMessage(reason));
     }
   }, []);
 
@@ -75,7 +77,7 @@ export function IngestionOperationsWorkstream() {
             <CardTitle id="ingestion-operations-title">Ingestion Operations Center</CardTitle>
             <CardDescription>Operate resumable imports and backfills from checkpoint through retained evidence.</CardDescription>
           </div>
-          <Button size="sm" variant="outline" onClick={() => void refresh()}><RefreshCcw className="mr-2 h-4 w-4" />Refresh</Button>
+          <PanelReload reload={refresh} failed={loadFailed} what="ingestion operations" />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -129,10 +131,11 @@ export function StorageAssuranceWorkstream() {
   const [confirmation, setConfirmation] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const refresh = useCallback(async () => {
-    setError(null);
-    try { setSnapshot(await getStorageAssurance()); } catch (reason) { setError(errorMessage(reason)); }
+    setError(null); setLoadFailed(false);
+    try { setSnapshot(await getStorageAssurance()); } catch (reason) { setLoadFailed(true); setError(errorMessage(reason)); }
   }, []);
   useEffect(() => { void refresh(); }, [refresh]);
 
@@ -155,7 +158,7 @@ export function StorageAssuranceWorkstream() {
 
   return (
     <section aria-labelledby="storage-assurance-title" className="workspace-region min-w-0 space-y-3">
-      <CardHeader><div className="flex flex-wrap items-start justify-between gap-3"><div><CardTitle id="storage-assurance-title">Storage &amp; Data Assurance</CardTitle><CardDescription>One posture for storage health, data quality, canonicalization, capacity, and safe maintenance.</CardDescription></div><Button size="sm" variant="outline" onClick={() => void refresh()}><RefreshCcw className="mr-2 h-4 w-4" />Refresh</Button></div></CardHeader>
+      <CardHeader><div className="flex flex-wrap items-start justify-between gap-3"><div><CardTitle id="storage-assurance-title">Storage &amp; Data Assurance</CardTitle><CardDescription>One posture for storage health, data quality, canonicalization, capacity, and safe maintenance.</CardDescription></div><PanelReload reload={refresh} failed={loadFailed} what="storage assurance" /></div></CardHeader>
       <CardContent className="space-y-4">
         {error ? <StatusBanner tone="danger" title="Storage assurance action needs attention" detail={error} /> : null}
         {result ? <StatusBanner tone={result.status === "Completed" ? "success" : "warning"} title={`${result.action} ${result.status}`} detail={`${formatBytes(result.affectedBytes)} affected · evidence ${result.evidenceVaultId ?? "not retained"}`} /> : null}

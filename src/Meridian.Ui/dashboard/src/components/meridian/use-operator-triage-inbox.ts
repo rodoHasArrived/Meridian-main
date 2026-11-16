@@ -171,7 +171,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
     } catch (failure) {
       if (signal.aborted || current !== commandInvocation.current) return;
       setUncertain(pending); setAction(null);
-      setNotice(`Command outcome is unconfirmed. Refresh activity or retry this same command. ${failure instanceof Error ? failure.message : "Request failed."}`);
+      setNotice(`Command outcome is unconfirmed. Check the command outcome or retry this same command. ${failure instanceof Error ? failure.message : "Request failed."}`);
     } finally {
       if (!signal.aborted && current === commandInvocation.current) {
         commandController.current = null;

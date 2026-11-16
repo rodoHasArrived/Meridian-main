@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormGrid, FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -141,7 +142,7 @@ export function IntercompanyAgreementsPanel({ initialEntityId = "", initialAgree
           <FormRow label="Status filter" labelFor={`${id}-status`}><Select id={`${id}-status`} value={status} onChange={event => setStatus(event.target.value)} disabled={Boolean(editor) || busy}><option value="">All statuses</option>{["Unapproved", "Scheduled", "Active", "Expired", "Terminated"].map(item => <option key={item}>{item}</option>)}</Select></FormRow>
         </FormGrid>
         <div className="flex flex-wrap gap-2"><Button variant="outline" type="submit" disabled={loading || busy || Boolean(editor)}>Apply agreement filters</Button>
-          <Button variant="outline" type="button" disabled={loading || busy || Boolean(editor)} onClick={() => { setDetail(null); setReload(value => value + 1); }}>Refresh agreements</Button>
+          <PanelReload reload={() => { if (loading || busy || editor) return; setDetail(null); setReload(value => value + 1); }} failed={!loading && !list} busy={busy || Boolean(editor)} what="agreements" />
           <Button type="button" disabled={createDisabledReason !== null} disabledReason={createDisabledReason} onClick={() => {
             setDetail(null); setEditor({ agreementId: crypto.randomUUID(), proposalId: crypto.randomUUID(), mutation: "create", fixedIdentity: false, initial: newAgreementDraft(query.entityId ?? "", query.asOf ?? asOf) });
           }}>New agreement draft</Button></div>

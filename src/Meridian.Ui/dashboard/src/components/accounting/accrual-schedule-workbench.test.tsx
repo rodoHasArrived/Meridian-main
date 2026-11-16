@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccrualScheduleWorkbench } from "./accrual-schedule-workbench";
 import { ApiError } from "@/lib/api-errors";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import * as api from "@/lib/api/accrual-schedules.api";
 import * as recurring from "@/lib/api/recurring-journals.api";
 vi.mock("@/lib/api/accrual-schedules.api", () => ({ getAccrualSchedules: vi.fn(), previewAccrualSchedule: vi.fn(), configureAccrualSchedule: vi.fn(), runAccrualSchedule: vi.fn() }));
@@ -98,7 +99,7 @@ describe("accrual schedule journey", () => {
     expectDisabledPrimaryReasons(); unmount();
     vi.mocked(api.getAccrualSchedules).mockRejectedValue(new Error("Registry offline")); render(<AccrualScheduleWorkbench {...props} />);
     await screen.findByRole("alert"); expect(screen.getByRole("button", { name: "Preview accrual schedule", hidden: true })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Preview accrual schedule", hidden: true })).toHaveAttribute("title", expect.stringContaining("Refresh retained schedules"));
+    expect(screen.getByRole("button", { name: "Preview accrual schedule", hidden: true })).toHaveAttribute("title", expect.stringContaining("Retry loading retained schedules"));
     expectDisabledPrimaryReasons();
   });
   it("allows a fresh preview after a known stale-authority refusal", async () => {
@@ -112,18 +113,19 @@ describe("accrual schedule journey", () => {
   });
   it("keeps an unconfirmed save locked through failed refresh and retries the original command", async () => {
     vi.mocked(api.configureAccrualSchedule).mockRejectedValueOnce(new Error("Connection lost"));
-    render(<AccrualScheduleWorkbench {...props} />); await fill();
+    const view = render(<GlobalRefreshProvider sequence={0}><AccrualScheduleWorkbench {...props} /></GlobalRefreshProvider>); await fill();
     fireEvent.click(screen.getByRole("checkbox")); fireEvent.click(screen.getByRole("button", { name: "Retain accrual schedule" }));
     await screen.findByRole("button", { name: "Retry same accrual schedule" });
     expect(screen.getByLabelText("Amount per occurrence")).toBeDisabled();
     expect(screen.getByRole("button", { name: "Preview accrual schedule" })).toHaveAttribute("title", expect.stringContaining("recover the unconfirmed save"));
     expectDisabledPrimaryReasons();
     vi.mocked(api.getAccrualSchedules).mockRejectedValueOnce(new Error("Registry offline"));
-    fireEvent.click(screen.getByRole("button", { name: "Refresh retained schedules" }));
+    expect(screen.queryByRole("button", { name: /retained schedules/ })).not.toBeInTheDocument();
+    view.rerender(<GlobalRefreshProvider sequence={1}><AccrualScheduleWorkbench {...props} /></GlobalRefreshProvider>);
     await screen.findByRole("alert");
     expect(screen.getByLabelText("Amount per occurrence")).toBeDisabled();
     expect(screen.getByRole("button", { name: "Retry same accrual schedule" })).toBeDisabled();
-    fireEvent.click(screen.getByRole("button", { name: "Refresh retained schedules" }));
+    fireEvent.click(screen.getByRole("button", { name: "Retry loading retained schedules" }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Retry same accrual schedule" })).toBeEnabled());
     fireEvent.click(screen.getByRole("button", { name: "Retry same accrual schedule" }));
     await screen.findByRole("button", { name: "Generate due accrual drafts" });

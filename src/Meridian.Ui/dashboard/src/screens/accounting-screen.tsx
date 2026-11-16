@@ -1713,10 +1713,8 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                     Identifier ambiguities detected when multiple providers map the same identifier to different securities.
                   </CardDescription>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
+                {securityMaster.conflictRefreshCommand.visible && <Button
+                  type="button" variant="outline" size="sm"
                   busy={securityMaster.conflictRefreshCommand.busy}
                   busyLabel={securityMaster.conflictRefreshCommand.busyLabel}
                   disabled={securityMaster.conflictRefreshCommand.disabled}
@@ -1728,7 +1726,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                 >
                   <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
                   {securityMaster.conflictRefreshCommand.label}
-                </Button>
+                </Button>}
               </div>
             </CardHeader>
             <CardContent>

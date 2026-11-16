@@ -14,7 +14,7 @@ import { type SettingsRouteViewId } from "@/screens/settings-route-state";
 import { humanizeSettingsIdentifier } from "@/screens/settings-screen.operations-form-options";
 import { type SettingsProviderConnectionRow, type SettingsScreenViewModel } from "@/screens/settings-screen.view-model";
 import type { FeatureCapabilitySettingsResponse, ProviderIntegrationQuarantinedRecord, ProviderIntegrationQuarantineResolutionAction, SessionInfo } from "@/types";
-import { ArrowRight, MonitorCheck, RefreshCcw, Search } from "lucide-react";
+import { ArrowRight, MonitorCheck, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { OwnedProviderCredentialPanel } from "./settings-owned-provider-credentials";
@@ -575,6 +575,7 @@ interface SettingsProviderSectionProps {
 }
 
 export function SettingsProviderSection({ vm, showProviderSetupControls, inlineProviderManagementEnabled, showProviderAdvancedControls, onProviderRoutingRefresh, showProviderFilters, providerSearch, setProviderSearch, providerCapabilityFilter, setProviderCapabilityFilter, providerHealthFilter, setProviderHealthFilter, providerVerificationFilter, setProviderVerificationFilter, providerSort, setProviderSort, activeProviderDisplayName, visibleProviderGroups, session, onRefresh, activeTaskView, providerRuntimeState, providerOpenApiImportState, updateProviderOpenApiImportState, submitProviderOpenApiImport, loadProviderRuntimeEvidence, setMutationConfirmation, runProviderRuntimeDueSync, createProviderRuntimeHandoff, replayProviderRuntimeQuarantine, resolveProviderRuntimeQuarantineRecord }: SettingsProviderSectionProps) {
+  const retryRouting = vm.providerConnectionCenter.refreshAction;
   return (
     <Card id="provider-connection-center" className="panel-surface scroll-mt-6 border border-border/70">
       <CardHeader>
@@ -597,23 +598,17 @@ export function SettingsProviderSection({ vm, showProviderSetupControls, inlineP
             </CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {onProviderRoutingRefresh ? (
+            {onProviderRoutingRefresh && retryRouting ? (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => void onProviderRoutingRefresh()}
-                disabled={vm.providerConnectionCenter.refreshAction.disabled}
-                disabledReason={vm.providerConnectionCenter.refreshAction.disabledReason}
-                aria-label={vm.providerConnectionCenter.refreshAction.ariaLabel}
+                disabled={retryRouting.disabled}
+                disabledReason={retryRouting.disabledReason}
+                busy={retryRouting.busy}
+                aria-label={retryRouting.ariaLabel}
               >
-                <RefreshCcw
-                  className={cn(
-                    "h-3.5 w-3.5",
-                    vm.providerConnectionCenter.refreshAction.busy && "animate-spin"
-                  )}
-                  aria-hidden="true"
-                />
-                {vm.providerConnectionCenter.refreshAction.label}
+                {retryRouting.label}
               </Button>
             ) : null}
             <SeverityBadge

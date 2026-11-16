@@ -31,6 +31,7 @@ import {
   saveProviderIntegrationSetup
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { formatProviderIntegrationSetupDraftIssues, validateProviderIntegrationSetupDraft } from "@/lib/provider-integration-setup-validation";
 import {
   parseProviderIntegrationStringRecord,
@@ -287,7 +288,9 @@ export function ProviderIntegrationRuntimePanel({
     .filter((promotionRow) => promotionRow.status === "ReadyForReconciliation" && !alreadyHandedOff.has(promotionRow.stagingRecordId))
     .length;
   const canCreateHandoff = !loading && handoffReadyCount > 0;
-  const actionLabel = state.phase === "loaded" || state.phase === "error" ? "Refresh runtime" : loading ? "Loading runtime" : "Load runtime";
+  // Runtime evidence is loaded on demand. Once it is on screen the header Refresh re-reads it; a local control returns only as Retry.
+  const onScreen = state.phase === "loaded" || (loading && [state.monitor, state.syncRuns, state.syncPlan, state.staging, state.identity, state.promotion, state.handoff, state.quarantine].some(Boolean));
+  useOnGlobalRefresh(() => { if (state.phase === "loaded" || state.phase === "error") onLoad(); });
 
   return (
     <section
@@ -344,18 +347,18 @@ export function ProviderIntegrationRuntimePanel({
             {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />}
             Replay quarantine
           </Button>
-          <Button
+          {onScreen ? null : <Button
             type="button"
             variant="outline"
             size="sm"
             className="shrink-0"
             onClick={onLoad}
             disabled={loading}
-            aria-label={`${state.phase === "loaded" || state.phase === "error" ? "Refresh" : "Load"} provider integration runtime evidence for ${row.displayName}`}
+            aria-label={`${state.phase === "error" ? "Retry loading" : "Load"} provider integration runtime evidence for ${row.displayName}`}
           >
-            {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />}
-            {actionLabel}
-          </Button>
+            {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : null}
+            {state.phase === "error" ? "Retry" : loading ? "Loading runtime" : "Load runtime"}
+          </Button>}
         </div>
       </div>
       <ProviderOpenApiImportForm

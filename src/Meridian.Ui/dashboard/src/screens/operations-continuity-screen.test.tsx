@@ -2,6 +2,8 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import {
   acknowledgeOperationsContinuityChecklistTask,
   approveOperationsContinuityWorkflow,
@@ -1760,7 +1762,7 @@ describe("OperationsContinuityScreen", () => {
     vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([repairedDetail]);
     vi.mocked(getOperationsContinuityWorkflow).mockReturnValueOnce(pendingDetail).mockResolvedValue(repairedDetail);
     vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(repairedDecision);
-    await user.click(screen.getByRole("button", { name: "Refresh operations continuity workflows" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
     await waitFor(() => expect(getOperationsContinuityWorkflow).toHaveBeenCalledTimes(2));
     expect(screen.queryByRole("button", { name: "Publish close package for 2026-05" })).not.toBeInTheDocument();
 
@@ -1803,7 +1805,7 @@ describe("OperationsContinuityScreen", () => {
 
     vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(repairedDetail);
     vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(repairedDetail));
-    await user.click(screen.getByRole("button", { name: "Refresh operations continuity workflows" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
     const repairedPublish = await screen.findByRole("button", { name: "Publish close package for 2026-05" });
     await waitFor(() => expect(repairedPublish).toBeEnabled());
     await user.click(repairedPublish);
@@ -1855,7 +1857,7 @@ describe("OperationsContinuityScreen", () => {
     repairedProjection.approvals.at(-1)!.decidedAtUtc = "2026-05-10T10:45:00.0000001-07:00";
     vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(repairedDetail);
     vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(repairedProjection));
-    await user.click(screen.getByRole("button", { name: "Refresh operations continuity workflows" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Publish close package for 2026-05" })).toBeEnabled());
     await user.click(screen.getByRole("button", { name: "Publish close package for 2026-05" }));
     await waitFor(() => expect(closeOperationsContinuityWorkflow).toHaveBeenCalledWith(workflowId, expect.objectContaining({
@@ -2236,10 +2238,16 @@ function renderScreen(initialEntry?: string) {
   return render(
     <MemoryRouter initialEntries={[initialEntry ?? `/accounting/operations-continuity?${query.toString()}`]}>
       <Routes>
-        <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
+        <Route path="/accounting/operations-continuity" element={<WithHeaderRefresh><OperationsContinuityScreen /></WithHeaderRefresh>} />
       </Routes>
     </MemoryRouter>
   );
+}
+
+/** Stands in for the shell: the header Refresh is the only control that reloads the workflow list. */
+function WithHeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence((value) => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
 }
 
 function createApprovalDecisionReadyDetail(reportPackEvidence: OperationsEvidenceLink): OperationsContinuityWorkflow {

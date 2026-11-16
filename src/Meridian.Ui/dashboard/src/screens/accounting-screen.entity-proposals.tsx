@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { FormGrid } from "@/components/ui/form";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operations.api";
@@ -43,7 +44,7 @@ export function EntityCounterpartProposals({ scope }: { scope: EntityOperationSc
     if (result) { proposals.refresh(); breaks.refresh(); }
   }
   return <section className="space-y-4"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">Counterpart proposals and intercompany breaks</h3>
-    <Button type="button" variant="outline" onClick={() => { proposals.refresh(); breaks.refresh(); }}>Refresh counterpart evidence</Button></div>
+    <PanelReload reload={() => { proposals.refresh(); breaks.refresh(); }} failed={Boolean(proposals.error || breaks.error)} busy={proposals.loading || breaks.loading} what="counterpart evidence" /></div>
     <p className="text-sm text-muted-foreground">Source posting retains a delivery record. The other entity reviews its own draft; source preparers gain no target-book edit rights. Link an existing counterpart only after checking its journal identity.</p>
     <OperationError error={proposals.error} /><OperationError error={breaks.error} />
     {proposals.loading ? <p role="status">Loading counterpart delivery records…</p> : null}

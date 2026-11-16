@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { PreparerAttestationProofDownload } from "@/components/meridian/preparer-attestation-evidence";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { isApiError } from "@/lib/api-errors";
@@ -104,7 +105,7 @@ function DraftCheck({ securityId, runId }: { securityId: string; runId: string }
     <div className="flex flex-wrap items-start justify-between gap-2">
       <div><h3 className="font-semibold">Preparer check for this retained calculation</h3>
         <p className="break-all text-muted-foreground">Run {runId}. This task does not approve, post or release anything.</p></div>
-      <Button type="button" size="sm" variant="outline" disabled={loading || busy} onClick={() => setRefresh(value => value + 1)}>Refresh draft check</Button>
+      <PanelReload reload={() => { if (!loading && !busy) setRefresh(value => value + 1); }} failed={!loading && (!workspace || !snapshot)} busy={busy} what="draft check" />
     </div>
     {loading ? <p role="status">Loading scoped draft-check support…</p> : null}
     {error ? <p role="alert" className="text-danger">{error}</p> : null}

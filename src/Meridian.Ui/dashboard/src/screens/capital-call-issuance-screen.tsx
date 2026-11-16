@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
@@ -118,7 +119,7 @@ function CapitalBookWorkbench({ bookId, onLockedChange }: { bookId: string; onLo
   return <div className="space-y-4">
     <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">{workbench ? `Retained capital activity · ${workbench.scope.currency}` : "Loading book authority"}</p>
       {workbench ? <TechnicalDetails label="Operating authority"><p className="break-all text-xs">Fund {workbench.scope.fundProfileId} · Entity {workbench.scope.entityId} · Book {workbench.scope.ledgerBookId}</p></TechnicalDetails> : null}
-      <Button variant="outline" disabled={loading || !!busy} onClick={() => void refresh()}>Refresh retained records</Button></div>
+      <PanelReload reload={() => { if (!loading && !busy) void refresh(); }} failed={!loading && !workbench} busy={!!busy} what="retained capital records" /></div>
     {loading ? <p role="status">Loading commitment and posting authority…</p> : null}
     {busy ? <p role="status" className="text-sm">{busy} is in progress…</p> : null}
     {error ? <StatusBanner role="alert" tone="danger" title="Capital activity unavailable" detail={error} /> : null}

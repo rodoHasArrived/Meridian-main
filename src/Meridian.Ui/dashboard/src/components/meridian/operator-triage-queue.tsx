@@ -108,7 +108,7 @@ export function OperatorTriageNotices({ triage, showPersistence = true }: { tria
   return <>
     {showPersistence && inbox && !inbox.persistenceAvailable ? <p role="alert" className="text-sm">{inbox.unavailableReason ?? "Durable triage is unavailable. Actions are disabled."}</p> : null}
     {notice ? <p role="status" className="text-sm">{notice}</p> : null}
-    {uncertain ? <div className="flex flex-wrap gap-2"><Button size="sm" disabled={busy || loading || !inbox?.persistenceAvailable} onClick={triage.retryUncertain}>Retry same command</Button><Button size="sm" variant="outline" disabled={busy || loading} onClick={triage.reload}>Refresh command activity</Button></div> : null}
+    {uncertain ? <div className="flex flex-wrap gap-2"><Button size="sm" disabled={busy || loading || !inbox?.persistenceAvailable} onClick={triage.retryUncertain}>Retry same command</Button><Button size="sm" variant="outline" disabled={busy || loading} onClick={triage.reload}>Check command outcome</Button></div> : null}
   </>;
 }
 

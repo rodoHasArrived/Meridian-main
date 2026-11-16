@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operations.api";
 import type { ConsolidationFxConfiguration, ConsolidationFxRateSet, EntityOperationScope } from "@/types/entity-operations";
@@ -22,7 +23,7 @@ export function EntityFxAuthority({ scope }: { scope: EntityOperationScope }) {
     <p className="text-sm text-muted-foreground">Consolidation translates the whole trial balance under the selected book policy. Booking breaks, translation differences and rounding are distinct. Missing or superseded rate authority blocks draft creation.</p>
     <OperationError error={rates.error} /><OperationError error={configuration.error} />
     <div className="flex flex-wrap items-end gap-3"><OperationField label="FX configuration as of" disabled={editing} value={asOf} onChange={(value) => { setAsOf(value); setEditingPolicy(false); }} type="date" required />
-      <Button type="button" variant="outline" disabled={editing} disabledReason={editingReason} onClick={() => { rates.refresh(); configuration.refresh(); }}>Refresh FX authority</Button>
+      <PanelReload reload={() => { if (!editing) { rates.refresh(); configuration.refresh(); } }} failed={Boolean(rates.error || configuration.error)} busy={rates.loading || configuration.loading} what="FX authority" />
       <Button type="button" disabled={editing || !scope.capabilities.canManageLedger} disabledReason={editing ? editingReason : "Ledger management permission is required to approve FX rate sets."} onClick={() => { setPreviousRates(null); setEditingRates(true); }}>New approved rate set</Button>
       <Button type="button" variant="outline" disabled={editing || !scope.capabilities.canManageLedger || rates.loading || configuration.loading || currentSets.length === 0} disabledReason={editing ? editingReason : !scope.capabilities.canManageLedger ? "Ledger management permission is required to configure book translation." : rates.loading || configuration.loading ? "Wait for the current FX authority to load." : "Retain an approved FX rate set before configuring book translation."} onClick={() => setEditingPolicy(true)}>Configure book translation</Button>
     </div>

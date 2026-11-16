@@ -1031,8 +1031,9 @@ describe("accounting-screen view model", () => {
       tableAriaLabel: "Tolerance profile health by reconciliation route",
       selectedProfileId: "profile-cash",
       refreshCommand: {
-        label: "Refresh calibration",
-        ariaLabel: "Refresh calibration summary",
+        visible: false,
+        label: "Retry calibration summary",
+        ariaLabel: "Retry calibration summary load",
         disabled: false,
         disabledReason: null
       }
@@ -1137,12 +1138,14 @@ describe("accounting-screen view model", () => {
 
   it("derives calibration refresh command states for loading and retry recovery", () => {
     expect(buildCalibrationSummaryViewState(null, true, null).refreshCommand).toEqual({
-      label: "Refreshing...",
-      ariaLabel: "Calibration summary refresh is already running",
+      visible: false,
+      label: "Loading...",
+      ariaLabel: "Calibration summary is already loading",
       disabled: true,
-      disabledReason: "Calibration summary refresh is already running."
+      disabledReason: "Calibration summary is already loading."
     });
     expect(buildCalibrationSummaryViewState(null, false, "Calibration API offline").refreshCommand).toEqual({
+      visible: true,
       label: "Retry calibration summary",
       ariaLabel: "Retry calibration summary load",
       disabled: false,
@@ -2662,8 +2665,9 @@ describe("accounting-screen view model", () => {
     expect(countOpenSecurityConflicts(conflicts)).toBe(1);
     expect(countOpenSecurityConflicts(null)).toBe(0);
     expect(buildSecurityConflictRefreshCommand(false, null)).toEqual({
-      label: "Refresh conflicts",
-      ariaLabel: "Refresh Security Master identifier conflicts",
+      visible: false,
+      label: "Retry conflicts",
+      ariaLabel: "Retry loading Security Master identifier conflicts",
       disabled: false,
       disabledReason: null,
       busy: false,
@@ -2672,19 +2676,22 @@ describe("accounting-screen view model", () => {
       feedbackText: null
     });
     expect(buildSecurityConflictRefreshCommand(true, null)).toMatchObject({
-      label: "Refreshing...",
+      visible: false,
+      label: "Retrying...",
       disabled: true,
       disabledReason: "Identifier conflicts are already loading.",
       busy: true,
-      busyLabel: "Refreshing..."
+      busyLabel: "Retrying..."
     });
     expect(buildSecurityConflictRefreshCommand(false, "Provider offline")).toMatchObject({
+      visible: true,
       label: "Retry conflicts",
       ariaLabel: "Retry loading Security Master identifier conflicts"
     });
     expect(buildSecurityConflictRefreshCommand(false, null, "conflict-1")).toMatchObject({
-      label: "Refresh conflicts",
-      ariaLabel: "Refresh disabled while identifier conflict conflict-1 is resolving",
+      visible: false,
+      label: "Retry conflicts",
+      ariaLabel: "Retry disabled while identifier conflict conflict-1 is resolving",
       disabled: true,
       disabledReason: "Wait until identifier conflict conflict-1 finishes resolving before refreshing the conflict queue.",
       busy: false,
@@ -2911,6 +2918,7 @@ describe("accounting-screen view model", () => {
       "Meridian service returned 503. Open diagnostics for technical details."
     ]);
     expect(result.current.conflictRefreshCommand).toMatchObject({
+      visible: true,
       label: "Retry conflicts",
       disabled: false
     });
@@ -2921,7 +2929,7 @@ describe("accounting-screen view model", () => {
     });
 
     await waitFor(() => expect(result.current.conflictRefreshCommand).toMatchObject({
-      label: "Refreshing...",
+      label: "Retrying...",
       disabled: true,
       busy: true
     }));
@@ -2934,7 +2942,7 @@ describe("accounting-screen view model", () => {
     expect(result.current.conflictsErrorText).toBeNull();
     expect(result.current.conflictRows).toHaveLength(2);
     expect(result.current.conflictRefreshCommand).toMatchObject({
-      label: "Refresh conflicts",
+      visible: false,
       disabled: false
     });
   });

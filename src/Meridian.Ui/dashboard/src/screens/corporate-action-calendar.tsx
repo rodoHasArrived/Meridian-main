@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useInRouterContext, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Input } from "@/components/ui/input";
 import { getCorporateActionCalendar } from "@/lib/api/corporate-action-calendar.api";
 import { CorporateActionDeadlinePanel } from "@/screens/corporate-action-deadline-panel";
@@ -98,7 +99,7 @@ function Calendar({ search, setSearch, ...props }: CalendarProps & { search: str
     return <button type="button" key={event.eventId} aria-pressed={event.eventId === query.eventId} onClick={() => selectEvent(event)} className={`my-1 block w-full rounded-sm border px-2 py-1 text-left text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${event.eventId === query.eventId ? "border-primary bg-primary/10" : "border-border bg-background"}`} aria-label={`${kind.label} for ${event.ticker} on ${event.date}${event.at ? ` at ${event.at}` : ""}`}><span className="font-semibold">{kind.symbol} {kind.label}</span><span className="block">{event.actionType}{event.at ? ` · ${event.at}` : ""}</span>{event.deadline ? <span className="block">{event.deadline.deadline.sourceParty} · operator-recorded</span> : event.sourceCutoff ? <span className="block">{event.sourceCutoff.label} · source-reported</span> : null}</button>;
   };
   return <section className="min-w-0 max-w-full space-y-3 rounded-sm border border-border bg-background p-3" style={{ contain: "inline-size" }} aria-label="Corporate action dates calendar">
-    <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="text-sm font-semibold">Corporate action dates</h3><p className="mt-1 text-xs text-muted-foreground">Ex-date, record date, payment date and actual election deadlines have different meanings. Source calendar dates are retained without timezone conversion.</p></div><Button size="sm" variant="outline" onClick={refresh}>Refresh dates calendar</Button></div>
+    <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="text-sm font-semibold">Corporate action dates</h3><p className="mt-1 text-xs text-muted-foreground">Ex-date, record date, payment date and actual election deadlines have different meanings. Source calendar dates are retained without timezone conversion.</p></div><PanelReload reload={refresh} failed={Boolean(current?.error)} what="dates calendar" /></div>
     <div className="flex flex-wrap gap-3"><label className="grid gap-1 text-xs">Calendar from<Input type="date" value={query.from} onChange={(event) => updateSearch({ caFrom: event.target.value, caEvent: null })} /></label><label className="grid gap-1 text-xs">Calendar through<Input type="date" value={query.to} onChange={(event) => updateSearch({ caTo: event.target.value, caEvent: null })} /></label></div>
     <p className="text-xs">{Object.values(CORPORATE_ACTION_DATE_KINDS).map((kind) => `${kind.symbol} ${kind.label}`).join(" · ")}</p>
     {query.error ? <p role="status">{query.error}</p> : !current ? <p role="status">Loading all retained calendar pages…</p> : null}

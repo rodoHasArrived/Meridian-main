@@ -3337,7 +3337,7 @@ export function useOrderTicketViewModel({
     const clientOrderId = services.previewOrder ? draftClientId.current : null;
     const submission = clientOrderId && request.fundAccountId ? { account: request.fundAccountId, id: clientOrderId } : null;
     if (services.previewOrder && (!submission || serverPreviewBlocked || !serverPreview || Date.parse(serverPreview.expiresAt) <= Date.now())) {
-      setErrorText("Refresh and review the authoritative order checks before submitting.");
+      setErrorText("Run checks again and review the authoritative order checks before submitting.");
       setAcknowledged(false);
       return;
     }
@@ -3395,7 +3395,7 @@ export function useOrderTicketViewModel({
         unconfirmedSubmissionRef.current = submission;
         setUnconfirmedSubmission(submission);
         setPhase("error");
-        setErrorText(`Submission outcome is unconfirmed for ${submission.id}. Inspect the journal and use Refresh checks before another submission.`);
+        setErrorText(`Submission outcome is unconfirmed for ${submission.id}. Inspect the journal and use Run checks again before another submission.`);
         return;
       }
       refusal = confirmedRefusal ?? toErrorMessage(err, "Order submission failed.");
@@ -3424,7 +3424,7 @@ export function useOrderTicketViewModel({
         : null
     },
     preview,
-    serverPreview, serverPreviewError: unconfirmedSubmission ? `Submission ${unconfirmedSubmission.id} is unconfirmed. Refresh checks to inspect its retained outcome; do not resubmit.` : serverPreviewError,
+    serverPreview, serverPreviewError: unconfirmedSubmission ? `Submission ${unconfirmedSubmission.id} is unconfirmed. Run checks again to inspect its retained outcome; do not resubmit.` : serverPreviewError,
     serverPreviewLoading, serverPreviewExpired, sessionIntent,
     setSessionIntent,
     refreshServerPreview: () => {

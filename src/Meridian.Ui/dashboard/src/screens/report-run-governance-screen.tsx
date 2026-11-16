@@ -9,6 +9,7 @@ import {
 import { Link, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -134,6 +135,8 @@ export function ReportRunGovernanceScreen() {
   const mutationControllerRef = useRef<AbortController | null>(null);
 
   const refresh = useCallback(() => setRefreshSequence((current) => current + 1), []);
+  // Re-read on the header Refresh; a failed read offers "Retry authoritative load" below.
+  useOnGlobalRefresh(refresh);
 
   useEffect(() => {
     setSelectedArtifactIds(null);
@@ -461,7 +464,7 @@ export function ReportRunGovernanceScreen() {
 
   return (
     <div className="space-y-4" aria-busy={loadState.phase === "loading" || isMutating}>
-      <RunHeader run={run} onRefresh={refresh} refreshing={loadState.phase === "loading"} />
+      <RunHeader run={run} />
 
       {mutation.phase !== "idle" ? (
         <StatusBanner
@@ -583,15 +586,7 @@ export function ReportRunGovernanceScreen() {
   );
 }
 
-function RunHeader({
-  run,
-  onRefresh,
-  refreshing
-}: {
-  run: GovernedReportingRun;
-  onRefresh: () => void;
-  refreshing: boolean;
-}) {
+function RunHeader({ run }: { run: GovernedReportingRun }) {
   return (
     <Card className="panel-surface">
       <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
@@ -604,16 +599,6 @@ function RunHeader({
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={governanceStateVariant(run.governanceState)}>{run.governanceState}</Badge>
           <Badge variant={executionStateVariant(run.executionState)}>{run.executionState}</Badge>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            busy={refreshing}
-            busyLabel="Refreshing…"
-            onClick={onRefresh}
-          >
-            Refresh retained state
-          </Button>
         </div>
       </CardHeader>
       <CardContent>

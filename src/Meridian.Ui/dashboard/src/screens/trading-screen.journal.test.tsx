@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getJournal, getJournalOrder, getJournalSummary, type JournalOrder } from "@/lib/api/execution-workflows.api";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { ExecutionJournalPanel } from "./trading-screen.journal";
 
 vi.mock("@/lib/api/execution-workflows.api", () => ({
@@ -47,15 +48,17 @@ describe("ExecutionJournalPanel", () => {
   });
 
   it("expands the journal and loads the selected account's evidence", async () => {
-    const { rerender } = render(<ExecutionJournalPanel />);
-    rerender(<ExecutionJournalPanel accountId={accountId} />);
+    const { rerender } = render(<GlobalRefreshProvider sequence={0}><ExecutionJournalPanel /></GlobalRefreshProvider>);
+    rerender(<GlobalRefreshProvider sequence={0}><ExecutionJournalPanel accountId={accountId} /></GlobalRefreshProvider>);
     expect(screen.getByRole("region", { name: "Operational trade journal" })).toHaveAttribute("aria-busy", "true");
     expect(screen.getByRole("heading", { name: "Trade journal" })).toBeVisible();
     expect(screen.getByRole("textbox", { name: "Symbol" })).toBeVisible();
     expect(await screen.findByRole("row", { name: /reused SPY/i })).toBeVisible();
     expect(getJournal).toHaveBeenCalledWith(accountId, expect.any(Object), expect.objectContaining({ signal: expect.any(AbortSignal) }));
-    expect(screen.getByRole("button", { name: "Refresh journal" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: /Refresh|Retry/ })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Operational trade journal" })).toHaveAttribute("aria-busy", "false");
+    rerender(<GlobalRefreshProvider sequence={1}><ExecutionJournalPanel accountId={accountId} /></GlobalRefreshProvider>);
+    await waitFor(() => expect(getJournal).toHaveBeenCalledTimes(2));
   });
 
   it("aborts an in-flight journal when account scope clears and ignores its late evidence", async () => {
@@ -77,7 +80,7 @@ describe("ExecutionJournalPanel", () => {
     vi.mocked(getJournal).mockRejectedValueOnce(new Error("Retained journal unavailable"));
     render(<ExecutionJournalPanel accountId={accountId} />);
     expect(await screen.findByRole("alert")).toHaveTextContent("Retained journal unavailable");
-    expect(screen.getByRole("button", { name: "Refresh journal" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Retry loading the trade journal" })).toBeEnabled();
     expect(screen.queryByText("Select an account to see its journal")).not.toBeInTheDocument();
   });
 

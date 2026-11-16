@@ -1,8 +1,6 @@
 import {
   CheckCircle2,
-  ChevronDown,
   FlaskConical,
-  Loader2,
   Pencil,
   Plus,
   RotateCcw,
@@ -12,6 +10,7 @@ import {
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { Toggle } from "@/components/ui/checkbox";
@@ -355,19 +354,7 @@ function ProviderSetupPanelBody({
               </CardDescription>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => void refresh()}
-                disabled={loading}
-              >
-                {loading ? (
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-                ) : (
-                  <ChevronDown className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-                )}
-                Refresh
-              </Button>
+              <PanelReload reload={refresh} failed={Boolean(error)} busy={loading} what="provider modules" />
               <Button size="sm" onClick={() => setAddOpen(true)}>
                 <Plus className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                 Add provider

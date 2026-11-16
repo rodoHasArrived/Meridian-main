@@ -4731,7 +4731,7 @@ describe("AccountingScreen", () => {
     expect(await screen.findByRole("treegrid", { name: "Tolerance profile health by reconciliation route" })).toHaveTextContent(
       "tp-cash-variance"
     );
-    expect(screen.getByRole("button", { name: "Refresh calibration summary" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: /calibration summary/i })).not.toBeInTheDocument();
   });
 
   it("renders Accounting statement runs with endpoint counts and detail tabs", async () => {
@@ -5635,20 +5635,16 @@ describe("AccountingScreen", () => {
     })).toHaveAttribute("title", disabledReason);
     expect(screen.getByText("Resolving identifier conflict conflict-1.")).toHaveAttribute("role", "status");
     const refreshDisabledReason = "Wait until identifier conflict conflict-1 finishes resolving before refreshing the conflict queue.";
-    const refreshButton = screen.getByRole("button", {
-      name: "Refresh disabled while identifier conflict conflict-1 is resolving"
-    });
-    expect(refreshButton).toBeDisabled();
-    expect(refreshButton).toHaveAttribute("aria-describedby", "security-conflict-refresh-feedback");
-    expect(refreshButton).toHaveAttribute("title", refreshDisabledReason);
+    expect(screen.queryByRole("button", { name: /Security Master identifier conflicts|while identifier conflict conflict-1 is resolving/ })).not.toBeInTheDocument();
     expect(screen.getByText(refreshDisabledReason)).toHaveAttribute("role", "status");
 
     finishResolve();
 
     await waitFor(() => {
       expect(screen.queryByRole("button", { name: /Disabled: Resolution is already in progress/ })).not.toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Refresh Security Master identifier conflicts" })).toBeEnabled();
+      expect(screen.queryByText(refreshDisabledReason)).not.toBeInTheDocument();
     });
+    expect(screen.queryByRole("button", { name: /Security Master identifier conflicts/ })).not.toBeInTheDocument();
   });
 
   it("recovers Security Master conflict loading failures with a retry command", async () => {
@@ -5672,7 +5668,7 @@ describe("AccountingScreen", () => {
     await user.click(retry);
 
     expect(await screen.findByRole("group", { name: /Identifier conflict conflict-1/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Refresh Security Master identifier conflicts" })).toHaveTextContent("Refresh conflicts");
+    expect(screen.queryByRole("button", { name: /Security Master identifier conflicts/ })).not.toBeInTheDocument();
   });
 
   it("announces Security Master conflict resolution failures with structured details", async () => {

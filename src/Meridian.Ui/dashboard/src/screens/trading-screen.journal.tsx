@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getJournal, getJournalOrder, getJournalSummary, type JournalOrder, type JournalSummary } from "@/lib/api/execution-workflows.api";
 import { formatCurrency, formatTimestamp } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
@@ -56,7 +57,7 @@ export function ExecutionJournalPanel({ accountId }: { accountId?: string | null
   const detail = selectedInList ?? (selected && linkedOrder?.accountId.toLowerCase() === accountId?.toLowerCase()
     && linkedOrder && matchesSelection(linkedOrder, selected) ? linkedOrder : null);
   return <section aria-label="Operational trade journal" aria-busy={loading} className="panel-surface space-y-3 rounded-lg border border-border p-4">
-    <div className="flex items-center justify-between gap-3"><div><h3 className="font-semibold">Trade journal</h3><p className="text-xs text-muted-foreground">Retained execution evidence and FIFO operational attribution. Accounting posting remains separate.</p></div><Button size="sm" variant="outline" onClick={refresh} disabled={loading || !accountId}>Refresh journal</Button></div>
+    <div className="flex items-center justify-between gap-3"><div><h3 className="font-semibold">Trade journal</h3><p className="text-xs text-muted-foreground">Retained execution evidence and FIFO operational attribution. Accounting posting remains separate.</p></div><PanelReload reload={refresh} failed={error !== null} busy={loading} what="the trade journal" /></div>
       <div className="grid gap-2 md:grid-cols-3"><label className="text-xs">Symbol<Input value={symbol} onChange={(event) => setSymbol(event.target.value)} /></label><label className="text-xs">Strategy or run<Input value={strategy} onChange={(event) => setStrategy(event.target.value)} /></label><label className="text-xs">Tag<Input value={tag} onChange={(event) => setTag(event.target.value)} /></label></div>
       <div className="grid gap-2 md:grid-cols-3">
         <label className="text-xs">From date (UTC)<Input type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label>

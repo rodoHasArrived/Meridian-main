@@ -10,9 +10,10 @@ import { TableWorkbench } from "@/components/meridian/table-workbench";
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { RefreshCcw, ScrollText } from "lucide-react";
+import { ScrollText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
@@ -70,10 +71,7 @@ export function ExecutionAuditTrailPanel() {
               action-ledger chain position.
             </CardDescription>
           </div>
-          <Button size="sm" variant="outline" onClick={() => void refresh()}>
-            <RefreshCcw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
+          <PanelReload reload={refresh} failed={error !== null} busy={loading} what="the execution audit trail" />
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

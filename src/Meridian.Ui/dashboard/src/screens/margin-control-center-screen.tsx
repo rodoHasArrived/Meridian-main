@@ -1,10 +1,11 @@
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { formatNumber, formatCurrency } from "@/lib/format";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
-import { RefreshCw, ShieldAlert } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PanelSurface } from "@/components/ui/panel-surface";
@@ -54,10 +55,7 @@ export function MarginControlCenterScreen() {
             remain authoritative; this workspace never liquidates positions or changes orders.
           </p>
         </div>
-        <Button size="sm" variant="outline" onClick={() => void load()} busy={loading} busyLabel="Refreshing…">
-          <RefreshCw className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-          Refresh
-        </Button>
+        <PanelReload reload={() => load()} failed={error !== null} busy={loading} what="margin control data" />
       </PanelSurface>
 
       {error ? (

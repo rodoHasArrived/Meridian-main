@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import type {
   LifecycleShutdownAccepted,
   LifecycleShutdownOperation,
@@ -133,8 +134,9 @@ describe("LifecycleControlPanel", () => {
 
   it("reenables lifecycle controls after a supervised restart creates a new host session", async () => {
     const user = userEvent.setup();
-    render(<LifecycleControlPanel />);
+    const { rerender } = render(<GlobalRefreshProvider sequence={0}><LifecycleControlPanel /></GlobalRefreshProvider>);
     await screen.findByText("Dedicated database");
+    expect(screen.queryByRole("button", { name: /Refresh|Retry/ })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Restart Meridian" }));
     await user.click(screen.getByRole("button", { name: "Confirm restart" }));
@@ -145,7 +147,7 @@ describe("LifecycleControlPanel", () => {
       sessionId: "replacement-session-1234",
       uptimeSeconds: 1
     });
-    await user.click(screen.getByRole("button", { name: "Refresh" }));
+    rerender(<GlobalRefreshProvider sequence={1}><LifecycleControlPanel /></GlobalRefreshProvider>);
 
     await waitFor(() => expect(screen.queryByText("Restart accepted")).not.toBeInTheDocument());
     expect(screen.getByRole("button", { name: "Restart Meridian" })).toBeEnabled();

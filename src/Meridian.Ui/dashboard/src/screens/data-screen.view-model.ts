@@ -340,13 +340,6 @@ export interface DataOperationsProviderSectionState extends DataOperationsSectio
   selectedDetail: DataOperationsProviderDetailState | null;
   detailEmptyState: DataOperationsEmptyState | null;
   diagnosticsSummary: string;
-  refreshAction: {
-    label: string;
-    ariaLabel: string;
-    busy: boolean;
-    disabled: boolean;
-    disabledReason: string | null;
-  };
 }
 
 export type DataOperationsProviderStatus = DataProviderRecord["status"] | "Blocked";
@@ -2255,16 +2248,17 @@ export function buildProviderSection(
         disabledReason: null,
         busy: false
       },
-      {
-        id: "refresh",
-        label: evidence.providerRoutingRefreshing ? "Refreshing..." : "Refresh Status",
-        ariaLabel: evidence.providerRoutingRefreshing ? "Provider status refresh in progress" : "Refresh provider status and routing evidence",
+      // The header Refresh re-reads provider status; a local control appears only while that evidence is missing.
+      ...(evidence.onProviderRoutingRefresh && evidence.providerConnections == null ? [{
+        id: "refresh" as const,
+        label: evidence.providerRoutingRefreshing ? "Retrying..." : "Retry",
+        ariaLabel: evidence.providerRoutingRefreshing ? "Provider status reload in progress" : "Retry loading provider status and routing evidence",
         href: null,
-        variant: "outline",
+        variant: "outline" as const,
         disabled: Boolean(evidence.providerRoutingRefreshing),
-        disabledReason: evidence.providerRoutingRefreshing ? "Provider routing refresh is already in progress." : null,
+        disabledReason: evidence.providerRoutingRefreshing ? "Provider status is already reloading." : null,
         busy: Boolean(evidence.providerRoutingRefreshing)
-      },
+      }] : []),
       {
         id: "diagnostics",
         label: "Run Diagnostics",
@@ -2308,13 +2302,6 @@ export function buildProviderSection(
     diagnosticsSummary: selectedDetail
       ? selectedDetail.diagnostics.map((item) => `${item.label}: ${item.statusLabel}`).join("; ")
       : "Select a provider before running diagnostics.",
-    refreshAction: {
-      label: evidence.providerRoutingRefreshing ? "Refreshing..." : "Refresh Status",
-      ariaLabel: evidence.providerRoutingRefreshing ? "Provider status refresh in progress" : "Refresh provider status and routing evidence",
-      busy: Boolean(evidence.providerRoutingRefreshing),
-      disabled: Boolean(evidence.providerRoutingRefreshing),
-      disabledReason: evidence.providerRoutingRefreshing ? "Provider routing refresh is already in progress." : null
-    },
     emptyState: {
       title: "No providers configured",
       description: "Add a provider before relying on live quotes, historical backfill, brokerage, Security Master, or export data."

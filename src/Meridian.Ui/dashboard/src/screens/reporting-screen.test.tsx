@@ -1759,7 +1759,7 @@ describe("ReportingScreen", () => {
     renderWithRouter(<ReportingScreen data={accounting} onRefreshLivePortfolioViews={refreshLivePortfolioViews} />, { initialEntries: ["/reporting/report-builder"] });
 
     expect(screen.getByRole("region", { name: "Live portfolio views" })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Refresh live portfolio reporting views" }));
+    await user.click(screen.getByRole("button", { name: "Revalue live portfolio reporting views" }));
     expect(refreshLivePortfolioViews).toHaveBeenCalledTimes(1);
     await waitFor(() => {
       expect(screen.getByText("Live portfolio views refreshed.")).toBeInTheDocument();
@@ -1833,7 +1833,7 @@ describe("ReportingScreen", () => {
     const refreshLivePortfolioViews = vi.fn().mockRejectedValue(new Error("Portfolio summary refresh failed."));
     renderWithRouter(<ReportingScreen data={accounting} onRefreshLivePortfolioViews={refreshLivePortfolioViews} />, { initialEntries: ["/reporting/report-builder"] });
 
-    await user.click(screen.getByRole("button", { name: "Refresh live portfolio reporting views" }));
+    await user.click(screen.getByRole("button", { name: "Revalue live portfolio reporting views" }));
 
     expect(refreshLivePortfolioViews).toHaveBeenCalledTimes(1);
     await waitFor(() => {

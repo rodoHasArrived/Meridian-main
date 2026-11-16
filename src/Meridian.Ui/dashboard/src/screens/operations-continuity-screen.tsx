@@ -15,6 +15,7 @@ import {
   submitOperationsContinuityApproval
 } from "@/lib/api";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { cn } from "@/lib/utils";
 import { useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
 import { Input } from "@/components/ui/input";
@@ -1176,6 +1177,7 @@ export function OperationsContinuityScreen() {
       periodId: searchParams.get("periodId") ?? undefined
     }
   }, useFundScopeNarrowingContext());
+  useOnGlobalRefresh(vm.refresh);
   const [breakCommand, setBreakCommand] = useState<{
     pending: { breakId: string; kind: BreakCommandKind } | null;
     message: string | null;
@@ -1583,10 +1585,8 @@ export function OperationsContinuityScreen() {
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Badge variant="outline">{vm.workflowsSummaryLabel}</Badge>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
+          {vm.errorText ? <Button
+            type="button" variant="outline" size="sm"
             onClick={() => void vm.refresh()}
             busy={vm.reloadBusy}
             busyLabel={vm.reloadLabel}
@@ -1596,7 +1596,7 @@ export function OperationsContinuityScreen() {
           >
             <RefreshCcw className="h-4 w-4" aria-hidden="true" />
             {vm.reloadLabel}
-          </Button>
+          </Button> : null}
         </div>
       </section>
 

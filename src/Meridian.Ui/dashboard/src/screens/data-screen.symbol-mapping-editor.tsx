@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { useRequestLifecycle } from "@/hooks/use-request-lifecycle";
@@ -61,7 +62,7 @@ export function SymbolMappingEditor({ api = symbolMappingApi, onChanged }: { api
   return <div className="grid gap-4 rounded-md border p-4" aria-label="Symbol mapping editor">
     <div className="flex flex-wrap items-center justify-between gap-2">
       <h3 className="font-semibold">Edit provider symbol mappings</h3>
-      <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => void refresh()}>Refresh mapping evidence</Button>
+      <PanelReload reload={refresh} failed={Boolean(status.error)} busy={busy} what="mapping evidence" />
     </div>
     <p className="text-sm text-muted-foreground">Mapping edits update registry aliases for future requests. Review comparison evidence before promoting each provider. Existing archives retain their original symbols and provenance.</p>
     {status.error ? <StatusBanner tone="danger" title="Mapping change unavailable" detail={status.error} /> : null}

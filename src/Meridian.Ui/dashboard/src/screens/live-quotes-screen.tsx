@@ -173,7 +173,7 @@ export function LiveQuotesScreen() {
                   disabled={vm.refreshCommand.disabled}
                   disabledReason={vm.refreshCommand.disabledReason}
                   busy={vm.refreshCommand.busy}
-                  busyLabel="Refreshing..."
+                  busyLabel="Fetching..."
                 >
                   <RefreshCw className={`h-4 w-4 ${vm.refreshCommand.busy ? "animate-spin" : ""}`} aria-hidden="true" />
                   <span className="ml-1.5">{vm.refreshCommand.label}</span>

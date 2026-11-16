@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Input } from "@/components/ui/input";
 import { DesignSystemStatus } from "@/design-system/status";
 import { applyApprovalCollaboration, getApprovalCollaboration, type ApprovalCollaboration, type ApprovalCollaborationCommand } from "@/lib/approval-collaboration";
@@ -71,7 +72,7 @@ export function ApprovalCollaborationPanel({ workflowId, onChanged }: { workflow
     {commandError ? <p role="alert" className="text-xs">{commandError}</p> : null}
     {notice ? <p role="status" className="text-xs">{notice}</p> : null}
     {retry ? <Button size="sm" disabled={busy || loading} onClick={() => void send(retry.action, retry.command)}>Retry same approval command</Button> : null}
-    <Button size="sm" variant="outline" disabled={loading || busy} onClick={() => setRevision((value) => value + 1)}>Refresh discussion</Button>
+    <PanelReload reload={() => { if (!loading && !busy) setRevision((value) => value + 1); }} failed={Boolean(error)} busy={busy} what="approval discussion" />
     {current ? <>
       <div className="flex flex-wrap items-center gap-2 text-xs"><DesignSystemStatus status={current.approvalState}>{current.approvalState}</DesignSystemStatus><span>Reviewer: {current.reviewer ?? "Unassigned"}</span><span>Submitted by: {current.submitter ?? "Unavailable"}</span></div>
       {current.disabledReason ? <p className="text-xs text-muted-foreground">{current.disabledReason}</p> : null}

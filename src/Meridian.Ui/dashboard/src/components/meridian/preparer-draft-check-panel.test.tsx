@@ -122,7 +122,7 @@ describe("retained calculation preparer check", () => {
     await ready(); fill(); fireEvent.click(screen.getByRole("button", { name: "Attest my non-postable draft check" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Refresh the declaration and retained run");
     expect(screen.queryByRole("button", { name: "Retry same draft command" })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Refresh draft check" }));
+    fireEvent.click(screen.getByRole("button", { name: "Retry loading draft check" }));
     await ready();
     expect(screen.getByLabelText("Draft-check reason")).toHaveValue("");
     expect(screen.getByRole("checkbox", { name: target.confirmation })).not.toBeChecked();

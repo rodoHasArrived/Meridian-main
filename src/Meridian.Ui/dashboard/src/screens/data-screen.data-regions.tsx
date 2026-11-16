@@ -1,6 +1,6 @@
-import { RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { useToast, type ToastApi } from "@/components/ui/toast";
@@ -51,17 +51,7 @@ export function CoverageGapsRegion({ panel }: { panel: CoverageGapsViewModel }) 
               {panel.model ? ` ${panel.model.summary} Last quality run: ${panel.model.runAtLabel}.` : null}
             </CardDescription>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => void panel.refresh()}
-            disabled={panel.loading}
-            aria-label="Refresh security master coverage"
-          >
-            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-            <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
-          </Button>
+          <PanelReload reload={panel.refresh} failed={Boolean(panel.error)} busy={panel.loading} what="security master coverage" />
         </CardHeader>
         <CardContent>
           {panel.error ? (
@@ -188,17 +178,7 @@ export function DataQualityRegion({
                 {panel.model.overallLabel}
               </Badge>
             )}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => void panel.refresh()}
-              disabled={panel.loading}
-              aria-label="Refresh data quality dashboard"
-            >
-              <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
-            </Button>
+            <PanelReload reload={panel.refresh} failed={Boolean(panel.error)} busy={panel.loading} what="data quality dashboard" />
           </div>
         </CardHeader>
         <CardContent>

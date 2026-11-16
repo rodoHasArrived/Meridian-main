@@ -1,5 +1,7 @@
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { axe } from "jest-axe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as oversight from "@/lib/api/account-oversight.api";
@@ -110,13 +112,14 @@ describe("account cash continuity operator panel", () => {
 
   it("blocks a stale assignment until the operator refreshes retained case versions", async () => {
     api.assignCashCase.mockRejectedValueOnce(new ApiError({ path: "/cash-cases", status: 409, detail: "Version conflict" }));
-    render(<AccountCashCasesPanel scope={scope} context={context} />);
+    render(<WithHeaderRefresh><AccountCashCasesPanel scope={scope} context={context} /></WithHeaderRefresh>);
     await selectCase();
     await userEvent.type(screen.getByLabelText("Assignment rationale"), "Check updated owner");
     await userEvent.click(screen.getByRole("button", { name: "Retain owner assignment" }));
     await screen.findByText(/This case changed after it was loaded/);
     expect(screen.getByRole("button", { name: "Retain owner assignment" })).toBeDisabled();
-    await userEvent.click(screen.getByRole("button", { name: "Refresh retained cases" }));
+    expect(screen.queryByRole("button", { name: /retained cash cases|Refresh retained cases/ })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Header refresh" }));
     await waitFor(() => expect(api.listCashCases).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(screen.getByRole("button", { name: "Retain owner assignment" })).toBeEnabled());
   });
@@ -177,12 +180,12 @@ describe("account cash continuity operator panel", () => {
 
   it("rejects foreign account case responses and keeps existing rows when a later refresh fails", async () => {
     api.listCashCases.mockResolvedValueOnce([cashCase()]).mockResolvedValueOnce([cashCase({ scope: { ...caseScope, accountId: "foreign" } })]).mockRejectedValueOnce(new Error("Retained store unavailable"));
-    render(<AccountCashCasesPanel scope={scope} context={context} />);
+    render(<WithHeaderRefresh><AccountCashCasesPanel scope={scope} context={context} /></WithHeaderRefresh>);
     await screen.findByText("cash-pilot · v4");
-    await userEvent.click(screen.getByRole("button", { name: "Refresh retained cases" }));
+    await userEvent.click(screen.getByRole("button", { name: "Header refresh" }));
     await screen.findByText(/Cash cases belong to a different account or ledger book/);
     expect(screen.getByRole("row", { name: /USD cash case stable-cash-case/ })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Refresh retained cases" }));
+    await userEvent.click(screen.getByRole("button", { name: "Retry loading retained cash cases" }));
     await screen.findByText("Retained store unavailable");
     expect(screen.getByRole("row", { name: /USD cash case stable-cash-case/ })).toBeInTheDocument();
   });
@@ -202,9 +205,15 @@ describe("account cash continuity operator panel", () => {
   it("reports unavailable durable history without presenting an empty-case assertion", async () => {
     api.listCashCases.mockRejectedValue(new ApiError({ path: "/cash-cases", status: 503, detail: "Durable cash history requires provisioning." }));
     render(<AccountCashCasesPanel scope={scope} context={context} />);
-    await screen.findByText("Retained cash cases could not be loaded. Refresh retained cases to retry.");
+    await screen.findByText("Retained cash cases could not be loaded. Retry the load.");
     expect(screen.queryByText(/No retained cash cases for this account and book/)).not.toBeInTheDocument();
     expect(screen.queryByText("0 retained cash cases")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Refresh retained cases" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Retry loading retained cash cases" })).toBeEnabled();
   });
 });
+
+/** Stands in for the shell: the header Refresh is the only control that reloads panel data. */
+function WithHeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence((value) => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
+}

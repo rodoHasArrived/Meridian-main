@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormGrid, FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -168,14 +169,14 @@ function AccountCashCasesScopePanel({ scope: incomingScope, context, onDirtyChan
       {error ? <StatusBanner role="alert" tone="danger" title={<span className="text-foreground">Cash oversight needs attention</span>} detail={error} /> : null}
       {message ? <StatusBanner role="status" tone="success" title={<span className="text-foreground">{message}</span>} /> : null}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">{loading ? "Loading authoritative retained cases…" : historyUnavailable ? "Retained cash history is unavailable. Refresh to retry; previously loaded cases remain visible." : `${cases.length} retained cash ${cases.length === 1 ? "case" : "cases"}`}</p>
-        <Button variant="outline" disabled={loading || busy || readingFile} onClick={() => { setError(""); setMessage(""); setReload(value => value + 1); }}>Refresh retained cases</Button>
+        <p className="text-sm text-muted-foreground">{loading ? "Loading authoritative retained cases…" : historyUnavailable ? "Retained cash history is unavailable. Retry the load; previously loaded cases remain visible." : `${cases.length} retained cash ${cases.length === 1 ? "case" : "cases"}`}</p>
+        <PanelReload reload={() => { if (loading || busy || readingFile) return; setError(""); setMessage(""); setReload(value => value + 1); }} failed={historyUnavailable} busy={loading || busy || readingFile} what="retained cash cases" />
       </div>
       <DenseDataTable<AccountCashReconciliationCase>
         ariaLabel="Retained account cash cases" rows={cases} getRowId={item => item.caseId}
         selectedRowId={selectedId} onRowSelect={item => { if (!busy && !assignmentDirty) setSelectedId(item.caseId); }}
         getRowAriaLabel={item => `${item.currency} cash case ${item.caseId}, ${item.state}, owner ${item.owner}`}
-        emptyText={loading ? "Loading retained cash cases…" : historyUnavailable ? "Retained cash cases could not be loaded. Refresh retained cases to retry." : "No retained cash cases for this account and book. Import a validated source handoff to capture the first comparison."}
+        emptyText={loading ? "Loading retained cash cases…" : historyUnavailable ? "Retained cash cases could not be loaded. Retry the load." : "No retained cash cases for this account and book. Import a validated source handoff to capture the first comparison."}
         columns={[
           { id: "case", label: "Stable case", render: item => <span className="break-all font-mono">{item.caseId}</span> },
           { id: "currency", label: "Native currency", render: item => item.currency },

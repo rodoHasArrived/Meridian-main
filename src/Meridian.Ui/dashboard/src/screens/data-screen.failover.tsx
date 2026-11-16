@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -55,9 +56,9 @@ function FailoverEditor({ api }: { api: FailoverApi }) {
     {error ? <StatusBanner tone="danger" title="Failover operation unavailable" detail={error} role="alert" /> : null}
     {notice ? <StatusBanner tone="success" title={notice} role="status" /> : null}
     {pending ? <StatusBanner tone="warning" title="Pending host restart" detail="Saved configuration applies after the host restarts and rebuilds streaming providers. The active provider shown below is live runtime evidence; saving does not switch it." /> : null}
-    <Button type="button" variant="outline" disabled={busy} onClick={() => void perform(async signal => {
+    <PanelReload what="failover state" failed={Boolean(error)} busy={busy} reload={() => busy ? undefined : perform(async signal => {
       const fresh = await api.get({ signal }); if (!signal.aborted) setSettings(fresh);
-    }, "Failover state refreshed.")}>Refresh failover state</Button>
+    }, "Failover state refreshed.")} />
     {!settings ? <p role="status" className="text-sm text-muted-foreground">{error ? "No authoritative settings loaded." : "Loading failover configuration…"}</p> : <>
       {!settings.runtimeAvailable ? <StatusBanner tone="warning" title="Streaming runtime unavailable" detail="You can edit saved configuration. Provider switch controls require a running streaming failover service." /> : null}
       <form className="grid gap-3 rounded border p-3" onSubmit={event => {

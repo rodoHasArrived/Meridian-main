@@ -969,10 +969,11 @@ export function buildLiveQuoteRefreshCommand(
   }
 
   return {
-    label: refreshing ? "Refreshing" : "Refresh",
-    ariaLabel: refreshing ? `Refreshing live data for ${activeSymbol}` : `Refresh live data for ${activeSymbol}`,
+    // Asks the market-data provider for new quotes on demand, so it is named for that work.
+    label: refreshing ? "Fetching" : "Fetch latest",
+    ariaLabel: refreshing ? `Fetching latest live data for ${activeSymbol}` : `Fetch latest live data for ${activeSymbol}`,
     disabled: refreshing,
-    disabledReason: refreshing ? "Live market data refresh is already running." : null,
+    disabledReason: refreshing ? "Live market data is already being fetched." : null,
     busy: refreshing
   };
 }

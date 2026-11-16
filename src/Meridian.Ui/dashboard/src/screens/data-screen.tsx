@@ -26,6 +26,8 @@ import {
 } from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -234,7 +236,9 @@ function DataScreenContent({
     providerRoutingTrustSnapshots
   ]);
   const operatorIdentity = session?.displayName.trim() || null;
+  // Provider status belongs to the header Refresh; routing evidence is re-read with it on the provider route.
   const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence, operatorIdentity);
+  useOnGlobalRefresh(() => { if (vm.workstream === "providers") void onProviderRoutingRefresh?.(); });
   // "Providers healthy" counts the providers in use with the status this page shows for each, so
   // the figure is a count of the health cards beneath it.
   const kpiProviders = useMemo(
@@ -2044,17 +2048,7 @@ function CapabilityMatrixRegion({ panel }: { panel: CapabilityMatrixViewModel })
               {panel.model ? ` ${panel.model.summary}` : null}
             </CardDescription>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => void panel.refresh()}
-            disabled={panel.loading}
-            aria-label="Refresh provider capability matrix"
-          >
-            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-            <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
-          </Button>
+          <PanelReload reload={panel.refresh} failed={Boolean(panel.error)} busy={panel.loading} what="provider capability matrix" />
         </CardHeader>
         <CardContent>
           {panel.error ? (

@@ -372,7 +372,7 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
             </Button>
             <Button type="button" variant="ghost" onClick={() => void vm.refreshChainPreview()}>
               <RotateCw className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">Refresh chain</span>
+              <span className="ml-1.5">Fetch latest chain</span>
             </Button>
           </div>
           <CommandFeedback id={vm.runCommand.feedbackId} message={vm.runCommand.feedbackText} />

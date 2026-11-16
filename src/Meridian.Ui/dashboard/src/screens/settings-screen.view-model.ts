@@ -1059,13 +1059,14 @@ export interface SettingsProviderConnectionCenter {
   statusLabel: string;
   statusVariant: "default" | "success" | "warning" | "danger" | "outline";
   routingSummaryLabel: string;
+  /** Present only while provider evidence failed to load; the header Refresh re-reads it otherwise. */
   refreshAction: {
     label: string;
     ariaLabel: string;
     busy: boolean;
     disabled: boolean;
     disabledReason: string | null;
-  };
+  } | null;
   groups: SettingsProviderConnectionGroup[];
 }
 
@@ -2150,7 +2151,8 @@ function buildProviderConnectionCenter(
   routingBindings: ProviderRoutingBinding[] | null | undefined,
   trustSnapshots: ProviderRoutingTrustSnapshot[] | null | undefined,
   refreshing: boolean,
-  evaluatedAt: Date
+  evaluatedAt: Date,
+  loadFailed = false
 ): SettingsProviderConnectionCenter {
   const routingConnectionRows = routingConnections ?? [];
   const bindingRows = routingBindings ?? [];
@@ -2200,13 +2202,13 @@ function buildProviderConnectionCenter(
     statusLabel,
     statusVariant: rows.length === 0 ? "warning" : readinessBlockedCount > 0 ? "danger" : readinessReviewCount > 0 ? "warning" : "success",
     routingSummaryLabel,
-    refreshAction: {
-      label: refreshing ? "Refreshing..." : "Refresh routing",
-      ariaLabel: refreshing ? "Provider routing refresh in progress" : "Refresh Provider Connection Center routing data",
+    refreshAction: loadFailed || !connections ? {
+      label: refreshing ? "Retrying..." : "Retry",
+      ariaLabel: refreshing ? "Provider routing reload in progress" : "Retry loading Provider Connection Center routing data",
       busy: refreshing,
       disabled: refreshing,
-      disabledReason: refreshing ? "Provider routing refresh is already in progress." : null
-    },
+      disabledReason: refreshing ? "Provider routing is already reloading." : null
+    } : null,
     groups: [
       {
         id: "brokerage",
@@ -2874,7 +2876,8 @@ export function buildSettingsScreenViewModel(
     payload.providerRoutingBindings ?? null,
     payload.providerRoutingTrustSnapshots ?? null,
     payload.providerRoutingRefreshing === true,
-    evaluatedAt
+    evaluatedAt,
+    Boolean(payload.workspaceErrors?.settings)
   );
   const alpacaConnectionPanel = buildAlpacaConnectionPanel(payload.brokerageConnection ?? null, evaluatedAt);
   const robinhoodConnectionPanel = buildRobinhoodConnectionPanel(payload.robinhoodConnection ?? null);

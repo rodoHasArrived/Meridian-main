@@ -3,6 +3,7 @@ import { TaxParcelComposition } from "@/screens/tax-parcel-composition";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { formatNumber, formatTimestamp } from "@/lib/format";
 import { formatTaxAmount as amount, formatTaxDecimal } from "@/lib/ledger-tax-results-format";
@@ -42,9 +43,7 @@ export function JournalEntryTaxResults({ ledgerBookId, periodId, journalEntryId 
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <CardTitle id="journal-tax-results-title">Disposal tax results</CardTitle>
-          <Button size="sm" variant="outline" disabled={loading} onClick={() => setRefreshVersion((value) => value + 1)}>
-            {error ? "Retry tax results" : "Refresh retained results"}
-          </Button>
+          <PanelReload reload={() => { if (!loading) setRefreshVersion((value) => value + 1); }} failed={Boolean(error)} busy={loading} what="tax results" />
         </div>
         <CardDescription>Retained server results for this posting. Refresh reads the latest evidence; it does not re-evaluate or change a disposal.</CardDescription>
       </CardHeader>

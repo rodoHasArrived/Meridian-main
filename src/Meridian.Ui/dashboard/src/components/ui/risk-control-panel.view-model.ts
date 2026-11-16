@@ -747,16 +747,16 @@ function buildRiskControlCommandState(state: RiskControlPanelCommandState): {
         : "Save price collar"
     },
     refreshAction: {
-      label: state.loading ? "Refreshing" : "Refresh",
+      label: state.loading ? "Retrying" : "Retry",
       busy: state.loading,
-      busyLabel: "Refreshing risk controls",
+      busyLabel: "Retrying risk controls",
       disabled: state.loading || state.saving,
       disabledReason: state.loading
         ? "Risk controls are already refreshing."
         : state.saving
           ? "Wait for the risk threshold update to finish before refreshing."
           : null,
-      ariaLabel: state.loading ? "Refreshing risk controls" : "Refresh risk controls"
+      ariaLabel: state.loading ? "Retrying risk controls" : "Retry loading risk controls"
     }
   };
 }
