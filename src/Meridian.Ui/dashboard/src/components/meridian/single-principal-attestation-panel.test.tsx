@@ -210,4 +210,12 @@ describe("single-principal evidence acknowledgment", () => {
     await loaded();
     expect((await axe(container)).violations).toEqual([]);
   });
+  it("keeps the typed reason and confirmation when the header refresh fires", async () => {
+    const view = render(<GlobalRefreshProvider sequence={0}><SinglePrincipalAttestationPanel vaultId="vault-1" documentId="document-1" /></GlobalRefreshProvider>);
+    await loaded(); confirm();
+    view.rerender(<GlobalRefreshProvider sequence={1}><SinglePrincipalAttestationPanel vaultId="vault-1" documentId="document-1" /></GlobalRefreshProvider>);
+    expect(screen.getByLabelText("Attestation reason")).toHaveValue("Inspected original retained bytes");
+    expect(screen.getByRole("checkbox")).toBeChecked();
+    expect(api.getAttestationSubject).toHaveBeenCalledTimes(1);
+  });
 });

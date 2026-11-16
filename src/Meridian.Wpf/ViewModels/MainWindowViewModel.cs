@@ -78,7 +78,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         NavigateCommand = new RelayCommand<string>(Navigate);
         StartCollectorCommand = new AsyncRelayCommand(StartCollectorAsync, CanControlCollector);
         StopCollectorCommand = new AsyncRelayCommand(StopCollectorAsync, CanControlCollector);
-        RefreshCommand = new RelayCommand(() => _messagingService.Send("RefreshStatus"));
+        RefreshCommand = new RelayCommand(RequestRefresh);
         LogoutCommand = new RelayCommand(Logout, CanLogout);
         AddClipboardSymbolsCommand = new AsyncRelayCommand(AddPendingSymbolsToWatchlistAsync, () => _pendingClipboardSymbols.Count > 0);
         DismissStartupBannerCommand = new RelayCommand(HideStartupBanner);
@@ -99,6 +99,12 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     }
 
     public event EventHandler? LogoutRequested;
+
+    /// <summary>
+    /// Raised when F5, the refresh shortcut, or the palette asks for a refresh, so the window can
+    /// run the same shell refresh as the toolbar Refresh button.
+    /// </summary>
+    public event EventHandler? ShellRefreshRequested;
 
     public StatusBarViewModel StatusBar { get; }
 
@@ -319,6 +325,13 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         StartupBannerVisibility = Visibility.Collapsed;
     }
 
+    private void RequestRefresh()
+    {
+        // Status listeners (dashboard, provider health) still rely on the message.
+        _messagingService.Send("RefreshStatus");
+        ShellRefreshRequested?.Invoke(this, EventArgs.Empty);
+    }
+
     public void HandleShortcut(string actionId)
     {
         switch (actionId)
@@ -370,7 +383,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
                 Navigate("ServiceManager");
                 break;
             case "RefreshStatus":
-                _messagingService.Send("RefreshStatus");
+                RequestRefresh();
                 break;
             case "ZoomIn":
                 _messagingService.Send("ZoomIn");
@@ -401,7 +414,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
                 Navigate("Backfill");
                 break;
             case "RefreshStatus":
-                _messagingService.Send("RefreshStatus");
+                RequestRefresh();
                 break;
             case "AddSymbol":
                 Navigate("Symbols");

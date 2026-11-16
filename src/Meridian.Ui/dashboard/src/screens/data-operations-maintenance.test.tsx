@@ -4,6 +4,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import * as maintenanceApi from "@/lib/api/archive-maintenance.api";
 import { ArchiveMaintenanceOperations } from "@/screens/data-operations-maintenance";
 import type { ArchiveMaintenanceExecution } from "@/types/archive-maintenance.types";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
+
+function HeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
+}
 
 vi.mock("@/lib/api/archive-maintenance.api", () => ({
   getMaintenanceServiceStatus: vi.fn(),
@@ -211,5 +218,23 @@ describe("ArchiveMaintenanceOperations", () => {
     expect(within(posture).getByText("Running")).toBeInTheDocument();
     // Both statistics-backed metrics fall back together; neither reports a zero.
     expect(within(posture).getAllByText("Execution statistics have not loaded.")).toHaveLength(2);
+  });
+
+  it("re-reads with the header refresh and offers Retry only after a failed read", async () => {
+    primeReads();
+    const user = userEvent.setup();
+    render(<HeaderRefresh><ArchiveMaintenanceOperations /></HeaderRefresh>);
+    await screen.findByLabelText("Archive maintenance posture");
+    await waitFor(() => expect(api.getMaintenanceExecutions).toHaveBeenCalledTimes(1));
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry loading archive maintenance" })).not.toBeInTheDocument();
+
+    api.getMaintenanceStatistics.mockRejectedValueOnce(new Error("statistics unavailable"));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(await screen.findByText(/1 of 5 maintenance reads failed/)).toBeInTheDocument();
+    expect(api.getMaintenanceExecutions).toHaveBeenCalledTimes(2);
+    await user.click(screen.getByRole("button", { name: "Retry loading archive maintenance" }));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Retry loading archive maintenance" })).not.toBeInTheDocument());
+    expect(api.getMaintenanceExecutions).toHaveBeenCalledTimes(3);
   });
 });

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PanelReload } from "@/components/ui/panel-reload";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ const newRule = (): FailoverRuleDraft => ({ id: "", primaryProviderId: "", backu
 
 function FailoverEditor({ api }: { api: FailoverApi }) {
   const [settings, setSettings] = useState<FailoverSettings | null>(null);
+  const [loaded, setLoaded] = useState<FailoverSettings | null>(null);
   const [rule, setRule] = useState<FailoverRuleDraft | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,13 +30,13 @@ function FailoverEditor({ api }: { api: FailoverApi }) {
 
   useEffect(() => {
     const controller = new AbortController(); request.current = controller;
-    api.get({ signal: controller.signal }).then(setSettings).catch((cause: unknown) => {
+    api.get({ signal: controller.signal }).then(fresh => { setSettings(fresh); setLoaded(fresh); }).catch((cause: unknown) => {
       if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Failover settings could not be loaded.");
     });
     return () => { controller.abort(); request.current?.abort(); };
   }, [api]);
 
-  async function perform(action: (signal: AbortSignal) => Promise<unknown>, message: string, saved = false) {
+  async function perform(action: (signal: AbortSignal) => Promise<unknown>, message: string | null, saved = false) {
     request.current?.abort(); const controller = new AbortController(); request.current = controller;
     setBusy(true); setError(null); setNotice(null);
     try {
@@ -44,19 +45,22 @@ function FailoverEditor({ api }: { api: FailoverApi }) {
       if (saved) { setPending(true); window.dispatchEvent(new Event("meridian:configuration-saved")); }
       setNotice(message);
       const refreshed = await api.get({ signal: controller.signal });
-      if (!controller.signal.aborted) setSettings(refreshed);
+      if (!controller.signal.aborted) { setSettings(refreshed); setLoaded(refreshed); }
     } catch (cause) {
       if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "The operation failed. Refresh to inspect current state before retrying.");
     } finally { if (!controller.signal.aborted) setBusy(false); }
   }
 
   function editRule(existing: FailoverRule) { setRule({ ...existing, reason: "" }); }
+  // The header Refresh is not a deliberate local click: it never replaces unsaved edits or an open draft, and reports nothing.
+  const dirty = JSON.stringify(settings) !== JSON.stringify(loaded) || rule !== null || deleteId !== null;
+  useOnGlobalRefresh(() => { if (!busy && !dirty) void perform(async () => undefined, null); });
 
   return <div className="grid gap-4">
     {error ? <StatusBanner tone="danger" title="Failover operation unavailable" detail={error} role="alert" /> : null}
     {notice ? <StatusBanner tone="success" title={notice} role="status" /> : null}
     {pending ? <StatusBanner tone="warning" title="Pending host restart" detail="Saved configuration applies after the host restarts and rebuilds streaming providers. The active provider shown below is live runtime evidence; saving does not switch it." /> : null}
-    <PanelReload what="failover state" failed={Boolean(error)} busy={busy} reload={() => busy ? undefined : perform(async () => undefined, "Failover state refreshed.")} />
+    {error ? <div><Button type="button" size="sm" variant="outline" disabled={busy} aria-label="Retry loading failover state" onClick={() => void perform(async () => undefined, "Failover state refreshed.")}>Retry</Button></div> : null}
     {!settings ? <p role="status" className="text-sm text-muted-foreground">{error ? "No authoritative settings loaded." : "Loading failover configuration…"}</p> : <>
       {!settings.runtimeAvailable ? <StatusBanner tone="warning" title="Streaming runtime unavailable" detail="You can edit saved configuration. Provider switch controls require a running streaming failover service." /> : null}
       <form className="grid gap-3 rounded border p-3" onSubmit={event => {

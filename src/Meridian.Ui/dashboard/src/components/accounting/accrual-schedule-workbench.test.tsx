@@ -131,6 +131,17 @@ describe("accrual schedule journey", () => {
     await screen.findByRole("button", { name: "Generate due accrual drafts" });
     expect(vi.mocked(api.configureAccrualSchedule).mock.calls[1]?.[0]).toEqual(vi.mocked(api.configureAccrualSchedule).mock.calls[0]?.[0]);
   });
+  it("keeps the reviewed preview, confirmation and inputs when the header refresh re-reads schedules", async () => {
+    const view = render(<GlobalRefreshProvider sequence={0}><AccrualScheduleWorkbench {...props} /></GlobalRefreshProvider>); await fill();
+    fireEvent.click(screen.getByRole("checkbox"));
+    const reads = vi.mocked(api.getAccrualSchedules).mock.calls.length;
+    view.rerender(<GlobalRefreshProvider sequence={1}><AccrualScheduleWorkbench {...props} /></GlobalRefreshProvider>);
+    await waitFor(() => expect(api.getAccrualSchedules).toHaveBeenCalledTimes(reads + 1));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Retain accrual schedule" })).toBeEnabled());
+    expect(screen.getByRole("region", { name: "Accrual occurrence preview" })).toBeInTheDocument();
+    expect(screen.getByRole("checkbox")).toBeChecked();
+    expect(screen.getByLabelText("Amount per occurrence")).toHaveValue("123.123456789123456789");
+  });
   it("shows closed-period blockers and refuses configuration", async () => {
     vi.mocked(api.previewAccrualSchedule).mockResolvedValue({ ...preview, occurrences: preview.occurrences.map(row => ({ ...row, isOpen: false, blocker: "Period locked by controller" })) });
     render(<AccrualScheduleWorkbench {...props} />); await fill(); expect(screen.getByText(/Period locked by controller/)).toBeInTheDocument();

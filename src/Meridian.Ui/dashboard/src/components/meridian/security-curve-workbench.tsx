@@ -49,6 +49,7 @@ export function SecurityCurveWorkbench() {
   const [loadFailed, setLoadFailed] = useState(false);
   const request = useRef<AbortController | null>(null);
   const mutation = useRef<AbortController | null>(null);
+  const shownCurve = useRef("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -66,7 +67,8 @@ export function SecurityCurveWorkbench() {
   useEffect(() => {
     request.current?.abort();
     const controller = new AbortController(); request.current = controller;
-    setVersions([]); setLeft(""); setRight(""); setConfirmed(false); setMessage(null);
+    // A reload of the same curve keeps the compared versions, the publication confirmation and the last message.
+    if (shownCurve.current !== selected) { shownCurve.current = selected; setVersions([]); setLeft(""); setRight(""); setConfirmed(false); setMessage(null); }
     if (!selected) return () => controller.abort();
     setLoading(true); setError(null); setLoadFailed(false);
     listSecurityCurveVersions(selected, { signal: controller.signal }).then((rows) => {
@@ -139,7 +141,7 @@ export function SecurityCurveWorkbench() {
         <FormRow label="Stored curve" labelFor={`${id}-select`}><Select id={`${id}-select`} value={selected} disabled={busy || readDenied} onChange={(e) => { setSelected(e.target.value); setPoints([emptyPoint(), emptyPoint()]); setSource(""); setAsOf(""); setSourcedAt(""); }}>
           <option value="">Select a curve</option>{definitions.map((row) => <option key={row.curveId} value={row.curveId}>{row.curveKey} · {row.kind} · {row.currency}</option>)}
         </Select></FormRow>
-        <PanelReload reload={() => { if (busy) return; setWriteDenied(false); setReload((value) => value + 1); }} failed={loadFailed} busy={busy || loading} what="curves" />
+        <PanelReload reload={() => { if (busy || (error && !loadFailed)) return; setWriteDenied(false); setReload((value) => value + 1); }} failed={loadFailed} busy={busy || loading} what="curves" />
       </div>
       {loading ? <p role="status">Loading retained curves…</p> : null}
       {!loading && !error && definitions.length === 0 ? <p>No curve definitions are retained. Create a definition to publish market inputs.</p> : null}

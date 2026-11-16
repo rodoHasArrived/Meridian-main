@@ -23,7 +23,7 @@ namespace Meridian.Wpf.ViewModels;
 /// so that the code-behind can be thinned to lifecycle wiring only (M1–M4, M6, M7).
 /// Provides contextual commands for the command palette when activated.
 /// </summary>
-public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionBarProvider, ICommandContextProvider
+public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionBarProvider, ICommandContextProvider, IPageRefreshTarget
 {
     private const int MaxActivityItems = 25;
     private const int SparklineCapacity = 30;
@@ -325,6 +325,9 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     public IRelayCommand ViewLogsCommand { get; }
     public IRelayCommand RunBackfillCommand { get; }
     public IAsyncRelayCommand RefreshStatusCommand { get; }
+
+    /// <summary>The shell Refresh control (toolbar button and F5) reloads the dashboard in place.</summary>
+    ICommand IPageRefreshTarget.RefreshCommand => RefreshStatusCommand;
     public IRelayCommand ViewAllActivityCommand { get; }
     public IRelayCommand ClearIntegrityAlertsCommand { get; }
     public IRelayCommand ExpandIntegrityPanelCommand { get; }
@@ -405,7 +408,6 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
 
         // Populate action bar.
         Actions.Clear();
-        Actions.Add(new ActionEntry("Refresh", RefreshStatusCommand, "\uE72C", "Refresh holdings and quality status", IsPrimary: true));
         Actions.Add(new ActionEntry("Activity Log", ViewLogsCommand, "\uE8FD", "View activity log"));
         Actions.Add(new ActionEntry("Quality Worklist", ViewAllIntegrityEventsCommand, "\uE73E", "Open data-quality worklist"));
 
@@ -581,7 +583,14 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     {
         if (message == "RefreshStatus")
         {
-            _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(() => _ = RefreshStatusAsync());
+            // F5 also runs the shell refresh, which executes RefreshStatusCommand; do not load twice.
+            _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                if (!RefreshStatusCommand.IsRunning)
+                {
+                    _ = RefreshStatusAsync();
+                }
+            });
         }
     }
 

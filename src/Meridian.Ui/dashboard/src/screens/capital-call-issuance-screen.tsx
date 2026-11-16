@@ -120,7 +120,7 @@ function CapitalBookWorkbench({ bookId, onLockedChange }: { bookId: string; onLo
   return <div className="space-y-4">
     <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">{workbench ? `Retained capital activity · ${workbench.scope.currency}` : "Loading book authority"}</p>
       {workbench ? <TechnicalDetails label="Operating authority"><p className="break-all text-xs">Fund {workbench.scope.fundProfileId} · Entity {workbench.scope.entityId} · Book {workbench.scope.ledgerBookId}</p></TechnicalDetails> : null}
-      <PanelReload reload={() => { if (!loading && !busy && !uncertain) void refresh(true); }} failed={!loading && !workbench} busy={!!busy} what="retained capital records" /></div>
+      <PanelReload reload={() => { if (!loading && !busy) void refresh(true); }} failed={!loading && !workbench} busy={!!busy} what="retained capital records" /></div>
     {loading ? <p role="status">Loading commitment and posting authority…</p> : null}
     {busy ? <p role="status" className="text-sm">{busy} is in progress…</p> : null}
     {error ? <StatusBanner role="alert" tone="danger" title="Capital activity unavailable" detail={error} /> : null}

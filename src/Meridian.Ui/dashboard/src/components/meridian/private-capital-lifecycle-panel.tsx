@@ -108,6 +108,9 @@ export function PrivateCapitalLifecyclePanel({ holderEntityIds, scopeKey = "", a
   const writableHolders = choices.entities.filter(item => !allowed || allowed.has(item.id));
   const writable = data?.canManage === true && writableHolders.length > 0;
   const locked = busy || uncertain !== null;
+  // A reload resets every draft below, so the header Refresh leaves the panel alone while one is open.
+  const hasDraft = Boolean(holder || vehicle || currency || source || csv || rationale || preview || confirmed
+    || evidence.documentId || evidence.contentHash || evidence.vaultId || JSON.stringify(row) !== JSON.stringify(initialRow()));
   const invalidate = () => { draftGeneration.current += 1; setPreview(null); setConfirmed(false); acceptRequest.current = null; setNotice(""); };
   const fail = (reason: unknown, operation?: "accept" | "register") => {
     setError(reason instanceof Error ? reason.message : "The operation could not be completed.");
@@ -172,7 +175,7 @@ export function PrivateCapitalLifecyclePanel({ holderEntityIds, scopeKey = "", a
         <label className="text-sm">Group vehicles by<Select value={group} onChange={event => {
           const value = event.target.value === "strategy" ? "strategy" : "vintage"; setGroup(value); setView("pcGroup", value);
         }}><option value="vintage">Vintage</option><option value="strategy">Strategy</option></Select></label>
-        <PanelReload reload={() => { if (!locked) setRefresh(value => value + 1); }} failed={Boolean(error)} busy={loading || locked} what="private-capital records" />
+        <PanelReload reload={() => { if (!locked && (error || !hasDraft)) setRefresh(value => value + 1); }} failed={Boolean(error)} busy={loading || locked} what="private-capital records" />
         {data && <span className="text-xs text-muted-foreground">Read generated {data.generatedAt}</span>}
       </div>
       {loading && <p role="status">Loading retained private-capital records…</p>}

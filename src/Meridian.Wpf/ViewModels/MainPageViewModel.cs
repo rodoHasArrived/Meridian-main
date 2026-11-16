@@ -1037,10 +1037,21 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         SyncNavigationState();
     }
 
+    /// <summary>Test seam for the content the shell refresh reloads; defaults to the navigation frame.</summary>
+    internal Func<object?>? ActivePageContentAccessor { get; set; }
+
     private void RefreshCurrentPage()
     {
         UpdateShellRefreshStamp();
-        NavigateToWithWorkspaceScope(CurrentPageTag);
+        var content = ActivePageContentAccessor is { } accessor
+            ? accessor()
+            : _wpfNavigationService?.GetActivePageContent(CurrentPageTag);
+        if (!PageRefreshResolver.TryRefreshInPlace(content))
+        {
+            // No reload command: rebuild the page, as before. This adds a Back entry.
+            NavigateToWithWorkspaceScope(CurrentPageTag);
+        }
+
         RequestShellRefresh();
     }
 

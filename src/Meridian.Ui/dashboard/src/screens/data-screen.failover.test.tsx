@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithRouter } from "@/test/render";
@@ -102,8 +102,8 @@ describe("FailoverRegion", () => {
     expect(screen.queryByRole("button", { name: "Retry loading failover state" })).not.toBeInTheDocument();
     expect(api.get).toHaveBeenCalledTimes(1);
     await user.click(screen.getByRole("button", { name: "Header refresh" }));
-    expect(await screen.findByText("Failover state refreshed.")).toBeInTheDocument();
-    expect(api.get).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
+    expect(screen.queryByText("Failover state refreshed.")).not.toBeInTheDocument();
 
     api.get.mockRejectedValueOnce(new Error("Failover host offline."));
     await user.click(screen.getByRole("button", { name: "Header refresh" }));
@@ -111,5 +111,26 @@ describe("FailoverRegion", () => {
     await user.click(screen.getByRole("button", { name: "Retry loading failover state" }));
     expect(await screen.findByText("Failover state refreshed.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Retry loading failover state" })).not.toBeInTheDocument();
+  });
+
+  it("never replaces unsaved failover edits on a header refresh", async () => {
+    const api = makeApi(); const user = userEvent.setup();
+    renderWithRouter(<HeaderRefresh><FailoverRegion api={api} /></HeaderRefresh>);
+    await user.click(screen.getByText("Configure streaming failover"));
+    await screen.findByRole("button", { name: "Save failover settings" });
+    const toggle = screen.getByRole("checkbox", { name: "Automatic failover" });
+    expect(toggle).toBeChecked();
+    await user.click(toggle);
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(api.get).toHaveBeenCalledTimes(1);
+    expect(toggle).not.toBeChecked();
+
+    await user.click(toggle);
+    await user.click(screen.getByRole("button", { name: "Edit stream" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(api.get).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole("button", { name: "Discard rule edit" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
   });
 });

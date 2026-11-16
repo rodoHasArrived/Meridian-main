@@ -115,6 +115,26 @@ describe("RiskControlPanel", () => {
     await waitFor(() => expect(api.getRiskRules).toHaveBeenCalledTimes(2));
   });
 
+  it("keeps a typed, unsaved threshold when the header refresh fires and reads again once it is saved", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<GlobalRefreshProvider sequence={0}><RiskControlPanel /></GlobalRefreshProvider>);
+    await screen.findByText("Position limit");
+    const input = screen.getByLabelText("Drawdown threshold percent");
+    await user.clear(input);
+    await user.type(input, "7.5");
+    rerender(<GlobalRefreshProvider sequence={1}><RiskControlPanel /></GlobalRefreshProvider>);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(input).toHaveValue("7.5");
+    expect(api.getRiskRules).toHaveBeenCalledTimes(1);
+    expect(api.getRiskRuleConfig).toHaveBeenCalledTimes(3);
+
+    await user.click(screen.getByRole("button", { name: "Save drawdown threshold" }));
+    expect(await screen.findByRole("status")).toHaveTextContent("Drawdown threshold saved.");
+    expect(api.getRiskRules).toHaveBeenCalledTimes(2);
+    rerender(<GlobalRefreshProvider sequence={2}><RiskControlPanel /></GlobalRefreshProvider>);
+    await waitFor(() => expect(api.getRiskRules).toHaveBeenCalledTimes(3));
+  });
+
   it("settles on loaded risk controls under React StrictMode", async () => {
     render(
       <StrictMode>

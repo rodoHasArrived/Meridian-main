@@ -44,7 +44,7 @@ export function EntityCounterpartProposals({ scope }: { scope: EntityOperationSc
     if (result) { proposals.refresh(); breaks.refresh(); }
   }
   return <section className="space-y-4"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">Counterpart proposals and intercompany breaks</h3>
-    <PanelReload reload={() => { proposals.refresh(); breaks.refresh(); }} failed={Boolean(proposals.error || breaks.error)} busy={proposals.loading || breaks.loading} what="counterpart evidence" /></div>
+    <PanelReload reload={() => { if (selected && !selectedResolved && !proposals.error && !breaks.error) return; proposals.refresh(); breaks.refresh(); }} failed={Boolean(proposals.error || breaks.error)} busy={proposals.loading || breaks.loading} what="counterpart evidence" /></div>
     <p className="text-sm text-muted-foreground">Source posting retains a delivery record. The other entity reviews its own draft; source preparers gain no target-book edit rights. Link an existing counterpart only after checking its journal identity.</p>
     <OperationError error={proposals.error} /><OperationError error={breaks.error} />
     {proposals.loading ? <p role="status">Loading counterpart delivery records…</p> : null}

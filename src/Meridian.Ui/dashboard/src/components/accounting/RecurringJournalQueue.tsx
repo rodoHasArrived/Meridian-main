@@ -23,9 +23,9 @@ export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds 
   useEffect(() => {
     const current = ++generation.current;
     const controller = new AbortController();
-    setQueue(null);
     setError(null);
     if (!fundProfileId || !ledgerBookId || !entityId) {
+      setQueue(null);
       setLoading(false);
       return;
     }
@@ -34,7 +34,7 @@ export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds 
       .then((result) => { if (generation.current === current) setQueue(result); })
       .catch((reason: unknown) => {
         if (generation.current === current && !controller.signal.aborted) {
-          setError(reason ?? new Error("The retained occurrence state could not be read."));
+          setQueue(null); setError(reason ?? new Error("The retained occurrence state could not be read."));
         }
       })
       .finally(() => { if (generation.current === current) setLoading(false); });

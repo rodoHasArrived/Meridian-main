@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PanelReload } from "@/components/ui/panel-reload";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { useRequestLifecycle } from "@/hooks/use-request-lifecycle";
@@ -24,13 +24,13 @@ export function SymbolMappingEditor({ api = symbolMappingApi, onChanged }: { api
   const [message, setMessage] = useState<string | null>(null);
   const { status, start, succeed, fail, finish } = useRequestLifecycle({ operation: "symbol-mapping-editor", failureMessage: "The symbol mapping operation failed. Refresh before retrying an uncertain write." });
   const resetReview = useCallback(() => { setReviewed(false); setArchivesConfirmed(false); setSeriesConfirmed(false); setReason(""); }, []);
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (keepReview = false) => {
     const request = start({ busyMode: "drop" });
     if (!request) return;
     try {
       const [nextMappings, nextRollout] = await Promise.all([api.list({ signal: request.signal }), api.rollout({ signal: request.signal })]);
       if (!request.isCurrent()) return;
-      setMappings(nextMappings); setRollout(nextRollout); resetReview(); succeed(request);
+      setMappings(nextMappings); setRollout(nextRollout); if (!keepReview) resetReview(); succeed(request);
     } catch (error) { if (request.isCurrent()) { setRollout(null); fail(request, error); } }
     finally { finish(request); }
   }, [api, start, succeed, fail, finish, resetReview]);
@@ -52,6 +52,8 @@ export function SymbolMappingEditor({ api = symbolMappingApi, onChanged }: { api
   }
   const selected = rollout?.providers.find(row => row.provider === provider);
   const busy = status.inFlight;
+  // The header Refresh is not a deliberate local click: it waits while a review or removal confirmation is in progress.
+  useOnGlobalRefresh(() => { if (!reviewed && !archivesConfirmed && !seriesConfirmed && !reason && !deleteConfirmed) void refresh(true); });
   const available = rollout !== null && !busy;
   const existing = mappings.some(row => row.canonicalSymbol === draft.canonicalSymbol.trim().toUpperCase());
   function selectMapping(symbol: string) {
@@ -62,7 +64,7 @@ export function SymbolMappingEditor({ api = symbolMappingApi, onChanged }: { api
   return <div className="grid gap-4 rounded-md border p-4" aria-label="Symbol mapping editor">
     <div className="flex flex-wrap items-center justify-between gap-2">
       <h3 className="font-semibold">Edit provider symbol mappings</h3>
-      <PanelReload reload={refresh} failed={Boolean(status.error)} busy={busy} what="mapping evidence" />
+      {status.error ? <Button type="button" variant="outline" size="sm" disabled={busy} aria-label="Retry loading mapping evidence" onClick={() => void refresh()}>Retry</Button> : null}
     </div>
     <p className="text-sm text-muted-foreground">Mapping edits update registry aliases for future requests. Review comparison evidence before promoting each provider. Existing archives retain their original symbols and provenance.</p>
     {status.error ? <StatusBanner tone="danger" title="Mapping change unavailable" detail={status.error} /> : null}

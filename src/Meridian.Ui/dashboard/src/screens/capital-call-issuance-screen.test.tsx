@@ -3,6 +3,7 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as api from "@/lib/api/private-capital.api";
 import { ApiError } from "@/lib/api-errors";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { CapitalCallIssuanceScreen } from "@/screens/capital-call-issuance-screen";
 import { CAPITAL_BOOK_ID, CAPITAL_ENTITY_ID, CAPITAL_PERIOD_ID, CAPITAL_BANK_LINE_ID, CAPITAL_EVIDENCE, capitalBankObservationImport, capitalBook, capitalCall, capitalCommitment, capitalWorkbench } from "@/screens/private-capital.test-fixtures";
 import type { PrivateCapitalCallPreview, PrivateCapitalNoticeGenerationResult } from "@/types/private-capital";
@@ -405,5 +406,19 @@ describe("Native commitment-to-cash workbench", () => {
     expect(mocks.generatePrivateCapitalNotice.mock.calls[1][3]).toEqual({ operationId: nextId, commitmentId: "commitment-a" });
     expect(uuid).toHaveBeenCalledTimes(2);
     await waitFor(() => expect(sessionStorage.getItem(key)).toBeNull());
+  });
+  it("keeps the loaded workbench and typed call terms on screen while the header refresh re-reads it", async () => {
+    const tree = <MemoryRouter initialEntries={[`/accounting/capital-calls?ledgerBookId=${CAPITAL_BOOK_ID}`]}><CapitalCallIssuanceScreen /></MemoryRouter>;
+    const view = render(<GlobalRefreshProvider sequence={0}>{tree}</GlobalRefreshProvider>); await ready(); fillCall();
+    let finish!: (value: ReturnType<typeof capitalWorkbench>) => void;
+    mocks.getPrivateCapitalWorkbench.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    view.rerender(<GlobalRefreshProvider sequence={1}>{tree}</GlobalRefreshProvider>);
+    await waitFor(() => expect(mocks.getPrivateCapitalWorkbench).toHaveBeenCalledTimes(2));
+    expect(screen.getByRole("heading", { name: "Retained commitment register" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Capital call ID")).toHaveValue("call-a");
+    await act(async () => finish({ ...capitalWorkbench(), generatedAtUtc: "2026-11-04T00:00:00Z" }));
+    await waitFor(() => expect(screen.getByLabelText("Capital call ID")).toBeEnabled());
+    expect(screen.getByLabelText("Capital call ID")).toHaveValue("call-a");
+    expect(screen.getByLabelText("Amount to call")).toHaveValue("250000.01");
   });
 });

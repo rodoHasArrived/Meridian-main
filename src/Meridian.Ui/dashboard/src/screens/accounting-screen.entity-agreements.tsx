@@ -40,7 +40,7 @@ export function EntityAccountingArrangements({ scope }: { scope: EntityOperation
     if (result) { arrangements.refresh(); history.refresh(); setEditing(false); }
   }
   return <div className="space-y-4"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">Intercompany accounting profiles</h3><div className="flex flex-wrap gap-2">
-    <PanelReload reload={() => { if (!editing && !mutation.busy) arrangements.refresh(); }} failed={Boolean(arrangements.error)} busy={arrangements.loading || editing || mutation.busy} what="accounting profiles" />
+    <PanelReload reload={() => { if (!editing && !mutation.busy && !(selected && reason.trim())) arrangements.refresh(); }} failed={Boolean(arrangements.error)} busy={arrangements.loading || editing || mutation.busy} what="accounting profiles" />
     <Button type="button" disabled={!organizationId || editing || mutation.busy} disabledReason={mutation.busy ? "Wait for the current accounting profile change to finish." : editing ? "Save or cancel the current accounting profile edit." : "Select an accounting profile organization."} onClick={() => { setCreating(true); setEditing(true); }}>New accounting profile</Button>
   </div></div>
   <p className="text-sm text-muted-foreground">Profiles govern book mappings and counterpart accounting against an exact approved legal agreement version. Legal terms and their independent review remain in the canonical agreement registry.</p>

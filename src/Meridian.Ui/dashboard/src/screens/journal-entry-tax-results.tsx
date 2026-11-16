@@ -20,12 +20,12 @@ export function JournalEntryTaxResults({ ledgerBookId, periodId, journalEntryId 
 
   useEffect(() => {
     const controller = new AbortController();
-    setResult(null);
     setLoading(true);
     setError(null);
     getLedgerJournalEntryTaxResults({ ledgerBookId, periodId, journalEntryId }, { signal: controller.signal })
       .then((response) => { if (!controller.signal.aborted) setResult(response); })
       .catch(() => {
+        if (!controller.signal.aborted) setResult(null);
         if (!controller.signal.aborted) setError("Retained tax results could not be loaded. Tax character and amounts are unavailable until the source responds.");
       })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
@@ -47,7 +47,7 @@ export function JournalEntryTaxResults({ ledgerBookId, periodId, journalEntryId 
         <CardDescription>Retained server results for this posting. Refresh reads the latest evidence; it does not re-evaluate or change a disposal.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4" aria-busy={loading}>
-        {loading ? <p role="status" className="text-sm text-muted-foreground">Loading retained tax results…</p> : error ? (
+        {loading && !current ? <p role="status" className="text-sm text-muted-foreground">Loading retained tax results…</p> : error ? (
           <StatusBanner role="alert" tone="danger" title="Tax results unavailable" detail={error} />
         ) : current ? (
           <>

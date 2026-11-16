@@ -86,6 +86,7 @@ public partial class MainWindow : Window
         _windowStateStore = windowStateStore ?? throw new ArgumentNullException(nameof(windowStateStore));
         DataContext = _viewModel;
         _viewModel.LogoutRequested += OnLogoutRequested;
+        _viewModel.ShellRefreshRequested += OnShellRefreshRequested;
 
         // Subscribe to keyboard shortcuts
         _keyboardShortcutService.ShortcutInvoked += OnShortcutInvoked;
@@ -202,6 +203,7 @@ public partial class MainWindow : Window
 
         // Unsubscribe from all events to prevent memory leaks
         _keyboardShortcutService.ShortcutInvoked -= OnShortcutInvoked;
+        _viewModel.ShellRefreshRequested -= OnShellRefreshRequested;
         _notificationService.NotificationReceived -= OnNotificationReceived;
         _tourService.StepChanged -= OnTourStepChanged;
         _tourService.TourCompleted -= OnTourCompleted;
@@ -312,6 +314,15 @@ public partial class MainWindow : Window
         }
 
         _viewModel.HandleShortcut(e.ActionId);
+    }
+
+    private void OnShellRefreshRequested(object? sender, EventArgs e)
+    {
+        // F5 runs the same shell refresh as the toolbar Refresh button.
+        if (RootFrame.Content is MainPage mainPage)
+        {
+            mainPage.RefreshCurrentPage();
+        }
     }
 
     private void OnLogoutRequested(object? sender, EventArgs e)

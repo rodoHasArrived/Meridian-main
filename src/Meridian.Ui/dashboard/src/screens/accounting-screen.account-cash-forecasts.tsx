@@ -173,7 +173,7 @@ function ScopedCashForecastsPanel({ scope, context, onDirtyChange }: AccountCash
             {history.map(item => <option key={item.snapshotId} value={item.snapshotId}>{item.inputs.periodStart} – {item.inputs.periodEnd} · {item.inputs.runId} · {item.inputs.previousSnapshotId ? "Correction" : "Original"} · {item.isCertified ? "Certified" : "Blocked"}</option>)}
           </Select>
         </FormRow>
-        <PanelReload reload={() => { if (!loading && busy === null && !preparing) setRevision(value => value + 1); }} failed={!loading && !historyAvailable} busy={busy !== null || preparing} what="cash forecast history" />
+        <PanelReload reload={() => { if (!loading && busy === null && !preparing && !(error && historyAvailable)) setRevision(value => value + 1); }} failed={!loading && !historyAvailable} busy={busy !== null || preparing} what="cash forecast history" />
       </div>
       {loading ? <p role="status" className="text-sm">Loading authoritative cash forecast history…</p> : null}
       {!loading && !error && history.length === 0 ? <p role="status" className="text-sm">No cash forecasts retained for this account and book.</p> : null}

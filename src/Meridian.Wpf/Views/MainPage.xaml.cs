@@ -152,6 +152,15 @@ public partial class MainPage : Page
         CommandPaletteControl.FocusInput();
     }
 
+    /// <summary>Runs the shell refresh, exactly as the toolbar Refresh button does.</summary>
+    public void RefreshCurrentPage()
+    {
+        if (_viewModel.RefreshPageCommand.CanExecute(null))
+        {
+            _viewModel.RefreshPageCommand.Execute(null);
+        }
+    }
+
     public Task WaitForShellReadyAsync()
     {
         if (IsLoaded)

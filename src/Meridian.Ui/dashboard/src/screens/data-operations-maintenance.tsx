@@ -10,7 +10,8 @@ import { exportTableQuery } from "@/lib/table-workbench";
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { RefreshCcw, Wrench } from "lucide-react";
+import { Wrench } from "lucide-react";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,6 +58,7 @@ export function ArchiveMaintenanceOperations() {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const refresh = useCallback(async () => {
     setError(null);
@@ -81,6 +83,7 @@ export function ArchiveMaintenanceOperations() {
 
     const failures = [statusResult, statisticsResult, summaryResult, taskTypeResult, executionResult]
       .filter((result): result is PromiseRejectedResult => result.status === "rejected");
+    setLoadFailed(failures.length > 0);
     if (failures.length > 0) {
       setError(`${failures.length} of 5 maintenance reads failed. ${errorMessage(failures[0].reason)}`);
     }
@@ -175,10 +178,7 @@ export function ArchiveMaintenanceOperations() {
               tier migration, and retention enforcement.
             </CardDescription>
           </div>
-          <Button size="sm" variant="outline" onClick={() => void refresh()}>
-            <RefreshCcw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
+          <PanelReload reload={refresh} failed={loadFailed} what="archive maintenance" />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

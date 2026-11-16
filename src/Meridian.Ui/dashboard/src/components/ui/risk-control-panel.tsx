@@ -20,8 +20,8 @@ const toneClass = {
 export function RiskControlPanel() {
   const vm = useRiskControlPanelViewModel();
   const riskControlsUnavailable = isApiError(vm.loadFailure) && vm.loadFailure.status === 404;
-  // The header Refresh re-reads limits; it waits while a load or a threshold save is in flight.
-  useOnGlobalRefresh(() => { if (!vm.refreshAction.disabled) void vm.refresh(); });
+  // The header Refresh re-reads limits, but never over a load, a save, or a typed value not yet saved.
+  useOnGlobalRefresh(() => { if (!vm.refreshAction.disabled && !vm.hasUnsavedEdits) void vm.refresh(); });
 
   return (
     <Card

@@ -55,7 +55,6 @@ export function ExecutionBlotterPanel() {
 
   const refresh = useCallback(async () => {
     setReadState("loading");
-    setError(null);
     const [healthResult, accountResult, blotterResult] = await Promise.allSettled([
       getExecutionGatewayHealth(),
       getExecutionAccountSnapshot(),
@@ -67,14 +66,14 @@ export function ExecutionBlotterPanel() {
     setBlotter(blotterResult.status === "fulfilled" ? blotterResult.value : null);
 
     if (blotterResult.status === "fulfilled") {
-      setReadState("ready");
+      setReadState("ready"); setError(null);
       return;
     }
 
     // A host without execution services answers 503 on every one of these reads.
     // Reporting that as a failure would send an operator chasing a broken gateway.
     if (isServiceInactive(blotterResult.reason)) {
-      setReadState("inactive");
+      setReadState("inactive"); setError(null);
       return;
     }
 
@@ -126,7 +125,7 @@ export function ExecutionBlotterPanel() {
               account figures behind it.
             </CardDescription>
           </div>
-          <PanelReload reload={refresh} failed={readState === "error"} what="the execution blotter" />
+          <PanelReload reload={() => (busy || (upsizeKey !== null && readState !== "error") ? undefined : refresh())} failed={readState === "error"} what="the execution blotter" />
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

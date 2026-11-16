@@ -548,7 +548,7 @@ export function CorporateActionInboxRegion({ panel }: { panel: CorporateActionIn
             </div>
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="outline" size="sm" disabled disabledReason={panel.bulkAcceptDisabledReason}>Bulk accept</Button>
-              <PanelReload reload={panel.refresh} failed={Boolean(panel.error)} busy={panel.loading} what="corporate action case queue" />
+              <PanelReload reload={() => panel.pendingAcceptance || panel.acceptingKey ? undefined : panel.refresh()} failed={Boolean(panel.error)} busy={panel.loading} what="corporate action case queue" />
             </div>
           </div>
           <ToolbarStrip

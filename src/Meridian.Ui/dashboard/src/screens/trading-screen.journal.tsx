@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getJournal, getJournalOrder, getJournalSummary, type JournalOrder, type JournalSummary } from "@/lib/api/execution-workflows.api";
 import { formatCurrency, formatTimestamp } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -24,17 +24,20 @@ export function ExecutionJournalPanel({ accountId }: { accountId?: string | null
   const [error, setError] = useState<string | null>(null); const [loading, setLoading] = useState(false);
   const [revision, setRevision] = useState(0);
   const refresh = useCallback(() => setRevision((value) => value + 1), []);
+  const loadedRevision = useRef(0);
   useEffect(() => {
     const linkedOrderId = linked.get("orderId");
-    setOrders([]); setSummary(null); setLinkedOrder(null); setError(null); setLoadedAccount(null);
-    setSelected(linkedOrderId ? { orderId: linkedOrderId, attemptId: linked.get("attemptId") ?? undefined, fromLink: true } : null);
+    // A reload of the same scope keeps the rows and the inspected order until fresh evidence arrives.
+    const reloadOnly = loadedRevision.current !== revision; loadedRevision.current = revision; setError(null);
+    if (!reloadOnly) { setOrders([]); setSummary(null); setLinkedOrder(null); setLoadedAccount(null); }
+    if (!reloadOnly) setSelected(linkedOrderId ? { orderId: linkedOrderId, attemptId: linked.get("attemptId") ?? undefined, fromLink: true } : null);
     if (!accountId) { setLoading(false); return; }
     const controller = new AbortController(); setLoading(true);
     const timer = window.setTimeout(() => {
       const range = { from: from ? new Date(`${from}T00:00:00Z`).toISOString() : undefined, to: to ? new Date(`${to}T00:00:00Z`).toISOString() : undefined };
       void Promise.all([getJournal(accountId, { symbol, strategy, tag, status, ...range }, { signal: controller.signal }), getJournalSummary(accountId, { signal: controller.signal }, range)])
         .then(([next, totals]) => { if (!controller.signal.aborted) { setOrders(next); setSummary(totals); setLoadedAccount(accountId); } })
-        .catch((reason: unknown) => { if (!controller.signal.aborted) setError(reason instanceof Error ? reason.message : "Journal evidence is unavailable."); })
+        .catch((reason: unknown) => { if (!controller.signal.aborted) { setOrders([]); setSummary(null); setError(reason instanceof Error ? reason.message : "Journal evidence is unavailable."); } })
         .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     }, 200);
     return () => { controller.abort(); window.clearTimeout(timer); };
