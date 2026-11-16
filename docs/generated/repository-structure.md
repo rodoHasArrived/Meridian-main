@@ -9320,6 +9320,7 @@ Meridian-main
 │   │   │   │   │       ├── governed-approvals-panel.test.tsx
 │   │   │   │   │       ├── governed-approvals-panel.tsx
 │   │   │   │   │       ├── guardrail-utilization.tsx
+│   │   │   │   │       ├── info-note.tsx
 │   │   │   │   │       ├── input.tsx
 │   │   │   │   │       ├── integration-runtime-contracts.test.tsx
 │   │   │   │   │       ├── kbd.tsx
@@ -9335,6 +9336,8 @@ Meridian-main
 │   │   │   │   │       ├── order-status-banner.tsx
 │   │   │   │   │       ├── overflow-menu.test.tsx
 │   │   │   │   │       ├── overflow-menu.tsx
+│   │   │   │   │       ├── page-heading.test.tsx
+│   │   │   │   │       ├── page-heading.tsx
 │   │   │   │   │       ├── panel-surface.tsx
 │   │   │   │   │       ├── popover.test.tsx
 │   │   │   │   │       ├── popover.tsx
@@ -9665,6 +9668,10 @@ Meridian-main
 │   │   │   │   │   ├── format.timestamps.test.ts
 │   │   │   │   │   ├── format.ts
 │   │   │   │   │   ├── fund-account-scope.ts
+│   │   │   │   │   ├── global-refresh.test.tsx
+│   │   │   │   │   ├── global-refresh.tsx
+│   │   │   │   │   ├── holdings-model.test.ts
+│   │   │   │   │   ├── holdings-model.ts
 │   │   │   │   │   ├── identifiers.test.ts
 │   │   │   │   │   ├── identifiers.ts
 │   │   │   │   │   ├── income-movement-waterfall.test.ts

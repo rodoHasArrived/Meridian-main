@@ -44,23 +44,19 @@ export function AccountingCaseWorkbench({
       className="workspace-section-band"
       aria-labelledby="accounting-case-workbench-heading"
     >
-      <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Today</p>
-          <h3 id="accounting-case-workbench-heading" className="workspace-section-title">Accounting case workbench</h3>
-          <p className="workspace-section-summary">
-            Status -&gt; Queue -&gt; Selected item -&gt; Evidence -&gt; Action for breaks, approvals, and close tasks.
-          </p>
-        </div>
-        <Badge variant={closeCommandCenter?.statusTone === "danger" ? "danger" : closeCommandCenter?.statusTone === "warning" ? "warning" : closeCommandCenter?.statusTone === "success" ? "success" : "outline"}>
-          {closeCommandCenter?.statusLabel ?? "Loading"}
-        </Badge>
-      </div>
+      {/* The queue, the selected case and its evidence are the section; it needs no band of its own
+          above them. The name stays for assistive technology and the close status sits on the queue. */}
+      <h3 id="accounting-case-workbench-heading" className="sr-only">Accounting case workbench</h3>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(15rem,0.72fr)_minmax(0,1.1fr)_minmax(16rem,0.82fr)]">
         <Card className="panel-surface" role="region" aria-label="Accounting case queue">
           <CardHeader>
-            <CardTitle className="text-base">Queue</CardTitle>
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="text-base">Queue</CardTitle>
+              <Badge variant={closeCommandCenter?.statusTone === "danger" ? "danger" : closeCommandCenter?.statusTone === "warning" ? "warning" : closeCommandCenter?.statusTone === "success" ? "success" : "outline"}>
+                {closeCommandCenter?.statusLabel ?? "Loading"}
+              </Badge>
+            </div>
             <CardDescription>Breaks, approvals, and close tasks needing finance review.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">

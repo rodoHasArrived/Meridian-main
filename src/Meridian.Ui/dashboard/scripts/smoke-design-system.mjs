@@ -109,7 +109,7 @@ async function portfolioProofRecord(page) {
   await page.getByRole("heading", { name: "Portfolio", level: 1, exact: true }).waitFor();
   await ready(page, "Portfolio");
   await page.getByRole("region", { name: "Portfolio workbench context", exact: true })
-    .getByRole("heading", { name: "Execution-linked holdings", exact: true }).waitFor();
+    .getByRole("heading", { name: "Holdings", exact: true }).waitFor();
   const summary = page.getByText("Retained run records and evidence · separate from current holdings", { exact: true });
   const disclosure = summary.locator("xpath=parent::details");
   if (await disclosure.getAttribute("open") === null) await summary.click();

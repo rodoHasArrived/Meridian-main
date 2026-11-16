@@ -454,7 +454,7 @@ export async function runExpandedDesignSystemSmoke({ browser, base, backendBase,
           assert.equal(new URL(page.url()).pathname, new URL(base + "/portfolio").pathname, "Canonical Portfolio route");
           await page.getByRole("heading", { name: "Portfolio", level: 1, exact: true }).waitFor();
           await page.getByRole("region", { name: "Portfolio workbench context", exact: true })
-            .getByRole("heading", { name: "Execution-linked holdings", exact: true }).waitFor();
+            .getByRole("heading", { name: "Holdings", exact: true }).waitFor();
         }
         await page.getByText(config.route.ready, { exact: true }).first().waitFor();
         await page.waitForLoadState("networkidle");

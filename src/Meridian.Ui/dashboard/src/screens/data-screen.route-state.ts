@@ -38,35 +38,35 @@ export type DataOperationsWorkstream =
 export const DATA_ROUTE_VIEW_COPY: Record<DataOperationsWorkstream, { title: string; description: string }> = {
   overview: {
     title: "Data overview",
-    description: "Provider posture, data quality, and analytics posture. Providers, backfills, exports, and SQL have focused routes."
+    description: "Check that data providers are healthy and that data is arriving."
   },
   providers: {
     title: "Provider catalog",
-    description: "Source health, credentials, routing trust, verification, and recovery actions."
+    description: "Check each provider's health and credentials, and fix the ones that need it."
   },
   import: {
     title: "Data import",
-    description: "Template-led retained-file preview, validation evidence, and downstream handoff."
+    description: "Preview and validate a file before importing it."
   },
   backfills: {
     title: "Backfill queue",
-    description: "Historical repair jobs with operator-visible status, ranges, and result evidence."
+    description: "Track jobs that fill gaps in historical data."
   },
   operations: {
     title: "Ingestion operations",
-    description: "Resumable import and backfill recovery with checkpointed evidence and audited actions."
+    description: "Resume or recover imports and backfills that stopped."
   },
   assurance: {
     title: "Storage assurance",
-    description: "Unified storage posture with preview-first, confirmation-gated maintenance actions."
+    description: "Check storage health and run maintenance after previewing its effect."
   },
   exports: {
     title: "Export packages",
-    description: "Governed export runs and downstream handoff evidence."
+    description: "Review export runs and where each one was delivered."
   },
   query: {
     title: "SQL query",
-    description: "Read-only SQL workbench over the workstation store."
+    description: "Run read-only SQL queries against workstation data."
   }
 };
 

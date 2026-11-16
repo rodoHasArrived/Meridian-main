@@ -555,7 +555,7 @@ describe("execution evidence view model", () => {
 
     expect(loading.auditEmptyText).toBe("Loading execution audit entries...");
     expect(loading.controlsEmptyText).toBe("Loading execution controls snapshot...");
-    expect(loading.refreshButtonLabel).toBe("Refreshing...");
+    expect(loading.refreshButtonLabel).toBe("Retrying...");
     expect(loading.refreshBusyLabel).toBe("Refreshing evidence...");
     expect(loading.refreshDisabled).toBe(true);
     expect(loading.refreshDisabledReason).toBe("Execution evidence refresh is already running.");
@@ -1021,8 +1021,8 @@ describe("trading readiness view model", () => {
       errorText: null
     });
 
-    expect(refreshing.refreshButtonLabel).toBe("Refreshing...");
-    expect(refreshing.refreshAriaLabel).toBe("Refreshing trading readiness");
+    expect(refreshing.refreshButtonLabel).toBe("Retrying...");
+    expect(refreshing.refreshAriaLabel).toBe("Retrying trading readiness");
     expect(refreshing.refreshBusyLabel).toBe("Refreshing readiness...");
     expect(refreshing.refreshDisabled).toBe(true);
     expect(refreshing.refreshDisabledReason).toBe("Trading readiness refresh is already running.");

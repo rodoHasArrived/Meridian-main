@@ -133,7 +133,8 @@ describe("authorized operator triage", () => {
     await act(async () => confirm({ status: "Applied", workItemId: blocked.workItemId, replayed: false }));
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     await waitFor(() => expect(screen.getByRole("button", { name: "Acknowledge" })).toBeEnabled());
-    expect(screen.getByRole("button", { name: "Refresh inbox" })).toBeEnabled();
+    // The inbox reloads with the header Refresh; it has no refresh button of its own.
+    expect(screen.queryByRole("button", { name: /refresh inbox/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Retry same command" })).not.toBeInTheDocument();
   });
 

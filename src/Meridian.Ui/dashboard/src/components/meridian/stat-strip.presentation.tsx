@@ -4,6 +4,7 @@ import { normalizeFinancialLabel } from "@/lib/format";
 import {
   buildMetricTrust,
   combineMetricFreshness,
+  describeCompactProvenance,
   describeGroupedMetricProvenance,
   describeMetricProvenance,
   sharedMetricProvenance,
@@ -130,6 +131,9 @@ export function StatStripPresentation({
     provenanceLine,
     !provenanceStatesScope && stripScope ? `Scope: ${stripScope}` : null
   ].filter(Boolean).join(" · ");
+  // The visible label is short; the full sentence above is its hover text and spoken form, and
+  // each figure's details icon states its own source.
+  const compactLabel = describeCompactProvenance(stamped, { dataLabel, scope: stripScope, freshness: stripFreshness });
 
   return (
     <div className={cn("panel-surface px-4 py-2.5", className)}>
@@ -158,10 +162,12 @@ export function StatStripPresentation({
                   data-kpi-rendered-value
                   className={cn(
                     "inline-flex items-baseline gap-1 whitespace-nowrap font-mono text-sm font-semibold tabular-nums",
-                    trust.degraded ? "text-muted-foreground" : statToneClass[metric.tone]
+                    trust.degraded ? "text-muted-foreground" : statToneClass[metric.tone],
+                    // Unverified is a style on the figure, explained on hover, not a sentence.
+                    trust.freshness === "unverified" && "underline decoration-dotted decoration-1 underline-offset-4"
                   )}
                 >
-                  {trust.degraded ? <Clock3 className="size-3 self-center" aria-hidden="true" /> : null}
+                  {trust.freshness === "stale" ? <Clock3 className="size-3 self-center" aria-hidden="true" /> : null}
                   {metric.value}
                 </span>
                 <MetricPassport metric={metric} />
@@ -178,8 +184,9 @@ export function StatStripPresentation({
         {sharedBasis ? <div className="flex min-w-0 items-baseline gap-2 text-xs text-muted-foreground"><dt id={basisTermId}>Basis</dt><dd id={basisId}>{sharedBasis}</dd></div> : null}
       </dl>
       {footnote ? (
-        <p className="mt-1.5 text-xs leading-4 text-muted-foreground" data-testid="stat-strip-provenance">
-          {footnote}
+        <p className="mt-1.5 text-xs leading-4 text-muted-foreground" title={footnote}>
+          {compactLabel ? <span aria-hidden="true" data-testid="stat-strip-compact-label">{compactLabel}</span> : null}
+          <span className={compactLabel ? "sr-only" : undefined} data-testid="stat-strip-provenance">{footnote}</span>
         </p>
       ) : null}
     </div>

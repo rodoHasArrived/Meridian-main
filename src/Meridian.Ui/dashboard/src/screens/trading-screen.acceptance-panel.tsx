@@ -103,7 +103,8 @@ export function AcceptanceStatusCard({
                 {readinessVm.evidenceAction.label}
               </Link>
             </Button>
-            <Button
+            {/* Readiness reloads with the header Refresh; a local Retry appears only after a failed load. */}
+            {readinessVm.errorText ? <Button
               size="sm"
               variant="outline"
               onClick={() => { void readinessVm.refresh(); }}
@@ -115,7 +116,7 @@ export function AcceptanceStatusCard({
             >
               <RotateCcw className={cn("h-4 w-4", readinessVm.refreshing && "animate-spin")} />
               {readinessVm.refreshButtonLabel}
-            </Button>
+            </Button> : null}
             <SeverityBadge status={acceptanceStatus[overallLevel]} label={`${readyCount}/${totalCount} ready`} />
           </div>
         </div>

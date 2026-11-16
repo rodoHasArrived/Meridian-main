@@ -47,8 +47,6 @@ export interface DailyControlTowerScreenProps {
    * Omit it to let Today read the inbox itself (a standalone render).
    */
   triage?: OperatorTriageInboxState;
-  onEditOperatingScope?: () => void;
-  onRefresh?: () => void;
   refreshing?: boolean;
 }
 
@@ -75,10 +73,7 @@ function DailyControlTowerQueue({
   viewModel,
   trustStrip,
   attention,
-  triage,
-  onEditOperatingScope,
-  onRefresh,
-  refreshing = false
+  triage
 }: DailyControlTowerScreenProps & { triage: OperatorTriageInboxState }) {
   const model = buildDailyControlTowerModel(viewModel, trustStrip);
   const fundAccountId = viewModel.operatingScope.fundAccountId;
@@ -255,18 +250,6 @@ function DailyControlTowerQueue({
                   {model.nextActionLabel}<ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               </Button>
-              {onRefresh ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={refreshing}
-                  aria-label={refreshing ? "Refreshing: control tower evidence" : "Refresh evidence: control tower"}
-                  onClick={onRefresh}
-                >
-                  {refreshing ? "Refreshing" : "Refresh evidence"}
-                </Button>
-              ) : null}
             </>
           }
         />
@@ -275,13 +258,7 @@ function DailyControlTowerQueue({
       <section aria-label="Daily control tower confidence" className="space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span title={viewModel.operatingScope.summary}><span className="text-muted-foreground">Scope </span>{viewModel.operatingScope.hasScope ? viewModel.operatingScope.summary : "All authorized scopes"}</span>
             <span title={freshness.detail}><span className="text-muted-foreground">Selected evidence </span>{freshness.value}</span>
-            {onEditOperatingScope ? (
-              <Button type="button" variant="ghost" size="sm" onClick={onEditOperatingScope}>
-                {viewModel.operatingScope.hasScope ? "Change scope filter" : "Set operating scope"}
-              </Button>
-            ) : null}
           </div>
           {showsInbox && triage.inbox ? (
             <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Inbox filters" aria-busy={triage.loading || triage.busy}>
@@ -293,7 +270,7 @@ function DailyControlTowerQueue({
                   {triage.inbox.unavailableReason ?? "Durable triage is unavailable. Actions are disabled."}
                 </span>
               ) : null}
-              <OperatorTriageInboxActions triage={triage} />
+              <OperatorTriageInboxActions />
             </div>
           ) : null}
         </div>

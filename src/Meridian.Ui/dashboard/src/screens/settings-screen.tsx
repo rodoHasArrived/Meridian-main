@@ -1,4 +1,4 @@
-import { SectionDescription } from "@/components/ui/section-description";
+import { PageHeading } from "@/components/ui/page-heading";
 import { KpiProvider, useKpiModels } from "@/lib/kpi-context";
 import { ExecutionAlertSettingsPanel } from "./settings-screen.execution-alerts";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
@@ -675,21 +675,14 @@ function SettingsScreenContent({
   const { activeProviderDisplayName, createProviderRuntimeHandoff, inlineProviderManagementEnabled, loadProviderRuntimeEvidence, providerCapabilityFilter, providerHealthFilter, providerRuntimeState, providerSearch, providerSort, providerVerificationFilter, replayProviderRuntimeQuarantine, resolveProviderRuntimeQuarantineRecord, runProviderRuntimeDueSync, setProviderCapabilityFilter, setProviderHealthFilter, setProviderSearch, setProviderSort, setProviderVerificationFilter, showProviderAdvancedControls, showProviderFilters, submitProviderOpenApiImport, updateProviderOpenApiImportState, visibleProviderGroups } = useSettingsProviderSectionState({ activeProviderId, activeTaskView, allProviderRows, featureCapabilities, legacyEmbeddedSettingsView, providerOpenApiImportState, session, setProviderOpenApiImportState, vm });
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       <section
         id="settings-overview"
         role="region"
         aria-label="Settings workbench context"
         className="flex flex-wrap items-end justify-between gap-3"
       >
-        <div className="min-w-0">
-          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-            {routeCopy.title}
-          </h2>
-          <SectionDescription descriptionKey={`settings:${activeTaskView}`} label={`About ${routeCopy.title}`}>
-            {routeCopy.description}
-          </SectionDescription>
-        </div>
+        <PageHeading title={routeCopy.title} purpose={routeCopy.description} descriptionKey={`settings:${activeTaskView}`} />
       </section>
 
       <SettingsChangeImpactBanner />
