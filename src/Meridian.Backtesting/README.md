@@ -240,7 +240,9 @@ and include residual accounts for closed positions. Return-of-capital distributi
 long lot/component's exact basis to zero before recognizing excess gain. `BasisReturned` stays
 separate from income in cash-flow evidence and symbol attribution; short payments remain expenses.
 
-Financing accrues on every calendar date using ACT/365 fixed. Sharpe, Sortino, rolling replay
+Financing accrues on every calendar date using ACT/365 fixed. Margin interest is charged on the
+debit carried into the day; short rebates and borrow fees then update that debit, so a fee that
+overdraws an account bears interest from the next day and a rebate that repays it stops interest. Sharpe, Sortino, rolling replay
 metrics, and stitched walk-forward metrics use the same 365-observation annualization because
 the native snapshot series includes weekends. Trade cash flows contain only consideration;
 commission cash flows carry fees separately, and their sum reconciles to the cash movement.

@@ -16,8 +16,8 @@
       "id": "SRC-BACKTESTING",
       "path": "src/Meridian.Backtesting",
       "readme": "src/Meridian.Backtesting/README.md",
-      "readme_hash": "f115949ac0bb8feb0a020fb979774e0de20a15015c8542a4f6b4bcb3bb6094e2",
-      "source_hash": "c2c6c42a30d148447bc758c78ce8c4f48a222bd043324f478b3f820358c9c104"
+      "readme_hash": "ddde24375b921aca4c368eea28427a43b82caf8c4bfbec0ef6429fe59e19ea08",
+      "source_hash": "98a0b7f05bc083bf4ecc00b5108e545849e33c8535b1109652bcd84d267ac534"
     },
     {
       "id": "SRC-BACKTESTING-SDK",
@@ -254,8 +254,8 @@
       "id": "SRC-STORAGE",
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
-      "readme_hash": "50b9befea2ab766ad54195d3c2a9cf61d5bc48d32b26fdd520b94755c173cf90",
-      "source_hash": "fd3c031c6abc7d0475edc973150e38b8fdc9a6d38a987a2ad67041ce81bedd24"
+      "readme_hash": "2dc548c0a120b524c6f791099297632927e38b0335c799ad8ca5598ec91925fd",
+      "source_hash": "1d2463ac7cf4862a99a4bde65b5135329670fd48c53b29a0cea6a2f28ecda270"
     },
     {
       "id": "SRC-STORAGE-ACCOUNTING",
